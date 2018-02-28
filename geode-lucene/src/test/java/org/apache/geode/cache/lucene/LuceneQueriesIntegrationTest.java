@@ -52,6 +52,8 @@ import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
@@ -64,18 +66,30 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
-  private static final String INDEX_NAME = "index";
+  protected static final String INDEX_NAME = "index";
   public static final String REGION_NAME = "index";
-  private Region region;
+  protected Region region;
+
+  protected Region createRegionAndIndex(Map<String, Analyzer> fields) {
+    ((LuceneIndexFactoryImpl) luceneService.createIndexFactory().setFields(fields))
+        .create(INDEX_NAME, REGION_NAME, LuceneServiceImpl.LUCENE_REINDEX);
+    region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    return region;
+  }
+
+  protected Region createRegionAndIndex(RegionShortcut regionShortcut, String... fields) {
+    ((LuceneIndexFactoryImpl) luceneService.createIndexFactory().setFields(fields))
+        .create(INDEX_NAME, REGION_NAME, LuceneServiceImpl.LUCENE_REINDEX);
+    region = cache.createRegionFactory(regionShortcut).create(REGION_NAME);
+    return region;
+  }
 
   @Test()
   public void shouldNotTokenizeWordsWithKeywordAnalyzer() throws Exception {
     Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
     fields.put("field1", new StandardAnalyzer());
     fields.put("field2", new KeywordAnalyzer());
-    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    region = createRegionAndIndex(fields);
 
     // Put two values with some of the same tokens
     String value1 = "one three";
@@ -131,9 +145,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   public void shouldQueryUsingIntRangeQueryProvider() throws Exception {
     // Note: range query on numeric field has some limitations. But IntRangeQueryProvider
     // provided basic functionality
-    luceneService.createIndexFactory().setFields(LuceneService.REGION_VALUE_FIELD)
-        .create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    region = createRegionAndIndex(RegionShortcut.PARTITION, LuceneService.REGION_VALUE_FIELD);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
     region.put("primitiveInt0", 122);
@@ -151,9 +163,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
     fields.put("field1", new StandardAnalyzer());
     fields.put("field2", new DoubleMetaphoneAnalyzer());
-    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    region = createRegionAndIndex(fields);
 
     // Put two values with some of the same tokens
     String value1 = "Stefan";
@@ -187,9 +197,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   public void queryParserCannotQueryByRange() throws Exception {
     // Note: range query on numeric field has some limitations. But IntRangeQueryProvider
     // provided basic functionality
-    luceneService.createIndexFactory().setFields(LuceneService.REGION_VALUE_FIELD)
-        .create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    region = createRegionAndIndex(RegionShortcut.PARTITION, LuceneService.REGION_VALUE_FIELD);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
     region.put("primitiveInt0", 122);
@@ -243,9 +251,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   private LuceneQuery<Object, Object> addValuesAndCreateQuery(int pagesize)
       throws InterruptedException {
-    luceneService.createIndexFactory().setFields("field1", "field2").create(INDEX_NAME,
-        REGION_NAME);
-    region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    region = createRegionAndIndex(RegionShortcut.PARTITION, "field1", "field2");
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
     // Put two values with some of the same tokens
@@ -272,9 +278,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     // Note: fields has to contain "field1", otherwise, field1 will not be tokenized
     fields.put("field1", null);
     fields.put("field2", new MyCharacterAnalyzer());
-    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    region = createRegionAndIndex(fields);
 
     // Put two values with some of the same tokens
     String value1 = "one three";
@@ -297,9 +301,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
     fields.put("field1", null);
     fields.put("field2", null);
-    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    region = createRegionAndIndex(fields);
 
     // Put two values with some of the same tokens
     String value1 = "one three";
@@ -315,9 +317,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     fields.put("name", null);
     fields.put("lastName", null);
     fields.put("address", null);
-    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    region = createRegionAndIndex(fields);
 
     // Put two values with some of the same tokens
     PdxInstance pdx1 = insertAJson(region, "jsondoc1");
@@ -337,9 +337,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     fields.put("name", null);
     fields.put("lastName", null);
     fields.put("address", null);
-    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    region = createRegionAndIndex(fields);
 
     // This is to send IllegalStateException from WaitUntilFlushedFunction
     String nonCreatedIndex = "index2";
@@ -358,9 +356,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void shouldAllowQueryOnRegionWithStringValue() throws Exception {
-    luceneService.createIndexFactory().setFields(LuceneService.REGION_VALUE_FIELD)
-        .create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    region = createRegionAndIndex(RegionShortcut.PARTITION, LuceneService.REGION_VALUE_FIELD);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
     region.put("A", "one three");
@@ -372,8 +368,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   @Test()
   public void throwFunctionExceptionWhenGivenBadQuery() throws Exception {
     LuceneService luceneService = LuceneServiceProvider.get(cache);
-    luceneService.createIndexFactory().setFields("text").create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    region = createRegionAndIndex(RegionShortcut.PARTITION, "text");
 
     // Create a query that throws an exception
     final LuceneQuery<Object, Object> query =
@@ -529,9 +524,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
     fields.put("field1", new DoubleMetaphoneAnalyzer());
     fields.put("field2", null);
-    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    region = createRegionAndIndex(fields);
 
     region.put("A", new TestObject("Stefan", "soundex"));
     region.put("B", new TestObject("Steph", "soundex"));

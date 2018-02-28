@@ -25,8 +25,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 /**
  * This class contains helper functions for generating ClientProtocol.Message objects
  *
- * Response building helpers can be found in {@link ProtobufResponseUtilities}, while more general
- * purpose helpers can be found in {@link ProtobufUtilities}
+ * More general purpose helpers can be found in {@link ProtobufUtilities}
  */
 @Experimental
 public abstract class ProtobufRequestUtilities {

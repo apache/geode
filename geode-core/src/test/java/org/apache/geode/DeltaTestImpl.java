@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
+import org.apache.geode.internal.cache.TestObjectWithIdentifier;
 
 /**
  * Sample test class which implements Delta.
@@ -57,7 +57,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   private String str = ""; // 0000 0010
   private Double doubleVar = new Double(0); // 0000 0100
   private byte[] byteArr = new byte[1]; // 0000 1000
-  private TestObject1 testObj = new TestObject1(); // 0001 0000
+  private TestObjectWithIdentifier testObj = new TestObjectWithIdentifier(); // 0001 0000
 
   /**
    * Indicates the fields containing delta.
@@ -76,7 +76,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   }
 
   public DeltaTestImpl(int intVal, String string, Double doubleVal, byte[] bytes,
-      TestObject1 testObj) {
+      TestObjectWithIdentifier testObj) {
     this.intVar = intVal;
     this.str = string;
     this.doubleVar = doubleVal;
@@ -137,11 +137,11 @@ public class DeltaTestImpl implements DataSerializable, Delta {
     this.hasDelta = true;
   }
 
-  public TestObject1 getTestObj() {
+  public TestObjectWithIdentifier getTestObj() {
     return testObj;
   }
 
-  public void setTestObj(TestObject1 testObj) {
+  public void setTestObj(TestObjectWithIdentifier testObj) {
     this.testObj = testObj;
     this.deltaBits |= TEST_OBJ_MASK;
     this.hasDelta = true;
@@ -261,7 +261,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
       int tempIntVar = this.intVar;
       double tempDoubleVar = this.doubleVar;
       String tempStr = this.str;
-      TestObject1 tempTestObj = this.testObj;
+      TestObjectWithIdentifier tempTestObj = this.testObj;
 
       tempDeltaBits = DataSerializer.readByte(in);
       if (tempDeltaBits != 0) {
@@ -281,7 +281,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
           tempByteArr = DataSerializer.readByteArray(in);
         }
         if ((tempDeltaBits & TEST_OBJ_MASK) == TEST_OBJ_MASK) {
-          tempTestObj = (TestObject1) DataSerializer.readObject(in);
+          tempTestObj = (TestObjectWithIdentifier) DataSerializer.readObject(in);
         }
         if ((deltaBits | COMPLETE_MASK) != COMPLETE_MASK) {
           throw new IllegalArgumentException("Unknown field code: " + tempDeltaBits);
@@ -370,7 +370,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
     this.str = DataSerializer.readString(in);
     this.doubleVar = DataSerializer.readDouble(in);
     this.byteArr = DataSerializer.readByteArray(in);
-    this.testObj = (TestObject1) DataSerializer.readObject(in);
+    this.testObj = (TestObjectWithIdentifier) DataSerializer.readObject(in);
     // if (deltaBits != 0) {
     // this.hasDelta = true;
     // }

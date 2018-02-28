@@ -48,6 +48,7 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.security.templates.SimpleAccessController;
 import org.apache.geode.security.templates.SimpleAuthenticator;
@@ -134,6 +135,11 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   @Before
   public void setup() throws Exception {
     Properties clusterMemberProperties = getVMPropertiesWithPermission("cluster,data");
+    int version = Integer.parseInt(clientVersion);
+    if (version == 0 || version >= 140) {
+      clusterMemberProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          "org.apache.geode.security.templates.UsernamePrincipal");
+    }
 
     locator = csRule.startLocatorVM(0, clusterMemberProperties);
     server1 = csRule.startServerVM(1, clusterMemberProperties, locator.getPort());
@@ -315,6 +321,12 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   @Test
   public void dataWriterCannotRegisterInterestAcrossFailover() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataWrite");
+    int version = Integer.parseInt(clientVersion);
+    if (version == 0 || version >= 140) {
+      props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          "org.apache.geode.security.templates.UsernamePrincipal");
+    }
+
     int server1Port = this.server1.getPort();
     int server2Port = this.server2.getPort();
 
@@ -366,9 +378,16 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   }
 
   private ClientVM createAndInitializeClientAndCache(String withPermission) throws Exception {
-    Properties props = getVMPropertiesWithPermission(withPermission);
     int server1Port = this.server1.getPort();
     int server2Port = this.server2.getPort();
+
+    Properties props = getVMPropertiesWithPermission(withPermission);
+
+    int version = Integer.parseInt(clientVersion);
+    if (version == 0 || version >= 140) {
+      props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          "org.apache.geode.security.templates.UsernamePrincipal");
+    }
 
     Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)

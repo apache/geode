@@ -24,7 +24,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnGroupRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnGroupResponse;
@@ -77,12 +76,8 @@ public class ExecuteFunctionOnGroupRequestOperationHandler extends
       }
     }
     if (!foundMatch) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder()
-              .setMessage("No server  in groups " + groupList + " could be found to execute \""
-                  + request.getFunctionID() + "\"")
-              .setErrorCode(BasicTypes.ErrorCode.NO_AVAILABLE_SERVER))
-          .build());
+      return Failure.of(BasicTypes.ErrorCode.NO_AVAILABLE_SERVER, "No server  in groups "
+          + groupList + " could be found to execute \"" + request.getFunctionID() + "\"");
     }
     return groupList;
   }
@@ -90,7 +85,11 @@ public class ExecuteFunctionOnGroupRequestOperationHandler extends
   @Override
   protected Object getFunctionArguments(ExecuteFunctionOnGroupRequest request,
       ProtobufSerializationService serializationService) throws DecodingException {
-    return serializationService.decode(request.getArguments());
+    if (request.hasArguments()) {
+      return serializationService.decode(request.getArguments());
+    } else {
+      return null;
+    }
   }
 
   @Override

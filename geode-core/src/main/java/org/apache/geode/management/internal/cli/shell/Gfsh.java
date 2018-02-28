@@ -681,7 +681,7 @@ public class Gfsh extends JLineShell {
         if (useExternalViewer(commandResult)) {
           // - Save file and pass to less so that viewer can scroll through
           // results
-          CliUtil.runLessCommandAsExternalViewer(commandResult, isError);
+          CliUtil.runLessCommandAsExternalViewer(commandResult);
         } else {
           if (!isScriptRunning) {
             // Normal Command

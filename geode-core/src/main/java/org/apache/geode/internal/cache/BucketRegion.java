@@ -216,6 +216,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     Assert.assertTrue(internalRegionArgs.getPartitionedRegion() != null);
     this.redundancy = internalRegionArgs.getPartitionedRegionBucketRedundancy();
     this.partitionedRegion = internalRegionArgs.getPartitionedRegion();
+    setEventSeqNum();
   }
 
   // Attempt to direct the GII process to the primary first
@@ -228,28 +229,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     getBucketAdvisor().getProxyBucketRegion().setBucketRegion(this);
     boolean success = false;
     try {
-      if (this.partitionedRegion.isShadowPR()
-          && this.partitionedRegion.getColocatedWith() != null) {
-        PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(this.partitionedRegion);
-        BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
-        // needs to be set only once.
-        if (parentBucket.eventSeqNum == null) {
-          parentBucket.eventSeqNum = new AtomicLong5(getId());
-        }
-      }
-      if (this.partitionedRegion.getColocatedWith() == null) {
-        this.eventSeqNum = new AtomicLong5(getId());
-      } else {
-        PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(this.partitionedRegion);
-        BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
-        if (parentBucket == null && logger.isDebugEnabled()) {
-          logger.debug("The parentBucket of region {} bucketId {} is NULL",
-              this.partitionedRegion.getFullPath(), getId());
-        }
-        Assert.assertTrue(parentBucket != null);
-        this.eventSeqNum = parentBucket.eventSeqNum;
-      }
-
       final InternalDistributedMember primaryHolder = getBucketAdvisor().basicGetPrimaryMember();
       if (primaryHolder != null && !primaryHolder.equals(getMyId())) {
         // Ignore the provided image target, use an existing primary (if any)
@@ -267,6 +246,28 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  private void setEventSeqNum() {
+    if (this.partitionedRegion.isShadowPR() && this.partitionedRegion.getColocatedWith() != null) {
+      PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(this.partitionedRegion);
+      BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
+      // needs to be set only once.
+      if (parentBucket.eventSeqNum == null) {
+        parentBucket.eventSeqNum = new AtomicLong5(getId());
+      }
+    }
+    if (this.partitionedRegion.getColocatedWith() == null) {
+      this.eventSeqNum = new AtomicLong5(getId());
+    } else {
+      PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(this.partitionedRegion);
+      BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
+      if (parentBucket == null && logger.isDebugEnabled()) {
+        logger.debug("The parentBucket of region {} bucketId {} is NULL",
+            this.partitionedRegion.getFullPath(), getId());
+      }
+      Assert.assertTrue(parentBucket != null);
+      this.eventSeqNum = parentBucket.eventSeqNum;
+    }
+  }
 
 
   @Override
@@ -1314,7 +1315,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     Assert.assertTrue(!isTX());
     Assert.assertTrue(event.getOperation().isDistributed());
 
-    LocalRegion lr = event.getLocalRegion();
+    LocalRegion lr = event.getRegion();
     AbstractRegionMap arm = ((AbstractRegionMap) lr.getRegionMap());
     try {
       arm.lockForCacheModification(lr, event);
@@ -1340,7 +1341,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         endLocalWrite(event);
       }
     } finally {
-      arm.releaseCacheModificationLock(event.getLocalRegion(), event);
+      arm.releaseCacheModificationLock(event.getRegion(), event);
     }
   }
 

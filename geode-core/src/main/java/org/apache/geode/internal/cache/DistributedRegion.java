@@ -1029,11 +1029,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       logger.debug("DistributedRegion.initialize BEGIN: {}", getFullPath());
     }
 
-    // if we're versioning entries we need a region-level version vector
-    if (this.scope.isDistributed() && this.getConcurrencyChecksEnabled()) {
-      createVersionVector();
-    }
-
     if (this.scope.isGlobal()) {
       getLockService(); // create lock service eagerly now
     }
@@ -1821,7 +1816,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   void basicUpdateEntryVersion(EntryEventImpl event) throws EntryNotFoundException {
-    LocalRegion localRegion = event.getLocalRegion();
+    LocalRegion localRegion = event.getRegion();
     AbstractRegionMap regionMap = (AbstractRegionMap) localRegion.getRegionMap();
     try {
       regionMap.lockForCacheModification(localRegion, event);

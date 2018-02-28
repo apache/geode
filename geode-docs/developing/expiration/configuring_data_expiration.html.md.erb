@@ -85,7 +85,7 @@ Configure the type of expiration and the expiration action to use.
     The gfsh equivalent of the above XML is:
 
         gfsh> create region --name=region1 --type=REPLICATE --enable-statistics \
-        --entry-idle-time-custom-expiry=60 --entry-idle-time-custom-expiry=com.company.mypackage.MyClass
+        --entry-idle-time-expiration=60 --entry-idle-time-custom-expiry=com.company.mypackage.MyClass
 
 -   When the primary expires entries, it requests last-accessed statistics from the secondaries.  The
 primary adopts the most recent access time and reschedules the expiration, if warranted. This is

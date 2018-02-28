@@ -70,14 +70,12 @@ import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class ClientSideHandshakeImpl extends Handshake implements ClientSideHandshake {
-  private static final Logger logger = LogService.getLogger();
-
   /**
    * Used at client side, indicates whether the 'delta-propagation' property is enabled on the DS
    * this client is connected to. This variable is used to decide whether to send delta bytes or
    * full value to the server for a delta-update operation.
    */
-  protected static boolean deltaEnabledOnServer = true;
+  private static boolean deltaEnabledOnServer = true;
 
   /**
    * If true, the client has configured multi-user security, meaning that each thread holds its own
@@ -89,6 +87,13 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
    * Another test hook, holding a version ordinal that is higher than CURRENT
    */
   private static short overrideClientVersion = -1;
+
+  private final byte replyCode;
+
+  @Override
+  protected byte getReplyCode() {
+    return replyCode;
+  }
 
   public static boolean isDeltaEnabledOnServer() {
     return deltaEnabledOnServer;
@@ -113,6 +118,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   public ClientSideHandshakeImpl(ClientSideHandshakeImpl handshake) {
     super(handshake);
     this.multiuserSecureMode = handshake.multiuserSecureMode;
+    this.replyCode = handshake.getReplyCode();
   }
 
   public static void setVersionForTesting(short ver) {
@@ -124,7 +130,6 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
     }
   }
 
-  // used by the client side
   private void setOverrides() {
     this.clientConflation = determineClientConflation();
 

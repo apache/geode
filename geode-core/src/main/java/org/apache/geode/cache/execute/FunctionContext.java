@@ -100,5 +100,10 @@ public interface FunctionContext<T1> {
     return member.getId();
   }
 
+  /**
+   * A convenience method to get the distributed system
+   *
+   * @return Returns the distributed system
+   */
   DistributedSystem getDistributedSystem();
 }

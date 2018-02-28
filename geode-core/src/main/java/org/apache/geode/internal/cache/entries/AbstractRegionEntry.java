@@ -1718,7 +1718,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       final InternalDistributedMember originator =
           (InternalDistributedMember) event.getDistributedMember();
       final VersionSource dmId = event.getRegion().getVersionMember();
-      InternalRegion r = event.getLocalRegion();
+      InternalRegion r = event.getRegion();
       boolean eventHasDelta = event.getDeltaBytes() != null && event.getRawNewValue() == null;
 
       VersionStamp stamp = getVersionStamp();

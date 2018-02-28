@@ -29,8 +29,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
  * messages or those used to create the top level Message objects.
  * <p>
  * Helper functions specific to creating ClientProtocol.Messages can be found at
- * {@link ProtobufResponseUtilities} Helper functions specific to creating ClientProtocol.Messages
- * can be found at {@link ProtobufRequestUtilities}
+ * {@link ProtobufRequestUtilities}
  */
 @Experimental
 public abstract class ProtobufUtilities {

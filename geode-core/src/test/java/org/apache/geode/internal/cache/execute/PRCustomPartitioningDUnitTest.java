@@ -14,524 +14,170 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.junit.Assert.*;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.cache.*;
-import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.EntryOperationImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore.BucketVisitor;
-import org.apache.geode.internal.cache.xmlcache.Declarable2;
-import org.apache.geode.test.dunit.*;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
+/**
+ * TODO: move to cache package
+ */
 @Category(DistributedTest.class)
-public class PRCustomPartitioningDUnitTest extends PartitionedRegionDUnitTestCase {
+@SuppressWarnings("serial")
+public class PRCustomPartitioningDUnitTest extends CacheTestCase {
 
-  public PRCustomPartitioningDUnitTest() {
-    super();
+  private static final int TOTAL_NUM_BUCKETS = 7;
+
+  private List<Date> listOfKeysInVM1;
+  private List<Date> listOfKeysInVM2;
+  private List<Date> listOfKeysInVM3;
+  private List<Date> listOfKeysInVM4;
+
+  private String regionName;
+
+  private VM datastoreVM0;
+  private VM datastoreVM1;
+  private VM datastoreVM2;
+  private VM accessorVM3;
+
+  @Before
+  public void setUp() {
+    datastoreVM0 = getHost(0).getVM(0);
+    datastoreVM1 = getHost(0).getVM(1);
+    datastoreVM2 = getHost(0).getVM(2);
+    accessorVM3 = getHost(0).getVM(3);
+
+    regionName = "PR1";
+
+    listOfKeysInVM1 = new ArrayList<>();
+    listOfKeysInVM2 = new ArrayList<>();
+    listOfKeysInVM3 = new ArrayList<>();
+    listOfKeysInVM4 = new ArrayList<>();
   }
 
-  protected static Cache cache = null;
-
-  Properties props = new Properties();
-
-  VM vm0 = null;
-
-  VM vm1 = null;
-
-  VM vm2 = null;
-
-  VM vm3 = null;
-
-  static final int totalNumBuckets = 7;
-
-  static ArrayList listOfKeys1 = new ArrayList();
-  static ArrayList listOfKeys2 = new ArrayList();
-  static ArrayList listOfKeys3 = new ArrayList();
-  static ArrayList listOfKeys4 = new ArrayList();
-
-
-  public static void createCacheInVm() throws Exception {
-    Properties props = new Properties();
-    // props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "0");
-    // props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new PRCustomPartitioningDUnitTest().createCache(props);
-  }
-
-  private void createCache(Properties props) throws Exception {
-    DistributedSystem ds = getSystem(props);
-    assertNotNull(ds);
-    ds.disconnect();
-    ds = getSystem(props);
-    cache = CacheFactory.create(ds);
-    assertNotNull(cache);
-  }
-
-  /* SerializableRunnable object to create PR with a partition resolver */
-  SerializableRunnable createPrRegionWithPartitionResolver =
-      new CacheSerializableRunnable("createPrRegionWithDS") {
-
-        public void run2() throws CacheException {
-          AttributesFactory attr = new AttributesFactory();
-          PartitionResolver resolver = MonthBasedPartitionResolver.getInstance();
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          paf.setTotalNumBuckets(totalNumBuckets);
-          paf.setPartitionResolver(resolver);
-          paf.setRedundantCopies(0);
-
-          PartitionAttributes prAttr = paf.create();
-          attr.setPartitionAttributes(prAttr);
-          RegionAttributes regionAttribs = attr.create();
-          cache.createRegion("PR1", regionAttribs);
-        }
-      };
-
-  /* SerializableRunnable object to create PR with a partition resolver */
-
-  SerializableRunnable createPrRegionOnlyAccessorWithPartitionResolver =
-      new CacheSerializableRunnable("createPrRegionOnlyAccessor") {
-
-        public void run2() throws CacheException {
-          AttributesFactory attr = new AttributesFactory();
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          PartitionResolver resolver = MonthBasedPartitionResolver.getInstance();
-          PartitionAttributes prAttr = paf.setLocalMaxMemory(0).setTotalNumBuckets(totalNumBuckets)
-              .setPartitionResolver(resolver).setRedundantCopies(0).create();
-
-          attr.setPartitionAttributes(prAttr);
-          RegionAttributes regionAttribs = attr.create();
-          cache.createRegion("PR1", regionAttribs);
-
-        }
-      };
-
-  /**
-   * Search the entires PartitionedRegion for the key, to validate that indeed it doesn't exist
-   *
-   * @returns true if it does exist
-   * @param par
-   * @param key
-   */
-  public static boolean searchForKey(PartitionedRegion par, Date key) {
-    // Check to make super sure that the key exists
-    boolean foundIt = false;
-    final int numBucks = par.getTotalNumberOfBuckets();
-    for (int b = 0; b < numBucks; b++) {
-      if (par.getBucketKeys(b).contains(key)) {
-        foundIt = true;
-        LogWriterUtils.getLogWriter().info("Key " + key + " found in bucket " + b);
-        break;
-      }
-    }
-    if (!foundIt) {
-      LogWriterUtils.getLogWriter().severe("Key " + key + " not found in any bucket");
-    }
-    return foundIt;
-  }
-
-  public void partitionedRegionTest(final String prName) {
-    /*
-     * Do put() operations through VM with PR having both Accessor and Datastore
-     */
-    vm0.invoke(new CacheSerializableRunnable("doPutCreateInvalidateOperations1") {
-      public void run2() throws CacheException {
-
-        Calendar cal = Calendar.getInstance();
-        final Region pr = cache.getRegion(prName);
-        if (pr == null) {
-          fail(prName + " not created");
-        }
-        int size = 0;
-
-        size = pr.size();
-        assertEquals("Size doesnt return expected value", 0, size);
-        assertEquals("isEmpty doesnt return proper state of the PartitionedRegion", true,
-            pr.isEmpty());
-        assertEquals(0, pr.keySet().size());
-
-        for (int i = 0; i <= 11; i++) {
-          int yr = (new Integer((int) (Math.random() * 2100))).intValue();
-          int month = i;
-          int date = (new Integer((int) (Math.random() * 30))).intValue();
-          cal.set(yr, month, date);
-          Object key = cal.getTime();
-          listOfKeys1.add(key);
-          assertNotNull(pr);
-          pr.put(key, Integer.toString(i));
-          assertEquals(Integer.toString(i), pr.get(key));
-
-        }
-        PartitionedRegion ppr = (PartitionedRegion) pr;
-        try {
-          ppr.dumpAllBuckets(false);
-        } catch (ReplyException re) {
-          Assert.fail("dumpAllBuckets", re);
-        }
-      }
-    });
-
-    vm1.invoke(new CacheSerializableRunnable("doPutCreateInvalidateOperations2") {
-      public void run2() throws CacheException {
-
-        Calendar cal = Calendar.getInstance();
-        final Region pr = cache.getRegion(prName);
-        if (pr == null) {
-          fail(prName + " not created");
-        }
-
-        for (int i = 0; i <= 11; i++) {
-
-          int yr = (new Integer((int) (Math.random() * 2200))).intValue();
-          int month = i;
-          int date = (new Integer((int) (Math.random() * 30))).intValue();
-
-          cal.set(yr, month, date);
-          Object key = cal.getTime();
-          listOfKeys2.add(key);
-
-          assertNotNull(pr);
-          pr.put(key, Integer.toString(i));
-          assertEquals(Integer.toString(i), pr.get(key));
-
-        }
-        PartitionedRegion ppr = (PartitionedRegion) pr;
-        try {
-          ppr.dumpAllBuckets(false);
-        } catch (ReplyException re) {
-          Assert.fail("dumpAllBuckets", re);
-        }
-      }
-    });
-
-    vm2.invoke(new CacheSerializableRunnable("doPutCreateInvalidateOperations2") {
-      public void run2() throws CacheException {
-
-        Calendar cal = Calendar.getInstance();
-        final Region pr = cache.getRegion(prName);
-        if (pr == null) {
-          fail(prName + " not created");
-        }
-
-        for (int i = 0; i <= 11; i++) {
-
-          int yr = (new Integer((int) (Math.random() * 2300))).intValue();
-          int month = i;
-          int date = (new Integer((int) (Math.random() * 30))).intValue();
-
-          cal.set(yr, month, date);
-          Object key = cal.getTime();
-          listOfKeys3.add(key);
-
-          assertNotNull(pr);
-          pr.put(key, Integer.toString(i));
-          assertEquals(Integer.toString(i), pr.get(key));
-        }
-        PartitionedRegion ppr = (PartitionedRegion) pr;
-        try {
-          ppr.dumpAllBuckets(false);
-        } catch (ReplyException re) {
-          Assert.fail("dumpAllBuckets", re);
-        }
-      }
-    });
-
-    vm3.invoke(new CacheSerializableRunnable("doPutCreateInvalidateOperations3") {
-      public void run2() throws CacheException {
-
-        Calendar cal = Calendar.getInstance();
-        final Region pr = cache.getRegion(prName);
-        if (pr == null) {
-          fail(prName + " not created");
-        }
-
-        for (int i = 0; i <= 11; i++) {
-          int yr = (new Integer((int) (Math.random() * 2400))).intValue();
-          int month = i;
-          int date = (new Integer((int) (Math.random() * 30))).intValue();
-
-          cal.set(yr, month, date);
-          Object key = cal.getTime();
-          listOfKeys4.add(key);
-
-          assertNotNull(pr);
-          pr.put(key, Integer.toString(i));
-          assertEquals(Integer.toString(i), pr.get(key));
-
-        }
-        PartitionedRegion ppr = (PartitionedRegion) pr;
-        try {
-          ppr.dumpAllBuckets(false);
-        } catch (ReplyException re) {
-          Assert.fail("dumpAllBuckets", re);
-        }
-      }
-    });
-
-    vm0.invoke(new CacheSerializableRunnable("verifyKeysonVM0") {
-      public void run2() throws CacheException {
-
-        // Calendar cal = Calendar.getInstance();
-        final PartitionedRegion pr = (PartitionedRegion) cache.getRegion(prName);
-        if (pr == null) {
-          fail(prName + " not created");
-        }
-        Iterator itr = listOfKeys1.iterator();
-        while (itr.hasNext()) {
-          assertTrue(searchForKey(pr, (Date) itr.next()));
-        }
-        pr.getDataStore().visitBuckets(new BucketVisitor() {
-          public void visit(Integer bucketId, Region r) {
-            Set s = pr.getBucketKeys(bucketId.intValue());
-            Iterator it = s.iterator();
-            while (it.hasNext()) {
-              EntryOperation eo = new EntryOperationImpl(pr, null, it.next(), null, null);
-              PartitionResolver rr = pr.getPartitionResolver();
-              Object o = rr.getRoutingObject(eo);
-              Integer i = new Integer(o.hashCode() % totalNumBuckets);
-              assertEquals(bucketId, i);
-            } // getLogWriter().severe("Key " + key + " found in bucket " + b);
-          }
-        });
-      }
-    });
-
-    vm1.invoke(new CacheSerializableRunnable("verifyKeysonVM1") {
-      public void run2() throws CacheException {
-
-        // Calendar cal = Calendar.getInstance();
-        final PartitionedRegion pr = (PartitionedRegion) cache.getRegion(prName);
-        if (pr == null) {
-          fail(prName + " not created");
-        }
-        Iterator itr = listOfKeys2.iterator();
-        while (itr.hasNext()) {
-          assertTrue(searchForKey(pr, (Date) itr.next()));
-        }
-        pr.getDataStore().visitBuckets(new BucketVisitor() {
-          public void visit(Integer bucketId, Region r) {
-            Set s = pr.getBucketKeys(bucketId.intValue());
-            Iterator it = s.iterator();
-            while (it.hasNext()) {
-              EntryOperation eo = new EntryOperationImpl(pr, null, it.next(), null, null);
-              PartitionResolver rr = pr.getPartitionResolver();
-              Object o = rr.getRoutingObject(eo);
-              Integer i = new Integer(o.hashCode() % totalNumBuckets);
-              assertEquals(bucketId, i);
-            } // getLogWriter().severe("Key " + key + " found in bucket " + b);
-          }
-        });
-      }
-    });
-
-    vm2.invoke(new CacheSerializableRunnable("verifyKeysonVM2") {
-      public void run2() throws CacheException {
-
-        // Calendar cal = Calendar.getInstance();
-        final PartitionedRegion pr = (PartitionedRegion) cache.getRegion(prName);
-        if (pr == null) {
-          fail(prName + " not created");
-        }
-        Iterator itr = listOfKeys3.iterator();
-        itr = listOfKeys3.iterator();
-        while (itr.hasNext()) {
-          assertTrue(searchForKey(pr, (Date) itr.next()));
-        }
-        pr.getDataStore().visitBuckets(new BucketVisitor() {
-          public void visit(Integer bucketId, Region r) {
-            Set s = pr.getBucketKeys(bucketId.intValue());
-            Iterator it = s.iterator();
-            while (it.hasNext()) {
-              EntryOperation eo = new EntryOperationImpl(pr, null, it.next(), null, null);
-              PartitionResolver rr = pr.getPartitionResolver();
-              Object o = rr.getRoutingObject(eo);
-              Integer i = new Integer(o.hashCode() % totalNumBuckets);
-              // assertIndexDetailsEquals(bucketId, bucketId);
-              assertEquals(bucketId, i);
-            } // getLogWriter().severe("Key " + key + " found in bucket " + b);
-          }
-        });
-      }
-    });
-
-    vm3.invoke(new CacheSerializableRunnable("verifyKeysonVM3") {
-      public void run2() throws CacheException {
-
-        // Calendar cal = Calendar.getInstance();
-        final PartitionedRegion pr = (PartitionedRegion) cache.getRegion(prName);
-        if (pr == null) {
-          fail(prName + " not created");
-        }
-        Iterator itr = listOfKeys4.iterator();
-        itr = listOfKeys4.iterator();
-        while (itr.hasNext()) {
-          assertTrue(searchForKey(pr, (Date) itr.next()));
-        }
-        assertEquals(pr.getDataStore(), null);
-      }
-    });
-
-  }
-
-  /**
-   * This is a PartitionedRegion test for Custom Partitioning . 4 VMs are used to create the PR with
-   * and without(Only Accessor) the DataStore.
-   */
   @Test
   public void testPartitionedRegionOperationsCustomPartitioning() throws Exception {
-    Host host = Host.getHost(0);
+    datastoreVM0.invoke(() -> createPartitionedRegionWithPartitionResolver());
+    datastoreVM1.invoke(() -> createPartitionedRegionWithPartitionResolver());
+    datastoreVM2.invoke(() -> createPartitionedRegionWithPartitionResolver());
+    accessorVM3.invoke(() -> createPartitionedRegionAccessorWithPartitionResolver());
 
-    // create the VM(0 - 4)
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-    final VM accessor = vm3;
-    // create cache in all vms
+    datastoreVM0.invoke(() -> doPutOperations(regionName, 2100, listOfKeysInVM1));
+    datastoreVM1.invoke(() -> doPutOperations(regionName, 2200, listOfKeysInVM2));
+    datastoreVM2.invoke(() -> doPutOperations(regionName, 2300, listOfKeysInVM3));
+    accessorVM3.invoke(() -> doPutOperations(regionName, 2400, listOfKeysInVM4));
 
-    vm0.invoke(() -> PRCustomPartitioningDUnitTest.createCacheInVm());
-    vm1.invoke(() -> PRCustomPartitioningDUnitTest.createCacheInVm());
-    vm2.invoke(() -> PRCustomPartitioningDUnitTest.createCacheInVm());
-    accessor.invoke(() -> PRCustomPartitioningDUnitTest.createCacheInVm());
-
-
-
-    // Create PR;s in different VM's
-    vm0.invoke(createPrRegionWithPartitionResolver);
-    vm1.invoke(createPrRegionWithPartitionResolver);
-    vm2.invoke(createPrRegionWithPartitionResolver);
-    accessor.invoke(createPrRegionOnlyAccessorWithPartitionResolver);
-
-    partitionedRegionTest("/PR1");
-    /*
-     * destroy the Region.
-     */
-    destroyTheRegion("/PR1");
+    datastoreVM0.invoke(() -> verifyKeys(regionName, listOfKeysInVM1));
+    datastoreVM1.invoke(() -> verifyKeys(regionName, listOfKeysInVM2));
+    datastoreVM2.invoke(() -> verifyKeys(regionName, listOfKeysInVM3));
+    accessorVM3.invoke(() -> verifyKeysInAccessor(regionName, listOfKeysInVM4));
   }
 
-  public void destroyTheRegion(final String name) {
-    /*
-     * destroy the Region.
-     */
-    vm0.invoke(new CacheSerializableRunnable("destroyRegionOp") {
+  private void doPutOperations(final String regionName, final int century,
+      final List<Date> listOfKeys) {
+    Calendar calendar = Calendar.getInstance();
+    Region<Date, Integer> region = getCache().getRegion(regionName);
+    for (int month = 0; month <= 11; month++) {
+      int year = (int) (Math.random() * century);
+      int date = (int) (Math.random() * 30);
 
-      public void run2() throws CacheException {
+      calendar.set(year, month, date);
+      Date key = calendar.getTime();
+      listOfKeys.add(key);
 
-        Region pr = cache.getRegion(name);
-        if (pr == null) {
-          fail(name + " not created");
+      region.put(key, month);
+    }
+  }
+
+  private void verifyKeysInAccessor(final String regionName, final List<Date> listOfKeys) {
+    PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);
+
+    for (Object key : listOfKeys) {
+      assertThat(containsKeyInSomeBucket(partitionedRegion, (Date) key)).isTrue();
+    }
+
+    assertThat(partitionedRegion.getDataStore()).isNull();
+  }
+
+  private void verifyKeys(final String regionName, final List<Date> listOfKeys) {
+    PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);
+
+    for (Date key : listOfKeys) {
+      assertThat(containsKeyInSomeBucket(partitionedRegion, key)).isTrue();
+    }
+
+    partitionedRegion.getDataStore().visitBuckets(new BucketVisitor() {
+      @Override
+      public void visit(Integer bucketId, Region region) {
+        Set<Object> bucketKeys = partitionedRegion.getBucketKeys(bucketId);
+        for (Object key : bucketKeys) {
+          EntryOperation entryOperation =
+              new EntryOperationImpl(partitionedRegion, null, key, null, null);
+          PartitionResolver partitionResolver = partitionedRegion.getPartitionResolver();
+          Object routingObject = partitionResolver.getRoutingObject(entryOperation);
+          int routingObjectHashCode = routingObject.hashCode() % TOTAL_NUM_BUCKETS;
+          assertThat(routingObjectHashCode).isEqualTo(bucketId);
         }
-        pr.destroyRegion();
       }
     });
   }
-}
 
+  private void createPartitionedRegionWithPartitionResolver() {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setPartitionResolver(new MonthBasedPartitionResolver());
+    paf.setRedundantCopies(0);
+    paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
 
-/**
- * Example implementation of a Partition Resolver which uses part of the value for custom
- * partitioning.
- *
- */
-class MonthBasedPartitionResolver implements PartitionResolver, Declarable2 {
+    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setPartitionAttributes(paf.create());
 
-  private static MonthBasedPartitionResolver mbrResolver = null;
-  static final String id = "MonthBasedPartitionResolverid1";
-  private Properties properties;
-  private String resolverName;
-
-
-  public MonthBasedPartitionResolver() {}
-
-  public static MonthBasedPartitionResolver getInstance() {
-    if (mbrResolver == null) {
-      mbrResolver = new MonthBasedPartitionResolver();
-    }
-    return mbrResolver;
+    regionFactory.create(regionName);
   }
 
-  public Serializable getRoutingObject(EntryOperation opDetails) {
-    Serializable routingObj = (Serializable) opDetails.getKey();
-    Calendar cal = Calendar.getInstance();
-    cal.setTime((Date) routingObj);
-    return new SerializableMonth(cal.get(Calendar.MONTH));
+  private void createPartitionedRegionAccessorWithPartitionResolver() {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(0);
+    paf.setPartitionResolver(new MonthBasedPartitionResolver());
+    paf.setRedundantCopies(0);
+    paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
+
+    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setPartitionAttributes(paf.create());
+
+    regionFactory.create(regionName);
   }
 
-  public void close() {
-    // Close internal state when Region closes
-  }
-
-  public void init(Properties props) {
-    this.properties = props;
-  }
-
-  // public Properties getProperties(){
-  // return this.properties;
-  // }
-
-  public boolean equals(Object obj) {
-    if (obj == this) {
-      return true;
-    }
-    if (obj instanceof MonthBasedPartitionResolver) {
-      // MonthBasedPartitionResolver epc = (MonthBasedPartitionResolver) obj;
-      return id.equals(MonthBasedPartitionResolver.id);
-    } else {
-      return false;
-    }
-  }
-
-  public String getName() {
-    return this.resolverName;
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.xmlcache.Declarable2#getConfig()
+  /**
+   * Returns true if the key is found in any buckets.
    */
-  public Properties getConfig() {
-    return this.properties;
-  }
-}
-
-
-class SerializableMonth implements DataSerializable {
-  private int month;
-
-  public SerializableMonth(int month) {
-    this.month = month;
-  }
-
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.month = in.readInt();
-  }
-
-  public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.month);
-  }
-
-  public int hashCode() {
-    if (this.month < 4)
-      return 1;
-    else if (this.month >= 4 && this.month < 8)
-      return 2;
-    else
-      return 3;
+  private boolean containsKeyInSomeBucket(PartitionedRegion partitionedRegion, Date key) {
+    int numberOfBuckets = partitionedRegion.getTotalNumberOfBuckets();
+    for (int bucketId = 0; bucketId < numberOfBuckets; bucketId++) {
+      if (partitionedRegion.getBucketKeys(bucketId).contains(key)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

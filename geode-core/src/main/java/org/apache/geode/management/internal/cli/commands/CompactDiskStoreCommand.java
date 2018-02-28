@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -176,7 +177,7 @@ public class CompactDiskStoreCommand implements GfshCommand {
 
     for (Map.Entry<String, String[]> entry : entrySet) {
       String[] value = entry.getValue();
-      if (CliUtil.contains(value, diskStoreName)) {
+      if (diskStoreName != null && ArrayUtils.contains(value, diskStoreName)) {
         return true;
       }
     }

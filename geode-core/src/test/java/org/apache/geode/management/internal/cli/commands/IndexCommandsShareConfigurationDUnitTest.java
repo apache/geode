@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
@@ -38,6 +39,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.query.Index;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -86,7 +88,12 @@ public class IndexCommandsShareConfigurationDUnitTest {
     locator = startupRule.startLocatorVM(0, x -> x.withProperties(locatorProps));
 
     gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-    serverVM = startupRule.startServerVM(1, groupName, locator.getPort());
+
+    Properties props = new Properties();
+    props.setProperty(GROUPS, groupName);
+    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.management.internal.cli.domain.Stock");
+    serverVM = startupRule.startServerVM(1, props, locator.getPort());
     serverVM.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       Region parReg =

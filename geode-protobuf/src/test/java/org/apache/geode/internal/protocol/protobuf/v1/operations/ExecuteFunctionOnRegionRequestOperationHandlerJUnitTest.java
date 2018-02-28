@@ -110,7 +110,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnRegionRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .setRegion(NOT_A_REGION).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnRegionResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnRegionResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     assertTrue(result instanceof Failure);
@@ -129,7 +129,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnRegionRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .setRegion(TEST_REGION).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnRegionResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnRegionResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     assertTrue(result instanceof Failure);
@@ -147,7 +147,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
 
     FunctionService.unregisterFunction(TEST_FUNCTION_ID);
 
-    final Result<FunctionAPI.ExecuteFunctionOnRegionResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnRegionResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     final ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();

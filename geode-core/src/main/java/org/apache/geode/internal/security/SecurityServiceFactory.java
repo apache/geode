@@ -25,8 +25,6 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 
 import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
@@ -88,14 +86,6 @@ public class SecurityServiceFactory {
     String clientAuthenticatorConfig = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     String peerAuthenticatorConfig = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
     return new LegacySecurityService(clientAuthenticatorConfig, peerAuthenticatorConfig);
-  }
-
-  public static SecurityService findSecurityService() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null) {
-      return cache.getSecurityService();
-    }
-    return SecurityServiceFactory.create();
   }
 
   private static boolean isShiroInUse() {

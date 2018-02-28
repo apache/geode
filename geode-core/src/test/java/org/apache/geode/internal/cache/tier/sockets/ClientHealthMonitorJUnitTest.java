@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
@@ -34,6 +35,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class ClientHealthMonitorJUnitTest {
+  @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   private int pingIntervalMillis = 200;
   private int monitorIntervalMillis = 20;
@@ -42,7 +44,7 @@ public class ClientHealthMonitorJUnitTest {
   @Before
   public void setUp() {
     System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY,
-        String.valueOf(Integer.toString(monitorIntervalMillis)));
+        Integer.toString(monitorIntervalMillis));
 
     InternalCache mockCache = mock(InternalCache.class);
     CacheClientNotifierStats mockStats = mock(CacheClientNotifierStats.class);

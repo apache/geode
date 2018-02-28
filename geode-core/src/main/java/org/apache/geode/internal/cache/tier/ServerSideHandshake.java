@@ -44,6 +44,6 @@ public interface ServerSideHandshake {
 
   Encryptor getEncryptor();
 
-  public void handshakeWithClient(OutputStream out, InputStream in, byte endpointType,
-      int queueSize, CommunicationMode communicationMode, Principal principal) throws IOException;
+  void handshakeWithClient(OutputStream out, InputStream in, byte endpointType, int queueSize,
+      CommunicationMode communicationMode, Principal principal) throws IOException;
 }

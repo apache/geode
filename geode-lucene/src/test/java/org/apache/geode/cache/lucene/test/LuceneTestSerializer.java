@@ -61,6 +61,11 @@ public class LuceneTestSerializer implements LuceneSerializer {
   }
 
   @Override
+  public String toString() {
+    return "LuceneTestSerializer [props=" + props + "]";
+  }
+
+  @Override
   public Collection<Document> toDocuments(LuceneIndex index, Object value) {
     return Collections.emptyList();
   }

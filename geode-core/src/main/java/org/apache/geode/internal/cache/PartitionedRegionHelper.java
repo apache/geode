@@ -47,10 +47,8 @@ import org.apache.geode.cache.partition.PartitionNotAvailableException;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -739,11 +737,8 @@ public class PartitionedRegionHelper {
       return bucketFullPath.substring(idxEndRoot);
     }
 
-    DistributedSystem ids = InternalDistributedSystem.getAnyInstance();
-    if (ids != null) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("getBucketString no match fullPath={}", bucketFullPath);
-      }
+    if (logger.isDebugEnabled()) {
+      logger.debug("getBucketString no match fullPath={}", bucketFullPath);
     }
     return null;
   }

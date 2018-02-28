@@ -14,12 +14,16 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import static com.googlecode.catchexception.CatchException.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +32,8 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
@@ -47,6 +53,98 @@ public class CacheCreationJUnitTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     CacheServerLauncher.clearStatics();
+  }
+
+  @SuppressWarnings("deprecation")
+  @Test
+  public void verifyRunInitializerWithInitializerAndNullPropsCallsInitAndInitialize() {
+    @SuppressWarnings("resource")
+    CacheCreation cacheCreation = new CacheCreation();
+    Declarable initializer = mock(Declarable.class);
+    Properties props = null;
+    cacheCreation.setInitializer(initializer, props);
+
+    cacheCreation.runInitializer(this.cache);
+
+    verify(initializer, times(1)).init(eq(props));
+    verify(initializer, times(1)).initialize(eq(this.cache), eq(props));
+  }
+
+  @SuppressWarnings("deprecation")
+  @Test
+  public void verifyRunInitializerWithInitializerAndPropsCallsInitAndInitialize() {
+    @SuppressWarnings("resource")
+    CacheCreation cacheCreation = new CacheCreation();
+    Declarable initializer = mock(Declarable.class);
+    Properties props = new Properties();
+    props.setProperty("key", "value");
+    cacheCreation.setInitializer(initializer, props);
+
+    cacheCreation.runInitializer(this.cache);
+
+    verify(initializer, times(1)).init(eq(props));
+    verify(initializer, times(1)).initialize(eq(this.cache), eq(props));
+  }
+
+  @Test
+  public void verifyInitializeDeclarablesMapWithNoDeclarablesPassesEmptyMap() {
+    @SuppressWarnings("resource")
+    CacheCreation cacheCreation = new CacheCreation();
+    Map<Declarable, Properties> expected = Collections.emptyMap();
+
+    cacheCreation.initializeDeclarablesMap(this.cache);
+
+    verify(this.cache, times(1)).addDeclarableProperties(eq(expected));
+  }
+
+  @Test
+  public void verifyInitializeDeclarablesMapWithDeclarablesPassesExpectedMap() {
+    @SuppressWarnings("resource")
+    CacheCreation cacheCreation = new CacheCreation();
+    Map<Declarable, Properties> expected = new HashMap<>();
+    Declarable d1 = mock(Declarable.class);
+    cacheCreation.addDeclarableProperties(d1, null);
+    expected.put(d1, null);
+    Declarable d2 = mock(Declarable.class);
+    Properties p2 = new Properties();
+    p2.setProperty("k2", "v2");
+    cacheCreation.addDeclarableProperties(d2, p2);
+    expected.put(d2, p2);
+
+    cacheCreation.initializeDeclarablesMap(this.cache);
+
+    verify(this.cache, times(1)).addDeclarableProperties(eq(expected));
+  }
+
+  @Test
+  public void verifyInitializeDeclarablesMapWithDeclarableCallInitAndInitialize() {
+    @SuppressWarnings("resource")
+    CacheCreation cacheCreation = new CacheCreation();
+    Declarable d2 = mock(Declarable.class);
+    Properties p2 = new Properties();
+    p2.setProperty("k2", "v2");
+    cacheCreation.addDeclarableProperties(d2, p2);
+
+    cacheCreation.initializeDeclarablesMap(this.cache);
+
+    verify(d2, times(1)).init(eq(p2));
+    verify(d2, times(1)).initialize(eq(this.cache), eq(p2));
+  }
+
+  @Test
+  public void verifyInitializeDeclarablesMapWithDeclarableThatThrowsWillThrowCacheXmlException() {
+    @SuppressWarnings("resource")
+    CacheCreation cacheCreation = new CacheCreation();
+    Declarable d2 = mock(Declarable.class);
+    Properties p2 = null;
+    cacheCreation.addDeclarableProperties(d2, p2);
+    Throwable cause = new RuntimeException("expected");
+    doThrow(cause).when(d2).initialize(this.cache, null);
+
+    catchException(cacheCreation).initializeDeclarablesMap(this.cache);
+
+    assertThat((Exception) caughtException()).isExactlyInstanceOf(CacheXmlException.class)
+        .hasMessageStartingWith("Exception while initializing an instance of").hasCause(cause);
   }
 
   @Test

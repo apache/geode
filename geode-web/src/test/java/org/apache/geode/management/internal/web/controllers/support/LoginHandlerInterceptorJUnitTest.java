@@ -20,6 +20,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -34,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -51,12 +53,16 @@ public class LoginHandlerInterceptorJUnitTest {
 
   private Mockery mockContext;
 
+  private SecurityService securityService;
+
   @Before
   public void setUp() {
     mockContext = new Mockery();
     mockContext.setImposteriser(ClassImposteriser.INSTANCE);
     mockContext.setThreadingPolicy(new Synchroniser());
     LoginHandlerInterceptor.getEnvironment().clear();
+
+    securityService = mockContext.mock(SecurityService.class);
   }
 
   @After
@@ -102,10 +108,12 @@ public class LoginHandlerInterceptorJUnitTest {
         will(returnValue("password"));
         oneOf(mockHttpRequest).getParameter(with(equal(createEnvironmentVariable("variable"))));
         will(returnValue(requestParameters.get(createEnvironmentVariable("variable"))));
+        oneOf(securityService).login(with(aNonNull(Properties.class)));
+        oneOf(securityService).logout();
       }
     });
 
-    LoginHandlerInterceptor handlerInterceptor = new LoginHandlerInterceptor();
+    LoginHandlerInterceptor handlerInterceptor = new LoginHandlerInterceptor(securityService);
 
     Map<String, String> envBefore = LoginHandlerInterceptor.getEnvironment();
 
@@ -167,6 +175,8 @@ public class LoginHandlerInterceptorJUnitTest {
           oneOf(mockHttpRequestOne)
               .getParameter(with(equal(createEnvironmentVariable("GEODE_HOME"))));
           will(returnValue(requestParametersOne.get(createEnvironmentVariable("GEODE_HOME"))));
+          oneOf(securityService).login(with(aNonNull(Properties.class)));
+          oneOf(securityService).logout();
         }
       });
 
@@ -192,10 +202,12 @@ public class LoginHandlerInterceptorJUnitTest {
           oneOf(mockHttpRequestTwo)
               .getParameter(with(equal(createEnvironmentVariable("GEODE_HOME"))));
           will(returnValue(requestParametersTwo.get(createEnvironmentVariable("GEODE_HOME"))));
+          oneOf(securityService).login(with(aNonNull(Properties.class)));
+          oneOf(securityService).logout();
         }
       });
 
-      handlerInterceptor = new LoginHandlerInterceptor();
+      handlerInterceptor = new LoginHandlerInterceptor(securityService);
     }
 
     public void thread1() throws Exception {

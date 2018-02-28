@@ -71,8 +71,8 @@ public class CreateRegionCommandDUnitTest {
   @BeforeClass
   public static void before() throws Exception {
     locator = lsRule.startLocatorVM(0);
-    server1 = lsRule.startServerVM(1, locator.getPort());
-    server2 = lsRule.startServerVM(2, locator.getPort());
+    server1 = lsRule.startServerVM(1, "group1", locator.getPort());
+    server2 = lsRule.startServerVM(2, "group2", locator.getPort());
 
     gfsh.connectAndVerify(locator);
   }
@@ -311,6 +311,98 @@ public class CreateRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
     gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+  }
+
+  @Test
+  public void startWithNonProxyRegion() {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region --type=REPLICATE --group=group1 --name=" + regionName)
+        .statusIsSuccess().tableHasRowWithValues("Member", "server-1");
+    gfsh.executeAndAssertThat("create region --type=REPLICATE --group=group2 --name=" + regionName)
+        .statusIsError().containsOutput("Region /" + regionName + " already exists on the cluster");
+
+    gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
+        .statusIsError().containsOutput("Region /" + regionName + " already exists on the cluster");
+
+    gfsh.executeAndAssertThat(
+        "create region --type=REPLICATE_PROXY --group=group2 --name=" + regionName)
+        .statusIsSuccess().tableHasRowWithValues("Member", "server-2");
+
+    locator.waitTillRegionsAreReadyOnServers("/" + regionName, 2);
+
+    gfsh.executeAndAssertThat(
+        "create region --type=PARTITION_PROXY --group=group2 --name=" + regionName).statusIsError()
+        .containsOutput("You can only create proxy regions with the same name on other members");
+  }
+
+  @Test
+  public void startWithReplicateProxyRegion() {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat(
+        "create region --type=REPLICATE_PROXY --group=group1 --name=" + regionName)
+        .statusIsSuccess().tableHasRowWithValues("Member", "server-1");
+    gfsh.executeAndAssertThat("create region --type=REPLICATE --group=group2 --name=" + regionName)
+        .statusIsSuccess().tableHasRowWithValues("Member", "server-2");
+
+    locator.waitTillRegionsAreReadyOnServers("/" + regionName, 2);
+    // the following two should fail with name check on locator, not on server
+    gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
+        .statusIsError().containsOutput("Region /" + regionName + " already exists on the cluster");
+    gfsh.executeAndAssertThat(
+        "create region --type=PARTITION_PROXY --group=group2 --name=" + regionName).statusIsError()
+        .containsOutput("You can only create proxy regions with the same name on other members");
+  }
+
+  @Test
+  public void startWithReplicateProxyThenPartitionRegion() {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat(
+        "create region --type=REPLICATE_PROXY --group=group1 --name=" + regionName)
+        .statusIsSuccess().tableHasRowWithValues("Member", "server-1");
+    gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
+        .statusIsError().containsOutput("The existing region is not a partitioned region");
+  }
+
+  @Test
+  public void startWithPartitionThenReplicateProxy() {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region --type=PARTITION --group=group1 --name=" + regionName)
+        .statusIsSuccess().tableHasRowWithValues("Member", "server-1");
+    gfsh.executeAndAssertThat(
+        "create region --type=REPLICATE_PROXY --group=group2 --name=" + regionName).statusIsError()
+        .containsOutput("The existing region is not a replicate region");
+  }
+
+  @Test
+  public void startWithPartitionProxyRegion() {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat(
+        "create region --type=PARTITION_PROXY --group=group1 --name=" + regionName)
+        .statusIsSuccess().tableHasRowWithValues("Member", "server-1");
+    gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
+        .statusIsSuccess().tableHasRowWithValues("Member", "server-2");
+
+    locator.waitTillRegionsAreReadyOnServers("/" + regionName, 2);
+    // the following two should fail with name check on locator, not on server
+    gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
+        .statusIsError().containsOutput("Region /" + regionName + " already exists on the cluster");
+    gfsh.executeAndAssertThat(
+        "create region --type=REPLICATE_PROXY --group=group2 --name=" + regionName).statusIsError()
+        .containsOutput("You can only create proxy regions with the same name on other members");
+  }
+
+  @Test
+  public void startWithLocalRegion() {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region --type=LOCAL --group=group1 --name=" + regionName)
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + regionName)
+        .statusIsError();
+    gfsh.executeAndAssertThat("create region --type=PARTITION --group=group2 --name=" + regionName)
+        .statusIsError();
+    gfsh.executeAndAssertThat(
+        "create region --type=PARTITION_PROXY --group=group2 --name=" + regionName).statusIsError()
+        .containsOutput("The existing region is not a partitioned region");
   }
 
   private String getUniversalClassCode(String classname) {

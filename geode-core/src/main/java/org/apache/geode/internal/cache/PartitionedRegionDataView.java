@@ -33,21 +33,21 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
 
   @Override
   public void updateEntryVersion(EntryEventImpl event) throws EntryNotFoundException {
-    PartitionedRegion pr = (PartitionedRegion) event.getLocalRegion();
+    PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     pr.updateEntryVersionInBucket(event);
   }
 
   @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
-    PartitionedRegion pr = (PartitionedRegion) event.getLocalRegion();
+    PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     pr.invalidateInBucket(event);
   }
 
   @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
-    PartitionedRegion pr = (PartitionedRegion) event.getLocalRegion();
+    PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     pr.destroyInBucket(event, expectedOldValue);
   }
 
@@ -95,7 +95,7 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
   public boolean putEntryOnRemote(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) throws DataLocationException {
-    PartitionedRegion pr = (PartitionedRegion) event.getLocalRegion();
+    PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     return pr.getDataStore().putLocally(event.getKeyInfo().getBucketId(), event, ifNew, ifOld,
         expectedOldValue, requireOldValue, lastModified);
   }
@@ -103,7 +103,7 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
   @Override
   public void destroyOnRemote(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue)
       throws DataLocationException {
-    PartitionedRegion pr = (PartitionedRegion) event.getLocalRegion();
+    PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     pr.getDataStore().destroyLocally(event.getKeyInfo().getBucketId(), event, expectedOldValue);
     return;
   }
@@ -111,7 +111,7 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
   @Override
   public void invalidateOnRemote(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) throws DataLocationException {
-    PartitionedRegion pr = (PartitionedRegion) event.getLocalRegion();
+    PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     pr.getDataStore().invalidateLocally(event.getKeyInfo().getBucketId(), event);
   }
 

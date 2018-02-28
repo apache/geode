@@ -757,7 +757,7 @@ public class GatewaySenderEventImpl implements AsyncEvent, DataSerializableFixed
         .append(getValueAsString(true)).append(";valueIsObject=").append(this.valueIsObject)
         .append(";numberOfParts=").append(this.numberOfParts).append(";callbackArgument=")
         .append(this.callbackArgument).append(";possibleDuplicate=").append(this.possibleDuplicate)
-        .append(";creationTime=").append(this.creationTime).append(";shadowKey= ")
+        .append(";creationTime=").append(this.creationTime).append(";shadowKey=")
         .append(this.shadowKey).append(";timeStamp=").append(this.versionTimeStamp)
         .append(";acked=").append(this.isAcked).append(";dispatched=").append(this.isDispatched)
         .append(";bucketId=").append(this.bucketId).append(";isConcurrencyConflict=")

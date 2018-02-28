@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -75,7 +76,6 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
@@ -1123,7 +1123,8 @@ public class InternalLocator extends Locator implements ConnectListener {
     try {
       response = statusFuture.get(5, TimeUnit.SECONDS);
     } catch (Exception e) {
-      logger.info("Exception occurred while fetching the status {}", CliUtil.stackTraceAsString(e));
+      logger.info("Exception occurred while fetching the status {}",
+          ExceptionUtils.getStackTrace(e));
       response = new SharedConfigurationStatusResponse();
       response.setStatus(SharedConfigurationStatus.UNDETERMINED);
     }

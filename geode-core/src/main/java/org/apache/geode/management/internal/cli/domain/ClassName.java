@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.internal.ClassPathLoader;
 
@@ -109,12 +110,14 @@ public class ClassName<T> implements Serializable {
         && this.getInitProperties().equals(that.getInitProperties());
   }
 
-  public T newInstance() {
+  public T newInstance(Cache cache) {
     try {
       Class<T> loadedClass = (Class<T>) ClassPathLoader.getLatest().forName(className);
       T object = loadedClass.newInstance();
       if (object instanceof Declarable) {
-        ((Declarable) object).init(initProperties);
+        Declarable declarable = (Declarable) object;
+        declarable.initialize(cache, initProperties);
+        declarable.init(initProperties); // for backwards compatibility
       }
       return object;
     } catch (Exception e) {

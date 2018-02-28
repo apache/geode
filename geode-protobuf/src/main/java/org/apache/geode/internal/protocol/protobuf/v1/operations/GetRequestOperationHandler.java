@@ -22,7 +22,6 @@ import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -31,7 +30,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class GetRequestOperationHandler
@@ -39,23 +38,24 @@ public class GetRequestOperationHandler
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<RegionAPI.GetResponse, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService, RegionAPI.GetRequest request,
-      MessageExecutionContext messageExecutionContext)
+  public Result<RegionAPI.GetResponse> process(ProtobufSerializationService serializationService,
+      RegionAPI.GetRequest request, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, EncodingException, DecodingException {
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
-      logger.error("Received Get request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities
-          .makeErrorResponse(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found"));
+      logger.error("Received get request for nonexistent region: {}", regionName);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
+          "Region \"" + regionName + "\" not found");
     }
-    long startOperationTime = messageExecutionContext.getStatistics().startOperation();
 
     try {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
 
       Object decodedKey = serializationService.decode(request.getKey());
+      if (decodedKey == null) {
+        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key.");
+      }
       Object resultValue = region.get(decodedKey);
 
       if (resultValue == null) {
@@ -66,7 +66,13 @@ public class GetRequestOperationHandler
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } finally {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
-      messageExecutionContext.getStatistics().endOperation(startOperationTime);
     }
+  }
+
+  public static ResourcePermission determineRequiredPermission(RegionAPI.GetRequest request,
+      ProtobufSerializationService serializer) throws DecodingException {
+    return new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, request.getRegionName(),
+        serializer.decode(request.getKey()).toString());
   }
 }

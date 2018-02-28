@@ -24,12 +24,15 @@ import java.net.Socket;
 import java.security.Principal;
 import java.util.Properties;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
+import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
@@ -39,7 +42,16 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.security.AuthenticationRequiredException;
 
 public class ServerSideHandshakeImpl extends Handshake implements ServerSideHandshake {
+  private static final Version currentServerVersion =
+      ServerSideHandshakeFactory.currentServerVersion;
   private Version clientVersion;
+
+  private final byte replyCode;
+
+  @Override
+  protected byte getReplyCode() {
+    return replyCode;
+  }
 
   /**
    * HandShake Constructor used by server side connection
@@ -53,63 +65,55 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     this.securityService = securityService;
     this.encryptor = new EncryptorImpl(sys.getSecurityLogWriter());
 
-    {
-      int soTimeout = -1;
+    int soTimeout = -1;
+    try {
+      soTimeout = sock.getSoTimeout();
+      sock.setSoTimeout(timeout);
+      InputStream inputStream = sock.getInputStream();
+      int valRead = inputStream.read();
+      if (valRead == -1) {
+        throw new EOFException(
+            LocalizedStrings.HandShake_HANDSHAKE_EOF_REACHED_BEFORE_CLIENT_CODE_COULD_BE_READ
+                .toLocalizedString());
+      }
+      this.replyCode = (byte) valRead;
+      if (replyCode != REPLY_OK) {
+        throw new IOException(
+            LocalizedStrings.HandShake_HANDSHAKE_REPLY_CODE_IS_NOT_OK.toLocalizedString());
+      }
       try {
-        soTimeout = sock.getSoTimeout();
-        sock.setSoTimeout(timeout);
-        InputStream inputStream = sock.getInputStream();
-        int valRead = inputStream.read();
-        // this.code = (byte)is.read();
-        if (valRead == -1) {
-          throw new EOFException(
-              LocalizedStrings.HandShake_HANDSHAKE_EOF_REACHED_BEFORE_CLIENT_CODE_COULD_BE_READ
-                  .toLocalizedString());
+        DataInputStream dataInputStream = new DataInputStream(inputStream);
+        DataOutputStream dataOutputStream = new DataOutputStream(sock.getOutputStream());
+        this.clientReadTimeout = dataInputStream.readInt();
+        if (clientVersion.compareTo(Version.CURRENT) < 0) {
+          // versioned streams allow object serialization code to deal with older clients
+          dataInputStream = new VersionedDataInputStream(dataInputStream, clientVersion);
+          dataOutputStream = new VersionedDataOutputStream(dataOutputStream, clientVersion);
         }
-        this.replyCode = (byte) valRead;
-        if (this.replyCode != REPLY_OK) {
-          throw new IOException(
-              LocalizedStrings.HandShake_HANDSHAKE_REPLY_CODE_IS_NOT_OK.toLocalizedString());
+        this.id = ClientProxyMembershipID.readCanonicalized(dataInputStream);
+        // Note: credentials should always be the last piece in handshake for
+        // Diffie-Hellman key exchange to work
+        if (clientVersion.compareTo(Version.GFE_603) >= 0) {
+          setOverrides(new byte[] {dataInputStream.readByte()});
+        } else {
+          setClientConflation(dataInputStream.readByte());
         }
+        if (this.clientVersion.compareTo(Version.GFE_65) < 0 || communicationMode.isWAN()) {
+          this.credentials =
+              readCredentials(dataInputStream, dataOutputStream, sys, this.securityService);
+        } else {
+          this.credentials = this.readCredential(dataInputStream, dataOutputStream, sys);
+        }
+      } catch (ClassNotFoundException cnfe) {
+        throw new IOException(
+            LocalizedStrings.HandShake_CLIENTPROXYMEMBERSHIPID_CLASS_COULD_NOT_BE_FOUND_WHILE_DESERIALIZING_THE_OBJECT
+                .toLocalizedString());
+      }
+    } finally {
+      if (soTimeout != -1) {
         try {
-          DataInputStream dataInputStream = new DataInputStream(inputStream);
-          DataOutputStream dataOutputStream = new DataOutputStream(sock.getOutputStream());
-          this.clientReadTimeout = dataInputStream.readInt();
-          if (clientVersion.compareTo(Version.CURRENT) < 0) {
-            // versioned streams allow object serialization code to deal with older clients
-            dataInputStream = new VersionedDataInputStream(dataInputStream, clientVersion);
-            dataOutputStream = new VersionedDataOutputStream(dataOutputStream, clientVersion);
-          }
-          this.id = ClientProxyMembershipID.readCanonicalized(dataInputStream);
-          // Note: credentials should always be the last piece in handshake for
-          // Diffie-Hellman key exchange to work
-          if (clientVersion.compareTo(Version.GFE_603) >= 0) {
-            setOverrides(new byte[] {dataInputStream.readByte()});
-          } else {
-            setClientConflation(dataInputStream.readByte());
-          }
-          // Hitesh
-          if (this.clientVersion.compareTo(Version.GFE_65) < 0 || communicationMode.isWAN()) {
-            this.credentials =
-                readCredentials(dataInputStream, dataOutputStream, sys, this.securityService);
-          } else {
-            this.credentials = this.readCredential(dataInputStream, dataOutputStream, sys);
-          }
-        } catch (IOException ioe) {
-          this.replyCode = -2;
-          throw ioe;
-        } catch (ClassNotFoundException cnfe) {
-          this.replyCode = -3;
-          throw new IOException(
-              LocalizedStrings.HandShake_CLIENTPROXYMEMBERSHIPID_CLASS_COULD_NOT_BE_FOUND_WHILE_DESERIALIZING_THE_OBJECT
-                  .toLocalizedString());
-        }
-      } finally {
-        if (soTimeout != -1) {
-          try {
-            sock.setSoTimeout(soTimeout);
-          } catch (IOException ignore) {
-          }
+          sock.setSoTimeout(soTimeout);
+        } catch (IOException ignore) {
         }
       }
     }
@@ -144,7 +148,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     // additional byte of wan site needs to send for Gateway BC
     if (communicationMode.isWAN()) {
-      Version.writeOrdinal(dos, ServerHandshakeProcessor.currentServerVersion.ordinal(), true);
+      Version.writeOrdinal(dos, currentServerVersion.ordinal(), true);
     }
 
     dos.writeByte(endpointType);
@@ -152,7 +156,15 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     // Write the server's member
     DistributedMember member = this.system.getDistributedMember();
-    ServerHandshakeProcessor.writeServerMember(member, dos);
+
+    Version v = Version.CURRENT;
+    if (dos instanceof VersionedDataStream) {
+      v = ((VersionedDataStream) dos).getVersion();
+    }
+    HeapDataOutputStream hdos = new HeapDataOutputStream(v);
+    DataSerializer.writeObject(member, hdos);
+    DataSerializer.writeByteArray(hdos.toByteArray(), dos);
+    hdos.close();
 
     // Write no message
     dos.writeUTF("");
@@ -171,13 +183,13 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     // Write the distributed system id if this is a 6.6 or greater client
     // on the remote side of the gateway
     if (communicationMode.isWAN() && this.clientVersion.compareTo(Version.GFE_66) >= 0
-        && ServerHandshakeProcessor.currentServerVersion.compareTo(Version.GFE_66) >= 0) {
+        && currentServerVersion.compareTo(Version.GFE_66) >= 0) {
       dos.writeByte(((InternalDistributedSystem) this.system).getDistributionManager()
           .getDistributedSystemId());
     }
 
     if ((communicationMode.isWAN()) && this.clientVersion.compareTo(Version.GFE_80) >= 0
-        && ServerHandshakeProcessor.currentServerVersion.compareTo(Version.GFE_80) >= 0) {
+        && currentServerVersion.compareTo(Version.GFE_80) >= 0) {
       int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
       dos.writeInt(pdxSize);
     }

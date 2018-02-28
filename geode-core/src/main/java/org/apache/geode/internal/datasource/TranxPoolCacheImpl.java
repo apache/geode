@@ -29,7 +29,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * This class models a connection pool for transactional database connection. Extends the
- * AbstractPoolCache to inherit the pool bahavior.
+ * AbstractPoolCache to inherit the pool behavior.
  *
  */
 public class TranxPoolCacheImpl extends AbstractPoolCache {

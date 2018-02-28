@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyMessage;
@@ -48,14 +47,14 @@ public class EventStateHelper {
    * Callers for this method are: <br>
    * {@link CreateRegionReplyMessage#toData(DataOutput)} <br>
    * {@link RegionStateMessage#toData(DataOutput)} <br>
+   *
+   * @param myId the memberId that is serializing
    */
   @SuppressWarnings("synthetic-access")
-  public static void dataSerialize(DataOutput dop, Map eventState, boolean isHARegion)
-      throws IOException {
+  public static void dataSerialize(DataOutput dop, Map eventState, boolean isHARegion,
+      InternalDistributedMember myId) throws IOException {
     // For HARegionQueues, the event state map is uses different values
     // than a regular region :(
-    InternalDistributedMember myId =
-        InternalDistributedSystem.getAnyInstance().getDistributedMember();
     Map<MemberIdentifier, Map<ThreadIdentifier, Object>> groupedThreadIds =
         groupThreadIds(eventState);
     List<MemberIdentifier> orderedIds = new LinkedList();

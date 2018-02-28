@@ -62,7 +62,6 @@ import org.apache.geode.management.internal.beans.stats.StatType;
 import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
 import org.apache.geode.management.internal.beans.stats.StatsKey;
 import org.apache.geode.management.internal.beans.stats.StatsRate;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.membership.ClientMembershipListener;
 
 /**
@@ -713,7 +712,7 @@ public class CacheServerBridge extends ServerBridge {
     if (!p.isConnected() && !proxyID.isDurable()) {
       return null;
     }
-    queueDetail.setClientId(CliUtil.getClientIdFromCacheClientProxy(p));
+    queueDetail.setClientId(getClientIdFromCacheClientProxy(p));
 
     HARegionQueue queue = p.getHARegionQueue();
     if (queue == null) {
@@ -737,7 +736,7 @@ public class CacheServerBridge extends ServerBridge {
         Collection<CacheClientProxy> clientProxies =
             acceptor.getCacheClientNotifier().getClientProxies();
         for (CacheClientProxy p : clientProxies) {
-          String buffer = CliUtil.getClientIdFromCacheClientProxy(p);
+          String buffer = getClientIdFromCacheClientProxy(p);
           if (buffer.equals(clientId)) {
             ClientQueueDetail queueDetail = getClientQueueDetail(p);
             return queueDetail;
@@ -748,6 +747,17 @@ public class CacheServerBridge extends ServerBridge {
       throw new Exception(e.getMessage());
     }
     return null;
+  }
+
+
+  private static String getClientIdFromCacheClientProxy(CacheClientProxy p) {
+    if (p == null) {
+      return null;
+    }
+    StringBuffer buffer = new StringBuffer();
+    buffer.append("[").append(p.getProxyID()).append(":port=").append(p.getRemotePort())
+        .append(":primary=").append(p.isPrimary()).append("]");
+    return buffer.toString();
   }
 
 }

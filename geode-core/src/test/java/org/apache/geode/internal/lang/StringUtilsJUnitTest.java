@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.lang;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -45,6 +46,16 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class StringUtilsJUnitTest {
 
 
+  @Test
+  public void arrayToString() {
+    assertThat(StringUtils.arrayToString(null)).isEqualTo("null");
+    String[] array1 = {"one", "two", "three"};
+    assertThat(StringUtils.arrayToString(array1)).isEqualTo("one, two, three");
+    String[] array2 = {"one", null, "three"};
+    assertThat(StringUtils.arrayToString(array2)).isEqualTo("one, null, three");
+    String[] array3 = {null};
+    assertThat(StringUtils.arrayToString(array3)).isEqualTo("null");
+  }
 
   @Test
   public void testGetDigitsOnly() {

@@ -19,10 +19,11 @@ import java.util.function.Function;
 import org.apache.geode.annotations.Experimental;
 
 @Experimental
-public interface Result<SuccessType, FailureType> {
-  <T> T map(Function<SuccessType, T> successFunction, Function<FailureType, T> errorFunction);
+public interface Result<SuccessType> {
+  <T> T map(Function<SuccessType, T> successFunction,
+      Function<ClientProtocol.ErrorResponse, T> errorFunction);
 
   SuccessType getMessage();
 
-  FailureType getErrorMessage();
+  ClientProtocol.ErrorResponse getErrorMessage();
 }

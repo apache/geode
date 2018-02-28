@@ -18,14 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 
 public class ProtocolVersionHandler {
-  private static final Logger logger = LogManager.getLogger();
   private static final VersionValidator validator = new VersionValidator();
 
   public static boolean handleVersionMessage(InputStream inputStream, OutputStream outputStream,

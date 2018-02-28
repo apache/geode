@@ -34,6 +34,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.ManagementService;
 
 /**
@@ -50,9 +51,11 @@ public class RestAgent {
 
   private boolean running = false;
   private final DistributionConfig config;
+  private final SecurityService securityService;
 
-  public RestAgent(DistributionConfig config) {
+  public RestAgent(DistributionConfig config, SecurityService securityService) {
     this.config = config;
+    this.securityService = securityService;
   }
 
   public synchronized boolean isRunning() {
@@ -134,8 +137,10 @@ public class RestAgent {
         this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port,
             SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
 
-        this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar);
-        this.httpServer = JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar);
+        this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar,
+            securityService);
+        this.httpServer =
+            JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar, securityService);
 
         if (logger.isDebugEnabled()) {
           logger.debug("Starting HTTP embedded server on port ({}) at bind-address ({})...",

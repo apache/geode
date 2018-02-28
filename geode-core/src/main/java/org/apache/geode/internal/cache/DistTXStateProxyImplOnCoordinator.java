@@ -775,7 +775,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         if (putAllForBucket == null) {
           // TODO DISTTX: event is never released
           EntryEventImpl event = EntryEventImpl.createPutAllEvent(null, region,
-              Operation.PUTALL_CREATE, key, putallOp.putAllData[i].getValue());
+              Operation.PUTALL_CREATE, key, putallOp.putAllData[i].getValue(region.getCache()));
           event.setEventId(putallOp.putAllData[i].getEventID());
           putAllForBucket =
               new DistributedPutAllOperation(event, putallOp.putAllDataSize, putallOp.isBridgeOp);

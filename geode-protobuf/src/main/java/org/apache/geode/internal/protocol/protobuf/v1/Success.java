@@ -19,20 +19,20 @@ import java.util.function.Function;
 import org.apache.geode.annotations.Experimental;
 
 @Experimental
-public class Success<SuccessType, FailureType> implements Result<SuccessType, FailureType> {
+public class Success<SuccessType> implements Result<SuccessType> {
   private final SuccessType successResponse;
 
   private Success(SuccessType successResponse) {
     this.successResponse = successResponse;
   }
 
-  public static <T, V> Success<T, V> of(T successResponse) {
+  public static <T> Success<T> of(T successResponse) {
     return new Success<>(successResponse);
   }
 
   @Override
   public <T> T map(Function<SuccessType, T> successFunction,
-      Function<FailureType, T> errorFunction) {
+      Function<ClientProtocol.ErrorResponse, T> errorFunction) {
     return successFunction.apply(successResponse);
   }
 
@@ -42,7 +42,7 @@ public class Success<SuccessType, FailureType> implements Result<SuccessType, Fa
   }
 
   @Override
-  public FailureType getErrorMessage() {
+  public ClientProtocol.ErrorResponse getErrorMessage() {
     throw new RuntimeException("This is a not Failure result");
   }
 }

@@ -46,6 +46,13 @@ resources:
     branch: develop
     paths:
     - ci/pipelines/docker-images.yml
+- name: geode-metrics-pipeline
+  type: git
+  source:
+    uri: https://github.com/apache/geode.git
+    branch: develop
+    paths:
+    - ci/pipelines/metrics.yml
 
 jobs:
 - name: set-develop-pipeline
@@ -72,3 +79,15 @@ jobs:
       - name: docker-images
         team: main
         config_file: geode-docker-images-pipeline/ci/pipelines/docker-images.yml
+- name: set-metrics-pipeline
+  serial: true
+  public: true
+  plan:
+  - get: geode-metrics-pipeline
+    trigger: true
+  - put: apachegeode-concourse
+    params:
+      pipelines:
+      - name: develop-metrics
+        team: main
+        config_file: geode-metrics-pipeline/ci/pipelines/metrics.yml

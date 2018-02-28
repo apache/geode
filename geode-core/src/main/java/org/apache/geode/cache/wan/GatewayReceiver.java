@@ -19,12 +19,13 @@ import java.util.List;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.wan.GatewayReceiverException;
 
 /**
- * A GatewayReceiver that receives the events from a <code>GatewaySender</code>. GatewayReceiver is
+ * A GatewayReceiver that receives the events from a {@code GatewaySender}. GatewayReceiver is
  * used in conjunction with a {@link GatewaySender} to connect two distributed-systems. This
  * GatewayReceiver will receive all the events originating in distributed-systems that has a
- * <code>GatewaySender<code> connected to this distributed-system.
+ * {@code GatewaySender} connected to this distributed-system.
  *
  *
  */
@@ -33,25 +34,25 @@ public interface GatewayReceiver {
   String RECEIVER_GROUP = "__recv__group";
   /**
    * The default maximum amount of time between client pings. This value is used by the
-   * <code>ClientHealthMonitor</code> to determine the health of this <code>GatewayReceiver</code>'s
+   * {@code ClientHealthMonitor} to determine the health of this {@code GatewayReceiver}'s
    * clients.
    */
   int DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS = 60000;
 
   /**
-   * Default start value of the port range from which the <code>GatewayReceiver</code>'s port will
+   * Default start value of the port range from which the {@code GatewayReceiver}'s port will
    * be chosen
    */
   int DEFAULT_START_PORT = 5000;
 
   /**
-   * Default end value of the port range from which the <code>GatewayReceiver</code>'s port will be
+   * Default end value of the port range from which the {@code GatewayReceiver}'s port will be
    * chosen
    */
   int DEFAULT_END_PORT = 5500;
 
   /**
-   * The default buffer size for socket buffers for the <code>GatewayReceiver</code>.
+   * The default buffer size for socket buffers for the {@code GatewayReceiver}.
    */
   int DEFAULT_SOCKET_BUFFER_SIZE = 524288;
 
@@ -64,7 +65,7 @@ public interface GatewayReceiver {
   String DEFAULT_HOSTNAME_FOR_SENDERS = "";
 
   /**
-   * The default value for manually starting a <code>GatewayReceiver</code>.
+   * The default value for manually starting a {@code GatewayReceiver}.
    *
    * @since GemFire 8.1
    */
@@ -85,13 +86,20 @@ public interface GatewayReceiver {
   void start() throws IOException;
 
   /**
-   * Stops this receiver. Note that the <code>GatewayReceiver</code> can be reconfigured and
+   * Stops this receiver. Note that the {@code GatewayReceiver} can be reconfigured and
    * restarted if desired.
    */
   void stop();
 
   /**
-   * Destroy this receiver. Stop should be called before calling destroy
+   * Destroys this {@code GatewayReceiver}and removes the {@code GatewayReceiverMBean}
+   * associated with this {@code GatewayReceiver}. This method does not remove
+   * the {@code GatewayReceiver} from cluster configuration.
+   * The {@link #stop() stop} method should be called before calling {@link #destroy() destroy}
+   *
+   *
+   * @throws GatewayReceiverException if {@code GatewayReceiver} has not been stopped before
+   *         calling destroy
    */
   void destroy();
 
@@ -101,15 +109,15 @@ public interface GatewayReceiver {
   boolean isRunning();
 
   /**
-   * Returns the list of <code>GatewayTransportFilter</code> added to this GatewayReceiver.
+   * Returns the list of {@code GatewayTransportFilter} added to this GatewayReceiver.
    *
-   * @return the list of <code>GatewayTransportFilter</code> added to this GatewayReceiver.
+   * @return the list of {@code GatewayTransportFilter} added to this GatewayReceiver.
    */
   List<GatewayTransportFilter> getGatewayTransportFilters();
 
   /**
    * Returns the maximum amount of time between client pings. This value is used by the
-   * <code>ClientHealthMonitor</code> to determine the health of this <code>GatewayReceiver</code>'s
+   * {@code ClientHealthMonitor} to determine the health of this {@code GatewayReceiver}'s
    * clients (i.e. the GatewaySenders). The default is 60000 ms.
    *
    * @return the maximum amount of time between client pings.
@@ -117,25 +125,25 @@ public interface GatewayReceiver {
   int getMaximumTimeBetweenPings();
 
   /**
-   * Returns the port on which this <code>GatewayReceiver</code> listens for clients.
+   * Returns the port on which this {@code GatewayReceiver} listens for clients.
    */
   int getPort();
 
   /**
-   * Returns start value of the port range from which the <code>GatewayReceiver</code>'s port will
+   * Returns start value of the port range from which the {@code GatewayReceiver}'s port will
    * be chosen.
    */
   int getStartPort();
 
   /**
-   * Returns end value of the port range from which the <code>GatewayReceiver</code>'s port will be
+   * Returns end value of the port range from which the {@code GatewayReceiver}'s port will be
    * chosen.
    */
   int getEndPort();
 
   /**
    * Returns a string representing the ip address or host name that server locators will tell
-   * clients (<code>GatewaySender</code>s in this case) that this receiver is listening on.
+   * clients ({@code GatewaySender}s in this case) that this receiver is listening on.
    *
    * @return the ip address or host name to give to clients so they can connect to this receiver
    */
@@ -148,10 +156,10 @@ public interface GatewayReceiver {
 
   /**
    * Returns the configured buffer size of the socket connection for this
-   * <code>GatewayReceiver</code>. The default is 524288 bytes.
+   * {@code GatewayReceiver}. The default is 524288 bytes.
    *
    * @return the configured buffer size of the socket connection for this
-   *         <code>GatewayReceiver</code>
+   *         {@code GatewayReceiver}
    */
   int getSocketBufferSize();
 

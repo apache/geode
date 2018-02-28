@@ -442,8 +442,8 @@ public class DistTXState extends TXState {
         // [DISTTX] TODO what do with versions next?
         final VersionedObjectList versions =
             new VersionedObjectList(dtop.getPutAllOperation().putAllDataSize, true,
-                dtop.region.getConcurrencyChecksEnabled());
-        postPutAll(dtop.getPutAllOperation(), versions, dtop.region);
+                dtop.getRegion().getConcurrencyChecksEnabled());
+        postPutAll(dtop.getPutAllOperation(), versions, dtop.getRegion());
       } else {
         result = putEntryOnRemote(dtop, false/* ifNew */, false/* ifOld */,
             null/* expectedOldValue */, false/* requireOldValue */, 0L/* lastModified */,
@@ -457,8 +457,8 @@ public class DistTXState extends TXState {
         // [DISTTX] TODO what do with versions next?
         final VersionedObjectList versions =
             new VersionedObjectList(dtop.getRemoveAllOperation().removeAllDataSize, true,
-                dtop.region.getConcurrencyChecksEnabled());
-        postRemoveAll(dtop.getRemoveAllOperation(), versions, dtop.region);
+                dtop.getRegion().getConcurrencyChecksEnabled());
+        postRemoveAll(dtop.getRemoveAllOperation(), versions, dtop.getRegion());
       } else {
         destroyOnRemote(dtop, false/* TODO [DISTTX] */, null/*
                                                              * TODO [DISTTX]

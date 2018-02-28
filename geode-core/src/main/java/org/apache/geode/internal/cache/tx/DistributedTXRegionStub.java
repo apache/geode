@@ -53,7 +53,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       Object expectedOldValue) {
     try {
       RemoteOperationResponse response = RemoteDestroyMessage.send(state.getTarget(),
-          event.getLocalRegion(), event, expectedOldValue, true, false);
+          event.getRegion(), event, expectedOldValue, true, false);
       response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -167,7 +167,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
     boolean retVal = false;
-    final LocalRegion r = event.getLocalRegion();
+    final LocalRegion r = event.getRegion();
 
     try {
       RemotePutResponse response = RemotePutMessage.txSend(state.getTarget(), r, event,

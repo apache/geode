@@ -417,6 +417,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         replyMsg.eventState = this.eventState;
         replyMsg.destroyedId = destroyedId;
         replyMsg.setProcessorId(this.processorId);
+        replyMsg.setSender(dm.getId()); // for EventStateHelper.dataSerialize
         replyMsg.setRecipient(this.getSender());
         replyMsg.skippedCompatibilityChecks = this.skippedCompatibilityChecks;
 
@@ -837,7 +838,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         // The isHARegion flag is false here because
         // we currently only include the event state in the profile
         // for bucket regions.
-        EventStateHelper.dataSerialize(out, (Map) eventState, false);
+        EventStateHelper.dataSerialize(out, (Map) eventState, false, getSender());
       } else {
         out.writeBoolean(false);
       }

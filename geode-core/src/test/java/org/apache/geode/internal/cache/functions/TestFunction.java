@@ -56,7 +56,7 @@ import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
-public class TestFunction implements Function, Declarable2, DataSerializable {
+public class TestFunction<T> implements Function<T>, Declarable2, DataSerializable {
   public static final String TEST_FUNCTION10 = "TestFunction10";
   public static final String TEST_FUNCTION9 = "TestFunction9";
   public static final String TEST_FUNCTION8 = "TestFunction8";

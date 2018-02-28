@@ -28,6 +28,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -137,7 +138,7 @@ public class CompactOfflineDiskStoreCommand implements GfshCommand {
       }
       String fieldsMessage = (maxOplogSize != -1
           ? CliStrings.COMPACT_OFFLINE_DISK_STORE__MAXOPLOGSIZE + "=" + maxOplogSize + "," : "");
-      fieldsMessage += CliUtil.arrayToString(diskDirs);
+      fieldsMessage += StringUtils.arrayToString(diskDirs);
       String errorString = CliStrings.format(
           CliStrings.COMPACT_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_DISKSTORE_0_WITH_1_REASON_2,
           diskStoreName, fieldsMessage);
