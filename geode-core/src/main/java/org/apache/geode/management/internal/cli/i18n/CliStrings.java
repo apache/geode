@@ -829,11 +829,8 @@ public class CliStrings {
   public static final String CREATE_REGION__USEATTRIBUTESFROM__HELP =
       "Name/Path of the region whose attributes should be duplicated when creating this region. Deprecated: Since Geode 1.5, regions should be created explicitly so that undesirable attributes are not copied inadvertently.";
   public static final String CREATE_REGION__SKIPIFEXISTS = "skip-if-exists";
-  public static final String CREATE_REGION__SKIPIFEXISTS__HELP =
-      "Skip region creation if the region already exists. Deprecated: Since Geode 1.5. Use --if-not-exists instead.";
-  public static final String CREATE_REGION__IFNOTEXISTS = "if-not-exists";
   public static final String CREATE_REGION__IFNOTEXISTS__HELP =
-      "By default, an attempt to create a duplicate region is reported as an error. If this option is specified without a value or is specified with a value of true, then gfsh displays a \"Skipping...\" acknowledgement, but does not throw an error.";
+      "By default, an attempt to create a duplicate region is reported as an error. If this option is specified without a value or is specified with a value of true, then gfsh displays a \"Skipping...\" acknowledgement, but does not throw an error. Deprecated: the alias --skip-if-exists is deprecated since Geode 1.5.";
   public static final String CREATE_REGION__KEYCONSTRAINT = "key-constraint";
   public static final String CREATE_REGION__KEYCONSTRAINT__HELP =
       "Fully qualified class name of the objects allowed as region keys. Ensures that keys for region entries are all of the same class.";
