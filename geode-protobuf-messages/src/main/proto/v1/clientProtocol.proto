@@ -66,6 +66,9 @@ message Message {
 
         ExecuteFunctionOnGroupRequest executeFunctionOnGroupRequest = 24;
         ExecuteFunctionOnGroupResponse executeFunctionOnGroupResponse= 25;
+
+        DisconnectClientRequest disconnectClientRequest = 26;
+        DisconnectClientResponse disconnectClientResponse = 27;
     }
 }
 
