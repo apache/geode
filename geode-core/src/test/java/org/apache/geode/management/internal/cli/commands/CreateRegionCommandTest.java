@@ -387,6 +387,7 @@ public class CreateRegionCommandTest {
   public void nameCollisionCheck() {
     when(regionMXBean.getMemberCount()).thenReturn(2);
     when(regionMXBean.getEmptyNodes()).thenReturn(1);
+    when(regionMXBean.getRegionType()).thenReturn("REPLICATE");
     parser.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("Region /region already exists on the cluster");
     parser.executeAndAssertThat(command, COMMAND + " --if-not-exists").statusIsSuccess()
