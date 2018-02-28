@@ -395,10 +395,6 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --type=LOCAL --group=group2 --name=" + regionName)
         .statusIsError()
         .containsOutput("Region /startWithLocalPersistent already exists on the cluster");
-    // todo: need to find out how to why local_persistent's data type is persistent_replicate
-    // gfsh.executeAndAssertThat(
-    // "create region --type=REPLICATE_PROXY --group=group2 --name=" + regionName).statusIsError()
-    // .containsOutput("The existing region is not a replicate region");
   }
 
   @Test
