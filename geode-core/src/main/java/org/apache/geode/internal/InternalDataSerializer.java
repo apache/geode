@@ -177,12 +177,10 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           + ";org.apache.geode.internal.cache.tier.sockets.VersionedObjectList" // putAll
           + ";org.apache.shiro.*;org.apache.shiro.authz.*;org.apache.shiro.authc.*" // security
                                                                                     // services
-          + ";org.apache.logging.log4j.Level"
-          + ";com.healthmarketscience.rmiio.RemoteInputStream"
-          + ";org.apache.geode.connectors.jdbc.internal.**"  // TODO - remove this!  See GEODE-4752
+          + ";org.apache.logging.log4j.Level" + ";com.healthmarketscience.rmiio.RemoteInputStream"
+          + ";org.apache.geode.connectors.jdbc.internal.**" // TODO - remove this! See GEODE-4752
           + ";org.apache.geode.modules.util.SessionCustomExpiry" // geode-modules
-          + ";com.sun.proxy.*"
-          + ";";
+          + ";com.sun.proxy.*" + ";";
 
 
   private static InputStreamFilter defaultSerializationFilter = new EmptyInputStreamFilter();
