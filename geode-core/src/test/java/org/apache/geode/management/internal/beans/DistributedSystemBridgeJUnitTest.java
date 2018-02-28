@@ -73,7 +73,7 @@ public class DistributedSystemBridgeJUnitTest {
 
     InOrder inOrder = inOrder(dm, backupService);
     inOrder.verify(dm).putOutgoing(isA(PrepareBackupRequest.class));
-    inOrder.verify(backupService).prepareBackup(any(), any(), any());
+    inOrder.verify(backupService).prepareBackup(any(), any());
     inOrder.verify(dm).putOutgoing(isA(FinishBackupRequest.class));
     inOrder.verify(backupService).doBackup();
   }

@@ -16,9 +16,9 @@ package org.apache.geode.internal.cache.backup;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -43,21 +43,19 @@ public class PrepareBackupRequest extends CliLegacyMessage {
   private static final Logger logger = LogService.getLogger();
 
   private final transient PrepareBackupFactory prepareBackupFactory;
-  private File targetDir;
-  private File baselineDir;
+  private Properties properties;
 
   public PrepareBackupRequest() {
     this.prepareBackupFactory = new PrepareBackupFactory();
   }
 
   PrepareBackupRequest(InternalDistributedMember sender, Set<InternalDistributedMember> recipients,
-      int msgId, PrepareBackupFactory prepareBackupFactory, File targetDir, File baselineDir) {
+      int msgId, PrepareBackupFactory prepareBackupFactory, Properties properties) {
     setSender(sender);
     setRecipients(recipients);
     this.msgId = msgId;
     this.prepareBackupFactory = prepareBackupFactory;
-    this.targetDir = targetDir;
-    this.baselineDir = baselineDir;
+    this.properties = properties;
   }
 
   @Override
@@ -65,8 +63,7 @@ public class PrepareBackupRequest extends CliLegacyMessage {
     HashSet<PersistentID> persistentIds;
     try {
       persistentIds = prepareBackupFactory
-          .createPrepareBackup(dm.getDistributionManagerId(), dm.getCache(), targetDir, baselineDir)
-          .run();
+          .createPrepareBackup(dm.getDistributionManagerId(), dm.getCache(), properties).run();
     } catch (IOException | InterruptedException e) {
       logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, getClass()), e);
       return AdminFailureResponse.create(getSender(), e);
@@ -82,14 +79,12 @@ public class PrepareBackupRequest extends CliLegacyMessage {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    targetDir = DataSerializer.readFile(in);
-    baselineDir = DataSerializer.readFile(in);
+    properties = DataSerializer.readProperties(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    DataSerializer.writeFile(targetDir, out);
-    DataSerializer.writeFile(baselineDir, out);
+    DataSerializer.writeProperties(properties, out);
   }
 }

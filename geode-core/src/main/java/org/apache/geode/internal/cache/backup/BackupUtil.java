@@ -14,14 +14,20 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
+import static org.apache.geode.internal.cache.backup.AbstractBackupWriterConfig.TIMESTAMP;
+import static org.apache.geode.internal.cache.backup.AbstractBackupWriterConfig.TYPE;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriterConfig.BASELINE_DIR;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriterConfig.TARGET_DIR;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
@@ -33,19 +39,35 @@ public class BackupUtil {
     // do not instantiate
   }
 
-  public static BackupStatus backupAllMembers(DistributionManager dm, File targetDir,
-      File baselineDir) throws ManagementException {
-    BackupStatus status = null;
+  public static BackupStatus backupAllMembers(DistributionManager dm, String targetDirPath,
+      String baselineDirPath) {
+    Properties properties = createBackupProperties(targetDirPath, baselineDirPath);
+    return backupAllMembers(dm, properties);
+  }
+
+  static Properties createBackupProperties(String targetDirPath, String baselineDirPath) {
+    Properties properties = new Properties();
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+    properties.setProperty(TIMESTAMP, format.format(new Date()));
+    properties.setProperty(TYPE, "FileSystem");
+    properties.setProperty(TARGET_DIR, targetDirPath);
+    if (baselineDirPath != null) {
+      properties.setProperty(BASELINE_DIR, baselineDirPath);
+    }
+    return properties;
+  }
+
+  public static BackupStatus backupAllMembers(DistributionManager dm, Properties properties)
+      throws ManagementException {
+    BackupStatus status;
     if (BackupDataStoreHelper.obtainLock(dm)) {
       try {
         Set<PersistentID> missingMembers =
             AdminDistributedSystemImpl.getMissingPersistentMembers(dm);
-        Set recipients = dm.getOtherDistributionManagerIds();
+        Set<InternalDistributedMember> recipients = dm.getOtherDistributionManagerIds();
 
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-        targetDir = new File(targetDir, format.format(new Date()));
         BackupDataStoreResult result =
-            BackupDataStoreHelper.backupAllMembers(dm, recipients, targetDir, baselineDir);
+            BackupDataStoreHelper.backupAllMembers(dm, recipients, properties);
 
         // It's possible that when calling getMissingPersistentMembers, some members are
         // still creating/recovering regions, and at FinishBackupRequest.send, the

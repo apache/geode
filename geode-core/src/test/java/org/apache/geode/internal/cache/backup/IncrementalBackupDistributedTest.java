@@ -60,7 +60,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -207,51 +206,33 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     });
   }
 
-  /**
-   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
-   *
-   * @param vm a member of the distributed system
-   * @return the status of the backup.
-   */
   private BackupStatus baseline(VM vm) {
     return vm.invoke(() -> {
       try {
-        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(), getBaselineDir(),
-            null);
+        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+            getBaselineDir().toString(), null);
       } catch (ManagementException e) {
         throw new RuntimeException(e);
       }
     });
   }
 
-  /**
-   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
-   *
-   * @param vm a member of the distributed system.
-   * @return a status of the backup operation.
-   */
   private BackupStatus incremental(VM vm) {
     return vm.invoke(() -> {
       try {
         return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
-            getIncrementalDir(), getBaselineBackupDir());
+            getIncrementalDir().toString(), getBaselineBackupDir().toString());
       } catch (ManagementException e) {
         throw new RuntimeException(e);
       }
     });
   }
 
-  /**
-   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
-   *
-   * @param vm a member of the distributed system.
-   * @return a status of the backup operation.
-   */
   private BackupStatus incremental2(VM vm) {
     return vm.invoke(() -> {
       try {
         return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
-            getIncremental2Dir(), getIncrementalBackupDir());
+            getIncremental2Dir().toString(), getIncrementalBackupDir().toString());
       } catch (ManagementException e) {
         throw new RuntimeException(e);
       }
@@ -960,7 +941,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
       public Object call() {
         try {
           return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
-              getIncrementalDir(), this.baselineDir);
+              getIncrementalDir().toString(), this.baselineDir.toString());
 
         } catch (ManagementException e) {
           throw new RuntimeException(e);
