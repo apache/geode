@@ -115,7 +115,7 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetServerRequest,
             new GetServerOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setGetServerResponse(opsResp),
-            ResourcePermissions.DATA_READ));
+            ResourcePermissions.CLUSTER_READ));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONREGIONREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getExecuteFunctionOnRegionRequest,
