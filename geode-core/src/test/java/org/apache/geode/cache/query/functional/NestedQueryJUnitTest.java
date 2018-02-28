@@ -268,7 +268,6 @@ public class NestedQueryJUnitTest {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        // DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
         r[i][0] = (SelectResults) q.execute();
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
@@ -276,7 +275,6 @@ public class NestedQueryJUnitTest {
         resType1 = (r[i][0]).getCollectionType().getElementType();
         resSize1 = ((r[i][0]).size());
         set1 = ((r[i][0]).asSet());
-        // Iterator iter=set1.iterator();
 
       } catch (Exception e) {
         throw new AssertionError(e);

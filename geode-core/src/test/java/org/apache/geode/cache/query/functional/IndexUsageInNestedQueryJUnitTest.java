@@ -93,7 +93,6 @@ public class IndexUsageInNestedQueryJUnitTest {
         QueryObserverHolder.setInstance(observer);
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        // DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
         r[i][0] = (SelectResults) q.execute();
         if (!observer.isIndexesUsed) {
           CacheUtils.log("NO INDEX USED");
