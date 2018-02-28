@@ -20,10 +20,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -35,15 +33,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -56,16 +57,15 @@ import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
+@RunWith(JUnitParamsRunner.class)
 @Category(UnitTest.class)
 public class SqlHandlerTest {
   private static final String REGION_NAME = "testRegion";
   private static final String TABLE_NAME = "testTable";
-  private static final Object COLUMN_VALUE_1 = "columnValue1";
   private static final String COLUMN_NAME_1 = "columnName1";
   private static final Object COLUMN_VALUE_2 = "columnValue2";
   private static final String COLUMN_NAME_2 = "columnName2";
   private static final String KEY_COLUMN = "keyColumn";
-  private static final String COLUMN_STRING_VALUE_1 = "columnStringValue1";
   private static final String PDX_FIELD_NAME_1 = COLUMN_NAME_1.toLowerCase();
   private static final String PDX_FIELD_NAME_2 = COLUMN_NAME_2.toLowerCase();
 
@@ -183,24 +183,26 @@ public class SqlHandlerTest {
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
     handler.read(region, new Object());
-    verify(factory).writeObject(PDX_FIELD_NAME_1, COLUMN_VALUE_1);
+    verify(factory).writeObject(PDX_FIELD_NAME_1, getValueByFieldType(FieldType.OBJECT));
     verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
     verify(factory).create();
   }
 
   @Test
-  public void readWritesStringFieldGivenPdxStringFieldType() throws Exception {
+  @Parameters(source = FieldType.class)
+  public void readWritesFieldGivenPdxFieldType(FieldType fieldType) throws Exception {
     ResultSet result = mock(ResultSet.class);
-    setupResultSet(result, FieldType.STRING);
+    setupResultSet(result, fieldType);
     when(result.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
 
-    PdxInstanceFactory factory = setupPdxInstanceFactory(FieldType.STRING);
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
 
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
     handler.read(region, new Object());
-    verify(factory).writeString(PDX_FIELD_NAME_1, COLUMN_STRING_VALUE_1);
+
+    verifyPdxFactoryWrite(factory, fieldType);
     verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
     verify(factory).create();
   }
@@ -245,7 +247,7 @@ public class SqlHandlerTest {
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
     handler.read(region, new Object());
-    verify(factory).writeObject(PDX_FIELD_NAME_1, COLUMN_VALUE_1);
+    verify(factory).writeObject(PDX_FIELD_NAME_1, getValueByFieldType(FieldType.OBJECT));
     verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
     verify(factory).create();
   }
@@ -269,7 +271,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void throwsExceptionIfMoreThatOneResultReturned() throws Exception {
+  public void throwsExceptionIfMoreThanOneResultReturned() throws Exception {
     ResultSet result = mock(ResultSet.class);
     setupResultSet(result);
     when(result.next()).thenReturn(true);
@@ -432,16 +434,207 @@ public class SqlHandlerTest {
     verify(statement).close();
   }
 
+
+  private static byte[][] arrayOfByteArray = new byte[][] {{1, 2}, {3, 4}};
+
+  private <T> T getValueByFieldType(FieldType fieldType) {
+    switch (fieldType) {
+      case STRING:
+        return (T) "stringValue";
+      case CHAR:
+        return (T) Character.valueOf('A');
+      case SHORT:
+        return (T) Short.valueOf((short) 36);
+      case INT:
+        return (T) Integer.valueOf(36);
+      case LONG:
+        return (T) Long.valueOf(36);
+      case FLOAT:
+        return (T) Float.valueOf(36);
+      case DOUBLE:
+        return (T) Double.valueOf(36);
+      case BYTE:
+        return (T) Byte.valueOf((byte) 36);
+      case BOOLEAN:
+        return (T) Boolean.TRUE;
+      case DATE:
+        return (T) new Date(1000);
+      case BYTE_ARRAY:
+        return (T) new byte[] {1, 2};
+      case BOOLEAN_ARRAY:
+        return (T) new boolean[] {true, false};
+      case CHAR_ARRAY:
+        return (T) new char[] {1, 2};
+      case SHORT_ARRAY:
+        return (T) new short[] {1, 2};
+      case INT_ARRAY:
+        return (T) new int[] {1, 2};
+      case LONG_ARRAY:
+        return (T) new long[] {1, 2};
+      case FLOAT_ARRAY:
+        return (T) new float[] {1, 2};
+      case DOUBLE_ARRAY:
+        return (T) new double[] {1, 2};
+      case STRING_ARRAY:
+        return (T) new String[] {"1", "2"};
+      case OBJECT_ARRAY:
+        return (T) new Object[] {1, 2};
+      case ARRAY_OF_BYTE_ARRAYS:
+        return (T) arrayOfByteArray;
+      case OBJECT:
+        return (T) "objectValue";
+      default:
+        throw new IllegalStateException("unhandled fieldType " + fieldType);
+    }
+  }
+
+  private void verifyPdxFactoryWrite(PdxInstanceFactory factory, FieldType fieldType) {
+    switch (fieldType) {
+      case STRING:
+        verify(factory).writeString(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case CHAR:
+        verify(factory).writeChar(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case SHORT:
+        verify(factory).writeShort(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case INT:
+        verify(factory).writeInt(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case LONG:
+        verify(factory).writeLong(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case FLOAT:
+        verify(factory).writeFloat(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case DOUBLE:
+        verify(factory).writeDouble(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case BYTE:
+        verify(factory).writeByte(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case BOOLEAN:
+        verify(factory).writeBoolean(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case DATE:
+        verify(factory).writeDate(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case BYTE_ARRAY:
+        verify(factory).writeByteArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case BOOLEAN_ARRAY:
+        verify(factory).writeBooleanArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case CHAR_ARRAY:
+        verify(factory).writeCharArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case SHORT_ARRAY:
+        verify(factory).writeShortArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case INT_ARRAY:
+        verify(factory).writeIntArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case LONG_ARRAY:
+        verify(factory).writeLongArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case FLOAT_ARRAY:
+        verify(factory).writeFloatArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case DOUBLE_ARRAY:
+        verify(factory).writeDoubleArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case STRING_ARRAY:
+        verify(factory).writeStringArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case OBJECT_ARRAY:
+        verify(factory).writeObjectArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case ARRAY_OF_BYTE_ARRAYS:
+        verify(factory).writeArrayOfByteArrays(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      case OBJECT:
+        verify(factory).writeObject(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        break;
+      default:
+        throw new IllegalStateException("unhandled fieldType " + fieldType);
+    }
+  }
+
   private void setupResultSet(ResultSet result, FieldType fieldType) throws SQLException {
     ResultSetMetaData metaData = mock(ResultSetMetaData.class);
     when(result.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(2);
+
     switch (fieldType) {
       case STRING:
-        when(result.getString(1)).thenReturn(COLUMN_STRING_VALUE_1);
+        when(result.getString(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case CHAR:
+        Character value = getValueByFieldType(fieldType);
+        when(result.getString(1)).thenReturn(value.toString());
+        break;
+      case SHORT:
+        when(result.getShort(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case INT:
+        when(result.getInt(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case LONG:
+        when(result.getLong(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case FLOAT:
+        when(result.getFloat(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case DOUBLE:
+        when(result.getDouble(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case BYTE:
+        when(result.getByte(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case BOOLEAN:
+        when(result.getBoolean(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case DATE:
+        Date date = getValueByFieldType(fieldType);
+        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+        when(result.getDate(1)).thenReturn(sqlDate);
+        break;
+      case BYTE_ARRAY:
+        when(result.getBytes(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case BOOLEAN_ARRAY:
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case CHAR_ARRAY:
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case SHORT_ARRAY:
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case INT_ARRAY:
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case LONG_ARRAY:
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case FLOAT_ARRAY:
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case DOUBLE_ARRAY:
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case STRING_ARRAY:
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case OBJECT_ARRAY:
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        break;
+      case ARRAY_OF_BYTE_ARRAYS:
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
         break;
       case OBJECT:
-        when(result.getObject(1)).thenReturn(COLUMN_VALUE_1);
+        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
         break;
       default:
         throw new IllegalStateException("unhandled fieldType " + fieldType);
@@ -505,22 +698,20 @@ public class SqlHandlerTest {
 
   @Test
   public void usesMappedPdxFieldNameWhenReading() throws Exception {
-    ResultSet result = mock(ResultSet.class);
-    setupResultSet(result);
-    when(result.next()).thenReturn(true).thenReturn(false);
-    when(statement.executeQuery()).thenReturn(result);
-
+    ResultSet resultSet = mock(ResultSet.class);
+    setupResultSet(resultSet);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    when(statement.executeQuery()).thenReturn(resultSet);
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
-
-    List<ColumnValue> columnList = new ArrayList<>();
-
     String fieldName1 = "pdxFieldName1";
     String fieldName2 = "pdxFieldName2";
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(fieldName1);
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(fieldName2);
-    handler.executeReadStatement(region, statement, columnList, regionMapping, "keyColumn");
-    verify(factory).writeObject(fieldName1, COLUMN_VALUE_1);
+
+    handler.createPdxInstance(resultSet, region, regionMapping, "keyColumn");
+
+    verify(factory).writeObject(fieldName1, getValueByFieldType(FieldType.OBJECT));
     verify(factory).writeObject(fieldName2, COLUMN_VALUE_2);
     verify(factory).create();
   }

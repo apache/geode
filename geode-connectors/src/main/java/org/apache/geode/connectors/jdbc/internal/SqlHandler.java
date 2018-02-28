@@ -78,14 +78,23 @@ public class SqlHandler {
           getColumnToValueList(connection, regionMapping, key, null, Operation.GET);
       try (PreparedStatement statement =
           getPreparedStatement(connection, columnList, tableName, Operation.GET, 0)) {
-        String keyColumnName = getKeyColumnName(connection, tableName);
-        result = executeReadStatement(region, statement, columnList, regionMapping, keyColumnName);
+        try (ResultSet resultSet = executeReadQuery(statement, columnList)) {
+          String keyColumnName = getKeyColumnName(connection, tableName);
+          result = createPdxInstance(resultSet, region, regionMapping, keyColumnName);
+        }
       }
     } catch (SQLException e) {
       handleSQLException(e);
     }
     return result;
   }
+
+  private ResultSet executeReadQuery(PreparedStatement statement, List<ColumnValue> columnList)
+      throws SQLException {
+    setValuesInStatement(statement, columnList);
+    return statement.executeQuery();
+  }
+
 
   private RegionMapping getMappingForRegion(String regionName) {
     RegionMapping regionMapping = this.configService.getMappingForRegion(regionName);
@@ -123,32 +132,28 @@ public class SqlHandler {
     return factory;
   }
 
-  PdxInstance executeReadStatement(Region region, PreparedStatement statement,
-      List<ColumnValue> columnList, RegionMapping regionMapping, String keyColumnName) {
+  PdxInstance createPdxInstance(ResultSet resultSet, Region region, RegionMapping regionMapping,
+      String keyColumnName) {
     PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
     PdxInstance pdxInstance = null;
     try {
-      setValuesInStatement(statement, columnList);
-      try (ResultSet resultSet = statement.executeQuery()) {
-        if (resultSet.next()) {
-          ResultSetMetaData metaData = resultSet.getMetaData();
-          int ColumnsNumber = metaData.getColumnCount();
-          for (int i = 1; i <= ColumnsNumber; i++) {
-            String columnName = metaData.getColumnName(i);
-            if (regionMapping.isPrimaryKeyInValue()
-                || !keyColumnName.equalsIgnoreCase(columnName)) {
-              String fieldName = mapColumnNameToFieldName(columnName, regionMapping);
-              FieldType fieldType =
-                  getFieldType(region, regionMapping.getPdxClassName(), fieldName, metaData, i);
-              writeField(factory, resultSet, i, fieldName, fieldType);
-            }
+      if (resultSet.next()) {
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int ColumnsNumber = metaData.getColumnCount();
+        for (int i = 1; i <= ColumnsNumber; i++) {
+          String columnName = metaData.getColumnName(i);
+          if (regionMapping.isPrimaryKeyInValue() || !keyColumnName.equalsIgnoreCase(columnName)) {
+            String fieldName = mapColumnNameToFieldName(columnName, regionMapping);
+            FieldType fieldType =
+                getFieldType(region, regionMapping.getPdxClassName(), fieldName, metaData, i);
+            writeField(factory, resultSet, i, fieldName, fieldType);
           }
-          if (resultSet.next()) {
-            throw new IllegalStateException(
-                "Multiple rows returned for query: " + resultSet.getStatement().toString());
-          }
-          pdxInstance = factory.create();
         }
+        if (resultSet.next()) {
+          throw new IllegalStateException(
+              "Multiple rows returned for query: " + resultSet.getStatement().toString());
+        }
+        pdxInstance = factory.create();
       }
     } catch (SQLException e) {
       handleSQLException(e);
@@ -165,8 +170,69 @@ public class SqlHandler {
       case STRING:
         factory.writeString(fieldName, resultSet.getString(columnIndex));
         break;
-      default:
+      case CHAR:
+        factory.writeChar(fieldName, resultSet.getString(columnIndex).toCharArray()[0]);
+        break;
+      case SHORT:
+        factory.writeShort(fieldName, resultSet.getShort(columnIndex));
+        break;
+      case INT:
+        factory.writeInt(fieldName, resultSet.getInt(columnIndex));
+        break;
+      case LONG:
+        factory.writeLong(fieldName, resultSet.getLong(columnIndex));
+        break;
+      case FLOAT:
+        factory.writeFloat(fieldName, resultSet.getFloat(columnIndex));
+        break;
+      case DOUBLE:
+        factory.writeDouble(fieldName, resultSet.getDouble(columnIndex));
+        break;
+      case BYTE:
+        factory.writeByte(fieldName, resultSet.getByte(columnIndex));
+        break;
+      case BOOLEAN:
+        factory.writeBoolean(fieldName, resultSet.getBoolean(columnIndex));
+        break;
+      case DATE:
+        factory.writeDate(fieldName, resultSet.getDate(columnIndex));
+        break;
+      case BYTE_ARRAY:
+        factory.writeByteArray(fieldName, resultSet.getBytes(columnIndex));
+        break;
+      case BOOLEAN_ARRAY:
+        factory.writeBooleanArray(fieldName, (boolean[]) resultSet.getObject(columnIndex));
+        break;
+      case CHAR_ARRAY:
+        factory.writeCharArray(fieldName, (char[]) resultSet.getObject(columnIndex));
+        break;
+      case SHORT_ARRAY:
+        factory.writeShortArray(fieldName, (short[]) resultSet.getObject(columnIndex));
+        break;
+      case INT_ARRAY:
+        factory.writeIntArray(fieldName, (int[]) resultSet.getObject(columnIndex));
+        break;
+      case LONG_ARRAY:
+        factory.writeLongArray(fieldName, (long[]) resultSet.getObject(columnIndex));
+        break;
+      case FLOAT_ARRAY:
+        factory.writeFloatArray(fieldName, (float[]) resultSet.getObject(columnIndex));
+        break;
+      case DOUBLE_ARRAY:
+        factory.writeDoubleArray(fieldName, (double[]) resultSet.getObject(columnIndex));
+        break;
+      case STRING_ARRAY:
+        factory.writeStringArray(fieldName, (String[]) resultSet.getObject(columnIndex));
+        break;
+      case OBJECT_ARRAY:
+        factory.writeObjectArray(fieldName, (Object[]) resultSet.getObject(columnIndex));
+        break;
+      case ARRAY_OF_BYTE_ARRAYS:
+        factory.writeArrayOfByteArrays(fieldName, (byte[][]) resultSet.getObject(columnIndex));
+        break;
+      case OBJECT:
         factory.writeObject(fieldName, resultSet.getObject(columnIndex));
+        break;
     }
   }
 
