@@ -604,7 +604,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
       @Override
       public void run2() throws CacheException {
-        // DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
         Region region = createRegion(name);
         assertTrue(!region.isDestroyed());
         Region root = region.getParentRegion();
@@ -628,7 +627,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     SerializableRunnable put = new CacheSerializableRunnable("Put key/value") {
       @Override
       public void run2() throws CacheException {
-        // DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to put");
         Region region = getRootRegion().getSubregion(name);
         region.put(key, value);
         assertTrue(!region.isDestroyed());
@@ -648,7 +646,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertTrue(!root.isDestroyed());
         Region region = root.getSubregion(name);
         assertTrue(!region.isDestroyed());
-        // DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to get");
         assertEquals(value, region.getEntry(key).getValue());
       }
     };
@@ -4841,8 +4838,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               // at magical number 301, do a region invalidation, then continue
               // as before
               if (i == 301) {
-                // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "About to invalidate
-                // region");
                 // wait for previous updates to be processed
                 flushIfNecessary(region);
                 region.invalidateRegion();
@@ -4857,12 +4852,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   // this works without enabling statistics
                   Object value = new Long(System.currentTimeMillis());
                   region.put(key, value);
-                  // no longer safe since get is not allowed to member doing GII
-                  // if (getRegionAttributes().getScope().isDistributedAck()) {
-                  // // do a nonblocking netSearch
-                  // region.localInvalidate(key);
-                  // assertIndexDetailsEquals(value, region.get(key));
-                  // }
                   break;
                 case 3: // INVALIDATE
                   region.invalidate(key);

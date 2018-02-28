@@ -200,7 +200,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable create =
         new SerializableCallable("Create Cache and Regions from cache.xml") {
           public Object call() throws CacheException {
-            // DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
             locatorPort = locPort;
             Properties props = getDistributedSystemProperties();
             props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
@@ -212,8 +211,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             Region myRegion = cache.getRegion("root/myRegion");
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
             myRegion.put("MyKey1", "MyValue1");
-            // MembershipManagerHelper.getMembershipManager(cache.getDistributedSystem()).setDebugJGroups(true);
-            // myRegion.put("Mykey2", "MyValue2");
             return savedSystem.getDistributedMember();
           }
         };
@@ -254,8 +251,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   public void doTestReconnectOnForcedDisconnect(final boolean createInAppToo) throws Exception {
 
     IgnoredException.addIgnoredException("killing member's ds");
-    // getSystem().disconnect();
-    // getLogWriter().fine("Cache Closed ");
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -272,18 +267,15 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable create1 =
         new SerializableCallable("Create Cache and Regions from cache.xml") {
           public Object call() throws CacheException {
-            // DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
             locatorPort = locPort;
             Properties props = getDistributedSystemProperties();
             props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
             props.put(MAX_WAIT_TIME_RECONNECT, "1000");
             props.put(MAX_NUM_RECONNECT_TRIES, "2");
-            // props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
             Cache cache = new CacheFactory(props).create();
             Region myRegion = cache.getRegion("root/myRegion");
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
             myRegion.put("MyKey1", "MyValue1");
-            // myRegion.put("Mykey2", "MyValue2");
             return savedSystem.getDistributedMember();
           }
         };
@@ -291,7 +283,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable create2 =
         new SerializableCallable("Create Cache and Regions from cache.xml") {
           public Object call() throws CacheException {
-            // DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
             locatorPort = locPort;
             final Properties props = getDistributedSystemProperties();
             props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
@@ -299,16 +290,12 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             props.put(MAX_NUM_RECONNECT_TRIES, "2");
             props.put(START_LOCATOR, "localhost[" + secondLocPort + "]");
             props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + secondLocPort + "]");
-            // props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
             getSystem(props);
-            // MembershipManagerHelper.getMembershipManager(system).setDebugJGroups(true);
             final Cache cache = getCache();
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
             Region myRegion = cache.getRegion("root/myRegion");
-            // myRegion.put("MyKey1", "MyValue1");
             myRegion.put("Mykey2", "MyValue2");
             assertNotNull(myRegion.get("MyKey1"));
-            // getLogWriter().fine("MyKey1 value is : "+myRegion.get("MyKey1"));
             if (createInAppToo) {
               Thread recreateCacheThread = new Thread("ReconnectDUnitTest.createInAppThread") {
                 public void run() {

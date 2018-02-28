@@ -278,7 +278,14 @@ public class AnalyzeSerializablesJUnitTest {
       String className = details.className.replaceAll("/", ".");
       System.out.println("testing class " + details.className);
 
-      Class sanctionedClass = Class.forName(className);
+      Class sanctionedClass = null;
+      try {
+        sanctionedClass = Class.forName(className);
+      } catch (ClassNotFoundException cnf) {
+        fail(className + " cannot be found.  It may need to be removed from "
+            + expectedSerializablesFileName);
+      }
+
       assertTrue(
           sanctionedClass.getName() + " is not Serializable and should be removed from "
               + expectedSerializablesFileName,
