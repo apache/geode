@@ -95,7 +95,7 @@ public class ProtobufDriver implements Driver {
       final InputStream inputStream = socket.getInputStream();
       final ConnectionAPI.DisconnectClientResponse disconnectClientResponse =
           ClientProtocol.Message.parseDelimitedFrom(inputStream).getDisconnectClientResponse();
-      if (Objects.isNull(disconnectClientResponse) || !disconnectClientResponse.getAcknowledged()) {
+      if (Objects.isNull(disconnectClientResponse)) {
         // The server did not acknowledge the disconnect request; ignore for now.
       }
     } catch (IOException ioe) {

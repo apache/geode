@@ -38,7 +38,6 @@ public class DisconnectClientRequestOperationHandler implements
     messageExecutionContext
         .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
 
-    return Success
-        .of(ConnectionAPI.DisconnectClientResponse.newBuilder().setAcknowledged(true).build());
+    return Success.of(ConnectionAPI.DisconnectClientResponse.newBuilder().build());
   }
 }

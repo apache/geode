@@ -29,5 +29,5 @@ message DisconnectClientRequest {
 }
 
 message DisconnectClientResponse {
-    bool acknowledged = 1;
+    // message presence indicates success.
 }
