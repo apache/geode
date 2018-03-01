@@ -179,7 +179,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
       userTX.begin();
       Collection<Long> set = region.keySet();
       set.forEach((key) -> assertTrue(testData.keySet().contains(key)));
-      testData.keySet().forEach((key) -> set.contains(key));
+      testData.keySet().forEach((key) -> assertTrue(set.contains(key)));
     } finally {
       validateTXManager(disableSetOpToStartJTA, isAccessor);
       if (!disableSetOpToStartJTA && !isAccessor) {
@@ -197,7 +197,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
       userTX.begin();
       Collection<String> set = region.values();
       set.forEach((value) -> assertTrue(testData.values().contains(value)));
-      testData.values().forEach((value) -> set.contains(value));
+      testData.values().forEach((value) -> assertTrue(set.contains(value)));
     } finally {
       validateTXManager(disableSetOpToStartJTA, isAccessor);
       if (!disableSetOpToStartJTA && !isAccessor) {
@@ -218,7 +218,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
         assertTrue(testData.values().contains(entry.getValue()));
         assertTrue(testData.keySet().contains(entry.getKey()));
       });
-      testData.entrySet().forEach((entry) -> set.contains(entry));
+      testData.entrySet().forEach((entry) -> assertTrue(set.contains(entry)));
     } finally {
       validateTXManager(disableSetOpToStartJTA, isAccessor);
       if (!disableSetOpToStartJTA && !isAccessor) {

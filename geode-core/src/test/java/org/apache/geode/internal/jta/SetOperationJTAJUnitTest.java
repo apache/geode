@@ -95,7 +95,7 @@ public class SetOperationJTAJUnitTest {
       userTX.begin();
       Collection<Long> set = region.keySet();
       set.forEach((key) -> assertTrue(testData.keySet().contains(key)));
-      testData.keySet().forEach((key) -> set.contains(key));
+      testData.keySet().forEach((key) -> assertTrue(set.contains(key)));
     } finally {
       validateTXManager(disableSetOpToStartJTA);
       if (!disableSetOpToStartJTA) {
@@ -136,7 +136,7 @@ public class SetOperationJTAJUnitTest {
         assertTrue(testData.values().contains(entry.getValue()));
         assertTrue(testData.keySet().contains(entry.getKey()));
       });
-      testData.entrySet().forEach((entry) -> set.contains(entry));
+      testData.entrySet().forEach((entry) -> assertTrue(set.contains(entry)));
     } finally {
       validateTXManager(disableSetOpToStartJTA);
       if (!disableSetOpToStartJTA) {
