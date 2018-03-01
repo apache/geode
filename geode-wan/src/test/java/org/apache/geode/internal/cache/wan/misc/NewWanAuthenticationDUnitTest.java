@@ -223,15 +223,14 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
     logger.info("Created RR in vm3");
 
-    try {
-      vm2.invoke(() -> WANTestBase.startSender("ln"));
-      fail(
-          "Authentication Failed: While starting the sender, an exception should have been thrown");
-    } catch (Exception e) {
-      if (!(e.getCause().getCause() instanceof AuthenticationFailedException)) {
-        fail("Authentication is not working as expected", e);
-      }
-    }
+    // Start sender
+    vm2.invoke(() -> WANTestBase.startSender("ln"));
+
+    // Verify the sender is started
+    vm2.invoke(() -> verifySenderRunningState("ln"));
+
+    // Verify the sender is not connected
+    vm2.invoke(() -> verifySenderConnectedState("ln", false));
   }
 
   /**
@@ -258,28 +257,61 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     vm3.invoke(() -> NewWanAuthenticationDUnitTest.createSecuredCache(props2, null, nyPort));
     logger.info("Created secured cache in vm3");
 
-    vm2.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
+    String senderId = "ln";
+    vm2.invoke(
+        () -> WANTestBase.createSender(senderId, 2, false, 100, 10, false, false, null, true));
     logger.info("Created sender in vm2");
 
     vm3.invoke(() -> createReceiverInSecuredCache());
     logger.info("Created receiver in vm3");
 
-    vm2.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    String regionName = getTestMethodName() + "_RR";
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, senderId, isOffHeap()));
     logger.info("Created RR in vm2");
-    vm3.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, isOffHeap()));
     logger.info("Created RR in vm3");
 
-    try {
-      vm2.invoke(() -> WANTestBase.startSender("ln"));
-      fail(
-          "Authentication Failed: While starting the sender, an exception should have been thrown");
-    } catch (Exception e) {
-      if (!(e.getCause().getCause() instanceof AuthenticationFailedException)) {
-        fail("Authentication is not working as expected", e);
-      }
-    }
+    // Start sender
+    vm2.invoke(() -> WANTestBase.startSender(senderId));
+
+    // Verify the sender is started
+    vm2.invoke(() -> verifySenderRunningState(senderId));
+
+    // Verify the sender is not connected
+    vm2.invoke(() -> verifySenderConnectedState(senderId, false));
+
+    // Do some puts in the sender
+    int numPuts = 10;
+    vm2.invoke(() -> WANTestBase.doPuts(regionName, numPuts));
+
+    // Verify the sender is still started
+    vm2.invoke(() -> verifySenderRunningState(senderId));
+
+    // Verify the sender is still not connected
+    vm2.invoke(() -> verifySenderConnectedState(senderId, false));
+
+    // Verify the sender queue size
+    vm2.invoke(() -> testQueueSize(senderId, numPuts));
+
+    // Stop the receiver
+    vm3.invoke(() -> closeCache());
+
+    // Restart the receiver with a SecurityManager that accepts the existing sender's username and
+    // password. The
+    // NewWanAuthenticationDUnitTest.testWanSecurityManagerWithInvalidCredentials.security.json.
+    // file contains the admin user definition that the SecurityManager will accept.
+    String securityJsonRersource = "org/apache/geode/internal/cache/wan/misc/"
+        + getClass().getSimpleName() + "." + getTestMethodName() + ".security.json";
+    Properties propsRestart = buildSecurityProperties("guest", "guest", securityJsonRersource);
+    vm3.invoke(() -> createSecuredCache(propsRestart, null, nyPort));
+    vm3.invoke(() -> createReplicatedRegion(regionName, null, isOffHeap()));
+    vm3.invoke(() -> createReceiverInSecuredCache());
+
+    // Wait for the queue to drain
+    vm2.invoke(() -> checkQueueSize(senderId, 0));
+
+    // Verify region size on receiver
+    vm3.invoke(() -> validateRegionSize(regionName, numPuts));
   }
 
   private static Properties buildProperties(String clientauthenticator, String clientAuthInit,
@@ -304,9 +336,15 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
   }
 
   private static Properties buildSecurityProperties(String username, String password) {
+    return buildSecurityProperties(username, password,
+        "org/apache/geode/security/templates/security.json");
+  }
+
+  private static Properties buildSecurityProperties(String username, String password,
+      String securityJsonResource) {
     Properties props = new Properties();
     props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
-    props.put("security-json", "org/apache/geode/security/templates/security.json");
+    props.put("security-json", securityJsonResource);
     props.put(SECURITY_CLIENT_AUTH_INIT, UserPasswdAI.class.getName());
     props.put("security-username", username);
     props.put("security-password", password);

@@ -2122,7 +2122,7 @@ public class LocalizedStrings {
   public static final StringId CacheClientProxy_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CREATE_A_MESSAGE_QUEUE =
       new StringId(2297, "Exception occurred while trying to create a message queue.");
   public static final StringId GatewayEventRemoteDispatcher_0_COULD_NOT_CONNECT_1 =
-      new StringId(2298, "{0} : Could not connect. {1}");
+      new StringId(2298, "{0} : Could not connect due to: {1}");
 
   public static final StringId CacheCollector_UNABLE_TO_MIX_REGION_AND_ENTRY_SNAPSHOTS_IN_CACHECOLLECTOR =
       new StringId(2300, "Unable to mix region and entry snapshots in CacheCollector.");
