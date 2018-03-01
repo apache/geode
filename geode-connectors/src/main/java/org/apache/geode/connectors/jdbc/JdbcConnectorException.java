@@ -14,15 +14,22 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import org.apache.geode.cache.CacheRuntimeException;
+
 /**
  * An exception thrown when communication with an external JDBC data source fails and can be used
  * to diagnose the cause of database communication failures.
  *
  * @since Geode 1.5
  */
-public class JdbcConnectorException extends RuntimeException {
+public class JdbcConnectorException extends CacheRuntimeException {
+  private static final long serialVersionUID = 1L;
 
   public JdbcConnectorException(Exception e) {
     super(e);
+  }
+
+  public JdbcConnectorException(String message) {
+    super(message);
   }
 }

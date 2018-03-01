@@ -45,6 +45,7 @@ import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
+import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
@@ -212,7 +213,7 @@ public class SqlHandlerTest {
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean()))
         .thenReturn(mock(PdxInstanceFactory.class));
 
-    thrown.expect(IllegalStateException.class);
+    thrown.expect(JdbcConnectorException.class);
     handler.read(region, new Object());
   }
 
