@@ -46,6 +46,8 @@ resources:
   source:
     uri: https://github.com/apache/geode.git
     branch: develop
+    ignore_paths:
+    - ci/*
 - name: geode-ci
   type: git
   source:
