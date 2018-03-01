@@ -29,24 +29,9 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.apache.geode.internal.lang.ObjectUtils
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since GemFire 6.8
  */
 @Category(UnitTest.class)
 public class ObjectUtilsJUnitTest {
-
-  @Test
-  public void testDefaultIfNull() {
-    assertNull(ObjectUtils.defaultIfNull());
-    assertNull(ObjectUtils.defaultIfNull((Object[]) null));
-    assertNull(ObjectUtils.defaultIfNull(null, null));
-    assertNull(ObjectUtils.defaultIfNull(null, null, null));
-    assertEquals("test", ObjectUtils.defaultIfNull(null, null, "test"));
-    assertEquals("test", ObjectUtils.defaultIfNull("test", null));
-    assertEquals("test", ObjectUtils.defaultIfNull("test"));
-    assertEquals("test", ObjectUtils.defaultIfNull("test", "mock", "assert"));
-    assertEquals("null", ObjectUtils.defaultIfNull(null, "null", null));
-    assertEquals("null", ObjectUtils.defaultIfNull("null", "test", null));
-  }
 
   @Test
   public void testEqualsWithUnequalObjects() {
@@ -111,77 +96,4 @@ public class ObjectUtilsJUnitTest {
     assertEquals(String.valueOf(Math.PI), ObjectUtils.toString(Math.PI));
     assertEquals("true", ObjectUtils.toString(Boolean.TRUE));
   }
-
-  @Test
-  public void testGetArgumentsTypesForNullArgumentsObjectArray() {
-    assertNull(ObjectUtils.getArgumentTypes((Object[]) null));
-  }
-
-  @Test
-  public void testGetArgumentsTypesForEmptyArgumentsObjectArray() {
-    final Class[] argumentTypes = ObjectUtils.getArgumentTypes(new Object[0]);
-
-    assertNotNull(argumentTypes);
-    assertEquals(0, argumentTypes.length);
-  }
-
-  @Test
-  public void testGetArgumentsTypes() {
-    final Object[] arguments = {true, 'A', 0, Math.PI, "test"};
-    final Class[] argumentTypes = ObjectUtils.getArgumentTypes(arguments);
-
-    assertNotNull(argumentTypes);
-    assertEquals(arguments.length, argumentTypes.length);
-
-    int index = 0;
-
-    for (Object argument : arguments) {
-      assertEquals(argument.getClass(), argumentTypes[index++]);
-    }
-  }
-
-  @Test
-  public void testInvoke() {
-    final ValueHolder<String> value = new ValueHolder<String>("test");
-
-    assertEquals("test", ObjectUtils.invoke(value, "getValue"));
-  }
-
-  @Test
-  public void testInvokeWithArguments() {
-    final ValueHolder<String> value = new ValueHolder<String>("test");
-
-    assertEquals("TEST", ObjectUtils.invoke(value, "transform", true));
-  }
-
-  @Test
-  public void testInvokeWithParametersAndArguments() {
-    final ValueHolder<Integer> value = new ValueHolder<Integer>(1);
-
-    assertEquals("1 is the loneliest number!", ObjectUtils.invoke(value, "transform",
-        new Class[] {String.class}, " is the loneliest number!"));
-  }
-
-  private static class ValueHolder<T> {
-
-    private final T value;
-
-    public ValueHolder(final T value) {
-      assert value != null : "The value for this holder cannot be null!";
-      this.value = value;
-    }
-
-    public T getValue() {
-      return value;
-    }
-
-    public Object transform(final Boolean upperCase) {
-      return String.valueOf(getValue()).toUpperCase();
-    }
-
-    public Object transform(final String concatenationValue) {
-      return (String.valueOf(getValue()) + concatenationValue);
-    }
-  }
-
 }

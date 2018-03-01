@@ -66,6 +66,9 @@ message Message {
 
         ExecuteFunctionOnGroupRequest executeFunctionOnGroupRequest = 24;
         ExecuteFunctionOnGroupResponse executeFunctionOnGroupResponse= 25;
+
+        OQLQueryRequest oqlQueryRequest = 26;
+        OQLQueryResponse oqlQueryResponse = 27;
     }
 }
 

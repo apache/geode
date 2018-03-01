@@ -25,10 +25,15 @@ import java.io.LineNumberReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
+
+import org.apache.geode.management.internal.cli.commands.ExportStackTraceCommand;
 
 /**
  * PluckStacks is a replacement for the old pluckstacks.pl Perl script that we've used for years.
@@ -49,14 +54,14 @@ public class PluckStacks {
   /**
    * @param args names of files to scan for suspicious threads in thread-dumps
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     PluckStacks ps = new PluckStacks();
     for (int i = 0; i < args.length; i++) {
       ps.examineLog(new File(args[i]));
     }
   }
 
-  private void examineLog(File log) {
+  private void examineLog(File log) throws IOException {
 
     LineNumberReader reader = null;
 
@@ -73,23 +78,50 @@ public class PluckStacks {
       return;
     }
 
-    StringBuffer buffer = new StringBuffer();
+    try {
+      Map<String, List<ThreadStack>> dumps = getThreadDumps(reader, log.getName());
+
+      StringBuffer buffer = new StringBuffer();
+      for (Map.Entry<String, List<ThreadStack>> dump : dumps.entrySet()) {
+        if (dump.getValue().size() > 0) {
+          buffer.append(dump.getKey());
+          for (ThreadStack stack : dump.getValue()) {
+            stack.appendToBuffer(buffer);
+            buffer.append("\n");
+          }
+          buffer.append("\n\n");
+        }
+        if (ONE_STACK) {
+          break;
+        }
+      }
+      String output = buffer.toString();
+      if (output.length() > 0) {
+        System.out.println(output);
+      }
+    } finally {
+      reader.close();
+    }
+  }
+
+  public Map<String, List<ThreadStack>> getThreadDumps(LineNumberReader reader,
+      String logFileName) {
+    Map<String, List<ThreadStack>> result = new HashMap<>();
 
     String line = null;
     int stackNumber = 1;
     try {
       while ((line = reader.readLine()) != null) {
-        if (line.startsWith("Full thread dump")) {
+        if (line.startsWith("Full thread dump")
+            || line.startsWith(ExportStackTraceCommand.STACK_TRACE_FOR_MEMBER)) {
           int lineNumber = reader.getLineNumber();
           List<ThreadStack> stacks = getStacks(reader);
           if (stacks.size() > 0) {
+            StringBuffer buffer = new StringBuffer();
             buffer.append("[Stack #").append(stackNumber++)
-                .append(" from " + log + " line " + lineNumber + "]\n").append(line).append("\n");
-            for (ThreadStack stack : stacks) {
-              stack.appendToBuffer(buffer);
-              buffer.append("\n");
-            }
-            buffer.append("\n\n");
+                .append(" from " + logFileName + " line " + lineNumber + "]\n").append(line)
+                .append("\n");
+            result.put(buffer.toString(), stacks);
           }
           if (ONE_STACK) {
             break;
@@ -97,18 +129,9 @@ public class PluckStacks {
         }
       }
     } catch (IOException ioe) {
-      return;
-    } finally {
-      if (reader != null)
-        try {
-          reader.close();
-        } catch (IOException ignore) {
-        }
+      throw new RuntimeException("Something went wrong processing " + logFileName, ioe);
     }
-    String output = buffer.toString();
-    if (output.length() > 0) {
-      System.out.println(output);
-    }
+    return result;
   }
 
   /** parses each stack trace and returns any that are unexpected */
@@ -119,7 +142,16 @@ public class PluckStacks {
     do {
       String line = null;
       // find the start of the stack
-      while ((line = reader.readLine()) != null) {
+      do {
+        reader.mark(100000);
+        if ((line = reader.readLine()) == null) {
+          break;
+        }
+        if (line.startsWith(ExportStackTraceCommand.STACK_TRACE_FOR_MEMBER)) {
+          reader.reset();
+          Collections.sort(result);
+          return result;
+        }
         if (line.length() > 0 && line.charAt(0) == '"')
           break;
         if (lastStack != null) {
@@ -127,7 +159,7 @@ public class PluckStacks {
             lastStack.add(line);
           }
         }
-      }
+      } while (true);
       // cache the first two lines and examine the third to see if it starts with a tab and "at "
       String firstLine = line;
       String secondLine = null;
@@ -151,10 +183,6 @@ public class PluckStacks {
         Collections.sort(result);
         return result;
       }
-      if (!line.startsWith("\tat ")) {
-        Collections.sort(result);
-        return result;
-      }
 
       lastStack = new ThreadStack(firstLine, secondLine, line, reader);
       lastStack.addBreadcrumbs(breadcrumbs);
@@ -167,6 +195,10 @@ public class PluckStacks {
       }
       if (!isExpectedStack(lastStack)) {
         result.add(lastStack);
+      }
+      if (lastStack.getThreadName().equals("VM Thread")) {
+        Collections.sort(result);
+        return result;
       }
     } while (true);
   }
@@ -445,9 +477,18 @@ public class PluckStacks {
       lines.add(thirdLine);
 
       String line = null;
-      while ((line = reader.readLine()) != null && line.trim().length() > 0) {
+      do {
+        reader.mark(100000);
+        line = reader.readLine();
+        if (line == null || line.trim().length() == 0) {
+          break;
+        }
+        if (line.startsWith("\"")) {
+          reader.reset();
+          break;
+        }
         lines.add(line);
-      }
+      } while (true);
     }
 
     void addBreadcrumbs(List crumbs) {

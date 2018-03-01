@@ -2363,7 +2363,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   public static BackupStatus backupAllMembers(DistributionManager dm, File targetDir,
       File baselineDir) throws AdminException {
-    return BackupUtil.backupAllMembers(dm, targetDir.toString(), baselineDir.toString());
+    String baselineDirectory = baselineDir == null ? null : baselineDir.toString();
+    return BackupUtil.backupAllMembers(dm, targetDir.toString(), baselineDirectory);
   }
 
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException {

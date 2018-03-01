@@ -90,6 +90,19 @@ gfsh writes several log files for any members that are started via gfsh. Useful 
 -   **&lt;server\_name&gt;.log**. Details a server's configuration (including all gemfire.properties) and all activity that occurs on the server after startup. This log file is written to a directory that is named after the server. For example, if you start a server named server1, the file is written as `server1.log` in the `<product_dir>/server1` directory. If you stop and start the server with an identical name, the older log files are kept in the same directory but renamed for versioning purposes.
 -   **vf.gf.server.pid**. Contains the process ID of the server. You can use the PID to stop or view the status of this server. This file is written to the same location as the server log file.
 
+## Viewing Standard Output and Standard Error
+
+By default, <%=vars.product_name%> does not show messages written by the application to standard output and
+standard error. To allow these messages to be written to the locator and server log files, respectively,
+specify the `--redirect-output` option with the gfsh `start locator` or `start server` commands. For
+example, the following command causes `stdout` and `stderr` messages to be written to the
+`locator1.log` file:
+
+```
+gfsh> start locator --name=locator1 --redirect-output
+```
+
+
 ## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_jcs_ltx_n4" class="no-quick-link"></a>Tab Completion
 
 *This section applies only to UNIX installations.*

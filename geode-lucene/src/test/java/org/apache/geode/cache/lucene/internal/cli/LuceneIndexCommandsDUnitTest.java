@@ -151,8 +151,6 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
         .tableHasColumnWithExactValuesInAnyOrder("Status", "Initialized")
         .tableHasColumnWithExactValuesInAnyOrder("Region Path", "/region")
         .tableHasColumnWithExactValuesInAnyOrder("Query Executions", "1")
-        .tableHasColumnWithExactValuesInAnyOrder("Commits", "2")
-        .tableHasColumnWithExactValuesInAnyOrder("Updates", "2")
         .tableHasColumnWithExactValuesInAnyOrder("Documents", "2");
 
   }

@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message.MessageTypeCase;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
@@ -31,12 +32,15 @@ import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionNamesR
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetServerOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.OqlQueryRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.RemoveRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.security.AuthenticationRequestOperationHandler;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 @Experimental
 public class ProtobufOperationContextRegistry {
@@ -115,7 +119,7 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetServerRequest,
             new GetServerOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setGetServerResponse(opsResp),
-            ResourcePermissions.DATA_READ));
+            ResourcePermissions.CLUSTER_READ));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONREGIONREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getExecuteFunctionOnRegionRequest,
@@ -143,5 +147,10 @@ public class ProtobufOperationContextRegistry {
             // Resource permissions get handled per-function, since they have varying permission
             // requirements.
             this::skipAuthorizationCheck));
+    operationContexts.put(MessageTypeCase.OQLQUERYREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getOqlQueryRequest,
+            new OqlQueryRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setOqlQueryResponse(opsResp),
+            new ResourcePermission(Resource.DATA, Operation.READ)));
   }
 }

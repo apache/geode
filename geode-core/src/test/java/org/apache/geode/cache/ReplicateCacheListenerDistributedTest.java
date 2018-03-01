@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.cache;
 
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,23 +24,13 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.io.Serializable;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.Operation;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionEvent;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.dunit.rules.SharedCountersRule;
@@ -49,8 +39,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * Registers a {@code CacheListener} in the Controller and all DUnit VMs. Verifies
- * {@code CacheListener} invocations for {@code Region} operations.
+ * Verifies {@code CacheListener} invocations for {@code Region} operations in multiple members.
  *
  * <p>
  * Converted from JUnit 3.
@@ -59,20 +48,19 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class ReplicateCacheListenerInvocationTest implements Serializable {
-
-  private static final Logger logger = LogService.getLogger();
-
-  protected static final int ENTRY_VALUE = 0;
-  protected static final int UPDATED_ENTRY_VALUE = 1;
+public class ReplicateCacheListenerDistributedTest implements Serializable {
 
   private static final String CREATES = "CREATES";
   private static final String UPDATES = "UPDATES";
   private static final String INVALIDATES = "INVALIDATES";
   private static final String DESTROYS = "DESTROYS";
 
-  protected String regionName;
-  private String key;
+  private static final int ENTRY_VALUE = 0;
+  private static final int UPDATED_ENTRY_VALUE = 1;
+
+  private static final String KEY = "key-1";
+
+  private String regionName;
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
@@ -92,7 +80,6 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
   @Before
   public void setUp() throws Exception {
     regionName = getClass().getSimpleName();
-    key = "key-1";
 
     sharedCountersRule.initialize(CREATES);
     sharedCountersRule.initialize(DESTROYS);
@@ -110,7 +97,7 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
       });
     }
 
-    region.put(key, ENTRY_VALUE, cacheRule.getSystem().getDistributedMember());
+    region.put(KEY, ENTRY_VALUE, cacheRule.getSystem().getDistributedMember());
 
     assertThat(sharedCountersRule.getTotal(CREATES)).isEqualTo(expectedCreates());
   }
@@ -125,8 +112,8 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
       });
     }
 
-    region.put(key, ENTRY_VALUE, cacheRule.getSystem().getDistributedMember());
-    region.put(key, UPDATED_ENTRY_VALUE, cacheRule.getSystem().getDistributedMember());
+    region.put(KEY, ENTRY_VALUE, cacheRule.getSystem().getDistributedMember());
+    region.put(KEY, UPDATED_ENTRY_VALUE, cacheRule.getSystem().getDistributedMember());
 
     assertThat(sharedCountersRule.getTotal(UPDATES)).isEqualTo(expectedUpdates());
   }
@@ -141,11 +128,11 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
       });
     }
 
-    region.put(key, 0, cacheRule.getSystem().getDistributedMember());
-    region.invalidate(key);
+    region.put(KEY, 0, cacheRule.getSystem().getDistributedMember());
+    region.invalidate(KEY);
 
     assertThat(sharedCountersRule.getTotal(INVALIDATES)).isEqualTo(expectedInvalidates());
-    assertThat(region.get(key)).isNull();
+    assertThat(region.get(KEY)).isNull();
   }
 
   @Test
@@ -158,8 +145,8 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
       });
     }
 
-    region.put(key, 0, cacheRule.getSystem().getDistributedMember());
-    region.destroy(key);
+    region.put(KEY, 0, cacheRule.getSystem().getDistributedMember());
+    region.destroy(KEY);
 
     assertThat(sharedCountersRule.getTotal(DESTROYS)).isEqualTo(expectedDestroys());
   }
@@ -193,40 +180,39 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
   /**
    * Overridden within tests to increment shared counters.
    */
-  abstract static class BaseCacheListener extends CacheListenerAdapter<String, Integer>
+  private abstract static class BaseCacheListener extends CacheListenerAdapter<String, Integer>
       implements Serializable {
 
     @Override
-    public void afterCreate(final EntryEvent event) {
+    public void afterCreate(final EntryEvent<String, Integer> event) {
       fail("Unexpected listener callback: afterCreate");
     }
 
     @Override
-    public void afterInvalidate(final EntryEvent event) {
+    public void afterInvalidate(final EntryEvent<String, Integer> event) {
       fail("Unexpected listener callback: afterInvalidate");
     }
 
     @Override
-    public void afterDestroy(final EntryEvent event) {
+    public void afterDestroy(final EntryEvent<String, Integer> event) {
       fail("Unexpected listener callback: afterDestroy");
     }
 
     @Override
-    public void afterUpdate(final EntryEvent event) {
+    public void afterUpdate(final EntryEvent<String, Integer> event) {
       fail("Unexpected listener callback: afterUpdate");
     }
 
     @Override
-    public void afterRegionInvalidate(final RegionEvent event) {
+    public void afterRegionInvalidate(final RegionEvent<String, Integer> event) {
       fail("Unexpected listener callback: afterRegionInvalidate");
     }
   }
 
-  class CreateCountingCacheListener extends BaseCacheListener {
+  private class CreateCountingCacheListener extends BaseCacheListener {
 
     @Override
-    public void afterCreate(final EntryEvent event) {
-      logger.info("Invoking afterCreate on listener; name={}", event.getKey());
+    public void afterCreate(final EntryEvent<String, Integer> event) {
       sharedCountersRule.increment(CREATES);
 
       errorCollector.checkThat(event.getDistributedMember(), equalTo(event.getCallbackArgument()));
@@ -242,21 +228,18 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
         errorCollector.checkThat(event.getSerializedNewValue().getDeserializedValue(),
             equalTo(event.getNewValue()));
       }
-
-      logger.info("create event new value is: {}", event.getNewValue());
     }
   }
 
-  class UpdateCountingCacheListener extends BaseCacheListener {
+  private class UpdateCountingCacheListener extends BaseCacheListener {
 
     @Override
-    public void afterCreate(final EntryEvent event) {
+    public void afterCreate(final EntryEvent<String, Integer> event) {
       // nothing
     }
 
     @Override
-    public void afterUpdate(final EntryEvent event) {
-      logger.info("Invoking afterUpdate on listener; name=" + event.getKey());
+    public void afterUpdate(final EntryEvent<String, Integer> event) {
       sharedCountersRule.increment(UPDATES);
 
       errorCollector.checkThat(event.getDistributedMember(), equalTo(event.getCallbackArgument()));
@@ -275,16 +258,15 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
     }
   }
 
-  class InvalidateCountingCacheListener extends BaseCacheListener {
+  private class InvalidateCountingCacheListener extends BaseCacheListener {
 
     @Override
-    public void afterCreate(final EntryEvent event) {
+    public void afterCreate(final EntryEvent<String, Integer> event) {
       // ignore
     }
 
     @Override
-    public void afterInvalidate(final EntryEvent event) {
-      logger.info("Invoking tests invalidated listener");
+    public void afterInvalidate(final EntryEvent<String, Integer> event) {
       sharedCountersRule.increment(INVALIDATES);
 
       if (event.isOriginRemote()) {
@@ -300,16 +282,15 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
     }
   }
 
-  class DestroyCountingCacheListener extends BaseCacheListener {
+  private class DestroyCountingCacheListener extends BaseCacheListener {
 
     @Override
-    public void afterCreate(final EntryEvent event) {
+    public void afterCreate(final EntryEvent<String, Integer> event) {
       // ignore
     }
 
     @Override
-    public void afterDestroy(final EntryEvent event) {
-      logger.info("Invoking objectDestroyed listener");
+    public void afterDestroy(final EntryEvent<String, Integer> event) {
       sharedCountersRule.increment(DESTROYS);
 
       if (event.isOriginRemote()) {
