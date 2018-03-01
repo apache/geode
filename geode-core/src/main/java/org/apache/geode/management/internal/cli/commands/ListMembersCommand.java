@@ -40,7 +40,7 @@ public class ListMembersCommand implements GfshCommand {
       operation = ResourcePermission.Operation.READ)
   public Result listMember(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.ALTER_REGION__GROUP__HELP) String[] groups) {
+      help = CliStrings.LIST_MEMBER__GROUP__HELP) String[] groups) {
 
     Set<DistributedMember> memberSet = new TreeSet<>();
     memberSet.addAll(this.findMembersIncludingLocators(groups, null));
