@@ -43,12 +43,12 @@ public class Employee implements PdxSerializable {
   @Override
   public void toData(PdxWriter writer) {
     writer.writeString("name", this.name);
-    writer.writeObject("age", this.age);
+    writer.writeInt("age", this.age);
   }
 
   @Override
   public void fromData(PdxReader reader) {
     this.name = reader.readString("name");
-    this.age = (int) reader.readObject("age");
+    this.age = reader.readInt("age");
   }
 }

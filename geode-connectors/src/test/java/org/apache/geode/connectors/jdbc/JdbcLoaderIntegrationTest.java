@@ -85,22 +85,24 @@ public class JdbcLoaderIntegrationTest {
 
   @Test
   public void verifySimpleGet() throws Exception {
-    statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
+    statement
+        .execute("Insert into " + REGION_TABLE_NAME + " (id, name, age) values('1', 'Emp1', 21)");
     Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, false);
     PdxInstance pdx = region.get("1");
 
-    assertThat(pdx.getFieldNames().size()).isEqualTo(2);
+    assertThat(pdx.getFieldNames()).hasSize(2);
     assertThat(pdx.getField("name")).isEqualTo("Emp1");
     assertThat(pdx.getField("age")).isEqualTo(21);
   }
 
   @Test
   public void verifySimpleGetWithPrimaryKeyInValue() throws Exception {
-    statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
+    statement
+        .execute("Insert into " + REGION_TABLE_NAME + " (id, name, age) values('1', 'Emp1', 21)");
     Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, true);
     PdxInstance pdx = region.get("1");
 
-    assertThat(pdx.getFieldNames().size()).isEqualTo(3);
+    assertThat(pdx.getFieldNames()).hasSize(3);
     assertThat(pdx.getField("id")).isEqualTo("1");
     assertThat(pdx.getField("name")).isEqualTo("Emp1");
     assertThat(pdx.getField("age")).isEqualTo(21);
@@ -108,10 +110,12 @@ public class JdbcLoaderIntegrationTest {
 
   @Test
   public void verifyGetWithPdxClassName() throws Exception {
-    statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
+    statement
+        .execute("Insert into " + REGION_TABLE_NAME + "(id, name, age) values('1', 'Emp1', 21)");
     Region<String, Employee> region =
         createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), false);
     createPdxType();
+
     Employee value = region.get("1");
 
     assertThat(value.getName()).isEqualTo("Emp1");

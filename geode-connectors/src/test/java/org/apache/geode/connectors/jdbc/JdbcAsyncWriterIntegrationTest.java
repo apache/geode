@@ -69,9 +69,9 @@ public class JdbcAsyncWriterIntegrationTest {
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
     pdxEmployee1 = cache.createPdxInstanceFactory(Employee.class.getName())
-        .writeString("name", "Emp1").writeObject("age", 55).create();
+        .writeString("name", "Emp1").writeInt("age", 55).create();
     pdxEmployee2 = cache.createPdxInstanceFactory(Employee.class.getName())
-        .writeString("name", "Emp2").writeObject("age", 21).create();
+        .writeString("name", "Emp2").writeInt("age", 21).create();
     employee1 = (Employee) pdxEmployee1.getObject();
     employee2 = (Employee) pdxEmployee2.getObject();
   }
