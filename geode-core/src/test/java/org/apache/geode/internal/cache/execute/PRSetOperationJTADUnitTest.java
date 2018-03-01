@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -38,7 +39,12 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -58,6 +64,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
   private static final String REGION_NAME = "region1";
 
   private Map<Long, String> testData;
+  private Map<Long, String> modifiedData;
 
   private VM accessor = null;
   private VM dataStore1 = null;
@@ -79,6 +86,9 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     testData.put(2L, "value2");
     testData.put(3L, "duplicateValue");
     testData.put(4L, "duplicateValue");
+    modifiedData = new HashMap<>();
+    modifiedData.putAll(testData);
+    modifiedData.put(5L, "newValue");
   }
 
   @Override
@@ -169,6 +179,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
       userTX.begin();
       Collection<Long> set = region.keySet();
       set.forEach((key) -> assertTrue(testData.keySet().contains(key)));
+      testData.keySet().forEach((key) -> set.contains(key));
     } finally {
       validateTXManager(disableSetOpToStartJTA, isAccessor);
       if (!disableSetOpToStartJTA && !isAccessor) {
@@ -186,6 +197,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
       userTX.begin();
       Collection<String> set = region.values();
       set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      testData.values().forEach((value) -> set.contains(value));
     } finally {
       validateTXManager(disableSetOpToStartJTA, isAccessor);
       if (!disableSetOpToStartJTA && !isAccessor) {
@@ -206,6 +218,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
         assertTrue(testData.values().contains(entry.getValue()));
         assertTrue(testData.keySet().contains(entry.getKey()));
       });
+      testData.entrySet().forEach((entry) -> set.contains(entry));
     } finally {
       validateTXManager(disableSetOpToStartJTA, isAccessor);
       if (!disableSetOpToStartJTA && !isAccessor) {
@@ -252,5 +265,172 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
         .setPartitionAttributes(new PartitionAttributesFactory<Long, String>().setTotalNumBuckets(3)
             .setLocalMaxMemory(isAccessor ? 0 : 1).create())
         .create(REGION_NAME);
+  }
+
+  @Test
+  public void testRegionValuesWithPutWhenSetOperationStartsJTA() throws Exception {
+    boolean disableSetOpToStartJTA = false;
+    setupRegion(disableSetOpToStartJTA);
+
+    accessor.invoke(() -> verifyRegionValuesWhenSetOperationStartsJTA());
+    dataStore1.invoke(() -> verifyRegionValuesWhenSetOperationStartsJTA());
+  }
+
+  private void setupRegion(boolean disableSetOpToStartJTA) {
+    accessor.invoke(() -> createCache(disableSetOpToStartJTA));
+    dataStore1.invoke(() -> createCache(disableSetOpToStartJTA));
+    accessor.invoke(() -> createPR(true));
+    dataStore1.invoke(() -> createPR(false));
+    dataStore1.invoke(() -> loadRegion());
+  }
+
+
+  private void verifyRegionValuesWhenSetOperationStartsJTA() throws Exception {
+    Context ctx = cache.getJNDIContext();
+    UserTransaction userTX = startUserTransaction(ctx);
+    Region<Long, String> region = basicGetCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    try {
+      userTX.begin();
+      Collection<String> set = region.values();
+      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      testData.values().forEach((value) -> assertTrue(set.contains(value)));
+      assertEquals(testData.size(), set.size());
+      region.put(5L, "newValue");
+      set.forEach((value) -> assertTrue(modifiedData.values().contains(value)));
+      modifiedData.values().forEach((value) -> assertTrue(set.contains(value)));
+      assertEquals(modifiedData.size(), set.size());
+    } finally {
+      userTX.rollback();
+    }
+  }
+
+  @Test
+  public void testRegionValuesWithPutWhenSetOperationDoesNotStartJTA() throws Exception {
+    boolean disableSetOpToStartJTA = true;
+    setupRegion(disableSetOpToStartJTA);
+
+    accessor.invoke(() -> verifyRegionValuesWhenSetOperationDoesNotStartJTA());
+    dataStore1.invoke(() -> verifyRegionValuesWhenSetOperationDoesNotStartJTA());
+  }
+
+
+  private void verifyRegionValuesWhenSetOperationDoesNotStartJTA() throws Exception {
+    Context ctx = cache.getJNDIContext();
+    UserTransaction userTX = startUserTransaction(ctx);
+    Region<Long, String> region = basicGetCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    try {
+      userTX.begin();
+      Collection<String> set = region.values();
+      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      testData.values().forEach((value) -> assertTrue(set.contains(value)));
+      assertEquals(testData.size(), set.size());
+      region.put(5L, "newValue");
+      assertThatThrownBy(() -> set.contains("newValue")).isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining(
+              "The Region collection is not transactional but is being used in a transaction");
+    } finally {
+      userTX.rollback();
+    }
+  }
+
+
+  @Test
+  public void testTxFunctionOnMemberWhenSetOperationDoesNotStartJTA() {
+    doTestTxFunction(true);
+  }
+
+  @Test
+  public void testTxFunctionOnMemberWhenSetOperationStartsJTA() {
+    doTestTxFunction(false);
+  }
+
+  private void doTestTxFunction(boolean disableSetOpToStartJTA) {
+    setupAndLoadRegion(disableSetOpToStartJTA);
+
+    accessor.invoke(() -> registerFunction());
+    dataStore1.invoke(() -> registerFunction());
+    dataStore2.invoke(() -> registerFunction());
+    dataStore3.invoke(() -> registerFunction());
+
+    accessor.invoke(() -> doTxFunction(disableSetOpToStartJTA));
+    dataStore1.invoke(() -> doTxFunction(disableSetOpToStartJTA));
+    dataStore2.invoke(() -> doTxFunction(disableSetOpToStartJTA));
+    dataStore3.invoke(() -> doTxFunction(disableSetOpToStartJTA));
+  }
+
+  private void registerFunction() {
+    FunctionService.registerFunction(new TXFunctionSetOpDoesNoStartJTA());
+    FunctionService.registerFunction(new TXFunctionSetOpStartsJTA());
+  }
+
+  class TXFunctionSetOpStartsJTA implements Function {
+    static final String id = "TXFunctionSetOpStartsJTA";
+
+    public void execute(FunctionContext context) {
+      Region r = null;
+      try {
+        verifyRegionValuesWhenSetOperationStartsJTA();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      context.getResultSender().lastResult(Boolean.TRUE);
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public boolean hasResult() {
+      return true;
+    }
+
+    public boolean optimizeForWrite() {
+      return true;
+    }
+
+    public boolean isHA() {
+      return false;
+    }
+  }
+
+  class TXFunctionSetOpDoesNoStartJTA implements Function {
+    static final String id = "TXFunctionSetOpDoesNotStartJTA";
+
+    public void execute(FunctionContext context) {
+      Region r = null;
+      try {
+        verifyRegionValuesWhenSetOperationDoesNotStartJTA();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      context.getResultSender().lastResult(Boolean.TRUE);
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public boolean hasResult() {
+      return true;
+    }
+
+    public boolean optimizeForWrite() {
+      return true;
+    }
+
+    public boolean isHA() {
+      return false;
+    }
+  }
+
+  private void doTxFunction(boolean disableSetOpToStartJTA) {
+    PartitionedRegion region =
+        (PartitionedRegion) basicGetCache().getRegion(Region.SEPARATOR + REGION_NAME);
+    DistributedMember owner = region.getOwnerForKey(region.getKeyInfo(5L));
+    if (disableSetOpToStartJTA) {
+      FunctionService.onMember(owner).execute(TXFunctionSetOpDoesNoStartJTA.id).getResult();
+    } else {
+      FunctionService.onMember(owner).execute(TXFunctionSetOpStartsJTA.id).getResult();
+    }
   }
 }
