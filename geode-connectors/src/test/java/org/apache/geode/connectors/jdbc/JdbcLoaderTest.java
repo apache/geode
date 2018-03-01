@@ -48,7 +48,7 @@ public class JdbcLoaderTest {
   }
 
   @Test
-  public void loadReadsFromSqlHandler() {
+  public void loadReadsFromSqlHandler() throws Exception {
     loader.load(loaderHelper);
 
     verify(sqlHandler, times(1)).read(any(), any());

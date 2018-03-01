@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -74,7 +75,7 @@ public class TableKeyColumnManagerTest {
     when(connection.getMetaData()).thenThrow(SQLException.class);
 
     assertThatThrownBy(() -> tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
-        .isInstanceOf(IllegalStateException.class);
+        .isInstanceOf(JdbcConnectorException.class);
   }
 
   @Test

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -68,7 +69,7 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
           getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
               getPdxInstance(event));
           changeSuccessfulEvents(1);
-        } catch (RuntimeException ex) {
+        } catch (SQLException | RuntimeException ex) {
           changeFailedEvents(1);
           logger.error("Exception processing event {}", event, ex);
         }
