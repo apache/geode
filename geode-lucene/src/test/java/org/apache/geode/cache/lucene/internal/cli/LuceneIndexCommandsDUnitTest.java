@@ -734,7 +734,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     return ClusterStartupRule.getCache();
   }
 
-  protected class TestObject implements Serializable {
+  protected static class TestObject implements Serializable {
     private String field1;
     private String field2;
     private String field3;
