@@ -257,6 +257,16 @@ Use for client caches. Defines a client's server pool used to communicate with s
 <td>Number of servers to use as backup to the primary for highly available subscription queue management. If set to 0, none are used. If set to -1, all available servers are used.</td>
 <td>0</td>
 </tr>
+<tr class="even">
+<td>subscription-timeout-multiplier</td>
+<td>Number of missing server pings that trigger timeout of a subscription feed.
+
+A value of zero (the default) disables timeouts. A value of one or more times out the server
+connection after the specified number of ping intervals have elapsed. A value of one is not
+recommended.
+</td>
+<td>0</td>
+</tr>
 <tr class="odd">
 <td>thread-local-connections</td>
 <td>Boolean specifying whether connections are sticky. True causes the connection to stick to the thread for multiple requests. False causes each connection to be returned to the pool after a request finishes. A sticky connection is returned to the pool when the thread releases it through the <code class="ph codeph">Pool</code> method <code class="ph codeph">releaseThreadLocalConnection</code>, when the <code class="ph codeph">idle-timeout</code> is reached, or when the pool is destroyed.</td>
