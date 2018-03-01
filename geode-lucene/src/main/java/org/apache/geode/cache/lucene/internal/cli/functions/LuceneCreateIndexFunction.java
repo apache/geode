@@ -15,8 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.INDEX_NAME;
-import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.REGION_PATH;
+import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateLuceneIndexName;
+import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateRegionName;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -73,7 +73,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       LuceneService service = LuceneServiceProvider.get(cache);
 
-      INDEX_NAME.validateName(indexName);
+      validateLuceneIndexName(indexName);
 
       String[] fields = indexInfo.getSearchableFieldNames();
       String[] analyzerName = indexInfo.getFieldAnalyzers();
@@ -99,7 +99,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
       }
 
       XmlEntity xmlEntity = null;
-      REGION_PATH.validateName(regionPath);
+      validateRegionName(regionPath);
       if (LuceneServiceImpl.LUCENE_REINDEX) {
         indexFactory.create(indexName, regionPath, true);
         if (cache.getRegion(regionPath) != null) {
