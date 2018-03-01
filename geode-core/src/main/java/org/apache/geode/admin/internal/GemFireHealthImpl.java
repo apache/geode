@@ -16,12 +16,24 @@ package org.apache.geode.admin.internal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.admin.DistributedSystemHealthConfig;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.admin.*;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.GfManagerAgent;
+import org.apache.geode.internal.admin.HealthListener;
+import org.apache.geode.internal.admin.JoinLeaveListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -84,9 +96,6 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    * distributed system.
    */
   protected GemFireHealthImpl(GfManagerAgent agent, AdminDistributedSystem system) {
-    // agent.getDM().getLogger().info("Creating GemFireHealthImpl",
-    // new Exception("Stack trace"));
-
     this.agent = agent;
     this.system = system;
 

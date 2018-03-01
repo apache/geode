@@ -65,7 +65,6 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
     GemFireStatSampler sampler = system.getStatSampler();
     if (sampler != null) {
       // Sampling is enabled
-      // this.vmStats = sampler.getVMStats();
       this.processStats = sampler.getProcessStats();
     }
 

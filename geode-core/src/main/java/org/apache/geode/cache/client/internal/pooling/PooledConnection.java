@@ -50,10 +50,8 @@ class PooledConnection implements Connection {
   private boolean active = true; // read and write while synchronized on this
   private final AtomicBoolean shouldDestroy = new AtomicBoolean();
   private boolean waitingToSwitch = false;
-  // private final ConnectionManagerImpl manager;
 
   public PooledConnection(ConnectionManagerImpl manager, Connection connection) {
-    // this.manager = manager;
     this.connection = connection;
     this.endpoint = connection.getEndpoint();
     this.birthDate = System.nanoTime();
@@ -103,10 +101,7 @@ class PooledConnection implements Connection {
   }
 
   public void close(boolean keepAlive) throws Exception {
-    // needed to junit test
     internalClose(keepAlive);
-    // throw new UnsupportedOperationException(
-    // "Pooled connections should only be closed by the connection manager");
   }
 
   public void emergencyClose() {

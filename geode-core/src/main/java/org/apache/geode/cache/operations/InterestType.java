@@ -26,10 +26,6 @@ public final class InterestType {
 
   public static final byte TP_REGEX = 1;
 
-  // public static final byte TP_FILTER_CLASS = 2;
-
-  // public static final byte TP_OQL = 3;
-
   public static final byte TP_LIST = 4;
 
   private static byte nextOrdinal = 0;
@@ -51,18 +47,6 @@ public final class InterestType {
    */
   public static final InterestType REGULAR_EXPRESSION =
       new InterestType("REGULAR_EXPRESSION", TP_REGEX);
-
-  /**
-   * For registering interest in all key/value pairs that satisfy a provided filtering class.
-   */
-  // public static final InterestType FILTER_CLASS = new InterestType(
-  // "FILTER_CLASS", TP_FILTER_CLASS);
-
-  /**
-   * For registering interest in all key/value pairs that satisfy an OQL query.
-   */
-  // public static final InterestType OQL_QUERY = new InterestType("OQL_QUERY",
-  // TP_OQL);
 
   /** The name of this interest type. */
   private final String name;
@@ -104,20 +88,6 @@ public final class InterestType {
   public boolean isRegularExpression() {
     return (this.interestType == TP_REGEX);
   }
-
-  /**
-   * Returns true if this is a filter class interest type.
-   */
-  // public boolean isFilterClass() {
-  // return (this.interestType == TP_FILTER_CLASS);
-  // }
-
-  /**
-   * Returns true if this is an OQL query interest type.
-   */
-  // public boolean isOQLQuery() {
-  // return (this.interestType == TP_OQL);
-  // }
 
   /**
    * Returns the <code>InterestType</code> represented by specified ordinal.

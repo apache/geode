@@ -158,9 +158,7 @@ public class QueueStateImpl implements QueueState {
         if (logger.isDebugEnabled()) {
           logger.debug(" got a duplicate entry with EventId {}. Ignoring the entry", eid);
         }
-        seo.setAckSend(false); // bug #41289: send ack to this server since it's sending old events
-        // this.threadIdToSequenceId.put(tid, new SequenceIdAndExpirationObject(
-        // seo.getSequenceId()));
+        seo.setAckSend(false);
         return true;
       } else if (addToMap) {
         ThreadIdentifier real_tid = new ThreadIdentifier(eid.getMembershipID(),
@@ -238,17 +236,6 @@ public class QueueStateImpl implements QueueState {
     private final long expiryTime;
 
     /**
-     * The peridic ack interval for client
-     */
-    // private final long ackTime;
-    // ackTime = QueueStateImpl.this.qManager.getPool().getQueueAckInterval();
-
-    // /**
-    // * boolean to specify if the thread should continue running
-    // */
-    // private volatile boolean continueRunning = true;
-
-    /**
      * constructs the Thread and initializes the expiry time
      *
      */
@@ -266,28 +253,9 @@ public class QueueStateImpl implements QueueState {
         ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.beforeSendingClientAck();
       }
-      // if ((qManager.getPool().getSubscriptionRedundancy() != 0) ||
-      // (qManager.getPool().isDurableClient())) {
       sendPeriodicAck();
-      // }
       checkForExpiry();
     }
-
-    // void shutdown() {
-    // synchronized (this) {
-    // continueRunning = false;
-    // this.notify();
-    // // Since the wait is timed, it is not necessary to interrupt
-    // // the thread; it will wake up of its own accord.
-    // // this.interrupt();
-    // }
-    // try {
-    // this.join();
-    // } catch (InterruptedException e) {
-    // Thread.currentThread().interrupt();
-    // // TODO:
-    // }
-    // }
 
     void checkForExpiry() {
       synchronized (threadIdToSequenceId) {
@@ -326,7 +294,6 @@ public class QueueStateImpl implements QueueState {
             ThreadIdentifier tid = (ThreadIdentifier) entry.getKey();
             events.add(new EventID(tid.getMembershipID(), tid.getThreadID(), seo.getSequenceId()));
             seo.setAckSend(true);
-            // entry.setValue(entry);
           } // if ends
         } // while ends
       } // synchronized ends

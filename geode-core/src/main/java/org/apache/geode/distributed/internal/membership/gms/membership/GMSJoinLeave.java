@@ -423,7 +423,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       JoinRequestMessage req = new JoinRequestMessage(coord, this.localAddress,
           services.getAuthenticator().getCredentials(coord), port,
           services.getMessenger().getRequestId());
-      // services.getMessenger().send(req, state.view);
       services.getMessenger().send(req);
     }
 
@@ -557,15 +556,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       services.getMessenger().send(m);
       return;
     }
-
-    // Remove JoinResponseMessage to fix GEODE-870
-    // if (!this.localAddress.getNetMember().preferredForCoordinator() &&
-    // incomingRequest.getMemberID().getNetMember().preferredForCoordinator()) {
-    // JoinResponseMessage joinResponseMessage = new
-    // JoinResponseMessage(incomingRequest.getMemberID(), currentView, true);
-    // services.getMessenger().send(joinResponseMessage);
-    // return;
-    // }
 
     recordViewRequest(incomingRequest);
   }

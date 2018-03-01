@@ -1716,62 +1716,8 @@ public class ConnectionStats implements MessageStats {
     this.stats = factory.createAtomicStatistics(type, "ClientStats-" + name);
     this.sendStats = factory.createAtomicStatistics(sendType, "ClientSendStats-" + name);
     this.poolStats = poolStats;
-    // this.gatewayStats = gatewayStats;
   }
 
-  ///////////////////////////////////////////////////////////////////////
-  // /**
-  // * Records that the specified op is starting
-  // * <p>Note: for every call of this method the caller must also call
-  // * {@link #endOpSend} and {@link #endOp}.
-  // * @return the start time of this op
-  // */
-  // public long startOp() {
-  // this.stats.incInt(opInProgressId, 1);
-  // this.sendStats.incInt(opSendInProgressId, 1);
-  // startClientOp();
-  // return getStatTime();
-  // }
-  // /**
-  // * Records that the send part of the op has completed
-  // * @param startTime the value returned by {@link #startOp}.
-  // * @param failed true if the send of the op failed
-  // */
-  // public void endOpSend(long startTime, boolean failed) {
-  // long duration = getStatTime() - startTime;
-  // endClientOpSend(duration, failed);
-  // this.sendStats.incInt(opSendInProgressId, -1);
-  // int endOpSendId;
-  // if (failed) {
-  // endOpSendId = opSendFailedId;
-  // } else {
-  // endOpSendId = opSendId;
-  // }
-  // this.sendStats.incInt(endOpSendId, 1);
-  // this.stats.incLong(opSendDurationId, duration);
-  // }
-  // /**
-  // * Records that the specified op has ended
-  // * @param startTime the value returned by {@link #startOp}.
-  // * @param timedOut true if op timed out
-  // * @param failed true if op failed
-  // */
-  // public void endOp(long startTime, boolean timedOut, boolean failed) {
-  // long duration = getStatTime() - startTime;
-  // endClientOp(duration, timedOut, failed);
-  // this.stats.incInt(opInProgressId, -1);
-  // int endOpId;
-  // if (timedOut) {
-  // endOpId = opTimedOutId;
-  // } else if (failed) {
-  // endOpId = opFailedId;
-  // } else {
-  // endOpId = opId;
-  // }
-  // this.stats.incInt(endOpId, 1);
-  // this.stats.incLong(opDurationId, duration);
-  // }
-  ///////////////////////////////////////////////////////////////////////
   /**
    * Records that the specified get is starting
    * <p>
@@ -3262,9 +3208,6 @@ public class ConnectionStats implements MessageStats {
 
   public void incSentBytes(long v) {
     this.stats.incLong(sentBytesId, v);
-    // if (this.gatewayStats != null) {
-    // this.gatewayStats.incSentBytes(v);
-    // }
   }
 
   public void incMessagesBeingReceived(int bytes) {

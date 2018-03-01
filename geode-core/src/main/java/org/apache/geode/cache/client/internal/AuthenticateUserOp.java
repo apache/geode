@@ -17,7 +17,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -245,7 +245,6 @@ public class AuthenticateUserOp {
         }
         // Get the exception toString part.
         // This was added for c++ thin client and not used in java
-        // Part exceptionToStringPart = msg.getPart(1);
       } else if (isErrorResponse(msgType)) {
         throw new ServerOperationException(part.getString());
       } else {

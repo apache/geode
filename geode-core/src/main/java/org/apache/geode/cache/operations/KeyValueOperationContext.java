@@ -52,8 +52,6 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
   public KeyValueOperationContext(Object key, Object value, boolean isObject) {
     super(key);
     setValue(value, isObject);
-    // this.value = value;
-    // this.isObject = isObject;
   }
 
   /**
@@ -69,8 +67,6 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
       boolean postOperation) {
     super(key, postOperation);
     setValue(value, isObject);
-    // this.value = value;
-    // this.isObject = isObject;
   }
 
   /**

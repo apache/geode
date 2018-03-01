@@ -40,13 +40,10 @@ import org.apache.commons.modeler.Registry;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.RuntimeAdminException;
-import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -163,7 +160,6 @@ public class MBeanUtil {
         registry.setMBeanServer(mbeanServer);
 
         String mbeansResource = getOSPath("/org/apache/geode/admin/jmx/mbeans-descriptors.xml");
-        // System.out.println(LocalizedStrings.MBeanUtil_LOADING_RESOURCE_0.toLocalizedString(mbeansResource));
 
         URL url = ClassPathLoader.getLatest().getResource(MBeanUtil.class, mbeansResource);
         raiseOnFailure(url != null, LocalizedStrings.MBeanUtil_FAILED_TO_FIND_0
@@ -440,16 +436,12 @@ public class MBeanUtil {
    */
   static void validateRefreshTimer() {
     if (refreshTimerObjectName == null || refreshTimer == null) {
-      // if (refreshTimerObjectName == null) System.out.println("refreshTimerObjectName is null");
-      // if (refreshTimer == null) System.out.println("refreshTimer is null");
-      // System.out.println("[validateRefreshTimer] createRefreshTimer");
       createRefreshTimer();
     }
 
     raiseOnFailure(refreshTimer != null, "Failed to validate Refresh Timer");
 
     if (mbeanServer != null && !mbeanServer.isRegistered(refreshTimerObjectName)) {
-      // System.out.println("[validateRefreshTimer] registerMBean");
       try {
         mbeanServer.registerMBean(refreshTimer, refreshTimerObjectName);
       } catch (JMException e) {

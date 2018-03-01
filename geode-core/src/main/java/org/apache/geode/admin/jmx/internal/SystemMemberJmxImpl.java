@@ -40,7 +40,6 @@ import org.apache.geode.admin.SystemMemberCacheEvent;
 import org.apache.geode.admin.SystemMemberRegionEvent;
 import org.apache.geode.admin.internal.ConfigurationParameterImpl;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.admin.ApplicationVM;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.admin.GemFireVM;
@@ -114,9 +113,6 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
 
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() throws org.apache.geode.admin.AdminException {
-    // initialize Managed Resources for stats & cache first.
-    // initializeManagedResources();
-
     this.mbeanName = new StringBuffer("GemFire.Member:id=")
         .append(MBeanUtil.makeCompliantMBeanNameProperty(getId())).append(",type=")
         .append(MBeanUtil.makeCompliantMBeanNameProperty(getType().getName())).toString();
@@ -188,38 +184,6 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
 
     super.refreshConfig();
   }
-
-  /**
-   * Initializes Cache & Statistics managed resources.
-   *
-   * @throws AdminException if initialization of managed resources fails
-   */
-  // private void initializeManagedResources() throws AdminException {
-  // try {
-  // manageCache();
-  // } catch (MalformedObjectNameException e) {
-  // throw new
-  // AdminException(LocalizedStrings.SystemMemberJmxImpl_EXCEPTION_OCCURRED_WHILE_INITIALIZING_0_MBEANS_FOR_1.toLocalizedString(
-  // new Object[] {"Cache", getId()}),
-  // e);
-  // } catch (AdminException ae) {
-  // if
-  // (LocalizedStrings.SystemMemberJmx_THIS_SYSTEM_MEMBER_DOES_NOT_HAVE_A_CACHE.toLocalizedString().equals(ae.getMessage()))
-  // {
-  // //ignore this exception for a cache-less peer
-  // } else {
-  // throw ae;
-  // }
-  // }
-  // try {
-  // manageStats();
-  // } catch (MalformedObjectNameException e) {
-  // throw new
-  // AdminException(LocalizedStrings.SystemMemberJmxImpl_EXCEPTION_OCCURRED_WHILE_INITIALIZING_0_MBEANS_FOR_1.toLocalizedString(
-  // new Object[] {"Statistics", getId()}),
-  // e);
-  // }
-  // }
 
   /**
    * Gets this member's cache.

@@ -70,10 +70,6 @@ public abstract class GemFireCheckedException extends Exception {
       return null;
     Throwable root = this.getCause();
     while (root != null) {
-      // if ( ! ( root instanceof GemFireCheckedException )) {
-      // break;
-      // }
-      // GemFireCheckedException tmp = (GemFireCheckedException) root;
       if (root.getCause() == null) {
         break;
       } else {
