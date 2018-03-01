@@ -28,7 +28,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class PREntryIdleExpirationTest extends ReplicateEntryIdleExpirationTest {
+public class PREntryIdleExpirationDistributedTest
+    extends ReplicateEntryIdleExpirationDistributedTest {
 
   @Before
   public void setUpPREntryIdleExpirationTest() throws Exception {

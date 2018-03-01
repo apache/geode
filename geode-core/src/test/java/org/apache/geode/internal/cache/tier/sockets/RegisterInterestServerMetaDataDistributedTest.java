@@ -47,7 +47,6 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.InternalClientCache;
-import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
@@ -57,33 +56,32 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class ClientWithInterestFailoverTest implements Serializable {
+public class RegisterInterestServerMetaDataDistributedTest implements Serializable {
 
   private static final String PROXY_REGION_NAME = "PROXY_REGION_NAME";
   private static final String CACHING_PROXY_REGION_NAME = "CACHING_PROXY_REGION_NAME";
-  private static final String REGEX = ".*";
 
   private static InternalCache cache;
   private static InternalClientCache clientCache;
 
-  private VM client;
-  private VM server;
-  private VM server2;
+  private String hostName;
   private int serverPort1;
-  private int serverPort2;
-  private int primaryServerPort;
+
+  private VM server;
+  private VM client;
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Before
   public void setUp() throws Exception {
-    client = getHost(0).getVM(0);
+    server = getHost(0).getVM(0);
+    client = getHost(0).getVM(1);
 
-    server = getHost(0).getVM(1);
-    server2 = getHost(0).getVM(2);
+    hostName = getServerHostName(server.getHost());
 
-    primaryServerPort = givenTwoCacheServers();
+    serverPort1 = server.invoke(() -> createServerCache());
+    client.invoke(() -> createClientCacheWithTwoRegions(hostName, serverPort1));
   }
 
   @After
@@ -98,44 +96,60 @@ public class ClientWithInterestFailoverTest implements Serializable {
   }
 
   @Test
-  public void clientWithSingleKeyInterestFailsOver() throws Exception {
+  public void registerInterestSingleKeyCanBeInvokedMultipleTimes() throws Exception {
     client.invoke(() -> registerKey(PROXY_REGION_NAME, 1));
     client.invoke(() -> registerKey(CACHING_PROXY_REGION_NAME, 1));
 
-    performFailoverTesting();
+    server.invoke(() -> awaitServerMetaDataToContainClient());
+    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
+    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+
+    // invoke registerKey multiple times
+
+    client.invoke(() -> registerKey(PROXY_REGION_NAME, 2));
+    client.invoke(() -> registerKey(PROXY_REGION_NAME, 3));
+    client.invoke(() -> registerKey(CACHING_PROXY_REGION_NAME, 4));
+
+    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
+    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
   }
 
   @Test
-  public void clientWithKeyListInterestFailsOver() throws Exception {
+  public void registerInterestRegexCanBeInvokedMultipleTimes() throws Exception {
+    client.invoke(() -> registerRegex(PROXY_REGION_NAME, ".*"));
+    client.invoke(() -> registerRegex(CACHING_PROXY_REGION_NAME, ".*"));
+
+    server.invoke(() -> awaitServerMetaDataToContainClient());
+    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
+    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+
+    // invoke registerRegex multiple times
+
+    client.invoke(() -> registerRegex(PROXY_REGION_NAME, "8"));
+    client.invoke(() -> registerRegex(PROXY_REGION_NAME, "7"));
+    client.invoke(() -> registerRegex(CACHING_PROXY_REGION_NAME, "9"));
+
+    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
+    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+  }
+
+  @Test
+  public void registerInterestKeyListCanBeInvokedMultipleTimes() throws Exception {
     client.invoke(() -> registerKeys(PROXY_REGION_NAME, 1, 2));
     client.invoke(() -> registerKeys(CACHING_PROXY_REGION_NAME, 1, 2));
 
-    performFailoverTesting();
-  }
+    server.invoke(() -> awaitServerMetaDataToContainClient());
+    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
+    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
 
-  @Test
-  public void clientWithRegexInterestFailsOver() throws Exception {
-    client.invoke(() -> registerRegex(PROXY_REGION_NAME));
-    client.invoke(() -> registerRegex(CACHING_PROXY_REGION_NAME));
+    // invoke registerKeys multiple times
 
-    performFailoverTesting();
-  }
+    client.invoke(() -> registerKeys(PROXY_REGION_NAME, 3, 4));
+    client.invoke(() -> registerKeys(PROXY_REGION_NAME, 5));
+    client.invoke(() -> registerKeys(CACHING_PROXY_REGION_NAME, 3));
 
-  private void performFailoverTesting() {
-    // arrange
-    VM primaryServerVM = getPrimaryServerVM();
-    VM secondaryServerVM = getSecondaryServerVM();
-    primaryServerVM.invoke(() -> awaitServerMetaDataToContainClient());
-    primaryServerVM.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
-    primaryServerVM.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
-
-    // act
-    primaryServerVM.invoke(() -> stopCacheServer());
-
-    // assert
-    secondaryServerVM.invoke(() -> awaitServerMetaDataToContainClient());
-    secondaryServerVM.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
-    secondaryServerVM.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
+    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
   }
 
   private int createServerCache() throws IOException {
@@ -154,24 +168,25 @@ public class ClientWithInterestFailoverTest implements Serializable {
     return server.getPort();
   }
 
-  /**
-   * Create client cache and return the client connection pool's primary server port
-   */
-  private int createClientCacheWithTwoRegions(final String host1, final int port1,
-      final String host2, final int port2) {
-    clientCache = (InternalClientCache) new ClientCacheFactory().create();
-    assertThat(clientCache.isClient()).isTrue();
+  private void createClientCacheWithTwoRegions(final String host, final int port) {
+    createClientCache();
 
     PoolFactory poolFactory = createPoolFactory();
-    poolFactory.addServer(host1, port1);
-    poolFactory.addServer(host2, port2);
+    poolFactory.addServer(host, port);
 
     Pool pool = poolFactory.create(getClass().getSimpleName() + "-Pool");
 
     createRegionOnClient(PROXY_REGION_NAME, ClientRegionShortcut.PROXY, pool);
-    createRegionOnClient(CACHING_PROXY_REGION_NAME, ClientRegionShortcut.CACHING_PROXY, pool);
+    Region<Integer, Object> region2 =
+        createRegionOnClient(CACHING_PROXY_REGION_NAME, ClientRegionShortcut.CACHING_PROXY, pool);
 
-    return ((PoolImpl) pool).getPrimaryPort();
+    region2.getAttributesMutator().setCloningEnabled(true);
+    assertThat(region2.getAttributes().getCloningEnabled()).isTrue();
+  }
+
+  private void createClientCache() {
+    clientCache = (InternalClientCache) new ClientCacheFactory().create();
+    assertThat(clientCache.isClient()).isTrue();
   }
 
   private PoolFactory createPoolFactory() {
@@ -180,46 +195,36 @@ public class ClientWithInterestFailoverTest implements Serializable {
         .setSocketBufferSize(32768);
   }
 
-  private void createRegionOnClient(final String regionName, final ClientRegionShortcut shortcut,
-      final Pool pool) {
+  private Region<Integer, Object> createRegionOnClient(final String regionName,
+      final ClientRegionShortcut shortcut, final Pool pool) {
     ClientRegionFactory<Integer, Object> regionFactory =
         clientCache.createClientRegionFactory(shortcut);
     regionFactory.setPoolName(pool.getName());
     Region<Integer, Object> region = regionFactory.create(regionName);
     assertThat(region.getAttributes().getCloningEnabled()).isFalse();
+    return region;
   }
 
-  private int givenTwoCacheServers() {
-    serverPort1 = server.invoke(() -> createServerCache());
-    serverPort2 = server2.invoke(() -> createServerCache());
-
-    return client.invoke(() -> createClientCacheWithTwoRegions(getServerHostName(server.getHost()),
-        serverPort1, getServerHostName(server2.getHost()), serverPort2));
+  private CacheClientProxy getClientProxy() {
+    CacheClientNotifier notifier = getCacheServer().getAcceptor().getCacheClientNotifier();
+    return notifier.getClientProxies().stream().findFirst().orElse(null);
   }
 
-  private VM getPrimaryServerVM() {
-    assertThat(primaryServerPort).isGreaterThan(-1);
-    if (primaryServerPort == serverPort1) {
-      return server;
-    } else {
-      return server2;
-    }
+  private InternalCacheServer getCacheServer() {
+    return (InternalCacheServer) cache.getCacheServers().iterator().next();
   }
 
-  private VM getSecondaryServerVM() {
-    assertThat(primaryServerPort).isGreaterThan(-1);
-    if (primaryServerPort == serverPort1) {
-      return server2;
-    } else {
-      return server;
-    }
-  }
-
+  /**
+   * Register single key on given region
+   */
   private void registerKey(final String regionName, final int key) {
     Region<Integer, Object> region = clientCache.getRegion(regionName);
     region.registerInterest(key);
   }
 
+  /**
+   * Register list of keys on given region
+   */
   private void registerKeys(final String regionName, final int... keys) {
     Region region = clientCache.getRegion(regionName);
 
@@ -231,13 +236,9 @@ public class ClientWithInterestFailoverTest implements Serializable {
     region.registerInterest(list);
   }
 
-  private void registerRegex(final String regionName) {
+  private void registerRegex(final String regionName, final String regex) {
     Region<Integer, Object> region = clientCache.getRegion(regionName);
-    region.registerInterestRegex(REGEX);
-  }
-
-  private void stopCacheServer() {
-    getCacheServer().stop();
+    region.registerInterestRegex(regex);
   }
 
   private void awaitServerMetaDataToContainClient() {
@@ -267,14 +268,5 @@ public class ClientWithInterestFailoverTest implements Serializable {
     assertThat(proxy.getRegionsWithEmptyDataPolicy()).hasSize(1);
     assertThat(proxy.getRegionsWithEmptyDataPolicy())
         .containsEntry(Region.SEPARATOR + PROXY_REGION_NAME, 0);
-  }
-
-  private InternalCacheServer getCacheServer() {
-    return (InternalCacheServer) cache.getCacheServers().iterator().next();
-  }
-
-  private CacheClientProxy getClientProxy() {
-    CacheClientNotifier notifier = getCacheServer().getAcceptor().getCacheClientNotifier();
-    return notifier.getClientProxies().stream().findFirst().orElse(null);
   }
 }

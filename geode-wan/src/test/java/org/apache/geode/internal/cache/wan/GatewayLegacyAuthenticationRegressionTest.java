@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.misc;
+package org.apache.geode.internal.cache.wan;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -37,51 +38,47 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.Authenticator;
-import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
- * Reproduces bug GEODE-3117: "Gateway authentication throws NullPointerException" and validates the
- * fix.
+ * Gateway authentication should not throw NullPointerException.
+ *
+ * <p>
+ * GEODE-3117: "Gateway authentication throws NullPointerException"
  */
 @Category({DistributedTest.class, SecurityTest.class, WanTest.class})
-public class GatewayLegacyAuthenticationRegressionTest extends DistributedTestCase {
+public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
 
+  private static final String REGION_NAME = "TheRegion";
   private static final String USER_NAME = "security-username";
   private static final String PASSWORD = "security-password";
 
-  private static final AtomicInteger invokeAuthenticateCount = new AtomicInteger();
-
-  private static Cache cache;
-  private static GatewaySender sender;
+  private static final AtomicInteger AUTHENTICATE_COUNT = new AtomicInteger();
 
   private VM londonLocatorVM;
   private VM newYorkLocatorVM;
@@ -96,32 +93,38 @@ public class GatewayLegacyAuthenticationRegressionTest extends DistributedTestCa
 
   private int londonLocatorPort;
   private int newYorkLocatorPort;
+  private int londonReceiverPort;
+  private int newYorkReceiverPort;
 
-  private String regionName;
+  @ClassRule
+  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
 
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Before
   public void before() {
-    invokeAuthenticateCount.set(0);
+    AUTHENTICATE_COUNT.set(0);
 
-    this.londonLocatorVM = getHost(0).getVM(0);
-    this.newYorkLocatorVM = getHost(0).getVM(1);
-    this.londonServerVM = getHost(0).getVM(2);
-    this.newYorkServerVM = getHost(0).getVM(3);
+    londonLocatorVM = getHost(0).getVM(0);
+    newYorkLocatorVM = getHost(0).getVM(1);
+    londonServerVM = getHost(0).getVM(2);
+    newYorkServerVM = getHost(0).getVM(3);
 
-    this.londonName = "ln";
-    this.newYorkName = "ny";
+    londonName = "ln";
+    newYorkName = "ny";
 
-    this.londonId = 1;
-    this.newYorkId = 2;
+    londonId = 1;
+    newYorkId = 2;
 
-    this.regionName = getTestMethodName() + "_RR";
-
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    this.londonLocatorPort = ports[0];
-    this.newYorkLocatorPort = ports[1];
+    int[] ports = getRandomAvailableTCPPorts(4);
+    londonLocatorPort = ports[0];
+    newYorkLocatorPort = ports[1];
+    londonReceiverPort = ports[2];
+    newYorkReceiverPort = ports[3];
   }
 
   /**
@@ -130,62 +133,64 @@ public class GatewayLegacyAuthenticationRegressionTest extends DistributedTestCa
    */
   @Test
   public void gatewayHandShakeShouldAuthenticate() {
-    this.londonLocatorVM.invoke("start London locator", () -> {
-      getSystem(
-          createLocatorConfig(this.londonId, this.londonLocatorPort, this.newYorkLocatorPort));
+    londonLocatorVM.invoke("start London locator", () -> {
+      Properties config = createLocatorConfig(londonId, londonLocatorPort, newYorkLocatorPort);
+      cacheRule.createCache(config);
     });
 
-    this.newYorkLocatorVM.invoke("start New York locator", () -> {
-      getSystem(
-          createLocatorConfig(this.newYorkId, this.newYorkLocatorPort, this.londonLocatorPort));
+    newYorkLocatorVM.invoke("start New York locator", () -> {
+      Properties config = createLocatorConfig(newYorkId, newYorkLocatorPort, londonLocatorPort);
+      cacheRule.createCache(config);
     });
 
-    this.londonServerVM.invoke("create London server", () -> {
-      assertThat(invokeAuthenticateCount.get()).isEqualTo(0);
-      startServer(this.londonId, this.londonLocatorPort, this.newYorkId, this.newYorkName);
+    londonServerVM.invoke("create London server", () -> {
+      assertThat(AUTHENTICATE_COUNT.get()).isEqualTo(0);
+      startServer(londonId, londonLocatorPort, newYorkId, newYorkName, londonReceiverPort);
     });
 
-    this.newYorkServerVM.invoke("create New York server", () -> {
-      assertThat(invokeAuthenticateCount.get()).isEqualTo(0);
-      startServer(this.newYorkId, this.newYorkLocatorPort, this.londonId, this.londonName);
+    newYorkServerVM.invoke("create New York server", () -> {
+      assertThat(AUTHENTICATE_COUNT.get()).isEqualTo(0);
+      startServer(newYorkId, newYorkLocatorPort, londonId, londonName, newYorkReceiverPort);
     });
 
-    this.londonServerVM.invoke(() -> {
+    londonServerVM.invoke(() -> {
+      GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
       await().atMost(1, MINUTES).until(() -> assertThat(isRunning(sender)).isTrue());
     });
 
-    this.newYorkServerVM.invoke(() -> {
+    newYorkServerVM.invoke(() -> {
+      GatewaySender sender = cacheRule.getCache().getGatewaySender(londonName);
       await().atMost(1, MINUTES).until(() -> assertThat(isRunning(sender)).isTrue());
     });
 
-    this.newYorkServerVM.invoke(() -> {
-      Region region = cache.getRegion(Region.SEPARATOR + this.regionName);
+    newYorkServerVM.invoke(() -> {
+      Region<Integer, Integer> region = cacheRule.getCache().getRegion(REGION_NAME);
       assertThat(region).isNotNull();
       assertThat(region.isEmpty()).isTrue();
     });
 
-    this.londonServerVM.invoke(() -> {
-      Region region = cache.getRegion(Region.SEPARATOR + this.regionName);
+    londonServerVM.invoke(() -> {
+      Region<Integer, Integer> region = cacheRule.getCache().getRegion(REGION_NAME);
       region.put(0, 0);
     });
 
-    this.newYorkServerVM.invoke(() -> {
-      Region region = cache.getRegion(Region.SEPARATOR + this.regionName);
+    newYorkServerVM.invoke(() -> {
+      Region<Integer, Integer> region = cacheRule.getCache().getRegion(REGION_NAME);
       assertThat(region).isNotNull();
       waitAtMost(1, MINUTES).until(() -> assertThat(region.isEmpty()).isFalse());
     });
 
-    this.newYorkLocatorVM.invoke(() -> {
-      assertThat(invokeAuthenticateCount.get()).isEqualTo(0);
+    newYorkLocatorVM.invoke(() -> {
+      assertThat(AUTHENTICATE_COUNT.get()).isEqualTo(0);
     });
-    this.londonLocatorVM.invoke(() -> {
-      assertThat(invokeAuthenticateCount.get()).isEqualTo(0);
+    londonLocatorVM.invoke(() -> {
+      assertThat(AUTHENTICATE_COUNT.get()).isEqualTo(0);
     });
-    this.newYorkServerVM.invoke(() -> {
-      assertThat(invokeAuthenticateCount.get()).isGreaterThanOrEqualTo(1);
+    newYorkServerVM.invoke(() -> {
+      assertThat(AUTHENTICATE_COUNT.get()).isGreaterThanOrEqualTo(1);
     });
-    this.londonServerVM.invoke(() -> {
-      assertThat(invokeAuthenticateCount.get()).isGreaterThanOrEqualTo(1);
+    londonServerVM.invoke(() -> {
+      assertThat(AUTHENTICATE_COUNT.get()).isGreaterThanOrEqualTo(1);
     });
   }
 
@@ -194,7 +199,7 @@ public class GatewayLegacyAuthenticationRegressionTest extends DistributedTestCa
   }
 
   private Properties createLocatorConfig(int systemId, int locatorPort, int remoteLocatorPort) {
-    Properties config = getDistributedSystemProperties();
+    Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(DISTRIBUTED_SYSTEM_ID, String.valueOf(systemId));
     config.setProperty(LOCATORS, "localhost[" + locatorPort + ']');
@@ -223,43 +228,40 @@ public class GatewayLegacyAuthenticationRegressionTest extends DistributedTestCa
     return config;
   }
 
-  private void startServer(int systemId, int locatorPort, int remoteSystemId, String remoteName)
-      throws IOException {
-    DistributedSystem system = getSystem(createServerConfig(locatorPort));
-    cache = CacheFactory.create(system);
+  private void startServer(int systemId, int locatorPort, int remoteSystemId, String remoteName,
+      int receiverPort) throws IOException {
+    cacheRule.createCache(createServerConfig(locatorPort));
 
     String uniqueName = "server-" + systemId;
-    File[] dirs = new File[] {this.temporaryFolder.newFolder(uniqueName)};
+    File[] dirs = new File[] {temporaryFolder.newFolder(uniqueName)};
 
     GatewaySenderFactory senderFactory = createGatewaySenderFactory(dirs, uniqueName);
-    sender = senderFactory.create(remoteName, remoteSystemId);
+    GatewaySender sender = senderFactory.create(remoteName, remoteSystemId);
     sender.start();
 
-    GatewayReceiverFactory receiverFactory = createGatewayReceiverFactory();
+    GatewayReceiverFactory receiverFactory = createGatewayReceiverFactory(receiverPort);
     GatewayReceiver receiver = receiverFactory.create();
     receiver.start();
 
-    AttributesFactory attributesFactory = new AttributesFactory();
-    attributesFactory.addGatewaySenderId(remoteName);
-    attributesFactory.setDataPolicy(DataPolicy.REPLICATE);
-    attributesFactory.setScope(Scope.DISTRIBUTED_ACK);
-    cache.createRegionFactory(attributesFactory.create()).create(this.regionName);
+    RegionFactory<Integer, Integer> regionFactory =
+        cacheRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
+    regionFactory.addGatewaySenderId(remoteName);
+
+    regionFactory.create(REGION_NAME);
   }
 
-  private GatewayReceiverFactory createGatewayReceiverFactory() {
-    GatewayReceiverFactory receiverFactory = cache.createGatewayReceiverFactory();
+  private GatewayReceiverFactory createGatewayReceiverFactory(int receiverPort) {
+    GatewayReceiverFactory receiverFactory = cacheRule.getCache().createGatewayReceiverFactory();
 
-    int port = AvailablePortHelper.getRandomAvailableTCPPort();
-
-    receiverFactory.setStartPort(port);
-    receiverFactory.setEndPort(port);
+    receiverFactory.setStartPort(receiverPort);
+    receiverFactory.setEndPort(receiverPort);
     receiverFactory.setManualStart(true);
     return receiverFactory;
   }
 
   private GatewaySenderFactory createGatewaySenderFactory(File[] dirs, String diskStoreName) {
     InternalGatewaySenderFactory senderFactory =
-        (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
+        (InternalGatewaySenderFactory) cacheRule.getCache().createGatewaySenderFactory();
 
     senderFactory.setMaximumQueueMemory(100);
     senderFactory.setBatchSize(10);
@@ -268,35 +270,31 @@ public class GatewayLegacyAuthenticationRegressionTest extends DistributedTestCa
     senderFactory.setDispatcherThreads(1);
     senderFactory.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
 
-    DiskStoreFactory dsf = cache.createDiskStoreFactory();
+    DiskStoreFactory dsf = cacheRule.getCache().createDiskStoreFactory();
     DiskStore store = dsf.setDiskDirs(dirs).create(diskStoreName);
     senderFactory.setDiskStoreName(store.getName());
 
     return senderFactory;
   }
 
-  static class TestPrincipal implements Principal, Serializable {
+  private static class TestPrincipal implements Principal, Serializable {
 
     private final String userName;
     private final UUID uuid;
 
     TestPrincipal(String userName) {
       this.userName = userName;
-      this.uuid = UUID.randomUUID();
+      uuid = UUID.randomUUID();
     }
 
     @Override
     public String getName() {
-      return this.userName;
-    }
-
-    public UUID getUUID() {
-      return this.uuid;
+      return userName;
     }
 
     @Override
     public String toString() {
-      return this.userName + "->" + this.uuid;
+      return userName + "->" + uuid;
     }
   }
 
@@ -396,7 +394,7 @@ public class GatewayLegacyAuthenticationRegressionTest extends DistributedTestCa
     @Override
     public Principal authenticate(Properties props, DistributedMember member)
         throws AuthenticationFailedException {
-      invokeAuthenticateCount.incrementAndGet();
+      AUTHENTICATE_COUNT.incrementAndGet();
 
       System.out.println(
           Thread.currentThread().getName() + ": TestClientOrReceiverAuthenticator authenticating "
@@ -419,5 +417,4 @@ public class GatewayLegacyAuthenticationRegressionTest extends DistributedTestCa
       // nothing
     }
   }
-
 }

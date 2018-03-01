@@ -106,7 +106,7 @@ public class FunctionExecution_ExceptionDUnitTest implements Serializable {
     PartitionAttributesFactory<?, ?> partitionAttributesFactory = new PartitionAttributesFactory();
     partitionAttributesFactory.setRedundantCopies(0).setLocalMaxMemory(localMaxMemory);
 
-    RegionFactory<?, ?> regionFactory = cacheRule.createCache().createRegionFactory(PARTITION);
+    RegionFactory<?, ?> regionFactory = cacheRule.getOrCreateCache().createRegionFactory(PARTITION);
     regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
     regionFactory.create(regionName);

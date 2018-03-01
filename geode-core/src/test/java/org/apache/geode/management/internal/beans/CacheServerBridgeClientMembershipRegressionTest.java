@@ -31,9 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -43,7 +41,7 @@ import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Regression test that confirms bug GEODE-3407.
+ * JMX and membership should not deadlock on CacheFactory.getAnyInstance.
  *
  * <p>
  * GEODE-3407: JMX and membership may deadlock on CacheFactory.getAnyInstance
@@ -54,8 +52,6 @@ public class CacheServerBridgeClientMembershipRegressionTest {
   private final AtomicBoolean after = new AtomicBoolean();
   private final AtomicBoolean before = new AtomicBoolean();
 
-  private CacheServerBridge cacheServerBridge;
-
   private ExecutorService synchronizing;
   private ExecutorService blocking;
   private CountDownLatch latch;
@@ -65,16 +61,18 @@ public class CacheServerBridgeClientMembershipRegressionTest {
   private AcceptorImpl acceptor;
   private MBeanStatsMonitor monitor;
 
+  private CacheServerBridge cacheServerBridge;
+
   @Before
   public void setUp() throws Exception {
-    this.synchronizing = Executors.newSingleThreadExecutor();
-    this.blocking = Executors.newSingleThreadExecutor();
-    this.latch = new CountDownLatch(1);
+    synchronizing = Executors.newSingleThreadExecutor();
+    blocking = Executors.newSingleThreadExecutor();
+    latch = new CountDownLatch(1);
 
-    this.cache = mock(InternalCache.class);
-    this.cacheServer = mock(CacheServerImpl.class);
-    this.acceptor = mock(AcceptorImpl.class);
-    this.monitor = mock(MBeanStatsMonitor.class);
+    cache = mock(InternalCache.class);
+    cacheServer = mock(CacheServerImpl.class);
+    acceptor = mock(AcceptorImpl.class);
+    monitor = mock(MBeanStatsMonitor.class);
 
     when(cache.getQueryService()).thenReturn(mock(InternalQueryService.class));
     when(acceptor.getStats()).thenReturn(mock(CacheServerStats.class));
@@ -99,7 +97,6 @@ public class CacheServerBridgeClientMembershipRegressionTest {
         // getNumSubscriptions -> getClientQueueSizes -> synchronizes on CacheFactory
         cacheServerBridge.getNumSubscriptions();
 
-      } catch (CacheClosedException ignored) {
       } finally {
         after.set(true);
       }
@@ -126,5 +123,4 @@ public class CacheServerBridgeClientMembershipRegressionTest {
   private void givenCacheServerBridge() {
     cacheServerBridge = new CacheServerBridge(cache, cacheServer, acceptor, monitor);
   }
-
 }

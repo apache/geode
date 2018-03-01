@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.cache;
 
 import java.util.Arrays;
 
@@ -21,14 +21,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
-import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.InterestPolicy;
-import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
@@ -42,10 +36,9 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  */
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")
-public class PRCacheListenerWithInterestPolicyAllInvocationTest
-    extends ReplicateCacheListenerInvocationTest {
+public class PRCacheListenerDistributedTest extends ReplicateCacheListenerDistributedTest {
 
   @Parameters(name = "{index}: redundancy={0}")
   public static Iterable<Integer> data() {
@@ -58,15 +51,34 @@ public class PRCacheListenerWithInterestPolicyAllInvocationTest
   @Override
   protected Region<String, Integer> createRegion(final String name,
       final CacheListener<String, Integer> listener) {
-    PartitionAttributesFactory partitionFactory = new PartitionAttributesFactory();
-    partitionFactory.setRedundantCopies(redundancy);
+    PartitionAttributesFactory<String, Integer> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(redundancy);
 
     RegionFactory<String, Integer> regionFactory = cacheRule.getCache().createRegionFactory();
     regionFactory.addCacheListener(listener);
     regionFactory.setDataPolicy(DataPolicy.PARTITION);
-    regionFactory.setPartitionAttributes(partitionFactory.create());
-    regionFactory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
+    regionFactory.setPartitionAttributes(paf.create());
 
     return regionFactory.create(name);
+  }
+
+  @Override
+  protected int expectedCreates() {
+    return 1;
+  }
+
+  @Override
+  protected int expectedUpdates() {
+    return 1;
+  }
+
+  @Override
+  protected int expectedInvalidates() {
+    return 1;
+  }
+
+  @Override
+  protected int expectedDestroys() {
+    return 1;
   }
 }
