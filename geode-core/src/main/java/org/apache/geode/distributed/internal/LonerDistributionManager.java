@@ -293,7 +293,7 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Executor getFunctionExcecutor() {
+  public Executor getFunctionExecutor() {
     return executor;
   }
 
