@@ -12,34 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal;
+package org.apache.geode.connectors.jdbc;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+/**
+ * An exception thrown when communication with an external JDBC data source fails and can be used
+ * to diagnose the cause of database communication failures.
+ *
+ * @since Geode 1.5
+ */
+public class JdbcConnectorException extends RuntimeException {
 
-import com.zaxxer.hikari.HikariDataSource;
-
-class HikariJdbcDataSource implements JdbcDataSource {
-
-  private final HikariDataSource delegate;
-
-  HikariJdbcDataSource(ConnectionConfiguration config) {
-    HikariDataSource ds = new HikariDataSource();
-    ds.setJdbcUrl(config.getUrl());
-    ds.setUsername(config.getUser());
-    ds.setPassword(config.getPassword());
-    ds.setDataSourceProperties(config.getConnectionProperties());
-    this.delegate = ds;
+  public JdbcConnectorException(Exception e) {
+    super(e);
   }
-
-  @Override
-  public Connection getConnection() throws SQLException {
-    return this.delegate.getConnection();
-  }
-
-  @Override
-  public void close() {
-    this.delegate.close();
-  }
-
 }

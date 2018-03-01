@@ -14,6 +14,8 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import java.sql.SQLException;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
@@ -49,6 +51,10 @@ public class JdbcLoader<K, V> extends AbstractJdbcCallback implements CacheLoade
     // The following cast to V is to keep the compiler happy
     // but is erased at runtime and no actual cast happens.
     checkInitialized((InternalCache) helper.getRegion().getRegionService());
-    return (V) getSqlHandler().read(helper.getRegion(), helper.getKey());
+    try {
+      return (V) getSqlHandler().read(helper.getRegion(), helper.getKey());
+    } catch (SQLException e) {
+      throw new JdbcConnectorException(e);
+    }
   }
 }
