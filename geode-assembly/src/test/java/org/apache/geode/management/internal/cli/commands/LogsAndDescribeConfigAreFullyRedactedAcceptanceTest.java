@@ -17,11 +17,11 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Scanner;
@@ -36,6 +36,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.examples.security.ExampleSecurityManager;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.util.test.TestUtil;
 
@@ -48,7 +49,7 @@ import org.apache.geode.util.test.TestUtil;
  * Each password shares the string below for easier log scanning.
  */
 @Category(AcceptanceTest.class)
-public class LogsAreFullyRedactedAcceptanceTest {
+public class LogsAndDescribeConfigAreFullyRedactedAcceptanceTest {
   private static String sharedPasswordString = "abcdefg";
 
   private File propertyFile;
@@ -58,7 +59,7 @@ public class LogsAreFullyRedactedAcceptanceTest {
   public GfshRule gfsh = new GfshRule();
 
   @Before
-  public void createDirectoriesAndFiles() throws IOException {
+  public void createDirectoriesAndFiles() throws Exception {
     propertyFile = gfsh.getTemporaryFolder().newFile("geode.properties");
     securityPropertyFile = gfsh.getTemporaryFolder().newFile("security.properties");
 
@@ -79,35 +80,43 @@ public class LogsAreFullyRedactedAcceptanceTest {
     try (FileOutputStream fileOutputStream = new FileOutputStream(securityPropertyFile)) {
       securityProperties.store(fileOutputStream, null);
     }
+
+    startSecureLocatorAndServer();
+  }
+
+  private void startSecureLocatorAndServer() throws Exception {
+    try {
+      // The json is in the root resource directory.
+      String securityJson = TestUtil.getResourcePath(
+          LogsAndDescribeConfigAreFullyRedactedAcceptanceTest.class, "/security.json");
+      // We want to add the folder to the classpath, so we strip off the filename.
+      securityJson = securityJson.substring(0, securityJson.length() - "security.json".length());
+      String startLocatorCmd =
+          new CommandStringBuilder("start locator").addOption("name", "test-locator")
+              .addOption("properties-file", propertyFile.getAbsolutePath())
+              .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
+              .addOption("J", "-Dsecure-username-jd=user-jd")
+              .addOption("J", "-Dsecure-password-jd=password-jd")
+              .addOption("classpath", securityJson).getCommandString();
+
+      String startServerCmd = new CommandStringBuilder("start server")
+          .addOption("name", "test-server").addOption("user", "viaStartMemberOptions")
+          .addOption("password", sharedPasswordString + "-viaStartMemberOptions")
+          .addOption("properties-file", propertyFile.getAbsolutePath())
+          .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
+          .addOption("J", "-Dsecure-username-jd=user-jd")
+          .addOption("J", "-Dsecure-password-jd=" + sharedPasswordString + "-password-jd")
+          .addOption("classpath", securityJson).getCommandString();
+
+      gfsh.execute(startLocatorCmd, startServerCmd);
+    } catch (Exception e) {
+      throw new Exception(
+          "Cluster could not start, failing beyond the intended scope of this test.", e);
+    }
   }
 
   @Test
   public void logsDoNotContainStringThatShouldBeRedacted() throws FileNotFoundException {
-    // The json is in the root resource directory.
-    String securityJson =
-        TestUtil.getResourcePath(LogsAreFullyRedactedAcceptanceTest.class, "/security.json");
-    // We want to add the folder to the classpath, so we strip off the filename.
-    securityJson = securityJson.substring(0, securityJson.length() - "security.json".length());
-    String startLocatorCmd =
-        new CommandStringBuilder("start locator").addOption("name", "test-locator")
-            .addOption("properties-file", propertyFile.getAbsolutePath())
-            .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
-            .addOption("J", "-Dsecure-username-jd=user-jd")
-            .addOption("J", "-Dsecure-password-jd=password-jd").addOption("classpath", securityJson)
-            .getCommandString();
-
-    String startServerCmd = new CommandStringBuilder("start server")
-        .addOption("name", "test-server").addOption("user", "viaStartMemberOptions")
-        .addOption("password", sharedPasswordString + "-viaStartMemberOptions")
-        .addOption("properties-file", propertyFile.getAbsolutePath())
-        .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
-        .addOption("J", "-Dsecure-username-jd=user-jd")
-        .addOption("J", "-Dsecure-password-jd=" + sharedPasswordString + "-password-jd")
-        .addOption("classpath", securityJson).getCommandString();
-
-
-    gfsh.execute(startLocatorCmd, startServerCmd);
-
     Collection<File> logs =
         FileUtils.listFiles(gfsh.getTemporaryFolder().getRoot(), new String[] {"log"}, true);
 
@@ -122,5 +131,22 @@ public class LogsAreFullyRedactedAcceptanceTest {
       }
     }
     softly.assertAll();
+  }
+
+  @Test
+  public void describeConfigRedactsJvmArguments() {
+    String connectCommand = new CommandStringBuilder("connect")
+        .addOption("user", "viaStartMemberOptions")
+        .addOption("password", sharedPasswordString + "-viaStartMemberOptions").getCommandString();
+
+    String describeLocatorConfigCommand = new CommandStringBuilder("describe config")
+        .addOption("hide-defaults", "false").addOption("member", "test-locator").getCommandString();
+
+    String describeServerConfigCommand = new CommandStringBuilder("describe config")
+        .addOption("hide-defaults", "false").addOption("member", "test-server").getCommandString();
+
+    GfshExecution execution =
+        gfsh.execute(connectCommand, describeLocatorConfigCommand, describeServerConfigCommand);
+    assertThat(execution.getOutputText()).doesNotContain(sharedPasswordString);
   }
 }
