@@ -225,7 +225,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
     validateRegionAttributes(region.getAttributes());
 
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
-    region.addAsyncEventQueueId(aeqId, true);
 
     region.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName, regionPath, fields,
         analyzer, fieldAnalyzers, serializer));
@@ -234,6 +233,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
         region.getAttributes(), analyzer, fieldAnalyzers, aeqId, serializer, fields);
 
     afterDataRegionCreated(luceneIndex);
+
+    region.addAsyncEventQueueId(aeqId, true);
 
     createLuceneIndexOnDataRegion(region, luceneIndex);
   }
@@ -252,6 +253,10 @@ public class LuceneServiceImpl implements InternalLuceneService {
         int primaryBucketId = (Integer) primaryBucketIterator.next();
         try {
           BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(primaryBucketId);
+          if (userBucket == null) {
+            throw new BucketNotFoundException(
+                "Bucket ID : " + primaryBucketId + " not found during lucene indexing");
+          }
           if (!userBucket.isEmpty()) {
             /**
              *
