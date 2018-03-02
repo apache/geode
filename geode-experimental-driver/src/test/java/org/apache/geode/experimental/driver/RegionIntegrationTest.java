@@ -23,34 +23,29 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class RegionIntegrationTest extends IntegrationTestBase {
-
   /** a JSON document */
   private static final String jsonDocument =
       "{" + System.lineSeparator() + "  \"name\" : \"Charlemagne\"," + System.lineSeparator()
           + "  \"age\" : 1276," + System.lineSeparator() + "  \"nationality\" : \"french\","
           + System.lineSeparator() + "  \"emailAddress\" : \"none\"" + System.lineSeparator() + "}";
 
+  @Test
+  public void putNewValueShouldIncrementSize() throws Exception {
+    Region<String, String> region = driver.getRegion("region");
+
+    region.put("key", "value");
+    assertEquals(1, region.size());
+  }
 
   @Test
   public void getShouldReturnPutValue() throws Exception {

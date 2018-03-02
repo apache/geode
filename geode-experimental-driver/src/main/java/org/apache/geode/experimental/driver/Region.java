@@ -34,12 +34,12 @@ import org.apache.geode.annotations.Experimental;
 @Experimental
 public interface Region<K, V> {
   /**
-   * Captures a snapshot of the attributes (e.g., size) of this region.
+   * Gets the number of entries in this region.
    *
-   * @return Attributes associated with this region.
+   * @return Non-negative integer count.
    * @throws IOException
    */
-  RegionAttributes getRegionAttributes() throws IOException;
+  int size() throws IOException;
 
   /**
    * Gets the value, if any, contained in this region for the <code>key</code>.

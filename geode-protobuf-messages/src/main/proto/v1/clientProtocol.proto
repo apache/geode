@@ -52,8 +52,8 @@ message Message {
         GetRegionNamesRequest getRegionNamesRequest = 14;
         GetRegionNamesResponse getRegionNamesResponse = 15;
 
-        GetRegionRequest getRegionRequest = 16;
-        GetRegionResponse getRegionResponse = 17;
+        GetSizeRequest getSizeRequest = 16;
+        GetSizeResponse getSizeResponse = 17;
 
         ExecuteFunctionOnRegionRequest executeFunctionOnRegionRequest = 18;
         ExecuteFunctionOnRegionResponse executeFunctionOnRegionResponse= 19;

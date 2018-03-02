@@ -23,15 +23,14 @@ import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message.MessageTypeCase;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnGroupRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnMemberRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionNamesRequestOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetServerOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.GetSizeRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.OqlQueryRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutRequestOperationHandler;
@@ -109,10 +108,10 @@ public class ProtobufOperationContextRegistry {
             opsResp -> ClientProtocol.Message.newBuilder().setGetRegionNamesResponse(opsResp),
             ResourcePermissions.DATA_READ));
 
-    operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREGIONREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Message::getGetRegionRequest,
-            new GetRegionRequestOperationHandler(),
-            opsResp -> ClientProtocol.Message.newBuilder().setGetRegionResponse(opsResp),
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETSIZEREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getGetSizeRequest,
+            new GetSizeRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setGetSizeResponse(opsResp),
             ResourcePermissions.DATA_READ));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETSERVERREQUEST,

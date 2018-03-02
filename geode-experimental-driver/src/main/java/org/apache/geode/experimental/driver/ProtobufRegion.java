@@ -15,7 +15,6 @@
 package org.apache.geode.experimental.driver;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +24,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message.MessageTypeCase;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetRegionRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.PutRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.RemoveRequest;
@@ -60,17 +58,13 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     this.protobufChannel = channel;
   }
 
-
   @Override
-  public RegionAttributes getRegionAttributes() throws IOException {
+  public int size() throws IOException {
     final Message request = Message.newBuilder()
-        .setGetRegionRequest(GetRegionRequest.newBuilder().setRegionName(name)).build();
-
-    return new RegionAttributes(
-        protobufChannel.sendRequest(request, MessageTypeCase.GETREGIONRESPONSE)
-            .getGetRegionResponse().getRegion());
+        .setGetSizeRequest(RegionAPI.GetSizeRequest.newBuilder().setRegionName(name)).build();
+    return protobufChannel.sendRequest(request, MessageTypeCase.GETSIZERESPONSE)
+        .getGetSizeResponse().getSize();
   }
-
 
   @Override
   public V get(K key) throws IOException {
@@ -142,7 +136,6 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
       throw new IOException("Unable to put the following keys: " + failures);
     }
   }
-
 
   @Override
   public void remove(K key) throws IOException {
