@@ -40,16 +40,16 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+public class GetSizeRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_REGION1 = "test region 1";
   private Region region1Stub;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     region1Stub = mock(Region.class);
     when(region1Stub.getName()).thenReturn(TEST_REGION1);
 
-    operationHandler = new GetRegionRequestOperationHandler();
+    operationHandler = new GetSizeRequestOperationHandler();
   }
 
   @Test
@@ -67,16 +67,9 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
 
 
     Result result = operationHandler.process(serializationService,
-        MessageUtil.makeGetRegionRequest(TEST_REGION1), getNoAuthCacheExecutionContext(cacheStub));
-    RegionAPI.GetRegionResponse response = (RegionAPI.GetRegionResponse) result.getMessage();
-    BasicTypes.Region region = response.getRegion();
-    Assert.assertEquals(TEST_REGION1, region.getName());
-    Assert.assertEquals(String.class.toString(), region.getKeyConstraint());
-    Assert.assertEquals(Scope.DISTRIBUTED_ACK.toString(), region.getScope());
-    Assert.assertEquals(DataPolicy.PERSISTENT_REPLICATE.toString(), region.getDataPolicy());
-    Assert.assertEquals(Integer.class.toString(), region.getValueConstraint());
-    Assert.assertEquals(true, region.getPersisted());
-    Assert.assertEquals(10, region.getSize());
+        MessageUtil.makeGetSizeRequest(TEST_REGION1), getNoAuthCacheExecutionContext(cacheStub));
+    RegionAPI.GetSizeResponse response = (RegionAPI.GetSizeResponse) result.getMessage();
+    Assert.assertEquals(10, response.getSize());
   }
 
   @Test
@@ -86,12 +79,10 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     String unknownRegionName = "UNKNOWN_REGION";
     Result result = operationHandler.process(serializationService,
-        MessageUtil.makeGetRegionRequest(unknownRegionName),
+        MessageUtil.makeGetSizeRequest(unknownRegionName),
         getNoAuthCacheExecutionContext(emptyCache));
     Assert.assertTrue(result instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage =
-        (ClientProtocol.ErrorResponse) result.getErrorMessage();
+    ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();
     Assert.assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
-
 }

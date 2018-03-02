@@ -59,16 +59,6 @@ message EncodedValue {
     }
 }
 
-message Region {
-    string name = 1;
-    string dataPolicy = 2;
-    string scope = 3;
-    string keyConstraint = 4;
-    string valueConstraint = 5;
-    bool persisted = 6;
-    int64 size = 7;
-}
-
 message Server {
     string hostname = 1;
     int32 port = 2;
