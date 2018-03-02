@@ -50,9 +50,7 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -78,6 +76,7 @@ import org.apache.geode.util.test.TestUtil;
 @Category(IntegrationTest.class)
 public class CacheOperationsJUnitTest {
   private final String TEST_KEY = "testKey";
+  private final String TEST_VALUE = "testValue";
   private final String TEST_REGION = "testRegion";
 
   private final String DEFAULT_STORE = "default.keystore";
@@ -250,26 +249,24 @@ public class CacheOperationsJUnitTest {
   }
 
   @Test
-  public void testNewProtocolGetRegionCall() throws Exception {
+  public void testNewProtocolGetSizeCall() throws Exception {
     System.setProperty("geode.feature-protobuf-protocol", "true");
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    ClientProtocol.Message getRegionMessage = MessageUtil.makeGetRegionRequestMessage(TEST_REGION);
+    ClientProtocol.Message putMessage = ProtobufRequestUtilities.createPutRequest(TEST_REGION,
+        ProtobufUtilities.createEntry(serializationService, TEST_KEY, TEST_VALUE));
+    protobufProtocolSerializer.serialize(putMessage, outputStream);
+    ClientProtocol.Message response = deserializeResponse(socket, protobufProtocolSerializer);
+    assertEquals(ClientProtocol.Message.MessageTypeCase.PUTRESPONSE, response.getMessageTypeCase());
+
+    ClientProtocol.Message getRegionMessage = MessageUtil.makeGetSizeRequestMessage(TEST_REGION);
     protobufProtocolSerializer.serialize(getRegionMessage, outputStream);
     ClientProtocol.Message message =
         protobufProtocolSerializer.deserialize(socket.getInputStream());
-    assertEquals(ClientProtocol.Message.MessageTypeCase.GETREGIONRESPONSE,
+    assertEquals(ClientProtocol.Message.MessageTypeCase.GETSIZERESPONSE,
         message.getMessageTypeCase());
-    RegionAPI.GetRegionResponse getRegionResponse = message.getGetRegionResponse();
-    BasicTypes.Region region = getRegionResponse.getRegion();
-
-    assertEquals(TEST_REGION, region.getName());
-    assertEquals(0, region.getSize());
-    assertEquals(false, region.getPersisted());
-    assertEquals(DataPolicy.NORMAL.toString(), region.getDataPolicy());
-    assertEquals("", region.getKeyConstraint());
-    assertEquals("", region.getValueConstraint());
-    assertEquals(Scope.DISTRIBUTED_NO_ACK, Scope.fromString(region.getScope()));
+    RegionAPI.GetSizeResponse getSizeResponse = message.getGetSizeResponse();
+    assertEquals(1, getSizeResponse.getSize());
   }
 
   private void validateGetResponse(Socket socket,
@@ -412,6 +409,4 @@ public class CacheOperationsJUnitTest {
     SocketCreator socketCreator = new SocketCreator(sslConfig);
     return socketCreator.connectForClient("localhost", cacheServerPort, 5000);
   }
-
-
 }

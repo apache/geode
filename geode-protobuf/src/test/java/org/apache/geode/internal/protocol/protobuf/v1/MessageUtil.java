@@ -29,7 +29,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestU
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 
 public class MessageUtil {
-
   public static void performAndVerifyHandshake(Socket socket) throws IOException {
     sendHandshake(socket);
     verifyHandshakeSuccess(socket);
@@ -48,13 +47,13 @@ public class MessageUtil {
         .writeDelimitedTo(socket.getOutputStream());
   }
 
-  public static RegionAPI.GetRegionRequest makeGetRegionRequest(String requestRegion) {
-    return RegionAPI.GetRegionRequest.newBuilder().setRegionName(requestRegion).build();
+  public static RegionAPI.GetSizeRequest makeGetSizeRequest(String requestRegion) {
+    return RegionAPI.GetSizeRequest.newBuilder().setRegionName(requestRegion).build();
   }
 
-  public static ClientProtocol.Message makeGetRegionRequestMessage(String requestRegion) {
-    return ClientProtocol.Message.newBuilder()
-        .setGetRegionRequest(makeGetRegionRequest(requestRegion)).build();
+  public static ClientProtocol.Message makeGetSizeRequestMessage(String requestRegion) {
+    return ClientProtocol.Message.newBuilder().setGetSizeRequest(makeGetSizeRequest(requestRegion))
+        .build();
   }
 
   public static ClientProtocol.Message createGetRequestMessage() {
