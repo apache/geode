@@ -68,7 +68,7 @@ public class CloseConnectionOp {
     protected Object processResponse(Message msg) throws Exception {
       // CloseConnectionOp doesn't return anything - we wait for a response
       // so that we know that the server has processed the request before
-      // we return from execute();
+      // we return from execute()
       return null;
     }
 

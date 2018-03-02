@@ -196,8 +196,6 @@ public class JGroupsMessenger implements Messenger {
 
     String properties;
     try {
-      // PlainConfigurator config = PlainConfigurator.getInstance(is);
-      // properties = config.getProtocolStackString();
       StringBuilder sb = new StringBuilder(3000);
       BufferedReader br;
       br = new BufferedReader(new InputStreamReader(is, "US-ASCII"));
@@ -485,20 +483,6 @@ public class JGroupsMessenger implements Messenger {
         logger
             .info("Unable to find getPhysicallAddress method in UDP - parsing its address instead");
       }
-
-      // if (this.jgAddress == null) {
-      // String addr = udp.getLocalPhysicalAddress();
-      // int cidx = addr.lastIndexOf(':'); // IPv6 literals might have colons
-      // String host = addr.substring(0, cidx);
-      // int jgport = Integer.parseInt(addr.substring(cidx+1, addr.length()));
-      // try {
-      // this.jgAddress = new JGAddress(logicalAddress, new IpAddress(InetAddress.getByName(host),
-      // jgport));
-      // } catch (UnknownHostException e) {
-      // myChannel.disconnect();
-      // throw new SystemConnectException("unable to initialize jgroups address", e);
-      // }
-      // }
     }
 
     // install the address in the JGroups channel protocols
@@ -715,7 +699,6 @@ public class JGroupsMessenger implements Messenger {
         }
         final String channelClosed =
             LocalizedStrings.GroupMembershipService_CHANNEL_CLOSED.toLocalizedString();
-        // services.getManager().membershipFailure(channelClosed, problem);
         throw new DistributedSystemDisconnectedException(channelClosed, problem);
       }
     } // useMcast
@@ -793,7 +776,6 @@ public class JGroupsMessenger implements Messenger {
           }
           final String channelClosed =
               LocalizedStrings.GroupMembershipService_CHANNEL_CLOSED.toLocalizedString();
-          // services.getManager().membershipFailure(channelClosed, problem);
           throw new DistributedSystemDisconnectedException(channelClosed, problem);
         }
       } // send individually
@@ -994,9 +976,6 @@ public class JGroupsMessenger implements Messenger {
 
       short ordinal = Version.readOrdinal(dis);
 
-      // logger.info("JGroupsMessenger read ordinal {} version is {}. My version is {}",
-      // ordinal, Version.fromOrdinalOrCurrent(ordinal), Version.CURRENT);
-
       if (ordinal < Version.CURRENT_ORDINAL) {
         dis = new VersionedDataInputStream(dis, Version.fromOrdinalNoThrow(ordinal, true));
       }
@@ -1075,7 +1054,6 @@ public class JGroupsMessenger implements Messenger {
       if (readPK) {
         // need to read PK
         pk = InternalDataSerializer.readByteArray(dis);
-        // encrypt.setPublicKey(publickey, mbr);
         data = InternalDataSerializer.readByteArray(dis);
         // using prefixed pk from sender
         data = encryptLocal.decryptData(data, pk);

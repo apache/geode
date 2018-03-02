@@ -457,9 +457,7 @@ public class RegionFactory<K, V> {
    * @deprecated as of 6.5
    */
   @Deprecated
-  public void setPublisher(boolean v) {
-    // this.attrsFactory.setPublisher(v);
-  }
+  public void setPublisher(boolean v) {}
 
   /**
    * Sets whether or not conflation is enabled for sending messages to async peers.

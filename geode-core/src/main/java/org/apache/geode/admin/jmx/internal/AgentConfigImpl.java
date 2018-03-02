@@ -14,8 +14,19 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.distributed.internal.DistributionConfig.*;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_CIPHERS;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_ENABLED;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -688,16 +699,12 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
             toString(LOCATOR_REMOTE_COMMAND, locator.getRemoteCommand()));
         props.setProperty(LOCATOR_BIND_ADDRESS + i,
             toString(LOCATOR_BIND_ADDRESS, locator.getBindAddress()));
-        // props.setProperty(LOCATOR_DS_PROPERTIES + i,
-        // getdsPropertiesString(locator));
       }
     }
 
     if (includeDSProperties) {
       props.setProperty(ENTITY_CONFIG_XML_FILE_NAME,
           toString(ENTITY_CONFIG_XML_FILE_NAME, getEntityConfigXMLFile()));
-      // This could be different each time agent is started
-      // props.setProperty(SYSTEM_ID_NAME, toString(getSystemId()));
       props.setProperty(MCAST_PORT, toString(MCAST_PORT, getMcastPort()));
       props.setProperty(MCAST_ADDRESS, toString(MCAST_ADDRESS, getMcastAddress()));
       props.setProperty(LOCATORS, toString(LOCATORS, getLocators()));
@@ -1196,8 +1203,6 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     } else if (prop.equals(MEMBERSHIP_PORT_RANGE_NAME)) {
       return LocalizedStrings.AgentConfigImpl_ALLOWED_RANGE_OF_UDP_PORTS_TO_FORM_UNIQUE_MEMBERSHIP_ID
           .toLocalizedString();
-      // } else if (prop.equals(SYSTEM_ID_NAME)) {
-      // return "The id of the distributed system";
     } else if (prop.equals(ENTITY_CONFIG_XML_FILE_NAME)) {
       return LocalizedStrings.AgentConfigImpl_XML_CONFIGURATION_FILE_FOR_MANAGED_ENTITIES
           .toLocalizedString();
@@ -1239,10 +1244,6 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (prop.equals(AUTO_CONNECT_NAME)) {
       return LocalizedStrings.AgentConfigImpl_WILL_THE_AGENT_AUTOMATICALLY_CONNECT_TO_THE_DISTRIBUTED_SYSTEM
           .toLocalizedString();
-
-      // } else if (prop.equals(SYSTEM_NAME_NAME)) {
-      // return "The logical name of the distributed system";
-
     } else if (prop.equals(HTTP_ENABLED_NAME)) {
       return LocalizedStrings.AgentConfigImpl_WILL_THE_AGENT_START_THE_HTTP_JMX_ADAPTER
           .toLocalizedString();
@@ -1554,29 +1555,10 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     }
   }
 
-  // /**
-  // * Validates that snmpBindAddress is not null and then returns the string form of it.
-  // */
-  // private String validateSnmpBindAddress(InetAddress snmpBindAddress) {
-  // if (snmpBindAddress == null) {
-  // throw new IllegalArgumentException("SnmpBindAddress must not be null");
-  // }
-  // return toString(snmpBindAddress);
-  // }
-
   /**
    * SnmpDirectory must be specified if SNMP is enabled. This directory must also exist.
    */
   private String validateSnmpDirectory(String snmpDir) {
-    /*
-     * if (isSnmpEnabled() && isEmpty(snmpDir)) { throw new
-     * IllegalArgumentException(LocalizedStrings.
-     * AgentConfigImpl_SNMPDIRECTORY_MUST_BE_SPECIFIED_BECAUSE_SNMP_IS_ENABLED.toLocalizedString());
-     * } File root new File(snmpDir); if (!root.exists()) throw new
-     * IllegalArgumentException(LocalizedStrings.AgentConfigImpl_SNMPDIRECTORY_DOES_NOT_EXIST.
-     * toLocalizedString());
-     */
-
     return snmpDir;
   }
 
@@ -1649,15 +1631,6 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
       return value;
     }
   }
-  // /**
-  // * Validates that rmiBindAddress is not null and then returns the string form of it.
-  // */
-  // private String validateRmiBindAddress(InetAddress rmiBindAddress) {
-  // if (rmiBindAddress == null) {
-  // throw new IllegalArgumentException("RmiBindAddress must not be null");
-  // }
-  // return toString(rmiBindAddress);
-  // }
 
   /**
    * Validates working directory is not null or empty.

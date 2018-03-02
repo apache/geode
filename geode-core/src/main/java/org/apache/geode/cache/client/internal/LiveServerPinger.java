@@ -86,7 +86,6 @@ public class LiveServerPinger extends EndpointListenerAdapter {
     @Override
     public void run2() {
       if (endpoint.timeToPing(pingIntervalNanos)) {
-        // logger.fine("DEBUG pinging " + server);
         try {
           PingOp.execute(pool, endpoint.getLocation());
         } catch (Exception e) {
@@ -103,9 +102,6 @@ public class LiveServerPinger extends EndpointListenerAdapter {
           // socket timeout exception, security exception, failure to connect).
           pool.getEndpointManager().serverCrashed(endpoint);
         }
-      } else {
-        // logger.fine("DEBUG skipping ping of " + server
-        // + " because lastAccessed=" + endpoint.getLastAccessed());
       }
     }
   }

@@ -14,19 +14,53 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 
 import java.net.InetAddress;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.management.*;
+import javax.management.InstanceNotFoundException;
+import javax.management.ListenerNotFoundException;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanException;
+import javax.management.MBeanNotificationInfo;
+import javax.management.MBeanOperationInfo;
+import javax.management.MBeanParameterInfo;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.management.OperationsException;
+import javax.management.ReflectionException;
 
 import mx4j.AbstractDynamicMBean;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.CacheVm;
+import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.admin.GemFireMemberStatus;
+import org.apache.geode.admin.RegionSubRegionSnapshot;
+import org.apache.geode.admin.StatisticResource;
+import org.apache.geode.admin.SystemMember;
+import org.apache.geode.admin.SystemMemberCacheServer;
 import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.SubscriptionAttributes;
@@ -226,11 +260,6 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
     notificationsInfo[8] =
         new MBeanNotificationInfo(notificationTypes, Notification.class.getName(),
             "A region was removed from a cache on a member of this distributed system.");
-
-    // String[] notificationTypes5 = new String[] {AdminDistributedSystemJmxImpl.NOTIF_STAT_ALERT};
-    // notificationsInfo[9] = new MBeanNotificationInfo(notificationTypes5,
-    // Notification.class.getName(),
-    // "An alert based on statistic(s) has been raised.");
 
     return notificationsInfo;
   }
@@ -542,11 +571,6 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * Cache.addCacheServer().
    */
 
-  // private static final String VERSION = "gemfire.version.string";
-  // private static final String MEMBER_COUNT = "gemfire.membercount.int";
-  // private static final String GATEWAYHUB_COUNT = "gemfire.gatewayhubcount.int";
-  // private static final String CLIENT_COUNT = "gemfire.clientcount.int";
-
   private static final String MEMBER_ID = DistributionConfig.GEMFIRE_PREFIX + "member.id.string";
   private static final String MEMBER_NAME =
       DistributionConfig.GEMFIRE_PREFIX + "member.name.string";
@@ -663,13 +687,6 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           } else {// Mark it of Application type if neither a gateway hub nor a server
             memberType = TYPE_NAME_APPLICATION;
           }
-          // if (isGatewayHub) {
-          // memberType = TYPE_NAME_GATEWAYHUB;
-          // } else if (isServer) {
-          // memberType = TYPE_NAME_CACHESERVER;
-          // } else {//Mark it of Application type if neither a gateway nor a server
-          // memberType = TYPE_NAME_APPLICATION;
-          // }
           allDetails.put(MEMBER_TYPE, memberType);
 
           // 2. Region info

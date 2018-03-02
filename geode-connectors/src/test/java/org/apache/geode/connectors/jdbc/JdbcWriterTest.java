@@ -62,7 +62,7 @@ public class JdbcWriterTest {
   }
 
   @Test
-  public void beforeUpdateWithPdxInstanceWritesToSqlHandler() {
+  public void beforeUpdateWithPdxInstanceWritesToSqlHandler() throws Exception {
     writer.beforeUpdate(entryEvent);
 
     verify(sqlHandler, times(1)).write(any(), any(), any(), eq(pdxInstance));
@@ -77,14 +77,14 @@ public class JdbcWriterTest {
   }
 
   @Test
-  public void beforeCreateWithPdxInstanceWritesToSqlHandler() {
+  public void beforeCreateWithPdxInstanceWritesToSqlHandler() throws Exception {
     writer.beforeCreate(entryEvent);
 
     verify(sqlHandler, times(1)).write(any(), any(), any(), eq(pdxInstance));
   }
 
   @Test
-  public void beforeDestroyWithPdxInstanceWritesToSqlHandler() {
+  public void beforeDestroyWithPdxInstanceWritesToSqlHandler() throws Exception {
     writer.beforeDestroy(entryEvent);
 
     verify(sqlHandler, times(1)).write(any(), any(), any(), eq(pdxInstance));

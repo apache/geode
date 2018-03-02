@@ -399,9 +399,6 @@ public class ExecuteRegionFunctionOp {
       getMessage().addObjPart(memberMappedArg);
 
       this.executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
-      // byte flags = this.executeOnBucketSet ?
-      // (byte)(0x00 | ExecuteFunctionHelper.BUCKETS_AS_FILTER_MASK) : 0x00;
-      // flags = isReExecute == 1? (byte)(flags | ExecuteFunctionHelper.IS_REXECUTE_MASK) : flags;
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
 
       getMessage().addBytesPart(new byte[] {flags});
@@ -461,9 +458,6 @@ public class ExecuteRegionFunctionOp {
       }
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);
-      // byte flags = this.executeOnBucketSet ?
-      // (byte)(0x00 | Op.BUCKETS_AS_FILTER_MASK) : 0x00;
-      // flags = isReExecute == 1? (byte)(flags | Op.IS_REXECUTE_MASK) : flags;
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
 
       getMessage().addBytesPart(new byte[] {flags});

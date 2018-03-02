@@ -106,8 +106,6 @@ public class ConnectionImpl implements Connection {
     theSocket = sc.connectForClient(location.getHostName(), location.getPort(), handshakeTimeout,
         socketBufferSize);
     theSocket.setTcpNoDelay(true);
-    // System.out.println("ConnectionImpl setting buffer sizes: " +
-    // socketBufferSize);
     theSocket.setSendBufferSize(socketBufferSize);
 
     // Verify buffer sizes
@@ -124,8 +122,6 @@ public class ConnectionImpl implements Connection {
     }
     theSocket.setSoTimeout(readTimeout);
     endpoint = endpointManager.referenceEndpoint(location, this.status.getMemberId());
-    // logger.warning("ESTABLISHING ENDPOINT:"+location+" MEMBERID:"+endpoint.getMemberId(),new
-    // Exception());
     this.connectFinished = true;
     this.endpoint.getStats().incConnections(1);
     return status;

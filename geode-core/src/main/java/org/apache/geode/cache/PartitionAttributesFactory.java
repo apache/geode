@@ -121,7 +121,7 @@ public class PartitionAttributesFactory<K, V> {
    *             <p>
    *             <em>This setting must be the same in all processes using the Region.</em>
    */
-  public static final String GLOBAL_MAX_BUCKETS_PROPERTY = "GLOBAL_MAX_BUCKETS"; // "GLOBAL_MAX_BUCKETS";
+  public static final String GLOBAL_MAX_BUCKETS_PROPERTY = "GLOBAL_MAX_BUCKETS";
 
   /**
    * The default total number of buckets (113).
@@ -337,53 +337,6 @@ public class PartitionAttributesFactory<K, V> {
     }
   }
 
-  // EXPIRATION ATTRIBUTES
-
-  /**
-   * Sets the idleTimeout expiration attributes for region entries for the next
-   * <code>PartitionAttributes</code> created.
-   *
-   * @param idleTimeout the idleTimeout ExpirationAttributes for entries in this region
-   * @throws IllegalArgumentException if idleTimeout is null
-   * @return PartitionAttributeFactory
-   */
-  /*
-   * public PartitionAttributesFactory<K,V> setEntryIdleTimeout( ExpirationAttributes idleTimeout) {
-   * if (idleTimeout == null) { throw new IllegalArgumentException(LocalizedStrings.
-   * PartitionAttributesFactory_IDLETIMEOUT_MUST_NOT_BE_NULL.toLocalizedString()); }
-   * this.partitionAttributes.entryIdleTimeoutExpiration = idleTimeout; return this; }
-   */
-
-  /**
-   * Sets the timeToLive expiration attributes for region entries for the next
-   * <code>PartitionAttributes</code> created.
-   *
-   * @param timeToLive the timeToLive ExpirationAttributes for entries in this region
-   * @throws IllegalArgumentException if timeToLive is null
-   */
-  /*
-   * public PartitionAttributesFactory<K,V> setEntryTimeToLive( ExpirationAttributes timeToLive) {
-   * if (timeToLive == null) { throw new IllegalArgumentException(LocalizedStrings.
-   * PartitionAttributesFactory_TIMETOLIVE_MUST_NOT_BE_NULL.toLocalizedString()); }
-   * this.partitionAttributes.entryTimeToLiveExpiration = timeToLive; return this; }
-   */
-
-  /**
-   * Enables/Disables local Caching for this node for region entries for the next
-   * <code>PartitionAttributes</code> created. Default is true.
-   *
-   * @param isLocalCache
-   * @return PartitionAttributesFactory
-   */
-  // TODO: Enable when we have local caching propertly implemented - mthomas
-  // 2/32/2006
-  // public PartitionAttributesFactory<K,V> enableLocalCaching(boolean isLocalCache)
-  // {
-  // this.partitionAttributes.localCaching = isLocalCache;
-  // return this;
-  // }
-  // DISTRIBUTION ATTRIBUTES
-  // FACTORY METHOD
   /**
    * Creates a <code>PartitionAttributes</code> with the current settings.
    *
@@ -394,24 +347,7 @@ public class PartitionAttributesFactory<K, V> {
   @SuppressWarnings("unchecked")
   public PartitionAttributes<K, V> create() {
     this.partitionAttributes.validateAttributes();
-    // setDefaults(); [bruce] defaults are set in the PartitionedRegion when the
-    // attributes are applied
+    // defaults are set in the PartitionedRegion when the attributes are applied
     return (PartitionAttributes<K, V>) this.partitionAttributes.clone();
   }
-
-  // /**
-  // * This method sets the properties to their default values in preparation
-  // * for returning a PartitionAttributes to the user. For example, if it
-  // * doesn't have localMaxMemory, it would set it to
-  // * LOCAL_MAX_MEMORY_DEFAULT.
-  // *
-  // */
-  // private void setDefaults()
-  // {
-  // if (this.partitionAttributes.localProperties
-  // .get(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY) == null) {
-  // this.partitionAttributes.setLocalMaxMemory(PartitionAttributesFactory.LOCAL_MAX_MEMORY_DEFAULT);
-  // }
-  //
-  // }
 }

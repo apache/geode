@@ -63,10 +63,8 @@ public class GetMemberInformationFunction implements InternalFunction {
     return true;
   }
 
+  /* Read only function */
   @Override
-  /**
-   * Read only function
-   */
   public boolean optimizeForWrite() {
     return false;
   }
@@ -75,10 +73,6 @@ public class GetMemberInformationFunction implements InternalFunction {
   public void execute(FunctionContext functionContext) {
     try {
       Cache cache = functionContext.getCache();
-
-      /*
-       * TODO: 1) Get the CPU usage%
-       */
 
       InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
       DistributionConfig config = system.getConfig();
@@ -99,7 +93,7 @@ public class GetMemberInformationFunction implements InternalFunction {
       memberInfo.setHeapUsage(Long.toString(bytesToMeg(memUsage.getUsed())));
       memberInfo.setMaxHeapSize(Long.toString(bytesToMeg(memUsage.getMax())));
       memberInfo.setInitHeapSize(Long.toString(bytesToMeg(memUsage.getInit())));
-      memberInfo.setHostedRegions(CliUtil.getAllRegionNames());
+      memberInfo.setHostedRegions(CliUtil.getAllRegionNames(cache));
 
       List<CacheServer> csList = cache.getCacheServers();
 

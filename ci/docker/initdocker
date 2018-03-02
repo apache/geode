@@ -23,7 +23,7 @@ IMAGE_ROOT="$PWD/image-root"
 mkdir -p /tmp/build/graph
 mount -t tmpfs -o size=5g tmpfs /tmp/build/graph
 
-dockerd --data-root /tmp/build/graph -s aufs >/tmp/dockerd.log 2>&1 &
+dockerd --data-root /tmp/build/graph -s overlay2 >/tmp/dockerd.log 2>&1 &
 
 until docker info &>/dev/null; do
   echo waiting for docker to come up...

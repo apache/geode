@@ -68,7 +68,7 @@ public class ExportConfigCommand implements GfshCommand {
           help = CliStrings.EXPORT_CONFIG__DIR__HELP) String dir) {
     InfoResultData infoData = ResultBuilder.createInfoResultData();
 
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, member);
+    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, member, getCache());
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }

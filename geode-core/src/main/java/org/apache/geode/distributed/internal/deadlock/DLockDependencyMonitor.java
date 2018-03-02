@@ -34,7 +34,6 @@ public class DLockDependencyMonitor implements DependencyMonitor {
 
   static {
     INSTANCE = new DLockDependencyMonitor();
-    // DependencyMonitorManager.addMonitor(INSTANCE);
   }
 
 

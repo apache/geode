@@ -55,7 +55,7 @@ public class RegionExpirationIntegrationTest {
 
   @Before
   public void setUp() {
-    regionName = getClass().getSimpleName() + "_" + testName.getMethodName();
+    regionName = testName.getMethodName() + "_Region";
     spyCacheListener = mock(CacheListener.class);
 
     cache = new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0").create();

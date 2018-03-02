@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
@@ -152,5 +154,19 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
         .build();
 
     protobufChannel.sendRequest(request, MessageTypeCase.REMOVERESPONSE);
+  }
+
+  @Override
+  public Set<K> keySet() throws IOException {
+    final Message request = Message.newBuilder()
+        .setKeySetRequest(RegionAPI.KeySetRequest.newBuilder().setRegionName(name)).build();
+    final Message message = protobufChannel.sendRequest(request, MessageTypeCase.KEYSETRESPONSE);
+    final RegionAPI.KeySetResponse keySetResponse = message.getKeySetResponse();
+
+    Set<K> keys = new HashSet<>(keySetResponse.getKeysCount());
+    for (BasicTypes.EncodedValue value : keySetResponse.getKeysList()) {
+      keys.add((K) ValueEncoder.decodeValue(value));
+    }
+    return keys;
   }
 }

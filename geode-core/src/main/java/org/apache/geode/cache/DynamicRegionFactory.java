@@ -257,7 +257,7 @@ public abstract class DynamicRegionFactory {
 
         if (isClient) {
           af.setScope(Scope.LOCAL);
-          af.setDataPolicy(DataPolicy.NORMAL); // MirrorType(MirrorType.NONE);
+          af.setDataPolicy(DataPolicy.NORMAL);
           af.setStatisticsEnabled(true);
           String cpName = this.config.getPoolName();
           if (cpName != null) {
@@ -279,7 +279,7 @@ public abstract class DynamicRegionFactory {
           af.setScope(Scope.DISTRIBUTED_ACK);
           if (!this.config.getPersistBackup()) { // if persistBackup, the data policy has already
                                                  // been set
-            af.setDataPolicy(DataPolicy.REPLICATE); // setMirrorType(MirrorType.KEYS_VALUES);
+            af.setDataPolicy(DataPolicy.REPLICATE);
           }
 
           for (GatewaySender gs : this.cache.getGatewaySenders()) {

@@ -26,11 +26,12 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
@@ -45,6 +46,7 @@ import org.apache.geode.management.internal.cli.result.TableBuilder.Table;
  */
 
 public class CommandResult implements Result {
+  private static final Logger logger = LogService.getLogger();
 
   private GfJsonObject gfJsonObject;
   private Status status;
@@ -169,7 +171,7 @@ public class CommandResult implements Result {
     }
   }
 
-  void buildObjectResultOutput() {
+  private void buildObjectResultOutput() {
     try {
       Table resultTable = TableBuilder.newTable();
       resultTable.setColumnSeparator(" : ");
@@ -379,7 +381,7 @@ public class CommandResult implements Result {
     return isPrimitive;
   }
 
-  void buildComposite() {
+  private void buildComposite() {
     try {
       GfJsonObject content = getContent();
       if (content != null) {
@@ -405,7 +407,7 @@ public class CommandResult implements Result {
     } catch (GfJsonException e) {
       resultLines
           .add("Error occurred while processing Command Result. Internal Error - Invalid Result.");
-      LogWrapper.getInstance().info(
+      logger.info(
           "Error occurred while processing Command Result. Internal Error - Invalid Result.", e);
     } finally {
       isDataBuilt = true;
@@ -473,11 +475,6 @@ public class CommandResult implements Result {
     return valueString.split(GfshParser.LINE_SEPARATOR);
   }
 
-  /**
-   * @param rowGroup
-   * @param content
-   * @throws GfJsonException
-   */
   private void buildTable(RowGroup rowGroup, GfJsonObject content) throws GfJsonException {
     GfJsonArray columnNames = content.names();
     int numOfColumns = columnNames.size();
@@ -509,13 +506,6 @@ public class CommandResult implements Result {
     }
   }
 
-  /**
-   * @param rowGroup
-   * @param dataRows
-   * @param accumulatedData
-   * @return rows
-   * @throws GfJsonException
-   */
   private Row[] buildRows(RowGroup rowGroup, Row[] dataRows, GfJsonArray accumulatedData)
       throws GfJsonException {
     int size = accumulatedData.size();
@@ -536,6 +526,7 @@ public class CommandResult implements Result {
     return dataRows;
   }
 
+  @Override
   public boolean hasIncomingFiles() {
     GfJsonArray fileDataArray = null;
     try {
@@ -553,6 +544,7 @@ public class CommandResult implements Result {
     return numTimesSaved;
   }
 
+  @Override
   public void saveIncomingFiles(String directory) throws IOException {
     // dump file data if any
     try {
@@ -652,7 +644,7 @@ public class CommandResult implements Result {
     return getFooter(gfJsonObject);
   }
 
-  public String getFooter(GfJsonObject gfJsonObject) {
+  private String getFooter(GfJsonObject gfJsonObject) {
     return gfJsonObject.getString(ResultData.RESULT_FOOTER);
   }
 

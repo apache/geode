@@ -1008,13 +1008,6 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
                   new Object[] {Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)}));
     }
 
-    // disabled in 5.1 - multicast and locators can be used together
-    // if (!DEFAULT_LOCATORS.equals(this.getLocators()) &&
-    // this.mcastPort > 0) {
-    // throw new IllegalArgumentException(
-    // "mcastPort must be zero when locators are specified");
-    // }
-
     LogLevel.getLogWriterLevel(this.logLevel);
 
     if (this.logFileSizeLimit < MIN_LOG_FILE_SIZE_LIMIT

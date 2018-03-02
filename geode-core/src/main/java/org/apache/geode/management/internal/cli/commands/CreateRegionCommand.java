@@ -501,7 +501,7 @@ public class CreateRegionCommand implements GfshCommand {
               throw (IllegalArgumentException) object;
             } else if (object instanceof Throwable) {
               Throwable th = (Throwable) object;
-              LogWrapper.getInstance().info(ExceptionUtils.getStackTrace((th)));
+              LogWrapper.getInstance(getCache()).info(ExceptionUtils.getStackTrace((th)));
               throw new IllegalArgumentException(CliStrings.format(
                   CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_REASON_1,
                   regionPath, th.getMessage()));

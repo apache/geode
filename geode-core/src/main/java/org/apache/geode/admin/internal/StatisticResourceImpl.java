@@ -43,7 +43,7 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
   /** GemFire system member which owns this statistic resource */
   protected SystemMember member;
   /** The array of statistics in this resource */
-  protected Statistic[] statistics; // = new Statistic[0];
+  protected Statistic[] statistics;
 
   // -------------------------------------------------------------------------
   // Constructor(s)

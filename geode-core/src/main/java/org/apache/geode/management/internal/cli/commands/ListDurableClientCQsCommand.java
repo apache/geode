@@ -60,7 +60,7 @@ public class ListDurableClientCQsCommand implements GfshCommand {
     try {
 
       boolean noResults = true;
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

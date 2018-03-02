@@ -43,13 +43,14 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
-public class PartitionedRegionCloseDUnitTest implements Serializable {
+public class PartitionedRegionCloseDistributedTest implements Serializable {
 
+  private static final int REDUNDANT_COPIES = 1;
   private static final int TOTAL_NUM_BUCKETS = 3;
   private static final int NUM_PUTS = 3;
-  private static final int REDUNDANT_COPIES = 1;
 
   private String regionName;
+
   private VM accessor;
   private VM[] datastores;
 
@@ -165,16 +166,16 @@ public class PartitionedRegionCloseDUnitTest implements Serializable {
   }
 
   private void createRegion(final boolean accessor) {
-    PartitionAttributesFactory partitionFactory = new PartitionAttributesFactory();
-    partitionFactory.setRedundantCopies(REDUNDANT_COPIES);
+    PartitionAttributesFactory<String, Integer> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(REDUNDANT_COPIES);
     if (accessor) {
-      partitionFactory.setLocalMaxMemory(0);
+      paf.setLocalMaxMemory(0);
     }
-    partitionFactory.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
+    paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
 
     RegionFactory<String, Integer> regionFactory = cacheRule.getCache().createRegionFactory();
     regionFactory.setDataPolicy(DataPolicy.PARTITION);
-    regionFactory.setPartitionAttributes(partitionFactory.create());
+    regionFactory.setPartitionAttributes(paf.create());
 
     regionFactory.create(regionName);
   }
@@ -183,13 +184,13 @@ public class PartitionedRegionCloseDUnitTest implements Serializable {
     CLOSE_REGION((region) -> region.close()),
     LOCAL_DESTROY_REGION((region) -> region.localDestroyRegion());
 
-    private final Consumer<Region> strategy;
+    private final Consumer<Region<Integer, String>> strategy;
 
-    RegionRemoval(final Consumer<Region> strategy) {
+    RegionRemoval(final Consumer<Region<Integer, String>> strategy) {
       this.strategy = strategy;
     }
 
-    void remove(final Region region) {
+    void remove(final Region<Integer, String> region) {
       strategy.accept(region);
     }
   }

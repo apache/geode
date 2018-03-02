@@ -32,6 +32,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionNamesR
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetServerOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.KeySetOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.OqlQueryRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutRequestOperationHandler;
@@ -158,5 +159,11 @@ public class ProtobufOperationContextRegistry {
             new OqlQueryRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setOqlQueryResponse(opsResp),
             new ResourcePermission(Resource.DATA, Operation.READ)));
+
+    operationContexts.put(MessageTypeCase.KEYSETREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getKeySetRequest,
+            new KeySetOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setKeySetResponse(opsResp),
+            KeySetOperationHandler::determineRequiredPermission));
   }
 }

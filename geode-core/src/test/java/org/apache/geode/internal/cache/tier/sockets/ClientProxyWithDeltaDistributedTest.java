@@ -63,7 +63,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class ClientProxyWithDeltaTest implements Serializable {
+public class ClientProxyWithDeltaDistributedTest implements Serializable {
 
   private static final String PROXY_NAME = "PROXY_NAME";
   private static final String CACHING_PROXY_NAME = "CACHING_PROXY_NAME";
@@ -72,11 +72,11 @@ public class ClientProxyWithDeltaTest implements Serializable {
   private static InternalClientCache clientCache;
 
   private String hostName;
+  private int serverPort;
 
   private VM server;
   private VM client1;
   private VM client2;
-  private int serverPort;
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
@@ -169,7 +169,7 @@ public class ClientProxyWithDeltaTest implements Serializable {
     });
 
     client2.invoke(() -> {
-      await().atMost(30, SECONDS).until(() -> ClientListener.keyZeroCreated.get());
+      await().atMost(30, SECONDS).until(() -> ClientListener.KEY_ZERO_CREATED.get());
       assertThat(CacheClientUpdater.fullValueRequested).isFalse();
       assertThat(DeltaEnabledObject.fromDeltaInvoked()).isFalse();
     });
@@ -261,11 +261,11 @@ public class ClientProxyWithDeltaTest implements Serializable {
 
   private static class ClientListener extends CacheListenerAdapter<Integer, DeltaEnabledObject> {
 
-    static AtomicBoolean keyZeroCreated = new AtomicBoolean(false);
+    static final AtomicBoolean KEY_ZERO_CREATED = new AtomicBoolean(false);
 
     @Override
     public void afterCreate(EntryEvent<Integer, DeltaEnabledObject> event) {
-      keyZeroCreated.set(true);
+      KEY_ZERO_CREATED.set(true);
     }
   }
 
@@ -274,11 +274,13 @@ public class ClientProxyWithDeltaTest implements Serializable {
    */
   private static class DeltaEnabledObject implements Delta, DataSerializable {
 
-    private static final AtomicBoolean fromDeltaInvoked = new AtomicBoolean();
+    private static final AtomicBoolean FROM_DELTA_INVOKED = new AtomicBoolean();
 
     private int value = 0;
 
-    public DeltaEnabledObject() {}
+    public DeltaEnabledObject() {
+      // nothing
+    }
 
     public void setValue(int value) {
       this.value = value;
@@ -286,8 +288,8 @@ public class ClientProxyWithDeltaTest implements Serializable {
 
     @Override
     public void fromDelta(DataInput in) throws IOException {
-      fromDeltaInvoked.set(true);
-      this.value = DataSerializer.readPrimitiveInt(in);
+      FROM_DELTA_INVOKED.set(true);
+      value = DataSerializer.readPrimitiveInt(in);
     }
 
     @Override
@@ -297,15 +299,15 @@ public class ClientProxyWithDeltaTest implements Serializable {
 
     @Override
     public void toDelta(DataOutput out) throws IOException {
-      DataSerializer.writePrimitiveInt(this.value, out);
+      DataSerializer.writePrimitiveInt(value, out);
     }
 
     static void resetFromDeltaInvoked() {
-      fromDeltaInvoked.set(false);
+      FROM_DELTA_INVOKED.set(false);
     }
 
     static boolean fromDeltaInvoked() {
-      return fromDeltaInvoked.get();
+      return FROM_DELTA_INVOKED.get();
     }
 
     @Override

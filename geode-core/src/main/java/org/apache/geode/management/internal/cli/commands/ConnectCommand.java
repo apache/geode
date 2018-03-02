@@ -282,7 +282,7 @@ public class ConnectCommand implements GfshCommand {
 
       gfsh.setOperationInvoker(operationInvoker);
 
-      LogWrapper.getInstance()
+      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
           .info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
       return ResultBuilder.createInfoResult(
           CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
@@ -358,8 +358,8 @@ public class ConnectCommand implements GfshCommand {
       gfsh.setOperationInvoker(operationInvoker);
       infoResultData.addLine(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
           jmxHostPortToConnect.toString(false)));
-      LogWrapper.getInstance().info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
-          jmxHostPortToConnect.toString(false)));
+      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).info(CliStrings
+          .format(CliStrings.CONNECT__MSG__SUCCESS, jmxHostPortToConnect.toString(false)));
       return ResultBuilder.buildResult(infoResultData);
     } catch (SecurityException | AuthenticationFailedException e) {
       // if it's security exception, and we already sent in username and password, still returns the
@@ -497,7 +497,7 @@ public class ConnectCommand implements GfshCommand {
   }
 
   private Result handleException(Exception e, String errorMessage) {
-    LogWrapper.getInstance().severe(errorMessage, e);
+    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).severe(errorMessage, e);
     return ResultBuilder.createConnectionErrorResult(errorMessage);
   }
 

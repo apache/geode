@@ -14,7 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -124,7 +127,7 @@ public class GfshInitFileJUnitTest {
 
     this.junitLoggerHandler = new JUnitLoggerHandler();
 
-    this.gfshFileLogger = LogWrapper.getInstance();
+    this.gfshFileLogger = LogWrapper.getInstance(null);
     Field logWrapper_INSTANCE = LogWrapper.class.getDeclaredField("INSTANCE");
     logWrapper_INSTANCE.setAccessible(true);
     logWrapper_INSTANCE.set(null, this.gfshFileLogger);

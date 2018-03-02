@@ -195,9 +195,6 @@ public class DestroyOp {
         }
       }
       if (prSingleHopEnabled) {
-        // if (log.fineEnabled()) {
-        // log.fine("reading prSingleHop part #" + (partIdx+1));
-        // }
         Part part = msg.getPart(partIdx++);
         byte[] bytesReceived = part.getSerializedForm();
         if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION

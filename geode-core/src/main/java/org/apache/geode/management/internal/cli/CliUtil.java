@@ -34,16 +34,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -54,6 +54,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
@@ -74,16 +75,18 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 public class CliUtil {
   public static final FileFilter JAR_FILE_FILTER = new CustomFileFilter(".jar");
 
-  public static InternalCache getCacheIfExists() {
-    InternalCache cache;
+  /**
+   * Returns the InternalCache returned by the provided method.
+   * If the provided method would raise a CacheClosedException, returns null instead.
+   */
+  public static InternalCache getCacheIfExists(Supplier<InternalCache> getCacheMethod) {
+    InternalCache cache = null;
     try {
-      cache = getInternalCache();
-    } catch (CacheClosedException e) {
-      // ignore & return null
-      cache = null;
+      cache = getCacheMethod.get();
+    } catch (CacheClosedException ignored) {
     }
-
     return cache;
+
   }
 
   public static String cliDependenciesExist(boolean includeGfshDependencies) {
@@ -212,7 +215,7 @@ public class CliUtil {
 
   public static Set<DistributedMember> getMembersWithAsyncEventQueue(InternalCache cache,
       String queueId) {
-    Set<DistributedMember> members = findMembers(null, null);
+    Set<DistributedMember> members = findMembers(null, null, cache);
     return members.stream().filter(m -> getAsyncEventQueueIds(cache, m).contains(queueId))
         .collect(Collectors.toSet());
   }
@@ -224,8 +227,7 @@ public class CliUtil {
         .map(x -> x.getKeyProperty("queue")).collect(Collectors.toSet());
   }
 
-  public static Set<String> getAllRegionNames() {
-    InternalCache cache = getInternalCache();
+  public static Set<String> getAllRegionNames(Cache cache) {
     Set<String> regionNames = new HashSet<>();
     Set<Region<?, ?>> rootRegions = cache.rootRegions();
 
@@ -246,10 +248,8 @@ public class CliUtil {
    * groups or members.
    */
   public static Set<DistributedMember> findMembersIncludingLocators(String[] groups,
-      String[] members) {
-    InternalCache cache = getInternalCache();
+      String[] members, InternalCache cache) {
     Set<DistributedMember> allMembers = getAllMembers(cache);
-
     return findMembers(allMembers, groups, members);
   }
 
@@ -257,8 +257,8 @@ public class CliUtil {
    * Finds all Servers which belong to the given arrays of groups or members. Does not include
    * locators.
    */
-  public static Set<DistributedMember> findMembers(String[] groups, String[] members) {
-    InternalCache cache = getInternalCache();
+  public static Set<DistributedMember> findMembers(String[] groups, String[] members,
+      InternalCache cache) {
     Set<DistributedMember> allNormalMembers = getAllNormalMembers(cache);
 
     return findMembers(allNormalMembers, groups, members);
@@ -303,22 +303,17 @@ public class CliUtil {
     return matchingMembers;
   }
 
-  public static DistributedMember getDistributedMemberByNameOrId(String memberNameOrId) {
-    DistributedMember memberFound = null;
-
-    if (memberNameOrId != null) {
-      InternalCache cache = getInternalCache();
-      Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
-      for (DistributedMember member : memberSet) {
-        if (memberNameOrId.equalsIgnoreCase(member.getId())
-            || memberNameOrId.equalsIgnoreCase(member.getName())) {
-          memberFound = member;
-          break;
-        }
-      }
+  public static DistributedMember getDistributedMemberByNameOrId(String memberNameOrId,
+      InternalCache cache) {
+    if (memberNameOrId == null) {
+      return null;
     }
-    return memberFound;
+
+    Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
+    return memberSet.stream().filter(member -> memberNameOrId.equalsIgnoreCase(member.getId())
+        || memberNameOrId.equalsIgnoreCase(member.getName())).findFirst().orElse(null);
   }
+
 
   /**
    * Even thought this is only used in a test, caller of MemberMXBean.processCommand(String, Map,
@@ -566,10 +561,7 @@ public class CliUtil {
     }
   }
 
-
   static class CustomFileFilter implements FileFilter {
-
-
     private String extensionWithDot;
 
     public CustomFileFilter(String extensionWithDot) {
@@ -581,14 +573,12 @@ public class CliUtil {
       String name = pathname.getName();
       return name.endsWith(extensionWithDot);
     }
-
   }
 
   public static class DeflaterInflaterData implements Serializable {
-
     private static final long serialVersionUID = 1104813333595216795L;
-    private final int dataLength;
 
+    private final int dataLength;
     private final byte[] data;
 
     public DeflaterInflaterData(int dataLength, byte[] data) {
@@ -608,11 +598,5 @@ public class CliUtil {
     public String toString() {
       return String.valueOf(dataLength);
     }
-  }
-
-  // Methods that will be removed by the next commit:
-
-  private static InternalCache getInternalCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
   }
 }

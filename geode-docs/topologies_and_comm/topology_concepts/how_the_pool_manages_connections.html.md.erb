@@ -67,11 +67,26 @@ The pool closes a pool connection when one of the following occurs:
 
 When it closes a connection that a thread is using, the pool switches the thread to another server connection, opening a new one if needed.
 
-## <a id="how_the_pool_manages_connections__section_FFC261DF179843D8BE06B35964B80D69" class="no-quick-link"></a>How the Pool Manages Subscription Connections
+## <a id="how_the_pool_manages_subscription_connections" class="no-quick-link"></a>How the Pool Manages Subscription Connections
 
-The pool’s subscription connection is established in the same way as the pool connections, by requesting server information from the locator and then sending a request to the server, or, if you are using a static server list, by connecting to the next server in the list.
+The pool’s subscription connection is established in the same way as the pool connections, by
+requesting server information from the locator and then sending a request to the server, or, if you
+are using a static server list, by connecting to the next server in the list.
 
-Subscription connections remain open for as long as needed and are not subject to the timeouts that apply to pool connections.
+The server sends ping messages once per second by a task scheduled in a timer.
+You can adjust the interval with the system property `gemfire.serverToClientPingPeriod`, specified in milliseconds.
+The server sends its ping-interval setting to the client. The client then uses this and a
+multiplier to establish a read-timeout in the cache.
+
+You can set the client property `subscription-timeout-multiplier` to enable timeout of the
+subscription feed with failover to another server.
+
+Value options include:
+ 
+- A value of zero (the default) disables timeouts.
+
+- A value of one or more times out the server connection after the specified number of ping intervals have
+elapsed. A value of one is not recommended.
 
 ## <a id="how_the_pool_manages_connections__section_6286FB8DC6564F0AA082004B447F1FC4" class="no-quick-link"></a>How the Pool Conditions Server Load
 

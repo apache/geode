@@ -135,7 +135,8 @@ public class ChangeLogLevelCommand implements GfshCommand {
 
           }
         } catch (Exception ex) {
-          LogWrapper.getInstance().warning("change log level command exception " + ex);
+          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+              .warning("change log level command exception " + ex);
         }
       }
 

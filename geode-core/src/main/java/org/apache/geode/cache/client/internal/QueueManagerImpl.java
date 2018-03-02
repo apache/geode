@@ -62,7 +62,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -80,8 +79,6 @@ import org.apache.geode.security.GemFireSecurityException;
 public class QueueManagerImpl implements QueueManager {
   private static final Logger logger = LogService.getLogger();
 
-  // private static final long SERVER_LOCATION_TIMEOUT = Long.getLong(
-  // "gemfire.QueueManagerImpl.SERVER_LOCATION_TIMEOUT", 120000).longValue();
   private static final Comparator QSIZE_COMPARATOR = new QSizeComparator();
 
   protected final long redundancyRetryInterval;
@@ -280,7 +277,6 @@ public class QueueManagerImpl implements QueueManager {
       // Use a separate timer for queue management tasks
       // We don't want primary recovery (and therefore user threads) to wait for
       // things like pinging connections for health checks.
-      // this.background = background;
       final String name = "queueTimer-" + this.pool.getName();
       this.recoveryThread = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
 
@@ -294,9 +290,6 @@ public class QueueManagerImpl implements QueueManager {
       });
       recoveryThread.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
-      // TODO - use yet another Timer or the like for these tasks? We know
-      // we don't want them in the recoveryThread, because the ThreadIdToSequenceIdExpiryTask
-      // will wait for primary recovery.
       getState().start(background, getPool().getSubscriptionAckInterval());
 
       // initialize connections
@@ -1242,10 +1235,6 @@ public class QueueManagerImpl implements QueueManager {
         isFirstNewConnection);
     recoverSingleList(InterestType.OQL_QUERY, recoveredConnection, durable, receiveValues,
         isFirstNewConnection);
-    // VJR: Recover CQs moved to recoverAllInterestTypes() to avoid multiple
-    // calls for receiveValues flag being true and false.
-    // recoverCqs(recoveredConnection, durable);
-    // recoverSingleList(InterestType.CQ, recoveredConnection, durable,isFirstNewConnection);
   }
 
   protected void recoverAllInterestTypes(final Connection recoveredConnection,

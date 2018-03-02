@@ -86,12 +86,12 @@ public class GCCommand implements GfshCommand {
 
     for (Object object : resultList) {
       if (object instanceof Exception) {
-        LogWrapper.getInstance().fine("Exception in GC " + ((Throwable) object).getMessage(),
-            ((Throwable) object));
+        LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+            .fine("Exception in GC " + ((Throwable) object).getMessage(), ((Throwable) object));
         continue;
       } else if (object instanceof Throwable) {
-        LogWrapper.getInstance().fine("Exception in GC " + ((Throwable) object).getMessage(),
-            ((Throwable) object));
+        LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+            .fine("Exception in GC " + ((Throwable) object).getMessage(), ((Throwable) object));
         continue;
       }
 
@@ -106,7 +106,8 @@ public class GCCommand implements GfshCommand {
               resultMap.get("TimeSpentInGC"));
         }
       } else {
-        LogWrapper.getInstance().fine("ResultMap was null ");
+        LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+            .fine("ResultMap was null ");
       }
     }
 

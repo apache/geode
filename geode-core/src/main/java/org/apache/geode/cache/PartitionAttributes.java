@@ -43,20 +43,6 @@ import org.apache.geode.cache.partition.PartitionListener;
  */
 public interface PartitionAttributes<K, V> {
   /**
-   * returns entryTimeToLive in ExpirationAttributes.
-   *
-   * @return expirationAttributes
-   */
-  // public ExpirationAttributes getEntryTimeToLive();
-
-  /**
-   * returns entryIdleTimeout in ExpirationAttributes.
-   *
-   * @return expirationAttributes
-   */
-  // public ExpirationAttributes getEntryIdleTimeout();
-
-  /**
    * The number of Backups for an entry in PartitionedRegion. This value should be between 0 and 3
    * (for a total of 1 to 4 instances of the data). The default value is 0.
    *

@@ -215,8 +215,6 @@ public class GMSLocator implements Locator, NetLocator {
         services.getMessenger().setPublicKey(findRequest.getMyPublicKey(),
             findRequest.getMemberID());
       } else {
-        // GMSEncrypt.registerMember(findRequest.getMyPublicKey(),
-        // findRequest.getMemberID());
         if (findRequest.getMyPublicKey() != null) {
           registerMbrVsPK.put(new InternalDistributedMemberWrapper(findRequest.getMemberID()),
               findRequest.getMyPublicKey());

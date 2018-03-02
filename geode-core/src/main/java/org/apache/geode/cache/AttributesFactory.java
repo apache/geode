@@ -427,15 +427,6 @@ public class AttributesFactory<K, V> {
     } else {
       // Set all fields to false, essentially starting with a new set of defaults
       this.regionAttributes.setAllHasFields(false);
-
-
-
-      //
-      // // Special Partitioned Region handling by
-      // // pretending the user didn't explicitly ask for the default scope
-      // if (AbstractRegion.DEFAULT_SCOPE.equals(this.regionAttributes.getScope())) {
-      // this.regionAttributes.setHasScope(false);
-      // }
     }
 
     this.regionAttributes.compressor = regionAttributes.getCompressor();
@@ -856,10 +847,7 @@ public class AttributesFactory<K, V> {
    * @deprecated as of 6.5
    */
   @Deprecated
-  public void setPublisher(boolean v) {
-    // this.regionAttributes.publisher = v;
-    // this.regionAttributes.setHasPublisher(true);
-  }
+  public void setPublisher(boolean v) {}
 
   /**
    * Sets whether or not conflation is enabled for sending messages to async peers. Default value is
@@ -1396,14 +1384,6 @@ public class AttributesFactory<K, V> {
               LocalizedStrings.AttributesFactory_EXPIRATIONACTIONLOCAL_INVALIDATE_ON_THE_ENTRIES_IS_INCOMPATIBLE_WITH_DISTRIBUTED_REPLICATION
                   .toLocalizedString());
         }
-        // TODO: Is it possible to add this check while region is getting created
-        // for(String senderId : attrs.getGatewaySenderIds()){
-        // if(sender.isParallel()){
-        // throw new IllegalStateException(
-        // LocalizedStrings.AttributesFactory_PARALLELGATEWAYSENDER_0_IS_INCOMPATIBLE_WITH_DISTRIBUTED_REPLICATION
-        // .toLocalizedString(sender));
-        // }
-        // }
       }
     }
 
@@ -1487,15 +1467,6 @@ public class AttributesFactory<K, V> {
       if (attrs.getPoolName() != null) {
         throw new IllegalStateException("Setting pool name on a Partitioned Region is not allowed");
       }
-
-      // if (attrs.getScope() == Scope.GLOBAL) {
-      // throw new IllegalStateException(
-      // "Global Scope is incompatible with Partitioned Regions");
-      // }
-      // if (attrs.getScope() == Scope.LOCAL) {
-      // throw new IllegalStateException(
-      // "Local Scope is incompatible with Partitioned Regions");
-      // }
       if (pa.getTotalMaxMemory() <= 0) {
         throw new IllegalStateException(
             LocalizedStrings.AttributesFactory_TOTAL_SIZE_OF_PARTITION_REGION_MUST_BE_0
@@ -1974,10 +1945,6 @@ public class AttributesFactory<K, V> {
       return this.isCloningEnabled;
     }
 
-    // public void setCloningEnable(boolean val) {
-    // this.isCloningEnabled = val;
-    // setHasCloningEnabled(true);
-    // }
     public boolean isDiskSynchronous() {
       return this.diskSynchronous;
     }

@@ -85,7 +85,7 @@ public class DeployCommand implements GfshCommand {
     List<String> jarFullPaths = CommandExecutionContext.getFilePathFromShell();
 
     Set<DistributedMember> targetMembers;
-    targetMembers = CliUtil.findMembers(groups, null);
+    targetMembers = CliUtil.findMembers(groups, null, getCache());
 
     List results = new ArrayList();
     ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
