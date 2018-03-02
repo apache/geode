@@ -577,9 +577,18 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   private boolean isTransactionInternalSuspendNeeded(LocalRegion region) {
-    boolean resetTxState = this.realDeal == null
-        && (!region.canStoreDataLocally() || restoreSetOperationTransactionBehavior);
+    // for peer accessor, do not bootstrap transaction in the node as subsequent operations
+    // will fail as transaction should be on data node only
+    boolean resetTxState =
+        this.realDeal == null && (isPeerAccessor(region) || restoreSetOperationTransactionBehavior);
     return resetTxState;
+  }
+
+  private boolean isPeerAccessor(LocalRegion region) {
+    if (region.hasServerProxy()) {
+      return false;
+    }
+    return !region.canStoreDataLocally();
   }
 
   @Override
