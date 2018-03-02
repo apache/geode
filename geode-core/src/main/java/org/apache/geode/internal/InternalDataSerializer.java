@@ -138,6 +138,28 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * serialization.
    */
   private static final Map<String, DataSerializer> classesToSerializers = new ConcurrentHashMap<>();
+
+
+  /**
+   * This list contains classes that Geode's classes subclass, such as antlr AST classes which
+   * are used by our Object Query Language. It also contains certain
+   * classes that are DataSerializable but end up being serialized as part of other serializable
+   * objects. VersionedObjectList, for instance, is serialized as part of a
+   * partial putAll exception object.
+   * <p>
+   * Do not java-serialize objects that Geode does not have complete control over. This
+   * leaves us open to security attacks such as Gadget Chains and compromises the ability
+   * to do a rolling upgrade from one version of Geode to the next.
+   * <p>
+   * In general you shouldn't use java serialization and you should implement
+   * DataSerializableFixedID
+   * for internal Geode objects. This gives you better control over backward-compatibility.
+   * <p>
+   * Do not add to this list unless absolutely necessary. Instead put your classes either
+   * in the sanctionedSerializables file for your module or in its excludedClasses file.
+   * Run AnalyzeSerializables to generate the content for the file.
+   * <p>
+   */
   private static final String SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN =
       "java.**;javax.management.**" + ";javax.print.attribute.EnumSyntax" // used for some old enums
           + ";antlr.**" // query AST objects
@@ -155,11 +177,10 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           + ";org.apache.geode.internal.cache.tier.sockets.VersionedObjectList" // putAll
           + ";org.apache.shiro.*;org.apache.shiro.authz.*;org.apache.shiro.authc.*" // security
                                                                                     // services
-          + ";org.apache.logging.log4j.**" // export logs
-          + ";org.apache.geode.connectors.jdbc.internal.**"
+          + ";org.apache.logging.log4j.Level" + ";com.healthmarketscience.rmiio.RemoteInputStream"
+          + ";org.apache.geode.connectors.jdbc.internal.**" // TODO - remove this! See GEODE-4752
           + ";org.apache.geode.modules.util.SessionCustomExpiry" // geode-modules
-          + ";com.healthmarketscience.rmiio.*;com.sun.proxy.*" // Jar deployment
-          + ";";
+          + ";com.sun.proxy.*" + ";";
 
 
   private static InputStreamFilter defaultSerializationFilter = new EmptyInputStreamFilter();
@@ -233,9 +254,10 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       Collection<DistributedSystemService> services) {
     logger.info("initializing InternalDataSerializer with {} services", services.size());
     if (distributionConfig.getValidateSerializableObjects()) {
-      if (!ClassUtils.isClassAvailable("sun.misc.ObjectInputFilter")) {
+      if (!ClassUtils.isClassAvailable("sun.misc.ObjectInputFilter")
+          && !ClassUtils.isClassAvailable("java.io.ObjectInputFilter")) {
         throw new GemFireConfigException(
-            "A serialization filter has been specified but this version of Java does not support serialization filters - sun.misc.ObjectInputFilter is not available");
+            "A serialization filter has been specified but this version of Java does not support serialization filters - ObjectInputFilter is not available");
       }
       serializationFilter =
           new ObjectInputStreamFilterWrapper(SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN
