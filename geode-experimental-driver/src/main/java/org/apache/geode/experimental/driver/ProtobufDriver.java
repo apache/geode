@@ -15,20 +15,16 @@
 package org.apache.geode.experimental.driver;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message.MessageTypeCase;
-import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetRegionNamesRequest;
 
@@ -84,9 +80,24 @@ public class ProtobufDriver implements Driver {
   @Override
   public void close() {
     try {
-      this.channel.close();
-    } catch (IOException e) {
-      // ignore
+      final Message disconnectClientRequest = ClientProtocol.Message.newBuilder()
+          .setDisconnectClientRequest(
+              ConnectionAPI.DisconnectClientRequest.newBuilder().setReason("Driver closed"))
+          .build();
+      final ConnectionAPI.DisconnectClientResponse disconnectClientResponse =
+          channel.sendRequest(disconnectClientRequest, MessageTypeCase.DISCONNECTCLIENTRESPONSE)
+              .getDisconnectClientResponse();
+      if (Objects.isNull(disconnectClientResponse)) {
+        // The server did not acknowledge the disconnect request; ignore for now.
+      }
+    } catch (IOException ioe) {
+      // NOP
+    } finally {
+      try {
+        this.channel.close();
+      } catch (IOException e) {
+        // ignore
+      }
     }
   }
 

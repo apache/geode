@@ -72,6 +72,9 @@ message Message {
 
         KeySetRequest keySetRequest = 28;
         KeySetResponse keySetResponse = 29;
+
+        DisconnectClientRequest disconnectClientRequest = 30;
+        DisconnectClientResponse disconnectClientResponse = 31;
     }
 }
 
