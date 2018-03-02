@@ -314,8 +314,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
       this.managementListener.afterIndexCreated(index);
     }
 
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(index.getName(), index.getRegionPath());
-    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
     AbstractPartitionedRepositoryManager repositoryManager =
         (AbstractPartitionedRepositoryManager) index.getRepositoryManager();
     repositoryManager.allowRepositoryComputation();
