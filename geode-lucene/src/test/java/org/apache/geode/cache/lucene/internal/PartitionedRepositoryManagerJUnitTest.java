@@ -141,7 +141,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     PowerMockito.mockStatic(PartitionedRegionHelper.class);
     PowerMockito.when(PartitionedRegionHelper.getPRRoot(cache)).thenReturn(prRoot);
     repoManager = new PartitionedRepositoryManager(indexForPR, serializer);
-    repoManager.setUserRegionForRepositoryManager();
+    repoManager.setUserRegionForRepositoryManager(userRegion);
     repoManager.allowRepositoryComputation();
   }
 

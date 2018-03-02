@@ -61,8 +61,8 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     this.closed = false;
   }
 
-  public void setUserRegionForRepositoryManager() {
-    this.userRegion = (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());
+  public void setUserRegionForRepositoryManager(PartitionedRegion userRegion) {
+    this.userRegion = userRegion;
   }
 
   @Override

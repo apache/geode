@@ -18,6 +18,7 @@ import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
 
 public class LuceneRawIndex extends LuceneIndexImpl {
 
@@ -39,7 +40,7 @@ public class LuceneRawIndex extends LuceneIndexImpl {
   @Override
   protected void createLuceneListenersAndFileChunkRegions(
       PartitionedRepositoryManager partitionedRepositoryManager) {
-    partitionedRepositoryManager.setUserRegionForRepositoryManager();
+    partitionedRepositoryManager.setUserRegionForRepositoryManager((PartitionedRegion) dataRegion);
   }
 
   @Override
