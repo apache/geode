@@ -26,7 +26,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ListAsyncEventQueuesFunction;
@@ -46,14 +45,14 @@ public class ListAsyncEventQueuesCommand implements GfshCommand {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers = CliUtil.getAllNormalMembers(getCache());
+      Set<DistributedMember> targetMembers = getAllNormalMembers(getCache());
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
-      ResultCollector<?, ?> rc = CliUtil.executeFunction(new ListAsyncEventQueuesFunction(),
-          new Object[] {}, targetMembers);
+      ResultCollector<?, ?> rc =
+          executeFunction(new ListAsyncEventQueuesFunction(), new Object[] {}, targetMembers);
       List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
       for (CliFunctionResult result : results) {

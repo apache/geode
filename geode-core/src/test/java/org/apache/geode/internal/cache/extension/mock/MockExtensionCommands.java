@@ -23,13 +23,15 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -173,14 +175,22 @@ public class MockExtensionCommands implements GfshCommand {
   protected Result executeFunctionOnAllMembersTabulateResultPersist(final Function function,
       final boolean addXmlElement, final Object... args) {
     final InternalCache cache = getCache();
-    final Set<DistributedMember> members = CliUtil.getAllNormalMembers(cache);
+    final Set<DistributedMember> members = getAllNormalMembers(cache);
 
-    @SuppressWarnings("unchecked")
+    Execution execution;
+
+    if (args != null) {
+      execution = FunctionService.onMembers(members).setArguments(args);
+    } else {
+      execution = FunctionService.onMembers(members);
+    }
+
+    ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+
     final ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
-        (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) CliUtil
-            .executeFunction(function, args, members);
-    final List<CliFunctionResult> functionResults =
-        (List<CliFunctionResult>) resultCollector.getResult();
+        (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) (ResultCollector<?, ?>) execution
+            .execute(function);
+    final List<CliFunctionResult> functionResults = resultCollector.getResult();
 
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     final TabularResultData tabularResultData = ResultBuilder.createTabularResultData();

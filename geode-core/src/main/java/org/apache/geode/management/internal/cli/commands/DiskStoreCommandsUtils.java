@@ -18,12 +18,8 @@ package org.apache.geode.management.internal.cli.commands;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
-import java.util.Set;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
 
 class DiskStoreCommandsUtils {
   static void configureLogging(final List<String> commandList) {
@@ -51,10 +47,5 @@ class DiskStoreCommandsUtils {
       invalidDirectories = builder.toString();
     }
     return invalidDirectories;
-  }
-
-  static Set<DistributedMember> getNormalMembers(final InternalCache cache) {
-    // TODO determine what this does (as it is untested and unmockable!)
-    return CliUtil.getAllNormalMembers(cache);
   }
 }

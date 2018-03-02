@@ -29,7 +29,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.GarbageCollectionFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -69,7 +68,7 @@ public class GCCommand implements GfshCommand {
     } else {
       // gc on entire cluster
       // exclude locators
-      dsMembers = CliUtil.getAllNormalMembers(cache);
+      dsMembers = getAllNormalMembers(cache);
       result = executeAndBuildResult(resultTable, dsMembers);
 
     }
@@ -81,16 +80,15 @@ public class GCCommand implements GfshCommand {
 
     List<?> resultList;
     Function garbageCollectionFunction = new GarbageCollectionFunction();
-    resultList =
-        (List<?>) CliUtil.executeFunction(garbageCollectionFunction, null, dsMembers).getResult();
+    resultList = (List<?>) executeFunction(garbageCollectionFunction, null, dsMembers).getResult();
 
     for (Object object : resultList) {
       if (object instanceof Exception) {
-        LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+        LogWrapper.getInstance(getCacheIfExists())
             .fine("Exception in GC " + ((Throwable) object).getMessage(), ((Throwable) object));
         continue;
       } else if (object instanceof Throwable) {
-        LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+        LogWrapper.getInstance(getCacheIfExists())
             .fine("Exception in GC " + ((Throwable) object).getMessage(), ((Throwable) object));
         continue;
       }
@@ -106,8 +104,7 @@ public class GCCommand implements GfshCommand {
               resultMap.get("TimeSpentInGC"));
         }
       } else {
-        LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-            .fine("ResultMap was null ");
+        LogWrapper.getInstance(getCacheIfExists()).fine("ResultMap was null ");
       }
     }
 

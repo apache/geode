@@ -27,7 +27,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.FetchSharedConfigurationStatusFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -59,8 +58,7 @@ public class StatusClusterConfigServiceCommand implements GfshCommand {
 
   private TabularResultData getSharedConfigurationStatus(Set<DistributedMember> locators) {
     boolean isSharedConfigRunning = false;
-    ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(fetchSharedConfigStatusFunction, null, locators);
+    ResultCollector<?, ?> rc = executeFunction(fetchSharedConfigStatusFunction, null, locators);
     List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
     TabularResultData table = ResultBuilder.createTabularResultData();
     table.setHeader("Status of shared configuration on locators");

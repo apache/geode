@@ -25,7 +25,6 @@ import java.util.TreeSet;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class RegionCommandsUtils {
@@ -47,10 +46,9 @@ public class RegionCommandsUtils {
     PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW);
   }
 
-  static void validateGroups(InternalCache cache, String[] groups) {
+  static void validateGroups(Set<DistributedMember> members, String[] groups) {
     if (groups != null && groups.length != 0) {
       Set<String> existingGroups = new HashSet<>();
-      Set<DistributedMember> members = CliUtil.getAllNormalMembers(cache);
       for (DistributedMember distributedMember : members) {
         List<String> memberGroups = distributedMember.getGroups();
         existingGroups.addAll(memberGroups);

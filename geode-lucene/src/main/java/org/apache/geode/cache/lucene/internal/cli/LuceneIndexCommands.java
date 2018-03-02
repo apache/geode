@@ -487,7 +487,7 @@ public class LuceneIndexCommands implements GfshCommand {
   protected ResultCollector<?, ?> executeFunctionOnAllMembers(Function function,
       final LuceneFunctionSerializable functionArguments)
       throws IllegalArgumentException, CommandResultException {
-    Set<DistributedMember> targetMembers = CliUtil.getAllNormalMembers(getCache());
+    Set<DistributedMember> targetMembers = getAllNormalMembers(getCache());
     return executeFunction(function, functionArguments, targetMembers);
   }
 

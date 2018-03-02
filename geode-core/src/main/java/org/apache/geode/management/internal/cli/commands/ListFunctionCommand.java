@@ -28,7 +28,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ListFunctionFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -56,7 +55,7 @@ public class ListFunctionCommand implements GfshCommand {
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
     boolean accumulatedData = false;
 
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, members, getCache());
+    Set<DistributedMember> targetMembers = findMembers(groups, members, getCache());
 
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
@@ -64,7 +63,7 @@ public class ListFunctionCommand implements GfshCommand {
 
     try {
       ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(this.listFunctionFunction, new Object[] {matches}, targetMembers);
+          executeFunction(this.listFunctionFunction, new Object[] {matches}, targetMembers);
       List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
       for (CliFunctionResult result : results) {

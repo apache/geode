@@ -84,7 +84,7 @@ public class NetstatCommand implements GfshCommand {
       if (members != null) {
         Set<String> notFoundMembers = new HashSet<>();
         for (String memberIdOrName : members) {
-          Set<DistributedMember> membersToExecuteOn = CliUtil.getAllMembers(system);
+          Set<DistributedMember> membersToExecuteOn = getAllMembers(system);
           boolean memberFound = false;
           for (DistributedMember distributedMember : membersToExecuteOn) {
             String memberName = distributedMember.getName();
@@ -112,7 +112,7 @@ public class NetstatCommand implements GfshCommand {
           membersToExecuteOn = system.getGroupMembers(group);
         } else {
           // consider all members
-          membersToExecuteOn = CliUtil.getAllMembers(system);
+          membersToExecuteOn = getAllMembers(system);
         }
 
         for (DistributedMember distributedMember : membersToExecuteOn) {
@@ -136,7 +136,7 @@ public class NetstatCommand implements GfshCommand {
       if (!hostMemberMap.isEmpty()) {
         Set<DistributedMember> membersToExecuteOn = new HashSet<>(hostMemberMap.values());
         ResultCollector<?, ?> netstatResult =
-            CliUtil.executeFunction(NetstatFunction.INSTANCE, nfa, membersToExecuteOn);
+            executeFunction(NetstatFunction.INSTANCE, nfa, membersToExecuteOn);
         List<?> resultList = (List<?>) netstatResult.getResult();
         for (Object aResultList : resultList) {
           NetstatFunction.NetstatFunctionResult netstatFunctionResult =
@@ -171,13 +171,13 @@ public class NetstatCommand implements GfshCommand {
       }
       result = ResultBuilder.buildResult(resultData);
     } catch (IllegalArgumentException e) {
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+      LogWrapper.getInstance(getCacheIfExists())
           .info(CliStrings.format(
               CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
               new Object[] {Arrays.toString(members)}));
       result = ResultBuilder.createUserErrorResult(e.getMessage());
     } catch (RuntimeException e) {
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+      LogWrapper.getInstance(getCacheIfExists())
           .info(CliStrings.format(
               CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
               new Object[] {Arrays.toString(members)}), e);

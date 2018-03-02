@@ -26,7 +26,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.SubscriptionQueueSizeResult;
 import org.apache.geode.management.internal.cli.functions.GetSubscriptionQueueSizeFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -56,7 +55,7 @@ public class CountDurableCQEventsCommand implements GfshCommand {
 
     Result result;
     try {
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
+      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId, getCache());
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
@@ -66,7 +65,7 @@ public class CountDurableCQEventsCommand implements GfshCommand {
       params[0] = durableClientId;
       params[1] = cqName;
       final ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(new GetSubscriptionQueueSizeFunction(), params, targetMembers);
+          executeFunction(new GetSubscriptionQueueSizeFunction(), params, targetMembers);
       final List<SubscriptionQueueSizeResult> funcResults =
           (List<SubscriptionQueueSizeResult>) rc.getResult();
 

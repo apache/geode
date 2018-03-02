@@ -521,12 +521,12 @@ public class CreateRegionCommand implements GfshCommand {
     return attributes;
   }
 
-  private static boolean isClusterWideSameConfig(InternalCache cache, String regionPath) {
+  private boolean isClusterWideSameConfig(InternalCache cache, String regionPath) {
     ManagementService managementService = ManagementService.getExistingManagementService(cache);
 
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
 
-    Set<DistributedMember> allMembers = CliUtil.getAllNormalMembers(cache);
+    Set<DistributedMember> allMembers = getAllNormalMembers(cache);
 
     RegionAttributesData regionAttributesToValidateAgainst = null;
     for (DistributedMember distributedMember : allMembers) {

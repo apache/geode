@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetector;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -54,7 +53,7 @@ public class ShowDeadlockCommand implements GfshCommand {
       }
       InternalCache cache = getCache();
 
-      Set<DistributedMember> allMembers = CliUtil.getAllMembers(cache);
+      Set<DistributedMember> allMembers = getAllMembers(cache);
       GemFireDeadlockDetector gfeDeadLockDetector = new GemFireDeadlockDetector(allMembers);
       DependencyGraph dependencyGraph = gfeDeadLockDetector.find();
       Collection<Dependency> deadlock = dependencyGraph.findCycle();

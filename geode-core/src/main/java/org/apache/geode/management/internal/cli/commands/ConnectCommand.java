@@ -282,7 +282,7 @@ public class ConnectCommand implements GfshCommand {
 
       gfsh.setOperationInvoker(operationInvoker);
 
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+      LogWrapper.getInstance(getCacheIfExists())
           .info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
       return ResultBuilder.createInfoResult(
           CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
@@ -358,7 +358,7 @@ public class ConnectCommand implements GfshCommand {
       gfsh.setOperationInvoker(operationInvoker);
       infoResultData.addLine(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
           jmxHostPortToConnect.toString(false)));
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).info(CliStrings
+      LogWrapper.getInstance(getCacheIfExists()).info(CliStrings
           .format(CliStrings.CONNECT__MSG__SUCCESS, jmxHostPortToConnect.toString(false)));
       return ResultBuilder.buildResult(infoResultData);
     } catch (SecurityException | AuthenticationFailedException e) {
@@ -497,7 +497,7 @@ public class ConnectCommand implements GfshCommand {
   }
 
   private Result handleException(Exception e, String errorMessage) {
-    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).severe(errorMessage, e);
+    LogWrapper.getInstance(getCacheIfExists()).severe(errorMessage, e);
     return ResultBuilder.createConnectionErrorResult(errorMessage);
   }
 

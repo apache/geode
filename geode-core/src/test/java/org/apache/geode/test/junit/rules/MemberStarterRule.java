@@ -31,12 +31,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -45,6 +47,7 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.cli.CacheMembers;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
@@ -276,8 +279,13 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
-    await().atMost(2, TimeUnit.SECONDS).until(
-        () -> CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId).size() == serverCount);
+    await().atMost(2, TimeUnit.SECONDS).until(() -> {
+      InternalCache cache = getCache();
+      CacheMembers cacheMembers = () -> cache;
+      Set<DistributedMember> members = cacheMembers.findMembers(null, null, cache);
+      return members.stream().filter(m -> CliUtil.getAsyncEventQueueIds(cache, m).contains(queueId))
+          .collect(Collectors.toSet()).size() == serverCount;
+    });
   }
 
   abstract void stopMember();

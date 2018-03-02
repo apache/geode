@@ -29,7 +29,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.DurableCqNamesResult;
 import org.apache.geode.management.internal.cli.functions.ListDurableCqNamesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -60,14 +59,14 @@ public class ListDurableClientCQsCommand implements GfshCommand {
     try {
 
       boolean noResults = true;
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
+      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId, getCache());
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       final ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(new ListDurableCqNamesFunction(), durableClientId, targetMembers);
+          executeFunction(new ListDurableCqNamesFunction(), durableClientId, targetMembers);
       final List<DurableCqNamesResult> results = (List<DurableCqNamesResult>) rc.getResult();
       Map<String, List<String>> memberCqNamesMap = new TreeMap<>();
       Map<String, List<String>> errorMessageNodes = new HashMap<>();
