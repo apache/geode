@@ -155,13 +155,6 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     }
   }
 
-  protected void setupAEQ(RegionAttributes attributes, String aeqId) {
-    if (!hasInitializedAEQ) {
-      createAEQ(attributes, aeqId);
-      hasInitializedAEQ = true;
-    }
-  }
-
   protected void setupRepositoryManager(LuceneSerializer luceneSerializer) {
     repositoryManager = createRepositoryManager(luceneSerializer);
   }
@@ -177,18 +170,26 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   protected AsyncEventQueue createAEQ(RegionAttributes attributes, String aeqId) {
+    if (attributes.getPartitionAttributes() != null) {
+      if (attributes.getPartitionAttributes().getLocalMaxMemory() == 0) {
+        // accessor will not create AEQ
+        return null;
+      }
+    }
     return createAEQ(createAEQFactory(attributes), aeqId);
+  }
+
+  private AsyncEventQueue createAEQ(AsyncEventQueueFactoryImpl factory, String aeqId) {
+    LuceneEventListener listener = new LuceneEventListener(repositoryManager);
+    factory.setGatewayEventSubstitutionListener(new LuceneEventSubstitutionFilter());
+    AsyncEventQueue indexQueue = factory.create(aeqId, listener);
+    return indexQueue;
   }
 
   private AsyncEventQueueFactoryImpl createAEQFactory(final RegionAttributes attributes) {
     AsyncEventQueueFactoryImpl factory =
         (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
     if (attributes.getPartitionAttributes() != null) {
-
-      if (attributes.getPartitionAttributes().getLocalMaxMemory() == 0) {
-        // accessor will not create AEQ
-        return null;
-      }
       factory.setParallel(true); // parallel AEQ for PR
     } else {
       factory.setParallel(false); // TODO: not sure if serial AEQ working or not
@@ -204,16 +205,6 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     factory.setDiskSynchronous(true);
     factory.setForwardExpirationDestroy(true);
     return factory;
-  }
-
-  private AsyncEventQueue createAEQ(AsyncEventQueueFactoryImpl factory, String aeqId) {
-    if (factory == null) {
-      return null;
-    }
-    LuceneEventListener listener = new LuceneEventListener(repositoryManager);
-    factory.setGatewayEventSubstitutionListener(new LuceneEventSubstitutionFilter());
-    AsyncEventQueue indexQueue = factory.create(aeqId, listener);
-    return indexQueue;
   }
 
   /**

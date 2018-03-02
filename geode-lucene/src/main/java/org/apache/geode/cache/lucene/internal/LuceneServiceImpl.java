@@ -332,7 +332,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     index.setFieldAnalyzers(fieldAnalyzers);
     index.setLuceneSerializer(serializer);
     index.setupRepositoryManager(serializer);
-    index.setupAEQ(attributes, aeqId);
+    index.createAEQ(attributes, aeqId);
     return index;
 
   }
