@@ -122,7 +122,7 @@ public class CompactDiskStoreCommand implements GfshCommand {
             }
             String notExecutedMembers = CompactRequest.getNotExecutedMembers();
             if (notExecutedMembers != null && !notExecutedMembers.isEmpty()) {
-              LogWrapper.getInstance()
+              LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
                   .info("compact disk-store \"" + diskStoreName
                       + "\" message was scheduled to be sent to but was not send to "
                       + notExecutedMembers);
@@ -159,7 +159,7 @@ public class CompactDiskStoreCommand implements GfshCommand {
         } // all members' if
       } // disk store exists' if
     } catch (RuntimeException e) {
-      LogWrapper.getInstance().info(e.getMessage(), e);
+      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).info(e.getMessage(), e);
       result = ResultBuilder.createGemFireErrorResult(
           CliStrings.format(CliStrings.COMPACT_DISK_STORE__ERROR_WHILE_COMPACTING_REASON_0,
               new Object[] {e.getMessage()}));

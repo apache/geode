@@ -45,10 +45,9 @@ public class LogWrapper {
 
   private Logger logger;
 
-  private LogWrapper() {
+  private LogWrapper(Cache cache) {
     logger = Logger.getLogger(this.getClass().getCanonicalName());
 
-    Cache cache = CliUtil.getCacheIfExists();
     if (cache != null && !cache.isClosed()) {
       logger.addHandler(cache.getLogger().getHandler());
       CommandResponseWriterHandler handler = new CommandResponseWriterHandler();
@@ -59,11 +58,11 @@ public class LogWrapper {
     logger.setUseParentHandlers(false);
   }
 
-  public static LogWrapper getInstance() {
+  public static LogWrapper getInstance(Cache cache) {
     if (INSTANCE == null) {
       synchronized (INSTANCE_LOCK) {
         if (INSTANCE == null) {
-          INSTANCE = new LogWrapper();
+          INSTANCE = new LogWrapper(cache);
         }
       }
     }

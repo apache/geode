@@ -54,7 +54,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
 
   GfshExecutionStrategy(Gfsh shell) {
     this.shell = shell;
-    this.logWrapper = LogWrapper.getInstance();
+    this.logWrapper = shell.getGfshFileLogger();
   }
 
   /**
@@ -220,7 +220,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
         debugInfo =
             debugInfo.replaceAll("\n", "\n[From Manager : " + commandResponse.getSender() + "]");
         debugInfo = "[From Manager : " + commandResponse.getSender() + "]" + debugInfo;
-        LogWrapper.getInstance().info(debugInfo);
+        this.logWrapper.info(debugInfo);
       }
       commandResult = ResultBuilder.fromJson((String) response);
     } else if (response instanceof Path) {

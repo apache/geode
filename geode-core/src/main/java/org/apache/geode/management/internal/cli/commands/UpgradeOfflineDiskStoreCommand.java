@@ -52,11 +52,10 @@ public class UpgradeOfflineDiskStoreCommand implements GfshCommand {
           unspecifiedDefaultValue = "-1",
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE__HELP) long maxOplogSize,
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J,
-          help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps)
-      throws InterruptedException {
+          help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps) {
 
     Result result;
-    LogWrapper logWrapper = LogWrapper.getInstance();
+    LogWrapper logWrapper = LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache));
 
     StringBuilder output = new StringBuilder();
     StringBuilder error = new StringBuilder();

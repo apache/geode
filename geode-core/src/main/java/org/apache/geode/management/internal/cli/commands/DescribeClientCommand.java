@@ -118,7 +118,7 @@ public class DescribeClientCommand implements GfshCommand {
       for (Object aResultList : resultList) {
         Object object = aResultList;
         if (object instanceof Throwable) {
-          LogWrapper.getInstance().warning(
+          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).warning(
               "Exception in Describe Client " + ((Throwable) object).getMessage(),
               ((Throwable) object));
           continue;
@@ -156,7 +156,8 @@ public class DescribeClientCommand implements GfshCommand {
       return ResultBuilder.createGemFireErrorResult(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
     }
 
-    LogWrapper.getInstance().info("describe client result " + result);
+    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+        .info("describe client result " + result);
     return result;
   }
 
@@ -207,13 +208,14 @@ public class DescribeClientCommand implements GfshCommand {
           String poolStatsStr = entry.getValue();
           String str[] = poolStatsStr.split(";");
 
-          LogWrapper.getInstance().info("describe client clientHealthStatus min conn="
+          LogWrapper logWrapper = LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache));
+          logWrapper.info("describe client clientHealthStatus min conn="
               + str[0].substring(str[0].indexOf("=") + 1));
-          LogWrapper.getInstance().info("describe client clientHealthStatus max conn ="
+          logWrapper.info("describe client clientHealthStatus max conn ="
               + str[1].substring(str[1].indexOf("=") + 1));
-          LogWrapper.getInstance().info("describe client clientHealthStatus redundancy ="
+          logWrapper.info("describe client clientHealthStatus redundancy ="
               + str[2].substring(str[2].indexOf("=") + 1));
-          LogWrapper.getInstance().info("describe client clientHealthStatus CQs ="
+          logWrapper.info("describe client clientHealthStatus CQs ="
               + str[3].substring(str[3].indexOf("=") + 1));
 
           poolStatsResultTable.accumulate(CliStrings.DESCRIBE_CLIENT_MIN_CONN,

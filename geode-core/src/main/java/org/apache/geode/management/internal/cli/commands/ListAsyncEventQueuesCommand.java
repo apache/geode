@@ -46,7 +46,7 @@ public class ListAsyncEventQueuesCommand implements GfshCommand {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(null, null);
+      Set<DistributedMember> targetMembers = CliUtil.getAllNormalMembers(getCache());
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

@@ -461,8 +461,9 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
               }
             }
           } catch (Exception e) {
-            LogWrapper.getInstance().warning("waitForMixedClients Exception in waitForMBean ::: "
-                + ExceptionUtils.getStackTrace(e));
+            LogWrapper.getInstance(cache)
+                .warning("waitForMixedClients Exception in waitForMBean ::: "
+                    + ExceptionUtils.getStackTrace(e));
           }
           return false;
         }));
@@ -611,7 +612,7 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
               return false;
 
             } catch (Exception e) {
-              LogWrapper.getInstance()
+              LogWrapper.getInstance(cache)
                   .warning("waitForListClientMBean3 Exception in waitForListClientMbean ::: "
                       + ExceptionUtils.getStackTrace(e));
             }
@@ -652,7 +653,7 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
               }
               return false;
             } catch (Exception e) {
-              LogWrapper.getInstance().warning(
+              LogWrapper.getInstance(cache).warning(
                   "waitForMBean Exception in waitForMBean ::: " + ExceptionUtils.getStackTrace(e));
             }
             return false;
@@ -754,7 +755,7 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
               }
             }
           } catch (Exception e) {
-            LogWrapper.getInstance()
+            LogWrapper.getInstance(cache)
                 .warning("waitForNonSubScribedClientMBean Exception in waitForMBean ::: "
                     + ExceptionUtils.getStackTrace(e));
           }

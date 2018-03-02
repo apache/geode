@@ -56,7 +56,7 @@ public class ListFunctionCommand implements GfshCommand {
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
     boolean accumulatedData = false;
 
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, members);
+    Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, members, getCache());
 
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
