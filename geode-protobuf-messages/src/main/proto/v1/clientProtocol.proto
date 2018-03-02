@@ -69,6 +69,9 @@ message Message {
 
         OQLQueryRequest oqlQueryRequest = 26;
         OQLQueryResponse oqlQueryResponse = 27;
+
+        KeySetRequest keySetRequest = 28;
+        KeySetResponse keySetResponse = 29;
     }
 }
 

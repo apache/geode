@@ -100,3 +100,11 @@ message OQLQueryResponse {
       Table tableResult = 3;
     }
 }
+
+message KeySetRequest {
+    string regionName = 1;
+}
+
+message KeySetResponse {
+    repeated EncodedValue keys = 1;
+}

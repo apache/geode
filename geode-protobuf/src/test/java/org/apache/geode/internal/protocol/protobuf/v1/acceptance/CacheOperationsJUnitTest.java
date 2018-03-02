@@ -31,9 +31,11 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.awaitility.Awaitility;
@@ -175,6 +177,13 @@ public class CacheOperationsJUnitTest {
         ProtobufUtilities.createProtobufRequestWithGetAllRequest(getAllRequest);
     protobufProtocolSerializer.serialize(getAllMessage, outputStream);
     validateGetAllResponse(socket, protobufProtocolSerializer);
+
+    RegionAPI.KeySetRequest keySetRequest =
+        RegionAPI.KeySetRequest.newBuilder().setRegionName(TEST_REGION).build();
+    ClientProtocol.Message keySetMessage =
+        ClientProtocol.Message.newBuilder().setKeySetRequest(keySetRequest).build();
+    protobufProtocolSerializer.serialize(keySetMessage, outputStream);
+    validateKeySetResponse(socket, protobufProtocolSerializer);
   }
 
   @Test
@@ -342,6 +351,21 @@ public class CacheOperationsJUnitTest {
           Assert.fail("Unexpected key found by getAll: " + key);
       }
     }
+  }
+
+  private void validateKeySetResponse(Socket socket,
+      ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
+    ClientProtocol.Message response = deserializeResponse(socket, protobufProtocolSerializer);
+
+    assertEquals(ClientProtocol.Message.MessageTypeCase.KEYSETRESPONSE,
+        response.getMessageTypeCase());
+    RegionAPI.KeySetResponse keySetResponse = response.getKeySetResponse();
+    assertEquals(3, keySetResponse.getKeysCount());
+    List responseKeys = keySetResponse.getKeysList().stream().map(serializationService::decode)
+        .collect(Collectors.toList());
+    assertTrue(responseKeys.contains(TEST_MULTIOP_KEY1));
+    assertTrue(responseKeys.contains(TEST_MULTIOP_KEY2));
+    assertTrue(responseKeys.contains(TEST_MULTIOP_KEY3));
   }
 
   private void validateRemoveResponse(Socket socket,
