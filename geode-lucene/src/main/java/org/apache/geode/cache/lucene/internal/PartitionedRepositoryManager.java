@@ -114,7 +114,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     return repo;
   }
 
-  public IndexRepository computeRepository(Integer bucketId, LuceneSerializer serializer,
+  protected IndexRepository computeRepository(Integer bucketId, LuceneSerializer serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
