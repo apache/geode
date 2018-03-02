@@ -27,6 +27,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingMap;
@@ -50,7 +51,7 @@ public class IndexRepositoryFactory {
   public IndexRepositoryFactory() {}
 
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-      LuceneIndexImpl index, PartitionedRegion userRegion, final IndexRepository oldRepository)
+      InternalLuceneIndex index, PartitionedRegion userRegion, final IndexRepository oldRepository)
       throws IOException {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();

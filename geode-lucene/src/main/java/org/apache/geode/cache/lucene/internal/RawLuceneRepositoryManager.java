@@ -48,7 +48,7 @@ public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
 
   @Override
   public IndexRepository computeRepository(Integer bucketId, LuceneSerializer serializer,
-      LuceneIndexImpl index, PartitionedRegion userRegion, IndexRepository oldRepository)
+      InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
         oldRepository);

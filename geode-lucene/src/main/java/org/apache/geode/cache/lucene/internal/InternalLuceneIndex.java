@@ -32,4 +32,9 @@ public interface InternalLuceneIndex extends LuceneIndex {
    */
   void destroy(boolean initiator);
 
+
+  LuceneIndexStats getIndexStats();
+
+  void initialize();
+
 }

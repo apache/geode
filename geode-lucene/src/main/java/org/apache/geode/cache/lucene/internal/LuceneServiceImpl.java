@@ -240,7 +240,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   protected boolean createLuceneIndexOnDataRegion(final PartitionedRegion userRegion,
-      final LuceneIndexImpl luceneIndex) {
+      final InternalLuceneIndex luceneIndex) {
     try {
       PartitionedRepositoryManager repositoryManager =
           (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
@@ -307,7 +307,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
    *
    * Public because this is called by the Xml parsing code
    */
-  public void afterDataRegionCreated(LuceneIndexImpl index) {
+  public void afterDataRegionCreated(InternalLuceneIndex index) {
     index.initialize();
     registerIndex(index);
     if (this.managementListener != null) {

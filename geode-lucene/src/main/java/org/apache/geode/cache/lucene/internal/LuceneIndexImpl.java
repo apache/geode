@@ -140,7 +140,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return indexStats;
   }
 
-  protected void initialize() {
+  public void initialize() {
     /* create index region */
     dataRegion = assignDataRegion();
     createLuceneListenersAndFileChunkRegions((PartitionedRepositoryManager) repositoryManager);

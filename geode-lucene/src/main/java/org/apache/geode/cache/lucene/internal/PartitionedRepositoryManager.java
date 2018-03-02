@@ -24,6 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
@@ -96,7 +97,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   }
 
   public IndexRepository computeRepository(Integer bucketId, LuceneSerializer serializer,
-      LuceneIndexImpl index, PartitionedRegion userRegion, IndexRepository oldRepository)
+      InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
         oldRepository);
