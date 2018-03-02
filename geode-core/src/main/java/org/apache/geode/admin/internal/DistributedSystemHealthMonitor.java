@@ -220,7 +220,6 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
   }
 
   public String getName() {
-    // return getId().toString();
     throw new UnsupportedOperationException("Not a real GemFireVM");
   }
 

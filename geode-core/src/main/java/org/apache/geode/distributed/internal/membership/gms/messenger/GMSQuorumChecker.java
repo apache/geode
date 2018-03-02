@@ -64,10 +64,6 @@ public class GMSQuorumChecker implements QuorumChecker {
     receivedAcks = new ConcurrentHashSet<>();
 
     pingPonger = new GMSPingPonger();
-    // UUID logicalAddress = (UUID) channel.getAddress();
-    // IpAddress ipaddr = (IpAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS));
-    //
-    // myAddress = new JGAddress(logicalAddress, ipaddr);
     myAddress = (JGAddress) channel.down(new Event(Event.GET_LOCAL_ADDRESS));
 
     addressConversionMap = new ConcurrentHashMap<>(this.lastView.size());

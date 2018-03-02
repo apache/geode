@@ -771,7 +771,6 @@ public class DirectChannel {
    * new local address to be generated.
    */
   public synchronized void disconnect(Exception cause) {
-    // this.shutdownCause = cause;
     this.disconnected = true;
     this.disconnectCompleted = false;
     try {

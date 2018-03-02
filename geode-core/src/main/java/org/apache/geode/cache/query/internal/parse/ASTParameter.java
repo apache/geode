@@ -16,14 +16,13 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
-import antlr.*;
+import antlr.Token;
 
 import org.apache.geode.cache.query.internal.QCompiler;
 
 
 public class ASTParameter extends GemFireAST {
   private static final long serialVersionUID = 2964948528198383319L;
-  // private int _index;
 
   public ASTParameter(Token t) {
     super(t);

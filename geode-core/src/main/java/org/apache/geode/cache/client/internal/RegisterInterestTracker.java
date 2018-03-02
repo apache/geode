@@ -127,7 +127,6 @@ public class RegisterInterestTracker {
     } else {
       return true;
     }
-    // return rie.getInterests().remove(key) != null;
   }
 
   public void addInterestList(LocalRegion r, List keys, InterestResultPolicy pol, boolean isDurable,
@@ -141,18 +140,10 @@ public class RegisterInterestTracker {
 
   public void addCq(InternalCqQuery cqi, boolean isDurable) {
     this.cqs.put(cqi, Boolean.valueOf(isDurable));
-    /*
-     * RegionInterestEntry rie = getRegionInterests(r, InterestType.CQ, false, isDurable);
-     * rie.getInterests().put(cqi.getName(), cqi);
-     */
   }
 
   public void removeCq(InternalCqQuery cqi, boolean isDurable) {
     this.cqs.remove(cqi);
-    /*
-     * RegionInterestEntry rie = getRegionInterests(r, InterestType.CQ, false, isDurable);
-     * rie.getInterests().remove(cqi.getName());
-     */
   }
 
   public Map getCqsMap() {

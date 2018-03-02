@@ -106,9 +106,6 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * Creates and registers the MBean to manage this resource
    */
   private void initializeMBean() throws AdminException {
-    // initialize Managed Resources for stats & cache first.
-    // initializeManagedResources();
-
     this.mbeanName = new StringBuffer("GemFire.CacheVm:").append("id=")
         .append(MBeanUtil.makeCompliantMBeanNameProperty(getId())).append(",type=")
         .append(MBeanUtil.makeCompliantMBeanNameProperty(getType().getName())).toString();
@@ -298,38 +295,6 @@ public class CacheServerJmxImpl extends CacheServerImpl
 
     super.refreshConfig();
   }
-
-  /**
-   * Initializes Cache & Statistics managed resources.
-   *
-   * @throws AdminException if initialization of managed resources fails
-   */
-  // private void initializeManagedResources() throws AdminException {
-  // try {
-  // manageCache();
-  // } catch (MalformedObjectNameException e) {
-  // throw new
-  // AdminException(LocalizedStrings.SystemMemberJmxImpl_EXCEPTION_OCCURRED_WHILE_INITIALIZING_0_MBEANS_FOR_1.toLocalizedString(
-  // new Object[] {"Cache", getId()}),
-  // e);
-  // } catch (AdminException ae) {
-  // if
-  // (LocalizedStrings.SystemMemberJmx_THIS_SYSTEM_MEMBER_DOES_NOT_HAVE_A_CACHE.toLocalizedString().equals(ae.getMessage()))
-  // {
-  // //ignore this exception for a cache-less peer
-  // } else {
-  // throw ae;
-  // }
-  // }
-  // try {
-  // manageStats();
-  // } catch (MalformedObjectNameException e) {
-  // throw new
-  // AdminException(LocalizedStrings.SystemMemberJmxImpl_EXCEPTION_OCCURRED_WHILE_INITIALIZING_0_MBEANS_FOR_1.toLocalizedString(
-  // new Object[] {"Statistics", getId()}),
-  // e);
-  // }
-  // }
 
   /**
    * Gets this member's cache.

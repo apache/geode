@@ -141,7 +141,6 @@ public class InetAddressUtil {
       if (LOCALHOST.equals(host)) {
         return true;
       } else {
-        // InetAddress hostAddr = (InetAddress)host;
         try {
           Enumeration en = NetworkInterface.getNetworkInterfaces();
           while (en.hasMoreElements()) {

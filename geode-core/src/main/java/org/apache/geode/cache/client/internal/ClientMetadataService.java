@@ -337,8 +337,6 @@ public class ClientMetadataService {
     }
 
     HashSet<Integer> currentBucketSet = new HashSet<Integer>();
-    // ServerLocation randomFirstServer =
-    // prAdvisor.adviseRandomServerLocation(); // get a random server here
     ServerLocation randomFirstServer = null;
     if (serverToBucketsMap.isEmpty()) {
       return null;
@@ -360,12 +358,6 @@ public class ClientMetadataService {
     while (!currentBucketSet.equals(buckets)) {
       ServerLocation server = findNextServer(serverToBucketsMap.entrySet(), currentBucketSet);
       if (server == null) {
-        // HashSet<Integer> rBuckets = prunedServerToBucketsMap
-        // .get(randomFirstServer);
-        // HashSet<Integer> remainingBuckets = new HashSet<Integer>(buckets);
-        // remainingBuckets.removeAll(currentBucketSet);
-        // rBuckets.addAll(remainingBuckets);
-        // prunedServerToBucketsMap.put(randomFirstServer, rBuckets);
         break;
       }
 
@@ -415,7 +407,6 @@ public class ClientMetadataService {
       }
     }
 
-    // return node;
     Random r = new Random();
     if (nodesOfEqualSize.size() > 0) {
       return nodesOfEqualSize.get(r.nextInt(nodesOfEqualSize.size()));

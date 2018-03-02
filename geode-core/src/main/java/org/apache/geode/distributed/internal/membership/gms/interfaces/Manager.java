@@ -21,9 +21,7 @@ import java.util.Set;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.distributed.internal.membership.gms.SuspectMember;
 
 /**
  * Manager presents the GMS services to the outside world and handles startup/shutdown race
@@ -110,12 +108,6 @@ public interface Manager extends Service, MessageHandler {
    * progress.
    */
   boolean isShutdownStarted();
-
-  // /**
-  // * similar to forceDisconnect but is used solely by Messenger
-  // * to tell Manager that communications have been lost
-  // */
-  // void membershipFailure(String message, Exception cause);
 
   /**
    * Indicate whether we are attempting a reconnect

@@ -74,7 +74,6 @@ public class KeySetOp {
       if (msgType == MessageType.RESPONSE) {
         do {
           keySetResponseMessage.receiveChunk();
-          // callback.handle(msg);
           Part part = keySetResponseMessage.getPart(0);
           Object o = part.getObject();
           if (o instanceof Throwable) {
@@ -92,7 +91,6 @@ public class KeySetOp {
           throw new ServerOperationException(s, (Throwable) part.getObject());
           // Get the exception toString part.
           // This was added for c++ thin client and not used in java
-          // Part exceptionToStringPart = msg.getPart(1);
         } else if (isErrorResponse(msgType)) {
           keySetResponseMessage.receiveChunk();
           Part part = msg.getPart(0);

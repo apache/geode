@@ -21,16 +21,29 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.BufferUnderflowException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.*;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.CopyException;
+import org.apache.geode.GemFireException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.SerializationException;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionException;
-import org.apache.geode.cache.client.*;
+import org.apache.geode.cache.client.NoAvailableServersException;
+import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.client.ServerRefusedConnectionException;
+import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.client.internal.ExecuteFunctionOp.ExecuteFunctionOpImpl;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
 import org.apache.geode.cache.client.internal.QueueManager.QueueConnections;
@@ -42,8 +55,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
-import org.apache.geode.internal.cache.TXManagerImpl;
-import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.tier.BatchException;
 import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
@@ -698,20 +709,6 @@ public class OpExecutorImpl implements ExecutablePool {
       title = "connection was asynchronously destroyed";
       cause = null;
     } else if (e instanceof java.io.EOFException) {
-      /*
-       * // it is still listening so make this into a timeout exception invalidateServer = false;
-       * title = "socket closed on server"; SocketTimeoutException ste = new
-       * SocketTimeoutException(title); ste.setStackTrace(e.getStackTrace()); e = ste; cause = null;
-       */
-
-      /*
-       * note: the old code in ConnectionProxyImpl used to create a new socket here to the server to
-       * determine if it really crashed. We may have to add this back in for some reason, but
-       * hopefully not.
-       *
-       * note 05/21/08: an attempt to address this was made by increasing the time waited on server
-       * before closing timeoutd clients see ServerConnection.hasBeenTimedOutOnClient
-       */
       title = "closed socket on server";
     } else if (e instanceof IOException) {
       title = "IOException";

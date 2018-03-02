@@ -43,7 +43,6 @@ class StatisticAttributeInfo extends org.apache.commons.modeler.AttributeInfo {
   }
 
   public void setStat(Statistic stat) {
-    // System.out.println(">> stat = " + stat);
     Assert.assertTrue(stat != null, "Attempting to set stat to null");
     this.stat = stat;
   }

@@ -14,7 +14,8 @@
  */
 package org.apache.geode.cache;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
 
 import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.Assert;
@@ -74,8 +75,6 @@ public class RequiredRoles {
    */
   public static Set<Role> waitForRequiredRoles(Region<?, ?> region, long timeout)
       throws InterruptedException {
-    // if (Thread.interrupted()) throw new InterruptedException(); not necessary
-    // waitForRequiredRoles does this
     if (region == null) {
       throw new NullPointerException(
           LocalizedStrings.RequiredRoles_REGION_MUST_BE_SPECIFIED.toLocalizedString());

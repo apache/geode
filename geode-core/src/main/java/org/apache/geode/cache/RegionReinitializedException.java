@@ -24,7 +24,6 @@ package org.apache.geode.cache;
  */
 public class RegionReinitializedException extends RegionDestroyedException {
   private static final long serialVersionUID = 8532904304288670752L;
-  // private String regionFullPath;
 
   /**
    * Constructs a <code>RegionReinitializedException</code> with a message.
