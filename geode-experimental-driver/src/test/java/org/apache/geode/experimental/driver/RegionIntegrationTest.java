@@ -14,17 +14,20 @@
  */
 package org.apache.geode.experimental.driver;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -104,6 +107,18 @@ public class RegionIntegrationTest extends IntegrationTestBase {
     region.remove(document);
     assertEquals(0, serverRegion.size());
     assertNull(region.get(document));
+  }
+
+  @Test
+  public void keySetTest() throws Exception {
+    Region<String, String> region = driver.getRegion("region");
+    Map<String, String> testMap = new HashMap<>();
+    testMap.put("Key1", "foo");
+    testMap.put("Key2", "foo");
+    testMap.put("Key3", "foo");
+    region.putAll(testMap);
+    assertArrayEquals(testMap.keySet().stream().sorted().toArray(),
+        region.keySet().stream().sorted().toArray());
   }
 
   @Test(expected = IOException.class)
