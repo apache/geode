@@ -50,8 +50,6 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected final InternalCache cache;
   protected final LuceneIndexStats indexStats;
 
-  protected boolean hasInitialized = false;
-  protected boolean hasInitializedAEQ = false;
   protected Map<String, Analyzer> fieldAnalyzers;
   protected String[] searchableFieldNames;
   protected RepositoryManager repositoryManager;
@@ -145,14 +143,11 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   protected void initialize() {
-    if (!hasInitialized) {
-      /* create index region */
-      dataRegion = assignDataRegion();
-      createLuceneListenersAndFileChunkRegions(
-          (AbstractPartitionedRepositoryManager) repositoryManager);
-      addExtension(dataRegion);
-      hasInitialized = true;
-    }
+    /* create index region */
+    dataRegion = assignDataRegion();
+    createLuceneListenersAndFileChunkRegions(
+        (AbstractPartitionedRepositoryManager) repositoryManager);
+    addExtension(dataRegion);
   }
 
   protected void setupRepositoryManager(LuceneSerializer luceneSerializer) {
