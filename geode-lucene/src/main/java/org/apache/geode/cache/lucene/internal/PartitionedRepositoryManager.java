@@ -51,11 +51,11 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   /** The user region for this index */
   protected PartitionedRegion userRegion = null;
   protected final LuceneSerializer serializer;
-  protected final LuceneIndexImpl index;
+  protected final InternalLuceneIndex index;
   protected volatile boolean closed;
   private final CountDownLatch isDataRegionReady = new CountDownLatch(1);
 
-  public PartitionedRepositoryManager(LuceneIndexImpl index, LuceneSerializer serializer) {
+  public PartitionedRepositoryManager(InternalLuceneIndex index, LuceneSerializer serializer) {
     this.index = index;
     this.serializer = serializer;
     this.closed = false;
@@ -63,18 +63,6 @@ public class PartitionedRepositoryManager implements RepositoryManager {
 
   public void setUserRegionForRepositoryManager(PartitionedRegion userRegion) {
     this.userRegion = userRegion;
-  }
-
-  @Override
-  public IndexRepository getRepository(Region region, Object key, Object callbackArg)
-      throws BucketNotFoundException {
-    BucketRegion userBucket = userRegion.getBucketRegion(key, callbackArg);
-    if (userBucket == null) {
-      throw new BucketNotFoundException("User bucket was not found for region " + region + "key "
-          + key + " callbackarg " + callbackArg);
-    }
-
-    return getRepository(userBucket.getId());
   }
 
   @Override
@@ -94,6 +82,36 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     }
 
     return repos;
+  }
+
+  @Override
+  public IndexRepository getRepository(Region region, Object key, Object callbackArg)
+      throws BucketNotFoundException {
+    BucketRegion userBucket = userRegion.getBucketRegion(key, callbackArg);
+    if (userBucket == null) {
+      throw new BucketNotFoundException("User bucket was not found for region " + region + "key "
+          + key + " callbackarg " + callbackArg);
+    }
+
+    return getRepository(userBucket.getId());
+  }
+
+  /**
+   * Return the repository for a given user bucket
+   */
+  protected IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
+    IndexRepository repo = indexRepositories.get(bucketId);
+    if (repo != null && !repo.isClosed()) {
+      return repo;
+    }
+
+    repo = computeRepository(bucketId);
+
+    if (repo == null) {
+      throw new BucketNotFoundException(
+          "Unable to find lucene index because no longer primary for bucket " + bucketId);
+    }
+    return repo;
   }
 
   public IndexRepository computeRepository(Integer bucketId, LuceneSerializer serializer,
@@ -130,23 +148,6 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     isDataRegionReady.countDown();
   }
 
-  /**
-   * Return the repository for a given user bucket
-   */
-  protected IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
-    IndexRepository repo = indexRepositories.get(bucketId);
-    if (repo != null && !repo.isClosed()) {
-      return repo;
-    }
-
-    repo = computeRepository(bucketId);
-
-    if (repo == null) {
-      throw new BucketNotFoundException(
-          "Unable to find lucene index because no longer primary for bucket " + bucketId);
-    }
-    return repo;
-  }
 
   @Override
   public void close() {
