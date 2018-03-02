@@ -64,7 +64,6 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
   @Override
   public synchronized Query getQuery(LuceneIndex index) throws LuceneQueryException {
     if (luceneQuery == null) {
-      String[] fields = index.getFieldNames();
       LuceneIndexImpl indexImpl = (LuceneIndexImpl) index;
       StandardQueryParser parser = new StandardQueryParser(indexImpl.getAnalyzer());
       parser.setAllowLeadingWildcard(true);
