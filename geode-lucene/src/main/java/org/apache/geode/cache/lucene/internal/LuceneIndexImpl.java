@@ -78,8 +78,12 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return this.regionPath;
   }
 
-  protected LocalRegion getDataRegion() {
+  protected LocalRegion assignDataRegion() {
     return (LocalRegion) cache.getRegion(regionPath);
+  }
+
+  protected LocalRegion getDataRegion() {
+    return dataRegion;
   }
 
   protected boolean withPersistence() {
@@ -143,7 +147,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected void initialize() {
     if (!hasInitialized) {
       /* create index region */
-      dataRegion = getDataRegion();
+      dataRegion = assignDataRegion();
       createLuceneListenersAndFileChunkRegions(
           (AbstractPartitionedRepositoryManager) repositoryManager);
       addExtension(dataRegion);
