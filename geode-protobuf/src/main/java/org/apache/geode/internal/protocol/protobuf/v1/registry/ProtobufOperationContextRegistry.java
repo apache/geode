@@ -33,7 +33,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRequestOpera
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetServerOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetSizeRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.KeySetOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.operations.GetSizeRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.OqlQueryRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutRequestOperationHandler;
