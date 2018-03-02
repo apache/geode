@@ -23,3 +23,11 @@ message AuthenticationRequest {
 message AuthenticationResponse {
     bool authenticated = 1;
 }
+
+message DisconnectClientRequest {
+    string reason = 1;
+}
+
+message DisconnectClientResponse {
+    // message presence indicates success.
+}
