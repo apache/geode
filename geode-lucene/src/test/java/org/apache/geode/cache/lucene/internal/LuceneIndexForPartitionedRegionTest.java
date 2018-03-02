@@ -253,10 +253,10 @@ public class LuceneIndexForPartitionedRegionTest {
       final LuceneIndexForPartitionedRegion index, final String aeq) {
     index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
-    doReturn(null).when(spy).createFileRegion(any(), any(), any(), any(), any());
+    doReturn(null).when(spy).createRegion(any(), any(), any(), any(), any(), any());
     doReturn(null).when(spy).createAEQ(any(), any());
     spy.setupRepositoryManager(null);
-    spy.setupAEQ(region.getAttributes(), aeq);
+    spy.createAEQ(region.getAttributes(), aeq);
     spy.initialize();
     return spy;
   }
@@ -273,7 +273,7 @@ public class LuceneIndexForPartitionedRegionTest {
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     LuceneIndexForPartitionedRegion spy = setupSpy(region, index, "aeq");
 
-    verify(spy).createFileRegion(eq(RegionShortcut.PARTITION), eq(index.createFileRegionName()),
+    verify(spy).createRegion(eq(index.createFileRegionName()),eq(RegionShortcut.PARTITION), any(),
         any(), any(), any());
   }
 
@@ -289,7 +289,7 @@ public class LuceneIndexForPartitionedRegionTest {
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     LuceneIndexForPartitionedRegion indexSpy = spy(index);
-    indexSpy.createFileRegion(RegionShortcut.PARTITION, index.createFileRegionName(),
+    indexSpy.createRegion(index.createFileRegionName(),RegionShortcut.PARTITION, regionPath,
         partitionAttributes, regionAttributes, null);
     String fileRegionName = index.createFileRegionName();
     verify(indexSpy).createRegion(fileRegionName, RegionShortcut.PARTITION, regionPath,
@@ -309,37 +309,13 @@ public class LuceneIndexForPartitionedRegionTest {
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
-    doReturn(null).when(spy).createFileRegion(any(), any(), any(), any(), any());
+    doReturn(null).when(spy).createRegion(any(), any(), any(), any(), any(), any());
     doReturn(null).when(spy).createAEQ((RegionAttributes) any(), any());
     spy.setupRepositoryManager(null);
-    spy.setupAEQ(any(), any());
+    spy.createAEQ(any(), any());
     spy.initialize();
 
-    verify(spy).createFileRegion(eq(RegionShortcut.PARTITION_PERSISTENT),
-        eq(index.createFileRegionName()), any(), any(), any());
-  }
-
-  @Test
-  public void initializeWhenCalledMultipleTimesShouldNotCreateMultipleFileRegions() {
-    boolean withPersistence = true;
-    String name = "indexName";
-    String regionPath = "regionName";
-    InternalCache cache = Fakes.cache();
-    initializeScenario(withPersistence, regionPath, cache);
-
-    LuceneIndexForPartitionedRegion index =
-        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.setSearchableFields(new String[] {"field"});
-    LuceneIndexForPartitionedRegion spy = spy(index);
-    doReturn(null).when(spy).createFileRegion(any(), any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ(any(), any());
-    spy.setupRepositoryManager(null);
-    spy.setupAEQ(any(), any());
-    spy.initialize();
-    spy.initialize();
-
-    verify(spy).createFileRegion(eq(RegionShortcut.PARTITION_PERSISTENT),
-        eq(index.createFileRegionName()), any(), any(), any());
+    verify(spy).createRegion(eq(index.createFileRegionName()), eq(RegionShortcut.PARTITION_PERSISTENT), any(), any(), any(), any());
   }
 
   @Test
@@ -360,7 +336,7 @@ public class LuceneIndexForPartitionedRegionTest {
     when(index.getFieldNames()).thenReturn(fields);
     doReturn(aeq).when(index).createAEQ(any(), any());
     index.setupRepositoryManager(null);
-    index.setupAEQ(cache.getRegionAttributes(regionPath), aeq.getId());
+    index.createAEQ(cache.getRegionAttributes(regionPath), aeq.getId());
     index.initialize();
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
     ResultCollector collector = mock(ResultCollector.class);
