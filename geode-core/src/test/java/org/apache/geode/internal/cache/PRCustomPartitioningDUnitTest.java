@@ -12,11 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.execute;
+package org.apache.geode.internal.cache;
 
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -33,19 +36,15 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.cache.EntryOperationImpl;
-import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore.BucketVisitor;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- * TODO: move to cache package
- */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class PRCustomPartitioningDUnitTest extends CacheTestCase {
+public class PRCustomPartitioningDUnitTest implements Serializable {
 
   private static final int TOTAL_NUM_BUCKETS = 7;
 
@@ -60,6 +59,12 @@ public class PRCustomPartitioningDUnitTest extends CacheTestCase {
   private VM datastoreVM1;
   private VM datastoreVM2;
   private VM accessorVM3;
+
+  @ClassRule
+  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
 
   @Before
   public void setUp() {
@@ -97,7 +102,7 @@ public class PRCustomPartitioningDUnitTest extends CacheTestCase {
   private void doPutOperations(final String regionName, final int century,
       final List<Date> listOfKeys) {
     Calendar calendar = Calendar.getInstance();
-    Region<Date, Integer> region = getCache().getRegion(regionName);
+    Region<Date, Integer> region = cacheRule.getCache().getRegion(regionName);
     for (int month = 0; month <= 11; month++) {
       int year = (int) (Math.random() * century);
       int date = (int) (Math.random() * 30);
@@ -111,7 +116,8 @@ public class PRCustomPartitioningDUnitTest extends CacheTestCase {
   }
 
   private void verifyKeysInAccessor(final String regionName, final List<Date> listOfKeys) {
-    PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);
+    PartitionedRegion partitionedRegion =
+        (PartitionedRegion) cacheRule.getCache().getRegion(regionName);
 
     for (Object key : listOfKeys) {
       assertThat(containsKeyInSomeBucket(partitionedRegion, (Date) key)).isTrue();
@@ -121,7 +127,8 @@ public class PRCustomPartitioningDUnitTest extends CacheTestCase {
   }
 
   private void verifyKeys(final String regionName, final List<Date> listOfKeys) {
-    PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);
+    PartitionedRegion partitionedRegion =
+        (PartitionedRegion) cacheRule.getCache().getRegion(regionName);
 
     for (Date key : listOfKeys) {
       assertThat(containsKeyInSomeBucket(partitionedRegion, key)).isTrue();
@@ -132,9 +139,10 @@ public class PRCustomPartitioningDUnitTest extends CacheTestCase {
       public void visit(Integer bucketId, Region region) {
         Set<Object> bucketKeys = partitionedRegion.getBucketKeys(bucketId);
         for (Object key : bucketKeys) {
-          EntryOperation entryOperation =
+          EntryOperation<Date, Integer> entryOperation =
               new EntryOperationImpl(partitionedRegion, null, key, null, null);
-          PartitionResolver partitionResolver = partitionedRegion.getPartitionResolver();
+          PartitionResolver<Date, Integer> partitionResolver =
+              partitionedRegion.getPartitionResolver();
           Object routingObject = partitionResolver.getRoutingObject(entryOperation);
           int routingObjectHashCode = routingObject.hashCode() % TOTAL_NUM_BUCKETS;
           assertThat(routingObjectHashCode).isEqualTo(bucketId);
@@ -144,25 +152,27 @@ public class PRCustomPartitioningDUnitTest extends CacheTestCase {
   }
 
   private void createPartitionedRegionWithPartitionResolver() {
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    PartitionAttributesFactory<Date, Integer> paf = new PartitionAttributesFactory<>();
     paf.setPartitionResolver(new MonthBasedPartitionResolver());
     paf.setRedundantCopies(0);
     paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
 
-    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<Date, Integer> regionFactory =
+        cacheRule.getOrCreateCache().createRegionFactory(RegionShortcut.PARTITION);
     regionFactory.setPartitionAttributes(paf.create());
 
     regionFactory.create(regionName);
   }
 
   private void createPartitionedRegionAccessorWithPartitionResolver() {
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    PartitionAttributesFactory<Date, Integer> paf = new PartitionAttributesFactory<>();
     paf.setLocalMaxMemory(0);
     paf.setPartitionResolver(new MonthBasedPartitionResolver());
     paf.setRedundantCopies(0);
     paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
 
-    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<Date, Integer> regionFactory =
+        cacheRule.getOrCreateCache().createRegionFactory(RegionShortcut.PARTITION);
     regionFactory.setPartitionAttributes(paf.create());
 
     regionFactory.create(regionName);
