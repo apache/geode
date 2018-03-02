@@ -47,6 +47,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -280,19 +281,9 @@ public class ClusterConfigurationLoader {
 
     ConfigurationResponse response = null;
     for (InternalDistributedMember locator : locatorList) {
-      ResultCollector resultCollector =
-          FunctionService.onMember(locator).setArguments(groups).execute(function);
-      Object result = ((ArrayList) resultCollector.getResult()).get(0);
-      if (result instanceof ConfigurationResponse) {
-        response = (ConfigurationResponse) result;
-        response.setMember(locator);
+      response = requestConfigurationFromOneLocator(locator, groups);
+      if (response != null) {
         break;
-      } else {
-        logger.error("Received invalid result from {}: {}", locator.toString(), result);
-        if (result instanceof Throwable) {
-          // log the stack trace.
-          logger.error(result.toString(), result);
-        }
       }
     }
 
@@ -303,6 +294,46 @@ public class ClusterConfigurationLoader {
     }
 
     return response;
+  }
+
+  private ConfigurationResponse requestConfigurationFromOneLocator(
+      InternalDistributedMember locator, Set<String> groups) {
+    ConfigurationResponse configResponse = null;
+    Function getCOnfigFunction = new GetClusterConfigurationFunction();
+
+    int attempts = 6;
+    while (attempts > 0) {
+      logger.info("Attempting to retrieve cluster configuration from {} - {} attempts remaining",
+          locator.getName(), attempts);
+      try {
+        ResultCollector resultCollector =
+            FunctionService.onMember(locator).setArguments(groups).execute(getCOnfigFunction);
+        Object result = ((ArrayList) resultCollector.getResult()).get(0);
+        if (result instanceof ConfigurationResponse) {
+          configResponse = (ConfigurationResponse) result;
+          configResponse.setMember(locator);
+          break;
+        } else {
+          logger.error("Received invalid result from {}: {}", locator.toString(), result);
+          if (result instanceof Throwable) {
+            // log the stack trace.
+            logger.error(result.toString(), result);
+          }
+        }
+      } catch (Exception e) {
+        // no worries - we're retrying...
+      }
+
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException e) {
+        break;
+      }
+
+      attempts--;
+    }
+
+    return configResponse;
   }
 
   Set<String> getGroups(String groupString) {

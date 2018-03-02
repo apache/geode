@@ -59,7 +59,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   protected transient TemporaryFolder temporaryFolder;
   protected File workingDir;
-  protected int memberPort = -1;
+  protected int memberPort = 0;
   protected int jmxPort = -1;
   protected int httpPort = -1;
 
