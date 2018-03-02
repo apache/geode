@@ -242,8 +242,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   protected boolean createLuceneIndexOnDataRegion(final PartitionedRegion userRegion,
       final LuceneIndexImpl luceneIndex) {
     try {
-      AbstractPartitionedRepositoryManager repositoryManager =
-          (AbstractPartitionedRepositoryManager) luceneIndex.getRepositoryManager();
+      PartitionedRepositoryManager repositoryManager =
+          (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
       if (userRegion.getDataStore() == null) {
         return true;
       }
@@ -314,8 +314,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
       this.managementListener.afterIndexCreated(index);
     }
 
-    AbstractPartitionedRepositoryManager repositoryManager =
-        (AbstractPartitionedRepositoryManager) index.getRepositoryManager();
+    PartitionedRepositoryManager repositoryManager =
+        (PartitionedRepositoryManager) index.getRepositoryManager();
     repositoryManager.allowRepositoryComputation();
 
   }

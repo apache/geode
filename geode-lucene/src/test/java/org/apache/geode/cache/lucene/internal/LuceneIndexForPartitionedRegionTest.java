@@ -273,7 +273,7 @@ public class LuceneIndexForPartitionedRegionTest {
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     LuceneIndexForPartitionedRegion spy = setupSpy(region, index, "aeq");
 
-    verify(spy).createRegion(eq(index.createFileRegionName()),eq(RegionShortcut.PARTITION), any(),
+    verify(spy).createRegion(eq(index.createFileRegionName()), eq(RegionShortcut.PARTITION), any(),
         any(), any(), any());
   }
 
@@ -289,7 +289,7 @@ public class LuceneIndexForPartitionedRegionTest {
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     LuceneIndexForPartitionedRegion indexSpy = spy(index);
-    indexSpy.createRegion(index.createFileRegionName(),RegionShortcut.PARTITION, regionPath,
+    indexSpy.createRegion(index.createFileRegionName(), RegionShortcut.PARTITION, regionPath,
         partitionAttributes, regionAttributes, null);
     String fileRegionName = index.createFileRegionName();
     verify(indexSpy).createRegion(fileRegionName, RegionShortcut.PARTITION, regionPath,
@@ -315,7 +315,8 @@ public class LuceneIndexForPartitionedRegionTest {
     spy.createAEQ(any(), any());
     spy.initialize();
 
-    verify(spy).createRegion(eq(index.createFileRegionName()), eq(RegionShortcut.PARTITION_PERSISTENT), any(), any(), any(), any());
+    verify(spy).createRegion(eq(index.createFileRegionName()),
+        eq(RegionShortcut.PARTITION_PERSISTENT), any(), any(), any(), any());
   }
 
   @Test

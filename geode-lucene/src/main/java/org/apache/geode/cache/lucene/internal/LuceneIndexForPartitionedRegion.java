@@ -67,7 +67,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   protected void createLuceneListenersAndFileChunkRegions(
-      AbstractPartitionedRepositoryManager partitionedRepositoryManager) {
+      PartitionedRepositoryManager partitionedRepositoryManager) {
     partitionedRepositoryManager.setUserRegionForRepositoryManager();
     RegionShortcut regionShortCut;
     final boolean withPersistence = withPersistence();

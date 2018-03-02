@@ -92,7 +92,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   protected LuceneIndexStats indexStats;
   protected FileSystemStats fileSystemStats;
   protected LuceneIndexImpl indexForPR;
-  protected AbstractPartitionedRepositoryManager repoManager;
+  protected PartitionedRepositoryManager repoManager;
   protected GemFireCacheImpl cache;
 
   @Before

@@ -38,7 +38,7 @@ public class LuceneRawIndex extends LuceneIndexImpl {
 
   @Override
   protected void createLuceneListenersAndFileChunkRegions(
-      AbstractPartitionedRepositoryManager partitionedRepositoryManager) {
+      PartitionedRepositoryManager partitionedRepositoryManager) {
     partitionedRepositoryManager.setUserRegionForRepositoryManager();
   }
 
