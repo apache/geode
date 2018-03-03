@@ -16,6 +16,7 @@ package org.apache.geode.internal.jndi;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -378,5 +379,25 @@ public class JNDIInvoker {
 
   public static int getNoOfAvailableDataSources() {
     return dataSourceList.size();
+  }
+
+  public static Map<String, String> getBindingNamesRecursively(Context ctx) throws Exception {
+    Map<String, String> result = new HashMap<>();
+    NamingEnumeration<Binding> enumeration = ctx.listBindings("");
+
+    while (enumeration.hasMore()) {
+      Binding binding = enumeration.next();
+      String name = binding.getName();
+      String separator = name.endsWith(":") ? "" : "/";
+      Object o = binding.getObject();
+      if (o instanceof Context) {
+        Map<String, String> innerBindings = getBindingNamesRecursively((Context) o);
+        innerBindings.forEach((k, v) -> result.put(name + separator + k, v));
+      } else {
+        result.put(name, binding.getClassName());
+      }
+    }
+
+    return result;
   }
 }
