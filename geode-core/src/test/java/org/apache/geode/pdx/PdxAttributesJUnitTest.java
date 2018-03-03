@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +55,7 @@ import org.apache.geode.pdx.internal.EnumId;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
