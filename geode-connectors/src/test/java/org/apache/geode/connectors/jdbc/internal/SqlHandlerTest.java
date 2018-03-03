@@ -207,6 +207,25 @@ public class SqlHandlerTest {
     verify(factory).create();
   }
 
+  @Test
+  @Parameters({"BOOLEAN_ARRAY", "OBJECT_ARRAY", "CHAR_ARRAY", "SHORT_ARRAY", "INT_ARRAY", "LONG_ARRAY",
+      "FLOAT_ARRAY", "DOUBLE_ARRAY", "STRING_ARRAY","ARRAY_OF_BYTE_ARRAYS"})
+  public void readWritesFieldGivenPdxFieldType2(FieldType fieldType) throws Exception {
+    ResultSet result = mock(ResultSet.class);
+    String returnValue = "ReturnValue";
+    setupResultSetForObject(result, returnValue);
+    when(result.next()).thenReturn(true).thenReturn(false);
+    when(statement.executeQuery()).thenReturn(result);
+
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
+
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
+    thrown.expect(IllegalStateException.class);
+    thrown.expectMessage("Could not convert ");
+    handler.read(region, new Object());
+  }
+
   private PdxInstanceFactory setupPdxInstanceFactory(FieldType fieldType) {
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
     String pdxClassName = "myPdxClassName";
@@ -292,6 +311,39 @@ public class SqlHandlerTest {
     handler.write(region, Operation.UPDATE, new Object(), null);
   }
 
+  @Test
+  public void writeWithCharField() throws Exception {
+    String fieldName = "fieldName";
+    Object fieldValue = 'S';
+    when(regionMapping.getColumnNameForField(fieldName)).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setObject(1, fieldValue.toString());
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
+  @Test
+  public void writeWithNonCharField() throws Exception {
+    String fieldName = "fieldName";
+    int fieldValue = 100;
+    when(regionMapping.getColumnNameForField(fieldName)).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setObject(1, fieldValue);
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
   @Test
   public void insertActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
@@ -561,6 +613,18 @@ public class SqlHandlerTest {
     }
   }
 
+  private void setupResultSetForObject(ResultSet result, Object objectToReturn) throws SQLException {
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(result.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(2);
+    when(result.getObject(1)).thenReturn(objectToReturn);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+
+    when(result.getObject(2)).thenReturn(COLUMN_VALUE_2);
+    when(metaData.getColumnName(2)).thenReturn(COLUMN_NAME_2);
+
+  }
+
   private void setupResultSet(ResultSet result, FieldType fieldType) throws SQLException {
     ResultSetMetaData metaData = mock(ResultSetMetaData.class);
     when(result.getMetaData()).thenReturn(metaData);
@@ -597,8 +661,8 @@ public class SqlHandlerTest {
         break;
       case DATE:
         Date date = getValueByFieldType(fieldType);
-        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-        when(result.getDate(1)).thenReturn(sqlDate);
+        java.sql.Timestamp sqlTimeStamp = new java.sql.Timestamp(date.getTime());
+        when(result.getTimestamp(1)).thenReturn(sqlTimeStamp);
         break;
       case BYTE_ARRAY:
         when(result.getBytes(1)).thenReturn(getValueByFieldType(fieldType));
@@ -644,6 +708,7 @@ public class SqlHandlerTest {
     when(result.getObject(2)).thenReturn(COLUMN_VALUE_2);
     when(metaData.getColumnName(2)).thenReturn(COLUMN_NAME_2);
   }
+
 
   private void setupResultSet(ResultSet result) throws SQLException {
     setupResultSet(result, FieldType.OBJECT);

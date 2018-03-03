@@ -171,6 +171,7 @@ public class SqlHandler {
         factory.writeString(fieldName, resultSet.getString(columnIndex));
         break;
       case CHAR:
+
         factory.writeChar(fieldName, resultSet.getString(columnIndex).toCharArray()[0]);
         break;
       case SHORT:
@@ -195,44 +196,69 @@ public class SqlHandler {
         factory.writeBoolean(fieldName, resultSet.getBoolean(columnIndex));
         break;
       case DATE:
-        factory.writeDate(fieldName, resultSet.getDate(columnIndex));
+        java.sql.Timestamp sqlDate = resultSet.getTimestamp(columnIndex);
+        java.util.Date pdxDate = null;
+        if (sqlDate != null) {
+          pdxDate = new java.util.Date(sqlDate.getTime());
+        }
+        factory.writeDate(fieldName, pdxDate);
         break;
       case BYTE_ARRAY:
         factory.writeByteArray(fieldName, resultSet.getBytes(columnIndex));
         break;
       case BOOLEAN_ARRAY:
-        factory.writeBooleanArray(fieldName, (boolean[]) resultSet.getObject(columnIndex));
+        factory.writeBooleanArray(fieldName,
+            convertJdbcObjectToJavaType(boolean[].class, resultSet.getObject(columnIndex)));
         break;
       case CHAR_ARRAY:
-        factory.writeCharArray(fieldName, (char[]) resultSet.getObject(columnIndex));
+        factory.writeCharArray(fieldName,
+            convertJdbcObjectToJavaType(char[].class, resultSet.getObject(columnIndex)));
         break;
       case SHORT_ARRAY:
-        factory.writeShortArray(fieldName, (short[]) resultSet.getObject(columnIndex));
+        factory.writeShortArray(fieldName,
+            convertJdbcObjectToJavaType(short[].class, resultSet.getObject(columnIndex)));
         break;
       case INT_ARRAY:
-        factory.writeIntArray(fieldName, (int[]) resultSet.getObject(columnIndex));
+        factory.writeIntArray(fieldName,
+            convertJdbcObjectToJavaType(int[].class, resultSet.getObject(columnIndex)));
         break;
       case LONG_ARRAY:
-        factory.writeLongArray(fieldName, (long[]) resultSet.getObject(columnIndex));
+        factory.writeLongArray(fieldName,
+            convertJdbcObjectToJavaType(long[].class, resultSet.getObject(columnIndex)));
         break;
       case FLOAT_ARRAY:
-        factory.writeFloatArray(fieldName, (float[]) resultSet.getObject(columnIndex));
+        factory.writeFloatArray(fieldName,
+            convertJdbcObjectToJavaType(float[].class, resultSet.getObject(columnIndex)));
         break;
       case DOUBLE_ARRAY:
-        factory.writeDoubleArray(fieldName, (double[]) resultSet.getObject(columnIndex));
+        factory.writeDoubleArray(fieldName,
+            convertJdbcObjectToJavaType(double[].class, resultSet.getObject(columnIndex)));
         break;
       case STRING_ARRAY:
-        factory.writeStringArray(fieldName, (String[]) resultSet.getObject(columnIndex));
+        factory.writeStringArray(fieldName,
+            convertJdbcObjectToJavaType(String[].class, resultSet.getObject(columnIndex)));
         break;
       case OBJECT_ARRAY:
-        factory.writeObjectArray(fieldName, (Object[]) resultSet.getObject(columnIndex));
+        factory.writeObjectArray(fieldName,
+            convertJdbcObjectToJavaType(Object[].class, resultSet.getObject(columnIndex)));
         break;
       case ARRAY_OF_BYTE_ARRAYS:
-        factory.writeArrayOfByteArrays(fieldName, (byte[][]) resultSet.getObject(columnIndex));
+        factory.writeArrayOfByteArrays(fieldName,
+            convertJdbcObjectToJavaType(byte[][].class, resultSet.getObject(columnIndex)));
         break;
       case OBJECT:
         factory.writeObject(fieldName, resultSet.getObject(columnIndex));
         break;
+    }
+  }
+
+  private <T> T convertJdbcObjectToJavaType(Class<T> javaType, Object jdbcObject) {
+    try {
+      return javaType.cast(jdbcObject);
+    } catch (ClassCastException classCastException) {
+      // TODO throw JdbcConnectorException
+      throw new IllegalStateException("Could not convert " + jdbcObject.getClass().getTypeName() +
+          " to " + javaType.getTypeName(), classCastException);
     }
   }
 
@@ -261,7 +287,11 @@ public class SqlHandler {
     int index = 0;
     for (ColumnValue columnValue : columnList) {
       index++;
-      statement.setObject(index, columnValue.getValue());
+      Object value = columnValue.getValue();
+      if (value instanceof Character) {
+        value = ((Character)value).toString();
+      }
+      statement.setObject(index, value);
     }
   }
 

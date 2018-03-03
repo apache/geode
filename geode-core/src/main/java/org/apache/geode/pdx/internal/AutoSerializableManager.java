@@ -78,7 +78,7 @@ public class AutoSerializableManager {
    * not evaluate any hardcoded excludes. This helps with testing as well as possibly debugging
    * future customer issues.
    */
-  private static final String NO_HARDCODED_EXCLUDES_PARAM =
+  public static final String NO_HARDCODED_EXCLUDES_PARAM =
       DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes";
 
   private boolean noHardcodedExcludes = Boolean.getBoolean(NO_HARDCODED_EXCLUDES_PARAM);
