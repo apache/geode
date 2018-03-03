@@ -215,7 +215,6 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
           }
           String className = serialClass.getName();
           if (serialClass.isArray()) {
-            serialClass = serialClass.getComponentType();
             className = serialClass.getComponentType().getName();
           }
           if (sanctionedClasses.contains(className)) {
