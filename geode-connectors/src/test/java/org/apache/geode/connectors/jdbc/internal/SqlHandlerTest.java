@@ -208,9 +208,9 @@ public class SqlHandlerTest {
   }
 
   @Test
-  @Parameters({"BOOLEAN_ARRAY", "OBJECT_ARRAY", "CHAR_ARRAY", "SHORT_ARRAY", "INT_ARRAY", "LONG_ARRAY",
-      "FLOAT_ARRAY", "DOUBLE_ARRAY", "STRING_ARRAY","ARRAY_OF_BYTE_ARRAYS"})
-  public void readWritesFieldGivenPdxFieldType2(FieldType fieldType) throws Exception {
+  @Parameters({"BOOLEAN_ARRAY", "OBJECT_ARRAY", "CHAR_ARRAY", "SHORT_ARRAY", "INT_ARRAY",
+      "LONG_ARRAY", "FLOAT_ARRAY", "DOUBLE_ARRAY", "STRING_ARRAY", "ARRAY_OF_BYTE_ARRAYS"})
+  public void throwsExceptionWhenReadWritesUnsupportedType(FieldType fieldType) throws Exception {
     ResultSet result = mock(ResultSet.class);
     String returnValue = "ReturnValue";
     setupResultSetForObject(result, returnValue);
@@ -344,6 +344,7 @@ public class SqlHandlerTest {
     verify(statement).setObject(2, createKey);
     verify(statement).close();
   }
+
   @Test
   public void insertActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
@@ -613,7 +614,8 @@ public class SqlHandlerTest {
     }
   }
 
-  private void setupResultSetForObject(ResultSet result, Object objectToReturn) throws SQLException {
+  private void setupResultSetForObject(ResultSet result, Object objectToReturn)
+      throws SQLException {
     ResultSetMetaData metaData = mock(ResultSetMetaData.class);
     when(result.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(2);

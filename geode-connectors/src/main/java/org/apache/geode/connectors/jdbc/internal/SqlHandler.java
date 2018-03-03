@@ -171,7 +171,6 @@ public class SqlHandler {
         factory.writeString(fieldName, resultSet.getString(columnIndex));
         break;
       case CHAR:
-
         factory.writeChar(fieldName, resultSet.getString(columnIndex).toCharArray()[0]);
         break;
       case SHORT:
@@ -257,8 +256,8 @@ public class SqlHandler {
       return javaType.cast(jdbcObject);
     } catch (ClassCastException classCastException) {
       // TODO throw JdbcConnectorException
-      throw new IllegalStateException("Could not convert " + jdbcObject.getClass().getTypeName() +
-          " to " + javaType.getTypeName(), classCastException);
+      throw new IllegalStateException("Could not convert " + jdbcObject.getClass().getTypeName()
+          + " to " + javaType.getTypeName(), classCastException);
     }
   }
 
@@ -289,7 +288,7 @@ public class SqlHandler {
       index++;
       Object value = columnValue.getValue();
       if (value instanceof Character) {
-        value = ((Character)value).toString();
+        value = ((Character) value).toString();
       }
       statement.setObject(index, value);
     }

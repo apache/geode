@@ -251,8 +251,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
       System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "false");
       Invoke.invokeInEveryVM(new SerializableRunnable() {
         public void run() {
-          System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM,
-              "false");
+          System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "false");
         }
       });
     }

@@ -64,10 +64,11 @@ public class JdbcLoaderIntegrationTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
-    cache = new CacheFactory().set("locators", "").set("mcast-port", "0")
-        .setPdxReadSerialized(false)
-        .setPdxSerializer(new ReflectionBasedAutoSerializer(ClassWithSupportedPdxFields.class.getName()))
-        .create();
+    cache =
+        new CacheFactory().set("locators", "").set("mcast-port", "0").setPdxReadSerialized(false)
+            .setPdxSerializer(
+                new ReflectionBasedAutoSerializer(ClassWithSupportedPdxFields.class.getName()))
+            .create();
     connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
   }
@@ -84,21 +85,11 @@ public class JdbcLoaderIntegrationTest {
   }
 
   private void createClassWithSupportedPdxFieldsTable() throws Exception {
-    statement.execute("Create Table " + REGION_TABLE_NAME +
-        " (id varchar(10) primary key not null, " +
-        "aboolean smallint, " +
-        "abyte smallint, " +
-        "ashort smallint, " +
-        "anint int, " +
-        "along bigint, " +
-        "afloat float, " +
-        "adouble float, " +
-        "astring varchar(10), " +
-        "adate timestamp, " +
-        "anobject varchar(20), " +
-        "abytearray blob(100) " +
-        ")"
-    );
+    statement
+        .execute("Create Table " + REGION_TABLE_NAME + " (id varchar(10) primary key not null, "
+            + "aboolean smallint, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
+            + "along bigint, " + "afloat float, " + "adouble float, " + "astring varchar(10), "
+            + "adate timestamp, " + "anobject varchar(20), " + "abytearray blob(100) " + ")");
   }
 
   private void closeDB() throws Exception {
@@ -158,10 +149,11 @@ public class JdbcLoaderIntegrationTest {
   @Test
   public void verifyGetWithSupportedFieldsWithPdxClassName() throws Exception {
     createClassWithSupportedPdxFieldsTable();
-    ClassWithSupportedPdxFields classWithSupportedPdxFields = createClassWithSupportedPdxFieldsForInsert();
+    ClassWithSupportedPdxFields classWithSupportedPdxFields =
+        createClassWithSupportedPdxFieldsForInsert();
     insertIntoClassWithSupportedPdxFieldsTable("1", classWithSupportedPdxFields);
-    Region<String, ClassWithSupportedPdxFields> region =
-        createRegionWithJDBCLoader(REGION_TABLE_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    Region<String, ClassWithSupportedPdxFields> region = createRegionWithJDBCLoader(
+        REGION_TABLE_NAME, ClassWithSupportedPdxFields.class.getName(), false);
 
     createPdxType(classWithSupportedPdxFields);
 
@@ -204,16 +196,15 @@ public class JdbcLoaderIntegrationTest {
 
   private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert() {
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
-        new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2,
-            3, 4, 5.5f, 6.0, "BigEmp", new Date(100000),
-            "BigEmpObject", new byte[]{1, 2});
+        new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2, 3, 4, 5.5f, 6.0, "BigEmp",
+            new Date(100000), "BigEmpObject", new byte[] {1, 2});
 
     return classWithSupportedPdxFields;
   }
 
-  private void insertIntoClassWithSupportedPdxFieldsTable(String id, ClassWithSupportedPdxFields classWithSupportedPdxFields) throws Exception {
-    String insertString = "Insert into " + REGION_TABLE_NAME +
-        " values (?,?,?,?,?,?,?,?,?,?,?,?)";
+  private void insertIntoClassWithSupportedPdxFieldsTable(String id,
+      ClassWithSupportedPdxFields classWithSupportedPdxFields) throws Exception {
+    String insertString = "Insert into " + REGION_TABLE_NAME + " values (?,?,?,?,?,?,?,?,?,?,?,?)";
     PreparedStatement ps = connection.prepareStatement(insertString);
     int i = 1;
     ps.setObject(i++, id);

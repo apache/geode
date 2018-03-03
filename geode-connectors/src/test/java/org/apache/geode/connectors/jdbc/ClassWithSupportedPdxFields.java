@@ -33,12 +33,11 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject {
   private Object anobject;
   private byte[] abytearray;
 
-  public ClassWithSupportedPdxFields(){}
+  public ClassWithSupportedPdxFields() {}
 
   public ClassWithSupportedPdxFields(boolean aboolean, byte abyte, short ashort, int anint,
-                                     long along, float afloat, double adouble,
-                                     String astring, Date adate, Object anobject,
-                                     byte[] abytearray) {
+      long along, float afloat, double adouble, String astring, Date adate, Object anobject,
+      byte[] abytearray) {
     this.aboolean = aboolean;
     this.abyte = abyte;
     this.ashort = ashort;
@@ -84,13 +83,15 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject {
     if (Double.compare(that.getAdouble(), getAdouble()) != 0) {
       return false;
     }
-    if (getAstring() != null ? !getAstring().equals(that.getAstring()) : that.getAstring() != null) {
+    if (getAstring() != null ? !getAstring().equals(that.getAstring())
+        : that.getAstring() != null) {
       return false;
     }
     if (getAdate() != null ? !getAdate().equals(that.getAdate()) : that.getAdate() != null) {
       return false;
     }
-    if (getAnobject() != null ? !getAnobject().equals(that.getAnobject()) : that.getAnobject() != null) {
+    if (getAnobject() != null ? !getAnobject().equals(that.getAnobject())
+        : that.getAnobject() != null) {
       return false;
     }
     return Arrays.equals(getAbytearray(), that.getAbytearray());
@@ -117,19 +118,11 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject {
 
   @Override
   public String toString() {
-    return "ClassWithSupportedPdxFields{" +
-        "aboolean=" + isAboolean() +
-        ", abyte=" + getAbyte() +
-        ", ashort=" + getAshort() +
-        ", anint=" + getAnint() +
-        ", along=" + getAlong() +
-        ", afloat=" + getAfloat() +
-        ", adouble=" + getAdouble() +
-        ", astring='" + getAstring() + '\'' +
-        ", adate=" + getAdate() +
-        ", anobject=" + getAnobject() +
-        ", abytearray=" + Arrays.toString(getAbytearray()) +
-        '}';
+    return "ClassWithSupportedPdxFields{" + "aboolean=" + isAboolean() + ", abyte=" + getAbyte()
+        + ", ashort=" + getAshort() + ", anint=" + getAnint() + ", along=" + getAlong()
+        + ", afloat=" + getAfloat() + ", adouble=" + getAdouble() + ", astring='" + getAstring()
+        + '\'' + ", adate=" + getAdate() + ", anobject=" + getAnobject() + ", abytearray="
+        + Arrays.toString(getAbytearray()) + '}';
   }
 
   public boolean isAboolean() {
