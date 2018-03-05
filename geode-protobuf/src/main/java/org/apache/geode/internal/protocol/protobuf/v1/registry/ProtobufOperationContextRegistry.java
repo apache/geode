@@ -29,9 +29,9 @@ import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunction
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionNamesRequestOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetServerOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.GetSizeRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.KeySetOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.OqlQueryRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutAllRequestOperationHandler;
@@ -116,10 +116,10 @@ public class ProtobufOperationContextRegistry {
             opsResp -> ClientProtocol.Message.newBuilder().setGetRegionNamesResponse(opsResp),
             ResourcePermissions.DATA_READ));
 
-    operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREGIONREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Message::getGetRegionRequest,
-            new GetRegionRequestOperationHandler(),
-            opsResp -> ClientProtocol.Message.newBuilder().setGetRegionResponse(opsResp),
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETSIZEREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getGetSizeRequest,
+            new GetSizeRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setGetSizeResponse(opsResp),
             ResourcePermissions.DATA_READ));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETSERVERREQUEST,
