@@ -264,7 +264,7 @@ public interface DistributionManager extends ReplySender {
   /**
    * Return the executor used for function processing
    */
-  Executor getFunctionExcecutor();
+  Executor getFunctionExecutor();
 
   /**
    * gets this distribution manager's message-processing executor for ordered (i.e. serialized)
