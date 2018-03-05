@@ -75,6 +75,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
@@ -130,7 +131,7 @@ public class ClusterConfigurationService {
   private final AtomicReference<SharedConfigurationStatus> status = new AtomicReference<>();
 
   private final InternalCache cache;
-  private final DistributedLockService sharedConfigLockingService;
+  private DistributedLockService sharedConfigLockingService;
 
   public ClusterConfigurationService(InternalCache cache) throws IOException {
     this.cache = cache;
@@ -518,7 +519,7 @@ public class ClusterConfigurationService {
   public ConfigurationResponse createConfigurationResponse(Set<String> groups) throws IOException {
     ConfigurationResponse configResponse = null;
 
-    boolean isLocked = this.sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, 5000, 5000);
+    boolean isLocked = lockSharedConfiguration();
     try {
       if (isLocked) {
         configResponse = new ConfigurationResponse();
@@ -536,7 +537,7 @@ public class ClusterConfigurationService {
         return configResponse;
       }
     } finally {
-      this.sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
+      unlockSharedConfiguration();
     }
     return configResponse;
   }

@@ -1041,7 +1041,10 @@ public class InternalLocator extends Locator implements ConnectListener {
         this.productUseLog.reopen();
       }
       this.productUseLog.monitorUse(newSystem);
-      startSharedConfigurationService();
+      if (isSharedConfigurationEnabled()) {
+        this.sharedConfig = new ClusterConfigurationService(newCache);
+        startSharedConfigurationService();
+      }
       if (!this.server.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
         startTcpServer();

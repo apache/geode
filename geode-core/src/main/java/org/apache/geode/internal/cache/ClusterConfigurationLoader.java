@@ -47,9 +47,13 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -68,6 +72,8 @@ import org.apache.geode.management.internal.configuration.messages.Configuration
 public class ClusterConfigurationLoader {
 
   private static final Logger logger = LogService.getLogger();
+
+  private static final Function GET_CLUSTER_CONFIG_FUNCTION = new GetClusterConfigurationFunction();
 
   /**
    * Deploys the jars received from shared configuration, it undeploys any other jars that were not
@@ -279,21 +285,25 @@ public class ClusterConfigurationLoader {
     GetClusterConfigurationFunction function = new GetClusterConfigurationFunction();
 
     ConfigurationResponse response = null;
-    for (InternalDistributedMember locator : locatorList) {
-      ResultCollector resultCollector =
-          FunctionService.onMember(locator).setArguments(groups).execute(function);
-      Object result = ((ArrayList) resultCollector.getResult()).get(0);
-      if (result instanceof ConfigurationResponse) {
-        response = (ConfigurationResponse) result;
-        response.setMember(locator);
-        break;
-      } else {
-        logger.error("Received invalid result from {}: {}", locator.toString(), result);
-        if (result instanceof Throwable) {
-          // log the stack trace.
-          logger.error(result.toString(), result);
+
+    int attempts = 6;
+    OUTER: while (attempts > 0) {
+      for (InternalDistributedMember locator : locatorList) {
+        logger.info("Attempting to retrieve cluster configuration from {} - {} attempts remaining",
+            locator.getName(), attempts);
+        response = requestConfigurationFromOneLocator(locator, groups);
+        if (response != null) {
+          break OUTER;
         }
       }
+
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException ex) {
+        break;
+      }
+
+      attempts--;
     }
 
     // if the response is null
@@ -303,6 +313,35 @@ public class ClusterConfigurationLoader {
     }
 
     return response;
+  }
+
+  private ConfigurationResponse requestConfigurationFromOneLocator(
+      InternalDistributedMember locator, Set<String> groups) {
+    ConfigurationResponse configResponse = null;
+
+    try {
+      ResultCollector resultCollector = FunctionService.onMember(locator).setArguments(groups)
+          .execute(GET_CLUSTER_CONFIG_FUNCTION);
+      Object result = ((ArrayList) resultCollector.getResult()).get(0);
+      if (result instanceof ConfigurationResponse) {
+        configResponse = (ConfigurationResponse) result;
+        configResponse.setMember(locator);
+      } else {
+        logger.error("Received invalid result from {}: {}", locator.toString(), result);
+        if (result instanceof Throwable) {
+          // log the stack trace.
+          logger.error(result.toString(), result);
+        }
+      }
+    } catch (FunctionException fex) {
+      // Rethrow unless we're possibly reconnecting
+      if (!(fex.getCause() instanceof LockServiceDestroyedException
+          || fex.getCause() instanceof FunctionInvocationTargetException)) {
+        throw fex;
+      }
+    }
+
+    return configResponse;
   }
 
   Set<String> getGroups(String groupString) {
