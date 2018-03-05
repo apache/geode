@@ -76,6 +76,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -83,7 +84,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * with a cache and a pre-defined region and a data loader. The client creates the same region and
  * attaches the connection pool.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 @SuppressWarnings("serial")
 public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 

@@ -44,13 +44,14 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the ContinuousQuery mechanism in GemFire. This includes the test with different
  * data activities.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class CqStatsDUnitTest extends JUnit4CacheTestCase {
 
   // TODO: delete this use of CqQueryDUnitTest
