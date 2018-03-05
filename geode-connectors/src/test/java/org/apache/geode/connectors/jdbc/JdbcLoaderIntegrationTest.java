@@ -86,11 +86,11 @@ public class JdbcLoaderIntegrationTest {
   }
 
   private void createClassWithSupportedPdxFieldsTable() throws Exception {
-    statement
-        .execute("Create Table " + REGION_TABLE_NAME + " (id varchar(10) primary key not null, "
-            + "aboolean smallint, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
-            + "along bigint, " + "afloat float, " + "adouble float, " + "astring varchar(10), "
-            + "adate timestamp, " + "anobject varchar(20), " + "abytearray blob(100) " + ")");
+    statement.execute("Create Table " + REGION_TABLE_NAME
+        + " (id varchar(10) primary key not null, " + "aboolean smallint, " + "abyte smallint, "
+        + "ashort smallint, " + "anint int, " + "along bigint, " + "afloat float, "
+        + "adouble float, " + "astring varchar(10), " + "adate timestamp, "
+        + "anobject varchar(20), " + "abytearray blob(100), " + "achar char(1))");
   }
 
   private void closeDB() throws Exception {
@@ -199,14 +199,15 @@ public class JdbcLoaderIntegrationTest {
   private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert() {
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
         new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2, 3, 4, 5.5f, 6.0, "BigEmp",
-            new Date(100000), "BigEmpObject", new byte[] {1, 2});
+            new Date(100000), "BigEmpObject", new byte[] {1, 2}, 'c');
 
     return classWithSupportedPdxFields;
   }
 
   private void insertIntoClassWithSupportedPdxFieldsTable(String id,
       ClassWithSupportedPdxFields classWithSupportedPdxFields) throws Exception {
-    String insertString = "Insert into " + REGION_TABLE_NAME + " values (?,?,?,?,?,?,?,?,?,?,?,?)";
+    String insertString =
+        "Insert into " + REGION_TABLE_NAME + " values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
     PreparedStatement ps = connection.prepareStatement(insertString);
     int i = 1;
     ps.setObject(i++, id);
@@ -221,6 +222,7 @@ public class JdbcLoaderIntegrationTest {
     ps.setObject(i++, classWithSupportedPdxFields.getAdate());
     ps.setObject(i++, classWithSupportedPdxFields.getAnobject());
     ps.setObject(i++, classWithSupportedPdxFields.getAbytearray());
+    ps.setObject(i++, new Character(classWithSupportedPdxFields.getAchar()).toString());
     ps.executeUpdate();
   }
 }

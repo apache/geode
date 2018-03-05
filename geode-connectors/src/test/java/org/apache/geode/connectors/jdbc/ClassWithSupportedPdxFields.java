@@ -32,12 +32,13 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject {
   private Date adate;
   private Object anobject;
   private byte[] abytearray;
+  private char achar;
 
   public ClassWithSupportedPdxFields() {}
 
   public ClassWithSupportedPdxFields(boolean aboolean, byte abyte, short ashort, int anint,
       long along, float afloat, double adouble, String astring, Date adate, Object anobject,
-      byte[] abytearray) {
+      byte[] abytearray, char achar) {
     this.aboolean = aboolean;
     this.abyte = abyte;
     this.ashort = ashort;
@@ -49,6 +50,7 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject {
     this.adate = adate;
     this.anobject = anobject;
     this.abytearray = abytearray;
+    this.achar = achar;
   }
 
   @Override
@@ -94,6 +96,9 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject {
         : that.getAnobject() != null) {
       return false;
     }
+    if (getAchar() != that.getAchar()) {
+      return false;
+    }
     return Arrays.equals(getAbytearray(), that.getAbytearray());
   }
 
@@ -119,10 +124,10 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject {
   @Override
   public String toString() {
     return "ClassWithSupportedPdxFields{" + "aboolean=" + isAboolean() + ", abyte=" + getAbyte()
-        + ", ashort=" + getAshort() + ", anint=" + getAnint() + ", along=" + getAlong()
-        + ", afloat=" + getAfloat() + ", adouble=" + getAdouble() + ", astring='" + getAstring()
-        + '\'' + ", adate=" + getAdate() + ", anobject=" + getAnobject() + ", abytearray="
-        + Arrays.toString(getAbytearray()) + '}';
+        + ", achar=" + getAchar() + ", ashort=" + getAshort() + ", anint=" + getAnint() + ", along="
+        + getAlong() + ", afloat=" + getAfloat() + ", adouble=" + getAdouble() + ", astring='"
+        + getAstring() + '\'' + ", adate=" + getAdate() + ", anobject=" + getAnobject()
+        + ", abytearray=" + Arrays.toString(getAbytearray()) + '}';
   }
 
   public boolean isAboolean() {
@@ -131,6 +136,10 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject {
 
   public byte getAbyte() {
     return abyte;
+  }
+
+  public char getAchar() {
+    return achar;
   }
 
   public short getAshort() {
