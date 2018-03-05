@@ -47,7 +47,7 @@ public class GatewayReceiverDUnitTest extends WANTestBase {
   @Test
   public void removingGatewayReceiverUsingReplicatedRegionShouldRemoveCacheServerFlagFromProfile()
       throws Exception {
-    testPrimarySecondaryQueueDrainInOrder_RR(
+    testRemoveGatewayReceiver(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName(), null, isOffHeap()),
         () -> ((DistributedRegion) WANTestBase.cache.getRegion(getTestMethodName()))
             .getDistributionAdvisor());
@@ -56,14 +56,29 @@ public class GatewayReceiverDUnitTest extends WANTestBase {
   @Test
   public void removingGatewayReceiverUsingPartitionedRegionShouldRemoveCacheServerFlagFromProfile()
       throws Exception {
-    testPrimarySecondaryQueueDrainInOrder_RR(
+    testRemoveGatewayReceiver(
         () -> WANTestBase.createPartitionedRegion(getTestMethodName(), null, 1, 10, isOffHeap()),
         () -> ((PartitionedRegion) WANTestBase.cache.getRegion(getTestMethodName()))
             .getDistributionAdvisor());
   }
 
-  public <T> void testPrimarySecondaryQueueDrainInOrder_RR(
-      SerializableRunnableIF createRegionLambda,
+  @Test
+  public void canAddReceiverAfterRemovingFromReplicatedRegion() throws Exception {
+    testCanAddGatewayReceiverAfterOneHasBeenRemoved(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName(), null, isOffHeap()),
+        () -> ((DistributedRegion) WANTestBase.cache.getRegion(getTestMethodName()))
+            .getDistributionAdvisor());
+  }
+
+  @Test
+  public void canAddReceiverAfterRemovingFromPartitionedRegion() throws Exception {
+    testCanAddGatewayReceiverAfterOneHasBeenRemoved(
+        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), null, 1, 10, isOffHeap()),
+        () -> ((PartitionedRegion) WANTestBase.cache.getRegion(getTestMethodName()))
+            .getDistributionAdvisor());
+  }
+
+  public <T> void testRemoveGatewayReceiver(SerializableRunnableIF createRegionLambda,
       SerializableCallableIF<DistributionAdvisor> extractAdvisorLambda) throws Exception {
     InternalDistributedMember[] memberIds = new InternalDistributedMember[8];
 
@@ -113,6 +128,62 @@ public class GatewayReceiverDUnitTest extends WANTestBase {
     vm2.invoke(() -> assertProfileCacheServerFlagEquals(memberIds[3], false, extractAdvisorLambda));
     vm3.invoke(() -> assertProfileCacheServerFlagEquals(memberIds[2], false, extractAdvisorLambda));
   }
+
+  public <T> void testCanAddGatewayReceiverAfterOneHasBeenRemoved(
+      SerializableRunnableIF createRegionLambda,
+      SerializableCallableIF<DistributionAdvisor> extractAdvisorLambda) throws Exception {
+    InternalDistributedMember[] memberIds = new InternalDistributedMember[8];
+
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    vm2.invoke(() -> WANTestBase.createCache(nyPort));
+    vm3.invoke(() -> WANTestBase.createCache(nyPort));
+
+    memberIds[2] = (InternalDistributedMember) vm2
+        .invoke(() -> WANTestBase.cache.getDistributedSystem().getDistributedMember());
+
+    memberIds[3] = (InternalDistributedMember) vm3
+        .invoke(() -> WANTestBase.cache.getDistributedSystem().getDistributedMember());
+
+    vm2.invoke(createRegionLambda);
+    vm3.invoke(createRegionLambda);
+
+    vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 100));
+
+    vm2.invoke(() -> {
+      GatewayReceiverDUnitTest.receiver = GatewayReceiverDUnitTest.createAndReturnReceiver();
+      return;
+    });
+    vm3.invoke(() -> {
+      GatewayReceiverDUnitTest.receiver = GatewayReceiverDUnitTest.createAndReturnReceiver();
+      return;
+    });
+
+    vm2.invoke(() -> {
+      GatewayReceiverDUnitTest.receiver.stop();
+      GatewayReceiverDUnitTest.receiver.destroy();
+    });
+
+    vm3.invoke(() -> {
+      GatewayReceiverDUnitTest.receiver.stop();
+      GatewayReceiverDUnitTest.receiver.destroy();
+    });
+
+    vm2.invoke(() -> {
+      GatewayReceiverDUnitTest.receiver = GatewayReceiverDUnitTest.createAndReturnReceiver();
+      return;
+    });
+    vm3.invoke(() -> {
+      GatewayReceiverDUnitTest.receiver = GatewayReceiverDUnitTest.createAndReturnReceiver();
+      return;
+    });
+
+    vm2.invoke(() -> assertProfileCacheServerFlagEquals(memberIds[3], true, extractAdvisorLambda));
+    vm3.invoke(() -> assertProfileCacheServerFlagEquals(memberIds[2], true, extractAdvisorLambda));
+
+  }
+
 
 
   private void assertProfileCacheServerFlagEquals(InternalDistributedMember member,
