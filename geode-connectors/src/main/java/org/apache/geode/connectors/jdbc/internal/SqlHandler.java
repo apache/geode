@@ -126,8 +126,8 @@ public class SqlHandler {
     return factory;
   }
 
-  PdxInstance createPdxInstance(ResultSet resultSet, Region region, RegionMapping regionMapping,
-      String keyColumnName) throws SQLException {
+  <K, V> PdxInstance createPdxInstance(ResultSet resultSet, Region<K, V> region,
+      RegionMapping regionMapping, String keyColumnName) throws SQLException {
     PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
     PdxInstance pdxInstance = null;
     if (resultSet.next()) {
@@ -250,7 +250,7 @@ public class SqlHandler {
     }
   }
 
-  private FieldType getFieldType(Region region, String pdxClassName, String fieldName,
+  private <K, V> FieldType getFieldType(Region<K, V> region, String pdxClassName, String fieldName,
       ResultSetMetaData metaData, int columnIndex) {
     FieldType result = null;
     if (pdxClassName != null) {
