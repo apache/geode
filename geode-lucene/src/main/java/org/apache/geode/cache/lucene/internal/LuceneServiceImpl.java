@@ -175,45 +175,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return getUniqueIndexName(indexName, regionPath) + regionSuffix;
   }
 
-  public enum validateCommandParameters {
-    REGION_PATH, INDEX_NAME;
-
-    public void validateName(String name) {
-      if (name == null) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
-      }
-      if (name.isEmpty()) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
-      }
-
-      boolean iae = false;
-      String msg =
-          " names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens";
-      Matcher matcher = null;
-      switch (this) {
-        case REGION_PATH:
-          matcher = Pattern.compile("[aA-zZ0-9-_./]+").matcher(name);
-          msg = "Region" + msg + ", underscores, or forward slashes: ";
-          iae = name.startsWith("__") || name.startsWith("/__") || !matcher.matches();
-          break;
-        case INDEX_NAME:
-          matcher = Pattern.compile("[aA-zZ0-9-_.]+").matcher(name);
-          msg = "Index" + msg + " or underscores: ";
-          iae = name.startsWith("__") || !matcher.matches();
-          break;
-        default:
-          throw new IllegalArgumentException("Illegal option for validateName function");
-      }
-
-      // Ensure the region only contains valid characters
-      if (iae) {
-        throw new IllegalArgumentException(msg + name);
-      }
-    }
-  }
-
   public void createIndex(String indexName, String regionPath, Map<String, Analyzer> fieldAnalyzers,
       LuceneSerializer serializer, boolean allowOnExistingRegion) {
     if (fieldAnalyzers == null || fieldAnalyzers.isEmpty()) {

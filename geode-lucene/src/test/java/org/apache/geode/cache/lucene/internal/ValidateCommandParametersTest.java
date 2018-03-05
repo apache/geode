@@ -15,29 +15,72 @@
 
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateLuceneIndexName;
+import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateRegionName;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ValidateCommandParametersTest {
 
   @Test
-  public void validateRegionName() throws Exception {
-    validateCommandParameters region = validateCommandParameters.REGION_PATH;
-    region.validateName("/test");
-    region.validateName("test");
-    assertThatThrownBy(() -> region.validateName("__#@T"))
+  public void validateVariousVariationsOfRegionName() throws Exception {
+    validateRegionName("/test");
+    validateRegionName("test");
+    validateRegionName("te/st");
+    validateRegionName("te-st");
+    validateRegionName("_test");
+    validateRegionName("/_test");
+    validateRegionName("/_tes/t");
+    assertThatThrownBy(() -> validateRegionName("/__test"))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> region.validateName("/__#@T"))
+    assertThatThrownBy(() -> validateRegionName("__#@T"))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> region.validateName("__"))
+    assertThatThrownBy(() -> validateRegionName("__#@T"))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> region.validateName("/__"))
+    assertThatThrownBy(() -> validateRegionName("/__#@T"))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateRegionName("__")).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateRegionName("/__"))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateRegionName("")).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateRegionName(null)).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateRegionName(" ")).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateRegionName("@#$%"))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void validateVariousVariationsOfIndexName() throws Exception {
+    assertThatThrownBy(() -> validateLuceneIndexName("/test"))
+        .isInstanceOf(IllegalArgumentException.class);
+    validateLuceneIndexName("test");
+    validateLuceneIndexName("_test");
+    validateLuceneIndexName("te-st");
+    validateLuceneIndexName("_te-st");
+    assertThatThrownBy(() -> validateLuceneIndexName("te/st"))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateLuceneIndexName("__test"))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateLuceneIndexName("__#@T"))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateLuceneIndexName("/__#@T"))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateLuceneIndexName("__"))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateLuceneIndexName("/__"))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateLuceneIndexName(""))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateLuceneIndexName(null))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateLuceneIndexName(" "))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> validateLuceneIndexName("@#$%"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 }
