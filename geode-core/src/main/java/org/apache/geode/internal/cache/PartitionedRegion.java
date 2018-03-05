@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.internal.lang.SystemUtils.*;
+import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -165,7 +165,6 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.eviction.EvictionController;
-import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.FunctionExecutionNodePruner;
@@ -239,6 +238,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
@@ -462,6 +462,19 @@ public class PartitionedRegion extends LocalRegion
   private boolean enableConflation;
 
   private final Object indexLock = new Object();
+
+  private final Set<ColocationListener> colocationListeners = new ConcurrentHashSet<>();
+
+  public void addColocationListener(ColocationListener colocationListener) {
+    if (colocationListener != null) {
+      colocationListeners.add(colocationListener);
+    }
+  }
+
+  public void removeColocationListener(ColocationListener colocationListener) {
+    colocationListeners.remove(colocationListener);
+  }
+
 
   static PRIdMap getPrIdToPR() {
     return prIdToPR;
@@ -1528,7 +1541,7 @@ public class PartitionedRegion extends LocalRegion
             this.prRoot.get(colocatedRegion.getRegionIdentifier());
         if (parentConf.isColocationComplete() && parentConf.hasSameDataStoreMembers(prConfig)) {
           colocationComplete = true;
-          prConfig.setColocationComplete();
+          prConfig.setColocationComplete(this);
         }
       }
 
@@ -1544,6 +1557,10 @@ public class PartitionedRegion extends LocalRegion
         colocatedLock.unlock();
       }
     }
+  }
+
+  void executeColocationCallbacks() {
+    colocationListeners.stream().forEach(ColocationListener::afterColocationCompleted);
   }
 
   /**
