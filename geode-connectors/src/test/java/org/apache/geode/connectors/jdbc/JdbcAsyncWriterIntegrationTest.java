@@ -37,6 +37,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
+import org.apache.geode.connectors.jdbc.internal.TableKeyColumnManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.pdx.PdxInstance;
@@ -100,20 +101,6 @@ public class JdbcAsyncWriterIntegrationTest {
     employees.put("2", pdxEmployee2);
 
     awaitUntil(() -> assertThat(jdbcWriter.getTotalEvents()).isEqualTo(2));
-  }
-
-  @Test
-  public void canInsertIntoTable() throws Exception {
-    employees.put("1", pdxEmployee1);
-    employees.put("2", pdxEmployee2);
-
-    awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(2));
-
-    ResultSet resultSet =
-        statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
-    assertRecordMatchesEmployee(resultSet, "1", employee1);
-    assertRecordMatchesEmployee(resultSet, "2", employee2);
-    assertThat(resultSet.next()).isFalse();
   }
 
   @Test
@@ -253,7 +240,7 @@ public class JdbcAsyncWriterIntegrationTest {
 
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(),
+    return new SqlHandler(new TestableConnectionManager(), new TableKeyColumnManager(),
         TestConfigService.getTestConfigService());
   }
 

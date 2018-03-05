@@ -114,14 +114,14 @@ public class JdbcDUnitTest implements Serializable {
               .writeString("name", "Emp1").writeInt("age", 55).create();
       Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
-          .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
+          .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
               "JDBC mapping for region employees not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
     });
   }
 
   @Test
   public void throwsExceptionWhenNoMappingExistsUsingAsyncWriter() throws Exception {
-    IgnoredException.addIgnoredException("IllegalStateException");
+    IgnoredException.addIgnoredException("JdbcConnectorException");
     createRegion(false, true, false);
     createJdbcConnection();
 
@@ -153,7 +153,7 @@ public class JdbcDUnitTest implements Serializable {
               .writeString("name", "Emp1").writeInt("age", 55).create();
       Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
-          .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
+          .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
               "JDBC mapping for region employees not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
     });
   }
@@ -169,7 +169,7 @@ public class JdbcDUnitTest implements Serializable {
               .writeString("name", "Emp1").writeInt("age", 55).create();
       Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
-          .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
+          .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
               "JDBC connection with name TestConnection not found. Create the connection with the gfsh command 'create jdbc-connection'");
     });
   }

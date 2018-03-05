@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -40,11 +41,7 @@ public class SqlHandler {
   private final DataSourceManager manager;
   private final TableKeyColumnManager tableKeyColumnManager;
 
-  public SqlHandler(DataSourceManager manager, JdbcConnectorService configService) {
-    this(manager, new TableKeyColumnManager(), configService);
-  }
-
-  SqlHandler(DataSourceManager manager, TableKeyColumnManager tableKeyColumnManager,
+  public SqlHandler(DataSourceManager manager, TableKeyColumnManager tableKeyColumnManager,
       JdbcConnectorService configService) {
     this.manager = manager;
     this.tableKeyColumnManager = tableKeyColumnManager;
@@ -93,7 +90,7 @@ public class SqlHandler {
   private RegionMapping getMappingForRegion(String regionName) {
     RegionMapping regionMapping = this.configService.getMappingForRegion(regionName);
     if (regionMapping == null) {
-      throw new IllegalStateException("JDBC mapping for region " + regionName
+      throw new JdbcConnectorException("JDBC mapping for region " + regionName
           + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
     }
     return regionMapping;
@@ -103,7 +100,7 @@ public class SqlHandler {
     ConnectionConfiguration connectionConfig =
         this.configService.getConnectionConfig(connectionConfigName);
     if (connectionConfig == null) {
-      throw new IllegalStateException("JDBC connection with name " + connectionConfigName
+      throw new JdbcConnectorException("JDBC connection with name " + connectionConfigName
           + " not found. Create the connection with the gfsh command 'create jdbc-connection'");
     }
     return connectionConfig;
@@ -161,7 +158,12 @@ public class SqlHandler {
         factory.writeString(fieldName, resultSet.getString(columnIndex));
         break;
       case CHAR:
-        factory.writeChar(fieldName, resultSet.getString(columnIndex).toCharArray()[0]);
+        char charValue = 0;
+        String columnValue = resultSet.getString(columnIndex);
+        if (columnValue != null && columnValue.length() > 0) {
+          charValue = columnValue.toCharArray()[0];
+        }
+        factory.writeChar(fieldName, charValue);
         break;
       case SHORT:
         factory.writeShort(fieldName, resultSet.getShort(columnIndex));
@@ -324,9 +326,7 @@ public class SqlHandler {
         }
       }
 
-      if (updateCount != 1) {
-        throw new IllegalStateException("Unexpected updateCount " + updateCount);
-      }
+      assert updateCount == 1;
     }
   }
 
@@ -357,7 +357,7 @@ public class SqlHandler {
     } else if (operation.isGet()) {
       return statementFactory.createSelectQueryString(tableName, columnList);
     } else {
-      throw new IllegalArgumentException("unsupported operation " + operation);
+      throw new InternalGemFireException("unsupported operation " + operation);
     }
   }
 

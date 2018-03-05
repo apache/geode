@@ -30,7 +30,7 @@ import org.apache.geode.connectors.jdbc.JdbcConnectorException;
  * than one column as a primary key or no columns then an exception is thrown. The computation is
  * remembered so that it does not need to be recomputed for the same table name.
  */
-class TableKeyColumnManager {
+public class TableKeyColumnManager {
   private final ConcurrentMap<String, String> tableToPrimaryKeyMap = new ConcurrentHashMap<>();
 
   public String getKeyColumnName(Connection connection, String tableName) {

@@ -46,6 +46,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
@@ -61,6 +62,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @RunWith(JUnitParamsRunner.class)
 @Category(UnitTest.class)
 public class SqlHandlerTest {
+  private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
   private static final String REGION_NAME = "testRegion";
   private static final String TABLE_NAME = "testTable";
   private static final String COLUMN_NAME_1 = "columnName1";
@@ -92,8 +94,10 @@ public class SqlHandlerTest {
     manager = mock(DataSourceManager.class);
     dataSource = mock(JdbcDataSource.class);
     connectionConfig = mock(ConnectionConfiguration.class);
+    when(connectionConfig.getName()).thenReturn(CONNECTION_CONFIG_NAME);
     when(connectionConfig.getUrl()).thenReturn("fake:url");
     region = mock(Region.class);
+    when(region.getName()).thenReturn(REGION_NAME);
     cache = mock(InternalCache.class);
     connection = mock(Connection.class);
     when(region.getRegionService()).thenReturn(cache);
@@ -105,13 +109,14 @@ public class SqlHandlerTest {
     value = mock(PdxInstanceImpl.class);
     when(value.getPdxType()).thenReturn(mock(PdxType.class));
 
-    when(connectorService.getConnectionConfig(any())).thenReturn(connectionConfig);
+    when(connectorService.getConnectionConfig(CONNECTION_CONFIG_NAME)).thenReturn(connectionConfig);
 
     regionMapping = mock(RegionMapping.class);
+    when(regionMapping.getConnectionConfigName()).thenReturn(CONNECTION_CONFIG_NAME);
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
     when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
     when(regionMapping.getRegionToTableName()).thenReturn(TABLE_NAME);
-    when(connectorService.getMappingForRegion(any())).thenReturn(regionMapping);
+    when(connectorService.getMappingForRegion(REGION_NAME)).thenReturn(regionMapping);
 
 
     when(manager.getDataSource(any())).thenReturn(this.dataSource);
@@ -122,9 +127,35 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void readReturnsNullIfNoKeyProvided() throws Exception {
+  public void verifyCloseCallsManagerClose() {
+    handler.close();
+
+    verify(manager).close();
+  }
+
+  @Test
+  public void readThrowsIfNoKeyProvided() throws Exception {
     thrown.expect(IllegalArgumentException.class);
     handler.read(region, null);
+  }
+
+  @Test
+  public void readThrowsIfNoMapping() throws Exception {
+    thrown.expect(JdbcConnectorException.class);
+    handler.read(mock(Region.class), new Object());
+  }
+
+  @Test
+  public void readThrowsIfNoConnectionConfig() throws Exception {
+    Region region2 = mock(Region.class);
+    when(region2.getName()).thenReturn("region2");
+    RegionMapping regionMapping2 = mock(RegionMapping.class);
+    when(regionMapping2.getConnectionConfigName()).thenReturn("bogus connection name");
+    when(regionMapping2.getRegionName()).thenReturn("region2");
+    when(connectorService.getMappingForRegion("region2")).thenReturn(regionMapping2);
+
+    thrown.expect(JdbcConnectorException.class);
+    handler.read(region2, new Object());
   }
 
   @Test
@@ -205,6 +236,46 @@ public class SqlHandlerTest {
 
     verifyPdxFactoryWrite(factory, fieldType);
     verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
+    verify(factory).create();
+  }
+
+  @Test
+  @Parameters(source = FieldType.class)
+  public void readOfNullWritesFieldGivenPdxFieldType(FieldType fieldType) throws Exception {
+    ResultSet result = mock(ResultSet.class);
+    setupResultSet(result, fieldType, null);
+    when(result.next()).thenReturn(true).thenReturn(false);
+    when(statement.executeQuery()).thenReturn(result);
+
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
+
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
+    handler.read(region, new Object());
+
+    verifyPdxFactoryWrite(factory, fieldType, null);
+    verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
+    verify(factory).create();
+  }
+
+  @Test
+  public void readOfCharFieldWithEmptyStringWritesCharZero() throws Exception {
+    FieldType fieldType = FieldType.CHAR;
+    ResultSet result = mock(ResultSet.class);
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(result.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(1);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+    when(result.getString(1)).thenReturn("");
+    when(result.next()).thenReturn(true).thenReturn(false);
+    when(statement.executeQuery()).thenReturn(result);
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
+
+    handler.read(region, new Object());
+
+    char expectedValue = 0;
+    verifyPdxFactoryWrite(factory, fieldType, expectedValue);
     verify(factory).create();
   }
 
@@ -394,6 +465,12 @@ public class SqlHandlerTest {
   }
 
   @Test
+  public void writesWithUnsupportedOperationThrows() throws Exception {
+    thrown.expect(InternalGemFireException.class);
+    handler.write(region, Operation.INVALIDATE, new Object(), value);
+  }
+
+  @Test
   public void preparedStatementClearedAfterExecution() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
     handler.write(region, Operation.CREATE, new Object(), value);
@@ -479,15 +556,6 @@ public class SqlHandlerTest {
     verify(insertStatement).close();
   }
 
-  @Test
-  public void whenStatementUpdatesMultipleRowsExceptionThrown() throws Exception {
-    when(statement.executeUpdate()).thenReturn(2);
-    thrown.expect(IllegalStateException.class);
-    handler.write(region, Operation.CREATE, new Object(), value);
-    verify(statement).close();
-  }
-
-
   private static byte[][] arrayOfByteArray = new byte[][] {{1, 2}, {3, 4}};
 
   private <T> T getValueByFieldType(FieldType fieldType) {
@@ -542,72 +610,77 @@ public class SqlHandlerTest {
   }
 
   private void verifyPdxFactoryWrite(PdxInstanceFactory factory, FieldType fieldType) {
+    verifyPdxFactoryWrite(factory, fieldType, getValueByFieldType(fieldType));
+  }
+
+  private void verifyPdxFactoryWrite(PdxInstanceFactory factory, FieldType fieldType,
+      Object value) {
     switch (fieldType) {
       case STRING:
-        verify(factory).writeString(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeString(PDX_FIELD_NAME_1, (String) value);
         break;
       case CHAR:
-        verify(factory).writeChar(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeChar(PDX_FIELD_NAME_1, value == null ? 0 : (char) value);
         break;
       case SHORT:
-        verify(factory).writeShort(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeShort(PDX_FIELD_NAME_1, value == null ? 0 : (short) value);
         break;
       case INT:
-        verify(factory).writeInt(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeInt(PDX_FIELD_NAME_1, value == null ? 0 : (int) value);
         break;
       case LONG:
-        verify(factory).writeLong(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeLong(PDX_FIELD_NAME_1, value == null ? 0 : (long) value);
         break;
       case FLOAT:
-        verify(factory).writeFloat(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeFloat(PDX_FIELD_NAME_1, value == null ? 0 : (float) value);
         break;
       case DOUBLE:
-        verify(factory).writeDouble(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeDouble(PDX_FIELD_NAME_1, value == null ? 0 : (double) value);
         break;
       case BYTE:
-        verify(factory).writeByte(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeByte(PDX_FIELD_NAME_1, value == null ? 0 : (byte) value);
         break;
       case BOOLEAN:
-        verify(factory).writeBoolean(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeBoolean(PDX_FIELD_NAME_1, value == null ? false : (boolean) value);
         break;
       case DATE:
-        verify(factory).writeDate(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeDate(PDX_FIELD_NAME_1, (Date) value);
         break;
       case BYTE_ARRAY:
-        verify(factory).writeByteArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeByteArray(PDX_FIELD_NAME_1, (byte[]) value);
         break;
       case BOOLEAN_ARRAY:
-        verify(factory).writeBooleanArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeBooleanArray(PDX_FIELD_NAME_1, (boolean[]) value);
         break;
       case CHAR_ARRAY:
-        verify(factory).writeCharArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeCharArray(PDX_FIELD_NAME_1, (char[]) value);
         break;
       case SHORT_ARRAY:
-        verify(factory).writeShortArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeShortArray(PDX_FIELD_NAME_1, (short[]) value);
         break;
       case INT_ARRAY:
-        verify(factory).writeIntArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeIntArray(PDX_FIELD_NAME_1, (int[]) value);
         break;
       case LONG_ARRAY:
-        verify(factory).writeLongArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeLongArray(PDX_FIELD_NAME_1, (long[]) value);
         break;
       case FLOAT_ARRAY:
-        verify(factory).writeFloatArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeFloatArray(PDX_FIELD_NAME_1, (float[]) value);
         break;
       case DOUBLE_ARRAY:
-        verify(factory).writeDoubleArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeDoubleArray(PDX_FIELD_NAME_1, (double[]) value);
         break;
       case STRING_ARRAY:
-        verify(factory).writeStringArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeStringArray(PDX_FIELD_NAME_1, (String[]) value);
         break;
       case OBJECT_ARRAY:
-        verify(factory).writeObjectArray(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeObjectArray(PDX_FIELD_NAME_1, (Object[]) value);
         break;
       case ARRAY_OF_BYTE_ARRAYS:
-        verify(factory).writeArrayOfByteArrays(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeArrayOfByteArrays(PDX_FIELD_NAME_1, (byte[][]) value);
         break;
       case OBJECT:
-        verify(factory).writeObject(PDX_FIELD_NAME_1, getValueByFieldType(fieldType));
+        verify(factory).writeObject(PDX_FIELD_NAME_1, value);
         break;
       default:
         throw new IllegalStateException("unhandled fieldType " + fieldType);
@@ -628,79 +701,87 @@ public class SqlHandlerTest {
   }
 
   private void setupResultSet(ResultSet result, FieldType fieldType) throws SQLException {
+    setupResultSet(result, fieldType, getValueByFieldType(fieldType));
+  }
+
+  private void setupResultSet(ResultSet result, FieldType fieldType, Object value)
+      throws SQLException {
     ResultSetMetaData metaData = mock(ResultSetMetaData.class);
     when(result.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(2);
 
     switch (fieldType) {
       case STRING:
-        when(result.getString(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getString(1)).thenReturn((String) value);
         break;
       case CHAR:
-        Character value = getValueByFieldType(fieldType);
-        when(result.getString(1)).thenReturn(value.toString());
+        Character charValue = (Character) value;
+        when(result.getString(1)).thenReturn(value == null ? null : value.toString());
         break;
       case SHORT:
-        when(result.getShort(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getShort(1)).thenReturn(value == null ? 0 : (Short) value);
         break;
       case INT:
-        when(result.getInt(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getInt(1)).thenReturn(value == null ? 0 : (Integer) value);
         break;
       case LONG:
-        when(result.getLong(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getLong(1)).thenReturn(value == null ? 0 : (Long) value);
         break;
       case FLOAT:
-        when(result.getFloat(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getFloat(1)).thenReturn(value == null ? 0 : (Float) value);
         break;
       case DOUBLE:
-        when(result.getDouble(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getDouble(1)).thenReturn(value == null ? 0 : (Double) value);
         break;
       case BYTE:
-        when(result.getByte(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getByte(1)).thenReturn(value == null ? 0 : (Byte) value);
         break;
       case BOOLEAN:
-        when(result.getBoolean(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getBoolean(1)).thenReturn(value == null ? false : (Boolean) value);
         break;
       case DATE:
-        Date date = getValueByFieldType(fieldType);
-        java.sql.Timestamp sqlTimeStamp = new java.sql.Timestamp(date.getTime());
+        Date date = (Date) value;
+        java.sql.Timestamp sqlTimeStamp = null;
+        if (date != null) {
+          sqlTimeStamp = new java.sql.Timestamp(date.getTime());
+        }
         when(result.getTimestamp(1)).thenReturn(sqlTimeStamp);
         break;
       case BYTE_ARRAY:
-        when(result.getBytes(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getBytes(1)).thenReturn((byte[]) value);
         break;
       case BOOLEAN_ARRAY:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       case CHAR_ARRAY:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       case SHORT_ARRAY:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       case INT_ARRAY:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       case LONG_ARRAY:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       case FLOAT_ARRAY:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       case DOUBLE_ARRAY:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       case STRING_ARRAY:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       case OBJECT_ARRAY:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       case ARRAY_OF_BYTE_ARRAYS:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       case OBJECT:
-        when(result.getObject(1)).thenReturn(getValueByFieldType(fieldType));
+        when(result.getObject(1)).thenReturn(value);
         break;
       default:
         throw new IllegalStateException("unhandled fieldType " + fieldType);

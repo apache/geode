@@ -38,6 +38,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
+import org.apache.geode.connectors.jdbc.internal.TableKeyColumnManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
@@ -180,8 +181,9 @@ public class JdbcLoaderIntegrationTest {
 
   private SqlHandler createSqlHandler(String pdxClassName, boolean primaryKeyInValue)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(), TestConfigService
-        .getTestConfigService((InternalCache) cache, pdxClassName, primaryKeyInValue));
+    return new SqlHandler(new TestableConnectionManager(), new TableKeyColumnManager(),
+        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName,
+            primaryKeyInValue));
   }
 
   private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
