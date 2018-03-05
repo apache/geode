@@ -32,4 +32,8 @@ public class JdbcConnectorException extends CacheRuntimeException {
   public JdbcConnectorException(String message) {
     super(message);
   }
+
+  public JdbcConnectorException(String message, ClassCastException e) {
+    super(message, e);
+  }
 }

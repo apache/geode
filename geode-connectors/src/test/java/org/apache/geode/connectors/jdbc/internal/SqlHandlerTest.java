@@ -222,7 +222,7 @@ public class SqlHandlerTest {
 
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
-    thrown.expect(IllegalStateException.class);
+    thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage("Could not convert ");
     handler.read(region, new Object());
   }
