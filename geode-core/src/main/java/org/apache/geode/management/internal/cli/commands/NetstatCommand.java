@@ -47,7 +47,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class NetstatCommand implements GfshCommand {
+public class NetstatCommand extends GfshCommand {
   private static final String NETSTAT_FILE_REQUIRED_EXTENSION = ".txt";
 
   @CliCommand(value = CliStrings.NETSTAT, help = CliStrings.NETSTAT__HELP)
@@ -171,13 +171,13 @@ public class NetstatCommand implements GfshCommand {
       }
       result = ResultBuilder.buildResult(resultData);
     } catch (IllegalArgumentException e) {
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+      LogWrapper.getInstance(getCache())
           .info(CliStrings.format(
               CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
               new Object[] {Arrays.toString(members)}));
       result = ResultBuilder.createUserErrorResult(e.getMessage());
     } catch (RuntimeException e) {
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+      LogWrapper.getInstance(getCache())
           .info(CliStrings.format(
               CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
               new Object[] {Arrays.toString(members)}), e);

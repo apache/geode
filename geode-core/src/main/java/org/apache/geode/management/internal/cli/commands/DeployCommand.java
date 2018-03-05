@@ -55,7 +55,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DeployCommand implements GfshCommand {
+public class DeployCommand extends GfshCommand {
   private final DeployFunction deployFunction = new DeployFunction();
 
   /**
@@ -85,7 +85,7 @@ public class DeployCommand implements GfshCommand {
     List<String> jarFullPaths = CommandExecutionContext.getFilePathFromShell();
 
     Set<DistributedMember> targetMembers;
-    targetMembers = CliUtil.findMembers(groups, null, getCache());
+    targetMembers = findMembers(groups, null);
 
     List results = new ArrayList();
     ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();

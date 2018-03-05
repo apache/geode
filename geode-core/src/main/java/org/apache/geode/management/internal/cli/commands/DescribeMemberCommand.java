@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeMemberCommand implements GfshCommand {
+public class DescribeMemberCommand extends GfshCommand {
   private static final GetMemberInformationFunction getMemberInformation =
       new GetMemberInformationFunction();
 

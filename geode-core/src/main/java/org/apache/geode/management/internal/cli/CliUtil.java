@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
@@ -43,7 +42,6 @@ import java.util.zip.Inflater;
 import org.apache.commons.lang.ArrayUtils;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -74,20 +72,6 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
  */
 public class CliUtil {
   public static final FileFilter JAR_FILE_FILTER = new CustomFileFilter(".jar");
-
-  /**
-   * Returns the InternalCache returned by the provided method.
-   * If the provided method would raise a CacheClosedException, returns null instead.
-   */
-  public static InternalCache getCacheIfExists(Supplier<InternalCache> getCacheMethod) {
-    InternalCache cache = null;
-    try {
-      cache = getCacheMethod.get();
-    } catch (CacheClosedException ignored) {
-    }
-    return cache;
-
-  }
 
   public static String cliDependenciesExist(boolean includeGfshDependencies) {
     // "Validate" each dependency by attempting to load an associated class

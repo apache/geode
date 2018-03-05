@@ -24,7 +24,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class VersionCommand implements GfshCommand {
+public class VersionCommand extends GfshCommand {
   @CliCommand(value = {CliStrings.VERSION}, help = CliStrings.VERSION__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result version(@CliOption(key = {CliStrings.VERSION__FULL}, specifiedDefaultValue = "true",

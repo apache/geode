@@ -42,7 +42,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class CreateConnectionCommand implements GfshCommand {
+public class CreateConnectionCommand extends GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   static final String CREATE_CONNECTION = "create jdbc-connection";

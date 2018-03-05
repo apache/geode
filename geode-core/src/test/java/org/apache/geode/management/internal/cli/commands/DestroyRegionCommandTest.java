@@ -95,7 +95,7 @@ public class DestroyRegionCommandTest {
 
   @Test
   public void whenNoRegionIsFoundOnAnyMembers() throws Exception {
-    doReturn(Collections.emptySet()).when(command).findMembersForRegion(any(), any());
+    doReturn(Collections.emptySet()).when(command).findMembersForRegion(any());
     parser.executeAndAssertThat(command, "destroy region --name=test").statusIsError()
         .containsOutput("Could not find a Region with Region path");
 
@@ -107,7 +107,7 @@ public class DestroyRegionCommandTest {
   public void multipleResultReturned_oneSucess_oneFailed() throws Exception {
     // mock this to pass the member search call
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
-        .findMembersForRegion(any(), any());
+        .findMembersForRegion(any());
     when(result1.isSuccessful()).thenReturn(true);
     when(result1.getStatus()).thenReturn("result1 message");
     when(result1.getXmlEntity()).thenReturn(xmlEntity);
@@ -126,7 +126,7 @@ public class DestroyRegionCommandTest {
   public void multipleResultReturned_oneSuccess_oneException() throws Exception {
     // mock this to pass the member search call
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
-        .findMembersForRegion(any(), any());
+        .findMembersForRegion(any());
     when(result1.isSuccessful()).thenReturn(true);
     when(result1.getStatus()).thenReturn("result1 message");
     when(result1.getXmlEntity()).thenReturn(xmlEntity);
@@ -146,7 +146,7 @@ public class DestroyRegionCommandTest {
   public void multipleResultReturned_all_failed() throws Exception {
     // mock this to pass the member search call
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
-        .findMembersForRegion(any(), any());
+        .findMembersForRegion(any());
     when(result1.isSuccessful()).thenReturn(false);
     when(result1.getStatus()).thenReturn("result1 message");
 

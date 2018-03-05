@@ -28,7 +28,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -37,7 +36,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.security.ResourcePermission;
 
-public class ConfigurePDXCommand implements GfshCommand {
+public class ConfigurePDXCommand extends GfshCommand {
   @CliCommand(value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -63,7 +62,7 @@ public class ConfigurePDXCommand implements GfshCommand {
           && (patterns != null && patterns.length > 0)) {
         return ResultBuilder.createUserErrorResult(CliStrings.CONFIGURE_PDX__ERROR__MESSAGE);
       }
-      if (!CliUtil.getAllNormalMembers(getCache()).isEmpty()) {
+      if (!getAllNormalMembers().isEmpty()) {
         ird.addLine(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING);
       }
       // Set persistent and the disk-store

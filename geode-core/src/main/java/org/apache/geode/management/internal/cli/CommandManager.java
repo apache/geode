@@ -35,10 +35,10 @@ import org.springframework.shell.core.MethodTarget;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -62,6 +62,7 @@ public class CommandManager {
 
   private Properties cacheProperties;
   private LogWrapper logWrapper;
+  private InternalCache cache;
 
   /**
    * this constructor is used from Gfsh VM. We are getting the user-command-package from system
@@ -75,10 +76,11 @@ public class CommandManager {
    * this is used when getting the instance in a cache server. We are getting the
    * user-command-package from distribution properties. used by OnlineCommandProcessor.
    */
-  public CommandManager(final Properties cacheProperties, Cache cache) {
+  public CommandManager(final Properties cacheProperties, InternalCache cache) {
     if (cacheProperties != null) {
       this.cacheProperties = cacheProperties;
     }
+    this.cache = cache;
     logWrapper = LogWrapper.getInstance(cache);
     loadCommands();
   }
@@ -272,6 +274,12 @@ public class CommandManager {
    * Method to add new Commands to the parser
    */
   void add(CommandMarker commandMarker) {
+    // inject the cache into the commands
+    if (GfshCommand.class.isAssignableFrom(commandMarker.getClass())) {
+      ((GfshCommand) commandMarker).setCache(cache);
+    }
+
+    // inject the commandManager into the commands
     if (CommandManagerAware.class.isAssignableFrom(commandMarker.getClass())) {
       ((CommandManagerAware) commandMarker).setCommandManager(this);
     }

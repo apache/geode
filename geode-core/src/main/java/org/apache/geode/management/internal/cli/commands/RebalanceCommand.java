@@ -50,7 +50,6 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.RebalanceFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -61,7 +60,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class RebalanceCommand implements GfshCommand {
+public class RebalanceCommand extends GfshCommand {
   @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
@@ -82,8 +81,8 @@ public class RebalanceCommand implements GfshCommand {
     List<Future<Result>> commandResult = new ArrayList<>();
     Result result;
     try {
-      commandResult.add(commandExecutors
-          .submit(new ExecuteRebalanceWithTimeout(includeRegions, excludeRegions, simulate)));
+      commandResult.add(commandExecutors.submit(
+          new ExecuteRebalanceWithTimeout(includeRegions, excludeRegions, simulate, getCache())));
 
       Future<Result> fs = commandResult.get(0);
       if (timeout > 0) {
@@ -94,8 +93,7 @@ public class RebalanceCommand implements GfshCommand {
     } catch (TimeoutException timeoutException) {
       result = ResultBuilder.createInfoResult(CliStrings.REBALANCE__MSG__REBALANCE_WILL_CONTINUE);
     }
-    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-        .info("Rebalance returning result >>>" + result);
+    LogWrapper.getInstance(getCache()).info("Rebalance returning result >>>" + result);
     return result;
   }
 
@@ -109,9 +107,9 @@ public class RebalanceCommand implements GfshCommand {
               CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
               ((Exception) object).getMessage());
 
-          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-              .info(CliStrings.REBALANCE__MSG__NO_EXECUTION + member.getId() + " exception="
-                  + ((Throwable) object).getMessage(), ((Throwable) object));
+          LogWrapper.getInstance(getCache()).info(CliStrings.REBALANCE__MSG__NO_EXECUTION
+              + member.getId() + " exception=" + ((Throwable) object).getMessage(),
+              ((Throwable) object));
 
           toContinueForOtherMembers = true;
           break;
@@ -120,16 +118,16 @@ public class RebalanceCommand implements GfshCommand {
               CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
               ((Throwable) object).getMessage());
 
-          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-              .info(CliStrings.REBALANCE__MSG__NO_EXECUTION + member.getId() + " exception="
-                  + ((Throwable) object).getMessage(), ((Throwable) object));
+          LogWrapper.getInstance(getCache()).info(CliStrings.REBALANCE__MSG__NO_EXECUTION
+              + member.getId() + " exception=" + ((Throwable) object).getMessage(),
+              ((Throwable) object));
 
           toContinueForOtherMembers = true;
           break;
         }
       }
     } else {
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).info(
+      LogWrapper.getInstance(getCache()).info(
           "Rebalancing for member=" + member.getId() + ", resultList is either null or empty");
       rebalanceResultData.addSection().addData("Rebalancing for member=" + member.getId(),
           ", resultList is either null or empty");
@@ -215,7 +213,7 @@ public class RebalanceCommand implements GfshCommand {
     String[] includeRegions = null;
     String[] excludeRegions = null;
     boolean simulate;
-    InternalCache cache = getCache();
+    InternalCache cache = null;
 
     @Override
     public Result call() throws Exception {
@@ -223,10 +221,11 @@ public class RebalanceCommand implements GfshCommand {
     }
 
     ExecuteRebalanceWithTimeout(String[] includedRegions, String[] excludedRegions,
-        boolean toSimulate) {
+        boolean toSimulate, InternalCache cache) {
       includeRegions = includedRegions;
       excludeRegions = excludedRegions;
       simulate = toSimulate;
+      this.cache = cache;
     }
 
     Result executeRebalanceWithTimeout(String[] includeRegions, String[] excludeRegions,
@@ -250,9 +249,8 @@ public class RebalanceCommand implements GfshCommand {
               DistributedMember member = getAssociatedMembers(regionName, cache);
 
               if (member == null) {
-                LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
-                    .info(CliStrings.format(
-                        CliStrings.REBALANCE__MSG__NO_ASSOCIATED_DISTRIBUTED_MEMBER, regionName));
+                LogWrapper.getInstance(cache).info(CliStrings.format(
+                    CliStrings.REBALANCE__MSG__NO_ASSOCIATED_DISTRIBUTED_MEMBER, regionName));
                 continue;
               }
 
@@ -275,7 +273,7 @@ public class RebalanceCommand implements GfshCommand {
                   resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
                       .getResult();
                 } catch (Exception ex) {
-                  LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
+                  LogWrapper.getInstance(cache)
                       .info(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
                           member.getId(), ex.getMessage()), ex);
@@ -301,7 +299,7 @@ public class RebalanceCommand implements GfshCommand {
                   resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
                       .getResult();
                 } catch (Exception ex) {
-                  LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
+                  LogWrapper.getInstance(cache)
                       .info(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
                           member.getId(), ex.getMessage()), ex);
@@ -350,19 +348,17 @@ public class RebalanceCommand implements GfshCommand {
             }
             index++;
           }
-          LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
-              .info("Rebalance returning result " + result);
+          LogWrapper.getInstance(cache).info("Rebalance returning result " + result);
           return result;
         } else {
           result = executeRebalanceOnDS(cache, String.valueOf(simulate), excludeRegions);
-          LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
+          LogWrapper.getInstance(cache)
               .info("Starting Rebalance simulate false result >> " + result);
         }
       } catch (Exception e) {
         result = ResultBuilder.createGemFireErrorResult(e.getMessage());
       }
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
-          .info("Rebalance returning result >>>" + result);
+      LogWrapper.getInstance(cache).info("Rebalance returning result >>>" + result);
       return result;
     }
   }
@@ -378,7 +374,7 @@ public class RebalanceCommand implements GfshCommand {
     }
 
     String[] membersName = bean.getMembers();
-    Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
+    Set<DistributedMember> dsMembers = getAllMembers();
     Iterator it = dsMembers.iterator();
 
     boolean matchFound = false;
@@ -535,7 +531,7 @@ public class RebalanceCommand implements GfshCommand {
             List resultList = null;
 
             try {
-              if (checkMemberPresence(dsMember, cache)) {
+              if (checkMemberPresence(dsMember)) {
                 resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, dsMember)
                     .getResult();
 
@@ -616,7 +612,7 @@ public class RebalanceCommand implements GfshCommand {
     List<MemberPRInfo> listMemberPRInfo = new ArrayList<>();
     String[] listDSRegions =
         ManagementService.getManagementService(cache).getDistributedSystemMXBean().listRegions();
-    final Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
+    final Set<DistributedMember> dsMembers = getAllMembers();
 
     for (String regionName : listDSRegions) {
       // check for excluded regions
@@ -684,10 +680,10 @@ public class RebalanceCommand implements GfshCommand {
     return listMemberPRInfo;
   }
 
-  private boolean checkMemberPresence(DistributedMember dsMember, InternalCache cache) {
+  private boolean checkMemberPresence(DistributedMember dsMember) {
     // check if member's presence just before executing function
     // this is to avoid running a function on departed members #47248
-    Set<DistributedMember> dsMemberList = CliUtil.getAllNormalMembers(cache);
+    Set<DistributedMember> dsMemberList = getAllNormalMembers();
     return dsMemberList.contains(dsMember);
   }
 

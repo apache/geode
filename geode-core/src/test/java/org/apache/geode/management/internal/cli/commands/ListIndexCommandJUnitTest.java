@@ -209,7 +209,7 @@ public class ListIndexCommandJUnitTest {
     }
 
     @Override
-    public Set<DistributedMember> getAllMembers(final InternalCache cache) {
+    public Set<DistributedMember> getAllMembers() {
       assertSame(getCache(), cache);
       return Collections.emptySet();
     }

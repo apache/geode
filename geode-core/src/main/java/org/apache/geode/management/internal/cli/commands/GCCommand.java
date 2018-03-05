@@ -39,7 +39,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class GCCommand implements GfshCommand {
+public class GCCommand extends GfshCommand {
   @CliCommand(value = CliStrings.GC, help = CliStrings.GC__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -69,7 +69,7 @@ public class GCCommand implements GfshCommand {
     } else {
       // gc on entire cluster
       // exclude locators
-      dsMembers = CliUtil.getAllNormalMembers(cache);
+      dsMembers = getAllNormalMembers();
       result = executeAndBuildResult(resultTable, dsMembers);
 
     }
@@ -86,11 +86,11 @@ public class GCCommand implements GfshCommand {
 
     for (Object object : resultList) {
       if (object instanceof Exception) {
-        LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+        LogWrapper.getInstance(getCache())
             .fine("Exception in GC " + ((Throwable) object).getMessage(), ((Throwable) object));
         continue;
       } else if (object instanceof Throwable) {
-        LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+        LogWrapper.getInstance(getCache())
             .fine("Exception in GC " + ((Throwable) object).getMessage(), ((Throwable) object));
         continue;
       }
@@ -106,8 +106,7 @@ public class GCCommand implements GfshCommand {
               resultMap.get("TimeSpentInGC"));
         }
       } else {
-        LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-            .fine("ResultMap was null ");
+        LogWrapper.getInstance(getCache()).fine("ResultMap was null ");
       }
     }
 

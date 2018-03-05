@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
-import static junit.framework.TestCase.assertSame;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.any;
@@ -448,8 +447,8 @@ public class LuceneIndexCommandsJUnitTest {
         isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
-    doReturn(Collections.emptySet()).when(commands).getAllNormalMembers(any());
-    doReturn(Collections.emptySet()).when(commands).findMembersForRegion(any(), any());
+    doReturn(Collections.emptySet()).when(commands).getAllNormalMembers();
+    doReturn(Collections.emptySet()).when(commands).findMembersForRegion(any());
 
     CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
@@ -485,8 +484,8 @@ public class LuceneIndexCommandsJUnitTest {
         isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
-    doReturn(members).when(commands).getAllNormalMembers(any());
-    doReturn(members).when(commands).findMembersForRegion(any(), any());
+    doReturn(members).when(commands).getAllNormalMembers();
+    doReturn(members).when(commands).findMembersForRegion(any());
 
     CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
@@ -517,8 +516,8 @@ public class LuceneIndexCommandsJUnitTest {
         isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
-    doReturn(Collections.emptySet()).when(commands).getAllNormalMembers(any());
-    doReturn(Collections.emptySet()).when(commands).findMembersForRegion(any(), any());
+    doReturn(Collections.emptySet()).when(commands).getAllNormalMembers();
+    doReturn(Collections.emptySet()).when(commands).findMembersForRegion(any());
 
     CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
@@ -554,8 +553,8 @@ public class LuceneIndexCommandsJUnitTest {
         isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
-    doReturn(Collections.emptySet()).when(commands).getAllNormalMembers(any());
-    doReturn(Collections.emptySet()).when(commands).findMembersForRegion(any(), any());
+    doReturn(Collections.emptySet()).when(commands).getAllNormalMembers();
+    doReturn(Collections.emptySet()).when(commands).findMembersForRegion(any());
 
     CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
@@ -665,8 +664,7 @@ public class LuceneIndexCommandsJUnitTest {
     }
 
     @Override
-    public Set<DistributedMember> getAllMembers(final InternalCache cache) {
-      assertSame(getCache(), cache);
+    public Set<DistributedMember> getAllMembers() {
       return Collections.emptySet();
     }
 

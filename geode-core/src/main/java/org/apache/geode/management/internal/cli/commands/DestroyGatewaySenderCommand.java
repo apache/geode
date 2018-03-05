@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyGatewaySenderCommand implements GfshCommand {
+public class DestroyGatewaySenderCommand extends GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.DESTROY_GATEWAYSENDER,

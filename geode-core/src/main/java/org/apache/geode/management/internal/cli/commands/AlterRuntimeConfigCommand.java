@@ -47,7 +47,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class AlterRuntimeConfigCommand implements GfshCommand {
+public class AlterRuntimeConfigCommand extends GfshCommand {
   private final AlterRuntimeConfigFunction alterRunTimeConfigFunction =
       new AlterRuntimeConfigFunction();
   private static Logger logger = LogService.getLogger();
@@ -96,7 +96,7 @@ public class AlterRuntimeConfigCommand implements GfshCommand {
 
     Map<String, String> runTimeDistributionConfigAttributes = new HashMap<>();
     Map<String, String> rumTimeCacheAttributes = new HashMap<>();
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
+    Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

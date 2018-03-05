@@ -45,7 +45,7 @@ import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeRegionCommand implements GfshCommand {
+public class DescribeRegionCommand extends GfshCommand {
   public static final Logger logger = LogService.getLogger();
 
   private static final GetRegionDescriptionFunction getRegionDescription =
@@ -103,7 +103,7 @@ public class DescribeRegionCommand implements GfshCommand {
   List<?> getFunctionResultFromMembers(String regionName) {
     InternalCache cache = getCache();
     ResultCollector<?, ?> rc =
-        executeFunction(getRegionDescription, regionName, getAllNormalMembers(cache));
+        executeFunction(getRegionDescription, regionName, getAllNormalMembers());
 
     return (List<?>) rc.getResult();
   }

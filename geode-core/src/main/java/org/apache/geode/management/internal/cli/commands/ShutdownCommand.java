@@ -39,7 +39,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.ShutDownFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -47,7 +46,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShutdownCommand implements GfshCommand {
+public class ShutdownCommand extends GfshCommand {
   private static final String DEFAULT_TIME_OUT = "10";
   private static final Logger logger = LogService.getLogger();
 
@@ -70,9 +69,9 @@ public class ShutdownCommand implements GfshCommand {
       // convert to milliseconds
       long timeout = userSpecifiedTimeout * 1000;
       InternalCache cache = getCache();
-      int numDataNodes = CliUtil.getAllNormalMembers(cache).size();
-      Set<DistributedMember> locators = CliUtil.getAllMembers(cache);
-      Set<DistributedMember> dataNodes = CliUtil.getAllNormalMembers(cache);
+      int numDataNodes = getAllNormalMembers().size();
+      Set<DistributedMember> locators = getAllMembers();
+      Set<DistributedMember> dataNodes = getAllNormalMembers();
       locators.removeAll(dataNodes);
 
       if (!shutdownLocators && numDataNodes == 0) {

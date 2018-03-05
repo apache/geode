@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class RemoveCommand implements GfshCommand {
+public class RemoveCommand extends GfshCommand {
   public static final String REGION_NOT_FOUND = "Region <%s> not found in any of the members";
 
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
@@ -69,7 +69,7 @@ public class RemoveCommand implements GfshCommand {
     DataCommandFunction removefn = new DataCommandFunction();
     DataCommandResult dataResult;
     if (region == null) {
-      Set<DistributedMember> memberList = findAnyMembersForRegion(getCache(), regionPath);
+      Set<DistributedMember> memberList = findAnyMembersForRegion(regionPath);
 
       if (CollectionUtils.isEmpty(memberList)) {
         return createUserErrorResult(String.format(REGION_NOT_FOUND, regionPath));

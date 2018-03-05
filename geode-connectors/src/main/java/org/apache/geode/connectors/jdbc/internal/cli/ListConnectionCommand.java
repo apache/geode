@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class ListConnectionCommand implements GfshCommand {
+public class ListConnectionCommand extends GfshCommand {
   static final String LIST_JDBC_CONNECTION = "list jdbc-connections";
   static final String LIST_JDBC_CONNECTION__HELP =
       EXPERIMENTAL + "Display jdbc connections for all members.";

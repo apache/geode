@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyRegionCommand implements GfshCommand {
+public class DestroyRegionCommand extends GfshCommand {
   @CliCommand(value = {CliStrings.DESTROY_REGION}, help = CliStrings.DESTROY_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
@@ -48,7 +48,7 @@ public class DestroyRegionCommand implements GfshCommand {
 
     // this finds all the members that host this region. destroy will be called on each of these
     // members since the region might be a scope.LOCAL region
-    Set<DistributedMember> regionMembersList = findMembersForRegion(getCache(), regionPath);
+    Set<DistributedMember> regionMembersList = findMembersForRegion(regionPath);
 
     if (regionMembersList.size() == 0) {
       String message =

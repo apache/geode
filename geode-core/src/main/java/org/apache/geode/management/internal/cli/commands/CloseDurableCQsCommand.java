@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CloseDurableCQsCommand implements GfshCommand {
+public class CloseDurableCQsCommand extends GfshCommand {
   DurableClientCommandsResultBuilder builder = new DurableClientCommandsResultBuilder();
 
   @CliCommand(value = CliStrings.CLOSE_DURABLE_CQS, help = CliStrings.CLOSE_DURABLE_CQS__HELP)
@@ -57,7 +57,7 @@ public class CloseDurableCQsCommand implements GfshCommand {
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
     Result result;
     try {
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
+      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

@@ -26,7 +26,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -44,7 +43,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  *
  * @since GemFire 8.1
  */
-public class MockExtensionCommands implements GfshCommand {
+public class MockExtensionCommands extends GfshCommand {
 
   public static final String OPTION_VALUE = "value";
 
@@ -172,8 +171,7 @@ public class MockExtensionCommands implements GfshCommand {
    */
   protected Result executeFunctionOnAllMembersTabulateResultPersist(final Function function,
       final boolean addXmlElement, final Object... args) {
-    final InternalCache cache = getCache();
-    final Set<DistributedMember> members = CliUtil.getAllNormalMembers(cache);
+    final Set<DistributedMember> members = getAllNormalMembers();
 
     @SuppressWarnings("unchecked")
     final ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =

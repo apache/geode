@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class StatusClusterConfigServiceCommand implements GfshCommand {
+public class StatusClusterConfigServiceCommand extends GfshCommand {
   private static final FetchSharedConfigurationStatusFunction fetchSharedConfigStatusFunction =
       new FetchSharedConfigurationStatusFunction();
 

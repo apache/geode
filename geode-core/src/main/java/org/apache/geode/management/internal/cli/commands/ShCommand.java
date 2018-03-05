@@ -25,14 +25,13 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class ShCommand implements GfshCommand {
+public class ShCommand extends GfshCommand {
   @CliCommand(value = {CliStrings.SH}, help = CliStrings.SH__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result sh(
@@ -47,7 +46,7 @@ public class ShCommand implements GfshCommand {
           ResultBuilder.buildResult(executeCommand(Gfsh.getCurrentInstance(), command, useConsole));
     } catch (IllegalStateException | IOException e) {
       result = ResultBuilder.createUserErrorResult(e.getMessage());
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+      LogWrapper.getInstance(getCache())
           .warning("Unable to execute command \"" + command + "\". Reason:" + e.getMessage() + ".");
     }
     return result;

@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListDurableClientCQsCommand implements GfshCommand {
+public class ListDurableClientCQsCommand extends GfshCommand {
   DurableClientCommandsResultBuilder builder = new DurableClientCommandsResultBuilder();
 
   @CliCommand(value = CliStrings.LIST_DURABLE_CQS, help = CliStrings.LIST_DURABLE_CQS__HELP)
@@ -60,7 +60,7 @@ public class ListDurableClientCQsCommand implements GfshCommand {
     try {
 
       boolean noResults = true;
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
+      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

@@ -51,7 +51,7 @@ import org.apache.geode.security.ResourcePermission;
  * this command currently only updates the cluster configuration. Requires server restart to pick up
  * the changes.
  */
-public class AlterAsyncEventQueueCommand implements GfshCommand {
+public class AlterAsyncEventQueueCommand extends GfshCommand {
 
   static final String COMMAND_NAME = "alter async-event-queue";
   static final String ID = "id";

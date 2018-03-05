@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ExportConfigCommand implements GfshCommand {
+public class ExportConfigCommand extends GfshCommand {
   private final ExportConfigFunction exportConfigFunction = new ExportConfigFunction();
 
   /**
@@ -68,7 +68,7 @@ public class ExportConfigCommand implements GfshCommand {
           help = CliStrings.EXPORT_CONFIG__DIR__HELP) String dir) {
     InfoResultData infoData = ResultBuilder.createInfoResultData();
 
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, member, getCache());
+    Set<DistributedMember> targetMembers = findMembers(group, member);
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }

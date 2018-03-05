@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CountDurableCQEventsCommand implements GfshCommand {
+public class CountDurableCQEventsCommand extends GfshCommand {
   DurableClientCommandsResultBuilder builder = new DurableClientCommandsResultBuilder();
 
   @CliCommand(value = CliStrings.COUNT_DURABLE_CQ_EVENTS,
@@ -56,7 +56,7 @@ public class CountDurableCQEventsCommand implements GfshCommand {
 
     Result result;
     try {
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
+      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
