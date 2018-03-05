@@ -64,9 +64,10 @@ public class PulseAnonymousUserTest {
   }
 
   @Test
-  public void userCannotGetToPulseDetails() {
+  public void userCanGetToPulseDetails() {
     webDriverRule.getDriver().get(serverRule.getPulseURL() + "pulseVersion");
 
-    assertThat(webDriverRule.getDriver().getPageSource()).doesNotContain("sourceRevision");
+    // pulseVersion is visible to public
+    assertThat(webDriverRule.getDriver().getPageSource()).contains("sourceRevision");
   }
 }

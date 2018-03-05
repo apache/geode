@@ -206,8 +206,8 @@ public class PulseAutomatedTest extends PulseBase {
         getTextUsingId(PulseTestLocators.RegionDetailsView.diskWritesId));
   }
 
-  @Test
   @Ignore("Fails for unknown reason when run using gradle on command line")
+  @Test
   public void clickHostShowsMemberTest() {
     clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
     PulseTestUtils.waitForElementWithId(PulseTestLocators.TopologyView.nodeH1Id).click();
@@ -529,6 +529,7 @@ public class PulseAutomatedTest extends PulseBase {
     verifyElementPresentById(PulseTestLocators.RedundancyZone.zoneRZ2Id);
   }
 
+  @Ignore("Fails for unknown reason when run using gradle on command line")
   @Test
   public void expandAndCloseRdncyZoneTest() {
     navigateToRedundancyZonesTreeView();
