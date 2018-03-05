@@ -19,6 +19,7 @@ import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCod
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
@@ -69,13 +70,17 @@ public class GetServerOperationHandler
         .getServerLocatorAdvisee().processRequest(clientConnectionRequest);
 
     ServerLocation serverLocation = null;
-    if (connectionResponse != null) {
+    if (connectionResponse != null && connectionResponse.hasResult()) {
       serverLocation = connectionResponse.getServer();
     }
 
     if (serverLocation == null) {
-      return Failure.of(NO_AVAILABLE_SERVER, "Unable to find a server for you");
-
+      StringBuilder builder = new StringBuilder("Unable to find a server");
+      if (!Objects.isNull(serverGroup) && !serverGroup.isEmpty()) {
+        builder.append(" in server group ");
+        builder.append(serverGroup);
+      }
+      return Failure.of(NO_AVAILABLE_SERVER, builder.toString());
     } else {
       LocatorAPI.GetServerResponse.Builder builder = LocatorAPI.GetServerResponse.newBuilder();
       BasicTypes.Server.Builder serverBuilder = BasicTypes.Server.newBuilder();

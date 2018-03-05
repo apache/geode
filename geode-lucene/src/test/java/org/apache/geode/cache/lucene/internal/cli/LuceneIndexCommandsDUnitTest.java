@@ -151,8 +151,6 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
         .tableHasColumnWithExactValuesInAnyOrder("Status", "Initialized")
         .tableHasColumnWithExactValuesInAnyOrder("Region Path", "/region")
         .tableHasColumnWithExactValuesInAnyOrder("Query Executions", "1")
-        .tableHasColumnWithExactValuesInAnyOrder("Commits", "2")
-        .tableHasColumnWithExactValuesInAnyOrder("Updates", "2")
         .tableHasColumnWithExactValuesInAnyOrder("Documents", "2");
 
   }
@@ -736,7 +734,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     return ClusterStartupRule.getCache();
   }
 
-  protected class TestObject implements Serializable {
+  protected static class TestObject implements Serializable {
     private String field1;
     private String field2;
     private String field3;

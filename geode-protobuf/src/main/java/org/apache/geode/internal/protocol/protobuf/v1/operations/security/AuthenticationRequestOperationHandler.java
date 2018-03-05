@@ -56,7 +56,8 @@ public class AuthenticationRequestOperationHandler implements
       return Success
           .of(ConnectionAPI.AuthenticationResponse.newBuilder().setAuthenticated(true).build());
     } catch (AuthenticationFailedException e) {
-      logger.warn("Authentication failed", e);
+      messageExecutionContext.getStatistics().incAuthenticationFailures();
+      logger.debug("Authentication failed", e);
       messageExecutionContext
           .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
       return Success

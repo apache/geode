@@ -123,7 +123,6 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     workingDirByVm.put(vm3, tempDir.newFolder());
 
     backupBaseDir = tempDir.newFolder("backupDir");
-
   }
 
   @Override
@@ -142,6 +141,15 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     long lastModified1 = setBackupFiles(vm1);
 
     createData();
+
+    vm0.invoke(() -> {
+      assertThat(getCache().getDistributionManager().getNormalDistributionManagerIds()).hasSize(2);
+    });
+
+    vm2.invoke(() -> {
+      getCache();
+      assertThat(getCache().getDistributionManager().getNormalDistributionManagerIds()).hasSize(3);
+    });
 
     BackupStatus status = backupMember(vm2);
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
@@ -692,8 +700,8 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
   private BackupStatus backupMember(final VM vm) {
     return vm.invoke("backup", () -> {
       try {
-        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(), backupBaseDir,
-            null);
+        return BackupUtil.backupAllMembers(getCache().getDistributionManager(),
+            backupBaseDir.toString(), null);
       } catch (ManagementException e) {
         throw new RuntimeException(e);
       }

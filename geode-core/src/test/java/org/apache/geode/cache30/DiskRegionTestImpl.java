@@ -135,19 +135,6 @@ public class DiskRegionTestImpl implements Serializable {
       }
     });
 
-    // vm2.invoke(new CacheSerializableRunnable("Create mirrored KEYS region in VM2") {
-    // public void run2() throws CacheException {
-    // AttributesFactory factory = new AttributesFactory();
-    // // set scope to be same as test region
-    // Scope scope = DiskRegionTestImpl.this.rtc.getRegionAttributes().getScope();
-    // factory.setScope(scope);
-    // // set mirror KEYS
-    // factory.setMirrorType(MirrorType.KEYS);
-    // RegionAttributes attrs2 = factory.create();
-    // Region rgn = DiskRegionTestImpl.this.rtc.createRegion(name, attrs2);
-    // }
-    // });
-
     String runnableName =
         "Re-create backup region in VM0 with mirror " + "KEYS_VALUES and Do Verification";
     vm0.invoke(new CacheSerializableRunnable(runnableName) {
@@ -156,7 +143,6 @@ public class DiskRegionTestImpl implements Serializable {
             new AttributesFactory(DiskRegionTestImpl.this.rtc.getRegionAttributes());
         factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
         RegionAttributes attrs2 = factory.create();
-        // DebuggerSupport.waitForJavaDebugger(rtc.getLogWriter(), "About to create region...");
         Region rgn = DiskRegionTestImpl.this.rtc.createRegion(name, attrs2);
 
         // verify

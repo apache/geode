@@ -20,7 +20,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -74,7 +73,7 @@ public class BackupServiceTest {
   public void startBackupThrowsExceptionWhenAnotherBackupInProgress() throws Exception {
     BackupTask backupTask = mock(BackupTask.class);
     backupService.currentTask.set(backupTask);
-    assertThatThrownBy(() -> backupService.prepareBackup(sender, new File(""), null))
+    assertThatThrownBy(() -> backupService.prepareBackup(sender, null))
         .isInstanceOf(IOException.class);
   }
 
@@ -85,7 +84,7 @@ public class BackupServiceTest {
 
   @Test
   public void prepareBackupReturnsEmptyPersistentIdsWhenBackupNotInProgress() throws Exception {
-    assertThat(backupService.prepareBackup(sender, new File(""), null).size()).isEqualTo(0);
+    assertThat(backupService.prepareBackup(sender, null).size()).isEqualTo(0);
   }
 
 }

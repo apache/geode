@@ -88,43 +88,49 @@ public class CliUtilDUnitTest {
   @Test
   public void findMembers() throws Exception {
     locator.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
       // can't pass in both group and names
-      assertThatThrownBy(() -> CliUtil.findMembers("group1".split(","), "member1".split(",")))
-          .isInstanceOf(UserErrorException.class);
+      assertThatThrownBy(
+          () -> CliUtil.findMembers("group1".split(","), "member1".split(","), cache))
+              .isInstanceOf(UserErrorException.class);
 
       // finds all servers
-      members = CliUtil.findMembers(null, null);
+      members = CliUtil.findMembers(null, null, cache);
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2", "member3",
           "member4");
 
       // find only one member
-      members = CliUtil.findMembers(null, "member1".split(","));
+      members = CliUtil.findMembers(null, "member1".split(","), cache);
       assertThat(getNames(members)).containsExactly("member1");
 
       // find multiple members
-      members = CliUtil.findMembers(null, "member1,member3".split(","));
+      members = CliUtil.findMembers(null, "member1,member3".split(","), cache);
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member3");
 
       // find multiple members
-      members = CliUtil.findMembers(null, "MembER1,member3".split(","));
+      members = CliUtil.findMembers(null, "MembER1,member3".split(","), cache);
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member3");
 
       // find only one group
-      members = CliUtil.findMembers("group1".split(","), null);
+      members = CliUtil.findMembers("group1".split(","), null, cache);
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2");
 
       // find multiple groups
-      members = CliUtil.findMembers("group1,group2".split(","), null);
+      members = CliUtil.findMembers("group1,group2".split(","), null, cache);
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2", "member3",
           "member4");
     });
   }
 
-  public void getMember() throws Exception {
+  public void getMember() {
     locator.invoke(() -> {
-      assertThat(CliUtil.getDistributedMemberByNameOrId("notValidName")).isNull();
-      assertThat(CliUtil.getDistributedMemberByNameOrId("member1").getName()).isEqualTo("member1");
-      assertThat(CliUtil.getDistributedMemberByNameOrId("MembER1").getName()).isEqualTo("member1");
+      assertThat(
+          CliUtil.getDistributedMemberByNameOrId("notValidName", ClusterStartupRule.getCache()))
+              .isNull();
+      assertThat(CliUtil.getDistributedMemberByNameOrId("member1", ClusterStartupRule.getCache())
+          .getName()).isEqualTo("member1");
+      assertThat(CliUtil.getDistributedMemberByNameOrId("MembER1", ClusterStartupRule.getCache())
+          .getName()).isEqualTo("member1");
     });
   }
 
@@ -174,12 +180,13 @@ public class CliUtilDUnitTest {
   @Test
   public void getMemberByNameOrId() throws Exception {
     locator.invoke(() -> {
-      DistributedMember member = CliUtil.getDistributedMemberByNameOrId("member1");
+      DistributedMember member =
+          CliUtil.getDistributedMemberByNameOrId("member1", ClusterStartupRule.getCache());
       assertThat(member.getName()).isEqualTo("member1");
       assertThat(member.getId()).contains("member1:");
       assertThat(member.getGroups()).containsExactly("group1");
 
-      member = CliUtil.getDistributedMemberByNameOrId("member100");
+      member = CliUtil.getDistributedMemberByNameOrId("member100", ClusterStartupRule.getCache());
       assertThat(member).isNull();
     });
   }

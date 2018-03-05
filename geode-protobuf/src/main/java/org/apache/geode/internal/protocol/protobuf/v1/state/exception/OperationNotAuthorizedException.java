@@ -15,10 +15,17 @@
 package org.apache.geode.internal.protocol.protobuf.v1.state.exception;
 
 
+import org.apache.geode.GemFireException;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 
-public class OperationNotAuthorizedException extends ConnectionStateException {
-  public OperationNotAuthorizedException(BasicTypes.ErrorCode errorCode, String errorMessage) {
-    super(errorCode, errorMessage);
+public class OperationNotAuthorizedException extends GemFireException
+    implements ExceptionWithErrorCode {
+  public OperationNotAuthorizedException(String errorMessage) {
+    super(errorMessage);
+  }
+
+  @Override
+  public BasicTypes.ErrorCode getErrorCode() {
+    return BasicTypes.ErrorCode.AUTHORIZATION_FAILED;
   }
 }

@@ -128,10 +128,6 @@ public interface ServerRegionDataAccess {
    * @return an {@link EntrySnapshot} for the given key
    */
   Entry getEntry(Object key);
-  // public boolean containsValue(Object value);
-  // public Set entries(boolean recursive) {
-  // public void invalidate(Object key) throws TimeoutException,
-  // public int size()
 
   /**
    * returns the name of the region to which this interface provides access

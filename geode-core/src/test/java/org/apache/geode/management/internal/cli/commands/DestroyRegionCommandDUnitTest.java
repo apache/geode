@@ -51,8 +51,8 @@ public class DestroyRegionCommandDUnitTest {
   public static void beforeClass() throws Exception {
     locator = lsRule.startLocatorVM(0);
     server1 = lsRule.startServerVM(1, "group1", locator.getPort());
-    server2 = lsRule.startServerVM(2, locator.getPort());
-    server3 = lsRule.startServerVM(3, locator.getPort());
+    server2 = lsRule.startServerVM(2, "group2", locator.getPort());
+    server3 = lsRule.startServerVM(3, "group2", locator.getPort());
   }
 
   @Before
@@ -103,10 +103,11 @@ public class DestroyRegionCommandDUnitTest {
   }
 
   @Test
-  public void testDestroyLocalAndDistributedRegions() {
+  public void testDestroyDistributedRegions() {
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE_PROXY --group=group1")
         .statusIsSuccess();
-    gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE").statusIsSuccess();
+    gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE --group=group2")
+        .statusIsSuccess();
 
     locator.waitTillRegionsAreReadyOnServers("/region1", 3);
 
@@ -117,7 +118,7 @@ public class DestroyRegionCommandDUnitTest {
       assertThat(group1Config.getCacheXmlContent()).contains("<region name=\"region1\">\n"
           + "    <region-attributes data-policy=\"empty\" scope=\"distributed-ack\"/>");
 
-      Configuration clusterConfig = service.getConfiguration("cluster");
+      Configuration clusterConfig = service.getConfiguration("group2");
       assertThat(clusterConfig.getCacheXmlContent()).contains("<region name=\"region1\">\n"
           + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>");
     });
@@ -132,7 +133,7 @@ public class DestroyRegionCommandDUnitTest {
       Configuration group1Config = service.getConfiguration("group1");
       assertThat(group1Config.getCacheXmlContent()).doesNotContain("region1");
 
-      Configuration clusterConfig = service.getConfiguration("cluster");
+      Configuration clusterConfig = service.getConfiguration("group2");
       assertThat(clusterConfig.getCacheXmlContent()).doesNotContain("region1");
     });
 

@@ -116,7 +116,7 @@ public interface GfshCommand extends CommandMarker {
    * this will return the member found or null if no member with that name
    */
   default DistributedMember findMember(final String memberName) {
-    return CliUtil.getDistributedMemberByNameOrId(memberName);
+    return CliUtil.getDistributedMemberByNameOrId(memberName, getCache());
   }
 
   /**
@@ -141,7 +141,7 @@ public interface GfshCommand extends CommandMarker {
    * if no members matches these names, an empty set would return, this does not include locators
    */
   default Set<DistributedMember> findMembers(String[] groups, String[] members) {
-    return CliUtil.findMembers(groups, members);
+    return CliUtil.findMembers(groups, members, getCache());
   }
 
   /**
@@ -159,7 +159,7 @@ public interface GfshCommand extends CommandMarker {
    * if no members matches these names, an empty set would return
    */
   default Set<DistributedMember> findMembersIncludingLocators(String[] groups, String[] members) {
-    return CliUtil.findMembersIncludingLocators(groups, members);
+    return CliUtil.findMembersIncludingLocators(groups, members, getCache());
   }
 
   /**

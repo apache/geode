@@ -168,11 +168,11 @@ public class CreateRegionCommandIntegrationTest {
 
     gfsh.executeAndAssertThat(
         "create region --skip-if-exists --type=PARTITION --name=/FOO --local-max-memory=0")
-        .statusIsSuccess().containsOutput("Region \"/FOO\" already exists.");
+        .statusIsSuccess().containsOutput("Region /FOO already exists on these members: server.");
 
     gfsh.executeAndAssertThat(
         "create region --if-not-exists --type=PARTITION --name=/FOO --local-max-memory=0")
-        .statusIsSuccess().containsOutput("Region \"/FOO\" already exists.");
+        .statusIsSuccess().containsOutput("Region /FOO already exists on these members: server.");
 
     gfsh.executeAndAssertThat("destroy region --name=/FOO").statusIsSuccess();
   }

@@ -20,6 +20,7 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,6 +35,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
+import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -47,6 +49,19 @@ public class LuceneEventListenerJUnitTest {
   @After
   public void clearExceptionListener() {
     LuceneEventListener.setExceptionObserver(null);
+  }
+
+  @Test
+  public void pdxReadSerializedFlagShouldBeResetBackToOriginalValueAfterProcessingEvents() {
+    boolean originalPdxReadSerialized = DefaultQuery.getPdxReadSerialized();
+    try {
+      DefaultQuery.setPdxReadSerialized(true);
+      LuceneEventListener luceneEventListener = new LuceneEventListener(null);
+      luceneEventListener.process(new LinkedList());
+      assertTrue(DefaultQuery.getPdxReadSerialized());
+    } finally {
+      DefaultQuery.setPdxReadSerialized(originalPdxReadSerialized);
+    }
   }
 
   @Test

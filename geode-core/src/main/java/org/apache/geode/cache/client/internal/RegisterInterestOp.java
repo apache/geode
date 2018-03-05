@@ -168,8 +168,6 @@ public class RegisterInterestOp {
           try {
             localRegion = (LocalRegion) GemFireCacheImpl.getInstance().getRegion(this.region);
           } catch (Exception ignore) {
-            // ignore but read message
-            // GemFireCacheImpl.getInstance().getLogger().config("hitesh error " + ex.getClass());
           }
 
           ArrayList list = new ArrayList();
@@ -192,14 +190,12 @@ public class RegisterInterestOp {
               throw new ServerOperationException(s, (Throwable) partObj);
               // Get the exception toString part.
               // This was added for c++ thin client and not used in java
-              // Part exceptionToStringPart = msg.getPart(1);
             } else {
               if (partObj instanceof VersionedObjectList) {
                 if (serverEntries == null) {
                   serverEntries = new VersionedObjectList(true);
                 }
                 ((VersionedObjectList) partObj).replaceNullIDs(con.getEndpoint().getMemberId());
-                // serverEntries.addAll((VersionedObjectList)partObj);
                 list.clear();
                 list.add(partObj);
 
@@ -208,8 +204,6 @@ public class RegisterInterestOp {
                     localRegion.refreshEntriesFromServerKeys(con, listOfList,
                         InterestResultPolicy.KEYS_VALUES);
                   } catch (Exception ex) {
-                    // GemFireCacheImpl.getInstance().getLogger().config("hitesh error2 " +
-                    // ex.getClass());
                   }
                 }
               } else {
@@ -237,7 +231,6 @@ public class RegisterInterestOp {
           Part part = chunkedMessage.getPart(0);
           // Get the exception toString part.
           // This was added for c++ thin client and not used in java
-          // Part exceptionToStringPart = msg.getPart(1);
           Object obj = part.getObject(); {
           String s = this + ": While performing a remote " + getOpName();
           throw new ServerOperationException(s, (Throwable) obj);

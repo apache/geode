@@ -17,5 +17,8 @@ package org.apache.geode.internal;
 import java.io.ObjectInputStream;
 
 public interface InputStreamFilter {
+
+  /** establish a serialization filter on the given stream */
   void setFilterOn(ObjectInputStream ois);
+
 }

@@ -14,21 +14,63 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.management.*;
+import javax.management.MBeanException;
+import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.ObjectName;
+import javax.management.RuntimeMBeanException;
+import javax.management.RuntimeOperationsException;
 import javax.management.modelmbean.ModelMBean;
-import javax.management.openmbean.*;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.CompositeDataSupport;
+import javax.management.openmbean.CompositeType;
+import javax.management.openmbean.OpenDataException;
+import javax.management.openmbean.OpenType;
+import javax.management.openmbean.SimpleType;
+import javax.management.openmbean.TabularData;
+import javax.management.openmbean.TabularDataSupport;
+import javax.management.openmbean.TabularType;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.CacheServer;
+import org.apache.geode.admin.CacheServerConfig;
+import org.apache.geode.admin.CacheVm;
+import org.apache.geode.admin.CacheVmConfig;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.DistributionLocator;
+import org.apache.geode.admin.DistributionLocatorConfig;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.SystemMember;
+import org.apache.geode.admin.SystemMemberCacheEvent;
+import org.apache.geode.admin.SystemMemberCacheListener;
+import org.apache.geode.admin.SystemMemberRegionEvent;
+import org.apache.geode.admin.SystemMemberType;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.admin.internal.CacheServerConfigImpl;
 import org.apache.geode.admin.internal.DistributionLocatorImpl;
@@ -38,8 +80,13 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.admin.*;
 import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.admin.ApplicationVM;
+import org.apache.geode.internal.admin.ClientMembershipMessage;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.GfManagerAgent;
+import org.apache.geode.internal.admin.StatAlert;
+import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.remote.UpdateAlertDefinitionMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -334,19 +381,10 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
         setAlertsManager(joined);
 
         this.modelMBean.sendNotification(
-            new Notification(NOTIF_MEMBER_JOINED, ((ManagedResource) member).getObjectName(), // Pass
-                                                                                              // the
-                                                                                              // ObjName
-                                                                                              // of
-                                                                                              // the
-                                                                                              // Source
-                                                                                              // Member
+            // Pass the ObjName of the Source Member
+            new Notification(NOTIF_MEMBER_JOINED, ((ManagedResource) member).getObjectName(),
                 notificationSequenceNumber.addAndGet(1), joined.getId().toString()));
 
-        // String mess = "Gemfire AlertNotification: System Member Joined, System member Id: " +
-        // joined.getId().toString();
-        // sendEmail("Gemfire AlertNotification: Member Joined, ID: " + joined.getId().toString(),
-        // mess);
         if (isEmailNotificationEnabled) {
           String mess =
               LocalizedStrings.AdminDistributedSystemJmxImpl_MEMBER_JOINED_THE_DISTRIBUTED_SYSTEM_MEMBER_ID_0
@@ -398,19 +436,10 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       }
       try {
         this.modelMBean.sendNotification(
-            new Notification(NOTIF_MEMBER_LEFT, ((ManagedResource) member).getObjectName(), // Pass
-                                                                                            // the
-                                                                                            // ObjName
-                                                                                            // of
-                                                                                            // the
-                                                                                            // Source
-                                                                                            // Member
+            // Pass the ObjName of the Source Member
+            new Notification(NOTIF_MEMBER_LEFT, ((ManagedResource) member).getObjectName(),
                 notificationSequenceNumber.addAndGet(1), left.getId().toString()));
 
-        // String mess = "Gemfire AlertNotification: System Member Left the system, System member
-        // Id: " + left.getId().toString();
-        // sendEmail("Gemfire AlertNotification: Member Left, ID: " + left.getId().toString(),
-        // mess);
         if (isEmailNotificationEnabled) {
           String mess =
               LocalizedStrings.AdminDistributedSystemJmxImpl_MEMBER_LEFT_THE_DISTRIBUTED_SYSTEM_MEMBER_ID_0
@@ -469,19 +498,10 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
       try {
         this.modelMBean.sendNotification(
-            new Notification(NOTIF_MEMBER_CRASHED, ((ManagedResource) member).getObjectName(), // Pass
-                                                                                               // the
-                                                                                               // ObjName
-                                                                                               // of
-                                                                                               // the
-                                                                                               // Source
-                                                                                               // Member
+            // Pass the ObjName of the Source Member
+            new Notification(NOTIF_MEMBER_CRASHED, ((ManagedResource) member).getObjectName(),
                 notificationSequenceNumber.addAndGet(1), crashed.getId().toString()));
 
-        // String mess = "Gemfire AlertNotification: System Member Crashed, System member Id: " +
-        // crashed.getId().toString();
-        // sendEmail("Gemfire AlertNotification: Member Crashed, ID: " + crashed.getId().toString(),
-        // mess);
         if (isEmailNotificationEnabled) {
           String mess =
               LocalizedStrings.AdminDistributedSystemJmxImpl_MEMBER_CRASHED_IN_THE_DISTRIBUTED_SYSTEM_MEMBER_ID_0
@@ -537,8 +557,6 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
         this.modelMBean.sendNotification(new Notification(NOTIF_ALERT, this.mbeanName,
             notificationSequenceNumber.addAndGet(1), strAlert));
 
-        // String mess = "Gemfire AlertNotification: System Alert :" + alert.toString();
-        // sendEmail("Gemfire AlertNotification: System Alert", mess);
         if (isEmailNotificationEnabled) {
           String mess =
               LocalizedStrings.AdminDistributedSystemJmxImpl_SYSTEM_ALERT_FROM_DISTRIBUTED_SYSTEM_0
@@ -770,9 +788,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
     try {
       return new ObjectName(((ManagedResource) addDistributionLocator()).getMBeanName());
-    }
-    // catch (AdminException e) { logger.warn(e.getMessage(), e); throw e; }
-    catch (RuntimeException e) {
+    } catch (RuntimeException e) {
       logger.warn(e.getMessage(), e);
       throw e;
     } catch (VirtualMachineError err) {
@@ -801,9 +817,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
         onames[i] = new ObjectName(loc.getMBeanName());
       }
       return onames;
-    }
-    // catch (AdminException e) { logger.warn(e.getMessage(), e); throw e; }
-    catch (RuntimeException e) {
+    } catch (RuntimeException e) {
       logger.warn(e.getMessage(), e);
       throw e;
     } catch (VirtualMachineError err) {
@@ -1400,9 +1414,6 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
    */
   private final HashMap alertsStore = new HashMap();
 
-  // TODO: yet to set the timer task
-  // private SystemTimer systemwideAlertNotificationScheduler = new SystemTimer();
-
   private MailManager mailManager = null;
   private final boolean isEmailNotificationEnabled;
 
@@ -1891,16 +1902,11 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
     StatAlert alert = null;
     Integer defId = null;
-    // Number[] values = null;
     for (int i = 0; i < alerts.length; i++) {
       alert = alerts[i];
 
-      // defId = Integer.valueOf(alert.getDefinitionId());
       if (getAlertDefinition(alert.getDefinitionId()) == null)
         continue; // Ignore any removed AlertDefns
-      // values = alert.getValues();
-
-      // StatAlertDefinition statAlertDef = (StatAlertDefinition)ALERT_DEFINITIONS.get(defId);
 
       /*
        * 1. check if it's system-wide. 2. if system-wide keep, it in a collection (that should get
@@ -1911,18 +1917,6 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
        * should directly be sent to clients.
        */
 
-      // if (statAlertDef.getFunctionId() != 0) {
-      /*
-       * StatAlert with alert definitions having functions assigned will get evaluated at manager
-       * side only.
-       *
-       * Is combination of systemwide alerts with function valid? It should be & hence such
-       * evaluation should be skipped on manager side. Or is it to be evaluated at manager as well
-       * as aggragator?
-       */
-      // }
-
-      // TODO: is this object required? Or earlier canbe resused?
       StatAlertNotification alertNotification = new StatAlertNotification(alert, memberId);
 
       /*
@@ -2016,7 +2010,6 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
         StatAlertNotification not = (StatAlertNotification) notificationObjects.get(i);
         buf.append(not.toString(getAlertDefinition(not.getDefinitionId())));
       }
-      // sendEmail("Gemfire AlertNotification on Member:" + objName, buf.toString());
       if (isEmailNotificationEnabled) {
         String mess =
             LocalizedStrings.AdminDistributedSystemJmxImpl_STATISTICS_ALERT_FROM_DISTRIBUTED_SYSTEM_MEMBER_0_STATISTICS_1

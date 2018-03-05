@@ -227,7 +227,6 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     Set blackListedServers = blackList.getBadServers();
     excludedServers.addAll(blackListedServers);
     Connection conn = null;
-    // long startTime = System.currentTimeMillis();
     RuntimeException fatalException = null;
     boolean tryBlackList = true;
 

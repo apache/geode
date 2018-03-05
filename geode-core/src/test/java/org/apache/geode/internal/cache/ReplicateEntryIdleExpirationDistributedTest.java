@@ -43,7 +43,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class ReplicateEntryIdleExpirationTest implements Serializable {
+public class ReplicateEntryIdleExpirationDistributedTest implements Serializable {
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();

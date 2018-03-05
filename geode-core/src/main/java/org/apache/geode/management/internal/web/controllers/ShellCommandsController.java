@@ -46,7 +46,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -98,7 +97,7 @@ public class ShellCommandsController extends AbstractCommandsController {
       ReflectionException, IOException {
     // Exceptions are caught by the @ExceptionHandler AbstractCommandsController.handleAppException
     signature = (signature != null ? signature : ArrayUtils.EMPTY_STRING_ARRAY);
-    parameters = (parameters != null ? parameters : ObjectUtils.EMPTY_OBJECT_ARRAY);
+    parameters = (parameters != null ? parameters : ArrayUtils.EMPTY_OBJECT_ARRAY);
     MBeanServer mBeanServer = getMBeanServer();
     ObjectName objectName = ObjectName.getInstance(decode(resourceName));
     final Object result =

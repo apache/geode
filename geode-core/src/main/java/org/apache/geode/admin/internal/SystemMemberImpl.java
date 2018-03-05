@@ -15,13 +15,26 @@
 package org.apache.geode.admin.internal;
 
 import java.net.InetAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.CacheDoesNotExistException;
+import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.admin.RuntimeAdminException;
+import org.apache.geode.admin.StatisticResource;
+import org.apache.geode.admin.SystemMemberCache;
+import org.apache.geode.admin.SystemMemberType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -58,9 +71,6 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
 
   /** Host name of the machine this member resides on */
   protected String host;
-
-  /** The internal configuration this impl delegates to for runtime config */
-  // private Config config;
 
   /**
    * The configuration parameters for this member. Maps the name of the ConfigurationParameter to
@@ -331,12 +341,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
       throw new RuntimeAdminException(e);
     } catch (java.lang.Exception e) {
       logger.warn(e.getMessage(), e);
-    }
-    // catch (java.lang.RuntimeException e) {
-    // logWriter.warning(e);
-    // throw e;
-    // }
-    catch (VirtualMachineError err) {
+    } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.

@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
+import static org.apache.geode.internal.cache.backup.AbstractBackupWriterConfig.TYPE;
+
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
@@ -31,18 +33,24 @@ class PrepareBackupFactory {
   }
 
   PrepareBackupRequest createRequest(InternalDistributedMember sender,
-      Set<InternalDistributedMember> recipients, int processorId, File targetDir,
-      File baselineDir) {
-    return new PrepareBackupRequest(sender, recipients, processorId, this, targetDir, baselineDir);
+      Set<InternalDistributedMember> recipients, int processorId, Properties properties) {
+    return new PrepareBackupRequest(sender, recipients, processorId, this, properties);
   }
 
   PrepareBackup createPrepareBackup(InternalDistributedMember member, InternalCache cache,
-      File targetDir, File baselineDir) {
-    return new PrepareBackup(member, cache, targetDir, baselineDir);
+      Properties properties) {
+    String memberId = cleanSpecialCharacters(member.toString());
+    BackupWriter backupWriter = BackupWriterFactory.getFactoryForType(properties.getProperty(TYPE))
+        .createWriter(properties, memberId);
+    return new PrepareBackup(member, cache, backupWriter);
   }
 
   BackupResponse createBackupResponse(InternalDistributedMember sender,
       HashSet<PersistentID> persistentIds) {
     return new BackupResponse(sender, persistentIds);
+  }
+
+  private String cleanSpecialCharacters(String string) {
+    return string.replaceAll("[^\\w]+", "_");
   }
 }

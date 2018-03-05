@@ -55,7 +55,8 @@ public class OnlineCommandProcessorTest {
     result = mock(Result.class);
     when(executor.execute(any())).thenReturn(result);
 
-    onlineCommandProcessor = new OnlineCommandProcessor(properties, securityService, executor);
+    onlineCommandProcessor =
+        new OnlineCommandProcessor(properties, securityService, executor, null);
   }
 
 

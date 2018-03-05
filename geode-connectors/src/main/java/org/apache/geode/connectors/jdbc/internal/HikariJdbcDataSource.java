@@ -19,11 +19,11 @@ import java.sql.SQLException;
 
 import com.zaxxer.hikari.HikariDataSource;
 
-public class HikariJdbcDataSource implements JdbcDataSource {
+class HikariJdbcDataSource implements JdbcDataSource {
 
   private final HikariDataSource delegate;
 
-  public HikariJdbcDataSource(ConnectionConfiguration config) {
+  HikariJdbcDataSource(ConnectionConfiguration config) {
     HikariDataSource ds = new HikariDataSource();
     ds.setJdbcUrl(config.getUrl());
     ds.setUsername(config.getUser());

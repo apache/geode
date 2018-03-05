@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.cache;
 
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY;
@@ -31,9 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -41,6 +39,7 @@ import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class PRCreationTotalNumBucketsDistributedTest implements Serializable {
 
   private VM vm0;
@@ -64,24 +63,24 @@ public class PRCreationTotalNumBucketsDistributedTest implements Serializable {
   @Test
   public void testSetTotalNumBuckets() throws Exception {
     vm0.invoke(() -> {
-      Cache cache = cacheRule.createCache();
+      Cache cache = cacheRule.getOrCreateCache();
 
-      RegionFactory regionFactory = cache.createRegionFactory(PARTITION);
+      RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
       regionFactory.create("PR1");
 
-      PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
-      partitionAttributesFactory.setTotalNumBuckets(totalNumBuckets);
-      regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+      PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
+      paf.setTotalNumBuckets(totalNumBuckets);
+      regionFactory.setPartitionAttributes(paf.create());
       regionFactory.create("PR2");
     });
 
     vm1.invoke(() -> {
-      Cache cache = cacheRule.createCache();
+      Cache cache = cacheRule.getOrCreateCache();
 
-      PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
-      partitionAttributesFactory.setLocalMaxMemory(0);
-      RegionFactory regionFactory = cache.createRegionFactory(PARTITION);
-      regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+      PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
+      paf.setLocalMaxMemory(0);
+      RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
+      regionFactory.setPartitionAttributes(paf.create());
       PartitionedRegion accessor = (PartitionedRegion) regionFactory.create("PR1");
 
       assertThat(accessor.getTotalNumberOfBuckets()).isEqualTo(GLOBAL_MAX_BUCKETS_DEFAULT);
@@ -91,32 +90,35 @@ public class PRCreationTotalNumBucketsDistributedTest implements Serializable {
             .isInstanceOf(IllegalStateException.class);
       }
 
-      partitionAttributesFactory.setTotalNumBuckets(totalNumBuckets);
-      regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+      paf.setTotalNumBuckets(totalNumBuckets);
+      regionFactory.setPartitionAttributes(paf.create());
       accessor = (PartitionedRegion) regionFactory.create("PR2");
 
       assertThat(accessor.getTotalNumberOfBuckets()).isEqualTo(totalNumBuckets);
     });
   }
 
+  /**
+   * Tests {@link PartitionAttributesFactory#setGlobalProperties(Properties)} which is deprecated.
+   */
   @Test
   public void testSetGlobalProperties() throws Exception {
     vm0.invoke(() -> {
-      Cache cache = cacheRule.createCache();
+      Cache cache = cacheRule.getOrCreateCache();
 
-      RegionFactory regionFactory = cache.createRegionFactory(PARTITION);
-      PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
-      partitionAttributesFactory.setTotalNumBuckets(totalNumBuckets);
-      regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+      RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
+      PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
+      paf.setTotalNumBuckets(totalNumBuckets);
+      regionFactory.setPartitionAttributes(paf.create());
       regionFactory.create("PR1");
     });
 
     vm1.invoke(() -> {
-      Cache cache = cacheRule.createCache();
+      Cache cache = cacheRule.getOrCreateCache();
 
-      RegionFactory regionFactory = cache.createRegionFactory(PARTITION);
-      PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
-      regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+      RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
+      PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
+      regionFactory.setPartitionAttributes(paf.create());
 
       try (IgnoredException ie = addIgnoredException(IllegalStateException.class)) {
         assertThatThrownBy(() -> regionFactory.create("PR1"))
@@ -125,8 +127,8 @@ public class PRCreationTotalNumBucketsDistributedTest implements Serializable {
 
       Properties globalProperties = new Properties();
       globalProperties.setProperty(GLOBAL_MAX_BUCKETS_PROPERTY, "" + totalNumBuckets);
-      partitionAttributesFactory.setGlobalProperties(globalProperties);
-      regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+      paf.setGlobalProperties(globalProperties);
+      regionFactory.setPartitionAttributes(paf.create());
       PartitionedRegion accessor = (PartitionedRegion) regionFactory.create("PR1");
 
       assertThat(accessor.getTotalNumberOfBuckets()).isEqualTo(totalNumBuckets);

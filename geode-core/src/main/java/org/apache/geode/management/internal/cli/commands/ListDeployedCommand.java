@@ -55,7 +55,7 @@ public class ListDeployedCommand implements GfshCommand {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, null);
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, null, getCache());
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

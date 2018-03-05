@@ -93,11 +93,6 @@ public class ExecuteRegionFunctionSingleHopOp {
         ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
             serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts - 1);
       }
-      // else {
-      // ExecuteRegionFunctionOp.execute(pool, region.getFullPath(), function,
-      // serverRegionExecutor, resultCollector, hasResult,
-      // maxRetryAttempts - 1);
-      // }
     }
 
     resultCollector.endResults();
@@ -141,11 +136,6 @@ public class ExecuteRegionFunctionSingleHopOp {
             serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts - 1,
             isHA, optimizeForWrite);
       }
-      // else {
-      // ExecuteRegionFunctionOp.execute(pool, region.getFullPath(), functionId,
-      // serverRegionExecutor, resultCollector, hasResult,
-      // maxRetryAttempts - 1, isHA, optimizeForWrite);
-      // }
     }
 
     resultCollector.endResults();

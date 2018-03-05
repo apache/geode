@@ -16,6 +16,7 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
@@ -51,21 +52,21 @@ public class ProtobufOpsProcessor {
     Result result;
 
     try {
-      messageExecutionContext.getConnectionStateProcessor()
-          .validateOperation(messageExecutionContext, operationContext);
+      messageExecutionContext.getConnectionStateProcessor().validateOperation(request,
+          serializationService, messageExecutionContext, operationContext);
       result = processOperation(request, messageExecutionContext, requestType, operationContext);
-    } catch (OperationNotAuthorizedException e) {
-      // Don't move to a terminating state for authorization state failures
-      logger.warn(e.getMessage());
-      result = Failure.of(e);
-    } catch (EncodingException | DecodingException e) {
-      logger.warn(e.getMessage());
-      result = Failure.of(e);
-    } catch (ConnectionStateException e) {
-      logger.warn(e.getMessage());
-      messageExecutionContext
-          .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
-      result = Failure.of(e);
+    } catch (VirtualMachineError error) {
+      SystemFailure.initiateFailure(error);
+      throw error;
+    } catch (Throwable t) {
+      logger.warn("Failure for request " + request, t);
+      SystemFailure.checkFailure();
+      result = Failure.of(t);
+
+      if (t instanceof ConnectionStateException) {
+        messageExecutionContext
+            .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
+      }
     }
 
     return ((ClientProtocol.Message.Builder) result.map(operationContext.getToResponse(),

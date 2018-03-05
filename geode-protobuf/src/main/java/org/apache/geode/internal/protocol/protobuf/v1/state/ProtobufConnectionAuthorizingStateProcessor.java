@@ -20,6 +20,8 @@ import org.apache.shiro.util.ThreadState;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
 import org.apache.geode.internal.security.SecurityService;
@@ -37,14 +39,16 @@ public class ProtobufConnectionAuthorizingStateProcessor
   }
 
   @Override
-  public void validateOperation(MessageExecutionContext messageContext,
-      ProtobufOperationContext operationContext) throws ConnectionStateException {
+  public void validateOperation(Object message, ProtobufSerializationService serializer,
+      MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
+      throws ConnectionStateException, DecodingException {
     ThreadState threadState = securityService.bindSubject(subject);
     try {
-      securityService.authorize(operationContext.getAccessPermissionRequired());
+      securityService.authorize(operationContext.getAccessPermissionRequired(
+          operationContext.getFromRequest().apply(message), serializer));
     } catch (NotAuthorizedException e) {
       messageContext.getStatistics().incAuthorizationViolations();
-      throw new OperationNotAuthorizedException(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
+      throw new OperationNotAuthorizedException(
           "The user is not authorized to complete this operation");
     } finally {
       threadState.restore();
@@ -56,5 +60,13 @@ public class ProtobufConnectionAuthorizingStateProcessor
       throws ConnectionStateException {
     throw new ConnectionStateException(BasicTypes.ErrorCode.ALREADY_AUTHENTICATED,
         "The user has already been authenticated for this connection. Re-authentication is not supported at this time.");
+  }
+
+  public ThreadState prepareThreadForAuthorization() {
+    return securityService.bindSubject(subject);
+  }
+
+  public void restoreThreadState(ThreadState state) {
+    state.restore();
   }
 }

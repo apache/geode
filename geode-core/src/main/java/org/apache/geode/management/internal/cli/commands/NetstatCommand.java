@@ -171,13 +171,13 @@ public class NetstatCommand implements GfshCommand {
       }
       result = ResultBuilder.buildResult(resultData);
     } catch (IllegalArgumentException e) {
-      LogWrapper.getInstance()
+      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
           .info(CliStrings.format(
               CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
               new Object[] {Arrays.toString(members)}));
       result = ResultBuilder.createUserErrorResult(e.getMessage());
     } catch (RuntimeException e) {
-      LogWrapper.getInstance()
+      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
           .info(CliStrings.format(
               CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
               new Object[] {Arrays.toString(members)}), e);

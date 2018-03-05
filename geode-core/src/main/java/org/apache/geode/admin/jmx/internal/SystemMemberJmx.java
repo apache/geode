@@ -246,7 +246,6 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
               LocalizedStrings.SystemMemberJmx_THIS_SYSTEM_MEMBER_DOES_NOT_HAVE_A_CACHE
                   .toLocalizedString());
         }
-        // Assert.assertTrue(cache != null); (cannot be null)
         SystemMemberCacheJmxImpl cacheJmx = (SystemMemberCacheJmxImpl) cache;
         return ObjectName.getInstance(cacheJmx.getMBeanName());
       } catch (AdminException e) {

@@ -70,7 +70,7 @@ public class DestroyIndexCommand implements GfshCommand {
     }
     IndexInfo indexInfo = new IndexInfo(indexName, regionName);
     indexInfo.setIfExists(ifExists);
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID);
+    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID, getCache());
 
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

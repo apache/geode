@@ -29,6 +29,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class RemoveRequestOperationHandler
@@ -56,5 +57,12 @@ public class RemoveRequestOperationHandler
     region.remove(decodedKey);
 
     return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
+  }
+
+  public static ResourcePermission determineRequiredPermission(RegionAPI.RemoveRequest request,
+      ProtobufSerializationService serializer) throws DecodingException {
+    return new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.WRITE, request.getRegionName(),
+        serializer.decode(request.getKey()).toString());
   }
 }

@@ -30,6 +30,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class GetRequestOperationHandler
@@ -66,5 +67,12 @@ public class GetRequestOperationHandler
     } finally {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
     }
+  }
+
+  public static ResourcePermission determineRequiredPermission(RegionAPI.GetRequest request,
+      ProtobufSerializationService serializer) throws DecodingException {
+    return new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, request.getRegionName(),
+        serializer.decode(request.getKey()).toString());
   }
 }

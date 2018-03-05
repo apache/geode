@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -26,8 +25,8 @@ import org.springframework.shell.event.ParseResult;
 import org.springframework.util.StringUtils;
 
 import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.Result;
@@ -50,20 +49,15 @@ public class OnlineCommandProcessor {
 
   private final SecurityService securityService;
 
-  @TestingOnly
-  public OnlineCommandProcessor() throws ClassNotFoundException, IOException {
-    this(new Properties(), SecurityServiceFactory.create());
-  }
-
-  public OnlineCommandProcessor(Properties cacheProperties, SecurityService securityService)
-      throws ClassNotFoundException, IOException {
-    this(cacheProperties, securityService, new CommandExecutor());
+  public OnlineCommandProcessor(Properties cacheProperties, SecurityService securityService,
+      Cache cache) {
+    this(cacheProperties, securityService, new CommandExecutor(), cache);
   }
 
   @TestingOnly
   public OnlineCommandProcessor(Properties cacheProperties, SecurityService securityService,
-      CommandExecutor commandExecutor) {
-    this.gfshParser = new GfshParser(new CommandManager(cacheProperties));
+      CommandExecutor commandExecutor, Cache cache) {
+    this.gfshParser = new GfshParser(new CommandManager(cacheProperties, cache));
     this.executor = commandExecutor;
     this.securityService = securityService;
   }

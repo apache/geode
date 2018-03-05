@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.beans;
 
 import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -29,7 +28,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +46,6 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
@@ -98,10 +95,8 @@ import org.apache.geode.internal.statistics.platform.SolarisSystemStats;
 import org.apache.geode.internal.statistics.platform.WindowsSystemStats;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.geode.management.DiskBackupResult;
 import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.JVMMetrics;
-import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.OSMetrics;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementConstants;
@@ -340,7 +335,7 @@ public class MemberMBeanBridge {
     this.config = system.getConfig();
     try {
       this.commandProcessor =
-          new OnlineCommandProcessor(system.getProperties(), cache.getSecurityService());
+          new OnlineCommandProcessor(system.getProperties(), cache.getSecurityService(), cache);
     } catch (Exception e) {
       commandServiceInitError = e.getMessage();
       logger.info(LogMarker.CONFIG, "Command processor could not be initialized. {}",
@@ -984,64 +979,6 @@ public class MemberMBeanBridge {
       t.setDaemon(false);
       t.start();
     }
-  }
-
-  /**
-   * backs up all the disk to the targeted directory
-   *
-   * @param targetDirPath path of the directory where back up is to be taken
-   * @return array of DiskBackup results which might get aggregated at Managing node Check the
-   *         validity of this mbean call. When does it make sense to backup a single member of a
-   *         gemfire system in isolation of the other members?
-   */
-  public DiskBackupResult[] backupMember(String targetDirPath) {
-    if (cache != null) {
-      Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
-      for (DiskStore store : diskStores) {
-        store.flush();
-      }
-    }
-
-    DiskBackupResult[] diskBackUpResult = null;
-    File targetDir = new File(targetDirPath);
-
-    if (cache == null) {
-      return null;
-
-    } else {
-      try {
-        boolean abort = true;
-        Set<PersistentID> existingDataStores;
-        Set<PersistentID> successfulDataStores;
-        try {
-          existingDataStores = cache.getBackupService().prepareBackup(
-              cache.getInternalDistributedSystem().getDistributedMember(), targetDir, null);
-          abort = false;
-        } finally {
-          if (abort) {
-            cache.getBackupService().abortBackup();
-            successfulDataStores = Collections.emptySet();
-          } else {
-            successfulDataStores = cache.getBackupService().doBackup();
-          }
-        }
-        diskBackUpResult = new DiskBackupResult[existingDataStores.size()];
-        int j = 0;
-
-        for (PersistentID id : existingDataStores) {
-          if (successfulDataStores.contains(id)) {
-            diskBackUpResult[j] = new DiskBackupResult(id.getDirectory(), false);
-          } else {
-            diskBackUpResult[j] = new DiskBackupResult(id.getDirectory(), true);
-          }
-          j++;
-        }
-
-      } catch (IOException | InterruptedException e) {
-        throw new ManagementException(e);
-      }
-    }
-    return diskBackUpResult;
   }
 
   /**

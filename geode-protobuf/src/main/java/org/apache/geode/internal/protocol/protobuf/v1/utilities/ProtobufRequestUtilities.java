@@ -109,8 +109,25 @@ public abstract class ProtobufRequestUtilities {
     return ClientProtocol.Message.newBuilder().setPutAllRequest(putAllRequestBuilder).build();
   }
 
+  /**
+   * Create a request to retrieve a server.
+   *
+   * @return Request object containing the get-server request.
+   */
   public static LocatorAPI.GetServerRequest createGetServerRequest() {
     LocatorAPI.GetServerRequest.Builder builder = LocatorAPI.GetServerRequest.newBuilder();
+    return builder.build();
+  }
+
+  /**
+   * Create a request to retrieve a server from a server group.
+   *
+   * @param serverGroup Server group name.
+   * @return Request object containing the get-server request.
+   */
+  public static LocatorAPI.GetServerRequest createGetServerRequest(String serverGroup) {
+    LocatorAPI.GetServerRequest.Builder builder = LocatorAPI.GetServerRequest.newBuilder();
+    builder.setServerGroup(serverGroup);
     return builder.build();
   }
 }

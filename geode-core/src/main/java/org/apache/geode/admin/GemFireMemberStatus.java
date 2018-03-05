@@ -216,13 +216,9 @@ public class GemFireMemberStatus implements Serializable {
    *
    * @return status of the gateway hub
    */
-  public Object/* GatewayHubStatus */ getGatewayHubStatus() {
+  public Object getGatewayHubStatus() {
     return this._gatewayHubStatus;
   }
-
-  // protected void setGatewayHubStatus(GatewayHubStatus gatewayHubStatus) {
-  // this._gatewayHubStatus = gatewayHubStatus;
-  // }
 
   public boolean getIsSecondaryGatewayHub() {
     return !this._isPrimaryGatewayHub;
@@ -493,8 +489,6 @@ public class GemFireMemberStatus implements Serializable {
 
     // Variables for gateway hubs
     this._outgoingGateways = new HashMap();
-    // this._connectedOutgoingGateways = new HashSet();
-    // this._unconnectedOutgoingGateways = new HashSet();
     this._connectedIncomingGateways = new HashMap();
     this._gatewayQueueSizes = new HashMap();
 
@@ -538,7 +532,6 @@ public class GemFireMemberStatus implements Serializable {
       setServerPort(server.getPort());
 
       // Get Client Health Stats
-      // Assert.assertTrue(cache != null); (cannot be null)
       Region clientHealthMonitoringRegion =
           ClientHealthMonitoringRegion.getInstance((InternalCache) cache);
       if (clientHealthMonitoringRegion != null) {
@@ -590,13 +583,7 @@ public class GemFireMemberStatus implements Serializable {
         while (connected.hasNext()) {
           Map.Entry entry = (Map.Entry) connected.next();
           String server = (String) entry.getKey();
-          // Integer connections = (Integer) entry.getValue();
-          // if (connections.intValue()==0) {
-          // addUnconnectedServer(server);
-          // } else {
           addConnectedServer(server);
-          // }
-          // System.out.println(connections.size() + " logical connnections to server " + server);
         }
       }
     }
@@ -647,11 +634,6 @@ public class GemFireMemberStatus implements Serializable {
   }
 
   protected void initializeMemory() {
-    // InternalDistributedSystem system = (InternalDistributedSystem)
-    // region.getCache().getDistributedSystem();
-    // GemFireStatSampler sampler = system.getStatSampler();
-    // VMStatsContract statsContract = sampler.getVMStats();
-
     Runtime rt = Runtime.getRuntime();
     setMaximumHeapSize(rt.maxMemory());
     setFreeHeapSize(rt.freeMemory());

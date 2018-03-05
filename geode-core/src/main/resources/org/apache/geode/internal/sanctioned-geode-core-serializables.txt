@@ -441,7 +441,6 @@ org/apache/geode/internal/tcp/ImmutableByteBufferInputStream,false
 org/apache/geode/internal/tcp/MemberShunnedException,true,-8453126202477831557,member:org/apache/geode/distributed/DistributedMember
 org/apache/geode/internal/tcp/ReenteredConnectException,true,2878977454669428469
 org/apache/geode/internal/util/Breadcrumbs$CrumbType,false
-org/apache/geode/internal/util/SingletonValue$ValueState,false
 org/apache/geode/internal/util/SunAPINotFoundException,true,75895915344106684
 org/apache/geode/internal/util/concurrent/CopyOnWriteHashMap,false,map:java/util/Map
 org/apache/geode/internal/util/concurrent/CustomEntryConcurrentHashMap,true,-7056732555635108300,compareValues:boolean,entryCreator:org/apache/geode/internal/util/concurrent/CustomEntryConcurrentHashMap$HashEntryCreator,segmentMask:int,segmentShift:int,segments:org/apache/geode/internal/util/concurrent/CustomEntryConcurrentHashMap$Segment[]
@@ -553,6 +552,7 @@ org/apache/geode/management/internal/cli/functions/ListDiskStoresFunction,false
 org/apache/geode/management/internal/cli/functions/ListDurableCqNamesFunction,true,1
 org/apache/geode/management/internal/cli/functions/ListFunctionFunction,true,1
 org/apache/geode/management/internal/cli/functions/ListIndexFunction,false
+org/apache/geode/management/internal/cli/functions/ListJndiBindingFunction,true,5254506785395069200
 org/apache/geode/management/internal/cli/functions/NetstatFunction,true,1
 org/apache/geode/management/internal/cli/functions/NetstatFunction$NetstatFunctionArgument,true,1,lineSeparator:java/lang/String,withlsof:boolean
 org/apache/geode/management/internal/cli/functions/NetstatFunction$NetstatFunctionResult,true,1,compressedBytes:org/apache/geode/management/internal/cli/CliUtil$DeflaterInflaterData,headerInfo:java/lang/String,host:java/lang/String
@@ -587,10 +587,10 @@ org/apache/geode/management/internal/cli/util/LogFilter$LineFilterResult,false
 org/apache/geode/management/internal/cli/util/MemberInformation,true,1,cacheXmlFilePath:java/lang/String,cpuUsage:java/lang/String,groups:java/lang/String,heapUsage:java/lang/String,host:java/lang/String,id:java/lang/String,initHeapSize:java/lang/String,locatorBindAddress:java/lang/String,locatorPort:int,locators:java/lang/String,logFilePath:java/lang/String,maxHeapSize:java/lang/String,name:java/lang/String,processId:java/lang/String,serverBindAddress:java/lang/String,statArchiveFilePath:java/lang/String,workingDirPath:java/lang/String
 org/apache/geode/management/internal/cli/util/VisualVmNotFoundException,true,-8491645604829510102
 org/apache/geode/management/internal/configuration/domain/SharedConfigurationStatus,false
+org/apache/geode/management/internal/configuration/functions/DownloadJarFunction,true,1
 org/apache/geode/management/internal/configuration/functions/GetClusterConfigurationFunction,false
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
 org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
-org/apache/geode/management/internal/configuration/functions/DownloadJarFunction,true,1
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
 org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238
 org/apache/geode/memcached/GemFireMemcachedServer$Protocol,false

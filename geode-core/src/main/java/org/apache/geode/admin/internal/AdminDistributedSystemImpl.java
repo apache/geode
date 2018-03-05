@@ -14,30 +14,80 @@
  */
 package org.apache.geode.admin.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.Alert;
+import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.admin.AlertListener;
+import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.admin.CacheServer;
+import org.apache.geode.admin.CacheServerConfig;
+import org.apache.geode.admin.CacheVm;
+import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.DistributionLocator;
+import org.apache.geode.admin.DistributionLocatorConfig;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.ManagedEntity;
+import org.apache.geode.admin.ManagedEntityConfig;
+import org.apache.geode.admin.OperationCancelledException;
+import org.apache.geode.admin.RuntimeAdminException;
+import org.apache.geode.admin.SystemMember;
+import org.apache.geode.admin.SystemMemberCacheListener;
+import org.apache.geode.admin.SystemMembershipEvent;
+import org.apache.geode.admin.SystemMembershipListener;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.FutureCancelledException;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.Banner;
-import org.apache.geode.internal.admin.*;
-import org.apache.geode.internal.admin.remote.*;
+import org.apache.geode.internal.admin.ApplicationVM;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.GfManagerAgent;
+import org.apache.geode.internal.admin.GfManagerAgentConfig;
+import org.apache.geode.internal.admin.GfManagerAgentFactory;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.admin.remote.CompactRequest;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.admin.remote.MissingPersistentIDsRequest;
+import org.apache.geode.internal.admin.remote.PrepareRevokePersistentIDRequest;
+import org.apache.geode.internal.admin.remote.RemoteApplicationVM;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
+import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.backup.BackupUtil;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -632,7 +682,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       Collection coll = new ArrayList(this.applicationSet.size());
       APPS: for (Iterator iter = this.applicationSet.iterator(); iter.hasNext();) {
         Future future = (Future) iter.next();
-        // this.logger.info("DEBUG: getSystemMemberApplications: " + future);
         for (;;) {
           checkCancellation();
           boolean interrupted = Thread.interrupted();
@@ -643,10 +692,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
             interrupted = true;
             continue; // keep trying
           } catch (CancellationException ex) {
-            // this.logger.info("DEBUG: cancelled: " + future, ex);
             continue APPS;
           } catch (ExecutionException ex) {
-            // this.logger.info("DEBUG: executed: " + future);
             handle(ex);
             continue APPS;
           } finally {
@@ -865,10 +912,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    */
   public void disconnect() {
     synchronized (CONNECTION_SYNC) {
-      // if (!isConnected()) {
-      // throw new IllegalStateException(this + " is not connected");
-      // }
-      // Assert.assertTrue(thisAdminDS == this);
       if (this.logWriterAppender != null) {
         LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
       }
@@ -1033,16 +1076,13 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   public void nodeJoined(GfManagerAgent source, final GemFireVM vm) {
     // sync to prevent bug 33341 Admin API can double-represent system members
     synchronized (this.membershipListenerLock) {
-      // this.logger.info("DEBUG: nodeJoined: " + vm.getId(), new RuntimeException("STACK"));
 
       // does it already exist?
       SystemMember member = findSystemMember(vm);
 
       // if not then create it...
       if (member == null) {
-        // this.logger.info("DEBUG: no existing member: " + vm.getId());
         FutureTask future = null;
-        // try {
         if (vm instanceof ApplicationVM) {
           final ApplicationVM app = (ApplicationVM) vm;
           if (app.isDedicatedCacheServer()) {
@@ -1079,11 +1119,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
           Assert.assertTrue(false, "Unknown GemFireVM type: " + vm.getClass().getName());
         }
 
-        // } catch (AdminException ex) {
-        // String s = "Could not create a SystemMember for " + vm;
-        // this.logger.warning(s, ex);
-        // }
-
         // Wait for the SystemMember to be created. We want to do this
         // outside of the "set" locks.
         future.run();
@@ -1097,10 +1132,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
             interrupted = true;
             continue; // keep trying
           } catch (CancellationException ex) {
-            // this.logger.info("DEBUG: run cancelled: " + future, ex);
             return;
           } catch (ExecutionException ex) {
-            // this.logger.info("DEBUG: run executed: " + future, ex);
             handle(ex);
             return;
           } finally {
@@ -1118,8 +1151,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
           SystemMembershipListener listener = (SystemMembershipListener) iter.next();
           listener.memberJoined(event);
         }
-        // } else {
-        // this.logger.info("DEBUG: found existing member: " + member);
       }
 
     }
@@ -1367,22 +1398,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       if (file1.getCanonicalFile().equals(file2.getCanonicalFile())) {
         return true;
       }
-
-      // StringBuffer sb = new StringBuffer();
-      // sb.append("File 1: ");
-      // sb.append(file1);
-      // sb.append("\nFile 2: ");
-      // sb.append(file2);
-      // sb.append("\n Absolute 1: ");
-      // sb.append(file1.getAbsoluteFile());
-      // sb.append("\n Absolute 2: ");
-      // sb.append(file2.getAbsoluteFile());
-      // sb.append("\n Canonical 1: ");
-      // sb.append(file1.getCanonicalFile());
-      // sb.append("\n Canonical 2: ");
-      // sb.append(file2.getCanonicalFile());
-      // logger.info(sb.toString());
-
     } catch (IOException ex) {
       // oh well...
       logger.info(LocalizedMessage
@@ -1518,8 +1533,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     if (internalId == null)
       return null;
 
-    // this.logger.info("DEBUG: removeSystemMember: " + internalId, new RuntimeException("STACK"));
-
     boolean found = false;
     SystemMemberImpl member = null;
 
@@ -1529,7 +1542,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         if (future instanceof AdminFutureTask) {
           AdminFutureTask task = (AdminFutureTask) future;
           if (task.getMemberId().equals(internalId)) {
-            // this.logger.info("DEBUG: removeSystemMember cs cancelling: " + future);
             future.cancel(true);
 
           } else {
@@ -1588,7 +1600,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
           if (future.isDone()) {
             member = (SystemMemberImpl) future.get();
           } else {
-            // this.logger.info("DEBUG: removeSystemMember as cancelling: " + future);
             future.cancel(true);
           }
 
@@ -2313,7 +2324,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   public static BackupStatus backupAllMembers(DistributionManager dm, File targetDir,
       File baselineDir) throws AdminException {
-    return new BackupStatusImpl(BackupUtil.backupAllMembers(dm, targetDir, baselineDir));
+    String baselineDirectory = baselineDir == null ? null : baselineDir.toString();
+    return BackupUtil.backupAllMembers(dm, targetDir.toString(), baselineDirectory);
   }
 
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException {

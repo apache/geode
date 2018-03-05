@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -35,6 +36,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionAuthorizingStateProcessor;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -45,7 +47,7 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
   @Override
   public Result<Resp> process(ProtobufSerializationService serializationService, Req request,
       MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, DecodingException {
+      throws InvalidExecutionContextException, DecodingException, EncodingException {
 
     final String functionID = getFunctionID(request);
 
@@ -59,6 +61,12 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
     final SecurityService securityService = messageExecutionContext.getCache().getSecurityService();
     final String regionName = getRegionName(request);
 
+    ThreadState threadState = null;
+    if (messageExecutionContext
+        .getConnectionStateProcessor() instanceof ProtobufConnectionAuthorizingStateProcessor) {
+      threadState = ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
+          .getConnectionStateProcessor()).prepareThreadForAuthorization();
+    }
     try {
       // check security for function.
       function.getRequiredPermissions(regionName).forEach(securityService::authorize);
@@ -66,6 +74,11 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
       final String message = "Authorization failed for function \"" + functionID + "\"";
       logger.warn(message, ex);
       return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED, message);
+    } finally {
+      if (threadState != null) {
+        ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
+            .getConnectionStateProcessor()).restoreThreadState(threadState);
+      }
     }
 
     Object executionTarget = getExecutionTarget(request, regionName, messageExecutionContext);
@@ -99,10 +112,6 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
       }
     } catch (FunctionException ex) {
       final String message = "Function execution failed: " + ex.toString();
-      logger.info(message, ex);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, message);
-    } catch (EncodingException ex) {
-      final String message = "Encoding failed: " + ex.toString();
       logger.info(message, ex);
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, message);
     }

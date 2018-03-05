@@ -21,6 +21,8 @@ import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+
 /**
  * Given a tableName this manager will determine which column should correspond to the Geode Region
  * key. The current implementation uses a connection to lookup the SQL metadata for the table and
@@ -37,7 +39,7 @@ class TableKeyColumnManager {
   }
 
   private String computeKeyColumnName(Connection connection, String tableName) {
-    String key = null;
+    String key;
     try {
       DatabaseMetaData metaData = connection.getMetaData();
       try (ResultSet tables = metaData.getTables(null, null, "%", null)) {
@@ -45,7 +47,7 @@ class TableKeyColumnManager {
         key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
       }
     } catch (SQLException e) {
-      SqlHandler.handleSQLException(e);
+      throw new JdbcConnectorException(e);
     }
     return key;
   }

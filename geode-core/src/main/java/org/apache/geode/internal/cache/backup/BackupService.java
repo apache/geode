@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +39,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 
 public class BackupService {
-  Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   public static final String DATA_STORES_TEMPORARY_DIRECTORY = "backupTemp_";
   private final ExecutorService executor;
@@ -71,10 +70,10 @@ public class BackupService {
     return Executors.newSingleThreadExecutor(threadFactory);
   }
 
-  public HashSet<PersistentID> prepareBackup(InternalDistributedMember sender, File targetDir,
-      File baselineDir) throws IOException, InterruptedException {
+  public HashSet<PersistentID> prepareBackup(InternalDistributedMember sender, BackupWriter writer)
+      throws IOException, InterruptedException {
     validateRequestingAdmin(sender);
-    BackupTask backupTask = new BackupTask(cache, targetDir, baselineDir);
+    BackupTask backupTask = new BackupTask(cache, writer);
     if (!currentTask.compareAndSet(null, backupTask)) {
       throw new IOException("Another backup already in progress");
     }

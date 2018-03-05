@@ -146,7 +146,6 @@ public class BugJUnitTest {
     queryStr = "import org.apache.geode.cache.\"query\".data.Portfolio; "
         + "select distinct * from /pos, (select distinct * from /pos p TYPE Portfolio, p.positions where value!=null)";
     q = qs.newQuery(queryStr);
-    // DebuggerSupport.waitForJavaDebugger(cache.getLogger());
     r = q.execute();
   }
 
@@ -165,7 +164,6 @@ public class BugJUnitTest {
     // iterator def, but now succeeds because there is only one untyped iterator
     queryStr = "Select distinct ID from /pos";
     q = qs.newQuery(queryStr);
-    // DebuggerSupport.waitForJavaDebugger(cache.getLogger());
     r = q.execute();
     Set expectedSet = createAndPopulateSet(4);
     assertEquals(expectedSet, ((SelectResults) r).asSet());
@@ -206,7 +204,6 @@ public class BugJUnitTest {
     }
 
     // the following queries, however, should work:
-    // DebuggerSupport.waitForJavaDebugger(cache.getLogger());
     queryStr = "Select distinct e.value.secId from /pos, getPositions(23) e";
     q = qs.newQuery(queryStr);
     r = q.execute();
@@ -216,14 +213,12 @@ public class BugJUnitTest {
     queryStr = "import org.apache.geode.cache.\"query\".data.Position;"
         + "select distinct value.secId from /pos, (map<string, Position>)getPositions(23)";
     q = qs.newQuery(queryStr);
-    // DebuggerSupport.waitForJavaDebugger(cache.getLogger());
     r = q.execute();
     CacheUtils.getLogger().fine(queryStr);
     CacheUtils.getLogger().fine(Utils.printResult(r));
 
     queryStr = "import java.util.Map$Entry as Entry;"
         + "select distinct value.secId from /pos, getPositions(23) type Entry";
-    // DebuggerSupport.waitForJavaDebugger(cache.getLogger());
     q = qs.newQuery(queryStr);
     r = q.execute();
     CacheUtils.getLogger().fine(queryStr);
@@ -234,7 +229,6 @@ public class BugJUnitTest {
   @Test
   public void testBug32624() throws Exception {
     this.qs.createIndex("iIndex", IndexType.FUNCTIONAL, "e.value.status", "/pos.entries e");
-    // DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
     this.region.put("0", new Portfolio(0));
   }
 
@@ -288,7 +282,6 @@ public class BugJUnitTest {
     try {
       q = CacheUtils.getQueryService().newQuery(queries);
       CacheUtils.getLogger().info("Executing query: " + queries);
-      // DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
       SelectResults rs = (SelectResults) q.execute();
       assertTrue("Resultset size should be > 0", rs.size() > 0);
     } catch (Exception e) {

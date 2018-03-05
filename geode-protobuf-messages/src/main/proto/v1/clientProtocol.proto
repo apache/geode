@@ -66,6 +66,15 @@ message Message {
 
         ExecuteFunctionOnGroupRequest executeFunctionOnGroupRequest = 24;
         ExecuteFunctionOnGroupResponse executeFunctionOnGroupResponse= 25;
+
+        OQLQueryRequest oqlQueryRequest = 26;
+        OQLQueryResponse oqlQueryResponse = 27;
+
+        KeySetRequest keySetRequest = 28;
+        KeySetResponse keySetResponse = 29;
+
+        DisconnectClientRequest disconnectClientRequest = 30;
+        DisconnectClientResponse disconnectClientResponse = 31;
     }
 }
 

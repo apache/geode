@@ -48,6 +48,7 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
+import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -121,7 +122,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void readReturnsNullIfNoKeyProvided() {
+  public void readReturnsNullIfNoKeyProvided() throws Exception {
     thrown.expect(IllegalArgumentException.class);
     handler.read(region, null);
   }
@@ -166,7 +167,7 @@ public class SqlHandlerTest {
   public void throwsExceptionIfQueryFails() throws Exception {
     when(statement.executeQuery()).thenThrow(SQLException.class);
 
-    thrown.expect(IllegalStateException.class);
+    thrown.expect(SQLException.class);
     handler.read(region, new Object());
   }
 
@@ -297,16 +298,15 @@ public class SqlHandlerTest {
     when(result.getStatement()).thenReturn(mock(PreparedStatement.class));
     when(statement.executeQuery()).thenReturn(result);
 
-    // when(manager.getKeyColumnName(any(), anyString())).thenReturn("key");
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean()))
         .thenReturn(mock(PdxInstanceFactory.class));
 
-    thrown.expect(IllegalStateException.class);
+    thrown.expect(JdbcConnectorException.class);
     handler.read(region, new Object());
   }
 
   @Test
-  public void writeThrowsExceptionIfValueIsNullAndNotDoingDestroy() {
+  public void writeThrowsExceptionIfValueIsNullAndNotDoingDestroy() throws Exception {
     thrown.expect(IllegalArgumentException.class);
     handler.write(region, Operation.UPDATE, new Object(), null);
   }
@@ -389,7 +389,7 @@ public class SqlHandlerTest {
   public void destroyThrowExceptionWhenFail() throws Exception {
     when(statement.executeUpdate()).thenThrow(SQLException.class);
 
-    thrown.expect(IllegalStateException.class);
+    thrown.expect(SQLException.class);
     handler.write(region, Operation.DESTROY, new Object(), value);
   }
 
@@ -473,7 +473,7 @@ public class SqlHandlerTest {
     when(insertStatement.executeUpdate()).thenThrow(SQLException.class);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
 
-    thrown.expect(IllegalStateException.class);
+    thrown.expect(SQLException.class);
     handler.write(region, Operation.UPDATE, new Object(), value);
     verify(statement).close();
     verify(insertStatement).close();
@@ -803,7 +803,7 @@ public class SqlHandlerTest {
     doThrow(new SQLException("test exception")).when(dataSource).getConnection();
 
     assertThatThrownBy(() -> handler.getConnection(connectionConfig))
-        .isInstanceOf(IllegalStateException.class).hasMessage("Could not connect to fake:url");
+        .isInstanceOf(SQLException.class).hasMessage("test exception");
   }
 
 

@@ -14,25 +14,15 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.internal.index.DummyQRegion;
-import org.apache.geode.internal.cache.EntrySnapshot;
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
@@ -76,6 +66,7 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
     Set<Class> mapCallers = new HashSet();
     mapCallers.add(Collection.class);
     mapCallers.add(Map.class);
+    whiteListMap.put("get", mapCallers);
     whiteListMap.put("entrySet", mapCallers);
     whiteListMap.put("keySet", mapCallers);
     whiteListMap.put("values", mapCallers);

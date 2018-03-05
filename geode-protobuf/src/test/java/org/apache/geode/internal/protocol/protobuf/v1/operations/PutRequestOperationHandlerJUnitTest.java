@@ -103,20 +103,6 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
 
-  @Test
-  public void test_RegionThrowsClasscastException() throws Exception {
-    when(regionMock.put(any(), any())).thenThrow(ClassCastException.class);
-
-    PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    Result result = operationHandler.process(serializationService, generateTestRequest(),
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertTrue(result instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage =
-        (ClientProtocol.ErrorResponse) result.getErrorMessage();
-    assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
-  }
-
   private RegionAPI.PutRequest generateTestRequest() throws EncodingException {
     BasicTypes.EncodedValue testKey = serializationService.encode(TEST_KEY);
     BasicTypes.EncodedValue testValue = serializationService.encode(TEST_VALUE);

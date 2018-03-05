@@ -17,7 +17,7 @@ package org.apache.geode.internal.protocol.protobuf.v1.state.exception;
 
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 
-public class ConnectionStateException extends Exception {
+public class ConnectionStateException extends Exception implements ExceptionWithErrorCode {
   private final BasicTypes.ErrorCode errorCode;
 
   public ConnectionStateException(BasicTypes.ErrorCode errorCode, String errorMessage) {
@@ -25,6 +25,7 @@ public class ConnectionStateException extends Exception {
     this.errorCode = errorCode;
   }
 
+  @Override
   public BasicTypes.ErrorCode getErrorCode() {
     return errorCode;
   }

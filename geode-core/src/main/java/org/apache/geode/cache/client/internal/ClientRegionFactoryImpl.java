@@ -88,7 +88,6 @@ public class ClientRegionFactoryImpl<K, V> implements ClientRegionFactory<K, V> 
   private void initAttributeFactoryDefaults() {
     this.attrsFactory.setScope(Scope.LOCAL);
     this.attrsFactory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-    // this.attrsFactory.setIgnoreJTA(true); in 6.6 and later releases client regions support JTA
   }
 
   /**

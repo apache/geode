@@ -84,3 +84,27 @@ message GetRegionRequest {
 message GetRegionResponse {
     Region region = 1;
 }
+
+message OQLQueryRequest {
+    string query = 1;
+    repeated EncodedValue bindParameter = 2;
+}
+
+//Response to an OQL query. Depending on the query,
+//it may return a single value, a list of values, or a table
+//of values.
+message OQLQueryResponse {
+    oneof result {
+      EncodedValue singleResult = 1;
+      EncodedValueList listResult = 2;
+      Table tableResult = 3;
+    }
+}
+
+message KeySetRequest {
+    string regionName = 1;
+}
+
+message KeySetResponse {
+    repeated EncodedValue keys = 1;
+}

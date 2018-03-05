@@ -14,6 +14,8 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import java.sql.SQLException;
+
 import org.apache.geode.CopyHelper;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheWriter;
@@ -48,23 +50,17 @@ public class JdbcWriter<K, V> extends AbstractJdbcCallback implements CacheWrite
 
   @Override
   public void beforeUpdate(EntryEvent<K, V> event) throws CacheWriterException {
-    checkInitialized((InternalCache) event.getRegion().getRegionService());
-    getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
-        getPdxNewValue(event));
+    writeEvent(event);
   }
 
   @Override
   public void beforeCreate(EntryEvent<K, V> event) throws CacheWriterException {
-    checkInitialized((InternalCache) event.getRegion().getRegionService());
-    getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
-        getPdxNewValue(event));
+    writeEvent(event);
   }
 
   @Override
   public void beforeDestroy(EntryEvent<K, V> event) throws CacheWriterException {
-    checkInitialized((InternalCache) event.getRegion().getRegionService());
-    getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
-        getPdxNewValue(event));
+    writeEvent(event);
   }
 
   @Override
@@ -75,6 +71,16 @@ public class JdbcWriter<K, V> extends AbstractJdbcCallback implements CacheWrite
   @Override
   public void beforeRegionClear(RegionEvent<K, V> event) throws CacheWriterException {
     // this event is not sent to JDBC
+  }
+
+  private void writeEvent(EntryEvent<K, V> event) {
+    checkInitialized((InternalCache) event.getRegion().getRegionService());
+    try {
+      getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
+          getPdxNewValue(event));
+    } catch (SQLException e) {
+      throw new JdbcConnectorException(e);
+    }
   }
 
   private PdxInstance getPdxNewValue(EntryEvent<K, V> event) {

@@ -315,7 +315,8 @@ public class Launcher {
 
     public void logStartupTime() {
       done = System.currentTimeMillis();
-      LogWrapper.getInstance().info("Startup done in " + ((done - start) / 1000.0) + " seconds.");
+      LogWrapper.getInstance(null)
+          .info("Startup done in " + ((done - start) / 1000.0) + " seconds.");
     }
 
     @Override

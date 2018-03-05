@@ -69,25 +69,6 @@ public interface RegionService extends AutoCloseable {
    */
   Set<Region<?, ?>> rootRegions();
 
-  // We did not have time to add this feature to 6.6.2
-  // /**
-  // * Returns a factory that can create a {@link PdxInstance}.
-  // * If you want to be able to deserialize the PdxInstance then name
-  // * must be a correct class name and expectDomainClass should be set to true.
-  // * If you want to just create an object that will always be a PdxInstance set expectDomainClass
-  // to false.
-  // * @param name the name of the pdx type that
-  // * the PdxInstance will represent. If expectDomainClass is true then
-  // * this must be the full class and package name of the domain class.
-  // * Otherwise it just needs to be a unique string that identifies this instances type.
-  // * @param expectDomainClass if true then during deserialization a domain class will
-  // * be expected. If false then this type will always deserialize to a PdxInstance
-  // * even if read-serialized is false and {@link PdxInstance#getObject()} will return
-  // * the PdxInstance.
-  // * @return the factory
-  // */
-  // public PdxInstanceFactory createPdxInstanceFactory(String name, boolean expectDomainClass);
-
   /**
    * Returns a factory that can create a {@link PdxInstance}.
    *

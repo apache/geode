@@ -76,7 +76,7 @@ public class GMSLocator implements Locator, NetLocator {
   private InternalDistributedMember localAddress;
 
   private final Set<InternalDistributedMember> registrants = new HashSet<>();
-  public Map<InternalDistributedMemberWrapper, byte[]> registerMbrVsPK = new ConcurrentHashMap<>();
+  private Map<InternalDistributedMemberWrapper, byte[]> registerMbrVsPK = new ConcurrentHashMap<>();
 
   /**
    * The current membership view, or one recovered from disk. This is a copy-on-write variable.
@@ -215,8 +215,6 @@ public class GMSLocator implements Locator, NetLocator {
         services.getMessenger().setPublicKey(findRequest.getMyPublicKey(),
             findRequest.getMemberID());
       } else {
-        // GMSEncrypt.registerMember(findRequest.getMyPublicKey(),
-        // findRequest.getMemberID());
         if (findRequest.getMyPublicKey() != null) {
           registerMbrVsPK.put(new InternalDistributedMemberWrapper(findRequest.getMemberID()),
               findRequest.getMyPublicKey());

@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimerTask;
@@ -422,7 +423,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       JoinRequestMessage req = new JoinRequestMessage(coord, this.localAddress,
           services.getAuthenticator().getCredentials(coord), port,
           services.getMessenger().getRequestId());
-      // services.getMessenger().send(req, state.view);
       services.getMessenger().send(req);
     }
 
@@ -556,15 +556,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       services.getMessenger().send(m);
       return;
     }
-
-    // Remove JoinResponseMessage to fix GEODE-870
-    // if (!this.localAddress.getNetMember().preferredForCoordinator() &&
-    // incomingRequest.getMemberID().getNetMember().preferredForCoordinator()) {
-    // JoinResponseMessage joinResponseMessage = new
-    // JoinResponseMessage(incomingRequest.getMemberID(), currentView, true);
-    // services.getMessenger().send(joinResponseMessage);
-    // return;
-    // }
 
     recordViewRequest(incomingRequest);
   }
@@ -809,7 +800,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       startViewBroadcaster();
     } else {
       // create and send out a new view
-      NetView newView = addMemberToNetView(oldCoordinator);
+      NetView newView = copyCurrentViewAndAddMyAddress(oldCoordinator);
       createAndStartViewCreator(newView);
       startViewBroadcaster();
     }
@@ -829,7 +820,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
 
-  private NetView addMemberToNetView(InternalDistributedMember oldCoordinator) {
+  private NetView copyCurrentViewAndAddMyAddress(InternalDistributedMember oldCoordinator) {
     boolean testing = unitTesting.contains("noRandomViewChange");
     NetView newView;
     Set<InternalDistributedMember> leaving = new HashSet<>();
@@ -857,6 +848,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       mbrs.removeAll(leaving);
       newView = new NetView(this.localAddress, viewNumber, mbrs, leaving, removals);
       newView.setFailureDetectionPorts(currentView);
+      newView.setPublicKeys(currentView);
       newView.setFailureDetectionPort(this.localAddress,
           services.getHealthMonitor().getFailureDetectionPort());
     }
@@ -947,7 +939,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     viewReplyProcessor.initialize(id, responders);
     viewReplyProcessor.processPendingRequests(pendingLeaves, pendingRemovals);
     addPublicKeysToView(view);
-    services.getMessenger().send(msg);
+    services.getMessenger().send(msg, view);
 
     // only wait for responses during preparation
     if (preparing) {
@@ -978,13 +970,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private void addPublicKeysToView(NetView view) {
     String sDHAlgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo();
     if (sDHAlgo != null && !sDHAlgo.isEmpty()) {
-      List<InternalDistributedMember> mbrs = view.getMembers();
-      Iterator<InternalDistributedMember> itr = mbrs.iterator();
-
-      while (itr.hasNext()) {
-        InternalDistributedMember mbr = itr.next();
-        byte[] pk = services.getMessenger().getPublicKey(mbr);
-        view.setPublicKey(mbr, pk);
+      for (InternalDistributedMember mbr : view.getMembers()) {
+        if (Objects.isNull(view.getPublicKey(mbr))) {
+          byte[] pk = services.getMessenger().getPublicKey(mbr);
+          view.setPublicKey(mbr, pk);
+        }
       }
     }
   }
