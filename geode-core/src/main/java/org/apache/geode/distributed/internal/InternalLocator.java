@@ -127,10 +127,10 @@ public class InternalLocator extends Locator implements ConnectListener {
   private final PrimaryHandler handler;
 
   /**
-   * The distributed system owned by this locator, if any. Note that if a ds already exists because
-   * the locator is being colocated in a normal member this field will be null.
+   * The distributed system owned by this locator.
    */
   private InternalDistributedSystem myDs;
+
   /**
    * The cache owned by this locator, if any. Note that if a cache already exists because the
    * locator is being colocated in a normal member this field will be null.
@@ -654,6 +654,9 @@ public class InternalLocator extends Locator implements ConnectListener {
   }
 
   private void startCache(DistributedSystem ds) {
+    if (myDs == null) {
+      myDs = (InternalDistributedSystem) ds;
+    }
     InternalCache internalCache = GemFireCacheImpl.getInstance();
     if (internalCache == null) {
       logger.info("Creating cache for locator.");
@@ -1058,10 +1061,6 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   @Override
   public DistributedSystem getDistributedSystem() {
-    if (myDs == null) {
-      return InternalDistributedSystem.getAnyInstance();
-    }
-
     return myDs;
   }
 
@@ -1362,5 +1361,4 @@ public class InternalLocator extends Locator implements ConnectListener {
   public boolean hasHandlerForClass(Class messageClass) {
     return this.handler.isHandled(messageClass);
   }
-
 }
