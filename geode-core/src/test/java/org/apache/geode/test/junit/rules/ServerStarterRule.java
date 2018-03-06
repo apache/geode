@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.PdxSerializer;
 
 /**
  * This is a rule to start up a server in your current VM. It's useful for your Integration Tests.
@@ -55,6 +56,8 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   private transient CacheServer server;
   private int embeddedLocatorPort = -1;
   private boolean pdxPersistent = false;
+  private PdxSerializer pdxSerializer = null;
+  private boolean pdxReadSerialized = false;
 
   private Map<String, RegionShortcut> regions = new HashMap<>();
 
@@ -109,6 +112,16 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     return this;
   }
 
+  public ServerStarterRule withPDXReadSerialized() {
+    pdxReadSerialized = true;
+    return this;
+  }
+
+  public ServerStarterRule withPdxSerializer(PdxSerializer pdxSerializer) {
+    this.pdxSerializer = pdxSerializer;
+    return this;
+  }
+
   public ServerStarterRule withEmbeddedLocator() {
     embeddedLocatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
     properties.setProperty("start-locator", "localhost[" + embeddedLocatorPort + "]");
@@ -151,8 +164,12 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   public void startServer() {
     CacheFactory cf = new CacheFactory(this.properties);
+    if (pdxSerializer != null) {
+      cf.setPdxSerializer(pdxSerializer);
+    }
     cf.setPdxReadSerialized(pdxPersistent);
     cf.setPdxPersistent(pdxPersistent);
+    cf.setPdxReadSerialized(pdxReadSerialized);
     cache = (InternalCache) cf.create();
     DistributionConfig config =
         ((InternalDistributedSystem) cache.getDistributedSystem()).getConfig();
