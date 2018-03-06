@@ -20,7 +20,7 @@ ENTRYPOINT []
 RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
 RUN apt-key adv --keyserver hkp://pgp.mit.edu --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 RUN apt-get update
-RUN apt-get install -y apt-transport-https ca-certificates aptitude lsb-release jq unzip vim htop golang cgroupfs-mount
+RUN apt-get install -y apt-transport-https ca-certificates aptitude lsb-release jq unzip vim htop golang cgroupfs-mount curl gnupg
 ADD docker.list /etc/apt/sources.list.d/
 RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 
@@ -49,13 +49,9 @@ RUN curl -Lo /usr/local/bin/dunit-progress https://github.com/jdeppe-pivotal/pro
 RUN chmod +x /usr/local/bin/dunit-progress
 
 # Install Chrome
-RUN apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg --no-install-recommends \
-	&& curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+RUN curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
 	&& echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-	&& apt-get update && apt-get install -y \
-	google-chrome-stable \
-	--no-install-recommends \
-	&& apt-get purge --auto-remove -y curl gnupg \
+	&& apt-get update && apt-get install -y google-chrome-stable --no-install-recommends \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Install Chrome driver
