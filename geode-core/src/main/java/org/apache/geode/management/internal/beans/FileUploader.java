@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -69,12 +70,7 @@ public class FileUploader implements FileUploaderMBean {
 
   @Override
   public RemoteFile uploadFile(String filename) throws IOException {
-    Set<PosixFilePermission> perms = new HashSet<>();
-    perms.add(PosixFilePermission.OWNER_READ);
-    perms.add(PosixFilePermission.OWNER_WRITE);
-    perms.add(PosixFilePermission.OWNER_EXECUTE);
-    Path tempDir =
-        Files.createTempDirectory(STAGED_DIR_PREFIX, PosixFilePermissions.asFileAttribute(perms));
+    Path tempDir = createSecuredTempDirectory(STAGED_DIR_PREFIX);
 
     File stagedFile = new File(tempDir.toString(), filename);
     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(stagedFile));
@@ -116,5 +112,14 @@ public class FileUploader implements FileUploaderMBean {
       FileUtils.deleteQuietly(file);
       FileUtils.deleteQuietly(parent);
     }
+  }
+
+  public static Path createSecuredTempDirectory(String prefix) throws IOException {
+    Path tempDir = Files.createTempDirectory(prefix);
+    tempDir.toFile().setExecutable(true, true);
+    tempDir.toFile().setWritable(true, true);
+    tempDir.toFile().setReadable(true, true);
+
+    return tempDir;
   }
 }
