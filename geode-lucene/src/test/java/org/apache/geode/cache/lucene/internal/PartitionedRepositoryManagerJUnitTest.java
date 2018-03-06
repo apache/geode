@@ -69,9 +69,10 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, LuceneTest.class})
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.UnitTest")
 @PrepareForTest({PartitionedRegionHelper.class})

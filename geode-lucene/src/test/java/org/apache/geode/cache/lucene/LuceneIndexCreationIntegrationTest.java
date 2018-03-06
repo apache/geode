@@ -68,6 +68,7 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
  * Tests of creating lucene indexes on regions. All tests of index creation use cases should be in
@@ -77,7 +78,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <li>Tests that use offheap are in {@link LuceneIndexCreationOffHeapIntegrationTest}</li>
  * </ul>
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
 

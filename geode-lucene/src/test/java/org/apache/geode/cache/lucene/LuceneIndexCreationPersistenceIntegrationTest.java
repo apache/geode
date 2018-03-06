@@ -57,11 +57,12 @@ import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
  * Tests of lucene index creation that use persistence
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegrationTest {
 

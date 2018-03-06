@@ -25,6 +25,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
 
 public class LuceneIntegrationTest {

@@ -58,11 +58,12 @@ import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
  * This class contains tests of lucene queries that can fit
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LuceneTest.class})
 public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();

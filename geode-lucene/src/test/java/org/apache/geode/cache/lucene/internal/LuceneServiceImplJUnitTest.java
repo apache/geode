@@ -54,9 +54,10 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, LuceneTest.class})
 public class LuceneServiceImplJUnitTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();

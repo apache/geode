@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
 public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryManagerJUnitTest {
 

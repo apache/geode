@@ -54,8 +54,9 @@ import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LuceneTest.class})
 public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest {
 
   private static int WAIT_FOR_FLUSH_TIME = 10000;

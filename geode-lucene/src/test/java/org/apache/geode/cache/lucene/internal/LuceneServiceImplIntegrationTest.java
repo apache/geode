@@ -36,8 +36,9 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LuceneTest.class})
 public class LuceneServiceImplIntegrationTest {
 
   Cache cache;

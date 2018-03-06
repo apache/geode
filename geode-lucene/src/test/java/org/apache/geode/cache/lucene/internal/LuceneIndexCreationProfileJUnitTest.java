@@ -42,9 +42,10 @@ import org.apache.geode.cache.lucene.internal.repository.serializer.Heterogeneou
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCreationProfileJUnitTest {
 

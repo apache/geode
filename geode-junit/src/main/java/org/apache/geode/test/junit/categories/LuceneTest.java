@@ -12,19 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.codeAnalysis;
-
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.LuceneTest;
+package org.apache.geode.test.junit.categories;
 
 
-@Category({IntegrationTest.class, LuceneTest.class})
-public class AnalyzeLuceneSerializablesJUnitTest extends AnalyzeSerializablesJUnitTest {
-
-  @Override
-  protected String getModuleName() {
-    return "geode-lucene";
-  }
+/**
+ * A test category for lucene-related tests
+ */
+public class LuceneTest {
 }

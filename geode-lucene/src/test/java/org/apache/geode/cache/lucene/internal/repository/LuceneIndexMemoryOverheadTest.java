@@ -38,9 +38,10 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TombstoneService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.size.ObjectGraphSizer;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.PerformanceTest;
 
-@Category(PerformanceTest.class)
+@Category({PerformanceTest.class, LuceneTest.class})
 @Ignore("Tests have no assertions")
 public class LuceneIndexMemoryOverheadTest extends LuceneIntegrationTest {
   private static int NUM_BATCHES = 30;

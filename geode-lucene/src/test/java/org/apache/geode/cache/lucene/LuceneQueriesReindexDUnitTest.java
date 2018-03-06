@@ -28,13 +28,14 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
  * This test class is intended to contain basic integration tests of the lucene query class that
  * should be executed against a number of different regions types and topologies.
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
