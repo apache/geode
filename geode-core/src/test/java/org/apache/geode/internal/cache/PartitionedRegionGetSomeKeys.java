@@ -20,16 +20,21 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.FetchKeysMessage;
 import org.apache.geode.internal.cache.partitioned.FetchKeysMessage.FetchKeysResponse;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.tier.InterestType;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Extracted from {@link PartitionedRegion}. This is a utility used by Hydra test code only.
  */
 public class PartitionedRegionGetSomeKeys {
+
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Test Method: Get a random set of keys from a randomly selected bucket using the provided
@@ -42,7 +47,8 @@ public class PartitionedRegionGetSomeKeys {
     Set<Integer> bucketIdSet = partitionedRegion.getRegionAdvisor().getBucketSet();
 
     if (bucketIdSet != null && !bucketIdSet.isEmpty()) {
-      Integer[] bucketIds = bucketIdSet.toArray(new Integer[bucketIdSet.size()]);
+      Object[] bucketIds = bucketIdSet.toArray();
+      Integer bucketId = null;
       Set<?> someKeys;
 
       // Randomly pick a node to get some data from
@@ -53,7 +59,7 @@ public class PartitionedRegionGetSomeKeys {
             // The GSRandom.nextInt(int) may return a value that includes the maximum.
             whichBucket = bucketIds.length - 1;
           }
-          int bucketId = bucketIds[whichBucket];
+          bucketId = (Integer) bucketIds[whichBucket];
 
           InternalDistributedMember member = partitionedRegion.getNodeForBucketRead(bucketId);
           if (member != null) {
@@ -70,8 +76,17 @@ public class PartitionedRegionGetSomeKeys {
               return someKeys;
             }
           }
-        } catch (ForceReattemptException | PRLocallyDestroyedException e) {
-          throw new RuntimeException(e);
+        } catch (ForceReattemptException movinOn) {
+          partitionedRegion.checkReadiness();
+          logger.debug(
+              "Test hook getSomeKeys caught a ForceReattemptException for bucketId={}{}{}. Moving on to another bucket",
+              partitionedRegion.getPRId(), partitionedRegion.BUCKET_ID_SEPARATOR, bucketId,
+              movinOn);
+          continue;
+        } catch (PRLocallyDestroyedException ignore) {
+          logger.debug("getSomeKeys: Encountered PRLocallyDestroyedException");
+          partitionedRegion.checkReadiness();
+          continue;
         }
       }
     }
