@@ -20,6 +20,7 @@ import static org.apache.geode.management.internal.web.util.UriUtils.decode;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.management.AttributeNotFoundException;
@@ -45,11 +46,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.web.domain.QueryParameterSource;
 
 /**
@@ -67,12 +71,55 @@ import org.apache.geode.management.internal.web.domain.QueryParameterSource;
 @RequestMapping(AbstractCommandsController.REST_API_VERSION)
 @SuppressWarnings("unused")
 public class ShellCommandsController extends AbstractCommandsController {
+
+  private static final MultipartFile[] DEFAULT_MULTIPART_FILE = null;
+
+  private static final String DEFAULT_INDEX_TYPE = "range";
+
   @RequestMapping(method = {RequestMethod.GET, RequestMethod.POST}, value = "/management/commands")
   public ResponseEntity<InputStreamResource> command(@RequestParam(value = "cmd") String command,
       @RequestParam(value = "resources", required = false) MultipartFile[] fileResource)
       throws IOException {
     String result = processCommand(decode(command), getEnvironment(), fileResource);
     return getResponse(result);
+  }
+
+  @RequestMapping(method = RequestMethod.POST, value = "/indexes")
+  public ResponseEntity<?> createIndex(@RequestParam(CliStrings.CREATE_INDEX__NAME) String name,
+      @RequestParam(CliStrings.CREATE_INDEX__EXPRESSION) String expression,
+      @RequestParam(CliStrings.CREATE_INDEX__REGION) String region,
+      @RequestParam(value = CliStrings.CREATE_INDEX__TYPE,
+          defaultValue = DEFAULT_INDEX_TYPE) String type)
+      throws IOException {
+
+    CommandStringBuilder command = new CommandStringBuilder(CliStrings.CREATE_INDEX);
+
+    command.addOption(CliStrings.CREATE_INDEX__NAME, name);
+    command.addOption(CliStrings.CREATE_INDEX__EXPRESSION, expression);
+    command.addOption(CliStrings.CREATE_INDEX__REGION, region);
+    command.addOption(CliStrings.CREATE_INDEX__TYPE, type);
+
+    return command(command.toString(), DEFAULT_MULTIPART_FILE);
+  }
+
+  @RequestMapping(method = RequestMethod.POST, value = "/regions")
+  public ResponseEntity<?> createRegion(
+      @RequestParam(CliStrings.CREATE_REGION__REGION) String namePath,
+      @RequestParam(value = CliStrings.CREATE_REGION__SKIPIFEXISTS,
+          defaultValue = "false") Boolean skipIfExists,
+      @RequestParam(value = CliStrings.CREATE_REGION__REGIONSHORTCUT,
+          defaultValue = "PARTITION") RegionShortcut type)
+      throws IOException {
+
+    CommandStringBuilder command = new CommandStringBuilder(CliStrings.CREATE_REGION);
+
+    command.addOption(CliStrings.CREATE_REGION__REGION, namePath);
+    command.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, type.name());
+
+    Optional.ofNullable(skipIfExists)
+        .ifPresent(it -> command.addOption(CliStrings.CREATE_REGION__SKIPIFEXISTS, it.toString()));
+
+    return command(command.toString(), DEFAULT_MULTIPART_FILE);
   }
 
   @RequestMapping(method = RequestMethod.GET, value = "/mbean/attribute")
