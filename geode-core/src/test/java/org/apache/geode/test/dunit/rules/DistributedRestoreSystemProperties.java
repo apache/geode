@@ -51,10 +51,16 @@ public class DistributedRestoreSystemProperties extends RestoreSystemProperties
       public void run() {
         if (originalProperties == null) {
           originalProperties = getProperties();
-          setProperties(new Properties(originalProperties));
+          setProperties(copyOf(originalProperties));
         }
       }
     });
+  }
+
+  private Properties copyOf(Properties source) {
+    Properties copy = new Properties();
+    copy.putAll(source);
+    return copy;
   }
 
   @Override
