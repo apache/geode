@@ -190,6 +190,17 @@ subprojects {
     reports.junitXml.destination = file "$buildDir/test-reports-backwardcompatibility"
   }
 
+  task clientSubscriptionTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.ClientSubscriptionTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    reports.junitXml.destination = file "$buildDir/test-reports-client-subscription"
+  }
+
   task membershipTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.MembershipTest'

@@ -33,9 +33,10 @@ import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class CQJUnitTest {
 
   private DistributedSystem ds;

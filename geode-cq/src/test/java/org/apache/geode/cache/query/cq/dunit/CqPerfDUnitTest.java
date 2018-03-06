@@ -50,6 +50,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
@@ -57,7 +58,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  * This class tests the ContiunousQuery mechanism in GemFire. This includes the test with diffetent
  * data activities.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
   protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
