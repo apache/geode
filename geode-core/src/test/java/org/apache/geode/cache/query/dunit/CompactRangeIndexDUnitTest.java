@@ -38,8 +38,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLIndexTest.class})
 public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
 
   QueryTestUtils utils;

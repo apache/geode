@@ -27,8 +27,9 @@ import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLQueryTest.class})
 @SuppressWarnings("serial")
 public class PRInvalidQueryDUnitTest extends CacheTestCase {
 

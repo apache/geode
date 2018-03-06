@@ -40,11 +40,12 @@ import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class PRIndexStatisticsJUnitTest {
 
   static QueryService qs;

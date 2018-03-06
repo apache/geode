@@ -33,11 +33,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Utils;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLQueryTest.class})
 public class IteratorTypeDefJUnitTest {
 
   @Before

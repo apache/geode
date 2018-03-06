@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * RegionJUnitTest.java
@@ -44,7 +45,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * Created on January 31, 2005, 3:54 PM
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLQueryTest.class})
 public class RegionJUnitTest {
 
   static String queries[] = {"status = 'active'", "status <> 'active'", "ID > 2", "ID < 1",

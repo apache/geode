@@ -82,8 +82,9 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLQueryTest.class})
 public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCase {
 
   private static int MAX_TEST_QUERY_TIMEOUT = 4000;

@@ -28,7 +28,6 @@ import java.util.Collection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
@@ -45,19 +44,19 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Utils;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.functional.StructSetOrResultsSet;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class IndexMaintainceJUnitTest {
 
   @Before

@@ -14,7 +14,8 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,8 +32,6 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.client.PoolFactory;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
@@ -43,7 +42,6 @@ import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.test.dunit.Assert;
@@ -54,9 +52,8 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * This class tests register interest behavior on client at startup given that client has already
@@ -65,7 +62,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  *
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({DistributedTest.class, OQLIndexTest.class})
 public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
 
   /** The port on which the bridge server was started in this VM */

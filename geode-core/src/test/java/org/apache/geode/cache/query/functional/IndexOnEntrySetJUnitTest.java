@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,8 +34,9 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class IndexOnEntrySetJUnitTest {
 
   private static String testRegionName = "regionName";

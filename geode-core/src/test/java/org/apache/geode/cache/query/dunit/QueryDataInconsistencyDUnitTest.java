@@ -53,11 +53,12 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * This tests the data inconsistency during update on an index and querying the same UNLOCKED index.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLIndexTest.class})
 public class QueryDataInconsistencyDUnitTest extends JUnit4CacheTestCase {
 
   private static final int cnt = 0;

@@ -40,7 +40,6 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Utils;
 import org.apache.geode.cache.query.data.Address;
 import org.apache.geode.cache.query.data.Country;
 import org.apache.geode.cache.query.data.Employee;
@@ -49,11 +48,12 @@ import org.apache.geode.cache.query.data.Street;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class IUMRCompositeIteratorJUnitTest {
 
   @Before

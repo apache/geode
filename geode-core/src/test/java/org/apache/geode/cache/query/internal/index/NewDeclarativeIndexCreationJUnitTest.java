@@ -39,11 +39,12 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * @since GemFire 6.6.1
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class NewDeclarativeIndexCreationJUnitTest {
 
   private static final String CACHE_XML_FILE_NAME = "cachequeryindex.xml";

@@ -57,9 +57,10 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLIndexTest.class})
 public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
   public static final Logger logger = LogService.getLogger();
 

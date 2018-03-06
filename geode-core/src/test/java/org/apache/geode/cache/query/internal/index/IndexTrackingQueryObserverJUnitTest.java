@@ -40,11 +40,12 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.IndexTrackingQueryObserverDUnitTest.IndexTrackingTestHook;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class IndexTrackingQueryObserverJUnitTest {
   static QueryService qs;
   static Region region;

@@ -46,12 +46,13 @@ import org.apache.geode.cache.query.data.Quote;
 import org.apache.geode.cache.query.data.Restricted;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  *
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLQueryTest.class})
 public class ProjectionAttributeJUnitTest {
 
   String queries[] = {"select distinct p from /pos p where p.ID > 0 ", // ResultSet

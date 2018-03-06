@@ -34,11 +34,12 @@ import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.query.data.Numbers;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 // TODO:TEST clean this up and add assertions
 /**
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLQueryTest.class})
 public class NegativeNumberQueriesJUnitTest {
 
   private Cache cache;

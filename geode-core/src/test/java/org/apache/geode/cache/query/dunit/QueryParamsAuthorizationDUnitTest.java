@@ -44,13 +44,14 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * Test for accessing query bind parameters from authorization callbacks
  *
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLQueryTest.class})
 public class QueryParamsAuthorizationDUnitTest extends JUnit4CacheTestCase {
 
   private final String regName = "exampleRegion";

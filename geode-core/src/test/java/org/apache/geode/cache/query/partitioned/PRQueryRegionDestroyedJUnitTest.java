@@ -34,6 +34,7 @@ import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * Test verifies Region#query()for PartitionedRegion on a single VM with Region#destroyRegion()
@@ -41,7 +42,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLQueryTest.class})
 public class PRQueryRegionDestroyedJUnitTest {
   // PR Region name
   static final String regionName = "portfolios";

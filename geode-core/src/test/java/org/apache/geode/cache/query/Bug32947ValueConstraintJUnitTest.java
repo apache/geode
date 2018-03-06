@@ -30,11 +30,12 @@ import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.data.*;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * Junit test for checking the value constraint region attributes.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLQueryTest.class})
 public class Bug32947ValueConstraintJUnitTest {
 
   DistributedSystem distributedSystem = null;

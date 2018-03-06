@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +35,6 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexInvalidException;
@@ -48,8 +46,9 @@ import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class HashIndexQueryIntegrationTest {
 
   private QueryService qs;

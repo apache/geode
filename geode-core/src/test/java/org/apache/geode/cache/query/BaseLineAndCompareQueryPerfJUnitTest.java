@@ -33,13 +33,13 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.data.*;
 import org.apache.geode.cache.query.internal.*;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.categories.PerformanceTest;
 
 /**
  * This test is to baseline and compare the performance figures for index usage benchmarks.
  */
-@Category(PerformanceTest.class)
+@Category({PerformanceTest.class, OQLQueryTest.class})
 @Ignore("Performance tests should not be run as part of precheckin")
 public class BaseLineAndCompareQueryPerfJUnitTest {
 

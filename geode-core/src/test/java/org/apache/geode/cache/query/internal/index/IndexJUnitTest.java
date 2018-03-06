@@ -34,10 +34,11 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class IndexJUnitTest {
 
   private static final String indexName = "testIndex";
