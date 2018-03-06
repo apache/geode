@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.internal.protocol.protobuf.v1.MessageUtil.validateGetResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -61,11 +62,9 @@ import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -213,18 +212,6 @@ public class CacheConnectionJUnitTest {
       ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
     ClientProtocol.Message response = deserializeResponse(socket, protobufProtocolSerializer);
     assertEquals(ClientProtocol.Message.MessageTypeCase.PUTRESPONSE, response.getMessageTypeCase());
-  }
-
-  private void validateGetResponse(Socket socket,
-      ProtobufProtocolSerializer protobufProtocolSerializer, Object expectedValue)
-      throws InvalidProtocolMessageException, IOException {
-    ClientProtocol.Message response = deserializeResponse(socket, protobufProtocolSerializer);
-
-    assertEquals(ClientProtocol.Message.MessageTypeCase.GETRESPONSE, response.getMessageTypeCase());
-    RegionAPI.GetResponse getResponse = response.getGetResponse();
-    BasicTypes.EncodedValue result = getResponse.getResult();
-    assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT, result.getValueCase());
-    assertEquals(expectedValue, result.getStringResult());
   }
 
   private ClientProtocol.Message deserializeResponse(Socket socket,
