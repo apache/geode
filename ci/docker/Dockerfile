@@ -48,10 +48,29 @@ RUN chmod +x /usr/local/bin/initdocker
 RUN curl -Lo /usr/local/bin/dunit-progress https://github.com/jdeppe-pivotal/progress-util/releases/download/0.2/progress.linux
 RUN chmod +x /usr/local/bin/dunit-progress
 
+# Install Chrome
+RUN apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg --no-install-recommends \
+	&& curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+	&& echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+	&& apt-get update && apt-get install -y \
+	google-chrome-stable \
+	--no-install-recommends \
+	&& apt-get purge --auto-remove -y curl gnupg \
+	&& rm -rf /var/lib/apt/lists/*
+
+# Install Chrome driver
+ARG CHROME_DRIVER_VERSION=2.35
+RUN wget --no-verbose -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
+  && rm -rf /opt/selenium/chromedriver \
+  && unzip /tmp/chromedriver_linux64.zip -d /opt/selenium \
+  && rm /tmp/chromedriver_linux64.zip \
+  && mv /opt/selenium/chromedriver /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION \
+  && chmod 755 /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION \
+  && ln -fs /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION /usr/bin/chromedriver
+
 # Cache gradle for performance
 ENV GRADLE_USER_HOME /usr/local/maven_files
 WORKDIR /tmp/work
 ADD cache_dependencies.sh cache_dependencies.sh
 RUN chmod +x cache_dependencies.sh
 RUN ./cache_dependencies.sh && rm -rf /tmp/work
-
