@@ -3128,7 +3128,7 @@ public class ClusterDistributionManager implements DistributionManager {
       case PARTITIONED_REGION_EXECUTOR:
         return getPartitionedRegionExcecutor();
       case REGION_FUNCTION_EXECUTION_EXECUTOR:
-        return getFunctionExcecutor();
+        return getFunctionExecutor();
       default:
         throw new InternalGemFireError(LocalizedStrings.DistributionManager_UNKNOWN_PROCESSOR_TYPE
             .toLocalizedString(processorType));
@@ -3526,7 +3526,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
 
   @Override
-  public Executor getFunctionExcecutor() {
+  public Executor getFunctionExecutor() {
     if (this.functionExecutionThread != null) {
       return this.functionExecutionThread;
     } else {

@@ -216,6 +216,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   }
 
   public void destroy() {
+    logger.info("Destroying Gateway Receiver: " + this);
     if (receiver.isRunning()) {
       throw new GatewayReceiverException(
           "Gateway Receiver is running and needs to be stopped first");
