@@ -15,16 +15,17 @@
 package org.apache.geode.experimental.driver;
 
 /**
- * This interface abstracts the creation of query abstractions.
+ * This interface abstracts the creation of function abstractions.
  */
-public interface QueryService {
+public interface FunctionService {
   /**
-   * Creates a new object that allows the execution of querys in the distributed system.
+   * Creates a new object that allows the execution of functions in the distributed system.
    *
-   * @param queryString OQL query.
-   * @param <T> Type of result returned from the query. May differ from the key and values types
+   * @param functionId Unique ID of the function that has already been registered in the distributed
+   *        system.
+   * @param <T> Type of result returned from the function. May differ from the key and values types
    *        of any involved regions.
-   * @return Query abstraction.
+   * @return Function abstraction.
    */
-  <T> Query newQuery(String queryString);
+  <T> Function newFunction(String functionId);
 }
