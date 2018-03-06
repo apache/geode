@@ -18,6 +18,7 @@ package org.apache.geode.internal.util;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -152,5 +153,9 @@ public class ArgumentRedactor {
       }
     }
     return false;
+  }
+
+  public static List<String> redactEachInList(List<String> inputArguments) {
+    return inputArguments.stream().map(ArgumentRedactor::redact).collect(Collectors.toList());
   }
 }

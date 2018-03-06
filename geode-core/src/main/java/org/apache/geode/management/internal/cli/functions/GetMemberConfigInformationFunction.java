@@ -36,6 +36,7 @@ import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 
 /****
@@ -222,6 +223,6 @@ public class GetMemberConfigInformationFunction implements InternalFunction {
 
   private List<String> getJvmInputArguments() {
     RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
-    return runtimeBean.getInputArguments();
+    return ArgumentRedactor.redactEachInList(runtimeBean.getInputArguments());
   }
 }
