@@ -38,12 +38,13 @@ import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFuncti
 import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({IntegrationTest.class, SecurityTest.class, LuceneTest.class})
 public class LuceneFunctionSecurityTest {
   private static final String RESULT_HEADER = "Function Execution Result";
 

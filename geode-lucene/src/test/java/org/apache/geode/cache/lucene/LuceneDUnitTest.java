@@ -33,6 +33,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
 public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
   protected VM dataStore1;

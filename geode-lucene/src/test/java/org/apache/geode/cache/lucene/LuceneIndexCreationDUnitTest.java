@@ -59,9 +59,10 @@ import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
 
