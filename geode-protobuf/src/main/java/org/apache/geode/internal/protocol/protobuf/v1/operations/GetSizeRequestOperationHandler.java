@@ -28,16 +28,15 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 
 @Experimental
-public class GetRegionRequestOperationHandler
-    implements ProtobufOperationHandler<RegionAPI.GetRegionRequest, RegionAPI.GetRegionResponse> {
+public class GetSizeRequestOperationHandler
+    implements ProtobufOperationHandler<RegionAPI.GetSizeRequest, RegionAPI.GetSizeResponse> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<RegionAPI.GetRegionResponse> process(
-      ProtobufSerializationService serializationService, RegionAPI.GetRegionRequest request,
+  public Result<RegionAPI.GetSizeResponse> process(
+      ProtobufSerializationService serializationService, RegionAPI.GetSizeRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
 
@@ -48,8 +47,6 @@ public class GetRegionRequestOperationHandler
           "No region exists for name: " + regionName);
     }
 
-    BasicTypes.Region protoRegion = ProtobufUtilities.createRegionMessageFromRegion(region);
-
-    return Success.of(RegionAPI.GetRegionResponse.newBuilder().setRegion(protoRegion).build());
+    return Success.of(RegionAPI.GetSizeResponse.newBuilder().setSize(region.size()).build());
   }
 }
