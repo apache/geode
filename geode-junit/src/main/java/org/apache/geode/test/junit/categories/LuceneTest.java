@@ -18,5 +18,5 @@ package org.apache.geode.test.junit.categories;
 /**
  * A test category for lucene-related tests
  */
-public class LuceneTest {
+public interface LuceneTest {
 }
