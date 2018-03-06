@@ -22,8 +22,7 @@ import javax.management.remote.JMXConnector;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * Interface having updateData() function which is getting Override by both MockDataUpdater and
- * JMXDataUpdater
+ * Interface having updateData() function which is implemented by JMXDataUpdater
  *
  * @since GemFire version 7.0.Beta 2012-09-23
  *
