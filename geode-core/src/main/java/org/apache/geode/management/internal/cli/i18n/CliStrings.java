@@ -3114,11 +3114,12 @@ public class CliStrings {
   public static final String CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES =
       "portable-auto-serializable-classes";
   public static final String CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES__HELP =
-      "the patterns which are matched against domain class names to determine whether they should be serialized";
+      "The patterns that are matched against domain class names to determine whether they should be serialized. Serialization done by the auto-serializer will throw an exception if the object of these classes are not portable to non-java languages (check-portability=true).";
 
   public static final String CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES = "auto-serializable-classes";
   public static final String CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES__HELP =
-      "the patterns which are matched against domain class names to determine whether they should be serialized, serialization done by the auto-serializer will throw an exception if the object of these classes are not portable to non-java languages";
+      "The patterns that are matched against domain class names to determine whether they should be auto-serialized. Serialization done by the auto-serializer will not throw an exception if the object of these classes are not portable to non-java languages (check-portability=false).";
+
   public static final String CONFIGURE_PDX__NORMAL__MEMBERS__WARNING =
       "The command would only take effect on new data members joining the distributed system. It won't affect the existing data members";
   public static final String CONFIGURE_PDX__ERROR__MESSAGE =
