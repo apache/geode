@@ -43,8 +43,9 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
 
@@ -234,7 +235,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
   }
 
-  @Category(FlakyTest.class) // GEODE-1920
+  @Category({FlakyTest.class, WanTest.class}) // GEODE-1920
   @Test
   public void test_NY_Recognises_TK_AND_HK_Simultaneously() {
     Map<Integer, Set<InetSocketAddress>> dsVsPort = new HashMap<>();

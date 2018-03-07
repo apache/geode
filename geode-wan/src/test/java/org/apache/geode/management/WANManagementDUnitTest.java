@@ -30,6 +30,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
 /**
  * Tests for WAN artifacts like Sender and Receiver. The purpose of this test is not to check WAN
@@ -38,7 +39,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  *
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class WANManagementDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -108,7 +109,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     WANTestBase.checkSenderMBean(managing, getTestMethodName() + "_PR", false);
   }
 
-  @Category(FlakyTest.class) // GEODE-1603
+  @Category({FlakyTest.class, WanTest.class}) // GEODE-1603
   @Test
   public void testReceiverMBean() throws Exception {
 
@@ -260,7 +261,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     });
   }
 
-  @Category(FlakyTest.class) // GEODE-1629
+  @Category({FlakyTest.class, WanTest.class}) // GEODE-1629
   @Test
   public void testMBeanCallbackInRemoteCluster() throws Exception {
 
