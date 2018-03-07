@@ -48,7 +48,7 @@ public class DestroyJndiBindingCommand implements GfshCommand {
   static final String CREATE_JNDIBINDING__HELP =
       "Destroy a jndi binding that holds the configuration for the XA datasource.";
   static final String JNDI_NAME = "name";
-  static final String JNDI_NAME__HELP = "Name of the binding to be created.";
+  static final String JNDI_NAME__HELP = "Name of the binding to be destroyed.";
 
   @CliCommand(value = CREATE_JNDIBINDING, help = CREATE_JNDIBINDING__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
@@ -64,9 +64,10 @@ public class DestroyJndiBindingCommand implements GfshCommand {
     if (service != null) {
       Element existingBinding =
           service.getXmlElement("cluster", "jndi-binding", "jndi-name", jndiName);
-      if (existingBinding == null)
+      if (existingBinding == null) {
         return ResultBuilder.createUserErrorResult(
-            CliStrings.format("Jndi binding with jndi-name \"{0}\" does not exists.", jndiName));
+            CliStrings.format("Jndi binding with jndi-name \"{0}\" does not exist.", jndiName));
+      }
       removeJndiBindingFromXml(jndiName);
       persisted = true;
     }
@@ -77,12 +78,13 @@ public class DestroyJndiBindingCommand implements GfshCommand {
           executeAndGetFunctionResult(new DestroyJndiBindingFunction(), jndiName, targetMembers);
       return buildResult(jndiCreationResult);
     } else {
-      if (persisted)
+      if (persisted) {
         result = ResultBuilder.createInfoResult(CliStrings.format(
             "No members found. Jndi-binding \"{0}\" is removed from cluster configuration.",
             jndiName));
-      else
+      } else {
         result = ResultBuilder.createInfoResult("No members found.");
+      }
     }
     result.setCommandPersisted(persisted);
     return result;

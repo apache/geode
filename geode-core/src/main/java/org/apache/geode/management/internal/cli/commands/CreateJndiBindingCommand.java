@@ -164,10 +164,11 @@ public class CreateJndiBindingCommand implements GfshCommand {
     if (service != null) {
       Element existingBinding =
           service.getXmlElement("cluster", "jndi-binding", "jndi-name", jndiName);
-      if (existingBinding != null)
+      if (existingBinding != null) {
         throw new EntityExistsException(
             CliStrings.format("Jndi binding with jndi-name \"{0}\" already exists.", jndiName),
             ifNotExists);
+      }
       updateXml(configuration);
       persisted = true;
     }
@@ -178,12 +179,13 @@ public class CreateJndiBindingCommand implements GfshCommand {
           new CreateJndiBindingFunction(), configuration, targetMembers);
       result = buildResult(jndiCreationResult);
     } else {
-      if (persisted)
+      if (persisted) {
         result = ResultBuilder.createInfoResult(CliStrings.format(
             "No members found. Cluster configuration is updated with jndi-binding \"{0}\".",
             jndiName));
-      else
+      } else {
         result = ResultBuilder.createInfoResult("No members found.");
+      }
     }
 
     result.setCommandPersisted(persisted);

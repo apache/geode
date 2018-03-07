@@ -365,10 +365,11 @@ public class JNDIInvoker {
     ctx.unbind("java:/" + jndiName);
     for (Iterator it = dataSourceList.iterator(); it.hasNext();) {
       Object obj = it.next();
-      if (obj instanceof AbstractDataSource)
+      if (obj instanceof AbstractDataSource) {
         ((AbstractDataSource) obj).clearUp();
-      else if (obj instanceof ClientConnectionFactoryWrapper)
+      } else if (obj instanceof ClientConnectionFactoryWrapper) {
         ((ClientConnectionFactoryWrapper) obj).clearUp();
+      }
       it.remove();
     }
   }
