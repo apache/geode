@@ -19,6 +19,7 @@ import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCod
 import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.NO_AVAILABLE_SERVER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -49,6 +50,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
@@ -172,13 +174,12 @@ public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnGroupRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .addGroupName(TEST_GROUP1).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse> result =
-        operationHandler.process(serializationService, request, mockedMessageExecutionContext());
-
-    assertTrue(result instanceof Failure);
-
-    assertEquals(AUTHORIZATION_FAILED, result.getErrorMessage().getError().getErrorCode());
-
+    try {
+      operationHandler.process(serializationService, request, mockedMessageExecutionContext());
+      fail("Should not have been authorized.");
+    } catch (OperationNotAuthorizedException ex) {
+      // Expected failure
+    }
   }
 
   @Test

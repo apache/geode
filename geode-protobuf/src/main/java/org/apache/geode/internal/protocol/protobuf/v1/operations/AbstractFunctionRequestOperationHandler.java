@@ -37,6 +37,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionAuthorizingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -71,9 +72,9 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
       // check security for function.
       function.getRequiredPermissions(regionName).forEach(securityService::authorize);
     } catch (NotAuthorizedException ex) {
-      final String message = "Authorization failed for function \"" + functionID + "\"";
-      logger.warn(message, ex);
-      return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED, message);
+      messageExecutionContext.getStatistics().incAuthorizationViolations();
+      throw new OperationNotAuthorizedException(
+          "The user is not authorized to complete this operation");
     } finally {
       if (threadState != null) {
         ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext

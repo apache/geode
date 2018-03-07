@@ -158,7 +158,9 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getOqlQueryRequest,
             new OqlQueryRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setOqlQueryResponse(opsResp),
-            new ResourcePermission(Resource.DATA, Operation.READ)));
+            // Perform authorization inside handler to avoid having to compile the OQL multiple
+            // times
+            this::skipAuthorizationCheck));
 
     operationContexts.put(MessageTypeCase.KEYSETREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getKeySetRequest,
