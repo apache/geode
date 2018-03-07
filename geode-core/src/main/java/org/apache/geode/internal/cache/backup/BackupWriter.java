@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.backup;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 public interface BackupWriter {
   String INCOMPLETE_BACKUP_FILE = "INCOMPLETE_BACKUP_FILE";
@@ -26,5 +27,7 @@ public interface BackupWriter {
   String DATA_STORES_DIRECTORY = "diskstores";
 
   void backupFiles(BackupDefinition backupDefinition) throws IOException;
+
+  Path getBaselineDirectory();
 
 }

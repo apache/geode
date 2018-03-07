@@ -67,6 +67,11 @@ public class FileSystemBackupWriter implements BackupWriter {
     Files.delete(backupDirectory.resolve(INCOMPLETE_BACKUP_FILE));
   }
 
+  @Override
+  public Path getBaselineDirectory() {
+    return incrementalBaselineLocation.getMemberBackupLocationDir().getParent();
+  }
+
   private void backupAllFilesets(BackupDefinition backupDefinition) throws IOException {
     RestoreScript restoreScript = backupDefinition.getRestoreScript();
     backupDiskInitFiles(backupDefinition.getDiskInitFiles());
