@@ -50,9 +50,7 @@ public class IndexRepositoryFactory {
   public IndexRepositoryFactory() {}
 
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-                                                InternalLuceneIndex index,
-                                                PartitionedRegion userRegion,
-                                                final IndexRepository oldRepository)
+      InternalLuceneIndex index, PartitionedRegion userRegion, final IndexRepository oldRepository)
       throws IOException {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
@@ -114,8 +112,7 @@ public class IndexRepositoryFactory {
         success = true;
         return repo;
       } else {
-        success =
-            reindexUserDataRegion(bucketId, userRegion, fileRegion, dataBucket, repo);
+        success = reindexUserDataRegion(bucketId, userRegion, fileRegion, dataBucket, repo);
       }
       return repo;
     } catch (IOException e) {
