@@ -67,8 +67,9 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLQueryTest.class})
 public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
 
   private static final String name = "Portfolios1";

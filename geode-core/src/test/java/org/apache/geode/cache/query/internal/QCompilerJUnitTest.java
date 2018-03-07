@@ -36,12 +36,13 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  *
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLQueryTest.class})
 public class QCompilerJUnitTest {
 
   QueryExecutionContext context = new QueryExecutionContext(null, null);

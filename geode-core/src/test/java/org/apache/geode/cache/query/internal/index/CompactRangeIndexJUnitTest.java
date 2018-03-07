@@ -41,8 +41,9 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.DefaultQuery.TestHook;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class CompactRangeIndexJUnitTest {
 
   private QueryTestUtils utils;

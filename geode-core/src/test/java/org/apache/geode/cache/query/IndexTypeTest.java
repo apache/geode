@@ -20,9 +20,10 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, OQLIndexTest.class})
 public class IndexTypeTest {
 
   @Test

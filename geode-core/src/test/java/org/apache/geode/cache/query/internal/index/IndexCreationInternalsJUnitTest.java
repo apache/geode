@@ -41,15 +41,15 @@ import org.apache.geode.cache.query.internal.CompiledPath;
 import org.apache.geode.cache.query.internal.CompiledRegion;
 import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class IndexCreationInternalsJUnitTest {
   protected String childThreadName1 = "";
   protected String childThreadName2 = "";

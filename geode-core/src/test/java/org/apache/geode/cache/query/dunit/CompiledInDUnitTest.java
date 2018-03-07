@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutionDUnitTest.region;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -41,7 +39,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.data.PortfolioPdx.Day;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -52,8 +49,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLQueryTest.class})
 public class CompiledInDUnitTest extends JUnit4CacheTestCase {
 
   final String rootRegionName = "root";

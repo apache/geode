@@ -12,26 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.query.functional;
-
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.CacheUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.OQLQueryTest;
+package org.apache.geode.test.junit.categories;
 
 /**
- *
- *
+ * A test category for oql index-related tests
  */
-@Category({IntegrationTest.class, OQLQueryTest.class})
-public class GroupByReplicatedJUnitTest extends GroupByTestImpl {
-
-  @Override
-  public Region createRegion(String regionName, Class valueConstraint) {
-    Region r1 = CacheUtils.createRegion(regionName, valueConstraint);
-    return r1;
-
-  }
+public interface OQLIndexTest {
 }

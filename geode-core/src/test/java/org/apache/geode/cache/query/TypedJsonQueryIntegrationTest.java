@@ -27,6 +27,7 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.json.TypedJson;
 import org.apache.geode.management.internal.cli.json.TypedJsonPdxIntegrationTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * Integration tests for {@link TypedJson} querying {@link Portfolio}.
@@ -37,7 +38,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * TODO: add real assertions
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLQueryTest.class})
 public class TypedJsonQueryIntegrationTest {
 
   private static final String RESULT = "result";

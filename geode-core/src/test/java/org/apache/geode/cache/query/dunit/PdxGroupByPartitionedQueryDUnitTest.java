@@ -25,8 +25,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLQueryTest.class})
 public class PdxGroupByPartitionedQueryDUnitTest extends GroupByDUnitImpl {
 
   @Override

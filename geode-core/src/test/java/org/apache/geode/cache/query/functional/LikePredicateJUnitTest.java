@@ -52,8 +52,9 @@ import org.apache.geode.cache.query.internal.index.IndexManager.TestHook;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLQueryTest.class})
 public class LikePredicateJUnitTest {
 
   @Before

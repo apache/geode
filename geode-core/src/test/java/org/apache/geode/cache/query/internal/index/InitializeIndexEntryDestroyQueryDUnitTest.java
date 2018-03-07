@@ -51,15 +51,15 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * Test creates a local region. Creates and removes index in a parallel running thread. Then
  * destroys and puts back entries in separated thread in the same region and runs query in parallel
  * and checks for UNDEFINED values in result set of the query.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLIndexTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();

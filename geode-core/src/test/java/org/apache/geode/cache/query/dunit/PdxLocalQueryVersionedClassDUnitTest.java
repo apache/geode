@@ -38,8 +38,9 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLQueryTest.class})
 public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
 
 

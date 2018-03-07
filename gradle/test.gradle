@@ -200,6 +200,27 @@ subprojects {
     }
     reports.junitXml.destination = file "$buildDir/test-reports-client-subscription"
   }
+  task queryTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.OQLQueryTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    reports.junitXml.destination = file "$buildDir/test-reports-oql-query"
+  }
+
+  task indexTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.OQLIndexTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    reports.junitXml.destination = file "$buildDir/test-reports-oql-index"
+  }
 
   task membershipTest(type:Test) {
     useJUnit {
