@@ -86,6 +86,22 @@ resources:
       password: ((!source-email-password))
     from: ((!source-email-address))
     to: [ ((!notification-email-address)) ]
+
+groups:
+- name: main
+  jobs:
+  - Build
+  - DistributedTest
+  - AcceptanceTest
+  - IntegrationTest
+  - FlakyTest
+  - TestExamples
+  - UpdatePassingRef
+- name: UITests
+  jobs:
+  - Build
+  - UITests
+
 jobs:
 - name: Build
   serial: true
@@ -389,6 +405,46 @@ jobs:
                - flakyTest
                - flakytestfiles
                path: geode-ci/ci/scripts/test-archive.sh
+
+- name: UITests
+  serial: true
+  public: true
+  plan:
+    - aggregate:
+      - get: geode
+        passed: [Build]
+        trigger: true
+      - get: geode-ci
+      - get: geode-build-version
+        passed: [Build]
+      - get: docker-test-image
+        params:
+          rootfs: true
+    - task: runtests
+      privileged: true
+      timeout: 1h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: docker-test-image
+          - name: geode-build-version
+        platform: linux
+        outputs:
+          - name: built-geode
+        image_resource: *docker-geode-build-image
+        params:
+          MAINTENANCE_VERSION: ((!maintenance-version))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+          PARALLEL_DUNIT: true
+          DUNIT_PARALLEL_FORKS: 1
+          CALL_STACK_TIMEOUT: 25200
+        run:
+          args:
+          - uiTest
+          - uitestfiles
+          path: geode-ci/ci/scripts/test-run.sh
 
 - name: TestExamples
   serial: true
