@@ -19,8 +19,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-## <a id="literals__section_BA2D0AC444EB45088F00D9E2C8A1DD06" class="no-quick-link"></a>Comparing Values With java.util.Date
-
 <%=vars.product_name%> supports the following literal types:
 
 <dt>**boolean**</dt>
@@ -44,8 +42,26 @@ limitations under the License.
 <dd>Equivalent alternative of `NULL`.</dd>
 <dt>**NULL**</dt>
 <dd>The same as `null` in Java.</dd>
-<dt>**UNDEFINED**</dt>
-<dd>A special literal that is a valid value for any data type. An `UNDEFINED` value is the result of accessing an attribute of a null-valued attribute. Note that if you access an attribute that has an explicit value of null, then it is not undefined. For example if a query accesses the attribute address.city and address is null, the result is undefined. If the query accesses address, then the result is not undefined, it is `NULL`.</dd>
+<a id="literals__section_undefined" class="no-quick-link"></a><dt>**UNDEFINED**</dt>
+<dd>A special literal, valid value for any data type, indicating that no value (not even NULL) has been designated for a given data item.</dd>
+
+## The Difference Between NULL and UNDEFINED
+
+In OQL, as in Java, NULL is an assignable entity (an object) indicating "no value".
+
+In OQL, UNDEFINED is a type. There is no Java equivalent. In OQL search results, an UNDEFINED value can be returned in two cases:
+
+- As the result of a search for a key or value that does not exist
+- As the result of accessing an attribute of a null-valued attribute.
+
+Searches for inequality return UNDEFINED values in their results.
+
+Note that if you access an attribute that has an explicit value of NULL, then it is not UNDEFINED.
+
+For example, if a query accesses the attribute `address.city` and `address` is NULL, the result is UNDEFINED.
+If the query accesses `address`, then the result is not UNDEFINED, it is NULL.
+
+## <a id="literals__section_BA2D0AC444EB45088F00D9E2C8A1DD06" class="no-quick-link"></a>Comparing Values With java.util.Date
 
 You can compare temporal literal values `DATE`, `TIME`, and `TIMESTAMP` with `java.util.Date` values. There is no literal for `java.util.Date` in the query language.
 
