@@ -274,5 +274,11 @@ public class TestCommand {
 
     // ShellCommand
     createTestCommand("disconnect");
+
+    // JNDI Commands
+    createTestCommand(
+        "create jndi-binding --name=jndi1 --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\"",
+        ResourcePermissions.CLUSTER_MANAGE);
+    createTestCommand("list jndi-binding", ResourcePermissions.CLUSTER_READ);
   }
 }

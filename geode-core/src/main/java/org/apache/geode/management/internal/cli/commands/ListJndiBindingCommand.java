@@ -30,15 +30,20 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.security.ResourcePermission;
 
 public class ListJndiBindingCommand implements GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   private static final String LIST_JNDIBINDING = "list jndi-binding";
-  private static final String LIST_JNDIBINDING__HELP = "List all jndi bindings.";
+  private static final String LIST_JNDIBINDING__HELP =
+      "List all active jndi bindings. An active binding is one that is bound to the server's jndi context.";
   private static final Function LIST_BINDING_FUNCTION = new ListJndiBindingFunction();
 
   @CliCommand(value = LIST_JNDIBINDING, help = LIST_JNDIBINDING__HELP)
+  @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
+      operation = ResourcePermission.Operation.READ)
   public Result listJndiBinding() {
     Result result = null;
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
