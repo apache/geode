@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.lucene.internal;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 
@@ -32,8 +33,9 @@ public interface InternalLuceneIndex extends LuceneIndex {
    */
   void destroy(boolean initiator);
 
-
   LuceneIndexStats getIndexStats();
+
+  Cache getCache();
 
   void initialize();
 
