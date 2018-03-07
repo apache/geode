@@ -32,19 +32,68 @@ public class ArgumentRedactor {
       ArrayUtils.asList(DistributionConfig.SYS_PROP_NAME, DistributionConfig.SSL_SYSTEM_PROPS_NAME,
           ConfigurationProperties.SECURITY_PREFIX);
 
-  // This pattern consists of three capture groups:
-  // The option, consisting of
-  // (a) A leading space or starting string boundary, followed by one or two hyphens
-  // (b) one or more non-whitespace, non-"=" characters, matching greedily
-  // The option-value separator, consisting of: any amount of whitespace surrounding at most 1 "="
-  // The value, consisting of:
-  // (a) If not wrapped in quotes, all non-whitespace characters, matching greedily.
-  // (b) If wrapped in quotes, any non-quote character, matching greedily, until the closing quote.
-  // -- -- This will therefore break on, e.g., --opt="escaped \" quote" and only redact "escaped."
-  // Positive lookahead between groups 1 and 2 to require space or "=", while * and ? match empty.
-  // Negative lookahead between groups 2 and 3 to avoid "--boolFlag --newOption" matching as a pair.
-  private static final Pattern optionWithValuePattern =
-      Pattern.compile("([^ ]--?[^\\s=]+)(?=[ =])( *=? *)(?!-)((?:\"[^\"]*\"|\\S+))");
+  private static final Pattern optionWithValuePattern = getOptionWithValuePattern();
+
+
+  /**
+   * This method returns the {@link java.util.regex.Pattern} given below. For clarity, the regex
+   * is given here without the escape characters required by Java's string handling.
+   * <p>
+   *
+   * ((?:^| )(?:--J=)?--?)([^\s=]+)(?=[ =])( *[ =] *)(?! *-)((?:"[^"]*"|[^"]\S+))
+   *
+   * <p>
+   * This pattern consists of one captured boundary,
+   * three additional capture groups, and two look-ahead boundaries.
+   *
+   * <p>
+   * The four capture groups are:
+   * <ul>
+   * <li>[1] The beginning boundary, including at most one leading space,
+   * possibly including "--J=", and including the option's leading "-" or "--"</li>
+   * <li>[2] The option name, which cannot include spaces</li>
+   * <li>[3] The option name / value separator, consisting of at least one character
+   * made of spaces and/or at most one "="</li>
+   * <li>[4] The option value, which terminates at the next space unless it is encapsulated by
+   * quotation-marks, in which case it terminates at the next quotation mark.</li>
+   * </ul>
+   *
+   * Look-ahead groups avoid falsely identifying two flag options (e.g. "--help --all") from
+   * interpreting the second flag as the value of the first option
+   * (here, misinterpreting as `--help="--all"`).
+   */
+  private static Pattern getOptionWithValuePattern() {
+    String capture_beginningBoundary;
+    {
+      String spaceOrBeginningAnchor = "(?:^| )";
+      String maybeLeadingWithDashDashJEquals = "(?:--J=)?";
+      String oneOrTwoDashes = "--?";
+      capture_beginningBoundary =
+          "(" + spaceOrBeginningAnchor + maybeLeadingWithDashDashJEquals + oneOrTwoDashes + ")";
+    }
+
+    String capture_optionNameHasNoSpaces = "([^\\s=]+)";
+
+    String boundary_lookAheadForSpaceOrEquals = "(?=[ =])";
+
+    String capture_keyValueSeparation = "( *[ =] *)";
+
+    String boundary_negativeLookAheadToPreventNextOptionAsThisValue = "(?! *-)";
+
+    String capture_value;
+    {
+      String valueCanBeAnythingBetweenQuotes = "\"[^\"]*\"";
+      String valueCanHaveNoSpacesWithoutQuotes = "[^\"]\\S+";
+      String valueCanBeEitherOfTheAbove =
+          "(?:" + valueCanBeAnythingBetweenQuotes + "|" + valueCanHaveNoSpacesWithoutQuotes + ")";
+      capture_value = "(" + valueCanBeEitherOfTheAbove + ")";
+    }
+
+    String fullPattern = capture_beginningBoundary + capture_optionNameHasNoSpaces
+        + boundary_lookAheadForSpaceOrEquals + capture_keyValueSeparation
+        + boundary_negativeLookAheadToPreventNextOptionAsThisValue + capture_value;
+    return Pattern.compile(fullPattern);
+  }
 
   private ArgumentRedactor() {}
 
@@ -82,13 +131,14 @@ public class ArgumentRedactor {
     // We capture the key, separator, and values separately, replacing only the value at print.
     Matcher matcher = optionWithValuePattern.matcher(line);
     while (matcher.find()) {
-      String option = matcher.group(1);
+      String option = matcher.group(2);
       if (!isTaboo(option)) {
         continue;
       }
 
-      String separator = matcher.group(2);
-      String withRedaction = option + separator + redacted;
+      String leadingBoundary = matcher.group(1);
+      String separator = matcher.group(3);
+      String withRedaction = leadingBoundary + option + separator + redacted;
       line = line.replace(matcher.group(), withRedaction);
     }
 
@@ -130,7 +180,6 @@ public class ArgumentRedactor {
     return value;
   }
 
-
   /**
    * Determine whether a key's value should be redacted.
    *
@@ -143,7 +192,10 @@ public class ArgumentRedactor {
       return false;
     }
     for (String taboo : tabooForKeyToStartWith) {
-      if (key.toLowerCase().startsWith(taboo)) {
+      // If a parameter is passed with -Dsecurity-option=value, the option key is
+      // "Dsecurity-option".
+      // With respect to taboo words, also check for the addition of the extra D
+      if (key.toLowerCase().startsWith(taboo) || key.toLowerCase().startsWith("d" + taboo)) {
         return true;
       }
     }
