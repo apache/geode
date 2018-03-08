@@ -44,11 +44,12 @@ public class ArgumentRedactorJUnitTest {
 
   @Test
   public void theseLinesShouldRedact() {
-    String valueThatShouldBeRedacted = "__this_should_be_redacted__";
-    List<String> someTabooOptions = Arrays.asList("-Dgemfire.password=" + valueThatShouldBeRedacted,
-        "--password=" + valueThatShouldBeRedacted,
-        "--J=-Dgemfire.some.very.qualified.item.password=" + valueThatShouldBeRedacted,
-        "--J=-Dsysprop-secret.information=" + valueThatShouldBeRedacted);
+    String argumentThatShouldBeRedacted = "__this_should_be_redacted__";
+    List<String> someTabooOptions =
+        Arrays.asList("-Dgemfire.password=" + argumentThatShouldBeRedacted,
+            "--password=" + argumentThatShouldBeRedacted,
+            "--J=-Dgemfire.some.very.qualified.item.password=" + argumentThatShouldBeRedacted,
+            "--J=-Dsysprop-secret.information=" + argumentThatShouldBeRedacted);
 
     List<String> fullyRedacted = redactEachInList(someTabooOptions);
     assertThat(fullyRedacted).doesNotContainAnyElementsOf(someTabooOptions);
@@ -61,9 +62,9 @@ public class ArgumentRedactorJUnitTest {
         SERVER_SSL_KEYSTORE_PASSWORD, "security-username", "security-manager",
         "security-important-property", "javax.net.ssl.keyStorePassword",
         "javax.net.ssl.some.security.item", "javax.net.ssl.keyStoreType", "sysprop-secret-prop");
-    for (String key : shouldBeRedacted) {
-      assertThat(isTaboo(key)).describedAs("This key should be identified as taboo: " + key)
-          .isTrue();
+    for (String option : shouldBeRedacted) {
+      assertThat(isTaboo(option))
+          .describedAs("This option should be identified as taboo: " + option).isTrue();
     }
   }
 
@@ -71,9 +72,9 @@ public class ArgumentRedactorJUnitTest {
   public void redactorWillAllowSampleMiscProperties() {
     List<String> shouldNotBeRedacted = Arrays.asList("gemfire.security-manager",
         CLUSTER_SSL_ENABLED, CONSERVE_SOCKETS, "username", "just-an-option");
-    for (String key : shouldNotBeRedacted) {
-      assertThat(isTaboo(key)).describedAs("This key should not be identified as taboo: " + key)
-          .isFalse();
+    for (String option : shouldNotBeRedacted) {
+      assertThat(isTaboo(option))
+          .describedAs("This option should not be identified as taboo: " + option).isFalse();
     }
   }
 
@@ -118,17 +119,17 @@ public class ArgumentRedactorJUnitTest {
   public void argListOfMiscOptionsDoNotRedact() {
     List<String> argList = new ArrayList<>();
     argList.add("--gemfire.security-properties=./security.properties");
-    argList.add("--gemfire.sys.security-value=someValue");
+    argList.add("--gemfire.sys.security-option=someArg");
     argList.add("--gemfire.use-cluster-configuration=true");
-    argList.add("--someotherstringvalue");
+    argList.add("--someotherstringoption");
     argList.add("--login-name=admin");
     argList.add("--myArg --myArg2 --myArg3=-arg4");
     argList.add("--myArg --myArg2 --myArg3=\"-arg4\"");
     String redacted = redact(argList);
     assertThat(redacted).contains("--gemfire.security-properties=./security.properties");
-    assertThat(redacted).contains("--gemfire.sys.security-value=someValue");
+    assertThat(redacted).contains("--gemfire.sys.security-option=someArg");
     assertThat(redacted).contains("--gemfire.use-cluster-configuration=true");
-    assertThat(redacted).contains("--someotherstringvalue");
+    assertThat(redacted).contains("--someotherstringoption");
     assertThat(redacted).contains("--login-name=admin");
     assertThat(redacted).contains("--myArg --myArg2 --myArg3=-arg4");
     assertThat(redacted).contains("--myArg --myArg2 --myArg3=\"-arg4\"");
@@ -158,16 +159,16 @@ public class ArgumentRedactorJUnitTest {
     arg = "-Dgemfire.security-properties=./security-properties";
     assertThat(redact(arg)).isEqualTo(arg);
 
-    arg = "-J-Dgemfire.sys.security-value=someValue";
+    arg = "-J-Dgemfire.sys.security-option=someArg";
     assertThat(redact(arg)).isEqualTo(arg);
 
-    arg = "-Dgemfire.sys.value=printable";
+    arg = "-Dgemfire.sys.option=printable";
     assertThat(redact(arg)).isEqualTo(arg);
 
     arg = "-Dgemfire.use-cluster-configuration=true";
     assertThat(redact(arg)).isEqualTo(arg);
 
-    arg = "someotherstringvalue";
+    arg = "someotherstringoption";
     assertThat(redact(arg)).isEqualTo(arg);
 
     arg = "--classpath=.";

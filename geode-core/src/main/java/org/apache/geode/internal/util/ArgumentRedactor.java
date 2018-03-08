@@ -28,19 +28,20 @@ public class ArgumentRedactor {
 
   // All taboo words should be entirely lowercase.
   private static final List<String> tabooToContain = ArrayUtils.asList("password");
-  private static final List<String> tabooForKeyToStartWith =
+  private static final List<String> tabooForOptionToStartWith =
       ArrayUtils.asList(DistributionConfig.SYS_PROP_NAME, DistributionConfig.SSL_SYSTEM_PROPS_NAME,
           ConfigurationProperties.SECURITY_PREFIX);
 
-  private static final Pattern optionWithValuePattern = getOptionWithValuePattern();
+  private static final Pattern optionWithArgumentPattern = getOptionWithArgumentPattern();
 
 
   /**
-   * This method returns the {@link java.util.regex.Pattern} given below. For clarity, the regex
-   * is given here without the escape characters required by Java's string handling.
+   * This method returns the {@link java.util.regex.Pattern} given below, used to capture
+   * command-line options that accept an argument. For clarity, the regex is given here without
+   * the escape characters required by Java's string handling.
    * <p>
    *
-   * ((?:^| )(?:--J=)?--?)([^\s=]+)(?=[ =])( *[ =] *)(?! *-)((?:"[^"]*"|[^"]\S+))
+   * {@code ((?:^| )(?:--J=)?--?)([^\s=]+)(?=[ =])( *[ =] *)(?! *-)((?:"[^"]*"|\S+))}
    *
    * <p>
    * This pattern consists of one captured boundary,
@@ -51,18 +52,22 @@ public class ArgumentRedactor {
    * <ul>
    * <li>[1] The beginning boundary, including at most one leading space,
    * possibly including "--J=", and including the option's leading "-" or "--"</li>
-   * <li>[2] The option name, which cannot include spaces</li>
-   * <li>[3] The option name / value separator, consisting of at least one character
+   * <li>[2] The option, which cannot include spaces</li>
+   * <li>[3] The option / argument separator, consisting of at least one character
    * made of spaces and/or at most one "="</li>
-   * <li>[4] The option value, which terminates at the next space unless it is encapsulated by
+   * <li>[4] The argument, which terminates at the next space unless it is encapsulated by
    * quotation-marks, in which case it terminates at the next quotation mark.</li>
    * </ul>
    *
-   * Look-ahead groups avoid falsely identifying two flag options (e.g. "--help --all") from
-   * interpreting the second flag as the value of the first option
-   * (here, misinterpreting as `--help="--all"`).
+   * Look-ahead groups avoid falsely identifying two flag options (e.g. `{@code --help --all}`) from
+   * interpreting the second flag as the argument to the first option
+   * (here, misinterpreting as `{@code --help="--all"}`).
+   * <p>
+   *
+   * Note that at time of writing, the argument (capture group 4) is not consumed by this class's
+   * logic, but its capture has proven repeatedly useful during iteration and testing.
    */
-  private static Pattern getOptionWithValuePattern() {
+  private static Pattern getOptionWithArgumentPattern() {
     String capture_beginningBoundary;
     {
       String spaceOrBeginningAnchor = "(?:^| )";
@@ -76,43 +81,44 @@ public class ArgumentRedactor {
 
     String boundary_lookAheadForSpaceOrEquals = "(?=[ =])";
 
-    String capture_keyValueSeparation = "( *[ =] *)";
+    String capture_optionArgumentSeparator = "( *[ =] *)";
 
-    String boundary_negativeLookAheadToPreventNextOptionAsThisValue = "(?! *-)";
+    String boundary_negativeLookAheadToPreventNextOptionAsThisArgument = "(?! *-)";
 
-    String capture_value;
+    String capture_Argument;
     {
-      String valueCanBeAnythingBetweenQuotes = "\"[^\"]*\"";
-      String valueCanHaveNoSpacesWithoutQuotes = "[^\"]\\S+";
-      String valueCanBeEitherOfTheAbove =
-          "(?:" + valueCanBeAnythingBetweenQuotes + "|" + valueCanHaveNoSpacesWithoutQuotes + ")";
-      capture_value = "(" + valueCanBeEitherOfTheAbove + ")";
+      String argumentCanBeAnythingBetweenQuotes = "\"[^\"]*\"";
+      String argumentCanHaveNoSpacesWithoutQuotes = "\\S+";
+      String argumentCanBeEitherOfTheAbove = "(?:" + argumentCanBeAnythingBetweenQuotes + "|"
+          + argumentCanHaveNoSpacesWithoutQuotes + ")";
+      capture_Argument = "(" + argumentCanBeEitherOfTheAbove + ")";
     }
 
     String fullPattern = capture_beginningBoundary + capture_optionNameHasNoSpaces
-        + boundary_lookAheadForSpaceOrEquals + capture_keyValueSeparation
-        + boundary_negativeLookAheadToPreventNextOptionAsThisValue + capture_value;
+        + boundary_lookAheadForSpaceOrEquals + capture_optionArgumentSeparator
+        + boundary_negativeLookAheadToPreventNextOptionAsThisArgument + capture_Argument;
     return Pattern.compile(fullPattern);
   }
 
   private ArgumentRedactor() {}
 
   /**
-   * Parse a string to find key-value pairs and redact the values if necessary.<br>
+   * Parse a string to find option/argument pairs and redact the arguments if necessary.<br>
    *
    * The following format is expected:<br>
-   * - Each key-value pair should be separated by spaces.<br>
-   * - The key of each key-value pair must be preceded by a hyphen '-'.<br>
-   * - Values may or may not be wrapped in quotation marks.<br>
-   * - If a value is wrapped in quotation marks, the actual value should not contain any quotation
-   * mark.<br>
-   * - Keys and values may be separated by an equals sign '=' or any number of spaces.<br>
+   * - Each option/argument pair should be separated by spaces.<br>
+   * - The option of each pair must be preceded by at least one hyphen '-'.<br>
+   * - Arguments may or may not be wrapped in quotation marks.<br>
+   * - Options and arguments may be separated by an equals sign '=' or any number of spaces.<br>
    * <br>
    * Examples:<br>
    * "--password=secret"<br>
    * "--user me --password secret"<br>
-   * "-Dflag -Dkey=value"<br>
+   * "-Dflag -Dopt=arg"<br>
    * "--classpath=."<br>
+   *
+   * See {@link #getOptionWithArgumentPattern()} for more information on
+   * the regular expression used.
    *
    * @param line The argument input to be parsed
    * @param permitFirstPairWithoutHyphen When true, prepends the line with a "-", which is later
@@ -128,8 +134,7 @@ public class ArgumentRedactor {
       wasPaddedWithHyphen = true;
     }
 
-    // We capture the key, separator, and values separately, replacing only the value at print.
-    Matcher matcher = optionWithValuePattern.matcher(line);
+    Matcher matcher = optionWithArgumentPattern.matcher(line);
     while (matcher.find()) {
       String option = matcher.group(2);
       if (!isTaboo(option)) {
@@ -149,10 +154,8 @@ public class ArgumentRedactor {
   }
 
   /**
-   * This alias permits the first key-value pair to be given without a leading hyphen, so that
-   * "password=secret" will be properly redacted.
-   *
-   * See {@link org.apache.geode.internal.util.ArgumentRedactor#redact(java.lang.String, boolean)}
+   * Alias for {@code redact(line, true)}. See
+   * {@link org.apache.geode.internal.util.ArgumentRedactor#redact(java.lang.String, boolean)}
    */
   public static String redact(String line) {
     return redact(line, true);
@@ -163,51 +166,50 @@ public class ArgumentRedactor {
   }
 
   /**
-   * Return a redacted value if the key indicates redaction is necessary. Otherwise, return the
-   * value unchanged.
+   * Return the redaction string if the provided option's argument should be redacted.
+   * Otherwise, return the provided argument unchanged.
    *
-   * @param key A string such as a system property, jvm parameter or similar in a key=value
-   *        situation.
-   * @param value A string that is the value assigned to the key.
+   * @param option A string such as a system property, jvm parameter or command-line option.
+   * @param argument A string that is the argument assigned to the option.
    *
-   * @return A redacted string if the key indicates it should be redacted, otherwise the string is
-   *         unchanged.
+   * @return A redacted string if the option indicates it should be redacted, otherwise the
+   *         provided argument.
    */
-  public static String redactValueIfNecessary(String key, String value) {
-    if (isTaboo(key)) {
+  public static String redactArgumentIfNecessary(String option, String argument) {
+    if (isTaboo(option)) {
       return redacted;
     }
-    return value;
+    return argument;
   }
 
   /**
-   * Determine whether a key's value should be redacted.
+   * Determine whether a option's argument should be redacted.
    *
-   * @param key The option key in question.
+   * @param option The option option in question.
    *
    * @return true if the value should be redacted, otherwise false.
    */
-  static boolean isTaboo(String key) {
-    if (key == null) {
+  static boolean isTaboo(String option) {
+    if (option == null) {
       return false;
     }
-    for (String taboo : tabooForKeyToStartWith) {
-      // If a parameter is passed with -Dsecurity-option=value, the option key is
+    for (String taboo : tabooForOptionToStartWith) {
+      // If a parameter is passed with -Dsecurity-option=argument, the option option is
       // "Dsecurity-option".
       // With respect to taboo words, also check for the addition of the extra D
-      if (key.toLowerCase().startsWith(taboo) || key.toLowerCase().startsWith("d" + taboo)) {
+      if (option.toLowerCase().startsWith(taboo) || option.toLowerCase().startsWith("d" + taboo)) {
         return true;
       }
     }
     for (String taboo : tabooToContain) {
-      if (key.toLowerCase().contains(taboo)) {
+      if (option.toLowerCase().contains(taboo)) {
         return true;
       }
     }
     return false;
   }
 
-  public static List<String> redactEachInList(List<String> inputArguments) {
-    return inputArguments.stream().map(ArgumentRedactor::redact).collect(Collectors.toList());
+  public static List<String> redactEachInList(List<String> argList) {
+    return argList.stream().map(ArgumentRedactor::redact).collect(Collectors.toList());
   }
 }
