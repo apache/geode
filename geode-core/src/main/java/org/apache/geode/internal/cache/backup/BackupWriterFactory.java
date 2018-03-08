@@ -30,7 +30,7 @@ public enum BackupWriterFactory {
       String baselineDir = config.getBaselineDirectory();
       FileSystemIncrementalBackupLocation incrementalBackupLocation = null;
       if (baselineDir != null) {
-        File baseline = new File(baselineDir);
+        File baseline = new File(baselineDir).getAbsoluteFile();
         incrementalBackupLocation = new FileSystemIncrementalBackupLocation(baseline, memberId);
       }
       return new FileSystemBackupWriter(targetDir, incrementalBackupLocation);
