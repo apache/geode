@@ -78,6 +78,12 @@ public interface Region<K, V> {
    */
   void putAll(Map<K, V> values) throws IOException;
 
+  /**
+   * Removes all keys and values associated from this region.
+   *
+   * @throws IOException
+   */
+  void clear() throws IOException;
 
   /**
    * Removes any value associated with the <code>key</code> from this region.

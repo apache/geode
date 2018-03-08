@@ -154,4 +154,15 @@ public class RegionIntegrationTest extends IntegrationTestBase {
     Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
     region.remove(JSONWrapper.wrapJSON("{\"name\":\"Johan\"]"));
   }
+
+  @Test
+  public void clearNonEmptyRegion() throws Exception {
+    Region<String, String> region = driver.getRegion("region");
+
+    region.put("key", "value");
+    assertEquals(1, region.size());
+
+    region.clear();
+    assertEquals(0, region.size());
+  }
 }

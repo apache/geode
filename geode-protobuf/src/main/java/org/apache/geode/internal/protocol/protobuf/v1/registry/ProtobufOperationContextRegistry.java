@@ -23,6 +23,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message.MessageTypeCase;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.ClearRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.DisconnectClientRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnGroupRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnMemberRequestOperationHandler;
@@ -165,5 +166,11 @@ public class ProtobufOperationContextRegistry {
             new KeySetOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setKeySetResponse(opsResp),
             KeySetOperationHandler::determineRequiredPermission));
+
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.CLEARREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getClearRequest,
+            new ClearRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setClearResponse(opsResp),
+            ResourcePermissions.DATA_WRITE));
   }
 }
