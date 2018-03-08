@@ -1086,7 +1086,7 @@ public class SocketCreator {
       for (String key : System.getProperties().stringPropertyNames()) { // fix for 46822
         if (key.startsWith("javax.net.ssl")) {
           String possiblyRedactedValue =
-              ArgumentRedactor.redactValueIfNecessary(key, System.getProperty(key));
+              ArgumentRedactor.redactArgumentIfNecessary(key, System.getProperty(key));
           sb.append("  ").append(key).append(" = ").append(possiblyRedactedValue).append("\n");
         }
       }

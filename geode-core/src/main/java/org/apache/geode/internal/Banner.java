@@ -119,7 +119,8 @@ public class Banner {
       for (Object o : sp.entrySet()) {
         Entry me = (Entry) o;
         String key = me.getKey().toString();
-        String value = ArgumentRedactor.redactValueIfNecessary(key, String.valueOf(me.getValue()));
+        String value =
+            ArgumentRedactor.redactArgumentIfNecessary(key, String.valueOf(me.getValue()));
         out.println("    " + key + " = " + value);
       }
       out.println("Log4J 2 Configuration:");
