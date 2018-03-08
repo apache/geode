@@ -89,7 +89,7 @@ public class DestroyJndiBindingCommandTest {
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsError()
-        .containsOutput("does not exists.");
+        .containsOutput("does not exist.");
   }
 
   @Test
