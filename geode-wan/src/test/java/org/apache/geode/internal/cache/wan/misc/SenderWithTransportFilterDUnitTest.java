@@ -43,8 +43,9 @@ import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 
   @Test

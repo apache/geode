@@ -34,13 +34,14 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
 /**
  * All the test cases are similar to SerialWANPropagationDUnitTest except that the we create
  * concurrent serial GatewaySender with concurrency of 4
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
 
   /**

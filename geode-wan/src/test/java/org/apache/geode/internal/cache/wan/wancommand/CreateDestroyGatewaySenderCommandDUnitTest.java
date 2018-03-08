@@ -38,10 +38,11 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class CreateDestroyGatewaySenderCommandDUnitTest {
 
   public static final String CREATE =

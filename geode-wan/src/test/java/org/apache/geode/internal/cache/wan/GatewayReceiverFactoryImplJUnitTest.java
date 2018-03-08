@@ -40,6 +40,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category(UnitTest.class)

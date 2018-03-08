@@ -63,10 +63,11 @@ import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @SuppressWarnings("ConstantConditions")
-@Category({DistributedTest.class, BackwardCompatibilityTest.class})
+@Category({DistributedTest.class, BackwardCompatibilityTest.class, WanTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {

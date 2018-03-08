@@ -36,11 +36,12 @@ import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
 /**
  * DUnit test for operations on ParallelGatewaySender
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   @Rule

@@ -18,9 +18,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.serial.SerialWANPropagation_PartitionedRegionDUnitTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
 @SuppressWarnings("serial")
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class SerialWANPropagation_PartitionedRegionOffHeapDUnitTest
     extends SerialWANPropagation_PartitionedRegionDUnitTest {
 

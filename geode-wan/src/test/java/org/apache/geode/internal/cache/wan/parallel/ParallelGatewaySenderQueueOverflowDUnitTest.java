@@ -49,11 +49,12 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
 /**
  * DUnit for ParallelSenderQueue overflow operations.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
 
   @Test

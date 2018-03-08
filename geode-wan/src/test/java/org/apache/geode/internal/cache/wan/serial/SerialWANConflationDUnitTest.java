@@ -25,6 +25,8 @@ import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.test.junit.categories.WanTest;
+
 
 public class SerialWANConflationDUnitTest extends WANTestBase {
 

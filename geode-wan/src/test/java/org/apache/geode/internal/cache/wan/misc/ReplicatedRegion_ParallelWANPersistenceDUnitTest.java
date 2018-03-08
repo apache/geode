@@ -27,8 +27,9 @@ import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBase {
 
   public ReplicatedRegion_ParallelWANPersistenceDUnitTest() {
