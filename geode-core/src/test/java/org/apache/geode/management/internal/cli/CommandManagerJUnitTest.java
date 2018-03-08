@@ -120,7 +120,6 @@ public class CommandManagerJUnitTest {
   public void testCommandManagerLoadPluginCommands() throws Exception {
     assertNotNull(commandManager);
 
-    // see META-INF/services/org.springframework.shell.core.CommandMarker service loader file.
     assertTrue("Should find listed plugin.",
         commandManager.getHelper().getCommands().contains("mock plugin command"));
     assertTrue("Should not find unlisted plugin.",

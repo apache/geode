@@ -19,10 +19,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.USER_COMMAND_
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -153,20 +151,19 @@ public class CommandManager {
    * @since GemFire 8.1
    */
   private void loadPluginCommands() {
-    final Iterator<CommandMarker> iterator = ServiceLoader
-        .load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader()).iterator();
-    while (iterator.hasNext()) {
-      try {
-        final CommandMarker commandMarker = iterator.next();
+    ServiceLoader<CommandMarker> loader =
+        ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
+    try {
+      loader.forEach(commandMarker -> {
         try {
           add(commandMarker);
         } catch (Exception e) {
           logWrapper.warning("Could not load Command from: " + commandMarker.getClass() + " due to "
               + e.getLocalizedMessage(), e); // continue
         }
-      } catch (ServiceConfigurationError e) {
-        logWrapper.severe("Could not load Command: " + e.getLocalizedMessage(), e); // continue
-      }
+      });
+    } catch (Throwable th) {
+      logWrapper.severe("Could not load plugin commands in the latest classLoader.", th);
     }
   }
 
