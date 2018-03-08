@@ -53,6 +53,7 @@ public class CreateConnectionCommandIntegrationTest {
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
 
     createConnectionCommand = new CreateConnectionCommand();
+    createConnectionCommand.setCache(cache);
   }
 
   @After

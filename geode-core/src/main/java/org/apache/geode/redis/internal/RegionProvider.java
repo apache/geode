@@ -399,6 +399,7 @@ public class RegionProvider implements Closeable {
     if (r != null)
       return r;
     do {
+      createRegionCmd.setCache(cache);
       Result result = createRegionCmd.createRegion(key, defaultRegionType, null, null, true, null,
           null, null, null, null, null, null, null, false, false, true, false, false, false, true,
           null, null, null, null, null, null, null, null, null, null, null, null, null, false, null,

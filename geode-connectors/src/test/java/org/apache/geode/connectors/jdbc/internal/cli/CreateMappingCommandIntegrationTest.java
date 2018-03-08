@@ -56,6 +56,7 @@ public class CreateMappingCommandIntegrationTest {
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
 
     createRegionMappingCommand = new CreateMappingCommand();
+    createRegionMappingCommand.setCache(cache);
   }
 
   @After

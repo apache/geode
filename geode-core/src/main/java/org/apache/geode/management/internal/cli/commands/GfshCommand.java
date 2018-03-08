@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.springframework.shell.core.CommandMarker;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
@@ -50,8 +51,8 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 public abstract class GfshCommand implements CommandMarker {
   private InternalCache cache;
 
-  public void setCache(InternalCache cache) {
-    this.cache = cache;
+  public void setCache(Cache cache) {
+    this.cache = (InternalCache) cache;
   }
 
   public InternalCache getCache() {

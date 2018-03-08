@@ -62,6 +62,7 @@ public class DescribeMappingCommandIntegrationTest {
         .withPdxClassName("myPdxClass").withPrimaryKeyInValue(true)
         .withFieldToColumnMappings(fieldMappings).build();
     command = new DescribeMappingCommand();
+    command.setCache(cache);
   }
 
   @After
