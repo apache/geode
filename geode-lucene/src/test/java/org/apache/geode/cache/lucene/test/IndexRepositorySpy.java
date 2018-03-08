@@ -14,7 +14,9 @@
  */
 package org.apache.geode.cache.lucene.test;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mockingDetails;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -24,8 +26,7 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.IndexRepositoryFactory;
-import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
 import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -49,9 +50,8 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
 
   @Override
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-      LuceneIndexImpl index, PartitionedRegion userRegion, IndexRepository oldRepository)
+      InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
-    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final IndexRepository indexRepo =
         super.computeIndexRepository(bucketId, serializer, index, userRegion, oldRepository);
     if (indexRepo == null) {

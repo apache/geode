@@ -28,12 +28,13 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneIndexNotFoundException;
 import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
@@ -75,7 +76,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
       throw new IllegalArgumentException("Missing query provider");
     }
 
-    LuceneIndexImpl index = getLuceneIndex(region, searchContext);
+    InternalLuceneIndex index = getLuceneIndex(region, searchContext);
     if (index == null) {
       throw new LuceneIndexNotFoundException(searchContext.getIndexName(), region.getFullPath());
     }
@@ -124,13 +125,13 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
     }
   }
 
-  private LuceneIndexImpl getLuceneIndex(final Region region,
+  private InternalLuceneIndex getLuceneIndex(final Region region,
       final LuceneFunctionContext<IndexResultCollector> searchContext) {
     LuceneService service = LuceneServiceProvider.get(region.getCache());
-    LuceneIndexImpl index = null;
+    InternalLuceneIndex index = null;
     try {
-      index =
-          (LuceneIndexImpl) service.getIndex(searchContext.getIndexName(), region.getFullPath());
+      index = (InternalLuceneIndex) service.getIndex(searchContext.getIndexName(),
+          region.getFullPath());
       if (index == null) {
         while (service instanceof LuceneServiceImpl && (((LuceneServiceImpl) service)
             .getDefinedIndex(searchContext.getIndexName(), region.getFullPath()) != null)) {
@@ -141,8 +142,8 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
           }
           region.getCache().getCancelCriterion().checkCancelInProgress(null);
         }
-        index =
-            (LuceneIndexImpl) service.getIndex(searchContext.getIndexName(), region.getFullPath());
+        index = (InternalLuceneIndex) service.getIndex(searchContext.getIndexName(),
+            region.getFullPath());
       }
     } catch (CacheClosedException e) {
       throw new InternalFunctionInvocationTargetException(
@@ -152,7 +153,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
     return index;
   }
 
-  private Query getQuery(final LuceneQueryProvider queryProvider, final LuceneIndexImpl index) {
+  private Query getQuery(final LuceneQueryProvider queryProvider, final LuceneIndex index) {
     Query query = null;
     try {
       query = queryProvider.getQuery(index);

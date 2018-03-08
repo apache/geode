@@ -92,7 +92,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   protected LuceneIndexStats indexStats;
   protected FileSystemStats fileSystemStats;
   protected LuceneIndexImpl indexForPR;
-  protected AbstractPartitionedRepositoryManager repoManager;
+  protected PartitionedRepositoryManager repoManager;
   protected GemFireCacheImpl cache;
 
   @Before
@@ -141,7 +141,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     PowerMockito.mockStatic(PartitionedRegionHelper.class);
     PowerMockito.when(PartitionedRegionHelper.getPRRoot(cache)).thenReturn(prRoot);
     repoManager = new PartitionedRepositoryManager(indexForPR, serializer);
-    repoManager.setUserRegionForRepositoryManager();
+    repoManager.setUserRegionForRepositoryManager(userRegion);
     repoManager.allowRepositoryComputation();
   }
 
