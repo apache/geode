@@ -37,6 +37,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
@@ -50,6 +51,7 @@ import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
  * @since GemFire 7.0
  */
 public class CommandManager {
+
   public static final String USER_CMD_PACKAGES_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + USER_COMMAND_PACKAGES;
   public static final String USER_CMD_PACKAGES_ENV_VARIABLE = "GEMFIRE_USER_COMMAND_PACKAGES";
@@ -272,6 +274,12 @@ public class CommandManager {
    * Method to add new Commands to the parser
    */
   void add(CommandMarker commandMarker) {
+    Disabled classDisabled = commandMarker.getClass().getAnnotation(Disabled.class);
+    if (classDisabled != null && (classDisabled.unlessPropertyIsSet().isEmpty()
+        || System.getProperty(classDisabled.unlessPropertyIsSet()) == null)) {
+      return;
+    }
+
     // inject the cache into the commands
     if (GfshCommand.class.isAssignableFrom(commandMarker.getClass())) {
       ((GfshCommand) commandMarker).setCache(cache);
