@@ -23,8 +23,9 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderOperati
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class ParallelGatewaySenderOperation_2_OffHeapDUnitTest
     extends ParallelGatewaySenderOperation_2_DUnitTest {
 

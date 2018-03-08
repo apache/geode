@@ -33,8 +33,9 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class ParallelWANStatsDUnitTest extends WANTestBase {
 
   private static final int NUM_PUTS = 100;
@@ -236,7 +237,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.checkGatewayReceiverStats(10, NUM_PUTS, NUM_PUTS));
   }
 
-  @Category(FlakyTest.class) // GEODE-2176
+  @Category({FlakyTest.class, WanTest.class}) // GEODE-2176
   @Test
   public void testParallelPropagationHA() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
