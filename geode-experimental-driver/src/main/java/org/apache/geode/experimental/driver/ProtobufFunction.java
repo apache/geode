@@ -14,15 +14,15 @@
  */
 package org.apache.geode.experimental.driver;
 
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
 
 public class ProtobufFunction<T> implements Function<T> {
   private final String functionId;
@@ -75,8 +75,7 @@ public class ProtobufFunction<T> implements Function<T> {
             .addAllGroupName(stringGroups).setFunctionID(functionId))
         .build();
     final FunctionAPI.ExecuteFunctionOnGroupResponse response = channel
-        .sendRequest(request,
-            ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONGROUPRESPONSE)
+        .sendRequest(request, ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONGROUPRESPONSE)
         .getExecuteFunctionOnGroupResponse();
     return response.getResultsList().stream().map(value -> (T) ValueEncoder.decodeValue(value))
         .collect(Collectors.toList());
