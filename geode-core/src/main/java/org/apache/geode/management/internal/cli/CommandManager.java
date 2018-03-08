@@ -39,6 +39,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.cli.FeatureFlag;
 import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -272,6 +273,12 @@ public class CommandManager {
    * Method to add new Commands to the parser
    */
   void add(CommandMarker commandMarker) {
+    FeatureFlag classFeatureFlag = commandMarker.getClass().getAnnotation(FeatureFlag.class);
+    if (classFeatureFlag != null && (classFeatureFlag.flag().isEmpty()
+        || System.getProperty(classFeatureFlag.flag()) == null)) {
+      return;
+    }
+
     if (CommandManagerAware.class.isAssignableFrom(commandMarker.getClass())) {
       ((CommandManagerAware) commandMarker).setCommandManager(this);
     }
@@ -279,6 +286,7 @@ public class CommandManager {
     for (Method method : commandMarker.getClass().getMethods()) {
       CliCommand cliCommand = method.getAnnotation(CliCommand.class);
       CliAvailabilityIndicator availability = method.getAnnotation(CliAvailabilityIndicator.class);
+
       if (cliCommand == null && availability == null) {
         continue;
       }
