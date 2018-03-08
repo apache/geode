@@ -45,7 +45,7 @@ public interface Function<T> {
    * @return Possibly empty list of results from the function.
    * @throws IOException If an error occurred communicating with the distributed system.
    */
-  List<T> executeOnMember(Object arguments, Object... members) throws IOException;
+  List<T> executeOnMember(Object arguments, String... members) throws IOException;
 
   /**
    * Executes this function with the specified arguments on the specified groups.
@@ -55,5 +55,5 @@ public interface Function<T> {
    * @return Possibly empty list of results from the function.
    * @throws IOException If an error occurred communicating with the distributed system.
    */
-  List<T> executeOnGroup(Object arguments, Object... groups) throws IOException;
+  List<T> executeOnGroup(Object arguments, String... groups) throws IOException;
 }
