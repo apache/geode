@@ -240,10 +240,10 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   protected boolean createLuceneIndexOnDataRegion(final PartitionedRegion userRegion,
-      final LuceneIndexImpl luceneIndex) {
+      final InternalLuceneIndex luceneIndex) {
     try {
-      AbstractPartitionedRepositoryManager repositoryManager =
-          (AbstractPartitionedRepositoryManager) luceneIndex.getRepositoryManager();
+      PartitionedRepositoryManager repositoryManager =
+          (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
       if (userRegion.getDataStore() == null) {
         return true;
       }
@@ -307,17 +307,15 @@ public class LuceneServiceImpl implements InternalLuceneService {
    *
    * Public because this is called by the Xml parsing code
    */
-  public void afterDataRegionCreated(LuceneIndexImpl index) {
+  public void afterDataRegionCreated(InternalLuceneIndex index) {
     index.initialize();
     registerIndex(index);
     if (this.managementListener != null) {
       this.managementListener.afterIndexCreated(index);
     }
 
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(index.getName(), index.getRegionPath());
-    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
-    AbstractPartitionedRepositoryManager repositoryManager =
-        (AbstractPartitionedRepositoryManager) index.getRepositoryManager();
+    PartitionedRepositoryManager repositoryManager =
+        (PartitionedRepositoryManager) index.getRepositoryManager();
     repositoryManager.allowRepositoryComputation();
 
   }
@@ -332,7 +330,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     index.setFieldAnalyzers(fieldAnalyzers);
     index.setLuceneSerializer(serializer);
     index.setupRepositoryManager(serializer);
-    index.setupAEQ(attributes, aeqId);
+    index.createAEQ(attributes, aeqId);
     return index;
 
   }

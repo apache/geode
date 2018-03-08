@@ -14,7 +14,8 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -152,7 +153,7 @@ public class LuceneServiceImplJUnitTest {
   private class TestLuceneServiceImpl extends LuceneServiceImpl {
 
     @Override
-    public void afterDataRegionCreated(LuceneIndexImpl index) {
+    public void afterDataRegionCreated(InternalLuceneIndex index) {
       PartitionedRegion userRegion =
           (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());
       verify(userRegion, never()).addAsyncEventQueueId(anyString(), anyBoolean());

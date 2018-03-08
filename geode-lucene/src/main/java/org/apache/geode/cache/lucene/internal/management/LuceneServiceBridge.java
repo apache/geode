@@ -23,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
 
 public class LuceneServiceBridge {
@@ -50,7 +49,7 @@ public class LuceneServiceBridge {
     LuceneIndexMetrics[] indexMetrics = new LuceneIndexMetrics[indexes.size()];
     int i = 0;
     for (LuceneIndex index : this.service.getAllIndexes()) {
-      indexMetrics[i++] = getIndexMetrics((LuceneIndexImpl) index);
+      indexMetrics[i++] = getIndexMetrics(index);
     }
     return indexMetrics;
   }
@@ -62,14 +61,14 @@ public class LuceneServiceBridge {
     List<LuceneIndexMetrics> indexMetrics = new ArrayList();
     for (LuceneIndex index : this.service.getAllIndexes()) {
       if (index.getRegionPath().equals(regionPath)) {
-        indexMetrics.add(getIndexMetrics((LuceneIndexImpl) index));
+        indexMetrics.add(getIndexMetrics(index));
       }
     }
     return indexMetrics.toArray(new LuceneIndexMetrics[indexMetrics.size()]);
   }
 
   public LuceneIndexMetrics listIndexMetrics(String regionPath, String indexName) {
-    LuceneIndexImpl index = (LuceneIndexImpl) this.service.getIndex(indexName, regionPath);
+    LuceneIndex index = this.service.getIndex(indexName, regionPath);
     return index == null ? null : getIndexMetrics(index);
   }
 
@@ -77,7 +76,7 @@ public class LuceneServiceBridge {
     return index.getRegionPath() + "_" + index.getName();
   }
 
-  private LuceneIndexMetrics getIndexMetrics(LuceneIndexImpl index) {
+  private LuceneIndexMetrics getIndexMetrics(LuceneIndex index) {
     LuceneIndexStatsMonitor monitor = this.monitors.get(getMonitorKey(index));
     return monitor.getIndexMetrics(index);
   }

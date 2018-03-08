@@ -46,7 +46,7 @@ public class LuceneRegionListener implements RegionListener {
 
   private LuceneSerializer serializer;
 
-  private LuceneIndexImpl luceneIndex;
+  private InternalLuceneIndex luceneIndex;
 
   private AtomicBoolean beforeCreateInvoked = new AtomicBoolean();
 

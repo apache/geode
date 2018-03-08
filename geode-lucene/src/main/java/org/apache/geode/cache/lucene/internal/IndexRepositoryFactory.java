@@ -50,7 +50,7 @@ public class IndexRepositoryFactory {
   public IndexRepositoryFactory() {}
 
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-      LuceneIndexImpl index, PartitionedRegion userRegion, final IndexRepository oldRepository)
+      InternalLuceneIndex index, PartitionedRegion userRegion, final IndexRepository oldRepository)
       throws IOException {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
@@ -112,8 +112,7 @@ public class IndexRepositoryFactory {
         success = true;
         return repo;
       } else {
-        success =
-            reindexUserDataRegion(bucketId, userRegion, fileRegion, dataBucket, success, repo);
+        success = reindexUserDataRegion(bucketId, userRegion, fileRegion, dataBucket, repo);
       }
       return repo;
     } catch (IOException e) {
@@ -133,7 +132,7 @@ public class IndexRepositoryFactory {
   }
 
   private boolean reindexUserDataRegion(Integer bucketId, PartitionedRegion userRegion,
-      PartitionedRegion fileRegion, BucketRegion dataBucket, boolean success, IndexRepository repo)
+      PartitionedRegion fileRegion, BucketRegion dataBucket, IndexRepository repo)
       throws IOException {
     Set<IndexRepository> affectedRepos = new HashSet<IndexRepository>();
 
@@ -154,8 +153,7 @@ public class IndexRepositoryFactory {
     }
     // fileRegion ops (get/put) need bucketId as a callbackArg for PartitionResolver
     fileRegion.put(APACHE_GEODE_INDEX_COMPLETE, APACHE_GEODE_INDEX_COMPLETE, bucketId);
-    success = true;
-    return success;
+    return true;
   }
 
   private Object getValue(Region.Entry entry) {
