@@ -106,9 +106,10 @@ public class CreateJndiBindingCommandTest {
   public void returnsErrorIfBindingAlreadyExistsAndIfUnspecified()
       throws ParserConfigurationException, SAXException, IOException {
     ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    Element existingBinding = mock(Element.class);
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
-    doReturn(true).when(command).isBindingAlreadyExists(any());
+    doReturn(existingBinding).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
@@ -119,9 +120,10 @@ public class CreateJndiBindingCommandTest {
   public void skipsIfBindingAlreadyExistsAndIfSpecified()
       throws ParserConfigurationException, SAXException, IOException {
     ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    Element existingBinding = mock(Element.class);
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
-    doReturn(true).when(command).isBindingAlreadyExists(any());
+    doReturn(existingBinding).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND
@@ -133,9 +135,10 @@ public class CreateJndiBindingCommandTest {
   public void skipsIfBindingAlreadyExistsAndIfSpecifiedTrue()
       throws ParserConfigurationException, SAXException, IOException {
     ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    Element existingBinding = mock(Element.class);
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
-    doReturn(true).when(command).isBindingAlreadyExists(any());
+    doReturn(existingBinding).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND
@@ -147,74 +150,15 @@ public class CreateJndiBindingCommandTest {
   public void returnsErrorIfBindingAlreadyExistsAndIfSpecifiedFalse()
       throws ParserConfigurationException, SAXException, IOException {
     ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    Element existingBinding = mock(Element.class);
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
-    doReturn(true).when(command).isBindingAlreadyExists(any());
+    doReturn(existingBinding).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND
             + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --if-not-exists=false")
         .statusIsError().containsOutput("already exists.");
-  }
-
-  @Test
-  public void ifBindingAlreadyExistsShouldReturnTrueIfABindingExistsWithJndiName()
-      throws ParserConfigurationException, SAXException, IOException, TransformerException {
-
-    Configuration clusterConfig = new Configuration("cluster");
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
-    Region configRegion = mock(Region.class);
-
-    doReturn(configRegion).when(clusterConfigService).getConfigurationRegion();
-    doReturn(null).when(configRegion).put(any(), any());
-    doReturn(clusterConfig).when(clusterConfigService).getConfiguration("cluster");
-    doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(clusterConfigService).when(command).getSharedConfiguration();
-
-    // update cluster config
-    JndiBindingConfiguration jndi = new JndiBindingConfiguration();
-    jndi.setJndiName("jndi1");
-    jndi.setType(JndiBindingConfiguration.DATASOURCE_TYPE.SIMPLE);
-    command.updateXml(jndi);
-
-    assertThat(command.isBindingAlreadyExists("jndi1")).isTrue();
-  }
-
-  @Test
-  public void ifBindingAlreadyExistsShouldReturnFalseIfNoBindingsTagExists()
-      throws ParserConfigurationException, SAXException, IOException {
-
-    Configuration clusterConfig = new Configuration("cluster");
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
-
-    doReturn(clusterConfig).when(clusterConfigService).getConfiguration("cluster");
-    doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(clusterConfigService).when(command).getSharedConfiguration();
-
-    assertThat(command.isBindingAlreadyExists("somename")).isFalse();
-  }
-
-  @Test
-  public void ifBindingAlreadyExistsShouldReturnFalseIfNoBindingExists()
-      throws ParserConfigurationException, SAXException, IOException, TransformerException {
-
-    Configuration clusterConfig = new Configuration("cluster");
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
-    Region configRegion = mock(Region.class);
-
-    doReturn(configRegion).when(clusterConfigService).getConfigurationRegion();
-    doReturn(null).when(configRegion).put(any(), any());
-    doReturn(clusterConfig).when(clusterConfigService).getConfiguration("cluster");
-    doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(clusterConfigService).when(command).getSharedConfiguration();
-
-    // update cluster config
-    JndiBindingConfiguration jndi = new JndiBindingConfiguration();
-    jndi.setJndiName("jndi1");
-    jndi.setType(JndiBindingConfiguration.DATASOURCE_TYPE.SIMPLE);
-    command.updateXml(jndi);
-
-    assertThat(command.isBindingAlreadyExists("jndi2")).isFalse();
   }
 
   @Test
@@ -297,7 +241,7 @@ public class CreateJndiBindingCommandTest {
       throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(false).when(command).isBindingAlreadyExists(any());
+    doReturn(null).when(command).getSharedConfiguration();
     doNothing().when(command).updateXml(any());
 
     gfsh.executeAndAssertThat(command,
@@ -311,7 +255,7 @@ public class CreateJndiBindingCommandTest {
     ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
 
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(false).when(command).isBindingAlreadyExists(any());
+    doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doNothing().when(command).updateXml(any());
 
@@ -335,10 +279,8 @@ public class CreateJndiBindingCommandTest {
         "Tried creating jndi binding \"name\" on \"server1\"");
     List<CliFunctionResult> results = new ArrayList<>();
     results.add(result);
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
 
     doReturn(members).when(command).findMembers(any(), any());
-    doReturn(false).when(command).isBindingAlreadyExists(any());
     doReturn(null).when(command).getSharedConfiguration();
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
 
@@ -380,7 +322,7 @@ public class CreateJndiBindingCommandTest {
     ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
 
     doReturn(members).when(command).findMembers(any(), any());
-    doReturn(false).when(command).isBindingAlreadyExists(any());
+    doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doNothing().when(command).updateXml(any());
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());

@@ -43,6 +43,7 @@ public class ServerRule extends ExternalResource {
     server = Server.createServer(jmxPort, jmxPropertiesFile, jsonAuthFile);
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_HOST, LOCALHOST);
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT, Integer.toString(jmxPort));
+    System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED, String.valueOf(Boolean.TRUE));
 
     int httpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     jetty = JettyHelper.initJetty(LOCALHOST, httpPort, new SSLConfig());

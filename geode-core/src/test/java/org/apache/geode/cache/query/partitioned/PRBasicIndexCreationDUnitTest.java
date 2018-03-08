@@ -43,11 +43,12 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * TODO: most of these tests log statements instead of using assertions
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLIndexTest.class})
 public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
 
   private static final String PARTITIONED_REGION_NAME = "PartionedPortfolios";

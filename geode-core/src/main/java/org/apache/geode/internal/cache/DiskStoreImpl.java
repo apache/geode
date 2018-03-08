@@ -63,6 +63,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -2029,10 +2030,14 @@ public class DiskStoreImpl implements DiskStore {
   private void cleanupOrphanedBackupDirectories() {
     for (DirectoryHolder directoryHolder : getDirectoryHolders()) {
       try {
-        List<Path> backupDirectories = Files.list(directoryHolder.getDir().toPath())
-            .filter((path) -> path.getFileName().toString()
-                .startsWith(BackupService.DATA_STORES_TEMPORARY_DIRECTORY))
-            .filter(p -> Files.isDirectory(p)).collect(Collectors.toList());
+        List<Path> backupDirectories;
+        // Make sure we close the stream's resources
+        try (Stream<Path> stream = Files.list(directoryHolder.getDir().toPath())) {
+          backupDirectories = stream
+              .filter((path) -> path.getFileName().toString()
+                  .startsWith(BackupService.DATA_STORES_TEMPORARY_DIRECTORY))
+              .filter(p -> Files.isDirectory(p)).collect(Collectors.toList());
+        }
         for (Path backupDirectory : backupDirectories) {
           try {
             logger.info("Deleting orphaned backup temporary directory: " + backupDirectory);

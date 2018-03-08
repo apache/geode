@@ -27,6 +27,7 @@ import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -35,7 +36,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * This test is still mocking out the underlying cache, rather than using a real region.
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, LuceneTest.class})
 public class RegionDirectoryJUnitTest extends BaseDirectoryTestCase {
 
   @Rule

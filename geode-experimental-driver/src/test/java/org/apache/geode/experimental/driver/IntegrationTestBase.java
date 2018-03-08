@@ -63,7 +63,6 @@ public class IntegrationTestBase {
 
     // Create a driver connected to the server
     driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-
   }
 
   @After

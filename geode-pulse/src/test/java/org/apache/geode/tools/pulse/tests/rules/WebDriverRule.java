@@ -25,8 +25,8 @@ import org.junit.rules.ExternalResource;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -89,13 +89,11 @@ public class WebDriverRule extends ExternalResource {
   }
 
   private void setUpWebDriver() {
-    DesiredCapabilities capabilities = new DesiredCapabilities();
-    capabilities.setJavascriptEnabled(true);
-    capabilities.setCapability("takesScreenshot", true);
-    capabilities.setCapability("phantomjs.page.settings.userAgent",
-        "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:16.0) Gecko/20121026 Firefox/16.0");
-
-    driver = new PhantomJSDriver(capabilities);
+    ChromeOptions options = new ChromeOptions();
+    options.addArguments("headless");
+    options.addArguments("no-sandbox");
+    options.addArguments("window-size=1200x600");
+    driver = new ChromeDriver(options);
     driver.manage().window().maximize();
     driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
     driver.manage().timeouts().pageLoadTimeout(300, TimeUnit.SECONDS);

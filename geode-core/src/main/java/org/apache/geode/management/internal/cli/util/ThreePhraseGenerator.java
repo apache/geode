@@ -22,15 +22,15 @@ import java.util.Random;
  */
 public class ThreePhraseGenerator {
   private static final String[] adjectives =
-      "agreeable, alive, better, brave, calm, careful, clever, dead, delightful, eager, easy, faithful, famous, gentle, gifted, happy, helpful, important, inexpensive, jolly, kind, lively, mushy, nice, obedient, odd, powerful, proud, relieved, rich, shy, silly, tender, thankful, uninterested, vast, victorious, witty, wrong, zealous"
+      "agreeable, alive, better, brave, calm, careful, clever, drab, delightful, eager, elegant, faithful, famous, gentle, gifted, happy, helpful, important, inexpensive, jolly, kind, lively, nice, obedient, odd, polite, powerful, proud, relieved, rich, shy, silly, tender, thankful, uninterested, vast, victorious, witty, wrong, zealous"
           .split(", ");
 
   private static final String[] nouns =
-      "ball, bat, bed, book, boy, bun, can, cake, cap, car, cat, cow, cub, cup, dad, day, dog, doll, dust, fan, feet, girl, gun, hall, hat, hen, jar, kite, man, map, men, mom, pan, pet, pie, pig, pot, rat, son, sun, toe, tub, van"
+      "alpha, bravo, ball, bat, bed, book, bun, can, cake, cap, car, cup, delta, echo, hotel, day, kilo, uniform, dust, fan, feet, xray, gun, hall, hat, gamma, jar, kite, beta, map, omega, zeta, pan, post, pie, iota, pot, sigma, theta, sun, toe, tub, van"
           .split(", ");
 
   private static final String[] verbs =
-      "add, allow, bake, bang, call, chase, damage, drop, end, escape, fasten, fix, gather, grab, hang, hug, imagine, itch, jog, jump, kick, knit, land, lock, march, mix, name, notice, obey, open, pass, promise, question, reach, rinse, scatter, stay, talk, turn, untie, use, vanish, visit, walk, work, yawn, yell, zip, zoom"
+      "add, allow, bake, sing, call, chase, dance, dream, end, elevate, fasten, fix, gather, give, hold, hug, imagine, itch, jog, jump, kick, knit, land, lock, march, mix, name, notice, obey, open, pass, promise, question, reach, rinse, scatter, stay, talk, turn, untie, use, vanish, visit, walk, work, yawn, yell, zip, zoom"
           .split(", ");
 
   private final Random prng;

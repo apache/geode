@@ -42,12 +42,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * This tests creates partition regions with 1 Datastore & 1 Accessor node, firing a simple query
  * and validating the ResultSet size and Contents.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLQueryTest.class})
 public class PRBasicQueryDUnitTest extends CacheTestCase {
 
   private static final String name = "Portfolios";

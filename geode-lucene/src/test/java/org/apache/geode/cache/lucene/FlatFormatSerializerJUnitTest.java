@@ -31,9 +31,10 @@ import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerTe
 import org.apache.geode.cache.lucene.test.Customer;
 import org.apache.geode.cache.lucene.test.Page;
 import org.apache.geode.cache.lucene.test.Person;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, LuceneTest.class})
 public class FlatFormatSerializerJUnitTest {
 
   private HashSet<Person> createCollectionObjectContacts() {

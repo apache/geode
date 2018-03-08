@@ -29,11 +29,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * Basic functional test for removing index from a partitioned region system.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLIndexTest.class})
 public class PRBasicRemoveIndexDUnitTest extends CacheTestCase {
 
   private static final String name = "PartitionedPortfolios";

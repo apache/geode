@@ -17,10 +17,20 @@ package org.apache.geode.management.internal.cli.domain;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.geode.internal.util.ArgumentRedactor;
 
 public class MemberConfigurationInfo implements Serializable {
 
+  /**
+   * JVM arguments can potentially contain sensitive information. If these arguments are ever to be
+   * displayed, remember to apply
+   * {@link org.apache.geode.internal.util.ArgumentRedactor#redact(String)}
+   * to each argument.
+   */
   private List<String> jvmInputArguments;
   private Properties systemProperties;
   private Map<String, String> gfePropsSetUsingApi;
@@ -33,7 +43,7 @@ public class MemberConfigurationInfo implements Serializable {
 
   public MemberConfigurationInfo() {
     RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
-    setJvmInputArguments(runtimeBean.getInputArguments());
+    setJvmInputArguments(ArgumentRedactor.redactEachInList(runtimeBean.getInputArguments()));
 
   }
 
@@ -110,7 +120,4 @@ public class MemberConfigurationInfo implements Serializable {
   public void setPdxAttrributes(Map<String, String> pdxAttrributes) {
     this.pdxAttributes = pdxAttrributes;
   }
-
-
-
 }

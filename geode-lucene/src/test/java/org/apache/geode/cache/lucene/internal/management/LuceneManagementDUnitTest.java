@@ -48,8 +48,9 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, LuceneTest.class})
 public class LuceneManagementDUnitTest extends ManagementTestBase {
 
   @Test

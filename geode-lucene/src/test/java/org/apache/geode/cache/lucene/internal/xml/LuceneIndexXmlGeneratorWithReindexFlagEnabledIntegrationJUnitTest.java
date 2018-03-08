@@ -20,8 +20,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LuceneTest.class})
 public class LuceneIndexXmlGeneratorWithReindexFlagEnabledIntegrationJUnitTest
     extends LuceneIndexXmlGeneratorIntegrationJUnitTest {
   // Delete this test file after when the feature flag LuceneServiceImpl.LUCENE_REINDEX is removed

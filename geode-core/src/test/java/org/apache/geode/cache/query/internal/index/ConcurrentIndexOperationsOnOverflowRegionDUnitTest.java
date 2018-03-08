@@ -19,9 +19,7 @@ package org.apache.geode.cache.query.internal.index;
 
 import static org.junit.Assert.*;
 
-import java.util.Collection;
 import java.util.Properties;
-import java.util.Set;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,7 +39,6 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -51,9 +48,9 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * Test creates a persistent-overflow region and performs updates in region which has compact
@@ -65,7 +62,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  *
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLIndexTest.class})
 public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4CacheTestCase {
 
   String name;

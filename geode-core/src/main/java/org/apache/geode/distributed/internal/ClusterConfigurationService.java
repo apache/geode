@@ -31,8 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +59,8 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.CancelException;
@@ -75,7 +75,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
@@ -84,6 +83,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -175,6 +175,29 @@ public class ClusterConfigurationService {
       return DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
     }
     return sharedConfigDls;
+  }
+
+  /**
+   * Finds xml element in a group's xml, with the tagName that has given attribute and value
+   */
+  public Element getXmlElement(String group, String tagName, String attribute, String value)
+      throws IOException, SAXException, ParserConfigurationException {
+    if (group == null) {
+      group = "cluster";
+    }
+    Configuration config = getConfiguration(group);
+    Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
+    NodeList elements = document.getElementsByTagName(tagName);
+    if (elements == null || elements.getLength() == 0) {
+      return null;
+    } else {
+      for (int i = 0; i < elements.getLength(); i++) {
+        Element eachElement = (Element) elements.item(i);
+        if (eachElement.getAttribute(attribute).equals(value))
+          return eachElement;
+      }
+    }
+    return null;
   }
 
   /**
@@ -435,12 +458,7 @@ public class ClusterConfigurationService {
     List<RemoteInputStream> result = rc.getResult();
     RemoteInputStream jarStream = result.get(0);
 
-    Set<PosixFilePermission> perms = new HashSet<>();
-    perms.add(PosixFilePermission.OWNER_READ);
-    perms.add(PosixFilePermission.OWNER_WRITE);
-    perms.add(PosixFilePermission.OWNER_EXECUTE);
-    Path tempDir =
-        Files.createTempDirectory("deploy-", PosixFilePermissions.asFileAttribute(perms));
+    Path tempDir = FileUploader.createSecuredTempDirectory("deploy-");
     Path tempJar = Paths.get(tempDir.toString(), jarName);
     FileOutputStream fos = new FileOutputStream(tempJar.toString());
     InputStream input = RemoteInputStreamClient.wrap(jarStream);

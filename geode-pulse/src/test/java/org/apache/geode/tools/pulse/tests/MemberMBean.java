@@ -70,8 +70,6 @@ public interface MemberMBean {
 
   int getPort();
 
-  long getFoo();
-
   long getOffHeapFreeSize();
 
   long getOffHeapUsedSize();

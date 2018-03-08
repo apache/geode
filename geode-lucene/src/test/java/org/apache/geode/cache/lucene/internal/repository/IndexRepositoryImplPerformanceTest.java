@@ -67,6 +67,7 @@ import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.PerformanceTest;
 
 
@@ -74,7 +75,7 @@ import org.apache.geode.test.junit.categories.PerformanceTest;
  * Microbenchmark of the IndexRepository to compare an IndexRepository built on top of cache with a
  * stock lucene IndexWriter with a RAMDirectory.
  */
-@Category(PerformanceTest.class)
+@Category({PerformanceTest.class, LuceneTest.class})
 @Ignore("Tests have no assertions")
 public class IndexRepositoryImplPerformanceTest {
 

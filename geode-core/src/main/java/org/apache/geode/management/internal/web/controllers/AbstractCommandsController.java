@@ -18,16 +18,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.JMX;
@@ -54,6 +49,7 @@ import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor;
 import org.apache.geode.management.internal.web.util.UriUtils;
@@ -246,11 +242,7 @@ public abstract class AbstractCommandsController {
     List<String> filePaths = null;
     Path tempDir = null;
     if (multipartFiles != null) {
-      Set<PosixFilePermission> perms = new HashSet<>();
-      perms.add(PosixFilePermission.OWNER_READ);
-      perms.add(PosixFilePermission.OWNER_WRITE);
-      perms.add(PosixFilePermission.OWNER_EXECUTE);
-      tempDir = Files.createTempDirectory("uploaded-", PosixFilePermissions.asFileAttribute(perms));
+      tempDir = FileUploader.createSecuredTempDirectory("uploaded-");
       // staging the files to local
       filePaths = new ArrayList<>();
       for (MultipartFile multipartFile : multipartFiles) {

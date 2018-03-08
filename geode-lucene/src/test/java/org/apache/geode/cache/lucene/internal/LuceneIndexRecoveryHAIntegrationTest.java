@@ -40,8 +40,9 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LuceneTest.class})
 public class LuceneIndexRecoveryHAIntegrationTest {
   String[] indexedFields = new String[] {"txt"};
   HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();

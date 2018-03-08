@@ -77,12 +77,12 @@ message GetRegionNamesResponse {
     repeated string regions = 1;
 }
 
-message GetRegionRequest {
+message GetSizeRequest {
     string regionName = 1;
 }
 
-message GetRegionResponse {
-    Region region = 1;
+message GetSizeResponse {
+    int32 size = 1;
 }
 
 message OQLQueryRequest {

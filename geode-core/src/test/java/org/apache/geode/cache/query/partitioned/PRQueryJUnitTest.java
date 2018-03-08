@@ -35,13 +35,14 @@ import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * Class verifies Region#query(String predicate) API for PartitionedRegion on a single VM.
  *
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLQueryTest.class})
 public class PRQueryJUnitTest {
   String regionName = "portfolios";
 

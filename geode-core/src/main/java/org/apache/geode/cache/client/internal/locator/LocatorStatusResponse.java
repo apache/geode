@@ -69,7 +69,7 @@ public class LocatorStatusResponse extends ServerLocationResponse {
       final String locatorLogFile, final String locatorName) {
     final RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
     this.pid = identifyPid();
-    this.jvmArgs = runtimeBean.getInputArguments();
+    this.jvmArgs = ArgumentRedactor.redactEachInList(runtimeBean.getInputArguments());
     this.uptime = runtimeBean.getUptime();
     this.classpath = runtimeBean.getClassPath();
     this.gemfireVersion = GemFireVersion.getGemFireVersion();

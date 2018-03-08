@@ -30,9 +30,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerTestHelper;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, LuceneTest.class})
 public class FlatFormatPdxSerializerJunitTest {
 
   private PdxInstance createPdxInstance() {

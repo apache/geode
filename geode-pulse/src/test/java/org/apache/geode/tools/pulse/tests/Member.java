@@ -161,11 +161,6 @@ public class Member extends JMXBaseBean implements MemberMBean {
   }
 
   @Override
-  public long getFoo() {
-    return getLong("foo");
-  }
-
-  @Override
   public long getOffHeapFreeSize() {
     return getLong("OffHeapFreeSize");
   }

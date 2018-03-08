@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * This tests puts some values in a Local Region and sets all region entries being updated as true
@@ -52,8 +53,10 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  *
  */
-@Category({IntegrationTest.class, FlakyTest.class}) // GEODE-1059: uses PRQueryHelper which launches
-                                                    // dunit vms in IntegrationTest
+@Category({IntegrationTest.class, FlakyTest.class, OQLIndexTest.class}) // GEODE-1059: uses
+                                                                        // PRQueryHelper which
+                                                                        // launches
+// dunit vms in IntegrationTest
 public class QueryREUpdateInProgressJUnitTest {
 
   private static final String exampleRegionName = "exampleRegion2";

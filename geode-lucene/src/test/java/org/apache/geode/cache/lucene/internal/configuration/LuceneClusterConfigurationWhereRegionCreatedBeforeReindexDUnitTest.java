@@ -27,8 +27,9 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, LuceneTest.class})
 public class LuceneClusterConfigurationWhereRegionCreatedBeforeReindexDUnitTest
     extends LuceneClusterConfigurationDUnitTest {
 

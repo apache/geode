@@ -15,8 +15,6 @@
 package org.apache.geode.internal.protocol.protobuf.v1.utilities;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -79,29 +77,4 @@ public abstract class ProtobufUtilities {
       RegionAPI.GetAllRequest getAllRequest) {
     return ClientProtocol.Message.newBuilder().setGetAllRequest(getAllRequest).build();
   }
-
-  /**
-   * @return a Protobuf BasicTypes.Region message that represents the {@link Region}
-   */
-
-  public static BasicTypes.Region createRegionMessageFromRegion(Region region) {
-    RegionAttributes regionAttributes = region.getAttributes();
-    BasicTypes.Region.Builder protoRegionBuilder = BasicTypes.Region.newBuilder();
-
-    protoRegionBuilder.setName(region.getName());
-    protoRegionBuilder.setSize(region.size());
-
-    protoRegionBuilder.setPersisted(regionAttributes.getDataPolicy().withPersistence());
-    if (regionAttributes.getKeyConstraint() != null) {
-      protoRegionBuilder.setKeyConstraint(regionAttributes.getKeyConstraint().toString());
-    }
-    if (regionAttributes.getValueConstraint() != null) {
-      protoRegionBuilder.setValueConstraint(regionAttributes.getValueConstraint().toString());
-    }
-
-    protoRegionBuilder.setScope(regionAttributes.getScope().toString());
-    protoRegionBuilder.setDataPolicy(regionAttributes.getDataPolicy().toString());
-    return protoRegionBuilder.build();
-  }
-
 }

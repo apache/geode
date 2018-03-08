@@ -24,7 +24,7 @@ buildscript {
   dependencies {
     classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
     classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
-    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.0.1'
+    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1'
     classpath "com.diffplug.gradle.spotless:spotless:2.2.0"
     classpath "me.champeau.gradle:jmh-gradle-plugin:0.3.1"
     classpath "com.pedjak.gradle.plugins:dockerized-test:0.5.4"

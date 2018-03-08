@@ -80,7 +80,8 @@ public class Banner {
     List<String> commandLineArguments = new ArrayList<>();
     RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
     if (runtimeBean != null) {
-      commandLineArguments.addAll(runtimeBean.getInputArguments()); // fixes 45353
+      // each argument is redacted below.
+      commandLineArguments.addAll(runtimeBean.getInputArguments());
     }
 
     if (args != null && args.length != 0) {

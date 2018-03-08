@@ -26,6 +26,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -77,7 +78,9 @@ public class DescribeConfigCommand implements GfshCommand {
         TabularResultData jvmInputArgs = crd.addSection().addSection().addTable();
 
         for (String jvmArg : jvmArgsList) {
-          jvmInputArgs.accumulate("JVM command line arguments", jvmArg);
+          // This redaction should be redundant, since jvmArgs should have already been redacted in
+          // MemberConfigurationInfo. Still, better redundant than missing.
+          jvmInputArgs.accumulate("JVM command line arguments", ArgumentRedactor.redact(jvmArg));
         }
 
         addSection(crd, memberConfigInfo.getGfePropsSetUsingApi(),

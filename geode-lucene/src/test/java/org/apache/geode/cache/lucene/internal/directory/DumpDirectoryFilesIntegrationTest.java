@@ -38,8 +38,9 @@ import org.apache.geode.cache.lucene.LuceneIntegrationTest;
 import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
 import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LuceneTest.class})
 public class DumpDirectoryFilesIntegrationTest extends LuceneIntegrationTest {
   @Rule
   public TemporaryFolder tempFolderRule = new TemporaryFolder();

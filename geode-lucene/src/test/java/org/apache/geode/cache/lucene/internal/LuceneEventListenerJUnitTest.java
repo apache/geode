@@ -38,12 +38,13 @@ import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test that async event listener dispatched the events to the appropriate repository.
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, LuceneTest.class})
 public class LuceneEventListenerJUnitTest {
 
   @After

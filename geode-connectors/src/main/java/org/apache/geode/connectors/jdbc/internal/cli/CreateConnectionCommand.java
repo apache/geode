@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -29,6 +30,8 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -62,7 +65,8 @@ public class CreateConnectionCommand implements GfshCommand {
   private static final String ERROR_PREFIX = "ERROR: ";
 
   @CliCommand(value = CREATE_CONNECTION, help = CREATE_CONNECTION__HELP)
-  @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
+  @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE,
+      interceptor = "org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public Result createConnection(
@@ -140,6 +144,20 @@ public class CreateConnectionCommand implements GfshCommand {
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
           () -> getSharedConfiguration().addXmlEntity(xmlEntity, null));
+    }
+  }
+
+  public static class Interceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public Result preExecution(GfshParseResult parseResult) {
+      String user = parseResult.getParamValueAsString(CREATE_CONNECTION__USER);
+      String password = parseResult.getParamValueAsString(CREATE_CONNECTION__PASSWORD);
+
+      if (StringUtils.isNotBlank(password) && StringUtils.isBlank(user)) {
+        return ResultBuilder
+            .createUserErrorResult("need to specify a user if a password is specified.");
+      }
+      return ResultBuilder.createInfoResult("");
     }
   }
 }

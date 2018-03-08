@@ -12,44 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.execute;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
-import org.apache.geode.DataSerializable;
+package org.apache.geode.test.junit.categories;
 
 /**
- * Extracted from {@link PRCustomPartitioningDUnitTest}.
+ * A test category for OQL query-related tests
  */
-@SuppressWarnings("serial")
-class SerializableMonth implements DataSerializable {
-
-  private int month;
-
-  public SerializableMonth(int month) {
-    this.month = month;
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    month = in.readInt();
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    out.writeInt(month);
-  }
-
-  @Override
-  public int hashCode() {
-    if (month < 4) {
-      return 1;
-    } else if (month < 8) {
-      return 2;
-    } else {
-      return 3;
-    }
-  }
+public interface OQLQueryTest {
 }

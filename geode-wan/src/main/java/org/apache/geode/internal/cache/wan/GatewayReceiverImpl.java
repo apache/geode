@@ -216,12 +216,18 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   }
 
   public void destroy() {
-    if (receiver.isRunning()) {
-      throw new GatewayReceiverException(
-          "Gateway Receiver is running and needs to be stopped first");
+    logger.info("Destroying Gateway Receiver: " + this);
+    if (receiver == null) {
+      // receiver was not started
+      this.cache.removeGatewayReceiver(this);
+    } else {
+      if (receiver.isRunning()) {
+        throw new GatewayReceiverException(
+            "Gateway Receiver is running and needs to be stopped first");
+      }
+      this.cache.removeGatewayReceiver(this);
+      this.cache.removeCacheServer(receiver);
     }
-    this.cache.removeGatewayReceiver(this);
-    this.cache.removeCacheServer(receiver);
     InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_DESTROY, this);
   }

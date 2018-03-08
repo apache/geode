@@ -37,8 +37,9 @@ import org.apache.geode.cache.lucene.test.LuceneDeclarable2TestSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestSerializer;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LuceneTest.class})
 public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
 
   protected Cache cache;

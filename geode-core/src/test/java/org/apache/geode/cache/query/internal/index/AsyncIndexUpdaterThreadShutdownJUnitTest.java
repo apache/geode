@@ -29,6 +29,7 @@ import org.apache.geode.cache.query.internal.index.IndexManager.IndexUpdaterThre
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * Test create a region (Replicated OR Partitioned) and sets index maintenance Asynchronous so that
@@ -38,7 +39,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class AsyncIndexUpdaterThreadShutdownJUnitTest {
 
   String name = "PR_with_Async_Index";

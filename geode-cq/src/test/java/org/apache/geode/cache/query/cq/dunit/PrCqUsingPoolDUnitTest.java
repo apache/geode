@@ -52,6 +52,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
@@ -60,7 +61,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  *
  * @since GemFire 5.5
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   public PrCqUsingPoolDUnitTest() {

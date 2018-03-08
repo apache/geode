@@ -37,9 +37,10 @@ import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OQLIndexTest.class})
 public class DeclarativeIndexCreationJUnitTest {
 
   private DistributedSystem ds;

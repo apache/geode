@@ -89,4 +89,21 @@ public class CreateConnectionCommandDUnitTest {
           .containsEntry("param2", "value2");
     });
   }
+
+  @Test
+  public void doesNotCreateConnectionIfPasswordSpecifiedWithoutUser() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_CONNECTION);
+    csb.addOption(CREATE_CONNECTION__NAME, "name");
+    csb.addOption(CREATE_CONNECTION__URL, "url");
+    csb.addOption(CREATE_CONNECTION__PASSWORD, "secret");
+    csb.addOption(CREATE_CONNECTION__PARAMS, "param1:value1,param2:value2");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError();
+
+    locator.invoke(() -> {
+      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
+          .getCacheXmlContent();
+      assertThat(xml).doesNotContain("jdbc:connector-service");
+    });
+  }
 }
