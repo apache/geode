@@ -66,6 +66,7 @@ public class SqlHandlerTest {
   private static final String REGION_NAME = "testRegion";
   private static final String TABLE_NAME = "testTable";
   private static final String COLUMN_NAME_1 = "columnName1";
+  private static final Object COLUMN_VALUE_1 = "columnValue1";
   private static final Object COLUMN_VALUE_2 = "columnValue2";
   private static final String COLUMN_NAME_2 = "columnName2";
   private static final String KEY_COLUMN = "keyColumn";
@@ -205,7 +206,7 @@ public class SqlHandlerTest {
   @Test
   public void readReturnsDataFromAllResultColumns() throws Exception {
     ResultSet result = mock(ResultSet.class);
-    setupResultSet(result);
+    setupResultSetForTwoObjectColumns(result);
     when(result.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
 
@@ -215,7 +216,7 @@ public class SqlHandlerTest {
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
     handler.read(region, new Object());
-    verify(factory).writeObject(PDX_FIELD_NAME_1, getValueByFieldType(FieldType.OBJECT));
+    verify(factory).writeObject(PDX_FIELD_NAME_1, COLUMN_VALUE_1);
     verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
     verify(factory).create();
   }
@@ -227,15 +228,12 @@ public class SqlHandlerTest {
     setupResultSet(result, fieldType);
     when(result.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
-
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
-    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
+
     handler.read(region, new Object());
 
     verifyPdxFactoryWrite(factory, fieldType);
-    verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
     verify(factory).create();
   }
 
@@ -246,15 +244,12 @@ public class SqlHandlerTest {
     setupResultSet(result, fieldType, null);
     when(result.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
-
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
-    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
+
     handler.read(region, new Object());
 
     verifyPdxFactoryWrite(factory, fieldType, null);
-    verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
     verify(factory).create();
   }
 
@@ -317,9 +312,9 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void readWritesObjectFieldGivenPdxTypeWithFieldMissing() throws Exception {
+  public void readThrowsGivenPdxTypeWithFieldMissing() throws Exception {
     ResultSet result = mock(ResultSet.class);
-    setupResultSet(result);
+    setupResultSet(result, FieldType.OBJECT);
     when(result.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
 
@@ -336,17 +331,17 @@ public class SqlHandlerTest {
     when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(null);
 
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
-    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
+
+
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("Could not find PdxType");
     handler.read(region, new Object());
-    verify(factory).writeObject(PDX_FIELD_NAME_1, getValueByFieldType(FieldType.OBJECT));
-    verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
-    verify(factory).create();
   }
 
   @Test
   public void readResultOmitsKeyColumnIfNotInValue() throws Exception {
     ResultSet result = mock(ResultSet.class);
-    setupResultSet(result);
+    setupResultSetForTwoObjectColumns(result);
     when(result.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
     when(tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME)).thenReturn(COLUMN_NAME_1);
@@ -364,7 +359,7 @@ public class SqlHandlerTest {
   @Test
   public void throwsExceptionIfMoreThanOneResultReturned() throws Exception {
     ResultSet result = mock(ResultSet.class);
-    setupResultSet(result);
+    setupResultSetForTwoObjectColumns(result);
     when(result.next()).thenReturn(true);
     when(result.getStatement()).thenReturn(mock(PreparedStatement.class));
     when(statement.executeQuery()).thenReturn(result);
@@ -700,6 +695,18 @@ public class SqlHandlerTest {
 
   }
 
+
+  private void setupResultSetForTwoObjectColumns(ResultSet result) throws SQLException {
+    setupResultSet(result, FieldType.OBJECT);
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(result.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(2);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+    when(metaData.getColumnName(2)).thenReturn(COLUMN_NAME_2);
+    when(result.getObject(1)).thenReturn(COLUMN_VALUE_1);
+    when(result.getObject(2)).thenReturn(COLUMN_VALUE_2);
+  }
+
   private void setupResultSet(ResultSet result, FieldType fieldType) throws SQLException {
     setupResultSet(result, fieldType, getValueByFieldType(fieldType));
   }
@@ -708,7 +715,8 @@ public class SqlHandlerTest {
       throws SQLException {
     ResultSetMetaData metaData = mock(ResultSetMetaData.class);
     when(result.getMetaData()).thenReturn(metaData);
-    when(metaData.getColumnCount()).thenReturn(2);
+    when(metaData.getColumnCount()).thenReturn(1);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
 
     switch (fieldType) {
       case STRING:
@@ -716,7 +724,7 @@ public class SqlHandlerTest {
         break;
       case CHAR:
         Character charValue = (Character) value;
-        when(result.getString(1)).thenReturn(value == null ? null : value.toString());
+        when(result.getString(1)).thenReturn(value == null ? null : charValue.toString());
         break;
       case SHORT:
         when(result.getShort(1)).thenReturn(value == null ? 0 : (Short) value);
@@ -786,16 +794,9 @@ public class SqlHandlerTest {
       default:
         throw new IllegalStateException("unhandled fieldType " + fieldType);
     }
-    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
 
-    when(result.getObject(2)).thenReturn(COLUMN_VALUE_2);
-    when(metaData.getColumnName(2)).thenReturn(COLUMN_NAME_2);
   }
 
-
-  private void setupResultSet(ResultSet result) throws SQLException {
-    setupResultSet(result, FieldType.OBJECT);
-  }
 
   private void setupEmptyResultSet() throws SQLException {
     ResultSet result = mock(ResultSet.class);
@@ -847,20 +848,17 @@ public class SqlHandlerTest {
   @Test
   public void usesMappedPdxFieldNameWhenReading() throws Exception {
     ResultSet resultSet = mock(ResultSet.class);
-    setupResultSet(resultSet);
+    setupResultSetForTwoObjectColumns(resultSet);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(resultSet);
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
     String fieldName1 = "pdxFieldName1";
-    String fieldName2 = "pdxFieldName2";
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(fieldName1);
-    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(fieldName2);
 
     handler.createPdxInstance(resultSet, region, regionMapping, "keyColumn");
 
-    verify(factory).writeObject(fieldName1, getValueByFieldType(FieldType.OBJECT));
-    verify(factory).writeObject(fieldName2, COLUMN_VALUE_2);
+    verify(factory).writeObject(fieldName1, COLUMN_VALUE_1);
     verify(factory).create();
   }
 

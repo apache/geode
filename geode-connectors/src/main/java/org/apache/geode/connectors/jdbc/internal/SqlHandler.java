@@ -134,8 +134,7 @@ public class SqlHandler {
         String columnName = metaData.getColumnName(i);
         if (regionMapping.isPrimaryKeyInValue() || !keyColumnName.equalsIgnoreCase(columnName)) {
           String fieldName = mapColumnNameToFieldName(columnName, regionMapping);
-          FieldType fieldType =
-              getFieldType(region, regionMapping.getPdxClassName(), fieldName, metaData, i);
+          FieldType fieldType = getFieldType(region, regionMapping.getPdxClassName(), fieldName);
           writeField(factory, resultSet, i, fieldName, fieldType);
         }
       }
@@ -252,24 +251,24 @@ public class SqlHandler {
     }
   }
 
-  private <K, V> FieldType getFieldType(Region<K, V> region, String pdxClassName, String fieldName,
-      ResultSetMetaData metaData, int columnIndex) {
-    FieldType result = null;
-    if (pdxClassName != null) {
-      InternalCache cache = (InternalCache) region.getRegionService();
-      PdxType pdxType = cache.getPdxRegistry().getPdxTypeForField(fieldName, pdxClassName);
-      if (pdxType != null) {
-        PdxField pdxField = pdxType.getPdxField(fieldName);
-        if (pdxField != null) {
-          result = pdxField.getFieldType();
-        }
+  private <K, V> FieldType getFieldType(Region<K, V> region, String pdxClassName,
+      String fieldName) {
+    if (pdxClassName == null) {
+      return FieldType.OBJECT;
+    }
+
+    InternalCache cache = (InternalCache) region.getRegionService();
+    PdxType pdxType = cache.getPdxRegistry().getPdxTypeForField(fieldName, pdxClassName);
+    if (pdxType != null) {
+      PdxField pdxField = pdxType.getPdxField(fieldName);
+      if (pdxField != null) {
+        return pdxField.getFieldType();
       }
     }
-    if (result == null) {
-      // TODO check metadata, for now make it object
-      result = FieldType.OBJECT;
-    }
-    return result;
+
+    throw new JdbcConnectorException("Could not find PdxType for field " + fieldName
+        + ". Add class " + pdxClassName + " with " + fieldName + " to pdx registry.");
+
   }
 
   private void setValuesInStatement(PreparedStatement statement, List<ColumnValue> columnList)

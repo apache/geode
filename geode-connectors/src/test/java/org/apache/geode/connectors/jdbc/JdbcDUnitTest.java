@@ -255,7 +255,8 @@ public class JdbcDUnitTest implements Serializable {
     server.invoke(() -> {
       String key = "emp1";
       Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
-      region.get(key);
+      Object value = region.get(key);
+      assertThat(value).isNull();
       assertThat(region.size()).isEqualTo(0);
     });
   }
@@ -289,7 +290,7 @@ public class JdbcDUnitTest implements Serializable {
     createTable();
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, Employee.class.getName());
+    createMapping(REGION_NAME, CONNECTION_NAME, Employee.class.getName(), false);
     server.invoke(() -> {
       String key = "id1";
       Employee value = new Employee("Emp1", 55);
@@ -311,7 +312,7 @@ public class JdbcDUnitTest implements Serializable {
 
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
-    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName());
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
     client.invoke(() -> {
       String key = "id1";
       ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2,
@@ -379,8 +380,13 @@ public class JdbcDUnitTest implements Serializable {
   }
 
   private void createMapping(String regionName, String connectionName, String pdxClassName) {
+    createMapping(regionName, connectionName, pdxClassName, true);
+  }
+
+  private void createMapping(String regionName, String connectionName, String pdxClassName,
+      boolean valueContainsPrimaryKey) {
     final String commandStr = "create jdbc-mapping --region=" + regionName + " --connection="
-        + connectionName + " --value-contains-primary-key"
+        + connectionName + (valueContainsPrimaryKey ? " --value-contains-primary-key" : "")
         + (pdxClassName != null ? " --pdx-class-name=" + pdxClassName : "");
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
