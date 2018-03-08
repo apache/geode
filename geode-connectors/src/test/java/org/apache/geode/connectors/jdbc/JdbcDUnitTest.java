@@ -278,7 +278,7 @@ public class JdbcDUnitTest implements Serializable {
       region.invalidate(key);
 
       PdxInstance result = (PdxInstance) region.get(key);
-      assertThat(result.getFieldNames().size()).isEqualTo(3);
+      assertThat(result.getFieldNames()).hasSize(3);
       assertThat(result.getField("id")).isEqualTo(key);
       assertThat(result.getField("name")).isEqualTo("Emp1");
       assertThat(result.getField("age")).isEqualTo(55);
