@@ -34,6 +34,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyJndiBindingFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -49,13 +50,17 @@ public class DestroyJndiBindingCommand extends GfshCommand {
       "Destroy a jndi binding that holds the configuration for the XA datasource.";
   static final String JNDI_NAME = "name";
   static final String JNDI_NAME__HELP = "Name of the binding to be destroyed.";
+  static final String IFEXISTS_HELP =
+      "Skip the destroy operation when a jndi binding with the same name does not exists. The default is not to skip it.";
 
   @CliCommand(value = CREATE_JNDIBINDING, help = CREATE_JNDIBINDING__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public Result destroyJDNIBinding(
-      @CliOption(key = JNDI_NAME, mandatory = true, help = JNDI_NAME__HELP) String jndiName)
+      @CliOption(key = JNDI_NAME, mandatory = true, help = JNDI_NAME__HELP) String jndiName,
+      @CliOption(key = CliStrings.IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false") boolean ifExists)
       throws IOException, SAXException, ParserConfigurationException, TransformerException {
 
     Result result;
@@ -65,8 +70,9 @@ public class DestroyJndiBindingCommand extends GfshCommand {
       Element existingBinding =
           service.getXmlElement("cluster", "jndi-binding", "jndi-name", jndiName);
       if (existingBinding == null) {
-        return ResultBuilder.createUserErrorResult(
-            CliStrings.format("Jndi binding with jndi-name \"{0}\" does not exist.", jndiName));
+        throw new EntityNotFoundException(
+            CliStrings.format("Jndi binding with jndi-name \"{0}\" does not exist.", jndiName),
+            ifExists);
       }
       removeJndiBindingFromXml(jndiName);
       persisted = true;
