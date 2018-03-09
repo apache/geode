@@ -38,9 +38,10 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class})
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class RegisterInterestIntegrationTest {
 
   private MemberVM locator;
