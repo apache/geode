@@ -22,6 +22,11 @@ configurations {
   moduleDistOutputs
 }
 
+dependencies {
+  slf4jDeps 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
+}
+
 jar.enabled = true
 extraArchive {
   sources = false
@@ -197,8 +202,6 @@ task distTcServer30(type: Zip, dependsOn: [':extensions/geode-modules:assemble',
 }
 
 dependencies {
-  slf4jDeps 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
-  slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
   moduleDistOutputs distTcServer.outputs.files
   moduleDistOutputs distTcServer30.outputs.files
   moduleDistOutputs distAppServer.outputs.files
