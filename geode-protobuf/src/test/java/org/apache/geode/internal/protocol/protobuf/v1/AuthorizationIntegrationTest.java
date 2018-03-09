@@ -63,6 +63,9 @@ public class AuthorizationIntegrationTest {
   private static final String TEST_KEY1 = "testKey1";
   private static final String TEST_KEY2 = "testKey2";
 
+  private final String OQLTwoRegionTestQuery =
+      "select * from /" + TEST_REGION1 + " one, /" + TEST_REGION2 + " two where one.id = two.id";
+
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
@@ -257,6 +260,40 @@ public class AuthorizationIntegrationTest {
     verifyBatchOperation(false, TEST_REGION1, true, false);
     verifyBatchOperation(true, TEST_REGION2, false, true);
     verifyBatchOperation(false, TEST_REGION2, false, false);
+  }
+
+  @Test
+  public void testOQLAuthorization() throws Exception {
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, TEST_REGION1));
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, TEST_REGION2));
+
+    ClientProtocol.Message request = ClientProtocol.Message.newBuilder()
+        .setOqlQueryRequest(RegionAPI.OQLQueryRequest.newBuilder().setQuery(OQLTwoRegionTestQuery))
+        .build();
+    protobufProtocolSerializer.serialize(request, outputStream);
+
+    ClientProtocol.Message response = protobufProtocolSerializer.deserialize(inputStream);
+    assertEquals(ClientProtocol.Message.MessageTypeCase.OQLQUERYRESPONSE,
+        response.getMessageTypeCase());
+  }
+
+  @Test
+  public void testOQLRequiresAuthorizationForMultipleRegions() throws Exception {
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, TEST_REGION1));
+
+    ClientProtocol.Message request = ClientProtocol.Message.newBuilder()
+        .setOqlQueryRequest(RegionAPI.OQLQueryRequest.newBuilder().setQuery(OQLTwoRegionTestQuery))
+        .build();
+    protobufProtocolSerializer.serialize(request, outputStream);
+
+    ClientProtocol.Message response = protobufProtocolSerializer.deserialize(inputStream);
+    assertEquals(ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE,
+        response.getMessageTypeCase());
+    assertEquals(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
+        response.getErrorResponse().getError().getErrorCode());
   }
 
   private void verifyBatchOperation(boolean testRead, String region, boolean expectedKey1Success,

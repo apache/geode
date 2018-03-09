@@ -772,8 +772,8 @@ public class DefaultQuery implements Query {
    * @param parameters the parameters to be passed in to the query when executed
    * @return Unmodifiable List containing the region names.
    */
-  public Set getRegionsInQuery(Object[] parameters) {
-    Set regions = new HashSet();
+  public Set<String> getRegionsInQuery(Object[] parameters) {
+    Set<String> regions = new HashSet<>();
     this.compiledQuery.getRegionsInQuery(regions, parameters);
     return Collections.unmodifiableSet(regions);
   }
