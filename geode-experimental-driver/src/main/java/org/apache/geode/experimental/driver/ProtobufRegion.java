@@ -140,6 +140,14 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
   }
 
   @Override
+  public void clear() throws IOException {
+    final Message request = Message.newBuilder()
+        .setClearRequest(RegionAPI.ClearRequest.newBuilder().setRegionName(name)).build();
+
+    protobufChannel.sendRequest(request, MessageTypeCase.CLEARRESPONSE);
+  }
+
+  @Override
   public void remove(K key) throws IOException {
     final Message request = Message.newBuilder()
         .setRemoveRequest(

@@ -75,6 +75,9 @@ message Message {
 
         DisconnectClientRequest disconnectClientRequest = 30;
         DisconnectClientResponse disconnectClientResponse = 31;
+
+        ClearRequest clearRequest = 32;
+        ClearResponse clearResponse = 33;
     }
 }
 
