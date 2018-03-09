@@ -83,7 +83,7 @@ public class ProcessControllerFactoryIntegrationTest {
         factory.createProcessController(parameters, directory, pidFileName);
 
     // assert
-    assertThat(controller).isInstanceOf(MBeanProcessController.class);
+    assertThat(controller).isInstanceOf(MBeanOrFileProcessController.class);
   }
 
   @Test
