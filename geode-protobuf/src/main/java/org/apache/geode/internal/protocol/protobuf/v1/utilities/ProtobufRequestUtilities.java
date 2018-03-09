@@ -44,6 +44,18 @@ public abstract class ProtobufRequestUtilities {
   }
 
   /**
+   * Creates a request object containing a RegionAPI.ClearRequest
+   *
+   * @param regionName - Name of the region being cleared
+   * @return Request object containing the passed params.
+   */
+  public static ClientProtocol.Message createClearRequest(String regionName) {
+    RegionAPI.ClearRequest clearRequest =
+        RegionAPI.ClearRequest.newBuilder().setRegionName(regionName).build();
+    return ClientProtocol.Message.newBuilder().setClearRequest(clearRequest).build();
+  }
+
+  /**
    * Creates a request object containing a RegionAPI.RemoveRequest
    *
    * @param regionName - Name of the region being deleted from
