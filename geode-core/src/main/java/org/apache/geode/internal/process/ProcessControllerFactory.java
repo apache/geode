@@ -49,13 +49,11 @@ public class ProcessControllerFactory {
     notNull(parameters, "Invalid parameters '" + parameters + "' specified");
     isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
 
-    if (isAttachAPIFound()) {
-      try {
-        return new MBeanProcessController(parameters, pid);
-      } catch (ExceptionInInitializerError ignore) {
-      }
+    if (!isAttachAPIFound()) {
+      return new FileProcessController(parameters, pid);
     }
-    return new FileProcessController(parameters, pid);
+
+    return new MBeanOrFileProcessController(parameters, pid);
   }
 
   public ProcessController createProcessController(final ProcessControllerParameters parameters,
