@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -32,7 +33,9 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.FeatureFlag;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -97,7 +100,7 @@ public class CommandManagerJUnitTest {
    * tests loadCommands()
    */
   @Test
-  public void testCommandManagerLoadCommands() throws Exception {
+  public void testCommandManagerLoadCommands() {
     assertNotNull(commandManager);
     assertThat(commandManager.getCommandMarkers().size()).isGreaterThan(0);
     assertThat(commandManager.getConverters().size()).isGreaterThan(0);
@@ -107,7 +110,7 @@ public class CommandManagerJUnitTest {
    * tests commandManagerInstance method
    */
   @Test
-  public void testCommandManagerInstance() throws Exception {
+  public void testCommandManagerInstance() {
     assertNotNull(commandManager);
   }
 
@@ -117,7 +120,7 @@ public class CommandManagerJUnitTest {
    * @since GemFire 8.1
    */
   @Test
-  public void testCommandManagerLoadPluginCommands() throws Exception {
+  public void testCommandManagerLoadPluginCommands() {
     assertNotNull(commandManager);
 
     // see META-INF/services/org.springframework.shell.core.CommandMarker service loader file.
@@ -125,6 +128,28 @@ public class CommandManagerJUnitTest {
         commandManager.getHelper().getCommands().contains("mock plugin command"));
     assertTrue("Should not find unlisted plugin.",
         !commandManager.getHelper().getCommands().contains("mock plugin command unlisted"));
+  }
+
+  @Test
+  public void commandManagerDoesNotAddUnsatisfiedFeatureFlaggedCommands() {
+    System.setProperty("enabled.flag", "true");
+    try {
+      CommandMarker accessibleCommand = new AccessibleCommand();
+      CommandMarker enabledCommand = new FeatureFlaggedAndEnabledCommand();
+      CommandMarker reachableButDisabledCommand = new FeatureFlaggedReachableCommand();
+      CommandMarker unreachableCommand = new FeatureFlaggedUnreachableCommand();
+
+      commandManager.add(accessibleCommand);
+      commandManager.add(enabledCommand);
+      commandManager.add(reachableButDisabledCommand);
+      commandManager.add(unreachableCommand);
+
+      assertThat(commandManager.getCommandMarkers()).contains(accessibleCommand, enabledCommand);
+      assertThat(commandManager.getCommandMarkers()).doesNotContain(reachableButDisabledCommand,
+          unreachableCommand);
+    } finally {
+      System.clearProperty("enabled.flag");
+    }
   }
 
   /**
@@ -198,18 +223,16 @@ public class CommandManagerJUnitTest {
     @Override
     public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
         String existingData, String context, MethodTarget target) {
-      if (context.equals(ARGUMENT1_CONTEXT)) {
-        for (Completion completion : ARGUMENT1_COMPLETIONS) {
-          completions.add(completion);
-        }
-      } else if (context.equals(ARGUMENT2_CONTEXT)) {
-        for (Completion completion : ARGUMENT2_COMPLETIONS) {
-          completions.add(completion);
-        }
-      } else if (context.equals(OPTION1_CONTEXT)) {
-        for (Completion completion : OPTION1_COMPLETIONS) {
-          completions.add(completion);
-        }
+      switch (context) {
+        case ARGUMENT1_CONTEXT:
+          Collections.addAll(completions, ARGUMENT1_COMPLETIONS);
+          break;
+        case ARGUMENT2_CONTEXT:
+          Collections.addAll(completions, ARGUMENT2_COMPLETIONS);
+          break;
+        case OPTION1_CONTEXT:
+          Collections.addAll(completions, OPTION1_COMPLETIONS);
+          break;
       }
       return true;
     }
@@ -228,6 +251,43 @@ public class CommandManagerJUnitTest {
     @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public Result mockPluginCommandUnlisted() {
       return null;
+    }
+  }
+
+
+  class AccessibleCommand implements CommandMarker {
+    @CliCommand(value = "test-command")
+    public Result ping() {
+      return ResultBuilder.createInfoResult("pong");
+    }
+
+    @CliAvailabilityIndicator("test-command")
+    public boolean always() {
+      return true;
+    }
+  }
+
+  @FeatureFlag
+  class FeatureFlaggedUnreachableCommand implements CommandMarker {
+    @CliCommand(value = "unreachable")
+    public Result nothing() {
+      throw new RuntimeException("You reached the body of a feature-flagged command.");
+    }
+  }
+
+  @FeatureFlag(flag = "reachable.flag")
+  class FeatureFlaggedReachableCommand implements CommandMarker {
+    @CliCommand(value = "reachable")
+    public Result nothing() {
+      throw new RuntimeException("You reached the body of a feature-flagged command.");
+    }
+  }
+
+  @FeatureFlag(flag = "enabled.flag")
+  class FeatureFlaggedAndEnabledCommand implements CommandMarker {
+    @CliCommand(value = "reachable")
+    public Result nothing() {
+      throw new RuntimeException("You reached the body of a feature-flagged command.");
     }
   }
 
