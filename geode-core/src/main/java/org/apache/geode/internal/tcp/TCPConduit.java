@@ -103,8 +103,6 @@ public class TCPConduit implements Runnable {
    */
   static boolean useSSL;
 
-  // public static final boolean USE_SYNC_WRITES = Boolean.getBoolean("p2p.useSyncWrites");
-
   /**
    * Force use of Sockets rather than SocketChannels (NIO). Note from Bruce: due to a bug in the
    * java VM, NIO cannot be used with IPv6 addresses on Windows. When that condition holds, the
@@ -536,7 +534,6 @@ public class TCPConduit implements Runnable {
 
     stopped = true;
 
-    // System.err.println("DEBUG: TCPConduit emergencyClose");
     try {
       if (channel != null) {
         channel.close();
@@ -558,8 +555,6 @@ public class TCPConduit implements Runnable {
     socket = null;
     thread = null;
     conTable = null;
-
-    // System.err.println("DEBUG: end of TCPConduit emergencyClose");
   }
 
   /* stops the conduit, closing all tcp/ip connections */
@@ -812,19 +807,11 @@ public class TCPConduit implements Runnable {
     } catch (CancelException e) {
     } catch (Exception e) {
       if (!stopped) {
-        // if (e instanceof SocketException
-        // && "Socket closed".equals(e.getMessage())) {
-        // // safe to ignore; see bug 31156
-        // }
-        // else
-        {
-          this.getStats().incFailedAccept();
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.TCPConduit_FAILED_TO_ACCEPT_CONNECTION_FROM_0_BECAUSE_1,
-              new Object[] {othersock.getInetAddress(), e}), e);
-        }
+        this.getStats().incFailedAccept();
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.TCPConduit_FAILED_TO_ACCEPT_CONNECTION_FROM_0_BECAUSE_1,
+            new Object[] {othersock.getInetAddress(), e}), e);
       }
-      // connections.cleanupLowWater();
     }
   }
 
@@ -852,8 +839,6 @@ public class TCPConduit implements Runnable {
    */
   public void waitForThreadOwnedOrderedConnectionState(DistributedMember member, Map channelState)
       throws InterruptedException {
-    // if (Thread.interrupted()) throw new InterruptedException(); not necessary done in
-    // waitForThreadOwnedOrderedConnectionState
     getConTable().waitForThreadOwnedOrderedConnectionState(member, channelState);
   }
 
@@ -919,8 +904,6 @@ public class TCPConduit implements Runnable {
   public Connection getConnection(InternalDistributedMember memberAddress,
       final boolean preserveOrder, boolean retry, long startTime, long ackTimeout,
       long ackSATimeout) throws java.io.IOException, DistributedSystemDisconnectedException {
-    // final boolean preserveOrder = (processorType == DistributionManager.SERIAL_EXECUTOR )||
-    // (processorType == DistributionManager.PARTITIONED_REGION_EXECUTOR);
     if (stopped) {
       throw new DistributedSystemDisconnectedException(
           LocalizedStrings.TCPConduit_THE_CONDUIT_IS_STOPPED.toLocalizedString());
@@ -1126,32 +1109,11 @@ public class TCPConduit implements Runnable {
     return "" + id;
   }
 
-  public boolean threadOwnsResources() {
-    ConnectionTable ct = this.conTable;
-    if (ct == null) {
-      return false;
-    } else {
-      DistributionManager d = getDM();
-      if (d != null) {
-        return d.getSystem().threadOwnsResources();
-      } else {
-        return false;
-      }
-    }
-  }
-
   /**
    * Returns the distribution manager of the direct channel
    */
   public DistributionManager getDM() {
     return directChannel.getDM();
-  }
-
-  /**
-   * Closes any connections used to communicate with the given member
-   */
-  public void removeEndpoint(DistributedMember mbr, String reason) {
-    removeEndpoint(mbr, reason, true);
   }
 
   public void removeEndpoint(DistributedMember mbr, String reason, boolean notifyDisconnect) {
@@ -1179,11 +1141,6 @@ public class TCPConduit implements Runnable {
 
   protected class Stopper extends CancelCriterion {
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.apache.geode.CancelCriterion#cancelInProgress()
-     */
     @Override
     public String cancelInProgress() {
       DistributionManager dm = getDM();
@@ -1196,11 +1153,6 @@ public class TCPConduit implements Runnable {
       return null;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.apache.geode.CancelCriterion#generateCancelledException(java.lang.Throwable)
-     */
     @Override
     public RuntimeException generateCancelledException(Throwable e) {
       String reason = cancelInProgress();
@@ -1252,20 +1204,4 @@ public class TCPConduit implements Runnable {
   public boolean waitForMembershipCheck(InternalDistributedMember remoteId) {
     return membershipManager.waitForNewMember(remoteId);
   }
-
-  /**
-   * simulate being sick
-   */
-  public void beSick() {
-    // this.inhibitNewConnections = true;
-    // this.conTable.closeReceivers(true);
-  }
-
-  /**
-   * simulate being healthy
-   */
-  public void beHealthy() {
-    // this.inhibitNewConnections = false;
-  }
-
 }
