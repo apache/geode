@@ -26,11 +26,13 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.PulseTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.EmbeddedPulseRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SecurityTest.class, PulseTest.class})
 public class PulseSecurityIntegrationTest {
 
   @Rule
