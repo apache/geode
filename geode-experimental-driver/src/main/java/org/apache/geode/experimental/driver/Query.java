@@ -17,7 +17,19 @@ package org.apache.geode.experimental.driver;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * This interface represents from the client-side the execution of a query on the server-side.
+ *
+ * @param <T> Type of result returned from the query. May differ from the key and value types
+ *        of any involved regions.
+ */
 public interface Query<T> {
-
+  /**
+   * Executes this query with the specified parameters.
+   *
+   * @param bindParameters Optional list of bind parameters.
+   * @return Possibly empty list of results from the query.
+   * @throws IOException If an error occurred communicating with the distributed system.
+   */
   List<T> execute(Object... bindParameters) throws IOException;
 }
