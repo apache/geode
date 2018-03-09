@@ -25,7 +25,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 public class DestroyMappingFunction extends JdbcCliFunction<String, CliFunctionResult> {
 
   DestroyMappingFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override

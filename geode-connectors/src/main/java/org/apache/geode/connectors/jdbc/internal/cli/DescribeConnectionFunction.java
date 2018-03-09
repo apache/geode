@@ -23,7 +23,7 @@ import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 public class DescribeConnectionFunction extends JdbcCliFunction<String, ConnectionConfiguration> {
 
   DescribeConnectionFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override

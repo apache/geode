@@ -29,7 +29,7 @@ public class AlterConnectionFunction
     extends JdbcCliFunction<ConnectionConfiguration, CliFunctionResult> {
 
   AlterConnectionFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override

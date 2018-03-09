@@ -23,13 +23,10 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 @Experimental
 public abstract class JdbcCliFunction<T1, T2> implements InternalFunction<T1> {
 
-  private final FunctionContextArgumentProvider argumentProvider;
-  private final ExceptionHandler exceptionHandler;
+  private transient final ExceptionHandler exceptionHandler;
 
-  JdbcCliFunction(FunctionContextArgumentProvider argumentProvider,
-      ExceptionHandler exceptionHandler) {
-    this.argumentProvider = argumentProvider;
-    this.exceptionHandler = exceptionHandler;
+  JdbcCliFunction() {
+    this.exceptionHandler = new ExceptionHandler();
   }
 
   @Override
@@ -45,7 +42,7 @@ public abstract class JdbcCliFunction<T1, T2> implements InternalFunction<T1> {
   @Override
   public void execute(FunctionContext<T1> context) {
     try {
-      JdbcConnectorService service = argumentProvider.getJdbcConnectorService(context);
+      JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
       T2 result = getFunctionResult(service, context);
       context.getResultSender().lastResult(result);
     } catch (Exception e) {
@@ -54,11 +51,11 @@ public abstract class JdbcCliFunction<T1, T2> implements InternalFunction<T1> {
   }
 
   String getMember(FunctionContext<T1> context) {
-    return argumentProvider.getMember(context);
+    return FunctionContextArgumentProvider.getMember(context);
   }
 
   XmlEntity createXmlEntity(FunctionContext<T1> context) {
-    return argumentProvider.createXmlEntity(context);
+    return FunctionContextArgumentProvider.createXmlEntity(context);
   }
 
   abstract T2 getFunctionResult(JdbcConnectorService service, FunctionContext<T1> context)

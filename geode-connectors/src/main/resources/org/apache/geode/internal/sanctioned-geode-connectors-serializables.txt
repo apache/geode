@@ -13,13 +13,6 @@ org/apache/geode/connectors/jdbc/internal/cli/DescribeConnectionFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DescribeMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DestroyConnectionFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DestroyMappingFunction,false
-org/apache/geode/connectors/jdbc/internal/cli/ExceptionHandler,false
-org/apache/geode/connectors/jdbc/internal/cli/FunctionContextArgumentProvider,false
-org/apache/geode/connectors/jdbc/internal/cli/JdbcCliFunction,false,argumentProvider:org/apache/geode/connectors/jdbc/internal/cli/FunctionContextArgumentProvider,exceptionHandler:org/apache/geode/connectors/jdbc/internal/cli/ExceptionHandler
+org/apache/geode/connectors/jdbc/internal/cli/JdbcCliFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/ListConnectionFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/ListMappingFunction,false
-org/apache/geode/connectors/jdbc/internal/xml/ElementType,false,typeName:java/lang/String
-org/apache/geode/connectors/jdbc/internal/xml/ElementType$1,false
-org/apache/geode/connectors/jdbc/internal/xml/ElementType$2,false
-org/apache/geode/connectors/jdbc/internal/xml/ElementType$3,false
-org/apache/geode/connectors/jdbc/internal/xml/ElementType$4,false

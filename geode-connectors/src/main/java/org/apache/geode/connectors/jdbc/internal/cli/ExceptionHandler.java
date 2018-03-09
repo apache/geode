@@ -28,7 +28,7 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 /**
  * Handles exceptions by returning an error result to GFSH
  */
-class ExceptionHandler implements Serializable {
+class ExceptionHandler {
   private static final Logger logger = LogService.getLogger();
 
   void handleException(final FunctionContext<?> context, final Exception exception) {
