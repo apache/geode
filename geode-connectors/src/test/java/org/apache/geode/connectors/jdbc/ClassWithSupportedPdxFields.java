@@ -15,12 +15,13 @@
 
 package org.apache.geode.connectors.jdbc;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 
 import org.apache.geode.internal.PdxSerializerObject;
 
-public class ClassWithSupportedPdxFields implements PdxSerializerObject {
+public class ClassWithSupportedPdxFields implements PdxSerializerObject, Serializable {
   private boolean aboolean;
   private byte abyte;
   private short ashort;

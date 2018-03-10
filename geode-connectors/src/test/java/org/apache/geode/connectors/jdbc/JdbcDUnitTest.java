@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,30 +34,25 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.RuleList;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * End-to-end dunits for jdbc connector
- *
  */
 @Category(DistributedTest.class)
 public class JdbcDUnitTest implements Serializable {
@@ -111,6 +107,33 @@ public class JdbcDUnitTest implements Serializable {
           + "along bigint, " + "afloat float, " + "adouble float, " + "astring varchar(10), "
           + "adate timestamp, " + "anobject varchar(20), " + "abytearray blob(100), "
           + "achar char(1))");
+    });
+  }
+
+  private void insertDataForAllSupportedFieldsTable(String key,
+      ClassWithSupportedPdxFields classWithSupportedPdxFields) {
+    server.invoke(() -> {
+      ClassWithSupportedPdxFields data = classWithSupportedPdxFields;
+      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+
+      String insertQuery = "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      System.out.println("### Query is :" + insertQuery);
+      PreparedStatement statement = connection.prepareStatement(insertQuery);
+      statement.setObject(1, key);
+      statement.setObject(2, data.isAboolean());
+      statement.setObject(3, data.getAbyte());
+      statement.setObject(4, data.getAshort());
+      statement.setObject(5, data.getAnint());
+      statement.setObject(6, data.getAlong());
+      statement.setObject(7, data.getAfloat());
+      statement.setObject(8, data.getAdouble());
+      statement.setObject(9, data.getAstring());
+      statement.setObject(10, data.getAdate());
+      statement.setObject(11, data.getAnobject());
+      statement.setObject(12, data.getAbytearray());
+      statement.setObject(13, new Character(data.getAchar()).toString());
+
+      statement.execute();
     });
   }
 
@@ -321,6 +344,33 @@ public class JdbcDUnitTest implements Serializable {
           ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
       region.put(key, value);
       region.invalidate(key);
+
+      ClassWithSupportedPdxFields result = region.get(key);
+      assertThat(result).isEqualTo(value);
+    });
+  }
+
+  @Test
+  public void clientRegistersPdxAndReadsFromDBWithPdxClassName() throws Exception {
+    createTableForAllSupportedFields();
+    ClientVM client = getClientVM();
+    createClientRegion(client);
+    createRegionUsingGfsh(true, false, true);
+    createJdbcConnection();
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    String key = "id1";
+    ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2,
+        3, 4, 5.5f, 6.0, "BigEmp", new Date(100000), "BigEmpObject", new byte[] {1, 2}, 'c');
+
+    server.invoke(() -> {
+      insertDataForAllSupportedFieldsTable(key, value);
+    });
+
+    client.invoke(() -> {
+      ClusterStartupRule.getClientCache().registerPdxMetaData(new ClassWithSupportedPdxFields());
+
+      Region<String, ClassWithSupportedPdxFields> region =
+          ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
 
       ClassWithSupportedPdxFields result = region.get(key);
       assertThat(result).isEqualTo(value);

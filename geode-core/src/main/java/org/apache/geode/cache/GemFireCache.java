@@ -224,7 +224,7 @@ public interface GemFireCache extends RegionService {
    * Note that in most cases this method never needs to be called. Currently it is only
    * needed by the JdbcLoader when gets are done for JDBC data that was not written to the
    * table using geode.
-   * 
+   *
    * @param instance the instance of the domain class for which meta-data is to be registered
    * @throws SerializationException if the instance can not be serialized
    * @since Geode 1.6
