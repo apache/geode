@@ -45,10 +45,13 @@ public class ProtobufDriver implements Driver {
    *
    * @param locators Set of Internet-address-or-host-name/port pairs of the locators to use to find
    *        GemFire servers that have Protobuf enabled.
+   * @param username User identity as a string; may be <code>null</code>.
+   * @param password User proof as a string; may be <code>null</code>.
    * @throws IOException
    */
-  ProtobufDriver(Set<InetSocketAddress> locators) throws IOException {
-    this.channel = new ProtobufChannel(locators);
+  ProtobufDriver(Set<InetSocketAddress> locators, String username, String password)
+      throws IOException {
+    this.channel = new ProtobufChannel(locators, username, password);
   }
 
   @Override

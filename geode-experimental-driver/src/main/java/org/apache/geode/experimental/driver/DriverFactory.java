@@ -37,6 +37,16 @@ public class DriverFactory {
   private Set<InetSocketAddress> locators = new HashSet<InetSocketAddress>();
 
   /**
+   * User identity as a string.
+   */
+  private String username = null;
+
+  /**
+   * User proof as a string.
+   */
+  private String password = null;
+
+  /**
    * Adds a locator at <code>host</code> and <code>port</code> to the set of locators to use.
    *
    * @param host Internet address or host name.
@@ -55,6 +65,28 @@ public class DriverFactory {
    * @throws Exception
    */
   public Driver create() throws Exception {
-    return new ProtobufDriver(locators);
+    return new ProtobufDriver(locators, username, password);
+  }
+
+  /**
+   * Specifies the user name with which to authenticate with the server.
+   *
+   * @param username User identity as a string; may be <code>null</code>.
+   * @return This driver factory.
+   */
+  public DriverFactory setUsername(String username) {
+    this.username = username;
+    return this;
+  }
+
+  /**
+   * Specifies the password with which to authenticate with the server.
+   *
+   * @param password User proof as a string; may be <code>null</code>.
+   * @return This driver factory.
+   */
+  public DriverFactory setPassword(String password) {
+    this.password = password;
+    return this;
   }
 }
