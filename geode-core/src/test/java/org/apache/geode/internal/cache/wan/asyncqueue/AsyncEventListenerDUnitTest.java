@@ -1225,13 +1225,13 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
 
     vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncEventQueueSize("ln",
-        keyValues.size() + updateKeyValues.size())); // no conflation of creates
+        keyValues.size() + updateKeyValues.size(), false)); // no conflation of creates
 
     vm1.invoke(() -> AsyncEventQueueTestBase.putGivenKeyValue(getTestMethodName() + "_PR",
         updateKeyValues));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncEventQueueSize("ln",
-        keyValues.size() + updateKeyValues.size())); // conflation of updates
+        keyValues.size() + updateKeyValues.size(), false)); // conflation of updates
 
     vm1.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln"));
     vm2.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln"));

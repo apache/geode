@@ -107,6 +107,21 @@ public class AsyncEventQueueMBean extends NotificationBroadcasterSupport
     return bridge.getEventQueueSize();
   }
 
+  @Override
+  public float getLRUEvictionsRate() {
+    return bridge.getLRUEvictionsRate();
+  }
+
+  @Override
+  public long getEntriesOverflowedToDisk() {
+    return bridge.getEntriesOverflowedToDisk();
+  }
+
+  @Override
+  public long getBytesOverflowedToDisk() {
+    return bridge.getBytesOverflowedToDisk();
+  }
+
   public void stopMonitor() {
     bridge.stopMonitor();
   }
