@@ -62,13 +62,14 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
  * This is DUnite Test to test the Function Execution stats under various scenarios like
  * Client-Server with Region/without Region, P2P with partitioned Region/Distributed Region,member
  * Execution
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FunctionServiceTest.class})
 public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
 
   static Boolean isByName = null;

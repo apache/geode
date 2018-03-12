@@ -35,6 +35,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
  * TRAC #41779: InternalExecution.setWaitOnExceptionFlag(true) does not add the exception from the
@@ -43,7 +44,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * <p>
  * Extracted from {@link PRFunctionExecutionDUnitTest}.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FunctionServiceTest.class})
 @SuppressWarnings("serial")
 public class FunctionExceptionsIncludeLocalMemberRegressionTest extends CacheTestCase {
 
