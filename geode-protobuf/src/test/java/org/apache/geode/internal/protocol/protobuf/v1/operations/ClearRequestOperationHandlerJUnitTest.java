@@ -18,14 +18,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,37 +40,39 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class KeySetOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
-  private final String TEST_KEY1 = "Key1";
-  private final String TEST_KEY2 = "Key2";
-  private final String TEST_KEY3 = "Key3";
+public class ClearRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_REGION = "test region";
+  private final String MISSING_REGION = "missing region";
+  private Region regionStub;
 
   @Before
   public void setUp() throws Exception {
-    Region regionStub = mock(Region.class);
-    when(regionStub.keySet())
-        .thenReturn(new HashSet<String>(Arrays.asList(TEST_KEY1, TEST_KEY2, TEST_KEY3)));
+    regionStub = mock(Region.class);
 
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
-    operationHandler = new KeySetOperationHandler();
+    when(cacheStub.getRegion(MISSING_REGION)).thenReturn(null);
+    operationHandler = new ClearRequestOperationHandler();
   }
 
   @Test
-  public void verifyKeySetReturnsExpectedKeys() throws Exception {
-    RegionAPI.KeySetRequest request =
-        RegionAPI.KeySetRequest.newBuilder().setRegionName(TEST_REGION).build();
-    Result result = operationHandler.process(serializationService, request,
+  public void processReturnsSuccessForValidRegion() throws Exception {
+    RegionAPI.ClearRequest removeRequest =
+        ProtobufRequestUtilities.createClearRequest(TEST_REGION).getClearRequest();
+    Result result = operationHandler.process(serializationService, removeRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    Assert.assertTrue(result instanceof Success);
-    RegionAPI.KeySetResponse response = (RegionAPI.KeySetResponse) result.getMessage();
+    assertTrue(result instanceof Success);
+  }
 
-    List<Object> results = response.getKeysList().stream().map(serializationService::decode)
-        .collect(Collectors.toList());
-    assertEquals(3, results.size());
-    assertTrue(results.contains(TEST_KEY1));
-    assertTrue(results.contains(TEST_KEY2));
-    assertTrue(results.contains(TEST_KEY3));
+  @Test
+  public void processReturnsFailureForInvalidRegion() throws Exception {
+    RegionAPI.ClearRequest removeRequest =
+        ProtobufRequestUtilities.createClearRequest(MISSING_REGION).getClearRequest();
+    Result result = operationHandler.process(serializationService, removeRequest,
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+
+    assertTrue(result instanceof Failure);
+    ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();
+    assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
 }

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.utilities;
+package org.apache.geode.internal.protocol.protobuf.v1;
 
 import java.util.Set;
 
@@ -41,6 +41,18 @@ public abstract class ProtobufRequestUtilities {
     RegionAPI.GetRequest getRequest =
         RegionAPI.GetRequest.newBuilder().setRegionName(regionName).setKey(key).build();
     return ClientProtocol.Message.newBuilder().setGetRequest(getRequest).build();
+  }
+
+  /**
+   * Creates a request object containing a RegionAPI.ClearRequest
+   *
+   * @param regionName - Name of the region being cleared
+   * @return Request object containing the passed params.
+   */
+  public static ClientProtocol.Message createClearRequest(String regionName) {
+    RegionAPI.ClearRequest clearRequest =
+        RegionAPI.ClearRequest.newBuilder().setRegionName(regionName).build();
+    return ClientProtocol.Message.newBuilder().setClearRequest(clearRequest).build();
   }
 
   /**

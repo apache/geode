@@ -108,3 +108,10 @@ message KeySetRequest {
 message KeySetResponse {
     repeated EncodedValue keys = 1;
 }
+
+message ClearRequest {
+    string regionName = 1;
+}
+
+message ClearResponse {
+}
