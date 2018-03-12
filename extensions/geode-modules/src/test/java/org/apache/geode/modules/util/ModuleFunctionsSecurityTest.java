@@ -30,11 +30,12 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.SessionTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({IntegrationTest.class, SecurityTest.class, SessionTest.class})
 public class ModuleFunctionsSecurityTest {
 
   private static final String RESULT_HEADER = "Function Execution Result";

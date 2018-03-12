@@ -56,12 +56,13 @@ import org.apache.geode.modules.session.filter.SessionCachingFilter;
 import org.apache.geode.modules.session.junit.PerTestClassLoaderRunner;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SessionTest;
 
 /**
  * In-container testing using Jetty. This allows us to test context listener events as well as
  * dispatching actions.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SessionTest.class})
 @RunWith(PerTestClassLoaderRunner.class)
 @SuppressWarnings("unchecked")
 public class SessionReplicationIntegrationJUnitTest {
@@ -311,9 +312,10 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test setting an attribute to null deletes it
    */
-  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class
-                             // loader isolation, TODO: rewrite test with JUnit 4 rules including
-                             // TemporaryFolder
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static
+                             // vars with class
+  // loader isolation, TODO: rewrite test with JUnit 4 rules including
+  // TemporaryFolder
   @Test
   public void testSetAttributeNullDeletesIt() throws Exception {
     Callback c_1 = (request, response) -> request.getSession().setAttribute("foo", "bar");
@@ -396,9 +398,10 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test that invalidating a session destroys it as well as the backend object.
    */
-  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class
-                             // loader isolation, TODO: rewrite test with JUnit 4 rules including
-                             // TemporaryFolder
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static
+                             // vars with class
+  // loader isolation, TODO: rewrite test with JUnit 4 rules including
+  // TemporaryFolder
   @Test
   public void testInvalidateSession1() throws Exception {
     Callback c_1 = (request, response) -> request.getSession().setAttribute("foo", "bar");
@@ -468,9 +471,10 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test that invalidating a session throws an exception on subsequent access.
    */
-  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class
-                             // loader isolation, TODO: rewrite test with JUnit 4 rules including
-                             // TemporaryFolder
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static
+                             // vars with class
+  // loader isolation, TODO: rewrite test with JUnit 4 rules including
+  // TemporaryFolder
   @Test
   public void testInvalidateSession3() throws Exception {
     Callback c_1 = (request, response) -> {
@@ -965,9 +969,10 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test that request forward dispatching works
    */
-  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class
-                             // loader isolation, TODO: rewrite test with JUnit 4 rules including
-                             // TemporaryFolder
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static
+                             // vars with class
+  // loader isolation, TODO: rewrite test with JUnit 4 rules including
+  // TemporaryFolder
   @Test
   public void testDispatchingForward1() throws Exception {
     Callback c_1 = (request, response) -> {
