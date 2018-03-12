@@ -187,8 +187,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           // jar deployment
           + ";com.sun.proxy.$Proxy*" + ";com.healthmarketscience.rmiio.RemoteInputStream"
 
-          + ";org.apache.geode.connectors.jdbc.internal.**" // TODO - remove this! See GEODE-4752
-
           // geode-modules
           + ";org.apache.geode.modules.util.SessionCustomExpiry" + ";";
 
