@@ -20,19 +20,17 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
-public class SleepCommand implements GfshCommand {
+public class SleepCommand extends GfshCommand {
   @CliCommand(value = {CliStrings.SLEEP}, help = CliStrings.SLEEP__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result sleep(@CliOption(key = {CliStrings.SLEEP__TIME}, unspecifiedDefaultValue = "3",
       help = CliStrings.SLEEP__TIME__HELP) double time) {
     try {
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-          .fine("Sleeping for " + time + "seconds.");
+      LogWrapper.getInstance(getCache()).fine("Sleeping for " + time + "seconds.");
       Thread.sleep(Math.round(time * 1000));
     } catch (InterruptedException ignored) {
     }

@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class ListMappingCommand implements GfshCommand {
+public class ListMappingCommand extends GfshCommand {
   static final String LIST_MAPPING = "list jdbc-mappings";
   static final String LIST_MAPPING__HELP = EXPERIMENTAL + "Display jdbc mappings for all members.";
 

@@ -37,7 +37,6 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -46,7 +45,7 @@ import org.apache.geode.management.internal.messages.CompactRequest;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CompactDiskStoreCommand implements GfshCommand {
+public class CompactDiskStoreCommand extends GfshCommand {
   @CliCommand(value = CliStrings.COMPACT_DISK_STORE, help = CliStrings.COMPACT_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -122,7 +121,7 @@ public class CompactDiskStoreCommand implements GfshCommand {
             }
             String notExecutedMembers = CompactRequest.getNotExecutedMembers();
             if (notExecutedMembers != null && !notExecutedMembers.isEmpty()) {
-              LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+              LogWrapper.getInstance(getCache())
                   .info("compact disk-store \"" + diskStoreName
                       + "\" message was scheduled to be sent to but was not send to "
                       + notExecutedMembers);
@@ -159,7 +158,7 @@ public class CompactDiskStoreCommand implements GfshCommand {
         } // all members' if
       } // disk store exists' if
     } catch (RuntimeException e) {
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).info(e.getMessage(), e);
+      LogWrapper.getInstance(getCache()).info(e.getMessage(), e);
       result = ResultBuilder.createGemFireErrorResult(
           CliStrings.format(CliStrings.COMPACT_DISK_STORE__ERROR_WHILE_COMPACTING_REASON_0,
               new Object[] {e.getMessage()}));

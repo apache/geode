@@ -25,7 +25,7 @@ import org.springframework.shell.event.ParseResult;
 import org.springframework.util.StringUtils;
 
 import org.apache.geode.annotations.TestingOnly;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.CommandProcessingException;
@@ -50,13 +50,13 @@ public class OnlineCommandProcessor {
   private final SecurityService securityService;
 
   public OnlineCommandProcessor(Properties cacheProperties, SecurityService securityService,
-      Cache cache) {
+      InternalCache cache) {
     this(cacheProperties, securityService, new CommandExecutor(), cache);
   }
 
   @TestingOnly
   public OnlineCommandProcessor(Properties cacheProperties, SecurityService securityService,
-      CommandExecutor commandExecutor, Cache cache) {
+      CommandExecutor commandExecutor, InternalCache cache) {
     this.gfshParser = new GfshParser(new CommandManager(cacheProperties, cache));
     this.executor = commandExecutor;
     this.securityService = securityService;

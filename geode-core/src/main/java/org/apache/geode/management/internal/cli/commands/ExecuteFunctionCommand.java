@@ -26,9 +26,6 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -42,7 +39,7 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 
-public class ExecuteFunctionCommand implements GfshCommand {
+public class ExecuteFunctionCommand extends GfshCommand {
   @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION},
       interceptor = "org.apache.geode.management.internal.cli.commands.ExecuteFunctionCommand$ExecuteFunctionCommandInterceptor")
@@ -77,7 +74,7 @@ public class ExecuteFunctionCommand implements GfshCommand {
       // find the members based on the groups or members
       dsMembers = findMembers(onGroups, onMembers);
     } else {
-      dsMembers = findMembersForRegion(getCache(), onRegion);
+      dsMembers = findMembersForRegion(onRegion);
     }
 
     if (dsMembers.size() == 0) {

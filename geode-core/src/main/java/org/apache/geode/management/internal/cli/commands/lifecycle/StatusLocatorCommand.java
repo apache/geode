@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.configuration.utils.ClusterConfigurationStatusRetriever;
 
-public class StatusLocatorCommand implements GfshCommand {
+public class StatusLocatorCommand extends GfshCommand {
   @CliCommand(value = CliStrings.STATUS_LOCATOR, help = CliStrings.STATUS_LOCATOR__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})

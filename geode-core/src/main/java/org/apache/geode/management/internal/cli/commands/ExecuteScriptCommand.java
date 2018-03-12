@@ -27,7 +27,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class ExecuteScriptCommand implements GfshCommand {
+public class ExecuteScriptCommand extends GfshCommand {
   @CliCommand(value = {CliStrings.RUN}, help = CliStrings.RUN__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result executeScript(

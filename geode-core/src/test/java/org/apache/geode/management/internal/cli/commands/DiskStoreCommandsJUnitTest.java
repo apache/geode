@@ -386,7 +386,7 @@ public class DiskStoreCommandsJUnitTest {
     }
 
     @Override
-    public Set<DistributedMember> getAllMembers(final InternalCache cache) {
+    public Set<DistributedMember> getAllMembers() {
       assertSame(getCache(), cache);
       return Collections.singleton(this.distributedMember);
     }
@@ -423,7 +423,7 @@ public class DiskStoreCommandsJUnitTest {
     }
 
     @Override
-    public Set<DistributedMember> getAllMembers(final InternalCache cache) {
+    public Set<DistributedMember> getAllMembers() {
       assertSame(getCache(), cache);
       return Collections.singleton(this.distributedMember);
     }

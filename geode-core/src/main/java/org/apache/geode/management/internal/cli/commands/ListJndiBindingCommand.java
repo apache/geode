@@ -33,7 +33,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListJndiBindingCommand implements GfshCommand {
+public class ListJndiBindingCommand extends GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   private static final String LIST_JNDIBINDING = "list jndi-binding";

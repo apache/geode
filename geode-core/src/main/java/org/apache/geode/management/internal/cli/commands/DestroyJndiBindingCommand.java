@@ -43,7 +43,7 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyJndiBindingCommand implements GfshCommand {
+public class DestroyJndiBindingCommand extends GfshCommand {
   static final String CREATE_JNDIBINDING = "destroy jndi-binding";
   static final String CREATE_JNDIBINDING__HELP =
       "Destroy a jndi binding that holds the configuration for the XA datasource.";

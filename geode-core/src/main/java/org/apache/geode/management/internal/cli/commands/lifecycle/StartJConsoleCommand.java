@@ -42,7 +42,7 @@ import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 import org.apache.geode.management.internal.cli.util.JdkTool;
 
-public class StartJConsoleCommand implements GfshCommand {
+public class StartJConsoleCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.START_JCONSOLE, help = CliStrings.START_JCONSOLE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,

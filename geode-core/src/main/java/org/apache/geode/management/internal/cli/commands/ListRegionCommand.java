@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListRegionCommand implements GfshCommand {
+public class ListRegionCommand extends GfshCommand {
   private static final GetRegionsFunction getRegionsFunction = new GetRegionsFunction();
 
   @CliCommand(value = {CliStrings.LIST_REGION}, help = CliStrings.LIST_REGION__HELP)
@@ -59,7 +59,7 @@ public class ListRegionCommand implements GfshCommand {
     try {
       Set<RegionInformation> regionInfoSet = new LinkedHashSet<>();
       ResultCollector<?, ?> rc;
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
+      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

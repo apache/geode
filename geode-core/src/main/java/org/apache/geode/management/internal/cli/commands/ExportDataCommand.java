@@ -36,7 +36,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class ExportDataCommand implements GfshCommand {
+public class ExportDataCommand extends GfshCommand {
   private final ExportDataFunction exportDataFunction = new ExportDataFunction();
 
   @CliCommand(value = CliStrings.EXPORT_DATA, help = CliStrings.EXPORT_DATA__HELP)

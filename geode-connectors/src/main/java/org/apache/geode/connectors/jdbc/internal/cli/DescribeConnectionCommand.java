@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class DescribeConnectionCommand implements GfshCommand {
+public class DescribeConnectionCommand extends GfshCommand {
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
   static final String DESCRIBE_CONNECTION__HELP =
       EXPERIMENTAL + "Describe the specified jdbc connection.";

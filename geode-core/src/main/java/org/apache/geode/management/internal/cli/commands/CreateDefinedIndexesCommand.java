@@ -40,7 +40,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateDefinedIndexesCommand implements GfshCommand {
+public class CreateDefinedIndexesCommand extends GfshCommand {
   private static final CreateDefinedIndexesFunction createDefinedIndexesFunction =
       new CreateDefinedIndexesFunction();
 

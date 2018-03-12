@@ -25,7 +25,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ClearDefinedIndexesCommand implements GfshCommand {
+public class ClearDefinedIndexesCommand extends GfshCommand {
   @CliCommand(value = CliStrings.CLEAR_DEFINED_INDEXES, help = CliStrings.CLEAR_DEFINED__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,

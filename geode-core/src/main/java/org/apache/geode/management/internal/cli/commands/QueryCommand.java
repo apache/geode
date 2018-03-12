@@ -50,7 +50,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class QueryCommand implements GfshCommand {
+public class QueryCommand extends GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = "query", help = CliStrings.QUERY__HELP)

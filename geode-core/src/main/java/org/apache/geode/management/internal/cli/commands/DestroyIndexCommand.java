@@ -27,7 +27,6 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyIndexFunction;
@@ -37,7 +36,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyIndexCommand implements GfshCommand {
+public class DestroyIndexCommand extends GfshCommand {
   private static final DestroyIndexFunction destroyIndexFunction = new DestroyIndexFunction();
 
   @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)
@@ -70,7 +69,7 @@ public class DestroyIndexCommand implements GfshCommand {
     }
     IndexInfo indexInfo = new IndexInfo(indexName, regionName);
     indexInfo.setIfExists(ifExists);
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID, getCache());
+    Set<DistributedMember> targetMembers = findMembers(group, memberNameOrID);
 
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

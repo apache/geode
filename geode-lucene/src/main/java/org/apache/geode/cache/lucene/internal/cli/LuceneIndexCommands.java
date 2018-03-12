@@ -67,7 +67,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * @see LuceneListIndexFunction
  */
 @SuppressWarnings("unused")
-public class LuceneIndexCommands implements GfshCommand {
+public class LuceneIndexCommands extends GfshCommand {
   private static final LuceneCreateIndexFunction createIndexFunction =
       new LuceneCreateIndexFunction();
   private static final LuceneDescribeIndexFunction describeIndexFunction =
@@ -91,7 +91,7 @@ public class LuceneIndexCommands implements GfshCommand {
 
   @SuppressWarnings("unchecked")
   protected List<LuceneIndexDetails> getIndexListing() {
-    final Execution functionExecutor = getMembersFunctionExecutor(getAllMembers(getCache()));
+    final Execution functionExecutor = getMembersFunctionExecutor(getAllMembers());
 
     if (functionExecutor instanceof AbstractExecution) {
       ((AbstractExecution) functionExecutor).setIgnoreDepartedMembers(true);
@@ -317,8 +317,8 @@ public class LuceneIndexCommands implements GfshCommand {
     // the index has been created, but not the region
     XmlEntity xmlEntity = null;
     InternalCache cache = getCache();
-    Set<DistributedMember> regionMembers = findMembersForRegion(cache, regionPath);
-    Set<DistributedMember> normalMembers = getAllNormalMembers(cache);
+    Set<DistributedMember> regionMembers = findMembersForRegion(regionPath);
+    Set<DistributedMember> normalMembers = getAllNormalMembers();
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath);
     ResultCollector<?, ?> rc;
     if (regionMembers.isEmpty()) {
@@ -485,9 +485,8 @@ public class LuceneIndexCommands implements GfshCommand {
   }
 
   protected ResultCollector<?, ?> executeFunctionOnAllMembers(Function function,
-      final LuceneFunctionSerializable functionArguments)
-      throws IllegalArgumentException, CommandResultException {
-    Set<DistributedMember> targetMembers = CliUtil.getAllNormalMembers(getCache());
+      final LuceneFunctionSerializable functionArguments) throws IllegalArgumentException {
+    Set<DistributedMember> targetMembers = getAllNormalMembers();
     return executeFunction(function, functionArguments, targetMembers);
   }
 

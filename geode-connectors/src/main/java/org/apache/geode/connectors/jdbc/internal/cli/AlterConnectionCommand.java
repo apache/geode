@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class AlterConnectionCommand implements GfshCommand {
+public class AlterConnectionCommand extends GfshCommand {
   static final String ALTER_JDBC_CONNECTION = "alter jdbc-connection";
   static final String ALTER_JDBC_CONNECTION__HELP =
       EXPERIMENTAL + "Alter properties for an existing jdbc connection.";

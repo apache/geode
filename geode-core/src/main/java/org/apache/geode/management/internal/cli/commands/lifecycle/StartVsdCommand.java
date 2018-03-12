@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
-public class StartVsdCommand implements GfshCommand {
+public class StartVsdCommand extends GfshCommand {
   @CliCommand(value = CliStrings.START_VSD, help = CliStrings.START_VSD__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_M_AND_M, CliStrings.TOPIC_GEODE_STATISTICS})

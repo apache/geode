@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class DescribeMappingCommand implements GfshCommand {
+public class DescribeMappingCommand extends GfshCommand {
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
   static final String DESCRIBE_MAPPING__HELP =
       EXPERIMENTAL + "Describe the specified jdbc mapping.";

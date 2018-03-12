@@ -32,7 +32,7 @@ import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
-public class StatusServerCommand implements GfshCommand {
+public class StatusServerCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.STATUS_SERVER, help = CliStrings.STATUS_SERVER__HELP)
   @CliMetaData(shellOnly = true,

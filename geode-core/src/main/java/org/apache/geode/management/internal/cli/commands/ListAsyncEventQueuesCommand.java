@@ -36,7 +36,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListAsyncEventQueuesCommand implements GfshCommand {
+public class ListAsyncEventQueuesCommand extends GfshCommand {
   @CliCommand(value = CliStrings.LIST_ASYNC_EVENT_QUEUES,
       help = CliStrings.LIST_ASYNC_EVENT_QUEUES__HELP)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -46,7 +46,7 @@ public class ListAsyncEventQueuesCommand implements GfshCommand {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers = CliUtil.getAllNormalMembers(getCache());
+      Set<DistributedMember> targetMembers = getAllNormalMembers();
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

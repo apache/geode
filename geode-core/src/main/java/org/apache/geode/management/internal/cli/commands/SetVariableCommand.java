@@ -24,7 +24,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
-public class SetVariableCommand implements GfshCommand {
+public class SetVariableCommand extends GfshCommand {
   @CliCommand(value = {CliStrings.SET_VARIABLE}, help = CliStrings.SET_VARIABLE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result setVariable(

@@ -50,7 +50,7 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateJndiBindingCommand implements GfshCommand {
+public class CreateJndiBindingCommand extends GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   static final String CREATE_JNDIBINDING = "create jndi-binding";

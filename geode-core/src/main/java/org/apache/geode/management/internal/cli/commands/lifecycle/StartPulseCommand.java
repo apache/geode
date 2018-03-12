@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
-public class StartPulseCommand implements GfshCommand {
+public class StartPulseCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.START_PULSE, help = CliStrings.START_PULSE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,

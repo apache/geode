@@ -49,7 +49,7 @@ import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ExportLogsCommand implements GfshCommand {
+public class ExportLogsCommand extends GfshCommand {
 
   private static final Logger logger = LogService.getLogger();
 

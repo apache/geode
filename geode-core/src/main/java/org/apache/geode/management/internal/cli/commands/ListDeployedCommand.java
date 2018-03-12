@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListDeployedCommand implements GfshCommand {
+public class ListDeployedCommand extends GfshCommand {
   private final ListDeployedFunction listDeployedFunction = new ListDeployedFunction();
 
   /**
@@ -55,7 +55,7 @@ public class ListDeployedCommand implements GfshCommand {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;
 
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, null, getCache());
+      Set<DistributedMember> targetMembers = findMembers(group, null);
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

@@ -44,7 +44,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeClientCommand implements GfshCommand {
+public class DescribeClientCommand extends GfshCommand {
   @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -105,7 +105,7 @@ public class DescribeClientCommand implements GfshCommand {
           CliStrings.format(CliStrings.DESCRIBE_CLIENT__CLIENT__ID__NOT__FOUND__0, clientId));
     }
 
-    Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
+    Set<DistributedMember> dsMembers = getAllMembers();
     String isDurable = null;
     List<String> primaryServers = new ArrayList<>();
     List<String> secondaryServers = new ArrayList<>();
@@ -118,7 +118,7 @@ public class DescribeClientCommand implements GfshCommand {
       for (Object aResultList : resultList) {
         Object object = aResultList;
         if (object instanceof Throwable) {
-          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).warning(
+          LogWrapper.getInstance(getCache()).warning(
               "Exception in Describe Client " + ((Throwable) object).getMessage(),
               ((Throwable) object));
           continue;
@@ -156,8 +156,7 @@ public class DescribeClientCommand implements GfshCommand {
       return ResultBuilder.createGemFireErrorResult(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
     }
 
-    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-        .info("describe client result " + result);
+    LogWrapper.getInstance(getCache()).info("describe client result " + result);
     return result;
   }
 
@@ -208,7 +207,7 @@ public class DescribeClientCommand implements GfshCommand {
           String poolStatsStr = entry.getValue();
           String str[] = poolStatsStr.split(";");
 
-          LogWrapper logWrapper = LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache));
+          LogWrapper logWrapper = LogWrapper.getInstance(getCache());
           logWrapper.info("describe client clientHealthStatus min conn="
               + str[0].substring(str[0].indexOf("=") + 1));
           logWrapper.info("describe client clientHealthStatus max conn ="

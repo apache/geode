@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateIndexCommand implements GfshCommand {
+public class CreateIndexCommand extends GfshCommand {
   private static final CreateIndexFunction createIndexFunction = new CreateIndexFunction();
 
   @CliCommand(value = CliStrings.CREATE_INDEX, help = CliStrings.CREATE_INDEX__HELP)

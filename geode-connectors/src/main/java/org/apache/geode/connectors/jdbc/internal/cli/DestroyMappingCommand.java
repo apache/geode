@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class DestroyMappingCommand implements GfshCommand {
+public class DestroyMappingCommand extends GfshCommand {
   static final String DESTROY_MAPPING = "destroy jdbc-mapping";
   static final String DESTROY_MAPPING__HELP = EXPERIMENTAL + "Destroy the specified mapping.";
   static final String DESTROY_MAPPING__REGION_NAME = "region";
