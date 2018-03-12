@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
@@ -27,6 +28,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.ErrorResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message.MessageTypeCase;
+import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 
 class ProtobufChannel {
@@ -37,9 +39,10 @@ class ProtobufChannel {
    */
   final Socket socket;
 
-  public ProtobufChannel(final Set<InetSocketAddress> locators) throws IOException {
+  public ProtobufChannel(final Set<InetSocketAddress> locators, String username, String password)
+      throws IOException {
     this.locators = locators;
-    this.socket = connectToAServer();
+    this.socket = connectToAServer(username, password);
   }
 
   Message sendRequest(final Message request, MessageTypeCase expectedResult) throws IOException {
@@ -62,8 +65,8 @@ class ProtobufChannel {
     return this.socket.isClosed();
   }
 
-  private Socket connectToAServer() throws IOException {
-    InetSocketAddress server = findAServer();
+  private Socket connectToAServer(String username, String password) throws IOException {
+    InetSocketAddress server = findAServer(username, password);
     Socket socket = new Socket(server.getAddress(), server.getPort());
     socket.setTcpNoDelay(true);
     socket.setSendBufferSize(65535);
@@ -80,6 +83,11 @@ class ProtobufChannel {
         .getVersionAccepted()) {
       throw new IOException("Failed protocol version verification.");
     }
+
+    if (!Objects.isNull(username)) {
+      authenticate(username, password, outputStream, inputStream);
+    }
+
     return socket;
   }
 
@@ -88,7 +96,7 @@ class ProtobufChannel {
    *
    * @return The server chosen by the Locator service for this client
    */
-  private InetSocketAddress findAServer() throws IOException {
+  private InetSocketAddress findAServer(String username, String password) throws IOException {
     IOException lastException = null;
 
     for (InetSocketAddress locator : locators) {
@@ -106,6 +114,10 @@ class ProtobufChannel {
         if (!ProtocolVersion.VersionAcknowledgement.parseDelimitedFrom(inputStream)
             .getVersionAccepted()) {
           throw new IOException("Failed ProtocolVersion.");
+        }
+
+        if (!Objects.isNull(username)) {
+          authenticate(username, password, outputStream, inputStream);
         }
 
         ClientProtocol.Message.newBuilder()
@@ -134,6 +146,30 @@ class ProtobufChannel {
       throw lastException;
     } else {
       throw new IllegalStateException("No locators");
+    }
+  }
+
+  private void authenticate(String username, String password, OutputStream outputStream,
+      InputStream inputStream) throws IOException {
+    final ConnectionAPI.AuthenticationRequest.Builder builder =
+        ConnectionAPI.AuthenticationRequest.newBuilder();
+    builder.putCredentials("security-username", username);
+    builder.putCredentials("security-password", password);
+    final Message authenticationRequest =
+        Message.newBuilder().setAuthenticationRequest(builder).build();
+    authenticationRequest.writeDelimitedTo(outputStream);
+
+    final Message authenticationResponseMessage = Message.parseDelimitedFrom(inputStream);
+    final ErrorResponse errorResponse = authenticationResponseMessage.getErrorResponse();
+    if (!Objects.isNull(errorResponse) && errorResponse.hasError()) {
+      throw new IOException("Failed authentication for " + username + ": error code="
+          + errorResponse.getError().getErrorCode() + "; error message="
+          + errorResponse.getError().getMessage());
+    }
+    final ConnectionAPI.AuthenticationResponse authenticationResponse =
+        authenticationResponseMessage.getAuthenticationResponse();
+    if (!Objects.isNull(authenticationResponse) && !authenticationResponse.getAuthenticated()) {
+      throw new IOException("Failed authentication for " + username);
     }
   }
 
