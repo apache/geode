@@ -30,6 +30,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
 // The tests here are to validate changes introduced because a distributed deadlock
 // was found that caused issues for a production customer.
@@ -40,7 +41,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 //
 // currently the 4th test using PR, conserve-sockets=true hangs/fails and is commented
 // out to prevent issues
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase {
 
   public SerialGatewaySenderDistributedDeadlockDUnitTest() {

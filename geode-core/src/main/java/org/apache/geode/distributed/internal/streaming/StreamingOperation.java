@@ -33,6 +33,9 @@ import org.apache.geode.GemFireRethrowable;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.PRQueryTraceInfo;
 import org.apache.geode.cache.query.internal.QueryMonitor;
@@ -52,17 +55,19 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * StreamingOperation is an abstraction for sending messages to multiple (or single) recipient
  * requesting a potentially large amount of data and receiving the reply with data chunked into
  * several messages.
- *
  */
 public abstract class StreamingOperation {
   private static final Logger logger = LogService.getLogger();
@@ -75,7 +80,9 @@ public abstract class StreamingOperation {
 
   public final InternalDistributedSystem sys;
 
-  /** Creates a new instance of StreamingOperation */
+  /**
+   * Creates a new instance of StreamingOperation
+   */
   public StreamingOperation(InternalDistributedSystem sys) {
     this.sys = sys;
   }
@@ -87,10 +94,12 @@ public abstract class StreamingOperation {
    */
   public void getDataFromAll(Set recipients)
       throws org.apache.geode.cache.TimeoutException, InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
-    if (recipients.isEmpty())
+    }
+    if (recipients.isEmpty()) {
       return;
+    }
 
     StreamingProcessor processor = new StreamingProcessor(this.sys, recipients);
     DistributionMessage m = createRequestMessage(recipients, processor);
@@ -111,7 +120,9 @@ public abstract class StreamingOperation {
     }
   }
 
-  /** Override in subclass to instantiate request message */
+  /**
+   * Override in subclass to instantiate request message
+   */
   protected abstract DistributionMessage createRequestMessage(Set recipients,
       ReplyProcessor21 processor);
 
@@ -451,21 +462,21 @@ public abstract class StreamingOperation {
     public static void send(InternalDistributedMember recipient, int processorId,
         ReplyException exception, DistributionManager dm, HeapDataOutputStream chunkStream,
         int numObjects, int msgNum, boolean lastMsg, boolean pdxReadSerialized) {
-      StreamingReplyMessage m = new StreamingReplyMessage();
-      m.processorId = processorId;
+      StreamingReplyMessage replyMessage = new StreamingReplyMessage();
+      replyMessage.processorId = processorId;
 
       if (exception != null) {
-        m.setException(exception);
-        logger.debug("Replying with exception: {}", m, exception);
+        replyMessage.setException(exception);
+        logger.debug("Replying with exception: {}", replyMessage, exception);
       }
 
-      m.chunkStream = chunkStream;
-      m.numObjects = numObjects;
-      m.setRecipient(recipient);
-      m.msgNum = msgNum;
-      m.lastMsg = lastMsg;
-      m.pdxReadSerialized = pdxReadSerialized;
-      dm.putOutgoing(m);
+      replyMessage.chunkStream = chunkStream;
+      replyMessage.numObjects = numObjects;
+      replyMessage.setRecipient(recipient);
+      replyMessage.msgNum = msgNum;
+      replyMessage.lastMsg = lastMsg;
+      replyMessage.pdxReadSerialized = pdxReadSerialized;
+      dm.putOutgoing(replyMessage);
     }
 
     public int getMessageNumber() {
@@ -501,6 +512,15 @@ public abstract class StreamingOperation {
       this.pdxReadSerialized = in.readBoolean();
       Version senderVersion = InternalDataSerializer.getVersionForDataStream(in);
       boolean isSenderAbove_8_1 = senderVersion.compareTo(Version.GFE_81) > 0;
+      InternalCache cache = null;
+      Boolean initialPdxReadSerialized = false;
+      try {
+        cache =
+            (InternalCache) GemFireCacheImpl.getForPdx("fromData invocation in StreamingOperation");
+        initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
+      } catch (CacheClosedException e) {
+        logger.debug("Cache is closed. PdxReadSerializedOverride set to false");
+      }
       if (n == -1) {
         this.objectList = null;
       } else {
@@ -508,8 +528,8 @@ public abstract class StreamingOperation {
         this.objectList = new ArrayList(n);
         // Check if the PDX types needs to be kept in serialized form.
         // This will make readObject() to return PdxInstance form.
-        if (this.pdxReadSerialized) {
-          DefaultQuery.setPdxReadSerialized(true);
+        if (this.pdxReadSerialized && cache != null) {
+          cache.setPdxReadSerializedOverride(true);
         }
         try {
           ReplyProcessor21 messageProcessor = ReplyProcessor21.getProcessor(processorId);
@@ -554,8 +574,8 @@ public abstract class StreamingOperation {
             }
           }
         } finally {
-          if (this.pdxReadSerialized) {
-            DefaultQuery.setPdxReadSerialized(false);
+          if (this.pdxReadSerialized && cache != null) {
+            cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
           }
         }
       }

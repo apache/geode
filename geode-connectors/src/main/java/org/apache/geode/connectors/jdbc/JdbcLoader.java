@@ -38,8 +38,8 @@ public class JdbcLoader<K, V> extends AbstractJdbcCallback implements CacheLoade
   }
 
   // Constructor for test purposes only
-  JdbcLoader(SqlHandler sqlHandler) {
-    super(sqlHandler);
+  JdbcLoader(SqlHandler sqlHandler, InternalCache cache) {
+    super(sqlHandler, cache);
   }
 
   /**

@@ -69,7 +69,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateRegionCommand implements GfshCommand {
+public class CreateRegionCommand extends GfshCommand {
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
       interceptor = "org.apache.geode.management.internal.cli.commands.CreateRegionCommand$Interceptor")
@@ -488,7 +488,7 @@ public class CreateRegionCommand implements GfshCommand {
 
     if (attributes == null) {
       // find first member which has the region
-      Set<DistributedMember> regionAssociatedMembers = findMembersForRegion(cache, regionPath);
+      Set<DistributedMember> regionAssociatedMembers = findMembersForRegion(regionPath);
       if (regionAssociatedMembers != null && !regionAssociatedMembers.isEmpty()) {
         DistributedMember distributedMember = regionAssociatedMembers.iterator().next();
         ResultCollector<?, ?> resultCollector =
@@ -521,12 +521,12 @@ public class CreateRegionCommand implements GfshCommand {
     return attributes;
   }
 
-  private static boolean isClusterWideSameConfig(InternalCache cache, String regionPath) {
+  private boolean isClusterWideSameConfig(InternalCache cache, String regionPath) {
     ManagementService managementService = ManagementService.getExistingManagementService(cache);
 
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
 
-    Set<DistributedMember> allMembers = CliUtil.getAllNormalMembers(cache);
+    Set<DistributedMember> allMembers = getAllNormalMembers();
 
     RegionAttributesData regionAttributesToValidateAgainst = null;
     for (DistributedMember distributedMember : allMembers) {

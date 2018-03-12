@@ -40,8 +40,9 @@ import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.MyGatewaySenderEventListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, WanTest.class})
 public class WANConfigurationJUnitTest {
 
   private Cache cache;

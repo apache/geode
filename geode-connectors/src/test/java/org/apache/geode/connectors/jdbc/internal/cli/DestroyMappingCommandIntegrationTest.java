@@ -50,6 +50,7 @@ public class DestroyMappingCommandIntegrationTest {
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
 
     command = new DestroyMappingCommand();
+    command.setCache(cache);
   }
 
   @After

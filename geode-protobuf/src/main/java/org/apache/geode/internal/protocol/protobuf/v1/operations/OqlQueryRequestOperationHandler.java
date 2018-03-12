@@ -16,13 +16,16 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
@@ -40,7 +43,12 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionAuthorizingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission;
 
 public class OqlQueryRequestOperationHandler
     implements ProtobufOperationHandler<OQLQueryRequest, OQLQueryResponse> {
@@ -57,8 +65,30 @@ public class OqlQueryRequestOperationHandler
     InternalQueryService queryService = messageExecutionContext.getCache().getQueryService();
 
     Query query = queryService.newQuery(queryString);
-
     Object[] bindParameters = decodeBindParameters(serializationService, encodedParameters);
+
+    if (messageExecutionContext
+        .getConnectionStateProcessor() instanceof ProtobufConnectionAuthorizingStateProcessor) {
+      final SecurityService securityService =
+          messageExecutionContext.getCache().getSecurityService();
+      ThreadState threadState =
+          ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
+              .getConnectionStateProcessor()).prepareThreadForAuthorization();
+      try {
+        for (String regionName : ((DefaultQuery) query).getRegionsInQuery(bindParameters)) {
+          securityService.authorize(ResourcePermission.Resource.DATA,
+              ResourcePermission.Operation.READ, regionName);
+        }
+      } catch (NotAuthorizedException ex) {
+        messageExecutionContext.getStatistics().incAuthorizationViolations();
+        throw new OperationNotAuthorizedException(
+            "The user is not authorized to complete this operation");
+      } finally {
+        ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
+            .getConnectionStateProcessor()).restoreThreadState(threadState);
+      }
+    }
+
     try {
       Object results = query.execute(bindParameters);
       return Success.of(encodeResults(serializationService, results));

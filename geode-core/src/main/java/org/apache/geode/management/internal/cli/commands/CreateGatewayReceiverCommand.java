@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateGatewayReceiverCommand implements GfshCommand {
+public class CreateGatewayReceiverCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.CREATE_GATEWAYRECEIVER,
       help = CliStrings.CREATE_GATEWAYRECEIVER__HELP)

@@ -23,10 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.ProxyCache;
@@ -73,9 +71,9 @@ public class DefaultQuery implements Query {
 
   private ServerProxy serverProxy;
 
-  protected AtomicLong numExecutions = new AtomicLong(0);
+  private final LongAdder numExecutions = new LongAdder();
 
-  private final AtomicLong totalExecutionTime = new AtomicLong(0);
+  private final LongAdder totalExecutionTime = new LongAdder();
 
   private final QueryStatistics stats;
 
@@ -128,110 +126,19 @@ public class DefaultQuery implements Query {
 
   public static TestHook testHook;
 
-  private static final ThreadLocal<Boolean> pdxReadSerialized =
-      ThreadLocal.withInitial(() -> Boolean.FALSE);
-
   /** indicates query executed remotely */
   private boolean isRemoteQuery = false;
 
   // to prevent objects from getting deserialized
   private boolean keepSerialized = false;
 
-  public static final Set<String> reservedKeywords = new HashSet<>();
-  static {
-    reservedKeywords.add("hint");
-    reservedKeywords.add("all");
-    reservedKeywords.add("map");
-    reservedKeywords.add("count");
-    reservedKeywords.add("sum");
-    reservedKeywords.add("nvl");
-    reservedKeywords.add("unique");
-    reservedKeywords.add("except");
-    reservedKeywords.add("declare");
-    reservedKeywords.add("for");
-    reservedKeywords.add("list");
-    reservedKeywords.add("min");
-    reservedKeywords.add("element");
-    reservedKeywords.add("false");
-    reservedKeywords.add("abs");
-    reservedKeywords.add("true");
-    reservedKeywords.add("bag");
-    reservedKeywords.add("time");
-    reservedKeywords.add("define");
-    reservedKeywords.add("and");
-    reservedKeywords.add("asc");
-    reservedKeywords.add("desc");
-    reservedKeywords.add("select");
-    reservedKeywords.add("intersect");
-    reservedKeywords.add("flatten");
-    reservedKeywords.add("float");
-    reservedKeywords.add("import");
-    reservedKeywords.add("exists");
-    reservedKeywords.add("distinct");
-    reservedKeywords.add("boolean");
-    reservedKeywords.add("string");
-    reservedKeywords.add("group");
-    reservedKeywords.add("interval");
-    reservedKeywords.add("orelse");
-    reservedKeywords.add("where");
-    reservedKeywords.add("trace");
-    reservedKeywords.add("first");
-    reservedKeywords.add("set");
-    reservedKeywords.add("octet");
-    reservedKeywords.add("nil");
-    reservedKeywords.add("avg");
-    reservedKeywords.add("order");
-    reservedKeywords.add("long");
-    reservedKeywords.add("limit");
-    reservedKeywords.add("mod");
-    reservedKeywords.add("type");
-    reservedKeywords.add("undefine");
-    reservedKeywords.add("in");
-    reservedKeywords.add("null");
-    reservedKeywords.add("some");
-    reservedKeywords.add("to_date");
-    reservedKeywords.add("short");
-    reservedKeywords.add("enum");
-    reservedKeywords.add("timestamp");
-    reservedKeywords.add("having");
-    reservedKeywords.add("dictionary");
-    reservedKeywords.add("char");
-    reservedKeywords.add("listtoset");
-    reservedKeywords.add("array");
-    reservedKeywords.add("union");
-    reservedKeywords.add("or");
-    reservedKeywords.add("max");
-    reservedKeywords.add("from");
-    reservedKeywords.add("query");
-    reservedKeywords.add("collection");
-    reservedKeywords.add("like");
-    reservedKeywords.add("date");
-    reservedKeywords.add("byte");
-    reservedKeywords.add("any");
-    reservedKeywords.add("is_undefined");
-    reservedKeywords.add("double");
-    reservedKeywords.add("int");
-    reservedKeywords.add("andthen");
-    reservedKeywords.add("last");
-    reservedKeywords.add("struct");
-    reservedKeywords.add("undefined");
-    reservedKeywords.add("is_defined");
-    reservedKeywords.add("not");
-    reservedKeywords.add("by");
-    reservedKeywords.add("as");
-  }
 
   /**
    * Caches the fields not found in any Pdx version. This threadlocal will be cleaned up after query
    * execution completes in {@linkplain #executeUsingContext(ExecutionContext)}
    */
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToFieldsMap =
-      new ThreadLocal() {
-        @Override
-        protected Map<String, Set<String>> initialValue() {
-          return new HashMap<>();
-        }
-      };
+      ThreadLocal.withInitial(HashMap::new);
 
   public static Map<String, Set<String>> getPdxClasstofieldsmap() {
     return pdxClassToFieldsMap.get();
@@ -243,12 +150,7 @@ public class DefaultQuery implements Query {
    * query execution completes in {@linkplain #executeUsingContext(ExecutionContext)}
    */
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToMethodsMap =
-      new ThreadLocal() {
-        @Override
-        protected Map<String, Set<String>> initialValue() {
-          return new HashMap<String, Set<String>>();
-        }
-      };
+      ThreadLocal.withInitial(HashMap::new);
 
   public static void setPdxClasstoMethodsmap(Map<String, Set<String>> map) {
     pdxClassToMethodsMap.set(map);
@@ -280,23 +182,6 @@ public class DefaultQuery implements Query {
     this.traceOn = compiler.isTraceRequested() || QUERY_VERBOSE;
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
-  }
-
-  public static boolean getPdxReadSerialized() {
-    return pdxReadSerialized.get();
-  }
-
-  public static void setPdxReadSerialized(boolean readSerialized) {
-    pdxReadSerialized.set(readSerialized);
-  }
-
-  /**
-   * helper method for setPdxReadSerialized
-   */
-  public static void setPdxReadSerialized(Cache cache, boolean readSerialized) {
-    if (cache != null && !cache.getPdxReadSerialized()) {
-      setPdxReadSerialized(readSerialized);
-    }
   }
 
   /**
@@ -347,9 +232,10 @@ public class DefaultQuery implements Query {
     QueryExecutor qe = checkQueryOnPR(params);
 
     Object result = null;
+    Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
     try {
       // Setting the readSerialized flag for local queries
-      setPdxReadSerialized(this.cache, true);
+      this.cache.setPdxReadSerializedOverride(true);
       ExecutionContext context = new QueryExecutionContext(params, this.cache, this);
       indexObserver = this.startTrace();
       if (qe != null) {
@@ -426,7 +312,7 @@ public class DefaultQuery implements Query {
             "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
       }
     } finally {
-      setPdxReadSerialized(this.cache, false);
+      this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
       if (queryMonitor != null) {
         queryMonitor.stopMonitoringQueryThread(Thread.currentThread(), this);
       }
@@ -611,7 +497,7 @@ public class DefaultQuery implements Query {
       if (!this.isQueryWithFunctionContext()) {
         throw new UnsupportedOperationException(
             LocalizedStrings.DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_REGION_1
-                .toLocalizedString(new Object[] {prs.get(0).getName(), prs.get(1).getName()}));
+                .toLocalizedString(prs.get(0).getName(), prs.get(1).getName()));
       }
 
       // If there are more than one PRs they have to be co-located.
@@ -634,7 +520,7 @@ public class DefaultQuery implements Query {
         if (!colocated) {
           throw new UnsupportedOperationException(
               LocalizedStrings.DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_NON_COLOCATED_PARTITIONED_REGION_1
-                  .toLocalizedString(new Object[] {eachPR.getName(), other.getName()}));
+                  .toLocalizedString(eachPR.getName(), other.getName()));
         }
 
       } // eachPR
@@ -723,14 +609,14 @@ public class DefaultQuery implements Query {
   }
 
   private void updateStatistics(long executionTime) {
-    this.numExecutions.incrementAndGet();
-    this.totalExecutionTime.addAndGet(executionTime);
+    this.numExecutions.increment();
+    this.totalExecutionTime.add(executionTime);
     this.cache.getCachePerfStats().endQueryExecution(executionTime);
   }
 
   // TODO: Implement the function. Toggle the isCompiled flag accordingly
   @Override
-  public void compile() throws TypeMismatchException, NameResolutionException {
+  public void compile() {
     throw new UnsupportedOperationException(
         LocalizedStrings.DefaultQuery_NOT_YET_IMPLEMENTED.toLocalizedString());
   }
@@ -751,7 +637,7 @@ public class DefaultQuery implements Query {
      */
     @Override
     public long getTotalExecutionTime() {
-      return DefaultQuery.this.totalExecutionTime.get();
+      return DefaultQuery.this.totalExecutionTime.longValue();
     }
 
     /**
@@ -759,7 +645,7 @@ public class DefaultQuery implements Query {
      */
     @Override
     public long getNumExecutions() {
-      return DefaultQuery.this.numExecutions.get();
+      return DefaultQuery.this.numExecutions.longValue();
     }
   }
 
@@ -772,8 +658,8 @@ public class DefaultQuery implements Query {
    * @param parameters the parameters to be passed in to the query when executed
    * @return Unmodifiable List containing the region names.
    */
-  public Set getRegionsInQuery(Object[] parameters) {
-    Set regions = new HashSet();
+  public Set<String> getRegionsInQuery(Object[] parameters) {
+    Set<String> regions = new HashSet<>();
     this.compiledQuery.getRegionsInQuery(regions, parameters);
     return Collections.unmodifiableSet(regions);
   }
@@ -892,7 +778,7 @@ public class DefaultQuery implements Query {
     float time = (NanoTimer.getTime() - startTime) / 1.0e6f;
 
     String usedIndexesString = null;
-    if (observer != null && observer instanceof IndexTrackingQueryObserver) {
+    if (observer instanceof IndexTrackingQueryObserver) {
       IndexTrackingQueryObserver indexObserver = (IndexTrackingQueryObserver) observer;
       Map usedIndexes = indexObserver.getUsedIndexes();
       indexObserver.reset();

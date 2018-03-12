@@ -34,8 +34,9 @@ import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class KeepEventsOnGatewaySenderQueueDUnitTest extends WANTestBase {
 
   public KeepEventsOnGatewaySenderQueueDUnitTest() {

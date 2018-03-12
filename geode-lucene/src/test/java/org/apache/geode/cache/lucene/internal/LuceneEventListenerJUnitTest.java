@@ -14,8 +14,19 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,26 +37,51 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
-import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test that async event listener dispatched the events to the appropriate repository.
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({LuceneEventListener.class, LogService.class})
 @Category({UnitTest.class, LuceneTest.class})
+@PowerMockIgnore({"*.UnitTest", "*.LuceneTest"})
 public class LuceneEventListenerJUnitTest {
+
+  private RepositoryManager manager;
+  private LuceneEventListener listener;
+  private InternalCache cache;
+
+  @Before
+  public void setup() {
+    cache = Fakes.cache();
+    manager = Mockito.mock(RepositoryManager.class);
+    listener = new LuceneEventListener(cache, manager);
+  }
 
   @After
   public void clearExceptionListener() {
@@ -54,20 +90,23 @@ public class LuceneEventListenerJUnitTest {
 
   @Test
   public void pdxReadSerializedFlagShouldBeResetBackToOriginalValueAfterProcessingEvents() {
-    boolean originalPdxReadSerialized = DefaultQuery.getPdxReadSerialized();
+    ArgumentCaptor valueCapture = ArgumentCaptor.forClass(Boolean.class);
+    doNothing().when(cache).setPdxReadSerializedOverride((Boolean) valueCapture.capture());
+
+    boolean originalPdxReadSerialized = cache.getPdxReadSerializedOverride();
     try {
-      DefaultQuery.setPdxReadSerialized(true);
-      LuceneEventListener luceneEventListener = new LuceneEventListener(null);
-      luceneEventListener.process(new LinkedList());
-      assertTrue(DefaultQuery.getPdxReadSerialized());
+      cache.setPdxReadSerializedOverride(true);
+      Assert.assertTrue((Boolean) valueCapture.getValue());
+      listener.process(new LinkedList<>());
+      Assert.assertTrue(!(Boolean) valueCapture.getValue());
     } finally {
-      DefaultQuery.setPdxReadSerialized(originalPdxReadSerialized);
+      cache.setPdxReadSerializedOverride(originalPdxReadSerialized);
     }
   }
 
   @Test
   public void testProcessBatch() throws Exception {
-    RepositoryManager manager = Mockito.mock(RepositoryManager.class);
+
     IndexRepository repo1 = Mockito.mock(IndexRepository.class);
     IndexRepository repo2 = Mockito.mock(IndexRepository.class);
     Region region1 = Mockito.mock(Region.class);
@@ -77,7 +116,6 @@ public class LuceneEventListenerJUnitTest {
 
     Mockito.when(manager.getRepository(eq(region1), any(), eq(callback1))).thenReturn(repo1);
     Mockito.when(manager.getRepository(eq(region2), any(), eq(null))).thenReturn(repo2);
-    LuceneEventListener listener = new LuceneEventListener(manager);
     List<AsyncEvent> events = new ArrayList<AsyncEvent>();
 
     int numEntries = 100;
@@ -119,28 +157,27 @@ public class LuceneEventListenerJUnitTest {
   @Test
   public void shouldHandleBucketNotFoundExceptionWithoutLoggingError()
       throws BucketNotFoundException {
-    RepositoryManager manager = Mockito.mock(RepositoryManager.class);
-    Logger log = Mockito.mock(Logger.class);
     Mockito.when(manager.getRepository(any(), any(), any()))
         .thenThrow(BucketNotFoundException.class);
-    LuceneEventListener listener = new LuceneEventListener(manager);
-    listener.logger = log;
+
+    PowerMockito.mockStatic(LogService.class);
+    Logger logger = Mockito.mock(Logger.class);
+    Mockito.when(LogService.getLogger()).thenReturn(logger);
+
     AsyncEvent event = Mockito.mock(AsyncEvent.class);
-    boolean result = listener.processEvents(Arrays.asList(new AsyncEvent[] {event}));
+    boolean result = listener.processEvents(Arrays.asList(event));
     assertFalse(result);
-    verify(log, never()).error(anyString(), any(Exception.class));
+    verify(logger, never()).error(anyString(), any(Exception.class));
   }
 
   @Test
   public void shouldThrowAndCaptureIOException() throws BucketNotFoundException {
-    RepositoryManager manager = Mockito.mock(RepositoryManager.class);
     Mockito.when(manager.getRepository(any(), any(), any())).thenThrow(IOException.class);
     AtomicReference<Throwable> lastException = new AtomicReference<>();
     LuceneEventListener.setExceptionObserver(lastException::set);
-    LuceneEventListener listener = new LuceneEventListener(manager);
     AsyncEvent event = Mockito.mock(AsyncEvent.class);
     try {
-      listener.processEvents(Arrays.asList(new AsyncEvent[] {event}));
+      listener.processEvents(Arrays.asList(event));
       fail("should have thrown an exception");
     } catch (InternalGemFireError expected) {
       assertEquals(expected, lastException.get());

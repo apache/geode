@@ -14,7 +14,11 @@
  */
 package org.apache.geode.experimental.driver;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,7 +27,12 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
@@ -32,7 +41,11 @@ import org.apache.geode.distributed.Locator;
  * Created by dan on 2/23/18.
  */
 public class IntegrationTestBase {
-  private static final String REGION = "region";
+  protected static final String NAME = "name";
+  protected static final String GROUP = "group";
+  protected static final String REGION = "region";
+  protected static final String FUNCTION_ID = "function";
+
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   protected Driver driver;
@@ -47,6 +60,8 @@ public class IntegrationTestBase {
     // Create a cache
     CacheFactory cf = new CacheFactory();
     cf.set(ConfigurationProperties.MCAST_PORT, "0");
+    cf.set(ConfigurationProperties.NAME, NAME);
+    cf.set(ConfigurationProperties.GROUPS, GROUP);
     cache = cf.create();
 
     // Start a locator
@@ -61,6 +76,9 @@ public class IntegrationTestBase {
     // Create a region
     serverRegion = cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION);
 
+    // Register a function
+    org.apache.geode.cache.execute.FunctionService.registerFunction(new TestFunction());
+
     // Create a driver connected to the server
     driver = new DriverFactory().addLocator("localhost", locatorPort).create();
   }
@@ -69,5 +87,20 @@ public class IntegrationTestBase {
   public void cleanup() {
     locator.stop();
     cache.close();
+  }
+
+  class TestFunction implements org.apache.geode.cache.execute.Function {
+    @Override
+    public String getId() {
+      return FUNCTION_ID;
+    }
+
+    @Override
+    public void execute(FunctionContext context) {
+      final ResultSender resultSender = context.getResultSender();
+      resultSender.sendResult("first result");
+      resultSender.sendResult("next result");
+      resultSender.lastResult("last result");
+    }
   }
 }

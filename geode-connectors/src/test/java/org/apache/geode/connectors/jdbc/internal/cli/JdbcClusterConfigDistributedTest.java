@@ -100,12 +100,14 @@ public class JdbcClusterConfigDistributedTest implements Serializable {
     cache = (InternalCache) new CacheFactory().set(LOCATORS, locators).create();
 
     locator.invoke(() -> {
-      Result result = new CreateConnectionCommand().createConnection(connectionName, connectionUrl,
-          null, null, null);
+      CreateConnectionCommand command = new CreateConnectionCommand();
+      command.setCache(CacheFactory.getAnyInstance());
+      Result result = command.createConnection(connectionName, connectionUrl, null, null, null);
       assertThat(result.getStatus()).isSameAs(Result.Status.OK);
-
-      result = new CreateMappingCommand().createMapping(regionName, connectionName, tableName,
-          pdxClass, keyInValue, fieldMappings);
+      CreateMappingCommand mappingCommand = new CreateMappingCommand();
+      mappingCommand.setCache(CacheFactory.getAnyInstance());
+      result = mappingCommand.createMapping(regionName, connectionName, tableName, pdxClass,
+          keyInValue, fieldMappings);
 
       assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     });

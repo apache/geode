@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -26,11 +27,13 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
@@ -44,7 +47,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  *
  * @since GemFire 8.1
  */
-public class MockExtensionCommands implements GfshCommand {
+public class MockExtensionCommands implements CommandMarker {
 
   public static final String OPTION_VALUE = "value";
 
@@ -172,7 +175,7 @@ public class MockExtensionCommands implements GfshCommand {
    */
   protected Result executeFunctionOnAllMembersTabulateResultPersist(final Function function,
       final boolean addXmlElement, final Object... args) {
-    final InternalCache cache = getCache();
+    InternalCache cache = GemFireCacheImpl.getInstance();
     final Set<DistributedMember> members = CliUtil.getAllNormalMembers(cache);
 
     @SuppressWarnings("unchecked")
@@ -199,14 +202,13 @@ public class MockExtensionCommands implements GfshCommand {
 
     final Result result = ResultBuilder.buildResult(tabularResultData);
 
+    ClusterConfigurationService ccService = InternalLocator.getLocator().getSharedConfiguration();
     System.out.println("MockExtensionCommands: persisting xmlEntity=" + xmlEntity);
     if (null != xmlEntity.get()) {
       if (addXmlElement) {
-        persistClusterConfiguration(result,
-            () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), null));
+        ccService.addXmlEntity(xmlEntity.get(), null);
       } else {
-        persistClusterConfiguration(result,
-            () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), null));
+        ccService.deleteXmlEntity(xmlEntity.get(), null);
       }
     }
 

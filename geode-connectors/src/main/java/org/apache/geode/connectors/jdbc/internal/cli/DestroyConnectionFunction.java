@@ -25,7 +25,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 public class DestroyConnectionFunction extends JdbcCliFunction<String, CliFunctionResult> {
 
   DestroyConnectionFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override

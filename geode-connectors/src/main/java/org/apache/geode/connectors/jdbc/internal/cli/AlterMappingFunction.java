@@ -28,7 +28,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 public class AlterMappingFunction extends JdbcCliFunction<RegionMapping, CliFunctionResult> {
 
   AlterMappingFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override

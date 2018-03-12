@@ -24,10 +24,10 @@ import org.apache.geode.internal.logging.LogService;
 
 public class LuceneBucketListener extends PartitionListenerAdapter {
   private static final Logger logger = LogService.getLogger();
-  private AbstractPartitionedRepositoryManager lucenePartitionRepositoryManager;
+  private PartitionedRepositoryManager lucenePartitionRepositoryManager;
   private final DistributionManager dm;
 
-  public LuceneBucketListener(AbstractPartitionedRepositoryManager partitionedRepositoryManager,
+  public LuceneBucketListener(PartitionedRepositoryManager partitionedRepositoryManager,
       final DistributionManager dm) {
     lucenePartitionRepositoryManager = partitionedRepositoryManager;
     this.dm = dm;

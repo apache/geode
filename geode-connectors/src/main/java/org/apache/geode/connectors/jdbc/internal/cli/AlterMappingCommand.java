@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class AlterMappingCommand implements GfshCommand {
+public class AlterMappingCommand extends GfshCommand {
   static final String ALTER_MAPPING = "alter jdbc-mapping";
   static final String ALTER_MAPPING__HELP =
       EXPERIMENTAL + "Alter properties for an existing jdbc mapping.";

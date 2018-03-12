@@ -10,9 +10,10 @@
 4. [Location of Directions for Building from Source](#building)
 5. [Geode in 5 minutes](#started)
 6. [Application Development](#development)
-7. [Documentation](http://geode.apache.org/docs/)
+7. [Documentation](https://geode.apache.org/docs/)
 8. [Wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)
-9. [Export Control](#export)
+9. [How to Contribute?](https://cwiki.apache.org/confluence/display/GEODE/How+to+Contribute)
+10. [Export Control](#export)
 
 ## <a name="overview"></a>Overview
 
@@ -38,7 +39,7 @@ latency and 24x7 availability requirements.
 ## <a name="obtaining"></a>How to Get Apache Geode
 
 You can download Apache Geode from the
-[website](http://geode.apache.org/releases/), run a Docker
+[website](https://geode.apache.org/releases/), run a Docker
 [image](https://hub.docker.com/r/apachegeode/geode/), or install with
 [homebrew](http://brewformulas.org/ApacheGeode) on OSX. Application developers
 can load dependencies from [Maven
@@ -182,22 +183,22 @@ Finally, shutdown the Geode server and locator:
 
 For more information see the [Geode
 Examples](https://github.com/apache/geode-examples) repository or the
-[documentation](http://geode.apache.org/docs/).
+[documentation](https://geode.apache.org/docs/).
 
 ## <a name="development"></a>Application Development
 
 Apache Geode applications can be written in these client technologies:
 
-* Java [client](http://geode.apache.org/docs/guide/topologies_and_comm/cs_configuration/chapter_overview.html)
-  or [peer](http://geode.apache.org/docs/guide/topologies_and_comm/p2p_configuration/chapter_overview.html)
-* [REST](http://geode.apache.org/docs/guide/rest_apps/chapter_overview.html)
+* Java [client](https://geode.apache.org/docs/guide/topologies_and_comm/cs_configuration/chapter_overview.html)
+  or [peer](https://geode.apache.org/docs/guide/topologies_and_comm/p2p_configuration/chapter_overview.html)
+* [REST](https://geode.apache.org/docs/guide/rest_apps/chapter_overview.html)
 * [Memcached](https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached)
 * [Redis](https://cwiki.apache.org/confluence/display/GEODE/Geode+Redis+Adapter)
 
 The following libraries are available external to the Apache Geode project:
 
-* [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/)
-* [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
+* [Spring Data GemFire](https://projects.spring.io/spring-data-gemfire/)
+* [Spring Cache](https://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
 * [Python](https://github.com/gemfire/py-gemfire-rest)
 
 ## <a name="export"></a>Export Control
@@ -225,7 +226,7 @@ The following provides more details on the included cryptographic software:
 
 * Apache Geode is designed to be used with
   [Java Secure Socket Extension](https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html) (JSSE) and
-  [Java Cryptography Extension](http://docs.oracle.com/javase/8/docs/technotes/guides/security/crypto/CryptoSpec.html) (JCE).
-  The [JCE Unlimited Strength Jurisdiction Policy](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html)
+  [Java Cryptography Extension](https://docs.oracle.com/javase/8/docs/technotes/guides/security/crypto/CryptoSpec.html) (JCE).
+  The [JCE Unlimited Strength Jurisdiction Policy](https://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html)
   may need to be installed separately to use keystore passwords with 7 or more characters.
 * Apache Geode links to and uses [OpenSSL](https://www.openssl.org/) ciphers.

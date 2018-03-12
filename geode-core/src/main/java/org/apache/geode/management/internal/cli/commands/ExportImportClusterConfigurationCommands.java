@@ -39,12 +39,10 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -66,7 +64,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * Commands for the cluster configuration
  */
 @SuppressWarnings("unused")
-public class ExportImportClusterConfigurationCommands implements GfshCommand {
+public class ExportImportClusterConfigurationCommands extends GfshCommand {
 
   @CliCommand(value = {CliStrings.EXPORT_SHARED_CONFIG},
       help = CliStrings.EXPORT_SHARED_CONFIG__HELP)
@@ -143,9 +141,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
       return ResultBuilder.buildResult(errorData);
     }
 
-    InternalCache cache = getCache();
-
-    Set<DistributedMember> servers = CliUtil.getAllNormalMembers(cache);
+    Set<DistributedMember> servers = getAllNormalMembers();
 
     Set<String> regionsWithData = servers.stream().map(this::getRegionNamesOnServer)
         .flatMap(Collection::stream).collect(toSet());

@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class GetCommand implements GfshCommand {
+public class GetCommand extends GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @CliCommand(value = {CliStrings.GET}, help = CliStrings.GET__HELP)
   public Result get(
@@ -63,7 +63,7 @@ public class GetCommand implements GfshCommand {
     Region region = cache.getRegion(regionPath);
     DataCommandFunction getfn = new DataCommandFunction();
     if (region == null) {
-      Set<DistributedMember> memberList = findAnyMembersForRegion(getCache(), regionPath);
+      Set<DistributedMember> memberList = findAnyMembersForRegion(regionPath);
       if (CollectionUtils.isNotEmpty(memberList)) {
         DataCommandRequest request = new DataCommandRequest();
         request.setCommand(CliStrings.GET);

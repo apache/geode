@@ -67,8 +67,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   protected void createLuceneListenersAndFileChunkRegions(
-      AbstractPartitionedRepositoryManager partitionedRepositoryManager) {
-    partitionedRepositoryManager.setUserRegionForRepositoryManager();
+      PartitionedRepositoryManager partitionedRepositoryManager) {
+    partitionedRepositoryManager.setUserRegionForRepositoryManager((PartitionedRegion) dataRegion);
     RegionShortcut regionShortCut;
     final boolean withPersistence = withPersistence();
     RegionAttributes regionAttributes = dataRegion.getAttributes();
@@ -95,8 +95,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
         new LuceneBucketListener(partitionedRepositoryManager, dm);
 
     if (!fileRegionExists(fileRegionName)) {
-      fileAndChunkRegion = createFileRegion(regionShortCut, fileRegionName, partitionAttributes,
-          regionAttributes, lucenePrimaryBucketListener);
+      fileAndChunkRegion = createRegion(fileRegionName, regionShortCut, this.regionPath,
+          partitionAttributes, regionAttributes, lucenePrimaryBucketListener);
     }
 
     fileSystemStats
@@ -114,13 +114,6 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   boolean fileRegionExists(String fileRegionName) {
     return cache.getRegion(fileRegionName) != null;
-  }
-
-  Region createFileRegion(final RegionShortcut regionShortCut, final String fileRegionName,
-      final PartitionAttributes partitionAttributes, final RegionAttributes regionAttributes,
-      PartitionListener listener) {
-    return createRegion(fileRegionName, regionShortCut, this.regionPath, partitionAttributes,
-        regionAttributes, listener);
   }
 
   public String createFileRegionName() {

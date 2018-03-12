@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -55,7 +54,7 @@ public class JdbcLoaderIntegrationTest {
   private static final String REGION_TABLE_NAME = "employees";
   private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
 
-  private Cache cache;
+  private InternalCache cache;
   private Connection connection;
   private Statement statement;
 
@@ -65,11 +64,11 @@ public class JdbcLoaderIntegrationTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
-    cache =
-        new CacheFactory().set("locators", "").set("mcast-port", "0").setPdxReadSerialized(false)
-            .setPdxSerializer(
-                new ReflectionBasedAutoSerializer(ClassWithSupportedPdxFields.class.getName()))
-            .create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
+        .setPdxReadSerialized(false)
+        .setPdxSerializer(
+            new ReflectionBasedAutoSerializer(ClassWithSupportedPdxFields.class.getName()))
+        .create();
     connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
   }
@@ -190,7 +189,7 @@ public class JdbcLoaderIntegrationTest {
       boolean primaryKeyInValue)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
     JdbcLoader<K, V> jdbcLoader =
-        new JdbcLoader<>(createSqlHandler(pdxClassName, primaryKeyInValue));
+        new JdbcLoader<>(createSqlHandler(pdxClassName, primaryKeyInValue), cache);
     RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.setCacheLoader(jdbcLoader);
     return regionFactory.create(regionName);

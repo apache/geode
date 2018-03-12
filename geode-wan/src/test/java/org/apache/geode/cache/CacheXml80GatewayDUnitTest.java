@@ -37,8 +37,9 @@ import org.apache.geode.cache30.MyGatewayTransportFilter2;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
 
   @Override

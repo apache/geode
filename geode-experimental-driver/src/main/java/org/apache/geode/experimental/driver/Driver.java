@@ -48,7 +48,19 @@ public interface Driver {
    */
   <K, V> Region<K, V> getRegion(String regionName);
 
+  /**
+   * Creates a new query service or retrieves an extant query service.
+   *
+   * @return Query service.
+   */
   QueryService getQueryService();
+
+  /**
+   * Creates a new function service or retrieves an extant function service.
+   *
+   * @return Function service.
+   */
+  FunctionService getFunctionService();
 
   /**
    * Close this Driver, rendering it useless

@@ -30,14 +30,13 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class LoadBalanceGatewaySenderCommand implements GfshCommand {
+public class LoadBalanceGatewaySenderCommand extends GfshCommand {
 
   @CliCommand(value = CliStrings.LOAD_BALANCE_GATEWAYSENDER,
       help = CliStrings.LOAD_BALANCE_GATEWAYSENDER__HELP)
@@ -57,7 +56,7 @@ public class LoadBalanceGatewaySenderCommand implements GfshCommand {
     SystemManagementService service =
         (SystemManagementService) ManagementService.getExistingManagementService(cache);
     TabularResultData resultData = ResultBuilder.createTabularResultData();
-    Set<DistributedMember> dsMembers = CliUtil.getAllNormalMembers(cache);
+    Set<DistributedMember> dsMembers = getAllNormalMembers();
 
     if (dsMembers.isEmpty()) {
       result = ResultBuilder.createInfoResult(CliStrings.GATEWAY_MSG_MEMBERS_NOT_FOUND);

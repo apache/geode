@@ -54,11 +54,12 @@ subprojects {
             "Organization": productOrg
           )
         }
-      }
-      jar.metaInf {
-        from("$rootDir/LICENSE")
-        if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
-          from("$rootDir/NOTICE")
+
+        metaInf {
+          from("$rootDir/LICENSE")
+          if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
+            from("$rootDir/NOTICE")
+          }
         }
       }
     }

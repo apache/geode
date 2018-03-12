@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class DestroyConnectionCommand implements GfshCommand {
+public class DestroyConnectionCommand extends GfshCommand {
   static final String DESTROY_CONNECTION = "destroy jdbc-connection";
   static final String DESTROY_CONNECTION__HELP =
       EXPERIMENTAL + "Destroy/Remove the specified jdbc connection.";

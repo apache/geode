@@ -25,14 +25,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -43,6 +41,7 @@ import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableKeyColumnManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -53,7 +52,7 @@ public class JdbcWriterIntegrationTest {
   private static final String REGION_TABLE_NAME = "employees";
   private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
 
-  private Cache cache;
+  private InternalCache cache;
   private Region<String, PdxInstance> employees;
   private Connection connection;
   private Statement statement;
@@ -65,7 +64,7 @@ public class JdbcWriterIntegrationTest {
 
   @Before
   public void setup() throws Exception {
-    cache = new CacheFactory().set("locators", "").set("mcast-port", "0")
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME);
 
@@ -210,7 +209,7 @@ public class JdbcWriterIntegrationTest {
 
   private Region<String, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    jdbcWriter = new JdbcWriter(createSqlHandler());
+    jdbcWriter = new JdbcWriter(createSqlHandler(), cache);
 
     RegionFactory<String, PdxInstance> regionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);

@@ -392,7 +392,7 @@ public abstract class AbstractConfig implements Config {
       } else {
         // Otherwise, redact based on the key string
         attributeValueToPrint =
-            ArgumentRedactor.redactValueIfNecessary(attName, getAttribute(attName));
+            ArgumentRedactor.redactArgumentIfNecessary(attName, getAttribute(attName));
       }
       pw.print(attName);
       pw.print('=');

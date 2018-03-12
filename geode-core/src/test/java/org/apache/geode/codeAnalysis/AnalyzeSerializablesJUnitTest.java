@@ -82,12 +82,14 @@ public class AnalyzeSerializablesJUnitTest {
       + "If the class is not persisted or sent over the wire add it to the file " + NEW_LINE + "%s"
       + NEW_LINE + "Otherwise if this doesn't break backward compatibility, copy the file "
       + NEW_LINE + "%s to " + NEW_LINE + "%s.";
-  public static final String EXCLUDED_CLASSES_TXT = "excludedClasses.txt";
-  public static final String ACTUAL_DATA_SERIALIZABLES_DAT = "actualDataSerializables.dat";
-  public static final String ACTUAL_SERIALIZABLES_DAT = "actualSerializables.dat";
-  public static final String OPEN_BUGS_TXT = "openBugs.txt";
+  private static final String EXCLUDED_CLASSES_TXT = "excludedClasses.txt";
+  private static final String ACTUAL_DATA_SERIALIZABLES_DAT = "actualDataSerializables.dat";
+  private static final String ACTUAL_SERIALIZABLES_DAT = "actualSerializables.dat";
+  private static final String OPEN_BUGS_TXT = "openBugs.txt";
 
-  /** all loaded classes */
+  /**
+   * all loaded classes
+   */
   private Map<String, CompiledClass> classes;
 
   private File expectedDataSerializablesFile;
@@ -98,13 +100,10 @@ public class AnalyzeSerializablesJUnitTest {
   private List<ClassAndMethodDetails> expectedDataSerializables;
   private List<ClassAndVariableDetails> expectedSerializables;
 
-  private File actualDataSerializablesFile;
-  private File actualSerializablesFile;
-
   @Rule
   public TestName testName = new TestName();
 
-  public void loadExpectedDataSerializables() throws Exception {
+  private void loadExpectedDataSerializables() throws Exception {
     this.expectedDataSerializablesFile = getResourceAsFile("sanctionedDataSerializables.txt");
     assertThat(this.expectedDataSerializablesFile).exists().canRead();
 
@@ -159,12 +158,12 @@ public class AnalyzeSerializablesJUnitTest {
     findClasses();
     loadExpectedDataSerializables();
 
-    this.actualDataSerializablesFile = createEmptyFile(ACTUAL_DATA_SERIALIZABLES_DAT);
+    File actualDataSerializablesFile = createEmptyFile(ACTUAL_DATA_SERIALIZABLES_DAT);
     System.out.println(this.testName.getMethodName() + " actualDataSerializablesFile="
-        + this.actualDataSerializablesFile.getAbsolutePath());
+        + actualDataSerializablesFile.getAbsolutePath());
 
     List<ClassAndMethods> actualDataSerializables = findToDatasAndFromDatas();
-    storeClassesAndMethods(actualDataSerializables, this.actualDataSerializablesFile);
+    storeClassesAndMethods(actualDataSerializables, actualDataSerializablesFile);
 
     String diff =
         diffSortedClassesAndMethods(this.expectedDataSerializables, actualDataSerializables);
@@ -173,7 +172,7 @@ public class AnalyzeSerializablesJUnitTest {
           "++++++++++++++++++++++++++++++testDataSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
       System.out.println(diff);
       fail(diff + FAIL_MESSAGE, getSrcPathFor(getResourceAsFile(EXCLUDED_CLASSES_TXT)),
-          this.actualDataSerializablesFile.getAbsolutePath(),
+          actualDataSerializablesFile.getAbsolutePath(),
           getSrcPathFor(this.expectedDataSerializablesFile));
     }
   }
@@ -184,12 +183,12 @@ public class AnalyzeSerializablesJUnitTest {
     findClasses();
     loadExpectedSerializables();
 
-    this.actualSerializablesFile = createEmptyFile(ACTUAL_SERIALIZABLES_DAT);
+    File actualSerializablesFile = createEmptyFile(ACTUAL_SERIALIZABLES_DAT);
     System.out.println(this.testName.getMethodName() + " actualSerializablesFile="
-        + this.actualSerializablesFile.getAbsolutePath());
+        + actualSerializablesFile.getAbsolutePath());
 
     List<ClassAndVariables> actualSerializables = findSerializables();
-    storeClassesAndVariables(actualSerializables, this.actualSerializablesFile);
+    storeClassesAndVariables(actualSerializables, actualSerializablesFile);
 
     String diff = diffSortedClassesAndVariables(this.expectedSerializables, actualSerializables);
     if (!diff.isEmpty()) {
@@ -197,7 +196,7 @@ public class AnalyzeSerializablesJUnitTest {
           "++++++++++++++++++++++++++++++testSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
       System.out.println(diff);
       fail(diff + FAIL_MESSAGE, getSrcPathFor(getResourceAsFile(EXCLUDED_CLASSES_TXT)),
-          this.actualSerializablesFile.getAbsolutePath(),
+          actualSerializablesFile.getAbsolutePath(),
           getSrcPathFor(this.expectedSerializablesFile, "main"));
     }
   }
@@ -221,12 +220,7 @@ public class AnalyzeSerializablesJUnitTest {
               + " is not Serializable and should be removed from excludedClasses.txt",
           Serializable.class.isAssignableFrom(excludedClass));
 
-      if (excludedClass.isEnum()) {
-        // geode enums are special cased by DataSerializer and are never java-serialized
-        // for (Object instance: excludedClass.getEnumConstants()) {
-        // serializeAndDeserializeObject(instance);
-        // }
-      } else {
+      if (!excludedClass.isEnum()) {
         final Object excludedInstance;
         try {
           excludedInstance = excludedClass.newInstance();
@@ -251,7 +245,7 @@ public class AnalyzeSerializablesJUnitTest {
       System.out.println("Not Serializable: " + object.getClass().getName());
     }
     try {
-      Object instance = DataSerializer
+      DataSerializer
           .readObject(new DataInputStream(new ByteArrayInputStream(outputStream.toByteArray())));
       fail("I was able to deserialize " + object.getClass().getName());
     } catch (InvalidClassException e) {
@@ -263,7 +257,6 @@ public class AnalyzeSerializablesJUnitTest {
   public void testSanctionedClassesExistAndDoDeserialize() throws Exception {
     loadExpectedSerializables();
     Set<String> openBugs = new HashSet<>(loadOpenBugs(getResourceAsFile(OPEN_BUGS_TXT)));
-
 
     DistributionConfig distributionConfig = new DistributionConfigImpl(new Properties());
     distributionConfig.setValidateSerializableObjects(true);
@@ -310,7 +303,7 @@ public class AnalyzeSerializablesJUnitTest {
         continue;
       }
 
-      Object sanctionedInstance = null;
+      Object sanctionedInstance;
       if (!Serializable.class.isAssignableFrom(sanctionedClass)) {
         throw new AssertionError(
             className + " is not serializable.  Remove it from " + expectedSerializablesFileName);

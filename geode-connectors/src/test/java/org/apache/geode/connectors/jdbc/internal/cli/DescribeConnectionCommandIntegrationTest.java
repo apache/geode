@@ -62,6 +62,7 @@ public class DescribeConnectionCommandIntegrationTest {
     service = cache.getService(JdbcConnectorService.class);
 
     command = new DescribeConnectionCommand();
+    command.setCache(cache);
   }
 
   @After

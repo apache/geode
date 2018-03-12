@@ -43,13 +43,14 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 /**
  * DUnit tests for 'create gateway-receiver' command.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class CreateGatewayReceiverCommandDUnitTest {
   private MemberVM locatorSite1;
   private MemberVM server1, server2, server3;

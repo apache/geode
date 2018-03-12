@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class CreateMappingCommand implements GfshCommand {
+public class CreateMappingCommand extends GfshCommand {
   static final String CREATE_MAPPING = "create jdbc-mapping";
   static final String CREATE_MAPPING__HELP =
       EXPERIMENTAL + "Create a mapping for a region for use with a JDBC database connection.";

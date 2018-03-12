@@ -149,14 +149,14 @@ If you are using ORDER BY queries, you must implement the equals and hashCode me
 </tr>
 <tr class="even">
 <td>IS_DEFINED(expr)</td>
-<td>Returns TRUE if the expression does not evaluate to UNDEFINED.</td>
+<td>Returns TRUE if the expression does not evaluate to <a href="../query_additional/literals.html#literals__section_undefined">UNDEFINED</a>.  Inequality queries include undefined values in their query results. With the IS_DEFINED function, you can limit results to only those elements with defined values.</td>
 <td><pre class="pre codeblock"><code>IS_DEFINED(SELECT DISTINCT * 
 FROM /exampleRegion p 
 WHERE p.status = &#39;active&#39;)</code></pre></td>
 </tr>
 <tr class="odd">
 <td>IS_UNDEFINED (expr)</td>
-<td>Returns TRUE if the expression evaluates to UNDEFINED. In most queries, undefined values are not included in the query results. The IS_UNDEFINED function allows undefined values to be included, so you can identify element with undefined values.</td>
+<td>Returns TRUE if the expression evaluates to <a href="../query_additional/literals.html#literals__section_undefined">UNDEFINED</a>. With the exception of inequality queries, most queries do not include undefined values in their query results. The IS_UNDEFINED function allows undefined values to be included, so you can identify elements with undefined values.</td>
 <td><pre class="pre codeblock"><code>SELECT DISTINCT * 
 FROM /exampleRegion p 
 WHERE IS_UNDEFINED(p.status)</code></pre></td>

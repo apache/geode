@@ -70,7 +70,7 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 import org.apache.geode.security.AuthenticationFailedException;
 
-public class ConnectCommand implements GfshCommand {
+public class ConnectCommand extends GfshCommand {
   // millis that connect --locator will wait for a response from the locator.
   static final int CONNECT_LOCATOR_TIMEOUT_MS = 60000; // see bug 45971
 
@@ -282,7 +282,7 @@ public class ConnectCommand implements GfshCommand {
 
       gfsh.setOperationInvoker(operationInvoker);
 
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+      LogWrapper.getInstance(getCache())
           .info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
       return ResultBuilder.createInfoResult(
           CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
@@ -358,8 +358,8 @@ public class ConnectCommand implements GfshCommand {
       gfsh.setOperationInvoker(operationInvoker);
       infoResultData.addLine(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
           jmxHostPortToConnect.toString(false)));
-      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).info(CliStrings
-          .format(CliStrings.CONNECT__MSG__SUCCESS, jmxHostPortToConnect.toString(false)));
+      LogWrapper.getInstance(getCache()).info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
+          jmxHostPortToConnect.toString(false)));
       return ResultBuilder.buildResult(infoResultData);
     } catch (SecurityException | AuthenticationFailedException e) {
       // if it's security exception, and we already sent in username and password, still returns the
@@ -497,7 +497,7 @@ public class ConnectCommand implements GfshCommand {
   }
 
   private Result handleException(Exception e, String errorMessage) {
-    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).severe(errorMessage, e);
+    LogWrapper.getInstance(getCache()).severe(errorMessage, e);
     return ResultBuilder.createConnectionErrorResult(errorMessage);
   }
 

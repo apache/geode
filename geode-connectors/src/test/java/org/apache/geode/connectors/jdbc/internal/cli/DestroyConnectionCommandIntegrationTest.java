@@ -51,6 +51,7 @@ public class DestroyConnectionCommandIntegrationTest {
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
 
     command = new DestroyConnectionCommand();
+    command.setCache(cache);
   }
 
   @After

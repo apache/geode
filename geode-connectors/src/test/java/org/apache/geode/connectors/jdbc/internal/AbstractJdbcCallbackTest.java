@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -34,21 +35,23 @@ public class AbstractJdbcCallbackTest {
 
   private AbstractJdbcCallback jdbcCallback;
   private SqlHandler sqlHandler;
+  private InternalCache cache;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
+    cache = Fakes.cache();
     sqlHandler = mock(SqlHandler.class);
-    jdbcCallback = new AbstractJdbcCallback(sqlHandler) {};
+    jdbcCallback = new AbstractJdbcCallback(sqlHandler, cache) {};
   }
 
   @Test
-  public void closesSqlHandler() throws Exception {
+  public void closesSqlHandler() {
     jdbcCallback.close();
     verify(sqlHandler, times(1)).close();
   }
 
   @Test
-  public void returnsCorrectSqlHander() throws Exception {
+  public void returnsCorrectSqlHander() {
     assertThat(jdbcCallback.getSqlHandler()).isSameAs(sqlHandler);
   }
 

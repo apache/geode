@@ -19,10 +19,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.USER_COMMAND_
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -35,10 +33,10 @@ import org.springframework.shell.core.MethodTarget;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -62,6 +60,7 @@ public class CommandManager {
 
   private Properties cacheProperties;
   private LogWrapper logWrapper;
+  private InternalCache cache;
 
   /**
    * this constructor is used from Gfsh VM. We are getting the user-command-package from system
@@ -75,10 +74,11 @@ public class CommandManager {
    * this is used when getting the instance in a cache server. We are getting the
    * user-command-package from distribution properties. used by OnlineCommandProcessor.
    */
-  public CommandManager(final Properties cacheProperties, Cache cache) {
+  public CommandManager(final Properties cacheProperties, InternalCache cache) {
     if (cacheProperties != null) {
       this.cacheProperties = cacheProperties;
     }
+    this.cache = cache;
     logWrapper = LogWrapper.getInstance(cache);
     loadCommands();
   }
@@ -151,20 +151,19 @@ public class CommandManager {
    * @since GemFire 8.1
    */
   private void loadPluginCommands() {
-    final Iterator<CommandMarker> iterator = ServiceLoader
-        .load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader()).iterator();
-    while (iterator.hasNext()) {
-      try {
-        final CommandMarker commandMarker = iterator.next();
+    ServiceLoader<CommandMarker> loader =
+        ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
+    try {
+      loader.forEach(commandMarker -> {
         try {
           add(commandMarker);
         } catch (Exception e) {
           logWrapper.warning("Could not load Command from: " + commandMarker.getClass() + " due to "
               + e.getLocalizedMessage(), e); // continue
         }
-      } catch (ServiceConfigurationError e) {
-        logWrapper.severe("Could not load Command: " + e.getLocalizedMessage(), e); // continue
-      }
+      });
+    } catch (Throwable th) {
+      logWrapper.severe("Could not load plugin commands in the latest classLoader.", th);
     }
   }
 
@@ -272,6 +271,12 @@ public class CommandManager {
    * Method to add new Commands to the parser
    */
   void add(CommandMarker commandMarker) {
+    // inject the cache into the commands
+    if (GfshCommand.class.isAssignableFrom(commandMarker.getClass())) {
+      ((GfshCommand) commandMarker).setCache(cache);
+    }
+
+    // inject the commandManager into the commands
     if (CommandManagerAware.class.isAssignableFrom(commandMarker.getClass())) {
       ((CommandManagerAware) commandMarker).setCommandManager(this);
     }

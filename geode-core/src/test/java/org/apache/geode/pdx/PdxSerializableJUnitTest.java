@@ -54,7 +54,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
@@ -75,37 +74,37 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category({IntegrationTest.class, SerializationTest.class})
 public class PdxSerializableJUnitTest {
 
-  private GemFireCacheImpl c;
+  private GemFireCacheImpl cache;
 
   @Before
   public void setUp() {
     // make it a loner
-    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
+    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
   }
 
   @After
   public void tearDown() {
-    this.c.close();
+    this.cache.close();
   }
 
   private int getLastPdxTypeId() {
-    return this.c.getPdxRegistry().getLastAllocatedTypeId();
+    return this.cache.getPdxRegistry().getLastAllocatedTypeId();
   }
 
   private int getPdxTypeIdForClass(Class c) {
     // here we are assuming Dsid == 0
-    return this.c.getPdxRegistry().getExistingTypeForClass(c).hashCode()
+    return this.cache.getPdxRegistry().getExistingTypeForClass(c).hashCode()
         & PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID;
   }
 
   private int getNumPdxTypes() {
-    return this.c.getPdxRegistry().typeMap().size();
+    return this.cache.getPdxRegistry().typeMap().size();
   }
 
   @Test
   public void testNoDiskStore() throws Exception {
-    this.c.close();
-    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+    this.cache.close();
+    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
         .setPdxDiskStore("doesNotExist").create();
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     PdxSerializable object = new SimpleClass(1, (byte) 5, null);
@@ -119,29 +118,29 @@ public class PdxSerializableJUnitTest {
   // for bugs 44271 and 44914
   @Test
   public void testPdxPersistentKeys() throws Exception {
-    this.c.close();
-    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+    this.cache.close();
+    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
         .setPdxDiskStore("pdxDS").create();
     try {
-      DiskStoreFactory dsf = this.c.createDiskStoreFactory();
+      DiskStoreFactory dsf = this.cache.createDiskStoreFactory();
       dsf.create("pdxDS");
-      this.c.createDiskStoreFactory().create("r2DS");
-      Region r1 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).create("r1");
+      this.cache.createDiskStoreFactory().create("r2DS");
+      Region r1 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).create("r1");
       r1.put(new SimpleClass(1, (byte) 1), "1");
       r1.put(new SimpleClass(2, (byte) 2), "2");
       r1.put(new SimpleClass(1, (byte) 1), "1.2"); // so we have something to compact offline
-      Region r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
+      Region r2 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
           .setDiskStoreName("r2DS").create("r2");
       r2.put(new SimpleClass(1, (byte) 1), new SimpleClass(1, (byte) 1));
       r2.put(new SimpleClass(2, (byte) 2), new SimpleClass(2, (byte) 2));
-      this.c.close();
-      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+      this.cache.close();
+      this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
           .setPdxDiskStore("pdxDS").create();
-      dsf = this.c.createDiskStoreFactory();
+      dsf = this.cache.createDiskStoreFactory();
       dsf.create("pdxDS");
-      this.c.createDiskStoreFactory().create("r2DS");
-      r1 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).create("r1");
-      r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
+      this.cache.createDiskStoreFactory().create("r2DS");
+      r1 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).create("r1");
+      r2 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
           .create("r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
@@ -149,9 +148,9 @@ public class PdxSerializableJUnitTest {
       assertEquals(true, r2.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(new SimpleClass(1, (byte) 1), r2.get(new SimpleClass(1, (byte) 1)));
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
-      this.c.close();
+      this.cache.close();
       // use a cache.xml to recover
-      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
+      this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos), true);
       pw.println("<?xml version=\"1.0\"?>");
@@ -169,16 +168,16 @@ public class PdxSerializableJUnitTest {
       pw.println("</cache>");
       pw.close();
       byte[] bytes = baos.toByteArray();
-      this.c.loadCacheXml(new ByteArrayInputStream(bytes));
-      r1 = this.c.getRegion("/r1");
-      r2 = this.c.getRegion("/r2");
+      this.cache.loadCacheXml(new ByteArrayInputStream(bytes));
+      r1 = this.cache.getRegion("/r1");
+      r2 = this.cache.getRegion("/r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(true, r2.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r2.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(new SimpleClass(1, (byte) 1), r2.get(new SimpleClass(1, (byte) 1)));
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
-      this.c.close();
+      this.cache.close();
       // make sure offlines tools work with disk store that has pdx keys
       SystemAdmin.validateDiskStore("DEFAULT", ".");
       SystemAdmin.compactDiskStore("DEFAULT", ".");
@@ -191,7 +190,7 @@ public class PdxSerializableJUnitTest {
       SystemAdmin.modifyDiskStore("pdxDS", ".");
     } finally {
       try {
-        this.c.close();
+        this.cache.close();
       } finally {
         Pattern pattern = Pattern.compile("BACKUP(DEFAULT|pdxDS|r2DS).*");
         File[] files = new File(".").listFiles((dir1, name) -> pattern.matcher(name).matches());
@@ -206,27 +205,27 @@ public class PdxSerializableJUnitTest {
 
   @Test
   public void testPdxPersistentKeysDefDS() throws Exception {
-    this.c.close();
-    this.c =
+    this.cache.close();
+    this.cache =
         (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true).create();
     try {
-      this.c.createDiskStoreFactory().create("r2DS");
-      Region r1 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
+      this.cache.createDiskStoreFactory().create("r2DS");
+      Region r1 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
           .setDiskStoreName("r2DS").create("r1");
       r1.put(new SimpleClass(1, (byte) 1), "1");
       r1.put(new SimpleClass(2, (byte) 2), "2");
       r1.put(new SimpleClass(1, (byte) 1), "1.2"); // so we have something to compact offline
-      Region r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
+      Region r2 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
           .setDiskStoreName("r2DS").create("r2");
       r2.put(new SimpleClass(1, (byte) 1), new SimpleClass(1, (byte) 1));
       r2.put(new SimpleClass(2, (byte) 2), new SimpleClass(2, (byte) 2));
-      this.c.close();
-      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+      this.cache.close();
+      this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
           .create();
-      this.c.createDiskStoreFactory().create("r2DS");
-      r1 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
+      this.cache.createDiskStoreFactory().create("r2DS");
+      r1 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
           .create("r1");
-      r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
+      r2 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
           .create("r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
@@ -234,9 +233,9 @@ public class PdxSerializableJUnitTest {
       assertEquals(true, r2.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(new SimpleClass(1, (byte) 1), r2.get(new SimpleClass(1, (byte) 1)));
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
-      this.c.close();
+      this.cache.close();
       // use a cache.xml to recover
-      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
+      this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos), true);
       pw.println("<?xml version=\"1.0\"?>");
@@ -255,16 +254,16 @@ public class PdxSerializableJUnitTest {
       pw.println("</cache>");
       pw.close();
       byte[] bytes = baos.toByteArray();
-      this.c.loadCacheXml(new ByteArrayInputStream(bytes));
-      r1 = this.c.getRegion("/r1");
-      r2 = this.c.getRegion("/r2");
+      this.cache.loadCacheXml(new ByteArrayInputStream(bytes));
+      r1 = this.cache.getRegion("/r1");
+      r2 = this.cache.getRegion("/r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(true, r2.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r2.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(new SimpleClass(1, (byte) 1), r2.get(new SimpleClass(1, (byte) 1)));
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
-      this.c.close();
+      this.cache.close();
       // make sure offlines tools work with disk store that has pdx keys
       SystemAdmin.validateDiskStore("DEFAULT", ".");
       SystemAdmin.compactDiskStore("DEFAULT", ".");
@@ -274,7 +273,7 @@ public class PdxSerializableJUnitTest {
       SystemAdmin.modifyDiskStore("r2DS", ".");
     } finally {
       try {
-        this.c.close();
+        this.cache.close();
       } finally {
         Pattern pattern = Pattern.compile("BACKUP(DEFAULT|r2DS).*");
         File[] files = new File(".").listFiles((dir1, name) -> pattern.matcher(name).matches());
@@ -438,7 +437,7 @@ public class PdxSerializableJUnitTest {
         "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
         pdx.equals(actualVal));
 
-    c.setReadSerializedForTest(true);
+    cache.setReadSerializedForTest(true);
     try {
       in = new DataInputStream(new ByteArrayInputStream(actual));
       PdxInstance pi = (PdxInstance) DataSerializer.readObject(in);
@@ -535,7 +534,7 @@ public class PdxSerializableJUnitTest {
           (byte) (floatBytes >> 16), (byte) (floatBytes >> 8), (byte) floatBytes}),
           reader.getRaw(7));
     } finally {
-      c.setReadSerializedForTest(false);
+      cache.setReadSerializedForTest(false);
     }
   }
 
@@ -664,7 +663,7 @@ public class PdxSerializableJUnitTest {
     assertTrue(
         "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
         pdx.equals(actualVal));
-    c.setReadSerializedForTest(true);
+    cache.setReadSerializedForTest(true);
     try {
       in = new DataInputStream(new ByteArrayInputStream(actual));
       PdxInstance pi = (PdxInstance) DataSerializer.readObject(in);
@@ -761,7 +760,7 @@ public class PdxSerializableJUnitTest {
           (byte) (floatBytes >> 16), (byte) (floatBytes >> 8), (byte) floatBytes}),
           reader.getRaw(7));
     } finally {
-      c.setReadSerializedForTest(false);
+      cache.setReadSerializedForTest(false);
     }
   }
 
@@ -1095,7 +1094,8 @@ public class PdxSerializableJUnitTest {
   // this method adds coverage for bug 43236
   @Test
   public void testObjectPdxInstance() throws IOException, ClassNotFoundException {
-    DefaultQuery.setPdxReadSerialized(true);
+    Boolean previousPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
+    cache.setPdxReadSerializedOverride(true);
     PdxReaderImpl.TESTHOOK_TRACKREADS = true;
     try {
       PdxInstance pi = (PdxInstance) serializeAndDeserialize(new ObjectHolder("hello"));
@@ -1110,14 +1110,15 @@ public class PdxSerializableJUnitTest {
       assertEquals("hello", v3.getObject());
       assertEquals("goodbye", wpi.getField("f1"));
     } finally {
-      DefaultQuery.setPdxReadSerialized(false);
+      cache.setPdxReadSerializedOverride(previousPdxReadSerializedFlag);
       PdxReaderImpl.TESTHOOK_TRACKREADS = false;
     }
   }
 
   @Test
   public void testObjectArrayPdxInstance() throws IOException, ClassNotFoundException {
-    DefaultQuery.setPdxReadSerialized(true);
+    Boolean previousPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
+    cache.setPdxReadSerializedOverride(true);
     PdxReaderImpl.TESTHOOK_TRACKREADS = true;
     try {
       LongFieldHolder[] v = new LongFieldHolder[] {new LongFieldHolder(1), new LongFieldHolder(2)};
@@ -1139,7 +1140,7 @@ public class PdxSerializableJUnitTest {
             "expected " + Arrays.toString(v) + " but had " + Arrays.toString(nv2));
       }
     } finally {
-      DefaultQuery.setPdxReadSerialized(false);
+      cache.setPdxReadSerializedOverride(previousPdxReadSerializedFlag);
       PdxReaderImpl.TESTHOOK_TRACKREADS = false;
     }
   }
@@ -1167,24 +1168,24 @@ public class PdxSerializableJUnitTest {
     } catch (NotSerializableException expected) {
 
     }
-    this.c.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
+    this.cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
     try {
       BasicAllFieldTypes v2 = (BasicAllFieldTypes) serializeAndDeserialize(v1);
       assertEquals(v1, v2);
     } finally {
-      this.c.setPdxSerializer(null);
+      this.cache.setPdxSerializer(null);
     }
   }
 
   @Test
   public void testPdxSerializerFalse() throws IOException, ClassNotFoundException {
-    this.c.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
+    this.cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
     try {
       POS v1 = new POS(3);
       POS v2 = (POS) serializeAndDeserialize(v1);
       assertEquals(v1, v2);
     } finally {
-      this.c.setPdxSerializer(null);
+      this.cache.setPdxSerializer(null);
     }
   }
 
@@ -1204,12 +1205,12 @@ public class PdxSerializableJUnitTest {
     } catch (NotSerializableException expected) {
 
     }
-    this.c.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
+    this.cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
     try {
       BasicAllFieldTypes v2 = (BasicAllFieldTypes) serializeAndDeserialize(v1);
       assertEquals(v1, v2);
     } finally {
-      this.c.setPdxSerializer(null);
+      this.cache.setPdxSerializer(null);
     }
   }
 
@@ -2056,7 +2057,7 @@ public class PdxSerializableJUnitTest {
     byte[] v2actual = createBlob(pdx);
     int v2typeId = getBlobPdxTypeId(v2actual);
 
-    c.getPdxRegistry().removeLocal(pdx);
+    cache.getPdxRegistry().removeLocal(pdx);
     MyEvolvablePdx.setVersion(1);
     MyEvolvablePdx pdxv1 = deblob(v2actual);
     assertEquals(7, pdxv1.f1);
@@ -2077,7 +2078,7 @@ public class PdxSerializableJUnitTest {
     checkBytes(v2actual, v1actual);
 
     MyEvolvablePdx.setVersion(2);
-    c.getPdxRegistry().removeLocal(pdx);
+    cache.getPdxRegistry().removeLocal(pdx);
     MyEvolvablePdx pdxv2 = deblob(v1actual);
     assertEquals(7, pdxv2.f1);
     assertEquals(8, pdxv2.f2);
@@ -2100,7 +2101,7 @@ public class PdxSerializableJUnitTest {
     assertEquals(8, pdx.f2);
     byte[] v3actual = createBlob(pdx);
     int v3typeId = getBlobPdxTypeId(v3actual);
-    c.getPdxRegistry().removeLocal(pdx);
+    cache.getPdxRegistry().removeLocal(pdx);
     MyEvolvablePdx.setVersion(1);
     MyEvolvablePdx pdxv1 = deblob(v3actual);
     assertEquals(7, pdxv1.f1);
@@ -2112,14 +2113,14 @@ public class PdxSerializableJUnitTest {
 
     int mergedTypeId = getBlobPdxTypeId(v1actual);
     assertEquals(numPdxTypes + 1, getNumPdxTypes());
-    TypeRegistry tr = c.getPdxRegistry();
+    TypeRegistry tr = cache.getPdxRegistry();
     PdxType v3Type = tr.getType(v3typeId);
     PdxType mergedType = tr.getType(mergedTypeId);
     assertFalse(mergedType.equals(v3Type));
     assertTrue(mergedType.compatible(v3Type));
 
     MyEvolvablePdx.setVersion(3);
-    c.getPdxRegistry().removeLocal(pdxv1);
+    cache.getPdxRegistry().removeLocal(pdxv1);
     MyEvolvablePdx pdxv3 = deblob(v1actual);
     assertEquals(7, pdxv3.f1);
     assertEquals(8, pdxv3.f2);
@@ -2137,7 +2138,7 @@ public class PdxSerializableJUnitTest {
     byte[] v1actual = createBlob(pdx);
     int v1typeId = getBlobPdxTypeId(v1actual);
 
-    c.getPdxRegistry().removeLocal(pdx);
+    cache.getPdxRegistry().removeLocal(pdx);
     MyEvolvablePdx.setVersion(2);
     MyEvolvablePdx pdxv2 = deblob(v1actual);
     assertEquals(7, pdxv2.f1);
@@ -2150,7 +2151,7 @@ public class PdxSerializableJUnitTest {
     int v2typeId = getBlobPdxTypeId(v2actual);
     assertEquals(numPdxTypes + 1, getNumPdxTypes());
 
-    TypeRegistry tr = c.getPdxRegistry();
+    TypeRegistry tr = cache.getPdxRegistry();
     PdxType v2Type = tr.getType(v2typeId);
     PdxType v1Type = tr.getType(v1typeId);
     assertFalse(v1Type.equals(v2Type));
@@ -2161,7 +2162,7 @@ public class PdxSerializableJUnitTest {
     assertNotNull(v2Type.getPdxField("f2"));
 
     MyEvolvablePdx.setVersion(1);
-    c.getPdxRegistry().removeLocal(pdx);
+    cache.getPdxRegistry().removeLocal(pdx);
     MyEvolvablePdx pdxv3 = deblob(v2actual);
     assertEquals(7, pdxv3.f1);
     assertEquals(0, pdxv3.f2);

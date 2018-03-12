@@ -27,7 +27,7 @@ public class CreateConnectionFunction
     extends JdbcCliFunction<ConnectionConfiguration, CliFunctionResult> {
 
   CreateConnectionFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override

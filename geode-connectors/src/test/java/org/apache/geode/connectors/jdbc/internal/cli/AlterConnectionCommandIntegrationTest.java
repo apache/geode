@@ -47,9 +47,12 @@ public class AlterConnectionCommandIntegrationTest {
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
-    (new CreateConnectionCommand()).createConnection(name, url, user, password, params);
+    CreateConnectionCommand create = new CreateConnectionCommand();
+    create.setCache(cache);
+    create.createConnection(name, url, user, password, params);
 
     alterConnectionCommand = new AlterConnectionCommand();
+    alterConnectionCommand.setCache(cache);
   }
 
   @After

@@ -71,7 +71,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  * <p>
  * GEODE-3117: "Gateway authentication throws NullPointerException"
  */
-@Category({DistributedTest.class, SecurityTest.class, WanTest.class})
+@Category({DistributedTest.class, SecurityTest.class, WanTest.class, WanTest.class})
 public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
 
   private static final String REGION_NAME = "TheRegion";

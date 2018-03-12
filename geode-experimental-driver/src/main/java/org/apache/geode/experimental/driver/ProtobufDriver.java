@@ -78,6 +78,11 @@ public class ProtobufDriver implements Driver {
   }
 
   @Override
+  public FunctionService getFunctionService() {
+    return new ProtobufFunctionService(channel);
+  }
+
+  @Override
   public void close() {
     try {
       final Message disconnectClientRequest = ClientProtocol.Message.newBuilder()

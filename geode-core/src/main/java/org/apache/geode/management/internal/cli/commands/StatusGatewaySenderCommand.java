@@ -30,7 +30,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -38,7 +37,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StatusGatewaySenderCommand implements GfshCommand {
+public class StatusGatewaySenderCommand extends GfshCommand {
   @CliCommand(value = CliStrings.STATUS_GATEWAYSENDER, help = CliStrings.STATUS_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -75,7 +74,7 @@ public class StatusGatewaySenderCommand implements GfshCommand {
         crd.addSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
             .addTable(CliStrings.TABLE_GATEWAY_SENDER);
 
-    Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember, getCache());
+    Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
 
     if (dsMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

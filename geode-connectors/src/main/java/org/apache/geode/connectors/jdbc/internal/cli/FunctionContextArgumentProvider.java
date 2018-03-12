@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 /**
  * Provides JDBC command dependencies provided in the FunctionContext
  */
-class FunctionContextArgumentProvider implements Serializable {
+class FunctionContextArgumentProvider {
 
   static InternalCache getCacheFromContext(FunctionContext<?> context) {
     return (InternalCache) context.getCache();
@@ -45,26 +45,26 @@ class FunctionContextArgumentProvider implements Serializable {
   /**
    * Returns the JdbcConnectorService
    */
-  JdbcConnectorService getJdbcConnectorService(FunctionContext<?> context) {
+  static JdbcConnectorService getJdbcConnectorService(FunctionContext<?> context) {
     return getCacheFromContext(context).getService(JdbcConnectorService.class);
   }
 
   /**
    * Returns the name of the distributed member or its id if it has no name
    */
-  String getMember(FunctionContext<?> context) {
+  static String getMember(FunctionContext<?> context) {
     return getMemberFromContext(context);
   }
 
   /**
    * Returns XmlEntity for JdbcConnectorServiceXmlGenerator snippet of cache xml
    */
-  XmlEntity createXmlEntity(FunctionContext<?> context) {
+  static XmlEntity createXmlEntity(FunctionContext<?> context) {
     return new XmlEntity(createCacheProvider(context), CACHE, PREFIX, NAMESPACE,
         CONNECTION_SERVICE.getTypeName(), NAME, CONNECTION_SERVICE.getTypeName());
   }
 
-  private XmlEntity.CacheProvider createCacheProvider(FunctionContext<?> context) {
+  private static XmlEntity.CacheProvider createCacheProvider(FunctionContext<?> context) {
     return () -> getCacheFromContext(context);
   }
 }

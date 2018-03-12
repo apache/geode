@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyAsyncEventQueueCommand implements GfshCommand {
+public class DestroyAsyncEventQueueCommand extends GfshCommand {
   public static final String DESTROY_ASYNC_EVENT_QUEUE = "destroy async-event-queue";
   public static final String DESTROY_ASYNC_EVENT_QUEUE__HELP = "destroy an Async Event Queue";
   public static final String DESTROY_ASYNC_EVENT_QUEUE__ID = "id";

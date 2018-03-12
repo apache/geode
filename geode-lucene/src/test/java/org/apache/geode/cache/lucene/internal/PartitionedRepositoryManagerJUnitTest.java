@@ -92,7 +92,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   protected LuceneIndexStats indexStats;
   protected FileSystemStats fileSystemStats;
   protected LuceneIndexImpl indexForPR;
-  protected AbstractPartitionedRepositoryManager repoManager;
+  protected PartitionedRepositoryManager repoManager;
   protected GemFireCacheImpl cache;
 
   @Before
@@ -105,8 +105,10 @@ public class PartitionedRepositoryManagerJUnitTest {
     serializer = new HeterogeneousLuceneSerializer();
     DLockService lockService = mock(DLockService.class);
     when(lockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
+    when(userRegion.getRegionService()).thenReturn(cache);
     DLockService.addLockServiceForTests(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME,
         lockService);
+
     createIndexAndRepoManager();
   }
 
@@ -141,7 +143,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     PowerMockito.mockStatic(PartitionedRegionHelper.class);
     PowerMockito.when(PartitionedRegionHelper.getPRRoot(cache)).thenReturn(prRoot);
     repoManager = new PartitionedRepositoryManager(indexForPR, serializer);
-    repoManager.setUserRegionForRepositoryManager();
+    repoManager.setUserRegionForRepositoryManager(userRegion);
     repoManager.allowRepositoryComputation();
   }
 

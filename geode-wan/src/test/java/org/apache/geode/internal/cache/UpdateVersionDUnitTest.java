@@ -67,11 +67,12 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
 /**
  * @since GemFire 7.0.1
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
   protected static final String regionName = "testRegion";

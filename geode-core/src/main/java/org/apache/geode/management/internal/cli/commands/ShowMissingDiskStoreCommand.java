@@ -40,7 +40,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShowMissingDiskStoreCommand implements GfshCommand {
+public class ShowMissingDiskStoreCommand extends GfshCommand {
   @CliCommand(value = CliStrings.SHOW_MISSING_DISK_STORE,
       help = CliStrings.SHOW_MISSING_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})

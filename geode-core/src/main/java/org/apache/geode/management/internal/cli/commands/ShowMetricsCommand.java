@@ -53,7 +53,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShowMetricsCommand implements GfshCommand {
+public class ShowMetricsCommand extends GfshCommand {
   enum Category {
     cache,
     cacheserver,

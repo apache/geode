@@ -29,7 +29,6 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -38,7 +37,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListClientCommand implements GfshCommand {
+public class ListClientCommand extends GfshCommand {
   @CliCommand(value = CliStrings.LIST_CLIENTS, help = CliStrings.LIST_CLIENT__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -111,8 +110,7 @@ public class ListClientCommand implements GfshCommand {
     }
     result = ResultBuilder.buildResult(compositeResultData);
 
-    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-        .info("list client result " + result);
+    LogWrapper.getInstance(getCache()).info("list client result " + result);
 
     return result;
   }

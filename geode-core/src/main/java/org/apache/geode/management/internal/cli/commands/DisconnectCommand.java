@@ -19,7 +19,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
@@ -27,7 +26,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
-public class DisconnectCommand implements GfshCommand {
+public class DisconnectCommand extends GfshCommand {
   @CliCommand(value = {CliStrings.DISCONNECT}, help = CliStrings.DISCONNECT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX,
       CliStrings.TOPIC_GEODE_MANAGER})
@@ -46,7 +45,7 @@ public class DisconnectCommand implements GfshCommand {
           operationInvoker.stop();
           infoResultData.addLine(CliStrings.format(CliStrings.DISCONNECT__MSG__DISCONNECTED,
               operationInvoker.toString()));
-          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).info(CliStrings
+          LogWrapper.getInstance(getCache()).info(CliStrings
               .format(CliStrings.DISCONNECT__MSG__DISCONNECTED, operationInvoker.toString()));
           if (!gfshInstance.isHeadlessMode()) {
             gfshInstance.setPromptPath(gfshInstance.getEnvAppContextPath());

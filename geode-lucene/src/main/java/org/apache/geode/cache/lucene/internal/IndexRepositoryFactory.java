@@ -32,10 +32,10 @@ import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingMap;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
-import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
@@ -50,7 +50,7 @@ public class IndexRepositoryFactory {
   public IndexRepositoryFactory() {}
 
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-      LuceneIndexImpl index, PartitionedRegion userRegion, final IndexRepository oldRepository)
+      InternalLuceneIndex index, PartitionedRegion userRegion, final IndexRepository oldRepository)
       throws IOException {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
@@ -95,8 +95,9 @@ public class IndexRepositoryFactory {
     }
 
     final IndexRepository repo;
-    boolean initialPdxReadSerializedFlag = DefaultQuery.getPdxReadSerialized();
-    DefaultQuery.setPdxReadSerialized(true);
+    InternalCache cache = (InternalCache) userRegion.getRegionService();
+    boolean initialPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
+    cache.setPdxReadSerializedOverride(true);
     try {
       // bucketTargetingMap handles partition resolver (via bucketId as callbackArg)
       Map bucketTargetingMap = getBucketTargetingMap(fileAndChunkBucket, bucketId);
@@ -112,8 +113,7 @@ public class IndexRepositoryFactory {
         success = true;
         return repo;
       } else {
-        success =
-            reindexUserDataRegion(bucketId, userRegion, fileRegion, dataBucket, success, repo);
+        success = reindexUserDataRegion(bucketId, userRegion, fileRegion, dataBucket, repo);
       }
       return repo;
     } catch (IOException e) {
@@ -127,19 +127,17 @@ public class IndexRepositoryFactory {
     } finally {
       if (!success) {
         lockService.unlock(lockName);
-        DefaultQuery.setPdxReadSerialized(initialPdxReadSerializedFlag);
+        cache.setPdxReadSerializedOverride(initialPdxReadSerializedFlag);
       }
     }
   }
 
   private boolean reindexUserDataRegion(Integer bucketId, PartitionedRegion userRegion,
-      PartitionedRegion fileRegion, BucketRegion dataBucket, boolean success, IndexRepository repo)
+      PartitionedRegion fileRegion, BucketRegion dataBucket, IndexRepository repo)
       throws IOException {
     Set<IndexRepository> affectedRepos = new HashSet<IndexRepository>();
 
-    Iterator keysIterator = dataBucket.keySet().iterator();
-    while (keysIterator.hasNext()) {
-      Object key = keysIterator.next();
+    for (Object key : dataBucket.keySet()) {
       Object value = getValue(userRegion.getEntry(key));
       if (value != null) {
         repo.update(key, value);
@@ -154,8 +152,7 @@ public class IndexRepositoryFactory {
     }
     // fileRegion ops (get/put) need bucketId as a callbackArg for PartitionResolver
     fileRegion.put(APACHE_GEODE_INDEX_COMPLETE, APACHE_GEODE_INDEX_COMPLETE, bucketId);
-    success = true;
-    return success;
+    return true;
   }
 
   private Object getValue(Region.Entry entry) {

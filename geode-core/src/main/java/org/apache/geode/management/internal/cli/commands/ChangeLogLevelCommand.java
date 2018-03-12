@@ -36,7 +36,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.ChangeLogLevelFunction;
@@ -47,7 +46,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ChangeLogLevelCommand implements GfshCommand {
+public class ChangeLogLevelCommand extends GfshCommand {
   @CliCommand(value = CliStrings.CHANGE_LOGLEVEL, help = CliStrings.CHANGE_LOGLEVEL__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_LOGS},
       interceptor = "org.apache.geode.management.internal.cli.commands.ChangeLogLevelCommand$ChangeLogLevelCommandInterceptor")
@@ -67,11 +66,11 @@ public class ChangeLogLevelCommand implements GfshCommand {
             .createUserErrorResult(CliStrings.CHANGE_LOGLEVEL__MSG__SPECIFY_GRP_OR_MEMBER);
       }
 
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = getCache();
       LogWriter logger = cache.getLogger();
 
       Set<DistributedMember> dsMembers = new HashSet<>();
-      Set<DistributedMember> ds = CliUtil.getAllMembers(cache);
+      Set<DistributedMember> ds = getAllMembers();
 
       if (grps != null && grps.length > 0) {
         for (String grp : grps) {
@@ -135,8 +134,7 @@ public class ChangeLogLevelCommand implements GfshCommand {
 
           }
         } catch (Exception ex) {
-          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-              .warning("change log level command exception " + ex);
+          LogWrapper.getInstance(getCache()).warning("change log level command exception " + ex);
         }
       }
 

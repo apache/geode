@@ -48,10 +48,13 @@ public class AlterMappingCommandIntegrationTest {
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
-    new CreateMappingCommand().createMapping(regionName, connectionName, tableName, pdxClass,
-        keyInValue, fieldMappings);
+    CreateMappingCommand create = new CreateMappingCommand();
+    create.setCache(cache);
+    create.createMapping(regionName, connectionName, tableName, pdxClass, keyInValue,
+        fieldMappings);
 
     alterRegionMappingCommand = new AlterMappingCommand();
+    alterRegionMappingCommand.setCache(cache);
   }
 
   @After

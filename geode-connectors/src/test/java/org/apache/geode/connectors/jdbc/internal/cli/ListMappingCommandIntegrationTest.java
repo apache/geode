@@ -61,6 +61,7 @@ public class ListMappingCommandIntegrationTest {
     service = cache.getService(JdbcConnectorService.class);
 
     command = new ListConnectionCommand();
+    command.setCache(cache);
   }
 
   @After
