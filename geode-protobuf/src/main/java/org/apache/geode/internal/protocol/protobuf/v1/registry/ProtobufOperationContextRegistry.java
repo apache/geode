@@ -171,6 +171,6 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getClearRequest,
             new ClearRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setClearResponse(opsResp),
-            ResourcePermissions.DATA_WRITE));
+            ClearRequestOperationHandler::determineRequiredPermission));
   }
 }

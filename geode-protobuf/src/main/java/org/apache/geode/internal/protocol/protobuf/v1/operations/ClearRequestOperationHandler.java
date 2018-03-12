@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import org.apache.geode.security.ResourcePermission;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,7 +44,7 @@ public class ClearRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
-      logger.error("Received remove request for nonexistent region: {}", regionName);
+      logger.error("Received clear request for nonexistent region: {}", regionName);
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
           "Region \"" + regionName + "\" not found");
     }
@@ -51,5 +52,11 @@ public class ClearRequestOperationHandler
     region.clear();
 
     return Success.of(RegionAPI.ClearResponse.newBuilder().build());
+  }
+
+  public static ResourcePermission determineRequiredPermission(RegionAPI.ClearRequest request,
+                                                               ProtobufSerializationService serializer) throws DecodingException {
+    return new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.WRITE, request.getRegionName());
   }
 }
