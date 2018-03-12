@@ -12,23 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal.cli;
+package org.apache.geode.codeAnalysis;
 
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.junit.experimental.categories.Category;
 
-@Experimental
-public class DescribeConnectionFunction extends JdbcCliFunction<String, ConnectionConfiguration> {
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
-  DescribeConnectionFunction() {
-    super();
-  }
+
+@Category({IntegrationTest.class})
+public class AnalyzeConnectorsSerializablesJUnitTest extends AnalyzeSerializablesJUnitTest {
 
   @Override
-  ConnectionConfiguration getFunctionResult(JdbcConnectorService service,
-      FunctionContext<String> context) {
-    return service.getConnectionConfig(context.getArguments());
+  protected String getModuleName() {
+    return "geode-connectors";
   }
 }

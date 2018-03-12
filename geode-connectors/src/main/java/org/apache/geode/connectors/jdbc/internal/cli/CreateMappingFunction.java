@@ -26,7 +26,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 public class CreateMappingFunction extends JdbcCliFunction<RegionMapping, CliFunctionResult> {
 
   CreateMappingFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override

@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 class InheritsDefaultPermissionsJDBCFunction extends JdbcCliFunction<String, CliFunctionResult> {
 
   InheritsDefaultPermissionsJDBCFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override

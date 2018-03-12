@@ -23,7 +23,7 @@ import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 public class DescribeMappingFunction extends JdbcCliFunction<String, RegionMapping> {
 
   DescribeMappingFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override

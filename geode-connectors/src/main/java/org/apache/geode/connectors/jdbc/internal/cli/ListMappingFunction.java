@@ -25,7 +25,7 @@ import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 public class ListMappingFunction extends JdbcCliFunction<Void, RegionMapping[]> {
 
   ListMappingFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override

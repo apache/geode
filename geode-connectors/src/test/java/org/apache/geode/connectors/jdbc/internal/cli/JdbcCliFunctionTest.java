@@ -32,9 +32,7 @@ public class JdbcCliFunctionTest {
 
   @Before
   public void setup() {
-    FunctionContextArgumentProvider argumentProvider = mock(FunctionContextArgumentProvider.class);
-    ExceptionHandler exceptionHandler = mock(ExceptionHandler.class);
-    function = new JdbcCliFunction<Void, Void>(argumentProvider, exceptionHandler) {
+    function = new JdbcCliFunction<Void, Void>() {
       @Override
       Void getFunctionResult(JdbcConnectorService service, FunctionContext<Void> context) {
         return null;

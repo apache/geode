@@ -25,7 +25,7 @@ import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 public class ListConnectionFunction extends JdbcCliFunction<Void, ConnectionConfiguration[]> {
 
   ListConnectionFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+    super();
   }
 
   @Override
