@@ -22,7 +22,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -47,7 +46,7 @@ public class StatusClusterConfigServiceCommand extends GfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_LOCATOR)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result statusSharedConfiguration() {
-    final InternalCache cache = GemFireCacheImpl.getInstance();
+    final InternalCache cache = getCache();
     final Set<DistributedMember> locators = new HashSet<>(
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
     if (locators.isEmpty()) {
