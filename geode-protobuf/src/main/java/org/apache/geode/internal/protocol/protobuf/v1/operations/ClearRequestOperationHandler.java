@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import org.apache.geode.security.ResourcePermission;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +29,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class ClearRequestOperationHandler
@@ -55,7 +55,7 @@ public class ClearRequestOperationHandler
   }
 
   public static ResourcePermission determineRequiredPermission(RegionAPI.ClearRequest request,
-                                                               ProtobufSerializationService serializer) throws DecodingException {
+      ProtobufSerializationService serializer) throws DecodingException {
     return new ResourcePermission(ResourcePermission.Resource.DATA,
         ResourcePermission.Operation.WRITE, request.getRegionName());
   }
