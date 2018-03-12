@@ -23,7 +23,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 @Experimental
 public abstract class JdbcCliFunction<T1, T2> implements InternalFunction<T1> {
 
-  private transient final ExceptionHandler exceptionHandler;
+  private final transient ExceptionHandler exceptionHandler;
 
   JdbcCliFunction() {
     this.exceptionHandler = new ExceptionHandler();
@@ -42,7 +42,8 @@ public abstract class JdbcCliFunction<T1, T2> implements InternalFunction<T1> {
   @Override
   public void execute(FunctionContext<T1> context) {
     try {
-      JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
+      JdbcConnectorService service =
+          FunctionContextArgumentProvider.getJdbcConnectorService(context);
       T2 result = getFunctionResult(service, context);
       context.getResultSender().lastResult(result);
     } catch (Exception e) {

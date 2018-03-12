@@ -64,7 +64,7 @@ class FunctionContextArgumentProvider {
         CONNECTION_SERVICE.getTypeName(), NAME, CONNECTION_SERVICE.getTypeName());
   }
 
-  static private XmlEntity.CacheProvider createCacheProvider(FunctionContext<?> context) {
+  private static XmlEntity.CacheProvider createCacheProvider(FunctionContext<?> context) {
     return () -> getCacheFromContext(context);
   }
 }
