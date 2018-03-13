@@ -22,7 +22,9 @@ import org.apache.geode.cache.CacheRuntimeException;
 
 /**
  * An exception thrown when communication with an external JDBC data source fails and can be used
- * to diagnose the cause of database communication failures.
+ * to diagnose the cause of database communication failures. In cases where the cause of this
+ * exception is not safe to serialize to clients, the stack trace is included in the message of the
+ * exception and the cause is left empty.
  *
  * @since Geode 1.5
  */
@@ -37,8 +39,7 @@ public class JdbcConnectorException extends CacheRuntimeException {
    * @param e cause of this Exception
    * @return a new JdbcConnectorException containing either the causing exception, if it can be
    *         serialized/deserialized by Geode, or containing the causing exception stack trace in
-   *         its
-   *         message if not
+   *         its message if not
    */
   public static JdbcConnectorException createException(Exception e) {
     String message;
