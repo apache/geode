@@ -83,12 +83,42 @@ public class DestroyJndiBindingCommandTest {
   }
 
   @Test
-  public void returnsErrorIfNoBindingExistsWithGivenName()
+  public void returnsErrorIfBindingDoesNotExistAndIfExistsUnspecified()
       throws ParserConfigurationException, SAXException, IOException {
     ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsError()
+        .containsOutput("does not exist.");
+  }
+
+  @Test
+  public void skipsIfBindingDoesNotExistAndIfExistsSpecified()
+      throws ParserConfigurationException, SAXException, IOException {
+    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    doReturn(clusterConfigService).when(command).getSharedConfiguration();
+    doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists").statusIsSuccess()
+        .containsOutput("does not exist.");
+  }
+
+  @Test
+  public void skipsIfBindingDoesNotExistAndIfExistsSpecifiedTrue()
+      throws ParserConfigurationException, SAXException, IOException {
+    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    doReturn(clusterConfigService).when(command).getSharedConfiguration();
+    doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=true").statusIsSuccess()
+        .containsOutput("does not exist.");
+  }
+
+  @Test
+  public void returnsErrorIfBindingDoesNotExistAndIfExistsSpecifiedFalse()
+      throws ParserConfigurationException, SAXException, IOException {
+    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    doReturn(clusterConfigService).when(command).getSharedConfiguration();
+    doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
+    gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=false").statusIsError()
         .containsOutput("does not exist.");
   }
 

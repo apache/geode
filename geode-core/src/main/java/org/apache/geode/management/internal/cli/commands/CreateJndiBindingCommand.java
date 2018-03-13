@@ -100,7 +100,7 @@ public class CreateJndiBindingCommand extends GfshCommand {
   static final String XA_DATASOURCE_CLASS__HELP =
       "The fully qualified name of the javax.sql.XADataSource implementation class.";
   static final String IFNOTEXISTS__HELP =
-      "Skip the create operation when a Jndi binding with the same name already exists. The default is to overwrite the entry (false).";
+      "Skip the create operation when a jndi binding with the same name already exists.  Without specifying this option, this command execution results into an error.";
   static final String DATASOURCE_CONFIG_PROPERTIES = "datasource-config-properties";
   static final String DATASOURCE_CONFIG_PROPERTIES_HELP =
       "Properties for the custom XSDataSource driver. Append json string containing (name, type, value) to set any property. Eg: --datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}";
