@@ -79,7 +79,7 @@ public class CreateDefinedIndexesFunctionTest {
   @Test
   public void noIndexDefinitionsAsFunctionArgument() throws Exception {
     context = new FunctionContextImpl(cache, CreateDefinedIndexesFunction.class.getName(),
-        Collections.emptySet(), resultSender);
+        Collections.emptySet(), resultSender, cache.getDistributedSystem());
 
     function.execute(context);
     List<?> results = resultSender.getResults();
@@ -97,7 +97,7 @@ public class CreateDefinedIndexesFunctionTest {
   public void noIndexPreviouslyDefinedInQueryService() throws Exception {
     when(queryService.createDefinedIndexes()).thenReturn(Collections.emptyList());
     context = new FunctionContextImpl(cache, CreateDefinedIndexesFunction.class.getName(),
-        indexDefinitions, resultSender);
+        indexDefinitions, resultSender, cache.getDistributedSystem());
 
     function.execute(context);
     List<?> results = resultSender.getResults();
@@ -119,7 +119,7 @@ public class CreateDefinedIndexesFunctionTest {
     when(queryService.createDefinedIndexes())
         .thenThrow(new MultiIndexCreationException(exceptions));
     context = new FunctionContextImpl(cache, CreateDefinedIndexesFunction.class.getName(),
-        indexDefinitions, resultSender);
+        indexDefinitions, resultSender, cache.getDistributedSystem());
 
     function.execute(context);
     List<?> results = resultSender.getResults();
@@ -141,7 +141,7 @@ public class CreateDefinedIndexesFunctionTest {
   public void unexpectedExceptionThrowByQueryService() throws Exception {
     when(queryService.createDefinedIndexes()).thenThrow(new RuntimeException("Mock Exception"));
     context = new FunctionContextImpl(cache, CreateDefinedIndexesFunction.class.getName(),
-        indexDefinitions, resultSender);
+        indexDefinitions, resultSender, cache.getDistributedSystem());
 
     function.execute(context);
     List<?> results = resultSender.getResults();
@@ -175,7 +175,7 @@ public class CreateDefinedIndexesFunctionTest {
     doReturn(mock(XmlEntity.class)).when(function).createXmlEntity(any());
     when(queryService.createDefinedIndexes()).thenReturn(Arrays.asList(index1, index2, index3));
     context = new FunctionContextImpl(cache, CreateDefinedIndexesFunction.class.getName(),
-        indexDefinitions, resultSender);
+        indexDefinitions, resultSender, cache.getDistributedSystem());
 
     function.execute(context);
     List<?> results = resultSender.getResults();

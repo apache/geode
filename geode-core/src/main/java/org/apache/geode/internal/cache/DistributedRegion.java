@@ -3694,7 +3694,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     final DistributionManager dm = getDistributionManager();
     ResultSender resultSender = new DistributedRegionFunctionResultSender(dm, msg, function);
     final RegionFunctionContextImpl context = new RegionFunctionContextImpl(cache, function.getId(),
-        this, args, filter, null, null, resultSender, isReExecute);
+        this, args, filter, null, null, resultSender, isReExecute, cache.getDistributedSystem());
     FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), dm.getSystem());
     try {
       long start = stats.startTime();
@@ -3731,8 +3731,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     final DistributionManager dm = getDistributionManager();
     final DistributedRegionFunctionResultSender resultSender =
         new DistributedRegionFunctionResultSender(dm, localRC, function, sender);
-    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(cache, function.getId(),
-        DistributedRegion.this, args, filter, null, null, resultSender, execution.isReExecute());
+    final RegionFunctionContextImpl context =
+        new RegionFunctionContextImpl(cache, function.getId(), DistributedRegion.this, args, filter,
+            null, null, resultSender, execution.isReExecute(), cache.getDistributedSystem());
     execution.executeFunctionOnLocalNode(function, context, resultSender, dm, isTX());
     return localRC;
   }

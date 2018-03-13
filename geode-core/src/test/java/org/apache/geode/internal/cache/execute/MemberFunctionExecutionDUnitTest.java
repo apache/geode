@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -705,7 +706,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     @Override
     public void execute(FunctionContext context) {
       // This will throw an exception because the cache is not yet created.
-      CacheFactory.getAnyInstance();
+      context.getCache();
     }
   }
 }

@@ -124,8 +124,8 @@ public abstract class FunctionServiceClientAccessorPRBase extends FunctionServic
     @Override
     public void execute(FunctionContext context) {
       RegionFunctionContext regionFunctionContext = (RegionFunctionContext) context;
-      final InternalDistributedMember myId =
-          InternalDistributedSystem.getAnyInstance().getDistributedMember();
+      final InternalDistributedMember myId = (InternalDistributedMember) context.getCache()
+          .getDistributedSystem().getDistributedMember();
       // Move all buckets to the destination
       if (myId.equals(source)) {
         PartitionRegionHelper.moveData(regionFunctionContext.getDataSet(), source, destination,

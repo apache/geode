@@ -19,6 +19,7 @@ import java.util.Set;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.distributed.DistributedSystem;
 
 /**
  * Context available when called using {@link InternalFunctionService#onRegions(Set)}
@@ -36,8 +37,8 @@ public class MultiRegionFunctionContextImpl extends FunctionContextImpl
 
   public MultiRegionFunctionContextImpl(final Cache cache, final String functionId,
       final Object args, ResultSender resultSender, Set<Region> regions,
-      boolean isPossibleDuplicate) {
-    super(cache, functionId, args, resultSender);
+      boolean isPossibleDuplicate, final DistributedSystem distributedSystem) {
+    super(cache, functionId, args, resultSender, distributedSystem);
     this.regions = regions;
     this.isPossibleDuplicate = isPossibleDuplicate;
   }

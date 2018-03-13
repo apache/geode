@@ -358,7 +358,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     // Get a list of all of the members
     ResultCollector rs = getExecution().execute(functionContext -> {
       functionContext.getResultSender()
-          .lastResult(InternalDistributedSystem.getAnyInstance().getDistributedMember());
+          .lastResult(functionContext.getCache().getDistributedSystem().getDistributedMember());
     });
     return (List<InternalDistributedMember>) rs.getResult();
   }
@@ -407,10 +407,11 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
     @Override
     public void execute(FunctionContext context) {
-      final InternalDistributedMember myId =
-          InternalDistributedSystem.getAnyInstance().getDistributedMember();
+
+      final InternalDistributedMember myId = (InternalDistributedMember) context.getCache()
+          .getDistributedSystem().getDistributedMember();
       if (myId.equals(member)) {
-        CacheFactory.getAnyInstance().close();
+        context.getCache().close();
         throw new CacheClosedException();
       }
       pause(1000);

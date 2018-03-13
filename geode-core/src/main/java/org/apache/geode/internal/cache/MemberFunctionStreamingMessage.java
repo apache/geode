@@ -181,8 +181,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
           regions.add(cache.getRegion(regionPath));
         }
       }
-      FunctionContextImpl context = new MultiRegionFunctionContextImpl(cache,
-          this.functionObject.getId(), this.args, resultSender, regions, isReExecute);
+      FunctionContextImpl context =
+          new MultiRegionFunctionContextImpl(cache, this.functionObject.getId(), this.args,
+              resultSender, regions, isReExecute, dm.getSystem());
 
       long start = stats.startTime();
       stats.startFunctionExecution(this.functionObject.hasResult());

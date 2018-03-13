@@ -173,10 +173,11 @@ public class ExecuteFunction65 extends BaseCommand {
 
       if (memberMappedArg != null) {
         context = new FunctionContextImpl(cache, functionObject.getId(),
-            memberMappedArg.getArgumentsForMember(localVM.getId()), resultSender, isReexecute);
+            memberMappedArg.getArgumentsForMember(localVM.getId()), resultSender, isReexecute,
+            cache.getDistributedSystem());
       } else {
-        context =
-            new FunctionContextImpl(cache, functionObject.getId(), args, resultSender, isReexecute);
+        context = new FunctionContextImpl(cache, functionObject.getId(), args, resultSender,
+            isReexecute, cache.getDistributedSystem());
       }
 
       ServerSideHandshake handshake = serverConnection.getHandshake();

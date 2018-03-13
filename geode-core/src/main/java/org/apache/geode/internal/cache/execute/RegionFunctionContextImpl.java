@@ -25,6 +25,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.LocalDataSet;
 
 /**
@@ -54,8 +55,9 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
   public RegionFunctionContextImpl(final Cache cache, final String functionId, final Region dataSet,
       final Object args, final Set<?> routingObjects,
       final Map<String, LocalDataSet> colocatedLocalDataMap, Set<Integer> localBucketSet,
-      ResultSender<?> resultSender, boolean isPossibleDuplicate) {
-    super(cache, functionId, args, resultSender);
+      ResultSender<?> resultSender, boolean isPossibleDuplicate,
+      final DistributedSystem distributedSystem) {
+    super(cache, functionId, args, resultSender, distributedSystem);
     this.dataSet = dataSet;
     this.filter = routingObjects;
     this.colocatedLocalDataMap = colocatedLocalDataMap;

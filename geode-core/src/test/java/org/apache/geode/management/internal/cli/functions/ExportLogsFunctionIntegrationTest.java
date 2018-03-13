@@ -71,7 +71,8 @@ public class ExportLogsFunctionIntegrationTest {
 
     CapturingResultSender resultSender = new CapturingResultSender();
 
-    FunctionContext context = new FunctionContextImpl(cache, "functionId", args, resultSender);
+    FunctionContext context = new FunctionContextImpl(cache, "functionId", args, resultSender,
+        cache.getDistributedSystem());
 
     new ExportLogsFunction().execute(context);
 

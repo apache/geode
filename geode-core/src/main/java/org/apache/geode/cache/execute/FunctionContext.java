@@ -18,6 +18,7 @@ import org.apache.logging.log4j.util.Strings;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
 
 /**
  * Defines the execution context of a {@link Function}. It is required by the
@@ -98,4 +99,11 @@ public interface FunctionContext<T1> {
 
     return member.getId();
   }
+
+  /**
+   * A convenience method to get the distributed system
+   *
+   * @return Returns the distributed system
+   */
+  DistributedSystem getDistributedSystem();
 }

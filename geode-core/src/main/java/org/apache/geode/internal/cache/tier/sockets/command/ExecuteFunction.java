@@ -143,9 +143,11 @@ public class ExecuteFunction extends BaseCommand {
 
       if (memberMappedArg != null) {
         context = new FunctionContextImpl(cache, functionObject.getId(),
-            memberMappedArg.getArgumentsForMember(localVM.getId()), resultSender);
+            memberMappedArg.getArgumentsForMember(localVM.getId()), resultSender,
+            cache.getDistributedSystem());
       } else {
-        context = new FunctionContextImpl(cache, functionObject.getId(), args, resultSender);
+        context = new FunctionContextImpl(cache, functionObject.getId(), args, resultSender,
+            cache.getDistributedSystem());
       }
 
       ServerSideHandshake handshake = serverConnection.getHandshake();

@@ -3487,10 +3487,10 @@ public class PartitionedRegion extends LocalRegion
     if (localKeys != null) {
       final RegionFunctionContextImpl prContext =
           new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
-              execution.getArgumentsForMember(getMyId().getId()),
-              localKeys, ColocationHelper
-                  .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
-              localBucketSet, resultSender, execution.isReExecute());
+              execution.getArgumentsForMember(getMyId().getId()), localKeys,
+              ColocationHelper.constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this,
+                  localBucketSet),
+              localBucketSet, resultSender, execution.isReExecute(), cache.getDistributedSystem());
       if (logger.isDebugEnabled()) {
         logger.debug("FunctionService: Executing on local node with keys.{}", localKeys);
       }
@@ -3624,11 +3624,10 @@ public class PartitionedRegion extends LocalRegion
           new PartitionedRegionFunctionResultSender(dm, PartitionedRegion.this, 0, localRC,
               execution.getServerResultSender(), true, false, execution.isForwardExceptions(),
               function, buckets);
-      final FunctionContext context =
-          new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
-              execution.getArgumentsForMember(localVm.getId()), routingKeys, ColocationHelper
-                  .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, buckets),
-              buckets, resultSender, execution.isReExecute());
+      final FunctionContext context = new RegionFunctionContextImpl(cache, function.getId(),
+          PartitionedRegion.this, execution.getArgumentsForMember(localVm.getId()), routingKeys,
+          ColocationHelper.constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, buckets),
+          buckets, resultSender, execution.isReExecute(), cache.getDistributedSystem());
       execution.executeFunctionOnLocalPRNode(function, context, resultSender, dm, isTX());
       return localRC;
     } else {
@@ -3757,9 +3756,10 @@ public class PartitionedRegion extends LocalRegion
     if (isSelf && this.dataStore != null) {
       final RegionFunctionContextImpl prContext =
           new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
-              execution.getArgumentsForMember(getMyId().getId()), null, ColocationHelper
-                  .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
-              localBucketSet, resultSender, execution.isReExecute());
+              execution.getArgumentsForMember(getMyId().getId()), null,
+              ColocationHelper.constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this,
+                  localBucketSet),
+              localBucketSet, resultSender, execution.isReExecute(), cache.getDistributedSystem());
       execution.executeFunctionOnLocalNode(function, prContext, resultSender, dm, isTX());
     }
     PartitionedRegionFunctionResultWaiter resultReciever =
@@ -3853,9 +3853,10 @@ public class PartitionedRegion extends LocalRegion
     if (isSelf && this.dataStore != null) {
       final RegionFunctionContextImpl prContext =
           new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
-              execution.getArgumentsForMember(getMyId().getId()), null, ColocationHelper
-                  .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
-              localBucketSet, resultSender, execution.isReExecute());
+              execution.getArgumentsForMember(getMyId().getId()), null,
+              ColocationHelper.constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this,
+                  localBucketSet),
+              localBucketSet, resultSender, execution.isReExecute(), cache.getDistributedSystem());
       execution.executeFunctionOnLocalPRNode(function, prContext, resultSender, dm, isTX());
     }
     PartitionedRegionFunctionResultWaiter resultReciever =

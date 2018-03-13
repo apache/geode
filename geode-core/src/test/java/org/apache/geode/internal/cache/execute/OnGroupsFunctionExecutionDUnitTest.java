@@ -14,8 +14,12 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -47,36 +51,16 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
-
-  @Override
-  public final void preTearDown() throws Exception {
-    Invoke.invokeInEveryVM(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Cache c = null;
-        try {
-          c = CacheFactory.getAnyInstance();
-          if (c != null) {
-            c.close();
-          }
-        } catch (CacheClosedException e) {
-        }
-        return null;
-      }
-    });
-  }
-
+public class OnGroupsFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   static class OnGroupsFunction extends FunctionAdapter implements DataSerializable {
     private static final long serialVersionUID = -1032915440862585532L;
     public static final String Id = "OnGroupsFunction";
@@ -87,7 +71,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
     @Override
     public void execute(FunctionContext context) {
       LogWriterUtils.getLogWriter().fine("SWAP:1:executing OnGroupsFunction:" + invocationCount);
-      InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+      InternalDistributedSystem ds = (InternalDistributedSystem) context.getDistributedSystem();
+
       synchronized (OnGroupsFunction.class) {
         invocationCount++;
       }
@@ -126,7 +111,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         if (regionName != null) {
           Cache c = null;
           try {
-            c = CacheFactory.getInstance(getSystem(props));
+            c = getCache(props);
             c.close();
           } catch (CacheClosedException cce) {
           }
@@ -311,7 +296,6 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         LogWriterUtils.getLogWriter().fine("SWAP:invoking on g0 g1");
-        InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
         Execution e = FunctionService.onMembers("g0", "g1");
         ArrayList<String> args = new ArrayList<String>();
         args.add("g0");
@@ -491,7 +475,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       if (args.get(0).equals("runtime")) {
         if (args.size() > 1) {
           String group = args.get(1);
-          InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+          InternalDistributedSystem ds =
+              (InternalDistributedSystem) context.getCache().getDistributedSystem();
           if (ds.getDistributedMember().getGroups().contains(group)) {
             throw new NullPointerException();
           }
@@ -499,7 +484,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
           throw new NullPointerException();
         }
       } else {
-        InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+        InternalDistributedSystem ds =
+            (InternalDistributedSystem) context.getCache().getDistributedSystem();
         if (args.size() > 1) {
           String group = args.get(1);
           if (ds.getDistributedMember().getGroups().contains(group)) {
@@ -728,7 +714,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = getCache();
           c.close();
         } catch (CacheClosedException cce) {
         }
@@ -828,7 +814,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = getCache();
           c.close();
         } catch (CacheClosedException cce) {
         }
@@ -909,7 +895,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = getCache();
           c.close();
         } catch (CacheClosedException cce) {
         }
@@ -991,7 +977,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = getCache();
           c.close();
         } catch (CacheClosedException cce) {
         }
@@ -1070,7 +1056,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = getCache();
           c.close();
         } catch (CacheClosedException cce) {
         }
@@ -1120,7 +1106,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = getCache();
           c.close();
         } catch (CacheClosedException cce) {
         }
@@ -1170,7 +1156,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = getCache();
           c.close();
         } catch (CacheClosedException cce) {
         }
@@ -1242,7 +1228,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       @Override
       public Object call() throws Exception {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = getCache();
           c.close();
         } catch (CacheClosedException cce) {
         }
