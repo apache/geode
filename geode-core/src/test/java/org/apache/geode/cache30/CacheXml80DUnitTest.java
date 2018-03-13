@@ -14,11 +14,14 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,6 +51,7 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
 
   @Override
@@ -55,7 +59,6 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     return CacheXml.VERSION_8_0;
   }
 
-  @SuppressWarnings("rawtypes")
   @Test
   public void testCompressor() throws Exception {
     final String regionName = "testCompressor";
@@ -220,11 +223,8 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
   }
 
   private static class QueryObserverImpl extends QueryObserverAdapter {
-
     boolean isIndexesUsed = false;
-
-    List<String> indexesUsed = new ArrayList<String>();
-
+    List<String> indexesUsed = new ArrayList<>();
     String indexName;
 
     @Override
@@ -248,7 +248,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     }
   }
 
-  private static class TestObject {
+  private static class TestObject implements Serializable {
     public int CR_ID;
     public int CR_ID_2;
     public int R_ID;

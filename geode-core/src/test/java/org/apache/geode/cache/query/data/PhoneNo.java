@@ -12,18 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * PhoneNo.java
- *
- * Created on September 29, 2005, 3:40 PM
- */
-
 package org.apache.geode.cache.query.data;
 
-/**
- *
- */
-public class PhoneNo {
+import java.io.Serializable;
+
+public class PhoneNo implements Serializable {
   public int phoneNo1;
   public int phoneNo2;
   public int phoneNo3;

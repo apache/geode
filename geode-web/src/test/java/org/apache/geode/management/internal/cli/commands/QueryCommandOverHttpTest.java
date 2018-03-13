@@ -21,10 +21,10 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.Server;
 
 @Category(IntegrationTest.class)
-public class QueryCommandOverHttpTest extends QueryCommandTest {
+public class QueryCommandOverHttpTest extends QueryCommandIntegrationTest {
 
   @Override
-  void connect(Server server) throws Exception {
+  protected void connect(Server server) throws Exception {
     gfsh.connectAndVerify(server.getHttpPort(), GfshCommandRule.PortType.http);
   }
 }

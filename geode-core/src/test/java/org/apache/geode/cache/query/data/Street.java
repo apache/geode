@@ -12,18 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * Street.java
- *
- * Created on September 30, 2005, 1:26 PM
- */
-
 package org.apache.geode.cache.query.data;
 
-/**
- *
- */
-public class Street {
+import java.io.Serializable;
+
+public class Street implements Serializable {
   public String street;
   public String lane;
 

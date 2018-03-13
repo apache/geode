@@ -87,10 +87,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Helper that tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
-
   private void helpTestHashIndexForQuery(String query) throws Exception {
     helpTestHashIndexForQuery(query, "p.ID", "/portfolios p");
   }
@@ -100,7 +97,7 @@ public class HashIndexQueryIntegrationTest {
     SelectResults nonIndexedResults = (SelectResults) qs.newQuery(query).execute();
     assertFalse(observer.indexUsed);
 
-    index = (Index) qs.createHashIndex("idHash", indexedExpression, regionPath);
+    index = qs.createHashIndex("idHash", indexedExpression, regionPath);
     SelectResults indexedResults = (SelectResults) qs.newQuery(query).execute();
     assertEquals(nonIndexedResults.size(), indexedResults.size());
     assertTrue(observer.indexUsed);
@@ -112,26 +109,21 @@ public class HashIndexQueryIntegrationTest {
     SelectResults nonIndexedResults = (SelectResults) qs.newQuery(query).execute(params);
     assertFalse(observer.indexUsed);
 
-    index = (Index) qs.createHashIndex("idHash", indexedExpression, regionPath);
+    index = qs.createHashIndex("idHash", indexedExpression, regionPath);
     SelectResults indexedResults = (SelectResults) qs.newQuery(query).execute(params);
     assertEquals(nonIndexedResults.size(), indexedResults.size());
     assertTrue(observer.indexUsed);
   }
 
-
-  /*
+  /**
    * helper method to test against a compact range index instead of hash index
-   *
-   * @param query
-   *
-   * @throws Exception
    */
   private void helpTestCRIndexForQuery(String query, String indexedExpression, String regionPath)
       throws Exception {
     SelectResults nonIndexedResults = (SelectResults) qs.newQuery(query).execute();
     assertFalse(observer.indexUsed);
 
-    index = (Index) qs.createIndex("crIndex", indexedExpression, regionPath);
+    index = qs.createIndex("crIndex", indexedExpression, regionPath);
     SelectResults indexedResults = (SelectResults) qs.newQuery(query).execute();
     assertEquals(nonIndexedResults.size(), indexedResults.size());
     assertTrue(observer.indexUsed);
@@ -139,8 +131,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index with And query for local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexWithORQueryForLocalRegion() throws Exception {
@@ -191,8 +181,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index with And query for local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexWithNestedQueryForLocalRegion() throws Exception {
@@ -210,8 +198,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index with Short vs Integer comparison
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexWithNestedQueryWithShortVsIntegerCompareForLocalRegion()
@@ -229,49 +215,8 @@ public class HashIndexQueryIntegrationTest {
         "p.shortID", "/portfolios p");
   }
 
-
-  /**
-   * Tests that hash index with comparison between float and integer
-   *
-   * @throws Exception
-   */
-  // @Test
-  // public void testHashIndexQueryWithFloatVsIntegerCompareForLocalRegion() throws Exception {
-  // createLocalRegion("portfolios");
-  // int numEntries = 1000;
-  // int numIds = 100;
-  // for (int i = 0; i < numEntries; i++) {
-  // Portfolio p = new Portfolio(i % (numIds));
-  // p.shortID = (short)i;
-  // region.put("" + i, p);
-  // }
-  // helpTestHashIndexForQuery("SELECT * FROM /portfolios p WHERE p.ID = 1.0f", "p.ID", "/portfolios
-  // p");
-  // }
-
-  /**
-   * Tests that hash index with comparison between float and integer
-   *
-   * @throws Exception
-   */
-  // @Test
-  // public void testHashIndexNotEqualsWithFloatVsIntegerLocalRegion() throws Exception {
-  // createLocalRegion("portfolios");
-  // int numEntries = 1000;
-  // int numIds = 100;
-  // for (int i = 0; i < numEntries; i++) {
-  // Portfolio p = new Portfolio(i % (numIds));
-  // p.shortID = (short)i;
-  // region.put("" + i, p);
-  // }
-  // helpTestCRIndexForQuery("SELECT * FROM /portfolios p WHERE p.ID != 1.0f", "p.ID", "/portfolios
-  // p");
-  // }
-
   /**
    * Tests that hash index with And query for local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexWithAndQueryForLocalRegion() throws Exception {
@@ -289,8 +234,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexWithLimitQueryForLocalRegion() throws Exception {
@@ -308,8 +251,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexEntriesQueryForLocalRegion() throws Exception {
@@ -321,8 +262,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexValueQueryForLocalRegion() throws Exception {
@@ -334,8 +273,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexKeySetQueryForLocalRegion() throws Exception {
@@ -347,8 +284,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexEqualsForSingleResultOnLocalRegion() throws Exception {
@@ -359,8 +294,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for replicated region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexEqualsForSingleResultOnReplicatedRegion() throws Exception {
@@ -371,8 +304,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for partitioned region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexEqualsForSingleResultOnPartitionedRegion() throws Exception {
@@ -383,69 +314,45 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexAndEquiJoinForSingleResultQueryWithHashIndex() throws Exception {
     createReplicatedRegion("portfolios");
     createData(region, 200);
     createJoinTable(400);
-    Index index = (Index) qs.createHashIndex("index2", "p2.ID", "/portfolios2 p2");
+    Index index = qs.createHashIndex("index2", "p2.ID", "/portfolios2 p2");
     helpTestHashIndexForQuery(
         "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexAndEquiJoinForSingleResultQueryWithCompactRangeIndex() throws Exception {
     createReplicatedRegion("portfolios");
     createData(region, 200);
     createJoinTable(400);
-    Index index = (Index) qs.createIndex("index2", "p2.ID", "/portfolios2 p2");
+    Index index = qs.createIndex("index2", "p2.ID", "/portfolios2 p2");
     helpTestHashIndexForQuery(
         "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexAndEquiJoinForSingleResultQueryWithRangeIndex() throws Exception {
     createReplicatedRegion("portfolios");
     createData(region, 200);
     createJoinTable(400);
-    Index index =
-        (Index) qs.createIndex("index2", "p2.ID", "/portfolios2 p2, p2.positions.values v");
+    Index index = qs.createIndex("index2", "p2.ID", "/portfolios2 p2, p2.positions.values v");
     helpTestHashIndexForQuery(
         "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
-   */
-  // @Test
-  // public void testHashIndexAndEquiJoinForSingleResultQueryWithMapRangeIndex() throws Exception {
-  // createReplicatedRegion("portfolios");
-  // createData(region, 1000);
-  // createJoinTable(2000);
-  // Index index = (Index)qs.createIndex("index2","p2.names[*]", "/portfolios2 p2");
-  // helpTestHashIndexForQuery("Select * FROM /portfolios p, /portfolios2 p2 where (p.names['1'] or
-  // p.names['2'] ) and p.names = p2.names", "p.names[*]", "/portfolios p");
-  // }
-
-  /**
-   * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexAndEquiJoinForSingleResultQueryWithHashIndexLessEntries()
@@ -453,15 +360,13 @@ public class HashIndexQueryIntegrationTest {
     createReplicatedRegion("portfolios");
     createData(region, 400);
     createJoinTable(200);
-    Index index = (Index) qs.createHashIndex("index2", "p2.ID", "/portfolios2 p2");
+    Index index = qs.createHashIndex("index2", "p2.ID", "/portfolios2 p2");
     helpTestHashIndexForQuery(
         "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexAndEquiJoinForSingleResultQueryWithCompactRangeIndexLessEntries()
@@ -469,15 +374,13 @@ public class HashIndexQueryIntegrationTest {
     createReplicatedRegion("portfolios");
     createData(region, 400);
     createJoinTable(200);
-    Index index = (Index) qs.createIndex("index2", "p2.ID", "/portfolios2 p2");
+    Index index = qs.createIndex("index2", "p2.ID", "/portfolios2 p2");
     helpTestHashIndexForQuery(
         "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexAndEquiJoinForSingleResultQueryWithRangeIndexLessEntries()
@@ -485,33 +388,13 @@ public class HashIndexQueryIntegrationTest {
     createReplicatedRegion("portfolios");
     createData(region, 400);
     createJoinTable(200);
-    Index index =
-        (Index) qs.createIndex("index2", "p2.ID", "/portfolios2 p2, p2.positions.values v");
+    Index index = qs.createIndex("index2", "p2.ID", "/portfolios2 p2, p2.positions.values v");
     helpTestHashIndexForQuery(
         "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
   }
 
   /**
-   * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
-   */
-  // @Test
-  // public void testHashIndexAndEquiJoinForSingleResultQueryWithMapRangeIndexLessEntries() throws
-  // Exception {
-  // createReplicatedRegion("portfolios");
-  // createData(region, 1000);
-  // createJoinTable(500);
-  // Index index = (Index)qs.createIndex("index2","p2.positions[*]", "/portfolios2 p2");
-  // helpTestHashIndexForQuery("Select * FROM /portfolios p, /portfolios2 p2 where
-  // p.positions['IBM'] and p.positions['IBM']=p2.positions['IBM']", "p.positions[*]", "/portfolios
-  // p");
-  // }
-
-  /**
    * Tests that hash index is used and that it returns the correct number of results on local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexEqualsForMultipleResultQueryOnLocalRegion() throws Exception {
@@ -531,8 +414,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that it returns the correct number of results on replicated
    * region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexEqualsForMultipleResultQueryOnReplicatedRegion() throws Exception {
@@ -552,8 +433,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that it returns the correct number of results on partitioned
    * region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexEqualsForMultipleResultQueryOnPartitionedRegion() throws Exception {
@@ -570,19 +449,15 @@ public class HashIndexQueryIntegrationTest {
     helpTestHashIndexForQuery("Select * FROM /portfolios p where p.ID = 1");
   }
 
-
   /**
    * Tests that hash index is used and that it returns the correct number of results
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexEquiJoinForMultipleResultQueryWithHashIndex() throws Exception {
     createReplicatedRegion("portfolios");
     createJoinTable(400);
-    index = (HashIndex) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
-    Index index = (Index) qs.createHashIndex("index2", "p2.ID", "/portfolios2 p2");
-
+    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    Index index = qs.createHashIndex("index2", "p2.ID", "/portfolios2 p2");
 
     int numEntries = 200;
     int numIds = 100;
@@ -601,8 +476,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where only
    * 1 value is using the key for partitioned regions
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexRemoveOnLocalRegion() throws Exception {
@@ -613,8 +486,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where only
    * 1 value is using the key for replicated regions
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexRemoveOnReplicatedRegion() throws Exception {
@@ -634,7 +505,7 @@ public class HashIndexQueryIntegrationTest {
     createPartitionedRegion("portfolios");
     createData(region, 200);
     region.destroy("1");
-    index = (Index) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
     SelectResults results =
         (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 1").execute();
     assertEquals(noIndexResults.size(), results.size());
@@ -644,8 +515,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where only
    * 1 value is using the key for partitioned regions
-   *
-   * @throws Exception
    */
   private void helpTestHashIndexRemove() throws Exception {
     createData(region, 200);
@@ -656,7 +525,7 @@ public class HashIndexQueryIntegrationTest {
     region.clear();
     createData(region, 200);
     region.destroy("1");
-    index = (Index) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
     SelectResults results =
         (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 1").execute();
     assertEquals(noIndexResults.size(), results.size());
@@ -666,8 +535,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where
    * multiple entries are using the key on localRegion
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexRemoveFromCommonKeyQueryOnLocalRegion() throws Exception {
@@ -678,8 +545,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where
    * multiple entries are using the key on replicated region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexRemoveFromCommonKeyQueryOnReplicatedRegion() throws Exception {
@@ -690,8 +555,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where
    * multiple entries are using the key on partitioned region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexRemoveFromCommonKeyQueryOnPartitionedRegion() throws Exception {
@@ -715,7 +578,7 @@ public class HashIndexQueryIntegrationTest {
         (SelectResults) qs.newQuery("Select * FROM /portfolios p where p.ID = 2").execute();
 
     region.clear();
-    index = (HashIndex) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
     for (int i = 0; i < numEntries; i++) {
       Portfolio p = new Portfolio(i % (numIds));
       p.shortID = (short) i;
@@ -735,8 +598,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result on local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexNotEqualsQueryOnLocalRegion() throws Exception {
@@ -747,8 +608,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result on replicated region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexNotEqualsQueryOnReplicatedRegion() throws Exception {
@@ -759,8 +618,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result on partitioned region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexNotEqualsQueryOnPartitionedRegion() throws Exception {
@@ -772,8 +629,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that it returns the correct number of results for local
    * region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexNotEqualsForMultipleResultQueryForLocalRegion() throws Exception {
@@ -791,8 +646,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that it returns the correct number of results for replicated
    * region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexNotEqualsForMultipleResultQueryForReplicatedRegion() throws Exception {
@@ -810,8 +663,6 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that it returns the correct number of results for partitioned
    * region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexNotEqualsForMultipleResultQueryForPartitionedRegion() throws Exception {
@@ -828,8 +679,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexInQueryForLocalRegion() throws Exception {
@@ -840,8 +689,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexInQueryForReplicatedRegion() throws Exception {
@@ -852,8 +699,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexInQueryForPartitionedRegion() throws Exception {
@@ -864,8 +709,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexNotUsedInRangeQueryForLocalRegion() throws Exception {
@@ -876,8 +719,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for replicated region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexNotUsedInRangeQueryForReplicatedRegion() throws Exception {
@@ -888,8 +729,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for partitioned region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexNotUsedInRangeQueryForPartitionedRegion() throws Exception {
@@ -900,8 +739,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   *
-   * @throws Exception
    */
   private void helpTestHashIndexNotUsedInRangeQuery() throws Exception {
     SelectResults results =
@@ -911,8 +748,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by asc query for local region using hash index
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexOrderByAscQueryForLocalRegion() throws Exception {
@@ -923,8 +758,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by asc query for replicated region using hash index
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexOrderByAscQueryForReplicatedRegion() throws Exception {
@@ -935,8 +768,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by asc query for partitioned region using hash index
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexOrderByAscQueryForPartitionedRegion() throws Exception {
@@ -946,7 +777,7 @@ public class HashIndexQueryIntegrationTest {
   }
 
   private void helpTestHashIndexOrderByAscQuery() throws Exception {
-    index = (Index) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
     SelectResults results = (SelectResults) qs
         .newQuery("Select * FROM /portfolios p where p.ID != 0 order by ID asc ").execute();
     assertEquals(199, results.size());
@@ -960,8 +791,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by desc query for local region using hash index
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexOrderByDescQueryForLocalRegion() throws Exception {
@@ -972,8 +801,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by desc query for replicated region using hash index
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexOrderByDescQueryForReplicatedRegion() throws Exception {
@@ -984,8 +811,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by desc query for partitioned region using hash index
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexOrderByDescQueryForPartitionedRegion() throws Exception {
@@ -996,8 +821,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index on non sequential hashes for local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexOnNonSequentialHashForLocalRegion() throws Exception {
@@ -1024,8 +847,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index on non sequential hashes for replicated region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexOnNonSequentialHashForReplicatedRegion() throws Exception {
@@ -1052,8 +873,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index on non sequential hashes for partitioned region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexOnNonSequentialHashForPartitionedRegion() throws Exception {
@@ -1079,7 +898,7 @@ public class HashIndexQueryIntegrationTest {
   }
 
   private void helpTestHashIndexOrderByDescQuery() throws Exception {
-    index = (Index) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
     SelectResults results = (SelectResults) qs
         .newQuery("Select * FROM /portfolios p where p.ID != 0 order by ID desc ").execute();
     assertEquals(199, results.size());
@@ -1093,8 +912,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * test async exception for hash index using partitioned region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexAsyncMaintenanceExceptionForPartitionedRegion() throws Exception {
@@ -1109,7 +926,7 @@ public class HashIndexQueryIntegrationTest {
     } catch (UnsupportedOperationException e) {
       expected = true;
     } catch (IndexInvalidException e) {
-      // for partition region execption;
+      // for partition region exception;
       expected = true;
     }
 
@@ -1118,8 +935,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * test multiple iterators exception for hash index using local region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexMultipleIteratorsExceptionForLocalRegion() throws Exception {
@@ -1129,8 +944,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * test multiple iterators exception for hash index using replicated region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexMultipleIteratorsExceptionForReplicatedRegion() throws Exception {
@@ -1140,8 +953,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * test multiple iterators exception for hash index using partiioned region
-   *
-   * @throws Exception
    */
   @Test
   public void testHashIndexMultipleIteratorsExceptionForPartitionedRegion() throws Exception {
@@ -1161,8 +972,6 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * test remove and not equals Query
-   *
-   * @throws Exception
    */
   @Test
   public void testRemoveAndNotEqualsQuery() throws Exception {
@@ -1172,7 +981,7 @@ public class HashIndexQueryIntegrationTest {
 
   private void helpTestRemoveAndNotEqualsQuery() throws Exception {
     int numEntries = 200;
-    index = (HashIndex) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
     for (int i = 0; i < numEntries; i++) {
       Portfolio p = new Portfolio(i);
       p.shortID = (short) i;
@@ -1202,14 +1011,12 @@ public class HashIndexQueryIntegrationTest {
     params[0] = new Identifier("Customer" + 1);
     params[1] = new Identifier("Customer" + 1);
     String query = "select * from /relationships.keySet k where k.leftKey = $1 OR k.rightKey = $2";
-    // String query = "select * from /relationships r where r.relationship.key IN (select * from
-    // /relationships.keySet k where k.leftKey = $1 OR k.rightKey = $2)";
     SelectResults nonIndexedResults = (SelectResults) qs.newQuery(query).execute(params);
     assertFalse(observer.indexUsed);
 
-    index = (Index) qs.createHashIndex("leftKey", "k.leftKey", "/relationships.keySet k");
-    Index index2 = (Index) qs.createHashIndex("rightKey", "k.rightKey", "/relationships.keySet k");
-    Index index3 = (Index) qs.createKeyIndex("keyIndex", "r.key", "/relationships r");
+    index = qs.createHashIndex("leftKey", "k.leftKey", "/relationships.keySet k");
+    Index index2 = qs.createHashIndex("rightKey", "k.rightKey", "/relationships.keySet k");
+    Index index3 = qs.createKeyIndex("keyIndex", "r.key", "/relationships r");
     SelectResults indexedResults = (SelectResults) qs.newQuery(query).execute(params);
     assertEquals(nonIndexedResults.size(), indexedResults.size());
     assertEquals(nonIndexedResults.size(), numEntries / numIds);
@@ -1229,7 +1036,7 @@ public class HashIndexQueryIntegrationTest {
   }
 
   private void helpTestHashIndexRecreate() throws Exception {
-    index = (Index) qs.createHashIndex("idHash", "p.ID", "/portfolios p");
+    index = qs.createHashIndex("idHash", "p.ID", "/portfolios p");
     createData(region, 200);
 
     SelectResults noIndexResults =
@@ -1383,6 +1190,7 @@ public class HashIndexQueryIntegrationTest {
       Index index = qs.createHashIndex("idHash", "p", "/portfolios p");
 
       Thread puts = new Thread(new Runnable() {
+        @Override
         public void run() {
           for (int j = 0; j < 20; j++) {
             for (int i = 0; i < 2; i++) {
@@ -1394,6 +1202,7 @@ public class HashIndexQueryIntegrationTest {
       });
 
       Thread morePuts = new Thread(new Runnable() {
+        @Override
         public void run() {
           for (int j = 0; j < 20; j++) {
             for (int i = 0; i < 1; i++) {
@@ -1405,6 +1214,7 @@ public class HashIndexQueryIntegrationTest {
       });
 
       Thread evenMorePuts = new Thread(new Runnable() {
+        @Override
         public void run() {
           for (int j = 0; j < 20; j++) {
             for (int i = 0; i < 1; i++) {
@@ -1449,150 +1259,6 @@ public class HashIndexQueryIntegrationTest {
     assertEquals(1, results.size());
     assertTrue(observer.indexUsed);
   }
-
-
-  // private void printIndex(Index index) {
-  // if (index instanceof PartitionedIndex) {
-  // Iterator it = ((PartitionedIndex)index).getBucketIndexes().iterator();
-  // while (it.hasNext()) {
-  // ((HashIndex)it.next()).printAll();
-  // }
-  // }
-  // else {
-  // System.out.println(((HashIndex)index).printAll());
-  // }
-  // }
-
-
-  private class RelationshipKey implements Comparable {
-    public Identifier leftKey;
-    public Identifier rightKey;
-
-    public RelationshipKey(int leftKeyId, int rightKeyId) {
-      this.leftKey = new Identifier("Customer" + leftKeyId);
-      this.rightKey = new Identifier("Customer" + rightKeyId);
-    }
-
-    public Identifier getLeftKey() {
-      return leftKey;
-    }
-
-    public Identifier getRightKey() {
-      return rightKey;
-    }
-
-    public int compareTo(Object o) {
-      if (o instanceof RelationshipKey) {
-        return leftKey.compareTo(((RelationshipKey) o).leftKey);
-      }
-      throw new ClassCastException("Unable to cast " + o + " to Identifier");
-    }
-
-    public boolean equals(Object o) {
-      if (o instanceof RelationshipKey) {
-        return leftKey.equals(((RelationshipKey) o).leftKey)
-            && rightKey.equals(((RelationshipKey) o).rightKey);
-      }
-      return false;
-    }
-
-    @Override
-    public int hashCode() {
-      return leftKey.hashCode();
-    }
-  }
-
-  private class Schema {
-    public Relationship relationship;
-
-    public Schema(Relationship relationship) {
-      this.relationship = relationship;
-    }
-
-    public Relationship getRelationship() {
-      return relationship;
-    }
-  }
-
-  private class Relationship {
-    public RelationshipKey key;
-
-    public Relationship(RelationshipKey key) {
-      this.key = key;
-    }
-
-    public RelationshipKey getKey() {
-      return key;
-    }
-  }
-
-  public class Identifier implements Comparable {
-    private int hashCode = 0;
-    public String id;
-
-    public Identifier(String id) {
-      this.id = id;
-    }
-
-    @Override
-    public int compareTo(Object o) {
-      if (o instanceof Identifier) {
-        String otherId = ((Identifier) o).id;
-        return id.compareTo(otherId);
-      }
-      throw new ClassCastException("Unable to cast " + o + " to Identifier");
-    }
-
-    public boolean equals(Object o) {
-      if (o instanceof Identifier) {
-        return id.equals(((Identifier) o).id);
-      }
-      return false;
-    }
-
-    @Override
-    public int hashCode() {
-      if (this.hashCode == 0) {
-        this.hashCode = id.hashCode();
-        this.hashCode += 7 * "something".hashCode();
-      }
-
-      return this.hashCode;
-    }
-  }
-
-  public class SameHashObject implements Serializable {
-
-    public int ID = 0;
-    public String stringValue;
-    private int uniqueId = 0;
-
-    public SameHashObject(int i, int uniqueId, String stringValue) {
-      ID = i;
-      this.uniqueId = uniqueId;
-      this.stringValue = stringValue;
-    }
-
-    public SameHashObject(int i, int uniqueId) {
-      this(i, uniqueId, "" + i);
-    }
-
-    public boolean equals(Object o) {
-      if (o instanceof SameHashObject) {
-        return ID == ((SameHashObject) o).ID;
-      }
-      return false;
-    }
-
-    public int hashCode() {
-      return 99;
-    }
-
-    public String toString() {
-      return "SameHashObject:" + ID + ":" + uniqueId + " :" + stringValue;
-    }
-  }
-
 
   private void createLocalRegion(String regionName) throws ParseException {
     createLocalRegion(regionName, true);
@@ -1654,15 +1320,148 @@ public class HashIndexQueryIntegrationTest {
     }
   }
 
+  private static class RelationshipKey implements Comparable, Serializable {
+    public Identifier leftKey;
+    public Identifier rightKey;
 
-  class MyQueryObserverAdapter extends QueryObserverAdapter {
+    public RelationshipKey(int leftKeyId, int rightKeyId) {
+      this.leftKey = new Identifier("Customer" + leftKeyId);
+      this.rightKey = new Identifier("Customer" + rightKeyId);
+    }
+
+    public Identifier getLeftKey() {
+      return leftKey;
+    }
+
+    public Identifier getRightKey() {
+      return rightKey;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+      if (o instanceof RelationshipKey) {
+        return leftKey.compareTo(((RelationshipKey) o).leftKey);
+      }
+      throw new ClassCastException("Unable to cast " + o + " to Identifier");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof RelationshipKey) {
+        return leftKey.equals(((RelationshipKey) o).leftKey)
+            && rightKey.equals(((RelationshipKey) o).rightKey);
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return leftKey.hashCode();
+    }
+  }
+
+  private static class Schema implements Serializable {
+    public Relationship relationship;
+
+    public Schema(Relationship relationship) {
+      this.relationship = relationship;
+    }
+
+    public Relationship getRelationship() {
+      return relationship;
+    }
+  }
+
+  private static class Relationship implements Serializable {
+    public RelationshipKey key;
+
+    public Relationship(RelationshipKey key) {
+      this.key = key;
+    }
+
+    public RelationshipKey getKey() {
+      return key;
+    }
+  }
+
+  private static class Identifier implements Comparable, Serializable {
+    private int hashCode = 0;
+    public String id;
+
+    public Identifier(String id) {
+      this.id = id;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+      if (o instanceof Identifier) {
+        String otherId = ((Identifier) o).id;
+        return id.compareTo(otherId);
+      }
+      throw new ClassCastException("Unable to cast " + o + " to Identifier");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof Identifier) {
+        return id.equals(((Identifier) o).id);
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      if (this.hashCode == 0) {
+        this.hashCode = id.hashCode();
+        this.hashCode += 7 * "something".hashCode();
+      }
+
+      return this.hashCode;
+    }
+  }
+
+  private static class MyQueryObserverAdapter extends QueryObserverAdapter {
     public boolean indexUsed = false;
 
+    @Override
     public void afterIndexLookup(Collection results) {
       super.afterIndexLookup(results);
       indexUsed = true;
     }
-  };
+  }
 
+  private static class SameHashObject implements Serializable {
 
+    public int ID = 0;
+    public String stringValue;
+    private int uniqueId = 0;
+
+    public SameHashObject(int i, int uniqueId, String stringValue) {
+      ID = i;
+      this.uniqueId = uniqueId;
+      this.stringValue = stringValue;
+    }
+
+    public SameHashObject(int i, int uniqueId) {
+      this(i, uniqueId, "" + i);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof SameHashObject) {
+        return ID == ((SameHashObject) o).ID;
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return 99;
+    }
+
+    @Override
+    public String toString() {
+      return "SameHashObject:" + ID + ":" + uniqueId + " :" + stringValue;
+    }
+  }
 }

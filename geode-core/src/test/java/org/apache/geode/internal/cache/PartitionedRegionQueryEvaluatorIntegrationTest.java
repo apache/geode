@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,14 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.LogWriter;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -44,24 +43,16 @@ import org.apache.geode.internal.util.VersionedArrayList;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * This class is an integration test for <code>PartitionedRegionQueryEvaluator</code> class.
+ * This class is an integration test for {@link PartitionedRegionQueryEvaluator} class.
  */
 @Category(IntegrationTest.class)
 public class PartitionedRegionQueryEvaluatorIntegrationTest {
+
   @Rule
   public TestName name = new TestName();
-  LogWriter logger = null;
-
-  @Before
-  public void setUp() throws Exception {
-    if (logger == null) {
-      logger = PartitionedRegionTestHelper.getLogger();
-    }
-  }
 
   /**
    * Test for the helper method getNodeToBucketMap.
-   *
    */
   @Test
   public void testGetNodeToBucketMap() {
@@ -112,16 +103,12 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
           buckList.contains(new Integer(i)));
     }
     clearAllPartitionedRegion(pr);
-    logger.info("************test ended successfully **********");
-
   }
 
   /**
    * This function populates bucket2Node region of the partition region
-   *
-   * @param pr
    */
-  public void populateBucket2Node(PartitionedRegion pr, List nodes, int numOfBuckets) {
+  private void populateBucket2Node(PartitionedRegion pr, List nodes, int numOfBuckets) {
     assertEquals(0, pr.getRegionAdvisor().getCreatedBucketsCount());
     final RegionAdvisor ra = pr.getRegionAdvisor();
     int nodeListCnt = 0;
@@ -160,9 +147,6 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
 
   /**
    * This function decides number of the nodes in the list of bucket2Node region
-   *
-   * @param i
-   * @return
    */
   private int setNodeListCnt(int i) {
     int nListcnt = 0;
@@ -197,16 +181,12 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
       case 9:
         nListcnt = 2;
         break;
-
     }
     return nListcnt;
   }
 
   /**
    * This functions number of new nodes specified by nCount.
-   *
-   * @param nCount
-   * @return
    */
   private ArrayList createNodeList(int nCount) {
     ArrayList nodeList = new ArrayList(nCount);
@@ -217,7 +197,6 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
   }
 
   private ArrayList createDataStoreList(int nCount) {
-    // ArrayList<InternalDistributedMember>
     ArrayList nodeList = new ArrayList(nCount);
     for (int i = 0; i < nCount; i++) {
       nodeList.add(createDataStoreMember(i));
@@ -240,22 +219,19 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
 
   /**
    * this function creates new node.
-   *
-   * @return
    */
-  public Node createNode(int i) {
+  private Node createNode(int i) {
     Node node = new Node(new InternalDistributedMember("host" + i, 3033), i);
     node.setPRType(Node.DATASTORE);
     return node;
   }
 
   private void populateAllPartitionedRegion(PartitionedRegion pr, List nodes) {
-    // int totalNodes = 4;
     Region rootReg = PartitionedRegionHelper.getPRRoot(pr.getCache());
-    // Region allPRs = PartitionedRegionHelper.getPRConfigRegion(rootReg, pr
-    // .getCache());
     PartitionRegionConfig prConf = new PartitionRegionConfig(pr.getPRId(), pr.getFullPath(),
-        pr.getPartitionAttributes(), pr.getScope());
+        pr.getPartitionAttributes(), pr.getScope(), new EvictionAttributesImpl(),
+        new ExpirationAttributes(), new ExpirationAttributes(), new ExpirationAttributes(),
+        new ExpirationAttributes(), Collections.emptySet());
     RegionAdvisor ra = pr.getRegionAdvisor();
     for (Iterator itr = nodes.iterator(); itr.hasNext();) {
       Node n = (Node) itr.next();

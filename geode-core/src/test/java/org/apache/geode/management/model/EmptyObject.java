@@ -14,8 +14,7 @@
  */
 package org.apache.geode.management.model;
 
-/**
- */
-public class EmptyObject {
+import java.io.Serializable;
 
+public class EmptyObject implements Serializable {
 }
