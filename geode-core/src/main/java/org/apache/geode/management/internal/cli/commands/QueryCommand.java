@@ -27,7 +27,6 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.QueryInvalidException;
@@ -68,7 +67,7 @@ public class QueryCommand extends GfshCommand {
   }
 
   private DataCommandResult select(String query) {
-    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+    InternalCache cache = getCache();
     DataCommandResult dataResult;
 
     if (StringUtils.isEmpty(query)) {
