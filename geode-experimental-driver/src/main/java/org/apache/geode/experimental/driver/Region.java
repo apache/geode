@@ -78,6 +78,23 @@ public interface Region<K, V> {
    */
   void putAll(Map<K, V> values) throws IOException;
 
+  /**
+   * Removes all keys and values associated from this region.
+   *
+   * @throws IOException
+   */
+  void clear() throws IOException;
+
+  /**
+   * Puts the <code>value</code> into this region for the <code>key</code> if <code>key</code> does
+   * not already have a value associated with it.
+   *
+   * @return null if the value was set; the current value otherwise.
+   *         NOTE that if the value in the region was set to null, this method will return null
+   *         without setting a new value.
+   * @throws IOException
+   */
+  V putIfAbsent(K key, V value) throws IOException;
 
   /**
    * Removes any value associated with the <code>key</code> from this region.

@@ -95,6 +95,29 @@ public class RegionIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
+  public void putIfAbsent() throws Exception {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    JSONWrapper document = JSONWrapper.wrapJSON(jsonDocument);
+
+    assertNull(region.putIfAbsent(document, document));
+
+    JSONWrapper value = region.get(document);
+    assertEquals(document, value);
+    assertEquals(1, serverRegion.size());
+
+    assertEquals(document, region.putIfAbsent(document, JSONWrapper.wrapJSON("{3 : 2}")));
+    value = region.get(document);
+    assertEquals(document, value);
+    assertEquals(1, serverRegion.size());
+
+    org.apache.geode.cache.Region.Entry entry =
+        (org.apache.geode.cache.Region.Entry) serverRegion.entrySet().iterator().next();
+
+    assertTrue(PdxInstance.class.isAssignableFrom(entry.getKey().getClass()));
+    assertTrue(PdxInstance.class.isAssignableFrom(entry.getValue().getClass()));
+  }
+
+  @Test
   public void removeWithJSONKey() throws Exception {
     Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
     JSONWrapper document = JSONWrapper.wrapJSON(jsonDocument);
@@ -153,5 +176,16 @@ public class RegionIntegrationTest extends IntegrationTestBase {
   public void removeWithBadJSONKey() throws IOException {
     Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
     region.remove(JSONWrapper.wrapJSON("{\"name\":\"Johan\"]"));
+  }
+
+  @Test
+  public void clearNonEmptyRegion() throws Exception {
+    Region<String, String> region = driver.getRegion("region");
+
+    region.put("key", "value");
+    assertEquals(1, region.size());
+
+    region.clear();
+    assertEquals(0, region.size());
   }
 }

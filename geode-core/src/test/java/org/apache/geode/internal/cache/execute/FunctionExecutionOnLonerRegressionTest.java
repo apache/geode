@@ -45,6 +45,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
+import org.apache.geode.test.junit.categories.FunctionServiceTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -58,7 +59,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * Extracted from {@link PRFunctionExecutionDUnitTest}.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, FunctionServiceTest.class})
 public class FunctionExecutionOnLonerRegressionTest {
 
   private Region<String, String> region;

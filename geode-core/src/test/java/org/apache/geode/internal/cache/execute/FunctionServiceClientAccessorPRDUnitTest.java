@@ -18,11 +18,12 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
  * Tests function execution with a client accessing a single member with a PR using onRegion calls.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({DistributedTest.class, ClientServerTest.class, FunctionServiceTest.class})
 public class FunctionServiceClientAccessorPRDUnitTest extends FunctionServiceClientAccessorPRBase {
 
   @Override

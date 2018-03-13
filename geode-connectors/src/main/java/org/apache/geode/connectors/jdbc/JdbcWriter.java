@@ -78,7 +78,7 @@ public class JdbcWriter<K, V> extends AbstractJdbcCallback implements CacheWrite
       getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
           getPdxNewValue(event));
     } catch (SQLException e) {
-      throw new JdbcConnectorException(e);
+      throw JdbcConnectorException.createException(e);
     }
   }
 

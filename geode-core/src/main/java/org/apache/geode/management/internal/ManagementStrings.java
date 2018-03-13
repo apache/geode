@@ -148,6 +148,9 @@ public class ManagementStrings {
   public static final StringId ASYNC_EVENT_QUEUE_MONITOR =
       new StringId(100043, "AsyncEventQueueMXBeanMonitor");
 
+  public static final StringId GATEWAY_SENDER_OVERFLOW_MONITOR =
+      new StringId(100044, "GatewaySenderMXBeanOverflowMonitor");
+
   // Query Error messages
   public static final StringId QUERY__MSG__INVALID_MEMBER =
       new StringId(100045, "Query is invalid due to invalid member : {0}");

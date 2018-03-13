@@ -14,30 +14,38 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueStats;
 import org.apache.geode.management.internal.ManagementStrings;
+import org.apache.geode.management.internal.beans.stats.GatewaySenderOverflowMonitor;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
+import org.apache.geode.management.internal.beans.stats.StatType;
 import org.apache.geode.management.internal.beans.stats.StatsKey;
+import org.apache.geode.management.internal.beans.stats.StatsRate;
 
-/**
- *
- *
- */
 public class AsyncEventQueueMBeanBridge {
 
   private AsyncEventQueueImpl queueImpl;
 
   private MBeanStatsMonitor monitor;
 
+  private GatewaySenderOverflowMonitor overflowMonitor;
+
+  private StatsRate lruEvictionsRate;
+
   public AsyncEventQueueMBeanBridge(AsyncEventQueue queue) {
     this.queueImpl = (AsyncEventQueueImpl) queue;
     this.monitor =
         new MBeanStatsMonitor(ManagementStrings.ASYNC_EVENT_QUEUE_MONITOR.toLocalizedString());
 
-    AsyncEventQueueStats stats = queueImpl.getStatistics();
-    addAsyncEventQueueStats(stats);
+    this.overflowMonitor = new GatewaySenderOverflowMonitor(
+        ManagementStrings.GATEWAY_SENDER_OVERFLOW_MONITOR.toLocalizedString());
+
+    addAsyncEventQueueStats(queueImpl.getStatistics());
+
+    initializeStats();
   }
 
   public AsyncEventQueueMBeanBridge() {
@@ -49,6 +57,16 @@ public class AsyncEventQueueMBeanBridge {
     monitor.addStatisticsToMonitor(asyncEventQueueStats.getStats());
   }
 
+  public void addOverflowStatistics(Statistics statistics) {
+    if (statistics != null) {
+      overflowMonitor.addStatisticsToMonitor(statistics);
+    }
+  }
+
+  private void initializeStats() {
+    lruEvictionsRate =
+        new StatsRate(StatsKey.GATEWAYSENDER_LRU_EVICTIONS, StatType.LONG_TYPE, overflowMonitor);
+  }
 
   public String getAsyncEventListener() {
     return queueImpl.getAsyncEventListener().getClass().getCanonicalName();
@@ -104,6 +122,20 @@ public class AsyncEventQueueMBeanBridge {
 
   public int getEventQueueSize() {
     return getStatistic(StatsKey.ASYNCEVENTQUEUE_EVENTS_QUEUE_SIZE).intValue();
+  }
+
+  public float getLRUEvictionsRate() {
+    return lruEvictionsRate.getRate();
+  }
+
+  public long getEntriesOverflowedToDisk() {
+    return overflowMonitor.getStatistic(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK)
+        .longValue();
+  }
+
+  public long getBytesOverflowedToDisk() {
+    return overflowMonitor.getStatistic(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK)
+        .longValue();
   }
 
   private Number getStatistic(String statName) {

@@ -127,8 +127,8 @@ public class IndexRepositoryFactory {
     } finally {
       if (!success) {
         lockService.unlock(lockName);
-        cache.setPdxReadSerializedOverride(initialPdxReadSerializedFlag);
       }
+      cache.setPdxReadSerializedOverride(initialPdxReadSerializedFlag);
     }
   }
 

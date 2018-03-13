@@ -92,8 +92,9 @@ class ProtobufChannel {
     IOException lastException = null;
 
     for (InetSocketAddress locator : locators) {
+      Socket locatorSocket = null;
       try {
-        final Socket locatorSocket = new Socket(locator.getAddress(), locator.getPort());
+        locatorSocket = new Socket(locator.getAddress(), locator.getPort());
 
         final OutputStream outputStream = locatorSocket.getOutputStream();
         final InputStream inputStream = locatorSocket.getInputStream();
@@ -127,6 +128,11 @@ class ProtobufChannel {
         return new InetSocketAddress(server.getHostname(), server.getPort());
       } catch (IOException e) {
         lastException = e;
+      } finally {
+        if (locatorSocket != null) {
+          locatorSocket.setSoLinger(true, 0);
+          locatorSocket.close();
+        }
       }
     }
 

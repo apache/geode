@@ -22,11 +22,12 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
  * Test of the behavior of a custom ResultCollector when handling exceptions
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FunctionServiceTest.class})
 public class FunctionServiceLocalRRDUnitTest extends FunctionServiceBase {
 
   public static final String REGION = "region";

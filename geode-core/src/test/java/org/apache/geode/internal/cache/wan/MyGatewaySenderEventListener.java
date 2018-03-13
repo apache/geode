@@ -37,7 +37,6 @@ public class MyGatewaySenderEventListener implements AsyncEventListener, Seriali
    * Processes events by recording their latencies.
    */
   public boolean processEvents(List<AsyncEvent> events) {
-    System.out.println("hitesh got event");
     synchronized (eventsMap) {
       for (AsyncEvent event : events) {
         this.eventsMap.put(event.getKey(), event.getDeserializedValue());
