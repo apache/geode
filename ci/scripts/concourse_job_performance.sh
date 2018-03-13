@@ -27,7 +27,6 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-apt-get install -y python3 python3-pip
 pip3 install requests
 pip3 install ansicolors
 pip3 install sseclient-py
