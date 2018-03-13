@@ -12,20 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.pdx.internal;
 
-import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.pdx.PdxInstance;
 
-/**
- * All of the API methods not exposed to User in EntryEvent.
- */
-public interface InternalEntryEvent extends EntryEvent {
-
-  void setRegionEntry(RegionEntry re);
-
-  Object basicGetNewValue();
-
-  void setCachedSerializedNewValue(byte[] v);
-
-  byte[] getCachedSerializedNewValue();
+public interface InternalPdxInstance extends PdxInstance, ConvertableToBytes {
 }

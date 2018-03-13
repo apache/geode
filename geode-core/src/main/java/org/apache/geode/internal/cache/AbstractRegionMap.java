@@ -115,6 +115,9 @@ public abstract class AbstractRegionMap
   // the region that owns this map
   private RegionMapOwner owner;
 
+  private final SerializeNewValueIfNeeded serializeNewValueIfNeeded =
+      new SerializeNewValueIfNeeded();
+
   protected AbstractRegionMap(InternalRegionArguments internalRegionArgs) {
     // do nothing
   }
@@ -2200,7 +2203,11 @@ public abstract class AbstractRegionMap
       final boolean ifOld, Object expectedOldValue, // only non-null if ifOld
       boolean requireOldValue, final boolean overwriteDestroyed)
       throws CacheWriterException, TimeoutException {
+
     final LocalRegion owner = _getOwner();
+
+    serializeNewValueIfNeeded.serializeNewValueIfNeeded(owner, event);
+
     boolean clearOccured = false;
     if (owner == null) {
       // "fix" for bug 32440
