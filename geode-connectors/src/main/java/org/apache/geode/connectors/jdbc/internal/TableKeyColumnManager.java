@@ -47,7 +47,7 @@ class TableKeyColumnManager {
         key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
       }
     } catch (SQLException e) {
-      throw new JdbcConnectorException(e);
+      throw JdbcConnectorException.createException(e);
     }
     return key;
   }
