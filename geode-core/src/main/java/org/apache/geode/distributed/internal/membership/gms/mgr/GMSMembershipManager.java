@@ -120,12 +120,8 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    * conserve-sockets=true. Use of this should be removed when connection pools are implemented in
    * the direct-channel
    */
-  private final ThreadLocal<Boolean> forceUseUDPMessaging = new ThreadLocal<Boolean>() {
-    @Override
-    protected Boolean initialValue() {
-      return Boolean.FALSE;
-    }
-  };
+  private final ThreadLocal<Boolean> forceUseUDPMessaging =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   /**
    * Trick class to make the startup synch more visible in stack traces
@@ -153,8 +149,6 @@ public class GMSMembershipManager implements MembershipManager, Manager {
 
     // Miscellaneous state depending on the kind of event
     InternalDistributedMember member;
-    boolean crashed;
-    String reason;
     DistributionMessage dmsg;
     NetView gmsView;
 
@@ -1746,19 +1740,14 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       if (allDestinations)
         return null;
 
-      List<InternalDistributedMember> members = (List<InternalDistributedMember>) ex.getMembers(); // We
-      // need
-      // to
-      // return
-      // this
-      // list
-      // of
-      // failures
+      // We need to return this list of failures
+      List<InternalDistributedMember> members = (List<InternalDistributedMember>) ex.getMembers();
 
       // SANITY CHECK: If we fail to send a message to an existing member
       // of the view, we have a serious error (bug36202).
-      NetView view = services.getJoinLeave().getView(); // grab a recent view, excluding shunned
-      // members
+
+      // grab a recent view, excluding shunned members
+      NetView view = services.getJoinLeave().getView();
 
       // Iterate through members and causes in tandem :-(
       Iterator it_mem = members.iterator();
@@ -2382,31 +2371,6 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     return services.getShutdownCause();
   }
 
-  // @Override
-  // public void membershipFailure(String reason, Exception e) {
-  // try {
-  // if (this.membershipTestHooks != null) {
-  // List l = this.membershipTestHooks;
-  // for (Iterator it=l.iterator(); it.hasNext(); ) {
-  // MembershipTestHook dml = (MembershipTestHook)it.next();
-  // dml.beforeMembershipFailure(reason, e);
-  // }
-  // }
-  // listener.membershipFailure(reason, e);
-  // if (this.membershipTestHooks != null) {
-  // List l = this.membershipTestHooks;
-  // for (Iterator it=l.iterator(); it.hasNext(); ) {
-  // MembershipTestHook dml = (MembershipTestHook)it.next();
-  // dml.afterMembershipFailure(reason, e);
-  // }
-  // }
-  // }
-  // catch (RuntimeException re) {
-  // logger.warn(LocalizedMessage.create(LocalizedStrings.GroupMembershipService_EXCEPTION_CAUGHT_WHILE_SHUTTING_DOWN),
-  // re);
-  // }
-  // }
-
   public void registerTestHook(MembershipTestHook mth) {
     // lock for additions to avoid races during startup
     latestViewWriteLock.lock();
@@ -2445,6 +2409,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   /**
    * Test hook - be a sick member
    */
+  @Override
   public synchronized void beSick() {
     if (!beingSick) {
       beingSick = true;
@@ -2452,15 +2417,13 @@ public class GMSMembershipManager implements MembershipManager, Manager {
           this.address);
       services.getJoinLeave().beSick();
       services.getHealthMonitor().beSick();
-      if (directChannel != null) {
-        directChannel.beSick();
-      }
     }
   }
 
   /**
    * Test hook - don't answer "are you alive" requests
    */
+  @Override
   public synchronized void playDead() {
     if (!playingDead) {
       playingDead = true;
@@ -2474,6 +2437,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   /**
    * Test hook - recover health
    */
+  @Override
   public synchronized void beHealthy() {
     if (beingSick || playingDead) {
       synchronized (startupMutex) {
@@ -2483,9 +2447,6 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       }
       logger.info("GroupMembershipService.beHealthy invoked for {} - recovering health now",
           this.address);
-      if (directChannel != null) {
-        directChannel.beHealthy();
-      }
       services.getJoinLeave().beHealthy();
       services.getHealthMonitor().beHealthy();
       services.getMessenger().beHealthy();
@@ -2521,14 +2482,17 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       }
     }
 
+    @Override
     protected void process(ClusterDistributionManager dm) {
       // not used
     }
 
+    @Override
     public int getDSFID() {
       return 0;
     }
 
+    @Override
     public int getProcessorType() {
       return ClusterDistributionManager.SERIAL_EXECUTOR;
     }
@@ -2613,7 +2577,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    * Class <code>BoundedLinkedHashMap</code> is a bounded <code>LinkedHashMap</code>. The bound is
    * the maximum number of entries the <code>BoundedLinkedHashMap</code> can contain.
    */
-  static class BoundedLinkedHashMap<K, V> extends LinkedHashMap {
+  static class BoundedLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
     private static final long serialVersionUID = -3419897166186852692L;
 
     /**
@@ -2644,6 +2608,4 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       shutdown();
     }
   }
-
-
 }

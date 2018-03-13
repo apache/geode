@@ -723,7 +723,6 @@ public class DirectChannel {
     }
   }
 
-
   public void receive(DistributionMessage msg, int bytesRead) {
     if (disconnected) {
       return;
@@ -741,10 +740,6 @@ public class DirectChannel {
             LocalizedMessage.create(LocalizedStrings.DirectChannel_WHILE_PULLING_A_MESSAGE), ex);
       }
     }
-  }
-
-  public InternalDistributedMember getLocalAddress() {
-    return this.localAddr;
   }
 
   /**
@@ -885,26 +880,4 @@ public class DirectChannel {
   public boolean hasReceiversFor(DistributedMember mbr) {
     return this.conduit.hasReceiversFor(mbr);
   }
-
-  /**
-   * cause the channel to be sick
-   */
-  public void beSick() {
-    TCPConduit tc = this.conduit;
-    if (tc != null) {
-      tc.beSick();
-    }
-  }
-
-  /**
-   * cause the channel to be healthy
-   */
-  public void beHealthy() {
-    TCPConduit tc = this.conduit;
-    if (tc != null) {
-      tc.beHealthy();
-    }
-  }
-
-
 }
