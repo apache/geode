@@ -246,8 +246,9 @@ public class SqlHandler {
     try {
       return javaType.cast(jdbcObject);
     } catch (ClassCastException classCastException) {
-      throw new JdbcConnectorException("Could not convert " + jdbcObject.getClass().getTypeName()
-          + " to " + javaType.getTypeName(), classCastException);
+      throw JdbcConnectorException.createException("Could not convert "
+          + jdbcObject.getClass().getTypeName() + " to " + javaType.getTypeName(),
+          classCastException);
     }
   }
 
