@@ -209,7 +209,7 @@ public class SSLSocketIntegrationTest {
       Awaitility.await("connect to server socket").atMost(30, TimeUnit.SECONDS).until(() -> {
         try {
           Socket clientSocket = socketCreator.connectForClient(
-              SocketCreator.getLocalHost().getHostAddress(), serverSocketPort, 2000);
+              SocketCreator.getLocalHost().getHostAddress(), serverSocketPort, 500);
           clientSocket.close();
           System.err.println(
               "client successfully connected to server but should not have been able to do so");
@@ -254,7 +254,8 @@ public class SSLSocketIntegrationTest {
     Thread serverThread = new Thread(new MyThreadGroup(this.testName.getMethodName()), () -> {
       try {
         Socket socket = serverSocket.accept();
-        SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER).configureServerSSLSocket(socket);
+        SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER).configureServerSSLSocket(socket,
+            15000);
         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
         messageFromClient.set((String) ois.readObject());
       } catch (IOException | ClassNotFoundException e) {

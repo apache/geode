@@ -360,9 +360,7 @@ public class TcpServer {
       long startTime = DistributionStats.getStatTime();
       DataInputStream input = null;
       try {
-
-        socket.setSoTimeout(READ_TIMEOUT);
-        getSocketCreator().configureServerSSLSocket(socket);
+        getSocketCreator().configureServerSSLSocket(socket, READ_TIMEOUT);
 
         try {
           input = new DataInputStream(socket.getInputStream());
