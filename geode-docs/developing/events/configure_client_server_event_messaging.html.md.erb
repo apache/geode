@@ -39,7 +39,7 @@ To receive entry events in the client from the server:
     Register interest in all keys, a key list, individual keys, or by comparing key strings to regular expressions. By default, no entries are registered to receive updates. Specify whether the server is to send values with entry update events. Interest registration is only available through the API.
 
     1.  Get an instance of the region where you want to register interest.
-    2.  Use the regions's `registerInterest`\* methods to specify the entries you want. Examples:
+    2.  Use the region's `registerInterest`\* methods to specify the entries you want. Examples:
 
         ``` pre
         // Register interest in a single key and download its entry 
@@ -55,11 +55,11 @@ To receive entry events in the client from the server:
         list.add("key-2"); 
         list.add("key-3"); 
         list.add("key-4");
-        region2.registerInterest(list, InterestResultPolicy.NONE, false); 
+        region2.registerInterestForKeys(list, InterestResultPolicy.NONE, false); 
                             
         // Register interest in all keys and download all available keys now
         Region region3 = . . . ;
-        region3.registerInterest("ALL_KEYS", InterestResultPolicy.KEYS); 
+        region3.registerInterestForAllKeys(InterestResultPolicy.KEYS); 
                             
         // Register Interest in all keys matching a regular expression 
         Region region1 = . . . ; 
