@@ -53,8 +53,9 @@ import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FunctionServiceTest.class})
 @SuppressWarnings("serial")
 public class PRFunctionExecutionWithResultSenderDUnitTest extends CacheTestCase {
 

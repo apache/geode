@@ -12,23 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.execute;
-
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FunctionServiceTest;
+package org.apache.geode.test.junit.categories;
 
 /**
- * Tests onServers using multiple servers from a single client.
+ * A test category for function service-related tests
  */
-@Category({DistributedTest.class, ClientServerTest.class, FunctionServiceTest.class})
-public class FunctionServiceClientMultipleOnServerDUnitTest
-    extends FunctionServiceClientOnServerBase {
-
-  @Override
-  public int numberOfExecutions() {
-    return 2;
-  }
+public interface FunctionServiceTest {
 }

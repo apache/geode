@@ -39,8 +39,9 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({DistributedTest.class, ClientServerTest.class, FunctionServiceTest.class})
 public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServerTestBase {
   /**
    *

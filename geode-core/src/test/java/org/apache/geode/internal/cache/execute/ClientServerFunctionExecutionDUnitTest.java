@@ -56,8 +56,9 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({DistributedTest.class, ClientServerTest.class, FunctionServiceTest.class})
 public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBase {
   private static final String TEST_FUNCTION1 = TestFunction.TEST_FUNCTION1;
 
