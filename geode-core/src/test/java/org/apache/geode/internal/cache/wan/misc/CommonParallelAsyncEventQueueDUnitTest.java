@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -22,14 +22,13 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, AEQTest.class})
 public class CommonParallelAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {
 
   private static final long serialVersionUID = 1L;

@@ -17,9 +17,11 @@
  */
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
-import static junitparams.JUnitParamsRunner.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static junitparams.JUnitParamsRunner.$;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -41,10 +43,11 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.MyGatewayEventFilter;
+import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, AEQTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class AsyncEventQueueValidationsJUnitTest {
 
