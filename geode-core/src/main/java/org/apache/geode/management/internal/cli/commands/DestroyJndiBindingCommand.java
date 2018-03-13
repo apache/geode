@@ -51,7 +51,7 @@ public class DestroyJndiBindingCommand extends GfshCommand {
   static final String JNDI_NAME = "name";
   static final String JNDI_NAME__HELP = "Name of the binding to be destroyed.";
   static final String IFEXISTS_HELP =
-      "Skip the destroy operation when a jndi binding with the same name does not exists. The default is not to skip it.";
+      "Skip the destroy operation when a jndi binding with the same name does not exists. Without specifying this option, this command execution results into an error.";
 
   @CliCommand(value = CREATE_JNDIBINDING, help = CREATE_JNDIBINDING__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
