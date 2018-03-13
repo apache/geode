@@ -41,23 +41,30 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.VM;
 
-/**
- *
- */
 public class ProcessManager {
-  private int namingPort;
-  private Map<Integer, ProcessHolder> processes = new HashMap<>();
-  private File log4jConfig;
+
+  private static final String SUSPEND_VM_PROPERTY = "dunit.debug.suspendVM";
+  private static final String BASE_PORT_PROPERTY = "dunit.debug.basePort";
+
+  private static final int SUSPEND_VM_DEFAULT = -100;
+  private static final int BASE_PORT_DEFAULT = 0;
+
+  private final Map<Integer, ProcessHolder> processes = new HashMap<>();
+  private final int suspendVM = Integer.getInteger(SUSPEND_VM_PROPERTY, SUSPEND_VM_DEFAULT);
+  private final int namingPort;
+  private final Registry registry;
+  private final VersionManager versionManager;
+  private final HeapSize heapSize;
+
+  private int debugPort = Integer.getInteger(BASE_PORT_PROPERTY, BASE_PORT_DEFAULT);
   private int pendingVMs;
-  private Registry registry;
-  private int debugPort = Integer.getInteger("dunit.debug.basePort", 0);
-  private int suspendVM = Integer.getInteger("dunit.debug.suspendVM", -100);
-  private VersionManager versionManager;
+  private File log4jConfig;
 
   public ProcessManager(int namingPort, Registry registry) {
     this.versionManager = VersionManager.getInstance();
     this.namingPort = namingPort;
     this.registry = registry;
+    heapSize = new HeapSize();
   }
 
   public synchronized void launchVM(int vmNum) throws IOException {
@@ -219,6 +226,8 @@ public class ProcessManager {
       debugPort++;
     }
 
+    String megabytes = heapSize.getMaxHeapSize();
+
     String jdkSuspend = vmNum == suspendVM ? "y" : "n"; // ignore version
     ArrayList<String> cmds = new ArrayList<String>();
     cmds.add(cmd);
@@ -250,14 +259,14 @@ public class ProcessManager {
     cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
     cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
     cmds.add("-XX:+HeapDumpOnOutOfMemoryError");
-    cmds.add("-Xmx512m");
+    cmds.add("-Xmx" + megabytes + "m");
     cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE=10");
     cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "disallowMcastDefaults=true");
     cmds.add("-D" + DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE + "=true");
     cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX
         + ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS + "=true");
     cmds.add("-ea");
-    cmds.add("-XX:MetaspaceSize=512m");
+    cmds.add("-XX:MetaspaceSize=" + megabytes + "m");
     cmds.add(agent);
     cmds.add(ChildVM.class.getName());
     String[] rst = new String[cmds.size()];
