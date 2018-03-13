@@ -164,12 +164,11 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   public void startServer() {
     CacheFactory cf = new CacheFactory(this.properties);
+    cf.setPdxPersistent(pdxPersistent);
+    cf.setPdxReadSerialized(pdxReadSerialized);
     if (pdxSerializer != null) {
       cf.setPdxSerializer(pdxSerializer);
     }
-    cf.setPdxReadSerialized(pdxPersistent);
-    cf.setPdxPersistent(pdxPersistent);
-    cf.setPdxReadSerialized(pdxReadSerialized);
     cache = (InternalCache) cf.create();
     DistributionConfig config =
         ((InternalDistributedSystem) cache.getDistributedSystem()).getConfig();
