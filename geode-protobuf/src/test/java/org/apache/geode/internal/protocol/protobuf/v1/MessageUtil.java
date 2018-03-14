@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -25,10 +24,7 @@ import java.net.Socket;
 import com.google.protobuf.MessageLite;
 
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 
 public class MessageUtil {
@@ -92,18 +88,5 @@ public class MessageUtil {
     } catch (IOException e) {
       throw new RuntimeException(e); // never happens.
     }
-  }
-
-  public static void validateGetResponse(Socket socket,
-      ProtobufProtocolSerializer protobufProtocolSerializer, Object expectedValue)
-      throws InvalidProtocolMessageException, IOException {
-
-    ClientProtocol.Message response =
-        protobufProtocolSerializer.deserialize(socket.getInputStream());
-    assertEquals(ClientProtocol.Message.MessageTypeCase.GETRESPONSE, response.getMessageTypeCase());
-    RegionAPI.GetResponse getResponse = response.getGetResponse();
-    BasicTypes.EncodedValue result = getResponse.getResult();
-    assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT, result.getValueCase());
-    assertEquals(expectedValue, result.getStringResult());
   }
 }

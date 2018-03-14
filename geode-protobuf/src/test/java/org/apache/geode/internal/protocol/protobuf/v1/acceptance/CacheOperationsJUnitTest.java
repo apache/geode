@@ -22,7 +22,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.internal.protocol.protobuf.v1.MessageUtil.validateGetResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -102,7 +101,6 @@ public class CacheOperationsJUnitTest {
 
   @Rule
   public TestName testName = new TestName();
-  private ProtobufProtocolSerializer protobufProtocolSerializer;
 
   @Before
   public void setup() throws Exception {
@@ -141,7 +139,6 @@ public class CacheOperationsJUnitTest {
     MessageUtil.performAndVerifyHandshake(socket);
 
     serializationService = new ProtobufSerializationService();
-    protobufProtocolSerializer = new ProtobufProtocolSerializer();
   }
 
   @After
@@ -177,7 +174,7 @@ public class CacheOperationsJUnitTest {
         ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, getEntries);
 
     ClientProtocol.Message getAllMessage =
-        ClientProtocol.Message.newBuilder().setGetAllRequest(getAllRequest).build();
+        ProtobufUtilities.createProtobufRequestWithGetAllRequest(getAllRequest);
     protobufProtocolSerializer.serialize(getAllMessage, outputStream);
     validateGetAllResponse(socket, protobufProtocolSerializer);
 
@@ -197,6 +194,7 @@ public class CacheOperationsJUnitTest {
     regionFactory.create(regionName);
     System.setProperty("geode.feature-protobuf-protocol", "true");
 
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     Set<BasicTypes.Entry> putEntries = new HashSet<>();
     putEntries.add(ProtobufUtilities.createEntry(serializationService, 2.2f, TEST_MULTIOP_VALUE1));
     putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY2,
@@ -226,6 +224,7 @@ public class CacheOperationsJUnitTest {
   @Test
   public void testResponseToGetWithNoData() throws Exception {
     // Get request without any data set must return a null
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     ClientProtocol.Message getMessage =
         MessageUtil.makeGetRequestMessage(serializationService, TEST_KEY, TEST_REGION);
     protobufProtocolSerializer.serialize(getMessage, outputStream);
@@ -239,6 +238,7 @@ public class CacheOperationsJUnitTest {
 
   @Test
   public void testNewProtocolGetRegionNamesCallSucceeds() throws Exception {
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     RegionAPI.GetRegionNamesRequest getRegionNamesRequest =
         ProtobufRequestUtilities.createGetRegionNamesRequest();
 
@@ -252,6 +252,7 @@ public class CacheOperationsJUnitTest {
   public void testNewProtocolGetSizeCall() throws Exception {
     System.setProperty("geode.feature-protobuf-protocol", "true");
 
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     ClientProtocol.Message putMessage = ProtobufRequestUtilities.createPutRequest(TEST_REGION,
         ProtobufUtilities.createEntry(serializationService, TEST_KEY, TEST_VALUE));
     protobufProtocolSerializer.serialize(putMessage, outputStream);
@@ -268,6 +269,17 @@ public class CacheOperationsJUnitTest {
     assertEquals(1, getSizeResponse.getSize());
   }
 
+  private void validateGetResponse(Socket socket,
+      ProtobufProtocolSerializer protobufProtocolSerializer, Object expectedValue)
+      throws InvalidProtocolMessageException, IOException {
+    ClientProtocol.Message response = deserializeResponse(socket, protobufProtocolSerializer);
+
+    assertEquals(ClientProtocol.Message.MessageTypeCase.GETRESPONSE, response.getMessageTypeCase());
+    RegionAPI.GetResponse getResponse = response.getGetResponse();
+    BasicTypes.EncodedValue result = getResponse.getResult();
+    assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT, result.getValueCase());
+    assertEquals(expectedValue, result.getStringResult());
+  }
 
   private ClientProtocol.Message deserializeResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer)
