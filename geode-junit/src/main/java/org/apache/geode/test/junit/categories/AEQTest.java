@@ -12,24 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.concurrent;
+package org.apache.geode.test.junit.categories;
 
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-@SuppressWarnings("serial")
-@Category({DistributedTest.class, AEQTest.class})
-public class ConcurrentAsyncEventQueueOffHeapDUnitTest extends ConcurrentAsyncEventQueueDUnitTest {
-
-  public ConcurrentAsyncEventQueueOffHeapDUnitTest() {
-    super();
-  }
-
-  @Override
-  public boolean isOffHeap() {
-    return true;
-  }
-
+/**
+ * JUnit Test Category that specifies a test that involves AEQ feature.
+ */
+public interface AEQTest {
 }

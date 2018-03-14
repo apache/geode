@@ -254,6 +254,18 @@ subprojects {
     reports.junitXml.destination = file "$buildDir/test-reports-lucene"
   }
 
+  task aeqTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.AEQTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    reports.junitXml.destination = file "$buildDir/test-reports-aeq"
+  }
+
+
   task wanTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.WanTest'
