@@ -17,7 +17,9 @@
 
 package org.apache.geode.internal.cache.configuration;
 
+import java.io.Serializable;
+
 import org.apache.geode.lang.Identifiable;
 
-public interface CacheElement extends Identifiable<String> {
+public interface CacheElement extends Identifiable<String>, Serializable {
 }
