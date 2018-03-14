@@ -33,7 +33,6 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 
@@ -83,7 +82,7 @@ public class JettyHelper {
 
       if (StringUtils.isNotBlank(sslConfig.getCiphers())
           && !"any".equalsIgnoreCase(sslConfig.getCiphers())) {
-        // If use has mentioned "any" let the SSL layer decide on the ciphers
+        sslContextFactory.setExcludeCipherSuites();
         sslContextFactory.setIncludeCipherSuites(SSLUtil.readArray(sslConfig.getCiphers()));
       }
 
@@ -118,6 +117,9 @@ public class JettyHelper {
         sslContextFactory.setTrustStorePassword(sslConfig.getTruststorePassword());
       }
 
+      if (logger.isDebugEnabled()) {
+        logger.debug(sslContextFactory.dump());
+      }
       httpConfig.addCustomizer(new SecureRequestCustomizer());
 
       // Somehow With HTTP_2.0 Jetty throwing NPE. Need to investigate further whether all GemFire
