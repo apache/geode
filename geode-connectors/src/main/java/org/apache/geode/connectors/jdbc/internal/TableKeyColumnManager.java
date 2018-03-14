@@ -58,14 +58,14 @@ public class TableKeyColumnManager {
       String name = tables.getString("TABLE_NAME");
       if (name.equalsIgnoreCase(tableName)) {
         if (realTableName != null) {
-          throw new IllegalStateException("Duplicate tables that match region name");
+          throw new JdbcConnectorException("Duplicate tables that match region name");
         }
         realTableName = name;
       }
     }
 
     if (realTableName == null) {
-      throw new IllegalStateException("no table was found that matches " + tableName);
+      throw new JdbcConnectorException("no table was found that matches " + tableName);
     }
     return realTableName;
   }
@@ -74,12 +74,12 @@ public class TableKeyColumnManager {
       throws SQLException {
     ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, tableName);
     if (!primaryKeys.next()) {
-      throw new IllegalStateException(
+      throw new JdbcConnectorException(
           "The table " + tableName + " does not have a primary key column.");
     }
     String key = primaryKeys.getString("COLUMN_NAME");
     if (primaryKeys.next()) {
-      throw new IllegalStateException(
+      throw new JdbcConnectorException(
           "The table " + tableName + " has more than one primary key column.");
     }
     return key;
