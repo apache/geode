@@ -47,6 +47,16 @@ public class DriverFactory {
   private String password = null;
 
   /**
+   * Path to SSL key store; SSL is <em>not</em> used if <code>null</code>.
+   */
+  private String keyStorePath;
+
+  /**
+   * Path to SSL trust store; SSL is <em>not</em> used if <code>null</code>.
+   */
+  private String trustStorePath;
+
+  /**
    * Adds a locator at <code>host</code> and <code>port</code> to the set of locators to use.
    *
    * @param host Internet address or host name.
@@ -56,16 +66,6 @@ public class DriverFactory {
   public DriverFactory addLocator(String host, int port) {
     this.locators.add(new InetSocketAddress(host, port));
     return this;
-  }
-
-  /**
-   * Creates a driver configured to use all the locators about which this driver factory knows.
-   *
-   * @return New driver.
-   * @throws Exception
-   */
-  public Driver create() throws Exception {
-    return new ProtobufDriver(locators, username, password);
   }
 
   /**
@@ -88,5 +88,37 @@ public class DriverFactory {
   public DriverFactory setPassword(String password) {
     this.password = password;
     return this;
+  }
+
+  /**
+   * Specifies the key store to use with SSL.
+   *
+   * @param keyStorePath Path to the SSL key store.
+   * @return This driver factory.
+   */
+  public DriverFactory setKeyStorePath(String keyStorePath) {
+    this.keyStorePath = keyStorePath;
+    return this;
+  }
+
+  /**
+   * Specifies the trust store to use with SSL.
+   *
+   * @param trustStorePath Path to the SSL trust store.
+   * @return This driver factory.
+   */
+  public DriverFactory setTrustStorePath(String trustStorePath) {
+    this.trustStorePath = trustStorePath;
+    return this;
+  }
+
+  /**
+   * Creates a driver configured to use all the locators about which this driver factory knows.
+   *
+   * @return New driver.
+   * @throws Exception
+   */
+  public Driver create() throws Exception {
+    return new ProtobufDriver(locators, username, password, keyStorePath, trustStorePath);
   }
 }
