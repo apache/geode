@@ -242,11 +242,11 @@ public class LuceneServiceImpl implements InternalLuceneService {
   protected boolean createLuceneIndexOnDataRegion(final PartitionedRegion userRegion,
       final InternalLuceneIndex luceneIndex) {
     try {
-      PartitionedRepositoryManager repositoryManager =
-          (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
       if (userRegion.getDataStore() == null) {
         return true;
       }
+      PartitionedRepositoryManager repositoryManager =
+          (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
       Set<Integer> primaryBucketIds = userRegion.getDataStore().getAllLocalPrimaryBucketIds();
       Iterator primaryBucketIterator = primaryBucketIds.iterator();
       while (primaryBucketIterator.hasNext()) {

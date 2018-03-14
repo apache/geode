@@ -50,8 +50,8 @@ public class IndexRepositoryFactory {
   public IndexRepositoryFactory() {}
 
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-      InternalLuceneIndex index, PartitionedRegion userRegion, final IndexRepository oldRepository)
-      throws IOException {
+      InternalLuceneIndex index, PartitionedRegion userRegion, final IndexRepository oldRepository,
+      PartitionedRepositoryManager partitionedRepositoryManager) throws IOException {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
 
@@ -59,10 +59,27 @@ public class IndexRepositoryFactory {
     Region prRoot = PartitionedRegionHelper.getPRRoot(fileRegion.getCache());
     PartitionRegionConfig prConfig =
         (PartitionRegionConfig) prRoot.get(fileRegion.getRegionIdentifier());
-    while (!prConfig.isColocationComplete()) {
-      prConfig = (PartitionRegionConfig) prRoot.get(fileRegion.getRegionIdentifier());
+    LuceneFileRegionColocationListener luceneFileRegionColocationCompleteListener =
+        new LuceneFileRegionColocationListener(partitionedRepositoryManager, bucketId);
+    fileRegion.addColocationListener(luceneFileRegionColocationCompleteListener);
+    IndexRepository repo = null;
+    if (prConfig.isColocationComplete()) {
+      repo = finishComputingRepository(bucketId, serializer, userRegion, oldRepository, index);
     }
+    return repo;
+  }
 
+  /*
+   * NOTE: The method finishComputingRepository must be called through computeIndexRepository.
+   * Executing finishComputingRepository outside of computeIndexRepository may result in race
+   * conditions.
+   * This is a util function just to not let computeIndexRepository be a huge chunk of code.
+   */
+  private IndexRepository finishComputingRepository(Integer bucketId, LuceneSerializer serializer,
+      PartitionedRegion userRegion, IndexRepository oldRepository, InternalLuceneIndex index)
+      throws IOException {
+    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
+    final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
     BucketRegion fileAndChunkBucket = getMatchingBucket(fileRegion, bucketId);
     BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
     boolean success = false;
