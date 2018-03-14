@@ -34,6 +34,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -42,7 +43,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class CreateJndiBindingFunctionTest {
 
   private CreateJndiBindingFunction createBindingFunction;
-  private FunctionContext<JndiBindingConfiguration> context;
+  private FunctionContext<JndiBindingsType.JndiBinding> context;
   private DistributedSystem distributedSystem;
   private ResultSender resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
@@ -62,10 +63,10 @@ public class CreateJndiBindingFunctionTest {
 
   @Test
   public void createJndiBindingIsSuccessful() throws Exception {
-    JndiBindingConfiguration config = new JndiBindingConfiguration();
+    JndiBindingsType.JndiBinding config = new JndiBindingsType.JndiBinding();
     config.setJndiName("jndi1");
-    config.setType(JndiBindingConfiguration.DATASOURCE_TYPE.SIMPLE);
-    config.setJdbcDriver("org.apache.derby.jdbc.EmbeddedDriver");
+    config.setType(JndiBindingConfiguration.DATASOURCE_TYPE.SIMPLE.getType());
+    config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
     when(context.getArguments()).thenReturn(config);
     when(context.getMemberName()).thenReturn("mock-member");

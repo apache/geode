@@ -198,7 +198,7 @@ public class JndiBindingsType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"configProperty"})
-  public static class JndiBinding {
+  public static class JndiBinding implements CacheElement {
 
     @XmlElement(name = "config-property", namespace = "http://geode.apache.org/schema/cache")
     protected List<JndiBindingsType.JndiBinding.ConfigProperty> configProperty;
@@ -623,6 +623,11 @@ public class JndiBindingsType {
       this.xaDatasourceClass = value;
     }
 
+    @Override
+    public String getId() {
+      return getJndiName();
+    }
+
 
     /**
      * <p>
@@ -662,6 +667,14 @@ public class JndiBindingsType {
           namespace = "http://geode.apache.org/schema/cache", required = true)
       protected String configPropertyValue;
 
+      public ConfigProperty() {};
+
+      public ConfigProperty(String name, String type, String value) {
+        this.configPropertyName = name;
+        this.configPropertyType = type;
+        this.configPropertyValue = value;
+      }
+
       /**
        * Gets the value of the configPropertyName property.
        *
@@ -670,7 +683,7 @@ public class JndiBindingsType {
        *         {@link String }
        *
        */
-      public String getConfigPropertyName() {
+      public String getName() {
         return configPropertyName;
       }
 
@@ -682,7 +695,7 @@ public class JndiBindingsType {
        *        {@link String }
        *
        */
-      public void setConfigPropertyName(String value) {
+      public void setName(String value) {
         this.configPropertyName = value;
       }
 
@@ -694,7 +707,7 @@ public class JndiBindingsType {
        *         {@link String }
        *
        */
-      public String getConfigPropertyType() {
+      public String getType() {
         return configPropertyType;
       }
 
@@ -706,7 +719,7 @@ public class JndiBindingsType {
        *        {@link String }
        *
        */
-      public void setConfigPropertyType(String value) {
+      public void setType(String value) {
         this.configPropertyType = value;
       }
 
@@ -718,7 +731,7 @@ public class JndiBindingsType {
        *         {@link String }
        *
        */
-      public String getConfigPropertyValue() {
+      public String getValue() {
         return configPropertyValue;
       }
 
@@ -730,7 +743,7 @@ public class JndiBindingsType {
        *        {@link String }
        *
        */
-      public void setConfigPropertyValue(String value) {
+      public void setValue(String value) {
         this.configPropertyValue = value;
       }
 

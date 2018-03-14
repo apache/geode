@@ -287,6 +287,7 @@ org/apache/geode/internal/cache/TXCommitMessage$CommitExceptionCollectingExcepti
 org/apache/geode/internal/cache/TXCommitMessage$RegionCommitList,true,-8910813949027683641
 org/apache/geode/internal/cache/configuration/EnumActionDestroyOverflow,false,value:java/lang/String
 org/apache/geode/internal/cache/configuration/EnumReadableWritable,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/JndiBindingsType$JndiBinding,false,blockingTimeoutSeconds:java/lang/String,configProperty:java/util/List,connPooledDatasourceClass:java/lang/String,connectionUrl:java/lang/String,idleTimeoutSeconds:java/lang/String,initPoolSize:java/lang/String,jdbcDriverClass:java/lang/String,jndiName:java/lang/String,loginTimeoutSeconds:java/lang/String,managedConnFactoryClass:java/lang/String,maxPoolSize:java/lang/String,password:java/lang/String,transactionType:java/lang/String,type:java/lang/String,userName:java/lang/String,xaDatasourceClass:java/lang/String
 org/apache/geode/internal/cache/configuration/RegionAttributesDataPolicy,false,value:java/lang/String
 org/apache/geode/internal/cache/configuration/RegionAttributesIndexUpdateType,false,value:java/lang/String
 org/apache/geode/internal/cache/configuration/RegionAttributesMirrorType,false,value:java/lang/String

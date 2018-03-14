@@ -156,7 +156,7 @@ public class RegionConfig {
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionConfig.Entry> entry;
   @XmlAnyElement(lax = true)
-  protected List<RegionElement> regionElements;
+  protected List<CacheElement> regionElements;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionConfig> region;
   @XmlAttribute(name = "name", required = true)
@@ -274,11 +274,11 @@ public class RegionConfig {
    * <p>
    * Objects of the following type(s) are allowed in the list
    * {@link Element }
-   * {@link RegionElement }
+   * {@link CacheElement }
    *
    *
    */
-  public List<RegionElement> getCustomRegionElements() {
+  public List<CacheElement> getCustomRegionElements() {
     if (regionElements == null) {
       regionElements = new ArrayList<>();
     }

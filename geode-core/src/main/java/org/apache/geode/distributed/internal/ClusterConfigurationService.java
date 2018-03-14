@@ -90,6 +90,7 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.configuration.CacheConfig;
+import org.apache.geode.internal.cache.configuration.CacheElement;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
@@ -849,7 +850,7 @@ public class ClusterConfigurationService {
     }
   }
 
-  private Marshaller getMarshaller(Class... additionBindClass) {
+  private Marshaller getMarshaller(Class<? extends CacheElement>... additionBindClass) {
     if (bindClasses.containsAll(Arrays.asList(additionBindClass))) {
       return marshaller;
     }
@@ -859,7 +860,7 @@ public class ClusterConfigurationService {
     return marshaller;
   }
 
-  private Unmarshaller getUnmarshaller(Class... additionBindClass) {
+  private Unmarshaller getUnmarshaller(Class<? extends CacheElement>... additionBindClass) {
     if (bindClasses.containsAll(Arrays.asList(additionBindClass))) {
       return unmarshaller;
     }
@@ -869,7 +870,8 @@ public class ClusterConfigurationService {
     return unmarshaller;
   }
 
-  public CacheConfig getCacheConfig(String group, Class... additionalBindClass) {
+  public CacheConfig getCacheConfig(String group,
+      Class<? extends CacheElement>... additionalBindClass) {
     return unMarshall(getConfiguration(group).getCacheXmlContent(), additionalBindClass);
   }
 
@@ -895,7 +897,7 @@ public class ClusterConfigurationService {
     return list.stream().filter(o -> o.getId().equals(id)).findFirst().orElse(null);
   }
 
-  String marshall(CacheConfig config, Class... additionalClass) {
+  String marshall(CacheConfig config, Class<? extends CacheElement>... additionalClass) {
     StringWriter sw = new StringWriter();
     try {
       getMarshaller(additionalClass).marshal(config, sw);
@@ -905,7 +907,7 @@ public class ClusterConfigurationService {
     return sw.toString();
   }
 
-  CacheConfig unMarshall(String xml, Class... additionalClass) {
+  CacheConfig unMarshall(String xml, Class<? extends CacheElement>... additionalClass) {
     try {
       return (CacheConfig) getUnmarshaller(additionalClass).unmarshal(new StringReader(xml));
     } catch (Exception e) {
