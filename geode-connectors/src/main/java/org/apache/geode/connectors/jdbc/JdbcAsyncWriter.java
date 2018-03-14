@@ -42,6 +42,7 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
   private LongAdder totalEvents = new LongAdder();
   private LongAdder successfulEvents = new LongAdder();
   private LongAdder failedEvents = new LongAdder();
+  private LongAdder ignoredEvents = new LongAdder();
 
   @SuppressWarnings("unused")
   public JdbcAsyncWriter() {
@@ -65,7 +66,10 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
     cache.setPdxReadSerializedOverride(true);
     try {
       for (AsyncEvent event : events) {
-
+        if (eventCanBeIgnored(event.getOperation())) {
+          changeIgnoredEvents(1);
+          continue;
+        }
         try {
           getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
               getPdxInstance(event));
@@ -93,6 +97,10 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
     return failedEvents.longValue();
   }
 
+  long getIgnoredEvents() {
+    return ignoredEvents.longValue();
+  }
+
   private void changeSuccessfulEvents(long delta) {
     successfulEvents.add(delta);
   }
@@ -103,6 +111,10 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
 
   private void changeTotalEvents(long delta) {
     totalEvents.add(delta);
+  }
+
+  private void changeIgnoredEvents(long delta) {
+    ignoredEvents.add(delta);
   }
 
   /**

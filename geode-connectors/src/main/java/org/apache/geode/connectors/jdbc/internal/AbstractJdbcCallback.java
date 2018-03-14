@@ -18,6 +18,7 @@ import java.util.Properties;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheCallback;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.InternalCache;
 
 @Experimental
@@ -55,6 +56,10 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
     if (sqlHandler == null) {
       initialize(cache);
     }
+  }
+
+  protected boolean eventCanBeIgnored(Operation operation) {
+    return operation.isLoad();
   }
 
   private synchronized void initialize(InternalCache cache) {

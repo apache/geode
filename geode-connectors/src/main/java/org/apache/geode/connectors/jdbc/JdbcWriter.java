@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryEvent;
@@ -77,11 +76,8 @@ public class JdbcWriter<K, V> extends AbstractJdbcCallback implements CacheWrite
   }
 
   private void writeEvent(EntryEvent<K, V> event) {
-    if (event.getOperation().isLoad()) {
-      CacheLoader<K, V> loader = event.getRegion().getAttributes().getCacheLoader();
-      if (loader instanceof JdbcLoader) {
-        return;
-      }
+    if (eventCanBeIgnored(event.getOperation())) {
+      return;
     }
     checkInitialized((InternalCache) event.getRegion().getRegionService());
     totalEvents.add(1);

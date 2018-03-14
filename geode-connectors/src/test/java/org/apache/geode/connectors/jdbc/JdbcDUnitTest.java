@@ -245,6 +245,36 @@ public class JdbcDUnitTest implements Serializable {
     });
   }
 
+  @Test
+  public void getReadsFromDBWithAsyncWriter() throws Exception {
+    createRegion(false, true, true);
+    createJdbcConnection();
+    createMapping(REGION_NAME, CONNECTION_NAME);
+    server.invoke(() -> {
+      PdxInstance pdxEmployee1 =
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
+              .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
+      String key = "id1";
+      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      JdbcAsyncWriter asyncWriter = (JdbcAsyncWriter) ClusterStartupRule.getCache()
+          .getAsyncEventQueue("JAW").getAsyncEventListener();
+
+      region.put(key, pdxEmployee1);
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        assertThat(asyncWriter.getSuccessfulEvents()).isEqualTo(1);
+      });
+      region.invalidate(key);
+      PdxInstance result = (PdxInstance) region.get(key);
+
+      assertThat(result.getField("id")).isEqualTo(pdxEmployee1.getField("id"));
+      assertThat(result.getField("name")).isEqualTo(pdxEmployee1.getField("name"));
+      assertThat(result.getField("age")).isEqualTo(pdxEmployee1.getField("age"));
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        assertThat(asyncWriter.getIgnoredEvents()).isEqualTo(1);
+      });
+    });
+  }
+
   private void createJdbcConnection() {
     final String commandStr =
         "create jdbc-connection --name=" + CONNECTION_NAME + " --url=" + CONNECTION_URL;
