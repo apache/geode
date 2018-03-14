@@ -26,7 +26,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,11 +46,18 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
@@ -64,6 +73,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.DataPolicy;
@@ -78,6 +88,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.configuration.CacheConfig;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
@@ -132,6 +143,13 @@ public class ClusterConfigurationService {
 
   private final InternalCache cache;
   private DistributedLockService sharedConfigLockingService;
+
+  @TestingOnly
+  ClusterConfigurationService() {
+    configDirPath = null;
+    configDiskDirPath = null;
+    cache = null;
+  }
 
   public ClusterConfigurationService(InternalCache cache) throws IOException {
     this.cache = cache;
@@ -801,6 +819,60 @@ public class ClusterConfigurationService {
     }
 
     return configDir;
+  }
+
+  public CacheConfig getCacheConfig(String group, Class... additionalBindClass) {
+    return unMarshall(getConfiguration(group).getCacheXmlContent(), additionalBindClass);
+  }
+
+  public void updateCacheConfig(String group, UnaryOperator<CacheConfig> mutator,
+      Class... additionalBindClass) {
+    lockSharedConfiguration();
+    try {
+      CacheConfig cacheConfig = getCacheConfig(group, additionalBindClass);
+      cacheConfig = mutator.apply(cacheConfig);
+      if (cacheConfig == null) {
+        // mutator returns a null config, indicating no change needs to be persisted
+        return;
+      }
+      Configuration configuration = getConfiguration(group);
+      configuration.setCacheXmlContent(marshall(cacheConfig, additionalBindClass));
+      getConfigurationRegion().put(group, configuration);
+    } finally {
+      unlockSharedConfiguration();
+    }
+  }
+
+  String marshall(CacheConfig config, Class... additionalClass) {
+    List<Class> classes = new ArrayList<>(Arrays.asList(additionalClass));
+    classes.add(0, CacheConfig.class);
+    StringWriter sw = new StringWriter();
+    try {
+      JAXBContext jaxbContext = JAXBContext.newInstance(classes.toArray(new Class[classes.size()]));
+      Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+      SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+      Schema schema =
+          factory.newSchema(new URL("http://geode.apache.org/schema/cache/cache-1.0.xsd"));
+      jaxbMarshaller.setSchema(schema);
+
+      jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+      jaxbMarshaller.marshal(config, sw);
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+    return sw.toString();
+  }
+
+  CacheConfig unMarshall(String xml, Class... additionalClass) {
+    List<Class> classes = new ArrayList<>(Arrays.asList(additionalClass));
+    classes.add(0, CacheConfig.class);
+    try {
+      JAXBContext jaxbContext = JAXBContext.newInstance(classes.toArray(new Class[classes.size()]));
+      Unmarshaller jaxUnmarshaller = jaxbContext.createUnmarshaller();
+      return (CacheConfig) jaxUnmarshaller.unmarshal(new StringReader(xml));
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
   }
 
 }
