@@ -291,6 +291,12 @@ org/apache/geode/internal/cache/RemoteOperationException,true,-59598896567920490
 org/apache/geode/internal/cache/SearchLoadAndWriteProcessor$TryAgainException,false
 org/apache/geode/internal/cache/TXCommitMessage$CommitExceptionCollectingException,true,589384721273797822,cacheExceptions:java/util/Set,fatalExceptions:java/util/Map,id:org/apache/geode/internal/cache/TXId,regionExceptions:java/util/Map
 org/apache/geode/internal/cache/TXCommitMessage$RegionCommitList,true,-8910813949027683641
+org/apache/geode/internal/cache/configuration/EnumActionDestroyOverflow,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/EnumReadableWritable,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/RegionAttributesDataPolicy,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/RegionAttributesIndexUpdateType,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/RegionAttributesMirrorType,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/RegionAttributesScope,false,value:java/lang/String
 org/apache/geode/internal/cache/control/InternalResourceManager$ResourceType,false,id:int
 org/apache/geode/internal/cache/control/MemoryThresholds$MemoryState,false
 org/apache/geode/internal/cache/control/PartitionRebalanceDetailsImpl,true,5880667005758250156,bucketCreateBytes:long,bucketCreateTime:long,bucketCreatesCompleted:int,bucketRemoveBytes:long,bucketRemoveTime:long,bucketRemovesCompleted:int,bucketTransferBytes:long,bucketTransferTime:long,bucketTransfersCompleted:int,partitionMemberDetailsAfter:java/util/Set,partitionMemberDetailsBefore:java/util/Set,primaryTransferTime:long,primaryTransfersCompleted:int,time:long

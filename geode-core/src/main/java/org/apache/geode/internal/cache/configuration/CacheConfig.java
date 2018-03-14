@@ -292,7 +292,7 @@ public class CacheConfig {
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionAttributesType> regionAttributes;
   @XmlElement(name = "jndi-bindings", namespace = "http://geode.apache.org/schema/cache")
-  protected List<JndiBindingsType> jndiBindings;
+  protected JndiBindingsType jndiBindings;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionConfig> region;
   @XmlElement(name = "function-service", namespace = "http://geode.apache.org/schema/cache")
@@ -677,12 +677,13 @@ public class CacheConfig {
    *
    *
    */
-  public List<JndiBindingsType> getJndiBindings() {
+  public List<JndiBindingsType.JndiBinding> getJndiBindings() {
     if (jndiBindings == null) {
-      jndiBindings = new ArrayList<JndiBindingsType>();
+      jndiBindings = new JndiBindingsType();
     }
-    return this.jndiBindings;
+    return jndiBindings.getJndiBinding();
   }
+
 
   /**
    * Gets the value of the region property.

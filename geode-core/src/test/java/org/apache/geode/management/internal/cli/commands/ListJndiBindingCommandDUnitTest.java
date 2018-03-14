@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Properties;
 
 import org.junit.BeforeClass;
@@ -24,8 +26,12 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
+import org.apache.geode.management.internal.cli.json.GfJsonArray;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
@@ -53,17 +59,24 @@ public class ListJndiBindingCommandDUnitTest {
   }
 
   @Test
-  public void listJndiBinding() {
+  public void listJndiBinding() throws GfJsonException {
     gfsh.executeAndAssertThat(
         "create jndi-binding --name=jndi1 --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
-    gfsh.executeAndAssertThat("list jndi-binding").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Name", "java:jndi1", "java:UserTransaction",
-            "java:TransactionManager")
-        .tableHasColumnWithExactValuesInAnyOrder("Class",
-            "org.apache.geode.internal.datasource.GemFireBasicDataSource",
-            "org.apache.geode.internal.jta.UserTransactionImpl",
-            "org.apache.geode.internal.jta.TransactionManagerImpl");
+    CommandResultAssert commandResultAssert =
+        gfsh.executeAndAssertThat("list jndi-binding").statusIsSuccess();
+
+    // cluster configuration table
+    commandResultAssert.tableHasRowWithValues("Group Name", "JNDI Name", "JDBC Driver Class",
+        "cluster", "jndi1", "org.apache.derby.jdbc.EmbeddedDriver")
+        .tableHasRowCount("Group Name", 1);
+
+    // member table
+    GfJsonObject memberTableContent = commandResultAssert.getCommandResult().getTableContent(0, 1);
+    GfJsonArray jndi_names = memberTableContent.getJSONArray("JNDI Name");
+    assertThat(jndi_names.size()).isEqualTo(3);
+    assertThat(GfJsonArray.toStringArray(jndi_names)).containsExactlyInAnyOrder("java:jndi1",
+        "java:UserTransaction", "java:TransactionManager");
   }
 }
