@@ -100,10 +100,11 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void processReturnsLookupFailureWhenKeyFoundWithNoValue() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, false, true);
-    Result response = operationHandler.process(serializationService, getRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result<RegionAPI.GetResponse> response = operationHandler.process(serializationService,
+        getRequest, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     Assert.assertTrue(response instanceof Success);
+    Assert.assertNull(serializationService.decode(response.getMessage().getResult()));
   }
 
   @Test(expected = DecodingException.class)

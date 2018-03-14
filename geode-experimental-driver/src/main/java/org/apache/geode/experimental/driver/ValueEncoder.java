@@ -14,7 +14,10 @@
  */
 package org.apache.geode.experimental.driver;
 
+import java.util.Objects;
+
 import com.google.protobuf.ByteString;
+import com.google.protobuf.NullValue;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
@@ -35,7 +38,9 @@ class ValueEncoder {
    */
   static BasicTypes.EncodedValue encodeValue(Object unencodedValue) {
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
-    if (Integer.class.equals(unencodedValue.getClass())) {
+    if (Objects.isNull(unencodedValue)) {
+      builder.setNullResult(NullValue.NULL_VALUE);
+    } else if (Integer.class.equals(unencodedValue.getClass())) {
       builder.setIntResult((Integer) unencodedValue);
     } else if (Long.class.equals(unencodedValue.getClass())) {
       builder.setLongResult((Long) unencodedValue);
@@ -91,7 +96,7 @@ class ValueEncoder {
         return encodedValue.getStringResult();
       case JSONOBJECTRESULT:
         return JSONWrapper.wrapJSON(encodedValue.getJsonObjectResult());
-      case VALUE_NOT_SET:
+      case NULLRESULT:
         return null;
       default:
         throw new IllegalStateException(
