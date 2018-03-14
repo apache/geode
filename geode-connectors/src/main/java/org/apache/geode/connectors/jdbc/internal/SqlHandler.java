@@ -17,7 +17,6 @@ package org.apache.geode.connectors.jdbc.internal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,11 +28,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.PdxInstanceFactory;
-import org.apache.geode.pdx.internal.PdxField;
-import org.apache.geode.pdx.internal.PdxType;
 
 @Experimental
 public class SqlHandler {
@@ -73,7 +68,10 @@ public class SqlHandler {
           getPreparedStatement(connection, columnList, tableName, Operation.GET)) {
         try (ResultSet resultSet = executeReadQuery(statement, columnList)) {
           String keyColumnName = getKeyColumnName(connection, tableName);
-          result = createPdxInstance(resultSet, region, regionMapping, keyColumnName);
+          InternalCache cache = (InternalCache) region.getRegionService();
+          SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
+              new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, keyColumnName);
+          result = sqlToPdxInstanceCreator.create();
         }
       }
     }
@@ -110,168 +108,6 @@ public class SqlHandler {
     return this.tableKeyColumnManager.getKeyColumnName(connection, tableName);
   }
 
-  private <K, V> PdxInstanceFactory getPdxInstanceFactory(Region<K, V> region,
-      RegionMapping regionMapping) {
-    InternalCache cache = (InternalCache) region.getRegionService();
-    String valueClassName = regionMapping.getPdxClassName();
-    PdxInstanceFactory factory;
-    if (valueClassName != null) {
-      factory = cache.createPdxInstanceFactory(valueClassName);
-    } else {
-      factory = cache.createPdxInstanceFactory("no class", false);
-    }
-    return factory;
-  }
-
-  <K, V> PdxInstance createPdxInstance(ResultSet resultSet, Region<K, V> region,
-      RegionMapping regionMapping, String keyColumnName) throws SQLException {
-    PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
-    PdxInstance pdxInstance = null;
-    if (resultSet.next()) {
-      ResultSetMetaData metaData = resultSet.getMetaData();
-      int ColumnsNumber = metaData.getColumnCount();
-      for (int i = 1; i <= ColumnsNumber; i++) {
-        String columnName = metaData.getColumnName(i);
-        if (regionMapping.isPrimaryKeyInValue() || !keyColumnName.equalsIgnoreCase(columnName)) {
-          String fieldName = mapColumnNameToFieldName(columnName, regionMapping);
-          FieldType fieldType = getFieldType(region, regionMapping.getPdxClassName(), fieldName);
-          writeField(factory, resultSet, i, fieldName, fieldType);
-        }
-      }
-      if (resultSet.next()) {
-        throw new JdbcConnectorException(
-            "Multiple rows returned for query: " + resultSet.getStatement().toString());
-      }
-      pdxInstance = factory.create();
-    }
-    return pdxInstance;
-  }
-
-  /**
-   * @throws SQLException if the column value get fails
-   */
-  private void writeField(PdxInstanceFactory factory, ResultSet resultSet, int columnIndex,
-      String fieldName, FieldType fieldType) throws SQLException {
-    switch (fieldType) {
-      case STRING:
-        factory.writeString(fieldName, resultSet.getString(columnIndex));
-        break;
-      case CHAR:
-        char charValue = 0;
-        String columnValue = resultSet.getString(columnIndex);
-        if (columnValue != null && columnValue.length() > 0) {
-          charValue = columnValue.toCharArray()[0];
-        }
-        factory.writeChar(fieldName, charValue);
-        break;
-      case SHORT:
-        factory.writeShort(fieldName, resultSet.getShort(columnIndex));
-        break;
-      case INT:
-        factory.writeInt(fieldName, resultSet.getInt(columnIndex));
-        break;
-      case LONG:
-        factory.writeLong(fieldName, resultSet.getLong(columnIndex));
-        break;
-      case FLOAT:
-        factory.writeFloat(fieldName, resultSet.getFloat(columnIndex));
-        break;
-      case DOUBLE:
-        factory.writeDouble(fieldName, resultSet.getDouble(columnIndex));
-        break;
-      case BYTE:
-        factory.writeByte(fieldName, resultSet.getByte(columnIndex));
-        break;
-      case BOOLEAN:
-        factory.writeBoolean(fieldName, resultSet.getBoolean(columnIndex));
-        break;
-      case DATE:
-        java.sql.Timestamp sqlDate = resultSet.getTimestamp(columnIndex);
-        java.util.Date pdxDate = null;
-        if (sqlDate != null) {
-          pdxDate = new java.util.Date(sqlDate.getTime());
-        }
-        factory.writeDate(fieldName, pdxDate);
-        break;
-      case BYTE_ARRAY:
-        factory.writeByteArray(fieldName, resultSet.getBytes(columnIndex));
-        break;
-      case BOOLEAN_ARRAY:
-        factory.writeBooleanArray(fieldName,
-            convertJdbcObjectToJavaType(boolean[].class, resultSet.getObject(columnIndex)));
-        break;
-      case CHAR_ARRAY:
-        factory.writeCharArray(fieldName,
-            convertJdbcObjectToJavaType(char[].class, resultSet.getObject(columnIndex)));
-        break;
-      case SHORT_ARRAY:
-        factory.writeShortArray(fieldName,
-            convertJdbcObjectToJavaType(short[].class, resultSet.getObject(columnIndex)));
-        break;
-      case INT_ARRAY:
-        factory.writeIntArray(fieldName,
-            convertJdbcObjectToJavaType(int[].class, resultSet.getObject(columnIndex)));
-        break;
-      case LONG_ARRAY:
-        factory.writeLongArray(fieldName,
-            convertJdbcObjectToJavaType(long[].class, resultSet.getObject(columnIndex)));
-        break;
-      case FLOAT_ARRAY:
-        factory.writeFloatArray(fieldName,
-            convertJdbcObjectToJavaType(float[].class, resultSet.getObject(columnIndex)));
-        break;
-      case DOUBLE_ARRAY:
-        factory.writeDoubleArray(fieldName,
-            convertJdbcObjectToJavaType(double[].class, resultSet.getObject(columnIndex)));
-        break;
-      case STRING_ARRAY:
-        factory.writeStringArray(fieldName,
-            convertJdbcObjectToJavaType(String[].class, resultSet.getObject(columnIndex)));
-        break;
-      case OBJECT_ARRAY:
-        factory.writeObjectArray(fieldName,
-            convertJdbcObjectToJavaType(Object[].class, resultSet.getObject(columnIndex)));
-        break;
-      case ARRAY_OF_BYTE_ARRAYS:
-        factory.writeArrayOfByteArrays(fieldName,
-            convertJdbcObjectToJavaType(byte[][].class, resultSet.getObject(columnIndex)));
-        break;
-      case OBJECT:
-        factory.writeObject(fieldName, resultSet.getObject(columnIndex));
-        break;
-    }
-  }
-
-  private <T> T convertJdbcObjectToJavaType(Class<T> javaType, Object jdbcObject) {
-    try {
-      return javaType.cast(jdbcObject);
-    } catch (ClassCastException classCastException) {
-      throw JdbcConnectorException.createException("Could not convert "
-          + jdbcObject.getClass().getTypeName() + " to " + javaType.getTypeName(),
-          classCastException);
-    }
-  }
-
-  private <K, V> FieldType getFieldType(Region<K, V> region, String pdxClassName,
-      String fieldName) {
-    if (pdxClassName == null) {
-      return FieldType.OBJECT;
-    }
-
-    InternalCache cache = (InternalCache) region.getRegionService();
-    PdxType pdxType = cache.getPdxRegistry().getPdxTypeForField(fieldName, pdxClassName);
-    if (pdxType != null) {
-      PdxField pdxField = pdxType.getPdxField(fieldName);
-      if (pdxField != null) {
-        return pdxField.getFieldType();
-      }
-    }
-
-    throw new JdbcConnectorException("Could not find PdxType for field " + fieldName
-        + ". Add class " + pdxClassName + " with " + fieldName + " to pdx registry.");
-
-  }
-
   private void setValuesInStatement(PreparedStatement statement, List<ColumnValue> columnList)
       throws SQLException {
     int index = 0;
@@ -283,10 +119,6 @@ public class SqlHandler {
       }
       statement.setObject(index, value);
     }
-  }
-
-  private String mapColumnNameToFieldName(String columnName, RegionMapping regionMapping) {
-    return regionMapping.getFieldNameForColumn(columnName);
   }
 
   public <K, V> void write(Region<K, V> region, Operation operation, K key, PdxInstance value)
@@ -389,4 +221,5 @@ public class SqlHandler {
     }
     return result;
   }
+
 }
