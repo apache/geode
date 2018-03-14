@@ -234,10 +234,14 @@ public class JdbcDUnitTest implements Serializable {
       region.put(key, pdxEmployee1);
       region.invalidate(key);
 
+      JdbcWriter writer = (JdbcWriter) region.getAttributes().getCacheWriter();
+      long writeCallsCompletedBeforeGet = writer.getTotalEvents();
+
       PdxInstance result = (PdxInstance) region.get(key);
       assertThat(result.getField("id")).isEqualTo(pdxEmployee1.getField("id"));
       assertThat(result.getField("name")).isEqualTo(pdxEmployee1.getField("name"));
       assertThat(result.getField("age")).isEqualTo(pdxEmployee1.getField("age"));
+      assertThat(writer.getTotalEvents()).isEqualTo(writeCallsCompletedBeforeGet);
     });
   }
 
