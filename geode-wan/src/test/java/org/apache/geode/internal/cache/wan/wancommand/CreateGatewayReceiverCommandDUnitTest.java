@@ -18,11 +18,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
-import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMemberIdCallable;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMember;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyGatewayReceiverProfile;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyGatewayReceiverServerLocations;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyReceiverCreationWithAttributes;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
+import static org.apache.geode.test.junit.rules.VMProvider.invokeInEveryMember;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.InetAddress;
@@ -45,18 +46,24 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.VMProvider;
 
 /**
  * DUnit tests for 'create gateway-receiver' command.
  */
 @Category({DistributedTest.class, WanTest.class})
 public class CreateGatewayReceiverCommandDUnitTest {
+
+  private static final String SERVER_1 = "server-1";
+  private static final String SERVER_2 = "server-2";
+  private static final String SERVER_3 = "server-3";
+
   private MemberVM locatorSite1;
-  private MemberVM server1, server2, server3;
+  private MemberVM server1;
+  private MemberVM server2;
+  private MemberVM server3;
 
   @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(4);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -65,24 +72,10 @@ public class CreateGatewayReceiverCommandDUnitTest {
   public void before() throws Exception {
     Properties props = new Properties();
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
-    locatorSite1 = clusterStartupRule.startLocatorVM(1, props);
+    locatorSite1 = clusterStartupRule.startLocatorVM(0, props);
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locatorSite1);
-  }
-
-  private String getHostName() throws Exception {
-    return SocketCreator.getLocalHost().getCanonicalHostName();
-  }
-
-  private String getBindAddress() throws Exception {
-    return InetAddress.getLocalHost().getHostAddress();
-  }
-
-  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
-    Properties props = new Properties();
-    props.setProperty(GROUPS, groups);
-    return clusterStartupRule.startServerVM(index, props, locPort);
   }
 
   /**
@@ -92,9 +85,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverErrorWhenGatewayReceiverAlreadyExists() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = clusterStartupRule.startServerVM(3, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, locator1Port);
 
     // Initial Creation should succeed
     String command =
@@ -104,20 +97,20 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START, 10000, 11000,
           "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2, server3);
 
     // This should fail as there's already a gateway receiver created on the member.
     gfsh.executeAndAssertThat(command).statusIsError()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithExactValuesInAnyOrder("Status",
             "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.",
             "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.",
@@ -130,25 +123,25 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverWithDefault() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = clusterStartupRule.startServerVM(3, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, locator1Port);
 
     // Default attributes.
     String command = CliStrings.CREATE_GATEWAYRECEIVER;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
     // If neither bind-address or hostname-for-senders is set, profile
     // uses AcceptorImpl.getExternalAddress() to derive canonical hostname
     // when the Profile (and ServerLocation) are created
     String hostname = getHostName();
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyGatewayReceiverProfile(hostname);
       verifyGatewayReceiverServerLocations(locator1Port, hostname);
       verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
@@ -165,9 +158,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiver() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = clusterStartupRule.startServerVM(3, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -177,13 +170,13 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2, server3);
@@ -195,9 +188,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverWithHostnameForSenders() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = clusterStartupRule.startServerVM(3, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, locator1Port);
 
     String hostnameForSenders = getHostName();
     String command =
@@ -208,13 +201,13 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       // verify hostname-for-senders is used when configured
       verifyGatewayReceiverProfile(hostnameForSenders);
       verifyGatewayReceiverServerLocations(locator1Port, hostnameForSenders);
@@ -236,19 +229,19 @@ public class CreateGatewayReceiverCommandDUnitTest {
     props.setProperty(GROUPS, receiverGroup);
     props.setProperty(BIND_ADDRESS, expectedBindAddress);
 
-    server1 = clusterStartupRule.startServerVM(3, props, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, props, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, props, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, props, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, props, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, props, locator1Port);
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       // verify bind-address used when provided as a gemfire property
       verifyGatewayReceiverProfile(expectedBindAddress);
       verifyGatewayReceiverServerLocations(locator1Port, expectedBindAddress);
@@ -273,19 +266,19 @@ public class CreateGatewayReceiverCommandDUnitTest {
     props.setProperty(GROUPS, receiverGroup);
     props.setProperty(SERVER_BIND_ADDRESS, expectedBindAddress);
 
-    server1 = clusterStartupRule.startServerVM(3, props, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, props, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, props, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, props, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, props, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, props, locator1Port);
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       // verify server-bind-address used if provided as a gemfire property
       verifyGatewayReceiverProfile(expectedBindAddress);
       verifyGatewayReceiverServerLocations(locator1Port, expectedBindAddress);
@@ -313,19 +306,19 @@ public class CreateGatewayReceiverCommandDUnitTest {
     props.setProperty(BIND_ADDRESS, extraBindAddress);
     props.setProperty(SERVER_BIND_ADDRESS, expectedBindAddress);
 
-    server1 = clusterStartupRule.startServerVM(3, props, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, props, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, props, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, props, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, props, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, props, locator1Port);
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       // verify server-bind-address used if provided as a gemfire property
       verifyGatewayReceiverProfile(expectedBindAddress);
       verifyGatewayReceiverServerLocations(locator1Port, expectedBindAddress);
@@ -352,9 +345,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
     props.setProperty(GROUPS, receiverGroup);
     props.setProperty(SERVER_BIND_ADDRESS, serverBindAddress);
 
-    server1 = clusterStartupRule.startServerVM(3, props, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, props, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, props, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, props, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, props, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, props, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -365,13 +358,13 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --" + GROUP + "="
             + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       // verify server-bind-address takes precedence over hostname-for-senders
       verifyGatewayReceiverProfile(hostnameForSenders);
       verifyGatewayReceiverServerLocations(locator1Port, hostnameForSenders);
@@ -395,9 +388,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
     props.setProperty(GROUPS, receiverGroup);
     props.setProperty(BIND_ADDRESS, expectedBindAddress);
 
-    server1 = clusterStartupRule.startServerVM(3, props, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, props, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, props, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, props, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, props, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, props, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -408,13 +401,13 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --" + GROUP + "="
             + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyGatewayReceiverProfile(hostnameForSenders);
       verifyGatewayReceiverServerLocations(locator1Port, hostnameForSenders);
       verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000, null,
@@ -428,9 +421,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverWithGatewayTransportFilter() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = clusterStartupRule.startServerVM(3, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -442,15 +435,15 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER
             + "=org.apache.geode.cache30.MyGatewayTransportFilter1";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
     List<String> transportFilters = new ArrayList<>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000, 512000,
           transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2, server3);
@@ -462,9 +455,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverWithMultipleGatewayTransportFilters() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = clusterStartupRule.startServerVM(3, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, locator1Port);
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --"
         + CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS + "=localhost" + " --"
@@ -475,17 +468,17 @@ public class CreateGatewayReceiverCommandDUnitTest {
         + CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER
         + "=org.apache.geode.cache30.MyGatewayTransportFilter1,org.apache.geode.cache30.MyGatewayTransportFilter2";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
     List<String> transportFilters = new ArrayList<>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter2");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START, 10000, 11000,
           "localhost", 100000, 512000, transportFilters,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
@@ -498,10 +491,11 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverOnSingleMember() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = clusterStartupRule.startServerVM(3, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, locator1Port);
-    final DistributedMember server1Member = server1.invoke(getMemberIdCallable());
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, locator1Port);
+
+    DistributedMember server1Member = getMember(server1.getVM());
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -512,16 +506,16 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
             + CliStrings.MEMBER + "=" + server1Member.getId();
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1);
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server2, server3);
@@ -533,11 +527,12 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverOnMultipleMembers() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = clusterStartupRule.startServerVM(3, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, locator1Port);
-    final DistributedMember server1Member = server1.invoke(getMemberIdCallable());
-    final DistributedMember server2Member = server2.invoke(getMemberIdCallable());
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    server3 = clusterStartupRule.startServerVM(3, locator1Port);
+
+    DistributedMember server1Member = getMember(server1.getVM());
+    DistributedMember server2Member = getMember(server2.getVM());
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -548,17 +543,17 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
             + CliStrings.MEMBER + "=" + server1Member.getId() + "," + server2Member.getId();
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2);
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server3);
@@ -571,9 +566,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   public void testCreateGatewayReceiverOnGroup() throws Exception {
     String groups = "receiverGroup1";
     Integer locator1Port = locatorSite1.getPort();
-    server1 = startServerWithGroups(3, groups, locator1Port);
-    server2 = startServerWithGroups(4, groups, locator1Port);
-    server3 = startServerWithGroups(5, groups, locator1Port);
+    server1 = startServerWithGroups(1, groups, locator1Port);
+    server2 = startServerWithGroups(2, groups, locator1Port);
+    server3 = startServerWithGroups(3, groups, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -584,13 +579,13 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --" + GROUP
             + "=receiverGroup1";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2, server3);
@@ -605,9 +600,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
     String group1 = "receiverGroup1";
     String group2 = "receiverGroup2";
     Integer locator1Port = locatorSite1.getPort();
-    server1 = startServerWithGroups(3, group1, locator1Port);
-    server2 = startServerWithGroups(4, group1, locator1Port);
-    server3 = startServerWithGroups(5, group2, locator1Port);
+    server1 = startServerWithGroups(1, group1, locator1Port);
+    server2 = startServerWithGroups(2, group1, locator1Port);
+    server3 = startServerWithGroups(3, group2, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -618,17 +613,17 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --" + GROUP
             + "=receiverGroup1";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2);
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server3);
@@ -640,9 +635,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverOnMultipleGroups() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = startServerWithGroups(3, "receiverGroup1", locator1Port);
-    server2 = startServerWithGroups(4, "receiverGroup1", locator1Port);
-    server3 = startServerWithGroups(5, "receiverGroup2", locator1Port);
+    server1 = startServerWithGroups(1, "receiverGroup1", locator1Port);
+    server2 = startServerWithGroups(2, "receiverGroup1", locator1Port);
+    server3 = startServerWithGroups(3, "receiverGroup2", locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -653,15 +648,29 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --" + GROUP
             + "=receiverGroup1,receiverGroup2";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithValuesContaining("Status",
-            "GatewayReceiver created on member \"server-3\"",
-            "GatewayReceiver created on member \"server-4\"",
-            "GatewayReceiver created on member \"server-5\"");
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"",
+            "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    VMProvider.invokeInEveryMember(() -> {
+    invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2, server3);
+  }
+
+  private String getHostName() throws Exception {
+    return SocketCreator.getLocalHost().getCanonicalHostName();
+  }
+
+  private String getBindAddress() throws Exception {
+    return InetAddress.getLocalHost().getHostAddress();
+  }
+
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(GROUPS, groups);
+    return clusterStartupRule.startServerVM(index, props, locPort);
   }
 }
