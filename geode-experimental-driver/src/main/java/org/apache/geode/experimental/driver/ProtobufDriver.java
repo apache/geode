@@ -16,6 +16,7 @@ package org.apache.geode.experimental.driver;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.security.GeneralSecurityException;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -47,11 +48,13 @@ public class ProtobufDriver implements Driver {
    *        GemFire servers that have Protobuf enabled.
    * @param username User identity as a string; may be <code>null</code>.
    * @param password User proof as a string; may be <code>null</code>.
+   * @param keyStorePath Path to SSL key store; SSL is <em>not</em> used if <code>null</code>.
+   * @param trustStorePath Path to SSL trust store; SSL is <em>not</em> used if <code>null</code>.
    * @throws IOException
    */
-  ProtobufDriver(Set<InetSocketAddress> locators, String username, String password)
-      throws IOException {
-    this.channel = new ProtobufChannel(locators, username, password);
+  ProtobufDriver(Set<InetSocketAddress> locators, String username, String password,
+      String keyStorePath, String trustStorePath) throws GeneralSecurityException, IOException {
+    this.channel = new ProtobufChannel(locators, username, password, keyStorePath, trustStorePath);
   }
 
   @Override
