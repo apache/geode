@@ -58,10 +58,6 @@ public class GetRequestOperationHandler
       }
       Object resultValue = region.get(decodedKey);
 
-      if (resultValue == null) {
-        return Success.of(RegionAPI.GetResponse.newBuilder().build());
-      }
-
       BasicTypes.EncodedValue encodedValue = serializationService.encode(resultValue);
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } finally {
