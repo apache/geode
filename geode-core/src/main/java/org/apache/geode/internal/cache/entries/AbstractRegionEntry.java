@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache.entries;
 
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.*;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -49,14 +50,12 @@ import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FilterProfile;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.ImageState;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
-import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -868,27 +867,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       region.recordEvent(event);
       // don't do index maintenance on a destroy if the value in the
       // RegionEntry (the old value) is invalid
-      if (!region.isProxy() && !isInvalid()) {
-        IndexManager indexManager = region.getIndexManager();
-        if (indexManager != null) {
-          try {
-            if (isValueNull()) {
-              @Released
-              Object value = getValueOffHeapOrDiskWithoutFaultIn(region);
-              try {
-                Object preparedValue = prepareValueForCache(region, value, false);
-                _setValue(preparedValue);
-                releaseOffHeapRefIfRegionBeingClosedOrDestroyed(region, preparedValue);
-              } finally {
-                OffHeapHelper.release(value);
-              }
-            }
-            indexManager.updateIndexes(this, IndexManager.REMOVE_ENTRY, IndexProtocol.OTHER_OP);
-          } catch (QueryException e) {
-            throw new IndexMaintenanceException(e);
-          }
-        }
-      }
+      updateIndexOnDestroyOperation(region);
 
       boolean removeEntry = false;
       VersionTag v = event.getVersionTag();
@@ -928,6 +907,30 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       return true;
     } else {
       return false;
+    }
+  }
+
+  protected void updateIndexOnDestroyOperation(InternalRegion region) {
+    if (!isTombstone() && !region.isProxy() && !isInvalid()) {
+      IndexManager indexManager = region.getIndexManager();
+      if (indexManager != null) {
+        try {
+          if (isValueNull()) {
+            @Released
+            Object value = getValueOffHeapOrDiskWithoutFaultIn(region);
+            try {
+              Object preparedValue = prepareValueForCache(region, value, false);
+              _setValue(preparedValue);
+              releaseOffHeapRefIfRegionBeingClosedOrDestroyed(region, preparedValue);
+            } finally {
+              OffHeapHelper.release(value);
+            }
+          }
+          indexManager.updateIndexes(this, IndexManager.REMOVE_ENTRY, IndexProtocol.OTHER_OP);
+        } catch (QueryException e) {
+          throw new IndexMaintenanceException(e);
+        }
+      }
     }
   }
 

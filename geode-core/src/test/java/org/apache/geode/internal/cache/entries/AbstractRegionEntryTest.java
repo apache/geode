@@ -16,7 +16,11 @@ package org.apache.geode.internal.cache.entries;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
@@ -29,13 +33,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
-import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
@@ -65,6 +71,19 @@ public class AbstractRegionEntryTest {
     Assert.assertEquals(Token.REMOVED_PHASE2, re.getValueField());
   }
 
+
+  @Test
+  public void whenRegionEntryIsTombstoneThenIndexShouldNotBeUpdated() throws QueryException {
+    InternalRegion region = mock(InternalRegion.class);
+    IndexManager indexManager = mock(IndexManager.class);
+    when(region.getIndexManager()).thenReturn(indexManager);
+    AbstractRegionEntry abstractRegionEntry = mock(AbstractRegionEntry.class);
+    when(abstractRegionEntry.isTombstone()).thenReturn(true);
+    abstractRegionEntry.updateIndexOnDestroyOperation(region);
+    verify(indexManager, never()).updateIndexes(any(AbstractRegionEntry.class),
+        eq(IndexManager.REMOVE_ENTRY), eq(IndexProtocol.OTHER_OP));
+
+  }
 
 
   @Test
