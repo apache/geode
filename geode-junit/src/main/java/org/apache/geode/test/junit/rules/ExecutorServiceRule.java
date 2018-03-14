@@ -34,7 +34,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  *
  * <p>
  * By default, the {@code ExecutorService} is single-threaded. You can specify the thread count by
- * using {@link Builder#threadCount(int)} or {@link ExecutorServiceRule(int)}.
+ * using {@link Builder#threadCount(int)} or {@link #ExecutorServiceRule(int)}.
  *
  * <p>
  * Example with default configuration (single-threaded and does not assert that tasks are done):
@@ -73,7 +73,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * private CountDownLatch hangLatch = new CountDownLatch(1);
  *
  * {@literal @}Rule
- * public AsynchronousRule asynchronousRule = AsynchronousRule.builder().threadCount(10).awaitTermination(10, MILLISECONDS).build();
+ * public ExecutorServiceRule asynchronousRule = ExecutorServiceRule.builder().threadCount(10).awaitTermination(10, MILLISECONDS).build();
  *
  * {@literal @}Test
  * public void doTest() throws Exception {
@@ -110,13 +110,13 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   }
 
   protected ExecutorServiceRule(Builder builder) {
-    this.threadCount = builder.threadCount;
-    this.enableAwaitTermination = builder.enableAwaitTermination;
-    this.awaitTerminationTimeout = builder.awaitTerminationTimeout;
-    this.awaitTerminationTimeUnit = builder.awaitTerminationTimeUnit;
-    this.awaitTerminationBeforeShutdown = builder.awaitTerminationBeforeShutdown;
-    this.useShutdown = builder.useShutdown;
-    this.useShutdownNow = builder.useShutdownNow;
+    threadCount = builder.threadCount;
+    enableAwaitTermination = builder.enableAwaitTermination;
+    awaitTerminationTimeout = builder.awaitTerminationTimeout;
+    awaitTerminationTimeUnit = builder.awaitTerminationTimeUnit;
+    awaitTerminationBeforeShutdown = builder.awaitTerminationBeforeShutdown;
+    useShutdown = builder.useShutdown;
+    useShutdownNow = builder.useShutdownNow;
   }
 
   /**
@@ -124,13 +124,13 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * {@code ExecutorService.shutdownNow()} during {@code tearDown}.
    */
   public ExecutorServiceRule() {
-    this.threadCount = 1;
-    this.enableAwaitTermination = false;
-    this.awaitTerminationTimeout = 0;
-    this.awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
-    this.awaitTerminationBeforeShutdown = false;
-    this.useShutdown = false;
-    this.useShutdownNow = true;
+    threadCount = 1;
+    enableAwaitTermination = false;
+    awaitTerminationTimeout = 0;
+    awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
+    awaitTerminationBeforeShutdown = false;
+    useShutdown = false;
+    useShutdownNow = true;
   }
 
   /**
@@ -139,12 +139,12 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    */
   public ExecutorServiceRule(int threadCount) {
     this.threadCount = threadCount;
-    this.enableAwaitTermination = false;
-    this.awaitTerminationTimeout = 0;
-    this.awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
-    this.awaitTerminationBeforeShutdown = false;
-    this.useShutdown = false;
-    this.useShutdownNow = true;
+    enableAwaitTermination = false;
+    awaitTerminationTimeout = 0;
+    awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
+    awaitTerminationBeforeShutdown = false;
+    useShutdown = false;
+    useShutdownNow = true;
   }
 
   @Override
@@ -301,9 +301,9 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      * @param unit the time unit of the timeout argument
      */
     public Builder awaitTermination(long timeout, TimeUnit unit) {
-      this.enableAwaitTermination = true;
-      this.awaitTerminationTimeout = timeout;
-      this.awaitTerminationTimeUnit = unit;
+      enableAwaitTermination = true;
+      awaitTerminationTimeout = timeout;
+      awaitTerminationTimeUnit = unit;
       return this;
     }
 
@@ -311,8 +311,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      * Enables invocation of {@code shutdown} during {@code tearDown}. Default is disabled.
      */
     public Builder useShutdown() {
-      this.useShutdown = true;
-      this.useShutdownNow = false;
+      useShutdown = true;
+      useShutdownNow = false;
       return this;
     }
 
@@ -321,8 +321,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      *
      */
     public Builder useShutdownNow() {
-      this.useShutdown = false;
-      this.useShutdownNow = true;
+      useShutdown = false;
+      useShutdownNow = true;
       return this;
     }
 
@@ -331,7 +331,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      * {@code shutdownNow}.
      */
     public Builder awaitTerminationBeforeShutdown() {
-      this.awaitTerminationBeforeShutdown = true;
+      awaitTerminationBeforeShutdown = true;
       return this;
     }
 
@@ -340,7 +340,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      * {@code shutdownNow}.
      */
     public Builder awaitTerminationAfterShutdown() {
-      this.awaitTerminationBeforeShutdown = false;
+      awaitTerminationBeforeShutdown = false;
       return this;
     }
 
