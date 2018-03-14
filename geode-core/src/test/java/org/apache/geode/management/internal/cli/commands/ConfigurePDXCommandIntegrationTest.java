@@ -42,16 +42,21 @@ public class ConfigurePDXCommandIntegrationTest {
   }
 
   @Test
-  @Ignore("See https://issues.apache.org/jira/browse/GEODE-4794")
-  public void commandShouldSucceedWhenUsingDefaults() {
-    gfsh.executeAndAssertThat(BASE_COMMAND_STRING).statusIsSuccess().hasNoFailToPersistError();
-  }
-
-  @Test
   public void commandShouldFailWhenNotConnected() throws Exception {
     gfsh.disconnect();
     gfsh.executeAndAssertThat(BASE_COMMAND_STRING).statusIsError().containsOutput("Command",
         "was found but is not currently available");
+  }
+
+  @Test
+  @Ignore("See https://issues.apache.org/jira/browse/GEODE-4794")
+  public void commandShouldSucceedWhenUsingDefaults() {
+    gfsh.executeAndAssertThat(BASE_COMMAND_STRING).statusIsSuccess().hasNoFailToPersistError();
+
+    String sharedConfigXml = locator.getLocator().getSharedConfiguration()
+        .getConfiguration("cluster").getCacheXmlContent();
+    assertThat(sharedConfigXml).contains(
+        "<pdx ignore-unread-fields=\"false\" persistent=\"false\" read-serialized=\"false\"></pdx>");
   }
 
   @Test

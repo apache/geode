@@ -96,17 +96,20 @@ public class ConfigurePDXCommandTest {
     doThrow(new RuntimeException("Can't create CacheCreation.")).when(command)
         .getCacheCreation(anyBoolean());
     gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING).statusIsError()
-        .containsOutput("Could not process command due to error. Can't create CacheCreation.");
+        .containsOutput("Could not process command due to error.")
+        .containsOutput("Can't create CacheCreation.");
     doReturn(cacheCreation).when(command).getCacheCreation(anyBoolean());
 
     doThrow(new RuntimeException("Can't find members.")).when(command).getAllNormalMembers();
     gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING).statusIsError()
-        .containsOutput("Could not process command due to error. Can't find members.");
+        .containsOutput("Could not process command due to error.")
+        .containsOutput("Can't find members.");
     doReturn(Collections.emptySet()).when(command).getAllNormalMembers();
 
     doThrow(new RuntimeException("Can't create XmlEntity.")).when(command).createXmlEntity(any());
     gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING).statusIsError()
-        .containsOutput("Could not process command due to error. Can't create XmlEntity.");
+        .containsOutput("Could not process command due to error.")
+        .containsOutput("Can't create XmlEntity.");
     doReturn(xmlEntity).when(command).createXmlEntity(any());
 
     doThrow(new RuntimeException("Can't create ReflectionBasedAutoSerializer.")).when(command)
@@ -114,13 +117,13 @@ public class ConfigurePDXCommandTest {
     gfshParserRule
         .executeAndAssertThat(command,
             BASE_COMMAND_STRING + "--auto-serializable-classes=" + new String[] {})
-        .statusIsError().containsOutput(
-            "Could not process command due to error. Can't create ReflectionBasedAutoSerializer.");
+        .statusIsError().containsOutput("Could not process command due to error.")
+        .containsOutput("Can't create ReflectionBasedAutoSerializer.");
     gfshParserRule
         .executeAndAssertThat(command,
             BASE_COMMAND_STRING + "--portable-auto-serializable-classes=" + new String[] {})
-        .statusIsError().containsOutput(
-            "Could not process command due to error. Can't create ReflectionBasedAutoSerializer.");
+        .statusIsError().containsOutput("Could not process command due to error.")
+        .containsOutput("Can't create ReflectionBasedAutoSerializer.");
 
     verify(command, times(0)).persistClusterConfiguration(any(), any());
   }
@@ -165,7 +168,7 @@ public class ConfigurePDXCommandTest {
         .statusIsSuccess().hasNoFailToPersistError()
         .hasReadSerializedConfigured(DEFAULT_PDX_READ_SERIALIZED, cacheCreation)
         .hasIgnoreUnreadFieldsConfigured(DEFAULT_PDX_IGNORE_UNREAD_FIELDS, cacheCreation)
-        .hasPersistenseConfigured(true, "DEFAULT", cacheCreation);
+        .hasPersistenceConfigured(true, "DEFAULT", cacheCreation);
 
     verify(cacheCreation, times(0)).setPdxSerializer(any());
     verify(command, times(1)).persistClusterConfiguration(any(), any());
@@ -179,7 +182,7 @@ public class ConfigurePDXCommandTest {
         .statusIsSuccess().hasNoFailToPersistError()
         .hasReadSerializedConfigured(DEFAULT_PDX_READ_SERIALIZED, cacheCreation)
         .hasIgnoreUnreadFieldsConfigured(DEFAULT_PDX_IGNORE_UNREAD_FIELDS, cacheCreation)
-        .hasPersistenseConfigured(true, "myDiskStore", cacheCreation);
+        .hasPersistenceConfigured(true, "myDiskStore", cacheCreation);
 
     verify(cacheCreation, times(0)).setPdxSerializer(any());
     verify(command, times(1)).persistClusterConfiguration(any(), any());
@@ -193,7 +196,7 @@ public class ConfigurePDXCommandTest {
         .statusIsSuccess().hasNoFailToPersistError()
         .hasReadSerializedConfigured(true, cacheCreation)
         .hasIgnoreUnreadFieldsConfigured(DEFAULT_PDX_IGNORE_UNREAD_FIELDS, cacheCreation)
-        .hasPersistenseConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation);
+        .hasPersistenceConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation);
 
     verify(cacheCreation, times(0)).setPdxSerializer(any());
     verify(command, times(1)).persistClusterConfiguration(any(), any());
@@ -207,7 +210,7 @@ public class ConfigurePDXCommandTest {
         .statusIsSuccess().hasNoFailToPersistError()
         .hasReadSerializedConfigured(false, cacheCreation)
         .hasIgnoreUnreadFieldsConfigured(DEFAULT_PDX_IGNORE_UNREAD_FIELDS, cacheCreation)
-        .hasPersistenseConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation);
+        .hasPersistenceConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation);
 
     verify(cacheCreation, times(0)).setPdxSerializer(any());
     verify(command, times(1)).persistClusterConfiguration(any(), any());
@@ -222,7 +225,7 @@ public class ConfigurePDXCommandTest {
         .statusIsSuccess().hasNoFailToPersistError()
         .hasReadSerializedConfigured(DEFAULT_PDX_READ_SERIALIZED, cacheCreation)
         .hasIgnoreUnreadFieldsConfigured(true, cacheCreation)
-        .hasPersistenseConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation);
+        .hasPersistenceConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation);
 
     verify(cacheCreation, times(0)).setPdxSerializer(any());
     verify(command, times(1)).persistClusterConfiguration(any(), any());
@@ -237,7 +240,7 @@ public class ConfigurePDXCommandTest {
         .statusIsSuccess().hasNoFailToPersistError()
         .hasReadSerializedConfigured(DEFAULT_PDX_READ_SERIALIZED, cacheCreation)
         .hasIgnoreUnreadFieldsConfigured(false, cacheCreation)
-        .hasPersistenseConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation);
+        .hasPersistenceConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation);
 
     verify(cacheCreation, times(0)).setPdxSerializer(any());
     verify(command, times(1)).persistClusterConfiguration(any(), any());
@@ -255,7 +258,7 @@ public class ConfigurePDXCommandTest {
         .statusIsSuccess().hasNoFailToPersistError()
         .hasReadSerializedConfigured(DEFAULT_PDX_READ_SERIALIZED, cacheCreation)
         .hasIgnoreUnreadFieldsConfigured(DEFAULT_PDX_IGNORE_UNREAD_FIELDS, cacheCreation)
-        .hasPersistenseConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation)
+        .hasPersistenceConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation)
         .containsOutput("Portable Classes = [com.company.DomainObject.*#identity=id]")
         .containsOutput("PDX Serializer = org.apache.geode.pdx.ReflectionBasedAutoSerializer");
 
@@ -276,7 +279,7 @@ public class ConfigurePDXCommandTest {
         .hasReadSerializedConfigured(CacheConfig.DEFAULT_PDX_READ_SERIALIZED, cacheCreation)
         .hasIgnoreUnreadFieldsConfigured(CacheConfig.DEFAULT_PDX_IGNORE_UNREAD_FIELDS,
             cacheCreation)
-        .hasPersistenseConfigured(CacheConfig.DEFAULT_PDX_PERSISTENT, null, cacheCreation)
+        .hasPersistenceConfigured(CacheConfig.DEFAULT_PDX_PERSISTENT, null, cacheCreation)
         .containsOutput("Non Portable Classes = [com.company.DomainObject.*#identity=id]")
         .containsOutput("PDX Serializer = org.apache.geode.pdx.ReflectionBasedAutoSerializer");
 
@@ -287,47 +290,47 @@ public class ConfigurePDXCommandTest {
 
   static class CustomGfshParserRule extends GfshParserRule {
     @Override
-    public <T> CustomResultAssert executeAndAssertThat(T instance, String command) {
+    public <T> PDXCommandResultAssert executeAndAssertThat(T instance, String command) {
       CommandResultAssert resultAssert = super.executeAndAssertThat(instance, command);;
 
-      return new CustomResultAssert(resultAssert.getCommandResult());
+      return new PDXCommandResultAssert(resultAssert.getCommandResult());
     }
   }
 
-  static class CustomResultAssert extends CommandResultAssert {
-    public CustomResultAssert(CommandResult commandResult) {
+  static class PDXCommandResultAssert extends CommandResultAssert {
+    public PDXCommandResultAssert(CommandResult commandResult) {
       super(commandResult);
     }
 
     @Override
-    public CustomResultAssert statusIsError() {
+    public PDXCommandResultAssert statusIsError() {
       super.statusIsError();
 
       return this;
     }
 
     @Override
-    public CustomResultAssert statusIsSuccess() {
+    public PDXCommandResultAssert statusIsSuccess() {
       super.statusIsSuccess();
 
       return this;
     }
 
     @Override
-    public CustomResultAssert containsOutput(String... expectedOutputs) {
+    public PDXCommandResultAssert containsOutput(String... expectedOutputs) {
       super.containsOutput(expectedOutputs);
 
       return this;
     }
 
     @Override
-    public CustomResultAssert hasNoFailToPersistError() {
+    public PDXCommandResultAssert hasNoFailToPersistError() {
       super.hasNoFailToPersistError();
 
       return this;
     }
 
-    public CustomResultAssert hasPersistenseConfigured(boolean persistenceEnabled,
+    public PDXCommandResultAssert hasPersistenceConfigured(boolean persistenceEnabled,
         String diskStoreName, CacheCreation cache) {
       assertThat(actual.getOutput()).contains("persistent = " + persistenceEnabled);
 
@@ -345,7 +348,7 @@ public class ConfigurePDXCommandTest {
     }
 
 
-    public CustomResultAssert hasReadSerializedConfigured(boolean readSerializedEnabled,
+    public PDXCommandResultAssert hasReadSerializedConfigured(boolean readSerializedEnabled,
         CacheCreation cache) {
       assertThat(actual.getOutput()).contains("read-serialized = " + readSerializedEnabled);
       verify(cache, times(1)).setPdxReadSerialized(readSerializedEnabled);
@@ -353,7 +356,7 @@ public class ConfigurePDXCommandTest {
       return this;
     }
 
-    public CustomResultAssert hasIgnoreUnreadFieldsConfigured(boolean ignoreUnreadFieldsEnabled,
+    public PDXCommandResultAssert hasIgnoreUnreadFieldsConfigured(boolean ignoreUnreadFieldsEnabled,
         CacheCreation cache) {
       assertThat(actual.getOutput())
           .contains("ignore-unread-fields = " + ignoreUnreadFieldsEnabled);
@@ -362,12 +365,12 @@ public class ConfigurePDXCommandTest {
       return this;
     }
 
-    public CustomResultAssert hasDefaultsConfigured(ConfigurePDXCommand command,
+    public PDXCommandResultAssert hasDefaultsConfigured(ConfigurePDXCommand command,
         CacheCreation cacheCreation) {
       hasNoFailToPersistError();
       hasReadSerializedConfigured(DEFAULT_PDX_READ_SERIALIZED, cacheCreation);
       hasIgnoreUnreadFieldsConfigured(DEFAULT_PDX_IGNORE_UNREAD_FIELDS, cacheCreation);
-      hasPersistenseConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation);
+      hasPersistenceConfigured(DEFAULT_PDX_PERSISTENT, null, cacheCreation);
 
       verify(cacheCreation, times(0)).setPdxSerializer(any());
       verify(command, times(1)).persistClusterConfiguration(any(), any());
