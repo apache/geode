@@ -12,21 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.modules.session;
+package org.apache.geode.test.junit.categories;
 
-import org.junit.BeforeClass;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.modules.session.catalina.Tomcat6DeltaSessionManager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SessionTest;
-
-@Category({IntegrationTest.class, SessionTest.class})
-public class Tomcat6SessionsJUnitTest extends TestSessionsBase {
-
-  // Set up the session manager we need
-  @BeforeClass
-  public static void setupClass() throws Exception {
-    setupServer(new Tomcat6DeltaSessionManager());
-  }
+/**
+ * JUnit Test Category that specifies a test that involves session state feature.
+ */
+public interface SessionTest {
 }
