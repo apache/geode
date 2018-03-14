@@ -36,6 +36,7 @@ import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -94,6 +95,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
@@ -149,6 +151,8 @@ public class ClusterConfigurationService {
     configDirPath = null;
     configDiskDirPath = null;
     cache = null;
+    bindClasses.add(CacheConfig.class);
+    initJaxbContext();
   }
 
   public ClusterConfigurationService(InternalCache cache) throws IOException {
@@ -176,6 +180,8 @@ public class ClusterConfigurationService {
     this.configDiskDirPath = FilenameUtils.concat(clusterConfigRootDir, configDiskDirName);
     this.sharedConfigLockingService = getSharedConfigLockService(cache.getDistributedSystem());
     this.status.set(SharedConfigurationStatus.NOT_STARTED);
+    bindClasses.add(CacheConfig.class);
+    initJaxbContext();
   }
 
   /**
@@ -821,6 +827,48 @@ public class ClusterConfigurationService {
     return configDir;
   }
 
+  private Collection<Class> bindClasses = new ArrayList<>();
+  private Marshaller marshaller;
+  private Unmarshaller unmarshaller;
+
+  private void initJaxbContext() {
+    try {
+      JAXBContext jaxbContext =
+          JAXBContext.newInstance(bindClasses.toArray(new Class[bindClasses.size()]));
+      marshaller = jaxbContext.createMarshaller();
+      SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+      Schema schema =
+          factory.newSchema(new URL("http://geode.apache.org/schema/cache/cache-1.0.xsd"));
+      marshaller.setSchema(schema);
+      marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
+          "http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd");
+      marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+      unmarshaller = jaxbContext.createUnmarshaller();
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  private Marshaller getMarshaller(Class... additionBindClass) {
+    if (bindClasses.containsAll(Arrays.asList(additionBindClass))) {
+      return marshaller;
+    }
+
+    bindClasses.addAll(Arrays.asList(additionBindClass));
+    initJaxbContext();
+    return marshaller;
+  }
+
+  private Unmarshaller getUnmarshaller(Class... additionBindClass) {
+    if (bindClasses.containsAll(Arrays.asList(additionBindClass))) {
+      return unmarshaller;
+    }
+
+    bindClasses.addAll(Arrays.asList(additionBindClass));
+    initJaxbContext();
+    return unmarshaller;
+  }
+
   public CacheConfig getCacheConfig(String group, Class... additionalBindClass) {
     return unMarshall(getConfiguration(group).getCacheXmlContent(), additionalBindClass);
   }
@@ -843,20 +891,14 @@ public class ClusterConfigurationService {
     }
   }
 
+  public <T extends Identifiable<String>> T findElement(List<T> list, String id) {
+    return list.stream().filter(o -> o.getId().equals(id)).findFirst().orElse(null);
+  }
+
   String marshall(CacheConfig config, Class... additionalClass) {
-    List<Class> classes = new ArrayList<>(Arrays.asList(additionalClass));
-    classes.add(0, CacheConfig.class);
     StringWriter sw = new StringWriter();
     try {
-      JAXBContext jaxbContext = JAXBContext.newInstance(classes.toArray(new Class[classes.size()]));
-      Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-      SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-      Schema schema =
-          factory.newSchema(new URL("http://geode.apache.org/schema/cache/cache-1.0.xsd"));
-      jaxbMarshaller.setSchema(schema);
-
-      jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-      jaxbMarshaller.marshal(config, sw);
+      getMarshaller(additionalClass).marshal(config, sw);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -864,12 +906,8 @@ public class ClusterConfigurationService {
   }
 
   CacheConfig unMarshall(String xml, Class... additionalClass) {
-    List<Class> classes = new ArrayList<>(Arrays.asList(additionalClass));
-    classes.add(0, CacheConfig.class);
     try {
-      JAXBContext jaxbContext = JAXBContext.newInstance(classes.toArray(new Class[classes.size()]));
-      Unmarshaller jaxUnmarshaller = jaxbContext.createUnmarshaller();
-      return (CacheConfig) jaxUnmarshaller.unmarshal(new StringReader(xml));
+      return (CacheConfig) getUnmarshaller(additionalClass).unmarshal(new StringReader(xml));
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }

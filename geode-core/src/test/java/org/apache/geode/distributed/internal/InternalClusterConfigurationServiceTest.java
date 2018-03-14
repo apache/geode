@@ -26,7 +26,9 @@ import static org.mockito.Mockito.spy;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlType;
 
 import org.junit.Before;
@@ -36,6 +38,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.configuration.CacheConfig;
 import org.apache.geode.internal.cache.configuration.CacheElement;
+import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.configuration.RegionElement;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -45,7 +48,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class InternalClusterConfigurationServiceTest {
   private String xml;
-  private Object unmarshalled;
+  private CacheConfig unmarshalled;
   private ClusterConfigurationService service;
   private Configuration configuration;
 
@@ -60,7 +63,7 @@ public class InternalClusterConfigurationServiceTest {
   }
 
   @Test
-  public void testCacheMarshall() throws Exception {
+  public void testCacheMarshall() {
     CacheConfig cacheConfig = new CacheConfig();
     setBasicValues(cacheConfig);
 
@@ -68,8 +71,11 @@ public class InternalClusterConfigurationServiceTest {
     System.out.println(xml);
     assertThat(xml).contains("</cache>");
 
+    assertThat(xml).contains("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
+    assertThat(xml).contains(
+        "xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\"");
+
     unmarshalled = service.unMarshall(xml);
-    assertThat(unmarshalled).isInstanceOf(CacheConfig.class);
   }
 
   @Test
@@ -81,9 +87,6 @@ public class InternalClusterConfigurationServiceTest {
     xml = service.marshall(cache, ElementOne.class);
     System.out.println(xml);
     assertThat(xml).contains("custom-one>");
-
-    unmarshalled = service.unMarshall(xml);
-    assertThat(unmarshalled).isInstanceOf(CacheConfig.class);
   }
 
   @Test
@@ -98,15 +101,16 @@ public class InternalClusterConfigurationServiceTest {
 
     // xml generated with CacheConfigOne marshaller can be unmarshalled by CacheConfigTwo
     unmarshalled = service.unMarshall(xml);
-    assertThat(unmarshalled).isInstanceOf(CacheConfig.class);
-    CacheConfig cacheTwo = (CacheConfig) unmarshalled;
-    cacheTwo.getCustomCacheElements().add(new ElementTwo("testTwo"));
+    unmarshalled.getCustomCacheElements().add(new ElementTwo("testTwo"));
 
     // xml generated wtih CacheConfigTwo has both elements in there.
-    xml = service.marshall(cacheTwo, ElementTwo.class);
+    xml = service.marshall(unmarshalled, ElementTwo.class);
     System.out.println(xml);
     assertThat(xml).contains("custom-one>");
     assertThat(xml).contains("custom-two>");
+    assertThat(xml).containsPattern("xmlns:ns\\d=\"http://geode.apache.org/schema/cache\"");
+    assertThat(xml).containsPattern("xmlns:ns\\d=\"http://geode.apache.org/schema/CustomOne\"");
+    assertThat(xml).containsPattern("xmlns:ns\\d=\"http://geode.apache.org/schema/CustomTwo\"");
   }
 
   @Test
@@ -138,6 +142,22 @@ public class InternalClusterConfigurationServiceTest {
     region.setName("testRegion");
     region.setRefid("REPLICATE");
     cache.getRegion().add(region);
+  }
+
+  @Test
+  public void jndiBindings() {
+    service.updateCacheConfig("cluster", cacheConfig -> {
+      JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
+      jndiBinding.setJndiName("jndiOne");
+      jndiBinding.setJdbcDriverClass("com.sun.ABC");
+      jndiBinding.setType("SimpleDataSource");
+      cacheConfig.getJndiBindings().add(jndiBinding);
+      return cacheConfig;
+    });
+
+    assertThat(configuration.getCacheXmlContent()).containsOnlyOnce("</jndi-bindings>");
+    assertThat(configuration.getCacheXmlContent()).contains(
+        "<jndi-binding jdbc-driver-class=\"com.sun.ABC\" jndi-name=\"jndiOne\" type=\"SimpleDataSource\"/>");
   }
 
   @XmlAccessorType(XmlAccessType.FIELD)
