@@ -35,6 +35,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.test.dunit.Host.getHost;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -75,6 +76,8 @@ import javax.management.ObjectName;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -130,7 +133,6 @@ import org.apache.geode.internal.cache.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.execute.data.CustId;
@@ -161,6 +163,7 @@ import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.pdx.SimpleClass1;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
@@ -174,7 +177,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
 
 @Category(DistributedTest.class)
-public class WANTestBase extends JUnit4DistributedTestCase {
+public class WANTestBase extends DistributedTestCase {
 
   protected static Cache cache;
   protected static Region region;
@@ -212,34 +215,20 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
   private static final Logger logger = LogService.getLogger();
 
-  public WANTestBase() {
-    super();
+  @BeforeClass
+  public static void beforeClassWANTestBase() throws Exception {
+    vm0 = getHost(0).getVM(0);
+    vm1 = getHost(0).getVM(1);
+    vm2 = getHost(0).getVM(2);
+    vm3 = getHost(0).getVM(3);
+    vm4 = getHost(0).getVM(4);
+    vm5 = getHost(0).getVM(5);
+    vm6 = getHost(0).getVM(6);
+    vm7 = getHost(0).getVM(7);
   }
 
-  /**
-   * @deprecated Use the no arg constructor, or better yet, don't construct this class
-   */
-  @Deprecated
-  public WANTestBase(final String ignored) {}
-
-  @Override
-  public final void preSetUp() throws Exception {
-    final Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-    vm4 = host.getVM(4);
-    vm5 = host.getVM(5);
-    vm6 = host.getVM(6);
-    vm7 = host.getVM(7);
-    // Need to set the test name after the VMs are created
-  }
-
-  @Override
-  public final void postSetUp() throws Exception {
-    // this is done to vary the number of dispatchers for sender
-    // during every test method run
+  @Before
+  public void setUpWANTestBase() throws Exception {
     shuffleNumDispatcherThreads();
     Invoke.invokeInEveryVM(() -> setNumDispatcherThreadsForTheRun(dispatcherThreads.get(0)));
     IgnoredException.addIgnoredException("Connection refused");
@@ -248,7 +237,9 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     postSetUpWANTestBase();
   }
 
-  protected void postSetUpWANTestBase() throws Exception {}
+  protected void postSetUpWANTestBase() throws Exception {
+    // nothing
+  }
 
   public static void shuffleNumDispatcherThreads() {
     Collections.shuffle(dispatcherThreads);
@@ -3674,7 +3665,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     cleanupVM();
     List<AsyncInvocation> invocations = new ArrayList<AsyncInvocation>();
-    final Host host = Host.getHost(0);
+    final Host host = getHost(0);
     for (int i = 0; i < host.getVMCount(); i++) {
       invocations.add(host.getVM(i).invokeAsync(() -> WANTestBase.cleanupVM()));
     }
