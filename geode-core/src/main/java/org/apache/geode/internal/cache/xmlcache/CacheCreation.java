@@ -2359,4 +2359,9 @@ public class CacheCreation implements InternalCache {
   public void setPdxReadSerializedOverride(boolean pdxReadSerialized) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
+  @Override
+  public void registerPdxMetaData(Object instance) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
 }

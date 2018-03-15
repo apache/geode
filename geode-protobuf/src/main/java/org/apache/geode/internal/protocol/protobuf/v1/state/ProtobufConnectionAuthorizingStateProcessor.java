@@ -18,6 +18,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -49,7 +50,8 @@ public class ProtobufConnectionAuthorizingStateProcessor
     } catch (NotAuthorizedException e) {
       messageContext.getStatistics().incAuthorizationViolations();
       throw new OperationNotAuthorizedException(
-          "The user is not authorized to complete this operation");
+          "The user is not authorized to complete this operation: "
+              + ((ClientProtocol.Message) message).getMessageTypeCase());
     } finally {
       threadState.restore();
     }

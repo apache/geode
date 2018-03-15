@@ -50,6 +50,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.Version;
+import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -185,12 +186,10 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    System.setProperty(
-        DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "true");
+    System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
-        System.setProperty(
-            DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "true");
+        System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
       }
     });
     try {
@@ -248,13 +247,10 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
         return null;
       });
     } finally {
-      System.setProperty(
-          DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "false");
+      System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "false");
       Invoke.invokeInEveryVM(new SerializableRunnable() {
         public void run() {
-          System.setProperty(
-              DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes",
-              "false");
+          System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "false");
         }
       });
     }

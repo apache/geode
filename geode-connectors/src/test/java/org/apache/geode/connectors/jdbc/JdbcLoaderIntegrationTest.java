@@ -17,13 +17,18 @@ package org.apache.geode.connectors.jdbc;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.Date;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
@@ -32,10 +37,14 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
+import org.apache.geode.connectors.jdbc.internal.TableKeyColumnManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
+import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -49,20 +58,38 @@ public class JdbcLoaderIntegrationTest {
   private Connection connection;
   private Statement statement;
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   @Before
   public void setUp() throws Exception {
+    System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
-        .setPdxReadSerialized(false).create();
+        .setPdxReadSerialized(false)
+        .setPdxSerializer(
+            new ReflectionBasedAutoSerializer(ClassWithSupportedPdxFields.class.getName()))
+        .create();
     connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
-    statement.execute("Create Table " + REGION_TABLE_NAME
-        + " (id varchar(10) primary key not null, name varchar(10), age int)");
   }
 
   @After
   public void tearDown() throws Exception {
     cache.close();
     closeDB();
+  }
+
+  private void createEmployeeTable() throws Exception {
+    statement.execute("Create Table " + REGION_TABLE_NAME
+        + " (id varchar(10) primary key not null, name varchar(10), age int)");
+  }
+
+  private void createClassWithSupportedPdxFieldsTable() throws Exception {
+    statement.execute("Create Table " + REGION_TABLE_NAME
+        + " (id varchar(10) primary key not null, " + "aboolean smallint, " + "abyte smallint, "
+        + "ashort smallint, " + "anint int, " + "along bigint, " + "afloat float, "
+        + "adouble float, " + "astring varchar(10), " + "adate timestamp, "
+        + "anobject varchar(20), " + "abytearray blob(100), " + "achar char(1))");
   }
 
   private void closeDB() throws Exception {
@@ -79,32 +106,122 @@ public class JdbcLoaderIntegrationTest {
 
   @Test
   public void verifySimpleGet() throws Exception {
-    statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
-    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME);
+    createEmployeeTable();
+    statement
+        .execute("Insert into " + REGION_TABLE_NAME + " (id, name, age) values('1', 'Emp1', 21)");
+    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, false);
     PdxInstance pdx = region.get("1");
 
+    assertThat(pdx.getFieldNames()).hasSize(2);
     assertThat(pdx.getField("name")).isEqualTo("Emp1");
     assertThat(pdx.getField("age")).isEqualTo(21);
   }
 
   @Test
+  public void verifySimpleGetWithPrimaryKeyInValue() throws Exception {
+    createEmployeeTable();
+    statement
+        .execute("Insert into " + REGION_TABLE_NAME + " (id, name, age) values('1', 'Emp1', 21)");
+    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, true);
+    PdxInstance pdx = region.get("1");
+
+    assertThat(pdx.getFieldNames()).hasSize(3);
+    assertThat(pdx.getField("id")).isEqualTo("1");
+    assertThat(pdx.getField("name")).isEqualTo("Emp1");
+    assertThat(pdx.getField("age")).isEqualTo(21);
+  }
+
+  @Test
+  public void verifyGetWithPdxClassName() throws Exception {
+    createEmployeeTable();
+    statement
+        .execute("Insert into " + REGION_TABLE_NAME + "(id, name, age) values('1', 'Emp1', 21)");
+    Region<String, Employee> region =
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), false);
+    createPdxType();
+
+    Employee value = region.get("1");
+
+    assertThat(value.getName()).isEqualTo("Emp1");
+    assertThat(value.getAge()).isEqualTo(21);
+  }
+
+  @Test
+  public void verifyGetWithSupportedFieldsWithPdxClassName() throws Exception {
+    createClassWithSupportedPdxFieldsTable();
+    ClassWithSupportedPdxFields classWithSupportedPdxFields =
+        createClassWithSupportedPdxFieldsForInsert();
+    insertIntoClassWithSupportedPdxFieldsTable("1", classWithSupportedPdxFields);
+    Region<String, ClassWithSupportedPdxFields> region = createRegionWithJDBCLoader(
+        REGION_TABLE_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+
+    createPdxType(classWithSupportedPdxFields);
+
+    ClassWithSupportedPdxFields value = region.get("1");
+    assertThat(value).isEqualTo(classWithSupportedPdxFields);
+  }
+
+  private void createPdxType() throws IOException {
+    createPdxType(new Employee("name", 45));
+  }
+
+  private void createPdxType(Object value) throws IOException {
+    // the following serialization will add a pdxType
+    BlobHelper.serializeToBlob(value);
+  }
+
+  @Test
   public void verifySimpleMiss() throws Exception {
-    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME);
+    createEmployeeTable();
+    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, false);
     PdxInstance pdx = region.get("1");
     assertThat(pdx).isNull();
   }
 
-  private SqlHandler createSqlHandler()
+  private SqlHandler createSqlHandler(String pdxClassName, boolean primaryKeyInValue)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(),
-        TestConfigService.getTestConfigService());
+    return new SqlHandler(new TestableConnectionManager(), new TableKeyColumnManager(),
+        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName,
+            primaryKeyInValue));
   }
 
-  private Region<String, PdxInstance> createRegionWithJDBCLoader(String regionName)
+  private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
+      boolean primaryKeyInValue)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    JdbcLoader<String, PdxInstance> jdbcLoader = new JdbcLoader<>(createSqlHandler(), cache);
-    RegionFactory<String, PdxInstance> regionFactory = cache.createRegionFactory(REPLICATE);
+    JdbcLoader<K, V> jdbcLoader =
+        new JdbcLoader<>(createSqlHandler(pdxClassName, primaryKeyInValue), cache);
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.setCacheLoader(jdbcLoader);
     return regionFactory.create(regionName);
+  }
+
+  private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert() {
+    ClassWithSupportedPdxFields classWithSupportedPdxFields =
+        new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2, 3, 4, 5.5f, 6.0, "BigEmp",
+            new Date(100000), "BigEmpObject", new byte[] {1, 2}, 'c');
+
+    return classWithSupportedPdxFields;
+  }
+
+  private void insertIntoClassWithSupportedPdxFieldsTable(String id,
+      ClassWithSupportedPdxFields classWithSupportedPdxFields) throws Exception {
+    String insertString =
+        "Insert into " + REGION_TABLE_NAME + " values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    PreparedStatement ps = connection.prepareStatement(insertString);
+    int i = 1;
+    ps.setObject(i++, id);
+    ps.setObject(i++, classWithSupportedPdxFields.isAboolean());
+    ps.setObject(i++, classWithSupportedPdxFields.getAbyte());
+    ps.setObject(i++, classWithSupportedPdxFields.getAshort());
+    ps.setObject(i++, classWithSupportedPdxFields.getAnint());
+    ps.setObject(i++, classWithSupportedPdxFields.getAlong());
+    ps.setObject(i++, classWithSupportedPdxFields.getAfloat());
+    ps.setObject(i++, classWithSupportedPdxFields.getAdouble());
+    ps.setObject(i++, classWithSupportedPdxFields.getAstring());
+    ps.setObject(i++, classWithSupportedPdxFields.getAdate());
+    ps.setObject(i++, classWithSupportedPdxFields.getAnobject());
+    ps.setObject(i++, classWithSupportedPdxFields.getAbytearray());
+    ps.setObject(i++, new Character(classWithSupportedPdxFields.getAchar()).toString());
+    ps.executeUpdate();
   }
 }

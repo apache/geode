@@ -34,19 +34,29 @@ public class TestConfigService {
 
   public static JdbcConnectorServiceImpl getTestConfigService()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    InternalCache cache = mock(InternalCache.class);
-    when(cache.getExtensionPoint()).thenReturn(mock(ExtensionPoint.class));
+    return getTestConfigService(createMockCache(), null, false);
+  }
+
+  public static JdbcConnectorServiceImpl getTestConfigService(InternalCache cache,
+      String pdxClassName, boolean primaryKeyInValue)
+      throws ConnectionConfigExistsException, RegionMappingExistsException {
 
     JdbcConnectorServiceImpl service = new JdbcConnectorServiceImpl();
     service.init(cache);
     service.createConnectionConfig(createConnectionConfig());
-    service.createRegionMapping(createRegionMapping());
+    service.createRegionMapping(createRegionMapping(pdxClassName, primaryKeyInValue));
     return service;
   }
 
-  private static RegionMapping createRegionMapping() {
-    return new RegionMapping(REGION_NAME, null, REGION_TABLE_NAME, CONNECTION_CONFIG_NAME, false,
-        Collections.emptyMap());
+  private static InternalCache createMockCache() {
+    InternalCache cache = mock(InternalCache.class);
+    when(cache.getExtensionPoint()).thenReturn(mock(ExtensionPoint.class));
+    return cache;
+  }
+
+  private static RegionMapping createRegionMapping(String pdxClassName, boolean primaryKeyInValue) {
+    return new RegionMapping(REGION_NAME, pdxClassName, REGION_TABLE_NAME, CONNECTION_CONFIG_NAME,
+        primaryKeyInValue, Collections.emptyMap());
   }
 
   private static ConnectionConfiguration createConnectionConfig() {

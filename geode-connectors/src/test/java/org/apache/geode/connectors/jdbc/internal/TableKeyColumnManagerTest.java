@@ -88,7 +88,7 @@ public class TableKeyColumnManagerTest {
     when(resultSet.getString("TABLE_NAME")).thenReturn("otherTable");
 
     assertThatThrownBy(() -> tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
-        .isInstanceOf(IllegalStateException.class);
+        .isInstanceOf(JdbcConnectorException.class);
   }
 
   @Test
@@ -97,7 +97,7 @@ public class TableKeyColumnManagerTest {
     when(primaryKeys.next()).thenReturn(true);
 
     assertThatThrownBy(() -> tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
-        .isInstanceOf(IllegalStateException.class);
+        .isInstanceOf(JdbcConnectorException.class);
   }
 
   @Test
@@ -111,7 +111,7 @@ public class TableKeyColumnManagerTest {
     when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toUpperCase());
 
     assertThatThrownBy(() -> tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
-        .isInstanceOf(IllegalStateException.class)
+        .isInstanceOf(JdbcConnectorException.class)
         .hasMessage("Duplicate tables that match region name");
   }
 
@@ -121,7 +121,7 @@ public class TableKeyColumnManagerTest {
     when(primaryKeys.next()).thenReturn(false);
 
     assertThatThrownBy(() -> tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
-        .isInstanceOf(IllegalStateException.class);
+        .isInstanceOf(JdbcConnectorException.class);
   }
 
   private ResultSet getPrimaryKeysMetaData() throws SQLException {

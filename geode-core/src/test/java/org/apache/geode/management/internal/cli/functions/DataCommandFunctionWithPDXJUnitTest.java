@@ -45,7 +45,7 @@ public class DataCommandFunctionWithPDXJUnitTest {
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule().withPDXPersistent()
-      .withRegion(RegionShortcut.PARTITION, PARTITIONED_REGION);
+      .withPDXReadSerialized().withRegion(RegionShortcut.PARTITION, PARTITIONED_REGION);
 
   private Customer alice;
   private Customer bob;
