@@ -42,7 +42,7 @@ public class ListJndiBindingCommand extends GfshCommand {
 
   private static final String LIST_JNDIBINDING = "list jndi-binding";
   private static final String LIST_JNDIBINDING__HELP =
-      "List all active jndi bindings. An active binding is one that is bound to the server's jndi context.";
+      "List all jndi bindings, active and configured. An active binding is one that is bound to the server's jndi context (and also listed in the cluster config). A configured binding is one that is listed in the cluster config, but may not be active on the servers.";
   private static final Function LIST_BINDING_FUNCTION = new ListJndiBindingFunction();
 
   @CliCommand(value = LIST_JNDIBINDING, help = LIST_JNDIBINDING__HELP)
@@ -57,7 +57,7 @@ public class ListJndiBindingCommand extends GfshCommand {
     ClusterConfigurationService ccService = getSharedConfiguration();
     if (ccService != null) {
       configTable = resultSection.addTable();
-      configTable.setHeader("JNDI bindings in the cluster configuration: ");
+      configTable.setHeader("Configured JNDI bindings: ");
       // we don't support creating jndi binding with random group name yet
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       List<JndiBindingsType.JndiBinding> jndiBindings = cacheConfig.getJndiBindings();
@@ -78,7 +78,7 @@ public class ListJndiBindingCommand extends GfshCommand {
     }
 
     memberTable = resultSection.addTable();
-    memberTable.setHeader("JNDI bindings in each member: ");
+    memberTable.setHeader("Active JNDI bindings found on each member: ");
     List<CliFunctionResult> rc = executeAndGetFunctionResult(LIST_BINDING_FUNCTION, null, members);
     for (CliFunctionResult oneResult : rc) {
       Serializable[] serializables = oneResult.getSerializables();
