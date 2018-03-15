@@ -12,25 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/*
- * Data.java
- *
- * Created on March 10, 2005, 7:32 PM
- */
-
 package org.apache.geode.cache.query.data;
 
-/**
- *
- */
-public class Data {
+import java.io.Serializable;
+
+public class Data implements Serializable {
 
   /** Creates a new instance of Data */
-  public Data() {}
+  public Data() {
+    // nothing
+  }
 
   public void voidMethod() {
-
+    // nothing
   }
 
   public boolean booleanMethod() {

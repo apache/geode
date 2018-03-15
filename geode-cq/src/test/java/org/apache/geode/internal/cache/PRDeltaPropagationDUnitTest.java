@@ -14,14 +14,22 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.Assert.fail;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -58,14 +66,11 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.DistributedTestCase;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
@@ -74,68 +79,58 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  * Tests the PR delta propagation functionality.
  */
 @Category({DistributedTest.class, SerializationTest.class, ClientSubscriptionTest.class})
-public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
+public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
   private static final Compressor compressor = SnappyCompressor.getDefaultInstance();
-
-  protected static Cache cache = null;
-
-  protected static VM dataStore1 = null;
-
-  protected static VM dataStore2 = null;
-
-  protected static VM dataStore3 = null;
-
-  protected static VM client1 = null;
-
-  protected static Region deltaPR = null;
-
   private static final int NO_PUTS = 10;
-
-  private static PRDeltaTestImpl prDelta = null;
-
-  static PoolImpl pool = null;
-
-  public static String DELTA_KEY = "DELTA_KEY";
-
-  public static String LAST_KEY = "LAST_KEY";
-
-  static boolean isFailed = false;
-  private static boolean procced = false;
-
-  private static boolean forOldNewCQVarification = false;
-
-  private static boolean isBadToDelta = false;
-
-  private static boolean isBadFromDelta = false;
-
-  /** name of the test region */
+  private static final String DELTA_KEY = "DELTA_KEY";
+  private static final String LAST_KEY = "LAST_KEY";
   private static final String REGION_NAME = "PRDeltaPropagationDUnitTest_Region";
-
-  /*
-   * cq
-   */
   private static final String CQ =
       "SELECT * FROM " + Region.SEPARATOR + REGION_NAME + " p where p.intVar < 9";
 
+  private static Cache cache = null;
+  private static Region deltaPR = null;
+  private static PRDeltaTestImpl prDelta = null;
+  private static PoolImpl pool = null;
+  private static boolean isFailed = false;
+  private static boolean procced = false;
+  private static boolean forOldNewCQVerification = false;
+  private static boolean isBadToDelta = false;
+  private static boolean isBadFromDelta = false;
   private static int numValidCqEvents = 0;
-  static boolean lastKeyReceived = false;
+  private static boolean lastKeyReceived = false;
   private static boolean queryUpdateExecuted = false;
   private static boolean queryDestroyExecuted = false;
   private static boolean notADeltaInstanceObj = false;
 
-  @Override
-  public final void postSetUp() throws Exception {
-    Host host = Host.getHost(0);
-    dataStore1 = host.getVM(0);
-    dataStore2 = host.getVM(1);
-    client1 = host.getVM(2);
-    dataStore3 = host.getVM(3);
+  private static VM dataStore1 = null;
+  private static VM dataStore2 = null;
+  private static VM dataStore3 = null;
+  private static VM client1 = null;
+
+  @Before
+  public void setUp() throws Exception {
+    dataStore1 = getHost(0).getVM(0);
+    dataStore2 = getHost(0).getVM(1);
+    client1 = getHost(0).getVM(2);
+    dataStore3 = getHost(0).getVM(3);
 
     DeltaTestImpl.resetDeltaInvokationCounters();
-    dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.resetAll());
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.resetAll());
-    dataStore3.invoke(() -> PRDeltaPropagationDUnitTest.resetAll());
+    dataStore1.invoke(() -> resetAll());
+    dataStore2.invoke(() -> resetAll());
+    dataStore3.invoke(() -> resetAll());
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    disconnectAllFromDS();
+    Invoke.invokeInEveryVM(() -> {
+      DeltaTestImpl.resetDeltaInvokationCounters();
+      isFailed = false;
+      isBadToDelta = false;
+      isBadFromDelta = false;
+    });
   }
 
   /**
@@ -146,12 +141,10 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testDeltaPropagationForPR() throws Exception {
     createCacheInAllPRVms();
-    createDeltaPR(Boolean.FALSE);
+    createDeltaPR(false);
     put();
-    Boolean deltaUsed1 =
-        (Boolean) dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.checkForDelta());
-    Boolean deltaUsed2 =
-        (Boolean) dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.checkForDelta());
+    boolean deltaUsed1 = dataStore1.invoke(() -> checkForDelta());
+    boolean deltaUsed2 = dataStore2.invoke(() -> checkForDelta());
     assertTrue("Delta Propagation Not Used in PR", (deltaUsed1 && deltaUsed2));
   }
 
@@ -161,10 +154,9 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testConstructorCountWithoutCloning() throws Exception {
-
     clearConstructorCounts();
     createCacheInAllPRVms();
-    createDeltaPR(Boolean.FALSE);
+    createDeltaPR(false);
 
     // Verify that cloning is disabled
     assertFalse(((LocalRegion) deltaPR).getCloningEnabled());
@@ -182,10 +174,9 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testConstructorCountWithCloning() throws Exception {
-
     clearConstructorCounts();
     createCacheInAllPRVms();
-    createDeltaPRWithCloning(Boolean.FALSE);
+    createDeltaPRWithCloning(false);
 
     // Verify that cloning is enabled
     assertTrue(((LocalRegion) deltaPR).getCloningEnabled());
@@ -195,7 +186,6 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     putInitial(); // Does multiple puts
 
     verifyConstructorCount(2);
-
   }
 
   /**
@@ -203,10 +193,9 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testConstructorCountWithMutator() throws Exception {
-
     clearConstructorCounts();
     createCacheInAllPRVms();
-    createDeltaPR(Boolean.FALSE);
+    createDeltaPR(false);
 
     // Verify that cloning is disabled
     assertFalse(((LocalRegion) deltaPR).getCloningEnabled());
@@ -229,70 +218,26 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     verifyConstructorCount(3);
   }
 
-  private void verifyConstructorCount(int timesConstructed) throws Exception {
-
-    long buildCount0 = getBuildCount();
-    long buildCount1 = (long) dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.getBuildCount());
-    long buildCount2 = (long) dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.getBuildCount());
-
-    assertEquals(1, buildCount0);
-    assertEquals(timesConstructed, buildCount1);
-    assertEquals(timesConstructed, buildCount2);
-  }
-
-  private void setPRCloning(boolean cloning) {
-    setCloningEnabled(cloning);
-    dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.setCloningEnabled(cloning));
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.setCloningEnabled(cloning));
-  }
-
-  private static void setCloningEnabled(boolean cloningEnabled) {
-    ((LocalRegion) deltaPR).setCloningEnabled(cloningEnabled);
-  }
-
-  private void verifyNoCopy() {
-    // Ensure not some other reason to make a copy
-    FilterProfile fp = ((LocalRegion) deltaPR).getFilterProfile();
-    boolean copy = ((LocalRegion) deltaPR).getCompressor() == null
-        && (((LocalRegion) deltaPR).isCopyOnRead() || (fp != null && fp.getCqCount() > 0));
-    assertFalse(copy);
-  }
-
-  private void clearConstructorCounts() throws Exception {
-    setBuildCount(0);
-    dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.setBuildCount(0));
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.setBuildCount(0));
-  }
-
-  public static long getBuildCount() throws Exception {
-    return DeltaTestImpl.getTimesConstructed();
-  }
-
-  public static void setBuildCount(long cnt) throws Exception {
-    DeltaTestImpl.setTimesConstructed(cnt);
-  }
-
   /**
    * Check delta propagation works properly with PR failover.
    */
   @Test
   public void testDeltaPropagationForPRFailover() throws Exception {
-    Object args[] = new Object[] {REGION_NAME, new Integer(1), new Integer(50), new Integer(8),
-        Boolean.FALSE, null};
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args);
-    Integer port2 = (Integer) dataStore2.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args);
+    int port1 =
+        dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 8, false, null));
+    int port2 =
+        dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 8, false, null));
+
     // Do puts after slowing the dispatcher.
     dataStore1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
     dataStore2.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
     createClientCache(port1, port2);
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port1, port2));
+    client1.invoke(() -> createClientCache(port1, port2));
 
     int deltaSent = putsWhichReturnsDeltaSent();
 
-    VM primary = null;
-    VM secondary = null;
+    VM primary;
+    VM secondary;
     if (pool.getPrimaryPort() == port1) {
       primary = dataStore1;
       secondary = dataStore2;
@@ -301,39 +246,37 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       secondary = dataStore1;
     }
 
-    primary.invoke(() -> PRDeltaPropagationDUnitTest.closeCache());
+    primary.invoke(() -> disconnectFromDS());
+
     Thread.sleep(5000);
+
     secondary.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
 
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.checkDeltaInvoked(new Integer(deltaSent)));
+    client1.invoke(() -> waitForLastKey());
+    client1.invoke(() -> checkDeltaInvoked(deltaSent));
   }
 
   @Test
   public void testDeltaPropagationForPRFailoverWithCompression() throws Exception {
-    Object args[] = new Object[] {REGION_NAME, new Integer(1), new Integer(50), new Integer(8),
-        Boolean.FALSE, compressor};
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args);
-    Integer port2 = (Integer) dataStore2.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args);
+    int port1 =
+        dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 8, false, compressor));
+    int port2 =
+        dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 8, false, compressor));
 
-    dataStore1.invoke(new SerializableRunnable() {
-      public void run() {
-        assertTrue(cache.getRegion(REGION_NAME).getAttributes().getCompressor() != null);
-      }
+    dataStore1.invoke(() -> {
+      assertTrue(cache.getRegion(REGION_NAME).getAttributes().getCompressor() != null);
     });
 
     // Do puts after slowing the dispatcher.
     dataStore1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
     dataStore2.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
     createClientCache(port1, port2);
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port1, port2));
+    client1.invoke(() -> createClientCache(port1, port2));
 
     int deltaSent = putsWhichReturnsDeltaSent();
 
-    VM primary = null;
-    VM secondary = null;
+    VM primary;
+    VM secondary;
     if (pool.getPrimaryPort() == port1) {
       primary = dataStore1;
       secondary = dataStore2;
@@ -342,12 +285,14 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       secondary = dataStore1;
     }
 
-    primary.invoke(() -> PRDeltaPropagationDUnitTest.closeCache());
+    primary.invoke(() -> disconnectFromDS());
+
     Thread.sleep(5000);
+
     secondary.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
 
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.checkDeltaInvoked(new Integer(deltaSent)));
+    client1.invoke(() -> waitForLastKey());
+    client1.invoke(() -> checkDeltaInvoked(deltaSent));
   }
 
   /**
@@ -356,10 +301,10 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testDeltaPropagationForPRWithExpiry() throws Exception {
     createCacheInAllPRVms();
-    createDeltaPR(Boolean.TRUE);
+    createDeltaPR(true);
     putWithExpiry();
-    dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.checkForFullObject());
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.checkForFullObject());
+    dataStore1.invoke(() -> checkForFullObject());
+    dataStore2.invoke(() -> checkForFullObject());
   }
 
   /**
@@ -369,21 +314,16 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testDeltaPropagationPRAccessorAsBridgeServer() throws Exception {
-    Object args1[] = new Object[] {REGION_NAME, new Integer(0), new Integer(0), new Integer(8),
-        Boolean.FALSE, null};
-    Object args2[] = new Object[] {REGION_NAME, new Integer(0), new Integer(50), new Integer(8),
-        Boolean.FALSE, null};
-    Integer port2 = (Integer) dataStore2.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args2);
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args1);
-    createClientCache(port1, new Boolean(true), new Boolean(false), new Boolean(false));
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port2, new Boolean(true),
-        new Boolean(false), new Boolean(false)));
+    int port2 =
+        dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 50, 8, false, null));
+    int port1 = dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 0, 8, false, null));
+
+    createClientCache(port1, true, false, false);
+    client1.invoke(() -> createClientCache(port2, true, false, false));
     int deltaSent = putsWhichReturnsDeltaSent();
 
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.checkDeltaInvoked(new Integer(deltaSent)));
+    client1.invoke(() -> waitForLastKey());
+    client1.invoke(() -> checkDeltaInvoked(deltaSent));
   }
 
   /**
@@ -394,17 +334,12 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testDeltaPropagationPRAccessorAsBridgeServerWithDeltaException() throws Exception {
-    Object args1[] = new Object[] {REGION_NAME, new Integer(0), new Integer(0), new Integer(8),
-        Boolean.FALSE, null};
-    Object args2[] = new Object[] {REGION_NAME, new Integer(0), new Integer(50), new Integer(8),
-        Boolean.FALSE, null};
-    Integer port2 = (Integer) dataStore2.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args2);
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args1);
-    createClientCache(port1, new Boolean(false), new Boolean(false), new Boolean(false));
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port2, new Boolean(true),
-        new Boolean(false), new Boolean(false)));
+    int port2 =
+        dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 50, 8, false, null));
+    int port1 = dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 0, 8, false, null));
+
+    createClientCache(port1, false, false, false);
+    client1.invoke(() -> createClientCache(port2, true, false, false));
 
     // feed delta
     DeltaTestImpl test = new DeltaTestImpl();
@@ -414,15 +349,15 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     deltaPR.put(DELTA_KEY, test);
 
     // perform invalidate on accessor
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.invalidateDeltaKey());
+    dataStore2.invoke(() -> invalidateDeltaKey());
 
     test = new DeltaTestImpl();
     test.setStr("DELTA");
     deltaPR.put(DELTA_KEY, test);
 
     deltaPR.put(LAST_KEY, "");
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.checkForFullObject());
+    client1.invoke(() -> waitForLastKey());
+    client1.invoke(() -> checkForFullObject());
   }
 
   /**
@@ -434,17 +369,12 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testDeltaPropagationClientEmptyPRAccessorAsBridgeServerWithDeltaException()
       throws Exception {
-    Object args1[] = new Object[] {REGION_NAME, new Integer(0), new Integer(0), new Integer(8),
-        Boolean.FALSE, null};
-    Object args2[] = new Object[] {REGION_NAME, new Integer(0), new Integer(50), new Integer(8),
-        Boolean.FALSE, null};
-    Integer port2 = (Integer) dataStore2.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args2);
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args1);
-    createClientCache(port1, new Boolean(false), new Boolean(true), new Boolean(false));
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port2, new Boolean(true),
-        new Boolean(false), new Boolean(false)));
+    int port2 =
+        dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 50, 8, false, null));
+    int port1 = dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 0, 8, false, null));
+
+    createClientCache(port1, false, true, false);
+    client1.invoke(() -> createClientCache(port2, true, false, false));
 
     // feed delta
     DeltaTestImpl test = new DeltaTestImpl();
@@ -454,7 +384,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     deltaPR.put(DELTA_KEY, test);
 
     // perform invalidate on accessor
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.invalidateDeltaKey());
+    dataStore2.invoke(() -> invalidateDeltaKey());
 
     test = new DeltaTestImpl();
     test.setStr("DELTA");
@@ -462,11 +392,10 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     deltaPR.put(LAST_KEY, "");
 
-    checkToDeltaCounter(new Integer(2));
+    checkToDeltaCounter(2);
 
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.checkForFullObject());
-
+    client1.invoke(() -> waitForLastKey());
+    client1.invoke(() -> checkForFullObject());
   }
 
   /**
@@ -477,16 +406,13 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testDeltaPropagationReplicatedRegionPeerWithDeltaException() throws Exception {
-    Object args1[] = new Object[] {Boolean.FALSE, Boolean.TRUE};
-    Object args2[] = new Object[] {Boolean.TRUE, Boolean.FALSE};
     // server 1 with empty data policy
-    Integer port1 =
-        (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class, "createServerCache", args1);
+    int port1 = dataStore1.invoke(() -> createServerCache(false, true));
 
     // server 2 with non empty data policy
-    dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createServerCache", args2);
+    dataStore2.invoke(() -> createServerCache(true, false));
 
-    createClientCache(port1, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+    createClientCache(port1, false, false, false);
 
     // feed delta
     DeltaTestImpl test = new DeltaTestImpl();
@@ -496,7 +422,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     deltaPR.put(DELTA_KEY, test);
 
     // perform invalidate on accessor
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.invalidateDeltaKey());
+    dataStore2.invoke(() -> invalidateDeltaKey());
 
     test = new DeltaTestImpl();
     test.setStr("DELTA");
@@ -504,11 +430,11 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     deltaPR.put(LAST_KEY, "");
 
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
+    dataStore2.invoke(() -> waitForLastKey());
     // check and reset isFailed flag
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.checkIsFailed());
+    dataStore2.invoke(() -> checkIsFailed());
 
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.fromDeltaCounter(new Integer(1)));
+    dataStore2.invoke(() -> fromDeltaCounter(1));
   }
 
   /**
@@ -517,29 +443,23 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testCqClientConnectAccessorAndDataStore() throws Exception {
-    Object args1[] = new Object[] {REGION_NAME, new Integer(1), new Integer(0), new Integer(8),
-        Boolean.FALSE, null};
-    Object args2[] = new Object[] {REGION_NAME, new Integer(1), new Integer(50), new Integer(8),
-        Boolean.FALSE, null};
-    Integer port2 = (Integer) dataStore2.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args2);
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args1);
+    int port2 =
+        dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 8, false, null));
+    int port1 = dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 0, 8, false, null));
 
     // client attached to accessor server1
-    createClientCache(port1, new Boolean(false), new Boolean(true), new Boolean(false));
+    createClientCache(port1, false, true, false);
 
     // enable CQ listner validation for this test for this client
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.setForOldNewCQVarification(new Boolean(true)));
+    client1.invoke(() -> setForOldNewCQVerification(true));
 
     // Not registering any interest but register cq server2
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port2, new Boolean(false),
-        new Boolean(false), new Boolean(true)));
+    client1.invoke(() -> createClientCache(port2, false, false, true));
 
     // check cloning is disabled
-    dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.checkCloning());
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.checkCloning());
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.checkCloning());
+    dataStore1.invoke(() -> checkCloning());
+    dataStore2.invoke(() -> checkCloning());
+    client1.invoke(() -> checkCloning());
     checkCloning();
 
     // feed delta
@@ -552,16 +472,15 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     deltaPR.put(LAST_KEY, new DeltaTestImpl(5, ""));
 
     // wait for last key
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
+    client1.invoke(() -> waitForLastKey());
     // full object, server will send full object as only CQ are registered
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.fromDeltaCounter(new Integer(0)));
-    boolean failed =
-        ((Boolean) client1.invoke(() -> PRDeltaPropagationDUnitTest.isFailed())).booleanValue();
+    client1.invoke(() -> fromDeltaCounter(0));
+    boolean failed = client1.invoke(() -> isFailed());
     // no cq events should get miss
     assertTrue("EVENT Missed", failed == true);
 
     // region size should be zero in second client as no registration happens
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.checkRegionSize(new Integer(0)));
+    client1.invoke(() -> checkRegionSize(0));
   }
 
   /**
@@ -571,19 +490,16 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testClientOnAccessorReceivesCqEvents() throws Exception {
-    Object args1[] = new Object[] {REGION_NAME, new Integer(1), new Integer(0), new Integer(8),
-        Boolean.FALSE, null};
-    Object args2[] = new Object[] {REGION_NAME, new Integer(1), new Integer(50), new Integer(8),
-        Boolean.FALSE, null};
-    dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createCacheServerWithPR", args2);
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args1);
+    Object args1[] = new Object[] {REGION_NAME, 1, 0, 8, false, null};
+    Object args2[] = new Object[] {REGION_NAME, 1, 50, 8, false, null};
+
+    dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 8, false, null));
+    int port1 = dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 0, 8, false, null));
 
     // both clients are attached to accessor
-    createClientCache(port1, new Boolean(false), new Boolean(true), new Boolean(false));
+    createClientCache(port1, false, true, false);
     // no register interest but register cq
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port1, new Boolean(false),
-        new Boolean(false), new Boolean(true)));
+    client1.invoke(() -> createClientCache(port1, false, false, true));
 
     // feed delta
     // This delta obj satisfies CQ
@@ -596,49 +512,39 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     deltaPR.put(LAST_KEY, new DeltaTestImpl(8, ""));
 
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
-    boolean flag =
-        ((Boolean) client1.invoke(() -> PRDeltaPropagationDUnitTest.verifyQueryUpdateExecuted()))
-            .booleanValue();
+    client1.invoke(() -> waitForLastKey());
+    boolean flag = client1.invoke(() -> verifyQueryUpdateExecuted());
     assertTrue("client update cq not executed properly", flag);
-    flag =
-        ((Boolean) client1.invoke(() -> PRDeltaPropagationDUnitTest.verifyQueryDestroyExecuted()))
-            .booleanValue();
+    flag = client1.invoke(() -> verifyQueryDestroyExecuted());
     assertTrue("client destroy cq not executed properly", flag);
   }
 
   /**
-   * Toplogy: PR: Accessor,DataStore,Bridge server; configured for 2 buckets and redundancy 1
+   * Topology: PR: Accessor,DataStore,Bridge server; configured for 2 buckets and redundancy 1
    * DataStore has primary while BridgeServer has secondary of bucket. client connects to PR
    * Accessor client1 connects to PR BridgeServer client1 registers CQ client puts delta objects on
    * accessor Verify on client1 that queryUpdate and queryDestroy are executed properly
    */
   @Test
   public void testCQClientOnRedundantBucketReceivesCQEvents() throws Exception {
-    // args for accessor
-    Object args1[] = new Object[] {REGION_NAME, new Integer(1), new Integer(0), new Integer(2),
-        Boolean.FALSE, null};
-    // args for dataStore with 2 buckets
-    Object args2[] = new Object[] {REGION_NAME, new Integer(1), new Integer(50), new Integer(2),
-        Boolean.FALSE, null};
-
     // dataStore2 is DataStore
     // implicit put of DELTA_KEY creates primary bucket on dataStore2
-    dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createCacheServerWithPR", args2);
+    dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 2, false, null));
+
     // dataStore3 is BridgeServer
     // this has secondary bucket
-    Integer port3 = (Integer) dataStore3.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args2);
+    int port3 =
+        dataStore3.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 2, false, null));
+
     // dataStore1 is accessor
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args1);
+    int port1 = dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 0, 2, false, null));
 
     // this client is attached to accessor - (port1)
-    createClientCache(port1, new Boolean(false), new Boolean(true), new Boolean(false));
+    createClientCache(port1, false, true, false);
+
     // client1 is attached to BridgeServer dataStore3
     // client1 does not registerInterest but registers cq
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port3, new Boolean(false),
-        new Boolean(false), new Boolean(true)));
+    client1.invoke(() -> createClientCache(port3, false, false, true));
 
     // create delta keys (1 primary 1 redundant bucket on each dataStore)
     DeltaTestImpl test = new DeltaTestImpl(8, "");
@@ -649,21 +555,17 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     deltaPR.put(LAST_KEY, new DeltaTestImpl(8, ""));
 
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
+    client1.invoke(() -> waitForLastKey());
     // verify no delta is sent by server to client1
-    dataStore3.invoke(() -> PRDeltaPropagationDUnitTest.verifyDeltaSent(Integer.valueOf(1)));
-    boolean flag =
-        ((Boolean) client1.invoke(() -> PRDeltaPropagationDUnitTest.verifyQueryUpdateExecuted()))
-            .booleanValue();
+    dataStore3.invoke(() -> verifyDeltaSent(1));
+    boolean flag = client1.invoke(() -> verifyQueryUpdateExecuted());
     assertTrue("client update cq not executed properly", flag);
-    flag =
-        ((Boolean) client1.invoke(() -> PRDeltaPropagationDUnitTest.verifyQueryDestroyExecuted()))
-            .booleanValue();
+    flag = client1.invoke(() -> verifyQueryDestroyExecuted());
     assertTrue("client destroy cq not executed properly", flag);
   }
 
   /**
-   * Toplogy: PR: Accessor,DataStore,Bridge server; configured for 2 buckets and redundancy 1
+   * Topology: PR: Accessor,DataStore,Bridge server; configured for 2 buckets and redundancy 1
    * DataStore has primary while BridgeServer has secondary of bucket. client connects to PR
    * Accessor client1 connects to PR BridgeServer client1 registers Interest as well as CQ client
    * puts delta objects on accessor Verify that client1 receives 2 deltas for 2 updates (due to RI)
@@ -671,30 +573,24 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testCQRIClientOnRedundantBucketReceivesDeltaAndCQEvents() throws Exception {
-    // args for accessor
-    Object args1[] = new Object[] {REGION_NAME, new Integer(1), new Integer(0), new Integer(2),
-        Boolean.FALSE, null};
-    // args for dataStore with 2 buckets
-    Object args2[] = new Object[] {REGION_NAME, new Integer(1), new Integer(50), new Integer(2),
-        Boolean.FALSE, null};
-
     // dataStore2 is DataStore
     // implicit put of DELTA_KEY creates primary bucket on dataStore2
-    dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createCacheServerWithPR", args2);
+    dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 2, false, null));
+
     // dataStore3 is BridgeServer
     // this has secondary bucket
-    Integer port3 = (Integer) dataStore3.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args2);
+    int port3 =
+        dataStore3.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 2, false, null));
+
     // dataStore1 is accessor
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args1);
+    int port1 = dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 0, 2, false, null));
 
     // this client is attached to accessor - (port1)
-    createClientCache(port1, new Boolean(false), new Boolean(true), new Boolean(false));
+    createClientCache(port1, false, true, false);
+
     // client1 is attached to BridgeServer dataStore3
     // client1 registers Interest as well as cq
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port3, new Boolean(true),
-        new Boolean(false), new Boolean(true)));
+    client1.invoke(() -> createClientCache(port3, true, false, true));
 
     // create delta keys (1 primary 1 redundant bucket on each dataStore)
     DeltaTestImpl test = new DeltaTestImpl(8, "");
@@ -705,15 +601,11 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     deltaPR.put(LAST_KEY, new DeltaTestImpl(8, ""));
 
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.fromDeltaCounter(new Integer(1)));
-    boolean flag =
-        ((Boolean) client1.invoke(() -> PRDeltaPropagationDUnitTest.verifyQueryUpdateExecuted()))
-            .booleanValue();
+    client1.invoke(() -> waitForLastKey());
+    client1.invoke(() -> fromDeltaCounter(1));
+    boolean flag = client1.invoke(() -> verifyQueryUpdateExecuted());
     assertTrue("client update cq not executed properly", flag);
-    flag =
-        ((Boolean) client1.invoke(() -> PRDeltaPropagationDUnitTest.verifyQueryDestroyExecuted()))
-            .booleanValue();
+    flag = client1.invoke(() -> verifyQueryDestroyExecuted());
     assertTrue("client destroy cq not executed properly", flag);
   }
 
@@ -725,20 +617,16 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testDeltaPropagationWithAdjunctMessaging() throws Exception {
-    Object args1[] = new Object[] {REGION_NAME, new Integer(0), new Integer(0), new Integer(8),
-        Boolean.FALSE, null};
-    Object args2[] = new Object[] {REGION_NAME, new Integer(0), new Integer(50), new Integer(8),
-        Boolean.FALSE, null};
-    dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createCacheServerWithPR", args2);
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args1);
-    createClientCache(port1, new Boolean(true), new Boolean(false), new Boolean(false));
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port1, new Boolean(true),
-        new Boolean(false), new Boolean(false)));
+    dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 50, 8, false, null));
+
+    int port1 = dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 0, 8, false, null));
+
+    createClientCache(port1, true, false, false);
+    client1.invoke(() -> createClientCache(port1, true, false, false));
     int deltaSent = putsWhichReturnsDeltaSent();
 
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.checkDeltaInvoked(new Integer(deltaSent)));
+    client1.invoke(() -> waitForLastKey());
+    client1.invoke(() -> checkDeltaInvoked(deltaSent));
   }
 
   /**
@@ -750,27 +638,23 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testDeltaPropagationWithAdjunctMessagingForEmptyClient() throws Exception {
-    Object args1[] = new Object[] {REGION_NAME, new Integer(0), new Integer(0), new Integer(8),
-        Boolean.FALSE, null};
-    Object args2[] = new Object[] {REGION_NAME, new Integer(0), new Integer(50), new Integer(8),
-        Boolean.FALSE, null};
-    dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createCacheServerWithPR", args2);
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", args1);
-    // Empty data policy on client
-    createClientCache(port1, new Boolean(true), new Boolean(true), new Boolean(false));
+    dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 50, 8, false, null));
 
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.createClientCache(port1, new Boolean(true),
-        new Boolean(false), new Boolean(false)));
+    Integer port1 =
+        dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 0, 8, false, null));
+
+    // Empty data policy on client
+    createClientCache(port1, true, true, false);
+
+    client1.invoke(() -> createClientCache(port1, true, false, false));
 
     // Feed on an accessor
-    int deltaSent =
-        (Integer) dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.putsWhichReturnsDeltaSent());
+    int deltaSent = dataStore1.invoke(() -> putsWhichReturnsDeltaSent());
 
     waitForLastKey();
-    checkDeltaInvoked(new Integer(0));
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.waitForLastKey());
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.checkDeltaInvoked(new Integer(deltaSent)));
+    checkDeltaInvoked(0);
+    client1.invoke(() -> waitForLastKey());
+    client1.invoke(() -> checkDeltaInvoked(deltaSent));
   }
 
   /**
@@ -782,118 +666,102 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testDeltaPropagationWithAdjunctMessagingAndBadDelta() throws Exception {
-    Object accessor[] = new Object[] {REGION_NAME, 0, 0, 8, Boolean.FALSE, null};
-    Object dataStore[] = new Object[] {REGION_NAME, 0, 50, 8, Boolean.FALSE, null};
+    dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 50, 8, false, null));
 
-    dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createCacheServerWithPR", dataStore);
-    Integer port1 = (Integer) dataStore1.invoke(PRDeltaPropagationDUnitTest.class,
-        "createCacheServerWithPR", accessor);
+    int port1 = dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 0, 0, 8, false, null));
 
     createClientCache(port1, true, false, false);
 
     PRDeltaTestImpl val1 = new PRDeltaTestImpl();
     val1.setIntVar(11);
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.put(val1));
+    dataStore2.invoke(() -> put(val1));
 
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.setBadToDelta(true));
+    dataStore2.invoke(() -> setBadToDelta(true));
     try {
       PRDeltaTestImpl val2 = new PRDeltaTestImpl();
       val2.setIntVar(22);
-      dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.put(val2));
+      dataStore2.invoke(() -> put(val2));
       fail("Did not expect successful delta put.");
-    } catch (Exception e) {
+    } catch (Exception expected) {
       // expected
     }
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.checkVal(val1));
+    dataStore2.invoke(() -> checkVal(val1));
   }
 
-  public static void checkToDeltaCounter(Integer count) {
+  private void checkToDeltaCounter(int count) {
     assertTrue(
-        "ToDelta counters do not match, expected: " + count.intValue() + ", actual: "
+        "ToDelta counters do not match, expected: " + count + ", actual: "
             + DeltaTestImpl.getToDeltaInvokations(),
-        DeltaTestImpl.getToDeltaInvokations() == count.intValue());
+        DeltaTestImpl.getToDeltaInvokations() == count);
     DeltaTestImpl.resetDeltaInvokationCounters();
   }
 
   // check and reset delta counters
-  public static void fromDeltaCounter(Integer count) {
+  private void fromDeltaCounter(int count) {
     assertTrue(
-        "FromDelta counters do not match, expected: " + count.intValue() + ", but actual: "
+        "FromDelta counters do not match, expected: " + count + ", but actual: "
             + DeltaTestImpl.getFromDeltaInvokations(),
-        DeltaTestImpl.getFromDeltaInvokations() == count.intValue());
+        DeltaTestImpl.getFromDeltaInvokations() == count);
     DeltaTestImpl.resetDeltaInvokationCounters();
   }
 
-  public static void checkIsFailed() {
+  private void checkIsFailed() {
     assertFalse("Full value is not reeived by server", isFailed);
   }
 
-  public static Boolean isFailed() {
+  private boolean isFailed() {
     return isFailed;
   }
 
-  public static void checkRegionSize(Integer i) {
-    assertTrue("Region size is not zero ", cache.getRegion(REGION_NAME).size() == i);
+  private void checkRegionSize(int value) {
+    assertTrue("Region size is not zero ", cache.getRegion(REGION_NAME).size() == value);
   }
 
-  public static void checkCloning() {
+  private void checkCloning() {
     assertFalse("Cloning is enabled ",
         cache.getRegion(REGION_NAME).getAttributes().getCloningEnabled());
   }
 
-  public static void invalidateDeltaKey() {
+  private void invalidateDeltaKey() {
     deltaPR.invalidate(DELTA_KEY);
   }
 
-  public static void createCacheInVm() {
-    new PRDeltaPropagationDUnitTest().createCache(new Properties());
+  private void createCacheInVm() {
+    createCache(new Properties());
   }
 
-  public void createCache(Properties props) {
-    try {
-      DistributedSystem ds = getSystem(props);
-      assertNotNull(ds);
-      ds.disconnect();
-      ds = getSystem(props);
-      cache = CacheFactory.create(ds);
-      assertNotNull(cache);
-    } catch (Exception e) {
-      Assert.fail("Failed while creating the cache", e);
-    }
+  public void createCache(Properties config) {
+    DistributedSystem ds = getSystem(config);
+    assertNotNull(ds);
+    ds.disconnect();
+    ds = getSystem(config);
+    cache = CacheFactory.create(ds);
+    assertNotNull(cache);
   }
 
-  private static void createDeltaPR(Boolean setExpiry) {
-    Object args[] = new Object[] {"DeltaPR", new Integer(1), new Integer(50), new Integer(8),
-        setExpiry, false, null};
-    createPR("DeltaPR", new Integer(1), new Integer(0), new Integer(8), setExpiry, false, null);
-    dataStore1.invoke(PRDeltaPropagationDUnitTest.class, "createPR", args);
-    dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createPR", args);
-
+  private void createDeltaPR(boolean expiry) {
+    createPR("DeltaPR", 1, 0, 8, expiry, false, null);
+    dataStore1.invoke(() -> createPR("DeltaPR", 1, 50, 8, expiry, false, null));
+    dataStore2.invoke(() -> createPR("DeltaPR", 1, 50, 8, expiry, false, null));
   }
 
-  private static void createDeltaPRWithCloning(Boolean setExpiry) {
-    Object args[] = new Object[] {"DeltaPR", new Integer(1), new Integer(50), new Integer(8),
-        setExpiry, true, null};
-    createPR("DeltaPR", new Integer(1), new Integer(0), new Integer(8), setExpiry, true, null);
-    dataStore1.invoke(PRDeltaPropagationDUnitTest.class, "createPR", args);
-    dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createPR", args);
-
+  private void createDeltaPRWithCloning(boolean expiry) {
+    createPR("DeltaPR", 1, 0, 8, expiry, true, null);
+    dataStore1.invoke(() -> createPR("DeltaPR", 1, 50, 8, expiry, true, null));
+    dataStore2.invoke(() -> createPR("DeltaPR", 1, 50, 8, expiry, true, null));
   }
 
-  public static void createPR(String partitionedRegionName, Integer redundancy,
-      Integer localMaxMemory, Integer totalNumBuckets, Boolean setExpiry, Boolean withCloning,
-      Compressor compressor) {
-
+  private void createPR(String partitionedRegionName, int redundancy, int localMaxMemory,
+      int totalNumBuckets, boolean expiry, boolean withCloning, Compressor compressor) {
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes prAttr =
-        paf.setRedundantCopies(redundancy.intValue()).setLocalMaxMemory(localMaxMemory.intValue())
-            .setTotalNumBuckets(totalNumBuckets.intValue()).create();
+    PartitionAttributes prAttr = paf.setRedundantCopies(redundancy)
+        .setLocalMaxMemory(localMaxMemory).setTotalNumBuckets(totalNumBuckets).create();
     AttributesFactory attr = new AttributesFactory();
     attr.setPartitionAttributes(prAttr);
     attr.setDataPolicy(DataPolicy.PARTITION);
     attr.setConcurrencyChecksEnabled(true);
     attr.setCloningEnabled(withCloning);
-    if (setExpiry) {
+    if (expiry) {
       attr.setStatisticsEnabled(true);
       attr.setEntryIdleTimeout(new ExpirationAttributes(1, ExpirationAction.INVALIDATE));
     }
@@ -904,17 +772,15 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     assertNotNull(cache);
     deltaPR = cache.createRegion(partitionedRegionName, attr.create());
     assertNotNull(deltaPR);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region " + partitionedRegionName + " created Successfully :" + deltaPR);
   }
 
-  public static Integer createCacheServerWithPR(String partitionedRegionName, Integer redundancy,
-      Integer localMaxMemory, Integer totalNumBuckets, Boolean setExpiry, Compressor compressor) {
-
+  private int createCacheServerWithPR(String partitionedRegionName, int redundancy,
+      int localMaxMemory, int totalNumBuckets, boolean expiry, Compressor compressor)
+      throws IOException {
     createCacheInVm();
 
-    createPR(partitionedRegionName, redundancy, localMaxMemory, totalNumBuckets, setExpiry,
-        Boolean.FALSE, compressor);
+    createPR(partitionedRegionName, redundancy, localMaxMemory, totalNumBuckets, expiry, false,
+        compressor);
     deltaPR.put(DELTA_KEY, new PRDeltaTestImpl());
 
     CacheServer server1 = cache.addCacheServer();
@@ -922,23 +788,18 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server1.setPort(port);
-    try {
-      server1.start();
-    } catch (IOException e) {
-      Assert.fail("Failed to start the Server", e);
-    }
+    server1.start();
     assertTrue(server1.isRunning());
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
-  public static Integer createServerCache(Boolean isListAttach, Boolean isEmpty) throws Exception {
-
+  private int createServerCache(Boolean isListAttach, Boolean isEmpty) throws IOException {
     Properties props = new Properties();
-    new PRDeltaPropagationDUnitTest().createCache(props);
+    createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setConcurrencyChecksEnabled(true);
-    if (isEmpty.booleanValue()) {
+    if (isEmpty) {
       factory.setDataPolicy(DataPolicy.EMPTY);
     } else {
       factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -948,7 +809,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     RegionAttributes attrs = factory.create();
     deltaPR = cache.createRegion(REGION_NAME, attrs);
     AttributesMutator am = deltaPR.getAttributesMutator();
-    if (isListAttach.booleanValue()) {
+    if (isListAttach) {
       am.addCacheListener(new CacheListenerAdapter() {
         @Override
         public void afterCreate(EntryEvent event) {
@@ -974,16 +835,15 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     // ensures updates to be sent instead of invalidations
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
-  public static void createClientCache(Integer port1, Boolean subscriptionEnable, Boolean isEmpty,
-      Boolean isCq) throws Exception {
-    PRDeltaPropagationDUnitTest test = new PRDeltaPropagationDUnitTest();
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    test.createCache(props);
+  public void createClientCache(int port1, boolean subscriptionEnable, boolean isEmpty,
+      boolean isCq) throws Exception {
+    Properties config = new Properties();
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
+    createCache(config);
 
     lastKeyReceived = false;
     queryUpdateExecuted = false;
@@ -992,6 +852,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     isFailed = false;
     procced = false;
     numValidCqEvents = 0;
+
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer("localhost", port1)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(0).setThreadLocalConnections(true)
         .setMinConnections(6).setReadTimeout(20000).setPingInterval(10000).setRetryAttempts(5)
@@ -1001,7 +862,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setConcurrencyChecksEnabled(true);
 
-    if (isEmpty.booleanValue()) {
+    if (isEmpty) {
       factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
       factory.setDataPolicy(DataPolicy.EMPTY);
     }
@@ -1019,15 +880,14 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     RegionAttributes attrs = factory.create();
     deltaPR = cache.createRegion(REGION_NAME, attrs);
-    if (subscriptionEnable.booleanValue()) {
+    if (subscriptionEnable) {
       deltaPR.registerInterest("ALL_KEYS");
     }
     pool = p;
-    if (isCq.booleanValue()) {
+    if (isCq) {
       CqAttributesFactory cqf = new CqAttributesFactory();
       CqListenerAdapter cqlist = new CqListenerAdapter() {
         @Override
-        @SuppressWarnings("synthetic-access")
         public void onEvent(CqEvent cqEvent) {
           if (LAST_KEY.equals(cqEvent.getKey().toString())) {
             lastKeyReceived = true;
@@ -1042,7 +902,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
             queryDestroyExecuted = true;
           }
 
-          if (forOldNewCQVarification) {
+          if (forOldNewCQVerification) {
             if (DELTA_KEY.equals(cqEvent.getKey().toString())) {
               if (numValidCqEvents == 0
                   && ((DeltaTestImpl) cqEvent.getNewValue()).getIntVar() == 8) {
@@ -1054,6 +914,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
               }
             }
           }
+
           numValidCqEvents++;
         }
       };
@@ -1064,12 +925,11 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void createClientCache(Integer port1, Integer port2) throws Exception {
-    PRDeltaPropagationDUnitTest test = new PRDeltaPropagationDUnitTest();
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    test.createCache(props);
+  public void createClientCache(Integer port1, Integer port2) throws Exception {
+    Properties config = new Properties();
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
+    createCache(config);
 
     lastKeyReceived = false;
 
@@ -1083,6 +943,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     factory.setPoolName(p.getName());
     factory.setCloningEnabled(false);
     factory.setConcurrencyChecksEnabled(true);
+
     factory.addCacheListener(new CacheListenerAdapter() {
       @Override
       public void afterCreate(EntryEvent event) {
@@ -1094,19 +955,17 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     RegionAttributes attrs = factory.create();
     deltaPR = cache.createRegion(REGION_NAME, attrs);
-    // deltaPR.create(DELTA_KEY, new PRDeltaTestImpl());
     deltaPR.registerInterest("ALL_KEYS");
     pool = p;
-
   }
 
-  public static void createCacheInAllPRVms() {
+  private void createCacheInAllPRVms() {
     createCacheInVm();
-    dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.createCacheInVm());
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.createCacheInVm());
+    dataStore1.invoke(() -> createCacheInVm());
+    dataStore2.invoke(() -> createCacheInVm());
   }
 
-  public static void put() throws Exception {
+  public void put() throws Exception {
     PRDeltaTestImpl test = new PRDeltaTestImpl();
     deltaPR.put(DELTA_KEY, test);
 
@@ -1119,7 +978,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     deltaPR.put(DELTA_KEY, test);
   }
 
-  public static PRDeltaTestImpl putInitial() throws Exception {
+  private PRDeltaTestImpl putInitial() throws Exception {
     PRDeltaTestImpl test = new PRDeltaTestImpl();
     deltaPR.put(DELTA_KEY, test);
 
@@ -1132,7 +991,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     return test;
   }
 
-  public static void putMore(PRDeltaTestImpl val) throws Exception {
+  private void putMore(PRDeltaTestImpl val) throws Exception {
     val.setIntVar(13);
     put(val);
 
@@ -1140,16 +999,16 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     put(val);
   }
 
-  public static void put(PRDeltaTestImpl val) throws Exception {
+  public void put(PRDeltaTestImpl val) throws Exception {
     deltaPR.put(DELTA_KEY, val);
   }
 
-  public static void checkVal(PRDeltaTestImpl val) throws Exception {
+  private void checkVal(PRDeltaTestImpl val) throws Exception {
     PRDeltaTestImpl localVal = (PRDeltaTestImpl) deltaPR.get(DELTA_KEY);
     assertEquals(val, localVal);
   }
 
-  public static void putWithExpiry() throws Exception {
+  private void putWithExpiry() throws Exception {
     DeltaTestImpl test = new DeltaTestImpl();
     deltaPR.put(DELTA_KEY, test);
 
@@ -1161,10 +1020,9 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     test = new DeltaTestImpl();
     test.setStr("DELTA");
     deltaPR.put(DELTA_KEY, test);
-
   }
 
-  public static int putsWhichReturnsDeltaSent() throws Exception {
+  private int putsWhichReturnsDeltaSent() throws Exception {
     prDelta = new PRDeltaTestImpl();
     for (int i = 0; i < NO_PUTS; i++) {
       prDelta.setIntVar(i);
@@ -1175,35 +1033,37 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     return prDelta.deltaSent;
   }
 
-  public static Boolean checkForDelta() {
+  private Boolean checkForDelta() {
     if (DeltaTestImpl.fromDeltaFeatureUsed()) {
       assertTrue(((DeltaTestImpl) deltaPR.getEntry("DELTA_KEY").getValue()).getIntVar() == 10);
       assertTrue(
           ((DeltaTestImpl) deltaPR.getEntry("DELTA_KEY").getValue()).getStr().equals("DELTA"));
-      return Boolean.TRUE;
+      return true;
     } else {
-      return Boolean.FALSE;
+      return false;
     }
   }
 
-  public static void checkForFullObject() {
+  private void checkForFullObject() {
     assertFalse(((DeltaTestImpl) deltaPR.getEntry("DELTA_KEY").getValue()).getIntVar() == 10);
     assertTrue(((DeltaTestImpl) deltaPR.getEntry("DELTA_KEY").getValue()).getStr().equals("DELTA"));
   }
 
-  public static void checkDeltaInvoked(Integer deltaSent) {
+  private void checkDeltaInvoked(Integer deltaSent) {
     assertTrue(
         "Delta applied :" + ((PRDeltaTestImpl) deltaPR.get("DELTA_KEY")).getDeltaApplied()
             + "\n Delta sent :" + deltaSent,
         ((PRDeltaTestImpl) deltaPR.get("DELTA_KEY")).getDeltaApplied() == deltaSent);
   }
 
-  public static void waitForLastKey() {
+  private void waitForLastKey() {
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
-        return PRDeltaPropagationDUnitTest.isLastKeyReceived();
+        return isLastKeyReceived();
       }
 
+      @Override
       public String description() {
         return "Last key NOT received.";
       }
@@ -1211,23 +1071,23 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     Wait.waitForCriterion(wc, 10 * 1000, 100, true);
   }
 
-  public static Boolean verifyQueryUpdateExecuted() {
-    return PRDeltaPropagationDUnitTest.queryUpdateExecuted;
+  private boolean verifyQueryUpdateExecuted() {
+    return queryUpdateExecuted;
   }
 
-  public static Boolean verifyQueryDestroyExecuted() {
-    return PRDeltaPropagationDUnitTest.queryDestroyExecuted;
+  private boolean verifyQueryDestroyExecuted() {
+    return queryDestroyExecuted;
   }
 
-  public static Boolean checkVMRecievesDeltaObjectThrCQListner() {
-    return PRDeltaPropagationDUnitTest.notADeltaInstanceObj;
+  public boolean checkVMRecievesDeltaObjectThrCQListner() {
+    return notADeltaInstanceObj;
   }
 
-  public static boolean isLastKeyReceived() {
+  public boolean isLastKeyReceived() {
     return lastKeyReceived;
   }
 
-  public static void verifyDeltaSent(Integer deltas) {
+  private void verifyDeltaSent(int deltas) {
     CacheClientNotifier ccn = ((CacheServerImpl) cache.getCacheServers().toArray()[0]).getAcceptor()
         .getCacheClientNotifier();
 
@@ -1237,44 +1097,76 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         numOfDeltasSent == deltas);
   }
 
-  public static void resetAll() {
+  private void resetAll() {
     DeltaTestImpl.resetDeltaInvokationCounters();
     ConflationDUnitTest.unsetIsSlowStart();
   }
 
-  @Override
-  public final void preTearDown() throws Exception {
-    closeCache();
-    client1.invoke(() -> PRDeltaPropagationDUnitTest.closeCache());
-    dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.closeCache());
-    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.closeCache());
-    dataStore3.invoke(() -> PRDeltaPropagationDUnitTest.closeCache());
+  private void setBadToDelta(boolean value) {
+    isBadToDelta = value;
   }
 
-  public static void closeCache() {
-    if (cache != null && !cache.isClosed()) {
-      cache.close();
-      cache.getDistributedSystem().disconnect();
-      DeltaTestImpl.resetDeltaInvokationCounters();
-      isFailed = false;
+  public void setBadFromDelta(boolean value) {
+    isBadToDelta = value;
+  }
+
+  private void setForOldNewCQVerification(boolean value) {
+    forOldNewCQVerification = value;
+  }
+
+  private void verifyConstructorCount(int timesConstructed) throws Exception {
+    long buildCount0 = getBuildCount();
+    long buildCount1 = dataStore1.invoke(() -> getBuildCount());
+    long buildCount2 = dataStore2.invoke(() -> getBuildCount());
+
+    for (Exception exception : DeltaTestImpl.getInstantiations()) {
+      exception.printStackTrace();
     }
-    isBadToDelta = false;
-    isBadFromDelta = false;
+
+    assertEquals(1, buildCount0);
+    assertEquals(timesConstructed, buildCount1);
+    assertEquals(timesConstructed, buildCount2);
   }
 
-  public static void setBadToDelta(Boolean bool) {
-    isBadToDelta = bool;
+  private void setPRCloning(boolean value) {
+    setCloningEnabled(value);
+    dataStore1.invoke(() -> setCloningEnabled(value));
+    dataStore2.invoke(() -> setCloningEnabled(value));
   }
 
-  public static void setBadFromDelta(Boolean bool) {
-    isBadToDelta = bool;
+  private void setCloningEnabled(boolean value) {
+    ((LocalRegion) deltaPR).setCloningEnabled(value);
+  }
+
+  private void verifyNoCopy() {
+    // Ensure not some other reason to make a copy
+    FilterProfile fp = ((LocalRegion) deltaPR).getFilterProfile();
+    boolean copy = ((LocalRegion) deltaPR).getCompressor() == null
+        && (((LocalRegion) deltaPR).isCopyOnRead() || (fp != null && fp.getCqCount() > 0));
+    assertFalse(copy);
+  }
+
+  private void clearConstructorCounts() throws Exception {
+    setBuildCount(0);
+    dataStore1.invoke(() -> setBuildCount(0));
+    dataStore2.invoke(() -> setBuildCount(0));
+  }
+
+  private long getBuildCount() throws Exception {
+    return DeltaTestImpl.getTimesConstructed();
+  }
+
+  private void setBuildCount(long cnt) throws Exception {
+    DeltaTestImpl.setTimesConstructed(cnt);
   }
 
   static class PRDeltaTestImpl extends DeltaTestImpl {
     int deltaSent = 0;
     int deltaApplied = 0;
 
-    public PRDeltaTestImpl() {}
+    public PRDeltaTestImpl() {
+      // nothing
+    }
 
     @Override
     public void toDelta(DataOutput out) throws IOException {
@@ -1298,7 +1190,7 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       return deltaSent;
     }
 
-    public int getDeltaApplied() {
+    int getDeltaApplied() {
       return deltaApplied;
     }
 
@@ -1306,9 +1198,5 @@ public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     public String toString() {
       return "PRDeltaTestImpl[deltaApplied=" + deltaApplied + "]" + super.toString();
     }
-  }
-
-  public static void setForOldNewCQVarification(Boolean forOldNewCQVarification) {
-    PRDeltaPropagationDUnitTest.forOldNewCQVarification = forOldNewCQVarification.booleanValue();
   }
 }

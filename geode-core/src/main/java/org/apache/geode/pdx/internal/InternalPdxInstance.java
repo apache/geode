@@ -12,18 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.query.data;
+package org.apache.geode.pdx.internal;
 
-import java.io.Serializable;
+import org.apache.geode.pdx.PdxInstance;
 
-public class Street implements Serializable {
-  public String street;
-  public String lane;
-
-  /** Creates a new instance of Street */
-  public Street(String street, String lane) {
-    this.street = street;
-    this.lane = lane;
-  }
-
+public interface InternalPdxInstance extends PdxInstance, ConvertableToBytes {
 }

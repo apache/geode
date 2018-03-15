@@ -42,7 +42,6 @@ import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
 
@@ -55,8 +54,7 @@ import org.apache.geode.pdx.WritablePdxInstance;
  * We do not use this normal java io serialization when serializing this class in GemFire because
  * Sendable takes precedence over Serializable.
  */
-public class PdxInstanceImpl extends PdxReaderImpl
-    implements PdxInstance, Sendable, ConvertableToBytes {
+public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstance, Sendable {
 
   private static final long serialVersionUID = -1669268527103938431L;
 
@@ -135,6 +133,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
     }
   }
 
+  @Override
   public Object getField(String fieldName) {
     return getUnmodifiableReader(fieldName).readField(fieldName);
   }
@@ -155,7 +154,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
     return writer;
   }
 
-  // Sendable implementation
+  @Override
   public void sendTo(DataOutput out) throws IOException {
     PdxReaderImpl ur = getUnmodifiableReader();
     if (ur.getPdxType().getHasDeletedField()) {
@@ -169,6 +168,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
     }
   }
 
+  @Override
   public byte[] toBytes() {
     PdxReaderImpl ur = getUnmodifiableReader();
     if (ur.getPdxType().getHasDeletedField()) {
@@ -474,6 +474,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
     return result.toString();
   }
 
+  @Override
   public List<String> getFieldNames() {
     return getPdxType().getFieldNames();
   }
@@ -488,6 +489,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
     this.cachedObjectForm = null;
   }
 
+  @Override
   public WritablePdxInstance createWriter() {
     if (isEnum()) {
       throw new IllegalStateException("PdxInstances that are an enum can not be modified.");
@@ -617,10 +619,12 @@ public class PdxInstanceImpl extends PdxReaderImpl
     super.basicSendTo(bb);
   }
 
+  @Override
   public String getClassName() {
     return getPdxType().getClassName();
   }
 
+  @Override
   public boolean isEnum() {
     return false;
   }

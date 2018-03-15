@@ -12,29 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * Employee.java
- *
- * Created on March 2, 2005, 12:29 PM
- */
-
 package org.apache.geode.cache.query.data;
 
-import java.util.*;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- *
- */
-public class Employee {
+public class Employee implements Serializable {
   private String name;
   private int age;
   private int empId;
   private Set addresses;
   private String title;
   private int salary;
-  private PhoneNo phoneNo = null;
-
-  // private Set subordinates;
+  private PhoneNo phoneNo;
 
   public String name() {
     return name;
@@ -80,5 +71,4 @@ public class Employee {
     ph.add(this.phoneNo);
     return ph;
   }
-
-}// end of employee class
+}
