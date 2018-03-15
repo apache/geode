@@ -12,16 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * InOperatorTest.java
- *
- * Created on March 24, 2005, 5:08 PM
- */
 package org.apache.geode.cache.query.functional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,12 +41,8 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, OQLQueryTest.class})
 public class INOperatorJUnitTest {
-
 
   @Before
   public void setUp() throws Exception {
@@ -80,7 +73,7 @@ public class INOperatorJUnitTest {
   @Ignore
   @Test
   public void testInDecompositionWithFunctionalIndex() throws Exception {
-
+    // TODO: this test was never implemented?
   }
 
   @Test
@@ -108,13 +101,13 @@ public class INOperatorJUnitTest {
     expectedResults = new HashSet();
     expectedResults.add(new Integer(6));
     expectedResults.add(new Integer(10));
-    assertEquals(expectedResults, results.asSet());
+    assertThat(results.asSet()).isEqualTo(expectedResults);
 
     q = qs.newQuery("SELECT e.value FROM /pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"42"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
-    assertEquals(expectedResults, results.asSet());
+    assertThat(results.asSet()).isEqualTo(expectedResults);
 
     for (int i = 0; i < 1000; i++) {
       region.put(String.valueOf(i), new Integer(i));
@@ -127,35 +120,30 @@ public class INOperatorJUnitTest {
     expectedResults.add(new Integer(6));
     expectedResults.add(new Integer(10));
     expectedResults.add(new Integer(45));
-    assertEquals(expectedResults, results.asSet());
+    assertThat(results.asSet()).isEqualTo(expectedResults);
 
     q = qs.newQuery("SELECT e.key, e.value FROM /pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
-    assertEquals(4, results.size());
+    assertThat(results).hasSize(4);
 
     region.destroyRegion();
   }
 
-
   @Test
   public void testIntSet() throws Exception {
-
     Query q = CacheUtils.getQueryService().newQuery("2 IN SET(1,2,3)");
 
     Object result = q.execute();
-    if (!result.equals(Boolean.TRUE))
-      fail("Failed for IN operator");
+    assertThat(result).isEqualTo(TRUE);
   }
 
   @Test
   public void testStringSet() throws Exception {
-
     Query q = CacheUtils.getQueryService().newQuery("'a' IN SET('x','y','z')");
 
     Object result = q.execute();
-    if (!result.equals(Boolean.FALSE))
-      fail("Failed for StringSet with IN operator");
+    assertThat(result).isEqualTo(FALSE);
   }
 
   @Test
@@ -165,8 +153,7 @@ public class INOperatorJUnitTest {
     params[0] = num;
     Query q = CacheUtils.getQueryService().newQuery("$1 IN SET(1,2,3)");
     Object result = q.execute(params);
-    if (!result.equals(Boolean.TRUE))
-      fail("Failed for ShortNum with IN operator");
+    assertThat(result).isEqualTo(TRUE);
   }
 
   @Test
@@ -185,8 +172,7 @@ public class INOperatorJUnitTest {
 
     Query q = CacheUtils.getQueryService().newQuery("$3 IN $2");
     Object result = q.execute(params);
-    if (!result.equals(Boolean.TRUE))
-      fail("Failed for Collection with IN operator");
+    assertThat(result).isEqualTo(TRUE);
   }
 
   @Test
@@ -201,8 +187,7 @@ public class INOperatorJUnitTest {
     params[1] = H1;
     Query q = CacheUtils.getQueryService().newQuery("$1 IN $2");
     Object result = q.execute(params);
-    if (!result.equals(Boolean.TRUE))
-      fail("Failed for String set with IN operator");
+    assertThat(result).isEqualTo(TRUE);
   }
 
   @Test
@@ -218,40 +203,33 @@ public class INOperatorJUnitTest {
     params[2] = AL1;
     Query q = CacheUtils.getQueryService().newQuery("$1 IN $3");
     Object result = q.execute(params);
-    if (!result.equals(Boolean.TRUE))
-      fail("Failed for ArrayList with IN operator");
+    assertThat(result).isEqualTo(TRUE);
   }
 
   @Test
   public void testNULL() throws Exception {
     Query q = CacheUtils.getQueryService().newQuery(" null IN SET('x','y','z')");
     Object result = q.execute();
-    if (!result.equals(Boolean.FALSE))
-      fail("Failed for NULL in IN operator Test");
+    assertThat(result).isEqualTo(FALSE);
 
     q = CacheUtils.getQueryService().newQuery(" null IN SET(null)");
     result = q.execute();
-    if (!result.equals(Boolean.TRUE))
-      fail("Failed for NULL in IN operator Test");
-
+    assertThat(result).isEqualTo(TRUE);
   }
 
   @Test
   public void testUNDEFINED() throws Exception {
     Query q = CacheUtils.getQueryService().newQuery(" UNDEFINED IN SET(1,2,3)");
     Object result = q.execute();
-    if (!result.equals(Boolean.FALSE))
-      fail("Failed for UNDEFINED with IN operator");
+    assertThat(result).isEqualTo(FALSE);
 
     q = CacheUtils.getQueryService().newQuery(" UNDEFINED IN SET(UNDEFINED)");
     result = q.execute();
-    if (!result.equals(QueryService.UNDEFINED))
-      fail("Failed for UNDEFINED with IN operator");
+    assertThat(result).isEqualTo(QueryService.UNDEFINED);
 
     q = CacheUtils.getQueryService().newQuery(" UNDEFINED IN SET(UNDEFINED,UNDEFINED)");
     result = q.execute();
-    if (!result.equals(QueryService.UNDEFINED))
-      fail("Failed for UNDEFINED with IN operator");
+    assertThat(result).isEqualTo(QueryService.UNDEFINED);
   }
 
   @Test
@@ -262,10 +240,8 @@ public class INOperatorJUnitTest {
     for (int i = 1; i < params.length; i++) {
       params[0] = params[i];
       Object result = q.execute(params);
-      if (!result.equals(Boolean.TRUE))
-        fail("Failed for Mix set with IN operator");
+      assertThat(result).isEqualTo(TRUE);
     }
-
   }
 
   @Test
@@ -293,13 +269,13 @@ public class INOperatorJUnitTest {
     expectedResults = new HashSet();
     expectedResults.add(new Integer(6));
     expectedResults.add(new Integer(10));
-    assertEquals(expectedResults, results.asSet());
+    assertThat(results.asSet()).isEqualTo(expectedResults);
 
     q = qs.newQuery("SELECT e.value FROM /pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"42"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
-    assertEquals(expectedResults, results.asSet());
+    assertThat(results.asSet()).isEqualTo(expectedResults);
 
     for (int i = 0; i < 1000; i++) {
       region.put(String.valueOf(i), new Integer(i));
@@ -312,20 +288,17 @@ public class INOperatorJUnitTest {
     expectedResults.add(new Integer(6));
     expectedResults.add(new Integer(10));
     expectedResults.add(new Integer(45));
-    assertEquals(expectedResults, results.asSet());
+    assertThat(results.asSet()).isEqualTo(expectedResults);
 
     q = qs.newQuery("SELECT e.key, e.value FROM /pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
-    assertEquals(4, results.size());
+    assertThat(results).hasSize(4);
   }
-
 
   /**
    * Tests optimization of compiled in where we no longer evaluate on every iteration The set is
    * saved off into the query context and reused Each query should have it's own query context
-   *
-   * @throws Exception
    */
   @Test
   public void testCacheEvalCollnWithIn() throws Exception {
@@ -352,7 +325,7 @@ public class INOperatorJUnitTest {
     Query q = qs.newQuery(
         "<trace>select r from /receipts r, r.items i where i.productId = 8 and r.customerId in (select c.id from /customers c where c.profile = 'PremiumIndividual')");
     SelectResults results = (SelectResults) q.execute();
-    assertEquals("Not the same size", 500, results.size());
+    assertThat(results).hasSize(500);
 
     for (int i = 1000; i < 1100; i++) {
       customersRegion.put(i, new Customer(i, i % 2 == 0 ? "PremiumIndividual" : "AverageJoe"));
@@ -362,14 +335,12 @@ public class INOperatorJUnitTest {
       }
     }
     results = (SelectResults) q.execute();
-    assertEquals("Not the same size after new inserts", 550, results.size());
+    assertThat(results).hasSize(550);
   }
 
   /**
    * Tests optimization of compiled in where we no longer evaluate on every iteration The set is
    * saved off into the query context and reused Each query should have it's own query context
-   *
-   * @throws Exception
    */
   @Test
   public void testCacheEvalCollnWithInWithMultipleNestedIn() throws Exception {
@@ -396,7 +367,7 @@ public class INOperatorJUnitTest {
     Query q = qs.newQuery(
         "<trace>select r from /receipts r, r.items i where i.productId = 8 and r.customerId in (select c.id from /customers c where c.id in (select d.id from /customers d where d.profile='PremiumIndividual'))");
     SelectResults results = (SelectResults) q.execute();
-    assertEquals("Not the same size", 500, results.size());
+    assertThat(results).hasSize(500);
 
     for (int i = 1000; i < 1100; i++) {
       customersRegion.put(i, new Customer(i, i % 2 == 0 ? "PremiumIndividual" : "AverageJoe"));
@@ -406,10 +377,10 @@ public class INOperatorJUnitTest {
       }
     }
     results = (SelectResults) q.execute();
-    assertEquals("Not the same size after new inserts", 550, results.size());
+    assertThat(results).hasSize(550);
   }
 
-  public class Customer {
+  public static class Customer implements Serializable {
     public int id;
     public String profile;
 
@@ -427,7 +398,7 @@ public class INOperatorJUnitTest {
     }
   }
 
-  public class Receipt {
+  public static class Receipt implements Serializable {
     public int customerId;
     public Item[] items;
 
@@ -445,7 +416,7 @@ public class INOperatorJUnitTest {
     }
   }
 
-  public class Item {
+  public static class Item implements Serializable {
     public int productId;
 
     public Item(int productId) {

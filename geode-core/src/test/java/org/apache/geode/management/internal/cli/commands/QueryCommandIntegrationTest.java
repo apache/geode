@@ -12,12 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
-public class QueryCommandTest {
+public class QueryCommandIntegrationTest {
 
   private final String DEFAULT_FETCH_SIZE = String.valueOf(Gfsh.DEFAULT_APP_FETCH_SIZE);
 
@@ -76,7 +76,7 @@ public class QueryCommandTest {
     connect(server);
   }
 
-  void connect(Server server) throws Exception {
+  protected void connect(Server server) throws Exception {
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
@@ -212,7 +212,7 @@ public class QueryCommandTest {
     return multilineString.split("[\\r\\n]+");
   }
 
-  public static class Customer {
+  public static class Customer implements Serializable {
     public String name;
     public String address;
 

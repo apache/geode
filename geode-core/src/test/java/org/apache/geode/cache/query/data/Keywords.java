@@ -12,16 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * Keywords.java
- *
- * Created on March 10, 2005, 7:01 PM
- */
 package org.apache.geode.cache.query.data;
 
-/**
- */
-public class Keywords {
+import java.io.Serializable;
+
+public class Keywords implements Serializable {
 
   // "select", "distinct", "from", "where", "true", "false","undefined",
   // "element", "not", "and", "or"};
