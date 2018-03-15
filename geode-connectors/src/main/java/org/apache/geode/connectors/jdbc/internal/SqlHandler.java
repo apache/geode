@@ -117,7 +117,11 @@ public class SqlHandler {
       if (value instanceof Character) {
         value = ((Character) value).toString();
       }
-      statement.setObject(index, value);
+      if (value == null) {
+        statement.setNull(index, columnValue.getDataType());
+      } else {
+        statement.setObject(index, value);
+      }
     }
   }
 
@@ -196,27 +200,31 @@ public class SqlHandler {
   <K> List<ColumnValue> getColumnToValueList(Connection connection, RegionMapping regionMapping,
       K key, PdxInstance value, Operation operation) {
     String tableName = regionMapping.getRegionToTableName();
-    String keyColumnName = getKeyColumnName(connection, tableName);
-    ColumnValue keyColumnValue = new ColumnValue(true, keyColumnName, key);
+    TableMetaData tableMetaData = this.tableMetaDataManager.getTableMetaData(connection, tableName);
+    String keyColumnName = tableMetaData.getKeyColumnName();
+    ColumnValue keyColumnValue =
+        new ColumnValue(true, keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
 
     if (operation.isDestroy() || operation.isGet()) {
       return Collections.singletonList(keyColumnValue);
     }
 
-    List<ColumnValue> result = createColumnValueList(regionMapping, value, keyColumnName);
+    List<ColumnValue> result =
+        createColumnValueList(tableMetaData, regionMapping, value, keyColumnName);
     result.add(keyColumnValue);
     return result;
   }
 
-  private List<ColumnValue> createColumnValueList(RegionMapping regionMapping, PdxInstance value,
-      String keyColumnName) {
+  private List<ColumnValue> createColumnValueList(TableMetaData tableMetaData,
+      RegionMapping regionMapping, PdxInstance value, String keyColumnName) {
     List<ColumnValue> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
       String columnName = regionMapping.getColumnNameForField(fieldName);
       if (columnName.equalsIgnoreCase(keyColumnName)) {
         continue;
       }
-      ColumnValue columnValue = new ColumnValue(false, columnName, value.getField(fieldName));
+      ColumnValue columnValue = new ColumnValue(false, columnName, value.getField(fieldName),
+          tableMetaData.getColumnDataType(keyColumnName));
       result.add(columnValue);
     }
     return result;

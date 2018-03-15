@@ -16,9 +16,12 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import java.util.HashMap;
+
 public class TableMetaDataImpl implements TableMetaData {
 
   private final String keyColumnName;
+  private final HashMap<String, Integer> columnNameToTypeMap = new HashMap<>();
 
   public TableMetaDataImpl(String keyColumnName) {
     this.keyColumnName = keyColumnName;
@@ -31,7 +34,14 @@ public class TableMetaDataImpl implements TableMetaData {
 
   @Override
   public int getColumnDataType(String columnName) {
-    return 0;
+    Integer dataType = this.columnNameToTypeMap.get(columnName);
+    if (dataType == null) {
+      return 0;
+    }
+    return dataType;
   }
 
+  public void addDataType(String columnName, int dataType) {
+    this.columnNameToTypeMap.put(columnName, dataType);
+  }
 }

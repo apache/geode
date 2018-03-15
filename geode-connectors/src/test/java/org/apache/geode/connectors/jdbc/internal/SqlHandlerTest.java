@@ -211,6 +211,24 @@ public class SqlHandlerTest {
   }
 
   @Test
+  public void writeWithNullField() throws Exception {
+    String fieldName = "fieldName";
+    Object fieldValue = null;
+    int dataType = 0;
+    when(regionMapping.getColumnNameForField(fieldName)).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setNull(1, dataType);
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
+  @Test
   public void insertActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
     Object createKey = "createKey";
