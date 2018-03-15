@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,15 +49,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
@@ -836,10 +832,9 @@ public class ClusterConfigurationService {
       JAXBContext jaxbContext =
           JAXBContext.newInstance(bindClasses.toArray(new Class[bindClasses.size()]));
       marshaller = jaxbContext.createMarshaller();
-      SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-      Schema schema =
-          factory.newSchema(new URL("http://geode.apache.org/schema/cache/cache-1.0.xsd"));
-      marshaller.setSchema(schema);
+      // currently we are generating the xml from jabx object so we don't need schema validation.
+      // but in the future, we will need to add the various xsd for schema validation. and these
+      // xsd needs to be local (no network access)
       marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
           "http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd");
       marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
