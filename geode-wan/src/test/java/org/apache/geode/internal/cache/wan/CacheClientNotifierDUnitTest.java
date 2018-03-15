@@ -50,7 +50,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({DistributedTest.class, WanTest.class})
@@ -174,67 +173,68 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
 
   public void doMultipleCacheServer(boolean durable) throws Exception {
     /* test scenario: */
-    /* create 1 GatewaySender on vm0 */
-    /* create 1 GatewayReceiver on vm1 */
-    /* create 2 cache servers on vm1, one with overflow. */
+    /* create 1 GatewaySender on vm5 */
+    /* create 1 GatewayReceiver on vm2 */
+    /* create 2 cache servers on vm2, one with overflow. */
     /* verify if the cache server2 still has the overflow attributes */
-    /* create 1 cache client1 on vm2 to register interest on cache server1 */
-    /* create 1 cache client2 on vm3 to register interest on cache server1 */
-    /* do some puts to GatewaySender on vm0 */
+    /* create 1 cache client1 on vm3 to register interest on cache server1 */
+    /* create 1 cache client2 on vm4 to register interest on cache server1 */
+    /* do some puts to GatewaySender on vm5 */
 
-    // create sender at ln
+    // start locators
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // create receiver and cache servers will be at ny
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-    vm1.invoke(() -> WANTestBase.createCache(nyPort));
-    int receiverPort = vm1.invoke(() -> WANTestBase.createReceiver());
-    checkCacheServer(vm1, receiverPort, false, 0);
+    vm2.invoke(() -> WANTestBase.createCache(nyPort));
+    int receiverPort = vm2.invoke(() -> WANTestBase.createReceiver());
+    checkCacheServer(vm2, receiverPort, false, 0);
 
     // create PR for receiver
-    vm1.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
+    vm2.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
         null, 1, 100, isOffHeap()));
 
     // create cache server1 with overflow
-    int serverPort = createCacheServerWithCSC(vm1, true, 3, "entry", "DEFAULT");
-    checkCacheServer(vm1, serverPort, true, 3);
+    int serverPort = createCacheServerWithCSC(vm2, true, 3, "entry", "DEFAULT");
+    checkCacheServer(vm2, serverPort, true, 3);
 
     // create cache server 2
-    final int serverPort2 = createCacheServerWithCSC(vm1, false, 0, null, null);
+    final int serverPort2 = createCacheServerWithCSC(vm2, false, 0, null, null);
     // Currently, only the first cache server's overflow attributes will take effect
     // It will be enhanced in GEODE-1102
-    checkCacheServer(vm1, serverPort2, true, 3);
+    checkCacheServer(vm2, serverPort2, true, 3);
     LogService.getLogger().info("receiverPort=" + receiverPort + ",serverPort=" + serverPort
         + ",serverPort2=" + serverPort2);
 
-    vm2.invoke(() -> createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR",
-        "123", durable));
     vm3.invoke(() -> createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR",
+        "123", durable));
+    vm4.invoke(() -> createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR",
         "124", durable));
 
-    vm0.invoke(() -> WANTestBase.createCache(lnPort));
-    vm0.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm0.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
+    // create sender at ln
+    vm5.invoke(() -> WANTestBase.createCache(lnPort));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 400, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
         "ln", 1, 100, isOffHeap()));
-    vm0.invoke(() -> WANTestBase.startSender("ln"));
-    vm0.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", NUM_KEYS));
+    vm5.invoke(() -> WANTestBase.startSender("ln"));
+    vm5.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", NUM_KEYS));
 
     /* verify */
-    verifyRegionSize(vm0, NUM_KEYS);
-    verifyRegionSize(vm1, NUM_KEYS);
-    verifyRegionSize(vm3, NUM_KEYS);
+    verifyRegionSize(vm5, NUM_KEYS);
     verifyRegionSize(vm2, NUM_KEYS);
+    verifyRegionSize(vm4, NUM_KEYS);
+    verifyRegionSize(vm3, NUM_KEYS);
 
     // close a cache server, then re-test
-    vm1.invoke(() -> closeACacheServer(serverPort2));
+    vm2.invoke(() -> closeACacheServer(serverPort2));
 
-    vm0.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", NUM_KEYS * 2));
+    vm5.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", NUM_KEYS * 2));
 
     /* verify */
-    verifyRegionSize(vm0, NUM_KEYS * 2);
-    verifyRegionSize(vm1, NUM_KEYS * 2);
-    verifyRegionSize(vm3, NUM_KEYS * 2);
+    verifyRegionSize(vm5, NUM_KEYS * 2);
     verifyRegionSize(vm2, NUM_KEYS * 2);
+    verifyRegionSize(vm4, NUM_KEYS * 2);
+    verifyRegionSize(vm3, NUM_KEYS * 2);
 
     disconnectAllFromDS();
   }
