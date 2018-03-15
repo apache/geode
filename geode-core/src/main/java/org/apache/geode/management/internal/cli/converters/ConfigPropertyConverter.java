@@ -23,13 +23,14 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.internal.datasource.ConfigProperty;
+import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 
 /***
  * Added converter to enable auto-completion for index-type
  *
  */
-public class ConfigPropertyConverter implements Converter<ConfigProperty> {
+public class ConfigPropertyConverter
+    implements Converter<JndiBindingsType.JndiBinding.ConfigProperty> {
 
   private static ObjectMapper mapper = new ObjectMapper();
   static {
@@ -38,13 +39,14 @@ public class ConfigPropertyConverter implements Converter<ConfigProperty> {
 
   @Override
   public boolean supports(Class<?> type, String optionContext) {
-    return ConfigProperty.class.isAssignableFrom(type);
+    return JndiBindingsType.JndiBinding.ConfigProperty.class.isAssignableFrom(type);
   }
 
   @Override
-  public ConfigProperty convertFromText(String value, Class<?> targetType, String optionContext) {
+  public JndiBindingsType.JndiBinding.ConfigProperty convertFromText(String value,
+      Class<?> targetType, String optionContext) {
     try {
-      return mapper.readValue(value, ConfigProperty.class);
+      return mapper.readValue(value, JndiBindingsType.JndiBinding.ConfigProperty.class);
     } catch (IOException e) {
       throw new IllegalArgumentException("invalid json: " + value);
     }

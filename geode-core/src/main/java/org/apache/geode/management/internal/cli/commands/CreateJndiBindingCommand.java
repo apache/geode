@@ -16,26 +16,19 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.result.ResultBuilder.buildResult;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.internal.datasource.ConfigProperty;
+import org.apache.geode.internal.cache.configuration.CacheConfig;
+import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -45,8 +38,6 @@ import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunct
 import org.apache.geode.management.internal.cli.functions.JndiBindingConfiguration;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -135,41 +126,45 @@ public class CreateJndiBindingCommand extends GfshCommand {
       @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,
       @CliOption(key = DATASOURCE_CONFIG_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
-          help = DATASOURCE_CONFIG_PROPERTIES_HELP) ConfigProperty[] dsConfigProperties)
-      throws IOException, SAXException, ParserConfigurationException, TransformerException {
+          help = DATASOURCE_CONFIG_PROPERTIES_HELP) JndiBindingsType.JndiBinding.ConfigProperty[] dsConfigProperties) {
 
-    JndiBindingConfiguration configuration = new JndiBindingConfiguration();
-    configuration.setBlockingTimeout(blockingTimeout);
-    configuration.setConnectionPoolDatasource(connectionPooledDatasource);
+    JndiBindingsType.JndiBinding configuration = new JndiBindingsType.JndiBinding();
+    configuration.setBlockingTimeoutSeconds(Objects.toString(blockingTimeout, null));
+    configuration.setConnPooledDatasourceClass(connectionPooledDatasource);
     configuration.setConnectionUrl(connectionUrl);
-    configuration.setIdleTimeout(idleTimeout);
-    configuration.setInitPoolSize(initPoolSize);
-    configuration.setJdbcDriver(jdbcDriver);
+    configuration.setIdleTimeoutSeconds(Objects.toString(idleTimeout, null));
+    configuration.setInitPoolSize(Objects.toString(initPoolSize, null));
+    configuration.setJdbcDriverClass(jdbcDriver);
     configuration.setJndiName(jndiName);
-    configuration.setLoginTimeout(loginTimeout);
-    configuration.setManagedConnFactory(managedConnFactory);
-    configuration.setMaxPoolSize(maxPoolSize);
+    configuration.setLoginTimeoutSeconds(Objects.toString(loginTimeout, null));
+    configuration.setManagedConnFactoryClass(managedConnFactory);
+    configuration.setMaxPoolSize(Objects.toString(maxPoolSize, null));
     configuration.setPassword(password);
     configuration.setTransactionType(transactionType);
-    configuration.setType(type);
-    configuration.setUsername(username);
-    configuration.setXaDatasource(xaDataSource);
+    configuration.setType(type.getType());
+    configuration.setUserName(username);
+    configuration.setXaDatasourceClass(xaDataSource);
     if (dsConfigProperties != null && dsConfigProperties.length > 0)
-      configuration.setDatasourceConfigurations(Arrays.asList(dsConfigProperties));
+      configuration.getConfigProperty().addAll(Arrays.asList(dsConfigProperties));
 
     Result result;
     boolean persisted = false;
     ClusterConfigurationService service = getSharedConfiguration();
 
     if (service != null) {
-      Element existingBinding =
-          service.getXmlElement("cluster", "jndi-binding", "jndi-name", jndiName);
-      if (existingBinding != null) {
+      CacheConfig cacheConfig = service.getCacheConfig("cluster");
+      JndiBindingsType.JndiBinding existing =
+          service.findElement(cacheConfig.getJndiBindings(), jndiName);
+      if (existing != null) {
         throw new EntityExistsException(
             CliStrings.format("Jndi binding with jndi-name \"{0}\" already exists.", jndiName),
             ifNotExists);
       }
-      updateXml(configuration);
+
+      service.updateCacheConfig("cluster", config -> {
+        config.getJndiBindings().add(configuration);
+        return config;
+      });
       persisted = true;
     }
 
@@ -193,51 +188,24 @@ public class CreateJndiBindingCommand extends GfshCommand {
     return result;
   }
 
-  void updateXml(JndiBindingConfiguration configuration)
-      throws TransformerException, IOException, SAXException, ParserConfigurationException {
-    // cluster group config should always be present
-    Configuration config = getSharedConfiguration().getConfiguration("cluster");
+  public enum DATASOURCE_TYPE {
+    MANAGED("ManagedDataSource"),
+    SIMPLE("SimpleDataSource"),
+    POOLED("PooledDataSource"),
+    XAPOOLED("XAPooledDataSource");
 
-    Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
-    Node cacheNode = document.getElementsByTagName("cache").item(0);
+    private final String type;
 
-    NodeList jndiBindingsNode = document.getElementsByTagName("jndi-bindings");
-
-    if (jndiBindingsNode == null || jndiBindingsNode.getLength() == 0) {
-      Element jndiBindings = document.createElement("jndi-bindings");
-      cacheNode.appendChild(jndiBindings);
+    DATASOURCE_TYPE(String type) {
+      this.type = type;
     }
 
-    Element jndiBinding = document.createElement("jndi-binding");
-    jndiBindingsNode.item(0).appendChild(jndiBinding);
-
-    for (Object key : configuration.getParamsAsMap().keySet()) {
-      if (configuration.getParamsAsMap().get(key) != null)
-        jndiBinding.setAttribute(key.toString(),
-            configuration.getParamsAsMap().get(key).toString());
+    public String getType() {
+      return this.type;
     }
 
-    for (ConfigProperty configProperty : configuration.getDatasourceConfigurations()) {
-      Element configPropertyElement = document.createElement("config-property");
-      jndiBinding.appendChild(configPropertyElement);
-
-      Node configPropertyName = document.createElement("config-property-name");
-      configPropertyName.setTextContent(configProperty.getName());
-
-      Node configPropertyType = document.createElement("config-property-type");
-      configPropertyType.setTextContent(configProperty.getType());
-
-      Node configPropertyValue = document.createElement("config-property-value");
-      configPropertyValue.setTextContent(configProperty.getValue());
-
-      configPropertyElement.appendChild(configPropertyName);
-      configPropertyElement.appendChild(configPropertyType);
-      configPropertyElement.appendChild(configPropertyValue);
+    public String getName() {
+      return name();
     }
-
-    String newXml = XmlUtils.prettyXml(document.getFirstChild());
-    config.setCacheXmlContent(newXml);
-
-    getSharedConfiguration().getConfigurationRegion().put("cluster", config);
   }
 }

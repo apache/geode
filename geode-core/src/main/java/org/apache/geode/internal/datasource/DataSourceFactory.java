@@ -43,6 +43,7 @@ import javax.sql.XADataSource;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -330,7 +331,8 @@ public class DataSourceFactory {
     String methodName = null;
     Method m = null;
     for (Iterator it = props.iterator(); it.hasNext();) {
-      ConfigProperty cp = (ConfigProperty) it.next();
+      JndiBindingsType.JndiBinding.ConfigProperty cp =
+          (JndiBindingsType.JndiBinding.ConfigProperty) it.next();
       key = cp.getName();
       value = cp.getValue();
       type = cp.getType();
