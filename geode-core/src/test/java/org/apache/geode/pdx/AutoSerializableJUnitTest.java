@@ -27,6 +27,7 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jmock.auto.Auto;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,8 +64,7 @@ public class AutoSerializableJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(
-        DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "true");
+    System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
   }
 
   @After
@@ -1238,8 +1238,7 @@ public class AutoSerializableJUnitTest {
    */
   @Test
   public void testNoHardCodedExcludes() {
-    System.setProperty(
-        DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "true");
+    System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
     setupSerializer();
     assertFalse(manager.isExcluded("com.gemstone.gemfire.GemFireException"));
     assertFalse(manager.isExcluded("com.gemstoneplussuffix.gemfire.GemFireException"));
@@ -1257,8 +1256,7 @@ public class AutoSerializableJUnitTest {
    */
   @Test
   public void testHardCodedExcludes() {
-    System.setProperty(
-        DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "false");
+    System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "false");
     setupSerializer();
     assertTrue(manager.isExcluded("com.gemstone.gemfire.GemFireException"));
     assertFalse(manager.isExcluded("com.gemstoneplussuffix.gemfire.GemFireException"));

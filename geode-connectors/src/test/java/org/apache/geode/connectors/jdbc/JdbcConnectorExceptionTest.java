@@ -37,11 +37,49 @@ public class JdbcConnectorExceptionTest {
   }
 
   @Test
+  public void returnsExceptionWithCauseForNonSqlExceptionAndNonSqlNestedCause() {
+    IllegalStateException cause = new IllegalStateException(new IllegalStateException());
+    Exception e = JdbcConnectorException.createException(cause);
+    assertThat(e.getCause()).isNotNull().isSameAs(cause);
+  }
+
+  @Test
+  public void returnsExceptionWithCauseForNonSqlExceptionWithMessage() {
+    Exception e = JdbcConnectorException.createException("message", new IllegalStateException());
+    assertThat(e.getMessage()).isEqualTo("message");
+    assertThat(e.getCause()).isNotNull().isInstanceOf(IllegalStateException.class);
+  }
+
+  @Test
   public void returnsExceptionWithNoCauseForSqlException() {
-    Exception sqlException = new SQLException();
+    Exception sqlException = new SQLException("mySqlExceptionMessage");
     Exception e = JdbcConnectorException.createException(sqlException);
     assertThat(e.getCause()).isNull();
-    assertThat(e.getMessage())
+    assertThat(e.getMessage()).contains("mySqlExceptionMessage")
         .contains(this.getClass().getCanonicalName() + "." + testName.getMethodName());
+  }
+
+  @Test
+  public void returnsExceptionWithNoCauseForSqlExceptionWithMessage() {
+    Exception sqlException = new SQLException();
+    Exception e = JdbcConnectorException.createException("message", sqlException);
+    assertThat(e.getCause()).isNull();
+    assertThat(e.getMessage()).startsWith("message")
+        .contains(this.getClass().getCanonicalName() + "." + testName.getMethodName());
+  }
+
+  @Test
+  public void returnsExceptionWithNoCauseForNestedSqlException() {
+    Exception sqlException = new SQLException();
+    Exception e = JdbcConnectorException.createException(new IllegalStateException(sqlException));
+    assertThat(e.getMessage())
+        .contains(this.getClass().getCanonicalName() + "." + testName.getMethodName())
+        .contains("SQLException").contains("IllegalStateException");
+  }
+
+  @Test
+  public void returnsExceptionForNull() {
+    Exception e = JdbcConnectorException.createException(null);
+    assertThat(e.getCause()).isNull();
   }
 }

@@ -38,6 +38,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
+import org.apache.geode.connectors.jdbc.internal.TableKeyColumnManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
@@ -126,7 +127,7 @@ public class JdbcWriterIntegrationTest {
   @Test
   public void verifyThatPdxFieldNamedSameAsPrimaryKeyIsIgnored() throws Exception {
     PdxInstance pdxInstanceWithId = cache.createPdxInstanceFactory(Employee.class.getName())
-        .writeString("name", "Emp1").writeInt("age", 55).writeInt("id", 3).create();
+        .writeString("name", "Emp1").writeInt("age", 55).writeString("id", "3").create();
     employees.put("1", pdxInstanceWithId);
 
     ResultSet resultSet =
@@ -225,7 +226,7 @@ public class JdbcWriterIntegrationTest {
 
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(),
+    return new SqlHandler(new TestableConnectionManager(), new TableKeyColumnManager(),
         TestConfigService.getTestConfigService());
   }
 
@@ -234,6 +235,6 @@ public class JdbcWriterIntegrationTest {
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getString("id")).isEqualTo(key);
     assertThat(resultSet.getString("name")).isEqualTo(employee.getName());
-    assertThat(resultSet.getObject("age")).isEqualTo(employee.getAge());
+    assertThat(resultSet.getInt("age")).isEqualTo(employee.getAge());
   }
 }

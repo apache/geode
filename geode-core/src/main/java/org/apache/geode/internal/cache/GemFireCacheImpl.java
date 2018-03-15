@@ -89,6 +89,7 @@ import org.apache.geode.GemFireCacheException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.LogWriter;
+import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.internal.SystemMemberCacheEventProcessor;
 import org.apache.geode.cache.AttributesFactory;
@@ -221,6 +222,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.internal.JmxManagerAdvisee;
@@ -5331,6 +5333,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     TypeRegistry pdxRegistry = this.getPdxRegistry();
     if (pdxRegistry != null) {
       pdxRegistry.setPdxReadSerializedOverride(pdxReadSerialized);
+    }
+  }
+
+  @Override
+  public void registerPdxMetaData(Object instance) {
+    try {
+      BlobHelper.serializeToBlob(instance);
+    } catch (IOException e) {
+      throw new SerializationException("Serialization failed", e);
     }
   }
 }
