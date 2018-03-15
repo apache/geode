@@ -38,13 +38,14 @@ public class TableMetaDataManager {
   }
 
   private TableMetaData computeTableMetaData(Connection connection, String tableName) {
-    TableMetaData result;
+    TableMetaDataImpl result;
     try {
       DatabaseMetaData metaData = connection.getMetaData();
       try (ResultSet tables = metaData.getTables(null, null, "%", null)) {
         String realTableName = getTableNameFromMetaData(tableName, tables);
         String key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
         result = new TableMetaDataImpl(key);
+        getDataTypesFromMetaData(realTableName, metaData, result);
       }
     } catch (SQLException e) {
       throw JdbcConnectorException.createException(e);
@@ -85,4 +86,13 @@ public class TableMetaDataManager {
     return key;
   }
 
+  private void getDataTypesFromMetaData(String tableName, DatabaseMetaData metaData, TableMetaDataImpl result)
+      throws SQLException {
+    ResultSet columnData = metaData.getColumns(null, null, tableName, "%");
+    while(columnData.next()) {
+      String columnName = columnData.getString("COLUMN_NAME");
+      int dataType = columnData.getInt("DATA_TYPE");
+      result.addDataType(columnName, dataType);
+    }
+  }
 }
