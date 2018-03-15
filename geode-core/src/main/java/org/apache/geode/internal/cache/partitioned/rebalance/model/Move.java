@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned.rebalance.model;
 
+import java.util.Objects;
+
 /**
  * Represents a move from one node to another. Used to keep track of moves that we have already
  * attempted that have failed.
@@ -52,39 +54,22 @@ public class Move {
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((this.bucket == null) ? 0 : this.bucket.hashCode());
-    result = prime * result + ((this.source == null) ? 0 : this.source.hashCode());
-    result = prime * result + ((this.target == null) ? 0 : this.target.hashCode());
-    return result;
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Move move = (Move) o;
+    return Objects.equals(source, move.source) &&
+        Objects.equals(target, move.target) &&
+        Objects.equals(bucket, move.bucket);
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    Move other = (Move) obj;
-    if (this.bucket == null) {
-      if (other.bucket != null)
-        return false;
-    } else if (!this.bucket.equals(other.bucket))
-      return false;
-    if (this.source == null) {
-      if (other.source != null)
-        return false;
-    } else if (!this.source.equals(other.source))
-      return false;
-    if (this.target == null) {
-      if (other.target != null)
-        return false;
-    } else if (!this.target.equals(other.target))
-      return false;
-    return true;
+  public int hashCode() {
+
+    return Objects.hash(source, target, bucket);
   }
 }

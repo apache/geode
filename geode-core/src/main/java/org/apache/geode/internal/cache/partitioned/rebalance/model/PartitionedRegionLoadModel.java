@@ -74,23 +74,21 @@ public class PartitionedRegionLoadModel {
    * A comparator that is used to sort buckets in the order that we should satisfy redundancy - most
    * needy buckets first.
    */
-  private static final Comparator<Bucket> REDUNDANCY_COMPARATOR = new Comparator<Bucket>() {
-    public int compare(Bucket o1, Bucket o2) {
-      // put the buckets with the lowest redundancy first
-      int result = o1.getRedundancy() - o2.getRedundancy();
-      if (result == 0) {
-        // put the bucket with the largest load first. This should give us a
-        // better chance of finding a place to put it
-        result = Float.compare(o2.getLoad(), o1.getLoad());
-      }
-      if (result == 0) {
-        // finally, just use the id so the comparator doesn't swallow buckets
-        // with the same load
-        result = o1.getId() - o2.getId();
-      }
-
-      return result;
+  private static final Comparator<Bucket> REDUNDANCY_COMPARATOR = (o1, o2) -> {
+    // put the buckets with the lowest redundancy first
+    int result = o1.getRedundancy() - o2.getRedundancy();
+    if (result == 0) {
+      // put the bucket with the largest load first. This should give us a
+      // better chance of finding a place to put it
+      result = Float.compare(o2.getLoad(), o1.getLoad());
     }
+    if (result == 0) {
+      // finally, just use the id so the comparator doesn't swallow buckets
+      // with the same load
+      result = o1.getId() - o2.getId();
+    }
+
+    return result;
   };
 
   private static final long MEGABYTES = 1024 * 1024;
@@ -107,22 +105,22 @@ public class PartitionedRegionLoadModel {
    * A map of all members that host this partitioned region
    */
   private final Map<InternalDistributedMember, MemberRollup> members =
-      new HashMap<InternalDistributedMember, MemberRollup>();
+      new HashMap<>();
 
   /**
    * The set of all regions that are colocated in this model.
    */
-  private final Set<String> allColocatedRegions = new HashSet<String>();
+  private final Set<String> allColocatedRegions = new HashSet<>();
 
   /**
    * The list of buckets that have low redundancy
    */
   private SortedSet<BucketRollup> lowRedundancyBuckets = null;
   private SortedSet<BucketRollup> overRedundancyBuckets = null;
-  private final Collection<Move> attemptedPrimaryMoves = new HashSet<Move>();
-  private final Collection<Move> attemptedBucketMoves = new HashSet<Move>();
-  private final Collection<Move> attemptedBucketCreations = new HashSet<Move>();
-  private final Collection<Move> attemptedBucketRemoves = new HashSet<Move>();
+  private final Collection<Move> attemptedPrimaryMoves = new HashSet<>();
+  private final Collection<Move> attemptedBucketMoves = new HashSet<>();
+  private final Collection<Move> attemptedBucketCreations = new HashSet<>();
+  private final Collection<Move> attemptedBucketRemoves = new HashSet<>();
 
   private final BucketOperator operator;
   private final int requiredRedundancy;
@@ -182,7 +180,7 @@ public class PartitionedRegionLoadModel {
     // that host it and each member has a reference to all of the buckets
     // it hosts
     Map<InternalDistributedMember, Member> regionMember =
-        new HashMap<InternalDistributedMember, Member>();
+        new HashMap<>();
     Bucket[] regionBuckets = new Bucket[this.buckets.length];
     for (InternalPartitionDetails memberDetails : memberDetailSet) {
       InternalDistributedMember memberId =
@@ -318,10 +316,6 @@ public class PartitionedRegionLoadModel {
     return overRedundancyBuckets;
   }
 
-  public void setOverRedundancyBuckets(SortedSet<BucketRollup> overRedundancyBuckets) {
-    this.overRedundancyBuckets = overRedundancyBuckets;
-  }
-
   public boolean enforceUniqueZones() {
     return addressComparor.enforceUniqueZones();
   }
@@ -356,10 +350,10 @@ public class PartitionedRegionLoadModel {
   }
 
   private Map<String, Long> getColocatedRegionSizes(BucketRollup bucket) {
-    Map<String, Long> colocatedRegionSizes = new HashMap<String, Long>();
+    Map<String, Long> colocatedRegionSizes = new HashMap<>();
 
     for (Map.Entry<String, Bucket> entry : bucket.getColocatedBuckets().entrySet()) {
-      colocatedRegionSizes.put(entry.getKey(), Long.valueOf(entry.getValue().getBytes()));
+      colocatedRegionSizes.put(entry.getKey(), entry.getValue().getBytes());
     }
     return colocatedRegionSizes;
   }
@@ -426,7 +420,7 @@ public class PartitionedRegionLoadModel {
   }
 
   private void initLowRedundancyBuckets() {
-    this.lowRedundancyBuckets = new TreeSet<BucketRollup>(REDUNDANCY_COMPARATOR);
+    this.lowRedundancyBuckets = new TreeSet<>(REDUNDANCY_COMPARATOR);
     for (BucketRollup b : this.buckets) {
       if (b != null && b.getRedundancy() >= 0 && b.getRedundancy() < this.requiredRedundancy) {
         this.lowRedundancyBuckets.add(b);
@@ -435,7 +429,7 @@ public class PartitionedRegionLoadModel {
   }
 
   private void initOverRedundancyBuckets() {
-    this.overRedundancyBuckets = new TreeSet<BucketRollup>(REDUNDANCY_COMPARATOR);
+    this.overRedundancyBuckets = new TreeSet<>(REDUNDANCY_COMPARATOR);
     for (BucketRollup b : this.buckets) {
       if (b != null && b.getOnlineRedundancy() > this.requiredRedundancy) {
         this.overRedundancyBuckets.add(b);
@@ -492,7 +486,6 @@ public class PartitionedRegionLoadModel {
   }
 
   public Move findBestTargetForFPR(Bucket bucket, boolean checkIPAddress) {
-    Move noMove = null;
     InternalDistributedMember targetMemberID = null;
     Member targetMember = null;
     List<FixedPartitionAttributesImpl> fpas =
@@ -515,7 +508,7 @@ public class PartitionedRegionLoadModel {
       }
     }
 
-    return noMove;
+    return null;
   }
 
   public boolean movePrimary(Move bestMove) {
@@ -559,54 +552,6 @@ public class PartitionedRegionLoadModel {
       }
     }
     return bestMove;
-  }
-
-  /**
-   * Move all primary from other to this
-   */
-  private void makeFPRPrimaryForThisNode() {
-    List<FixedPartitionAttributesImpl> FPAs =
-        this.partitionedRegion.getFixedPartitionAttributesImpl();
-    InternalDistributedMember targetId = this.partitionedRegion.getDistributionManager().getId();
-    Member target = this.members.get(targetId);
-    Set<Bucket> unsuccessfulAttempts = new HashSet<Bucket>();
-    for (Bucket bucket : this.buckets) {
-      if (bucket != null) {
-        for (FixedPartitionAttributesImpl fpa : FPAs) {
-          if (fpa.hasBucket(bucket.getId()) && fpa.isPrimary()) {
-            Member source = bucket.getPrimary();
-            bucket.getPrimary();
-            if (source != target) {
-              // HACK: In case we don't know who is Primary at this time
-              // we just set source as target too for stat purposes
-
-              InternalDistributedMember srcDM = (source == null || source == INVALID_MEMBER)
-                  ? target.getDistributedMember() : source.getDistributedMember();
-              if (logger.isDebugEnabled()) {
-                logger.debug(
-                    "PRLM#movePrimariesForFPR: For Bucket#{}, moving primary from source {} to target {}",
-                    bucket.getId(), bucket.getPrimary(), target);
-              }
-              boolean successfulMove =
-                  this.operator.movePrimary(srcDM, target.getDistributedMember(), bucket.getId());
-              unsuccessfulAttempts.add(bucket);
-              // We have to move the primary otherwise there is some problem!
-              Assert.assertTrue(successfulMove,
-                  " Fixed partitioned region not able to move the primary!");
-              if (successfulMove) {
-                if (logger.isDebugEnabled()) {
-                  logger.debug(
-                      "PRLM#movePrimariesForFPR: For Bucket#{}, moving primary source {} to target {}",
-                      bucket.getId(), source, target);
-                }
-
-                bucket.setPrimary(target, bucket.getPrimaryLoad());
-              }
-            }
-          }
-        }
-      }
-    }
   }
 
   /**
@@ -796,7 +741,7 @@ public class PartitionedRegionLoadModel {
    * @return a set of partitioned member details.
    */
   public Set<PartitionMemberInfo> getPartitionedMemberDetails(String region) {
-    TreeSet<PartitionMemberInfo> result = new TreeSet<PartitionMemberInfo>();
+    TreeSet<PartitionMemberInfo> result = new TreeSet<>();
     for (MemberRollup member : this.members.values()) {
       Member colocatedMember = member.getColocatedMember(region);
       if (colocatedMember != null) {
@@ -844,11 +789,7 @@ public class PartitionedRegionLoadModel {
   @Override
   public String toString() {
     StringBuilder result = new StringBuilder();
-    TreeSet<Bucket> allBucketIds = new TreeSet<Bucket>(new Comparator<Bucket>() {
-      public int compare(Bucket o1, Bucket o2) {
-        return o1.getId() - o2.getId();
-      }
-    });
+    TreeSet<Bucket> allBucketIds = new TreeSet<>(Comparator.comparingInt(Bucket::getId));
     if (this.members.isEmpty()) {
       return "";
     }

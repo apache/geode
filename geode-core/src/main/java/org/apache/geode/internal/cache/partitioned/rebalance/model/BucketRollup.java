@@ -21,17 +21,13 @@ import java.util.Map;
  * Represents the sum of all of colocated buckets with a given bucket id.
  */
 public class BucketRollup extends Bucket {
-  private final Map<String, Bucket> colocatedBuckets = new HashMap<String, Bucket>();
+  private final Map<String, Bucket> colocatedBuckets = new HashMap<>();
 
   BucketRollup(int id) {
     super(id);
   }
 
-  /**
-   * @param region
-   * @param b
-   */
-  boolean addColocatedBucket(String region, Bucket b) {
+  void addColocatedBucket(String region, Bucket b) {
     if (!this.getColocatedBuckets().containsKey(region)) {
       this.getColocatedBuckets().put(region, b);
       changeLoad(b.getLoad());
@@ -49,10 +45,7 @@ public class BucketRollup extends Bucket {
         }
         rollup.updateLoad(b.getLoad(), primaryLoad, b.getBytes());
       }
-      return true;
     }
-
-    return false;
   }
 
   @Override

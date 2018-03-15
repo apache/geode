@@ -24,10 +24,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  * of the colocated regions hosted on this member.
  */
 class MemberRollup extends Member {
-  private final Map<String, Member> colocatedMembers = new HashMap<String, Member>();
-  private final boolean invalid = false;
+  private final Map<String, Member> colocatedMembers = new HashMap<>();
 
-  public MemberRollup(AddressComparor addressComparor, InternalDistributedMember memberId,
+  MemberRollup(AddressComparor addressComparor, InternalDistributedMember memberId,
       boolean isCritical, boolean enforceLocalMaxMemory) {
     super(addressComparor, memberId, isCritical, enforceLocalMaxMemory);
   }
@@ -36,17 +35,15 @@ class MemberRollup extends Member {
    * Indicates that this member doesn't have all of the colocated regions
    */
   public boolean isInvalid() {
-    return invalid;
+    return false;
   }
 
-  public boolean addColocatedMember(String region, Member member) {
+  public void addColocatedMember(String region, Member member) {
     if (!getColocatedMembers().containsKey(region)) {
       this.getColocatedMembers().put(region, member);
       this.weight += member.weight;
       changeLocalMaxMemory(member.getConfiguredMaxMemory());
-      return true;
     }
-    return false;
   }
 
 

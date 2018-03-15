@@ -35,8 +35,8 @@ public class Member implements Comparable<Member> {
   private float totalPrimaryLoad;
   private long totalBytes;
   private long localMaxMemory;
-  private final Set<Bucket> buckets = new TreeSet<Bucket>();
-  private final Set<Bucket> primaryBuckets = new TreeSet<Bucket>();
+  private final Set<Bucket> buckets = new TreeSet<>();
+  private final Set<Bucket> primaryBuckets = new TreeSet<>();
   private final boolean isCritical;
   private final boolean enforceLocalMaxMemory;
 
@@ -231,6 +231,7 @@ public class Member implements Comparable<Member> {
     return this.memberId.equals(o.memberId);
   }
 
+  @Override
   public int compareTo(Member other) {
     // memberId is InternalDistributedMember which implements Comparable
     return this.memberId.compareTo(other.memberId);

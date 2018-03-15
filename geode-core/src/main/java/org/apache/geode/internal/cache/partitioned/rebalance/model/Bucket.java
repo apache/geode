@@ -26,7 +26,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
  */
 public class Bucket implements Comparable<Bucket> {
   private final int id;
-  private final Set<Member> membersHosting = new TreeSet<Member>();
+  private final Set<Member> membersHosting = new TreeSet<>();
   private final Set<PersistentMemberID> offlineMembers;
   private float load;
   private long bytes;
@@ -45,19 +45,19 @@ public class Bucket implements Comparable<Bucket> {
     this.offlineMembers = offlineMembers;
   }
 
-  protected void changeLoad(float change) {
+  void changeLoad(float change) {
     load += change;
   }
 
-  protected void changePrimaryLoad(float change) {
+  void changePrimaryLoad(float change) {
     primaryLoad += change;
   }
 
-  protected void changeBytes(long change) {
+  void changeBytes(long change) {
     bytes += change;
   }
 
-  protected void addOfflineMembers(Collection<? extends PersistentMemberID> members) {
+  void addOfflineMembers(Collection<? extends PersistentMemberID> members) {
     offlineMembers.addAll(members);
   }
 
@@ -76,9 +76,6 @@ public class Bucket implements Comparable<Bucket> {
     }
   }
 
-  /**
-   * @param targetMember
-   */
   public boolean addMember(Member targetMember) {
     if (this.getMembersHosting().add(targetMember)) {
       this.redundancy++;
@@ -156,13 +153,8 @@ public class Bucket implements Comparable<Bucket> {
     return this.id == o.id;
   }
 
+  @Override
   public int compareTo(Bucket other) {
-    if (this.id < other.id) {
-      return -1;
-    } else if (this.id > other.id) {
-      return 1;
-    } else {
-      return 0;
-    }
+    return Integer.compare(this.id, other.id);
   }
 }
