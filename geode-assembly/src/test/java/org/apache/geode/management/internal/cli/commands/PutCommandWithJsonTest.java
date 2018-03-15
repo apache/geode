@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,17 +32,18 @@ import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 @Category(AcceptanceTest.class)
 public class PutCommandWithJsonTest {
+
   private File jarToDeploy;
+
   @Rule
   public GfshRule gfsh = new GfshRule();
-
 
   @Before
   public void setup() throws IOException {
     jarToDeploy = new File(gfsh.getTemporaryFolder().getRoot(), "ourJar.jar");
 
     String classContents =
-        "public class Customer {private String name; public void setName(String name){this.name=name;}}";
+        "public class Customer implements java.io.Serializable {private String name; public void setName(String name){this.name=name;}}";
     JarBuilder jarBuilder = new JarBuilder();
     jarBuilder.buildJar(jarToDeploy, classContents);
   }

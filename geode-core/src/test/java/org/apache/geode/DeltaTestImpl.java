@@ -12,15 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TestObjectWithIdentifier;
@@ -66,8 +65,15 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   private boolean hasDelta = false;
 
+  private static List<Exception> instantiations = new ArrayList<>();
+
+  public static List<Exception> getInstantiations() {
+    return instantiations;
+  }
+
   public DeltaTestImpl() {
     timesConstructed++;
+    instantiations.add(new Exception("DeltaTestImpl"));
   }
 
   public DeltaTestImpl(int intVal, String str) {
@@ -223,6 +229,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   /** ********************************************************************** */
 
+  @Override
   public String toString() {
     StringBuffer bytes = new StringBuffer("");
     if (byteArr != null) {
@@ -235,6 +242,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
         + ((this.testObj != null) ? this.testObj.hashCode() : "") + "]";
   }
 
+  @Override
   public boolean equals(Object other) {
     if (other == null || !(other instanceof DeltaTestImpl)) {
       return false;
@@ -247,11 +255,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
     return false;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.Delta#fromDelta(java.io.DataInput)
-   */
+  @Override
   public void fromDelta(DataInput in) throws IOException {
     try {
       fromDeltaInvokations++;
@@ -281,15 +285,13 @@ public class DeltaTestImpl implements DataSerializable, Delta {
           tempByteArr = DataSerializer.readByteArray(in);
         }
         if ((tempDeltaBits & TEST_OBJ_MASK) == TEST_OBJ_MASK) {
-          tempTestObj = (TestObjectWithIdentifier) DataSerializer.readObject(in);
+          tempTestObj = DataSerializer.readObject(in);
         }
         if ((deltaBits | COMPLETE_MASK) != COMPLETE_MASK) {
           throw new IllegalArgumentException("Unknown field code: " + tempDeltaBits);
         }
       }
       if (tempHasDelta) {
-        // this.hasDelta = true;
-        // this.deltaBits = tempDeltaBits;
         this.intVar = tempIntVar;
         this.str = tempStr;
         this.doubleVar = tempDoubleVar;
@@ -308,20 +310,12 @@ public class DeltaTestImpl implements DataSerializable, Delta {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.Delta#hasDelta()
-   */
+  @Override
   public boolean hasDelta() {
     return this.hasDelta;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.Delta#toDelta(java.io.DataOutput)
-   */
+  @Override
   public void toDelta(DataOutput out) throws IOException {
     try {
       toDeltaInvokations++;
@@ -355,34 +349,30 @@ public class DeltaTestImpl implements DataSerializable, Delta {
       GemFireCacheImpl.getInstance().getLogger().warning("DeltaTestImpl.toDelta(): " + iae);
       throw new InvalidDeltaException(iae);
     } finally {
-      if (NEED_TO_RESET_T0_DELTA) {// No need to reset if secondary needs to
-                                   // send delta again upon receiving
-                                   // forceReattemptException
+      if (NEED_TO_RESET_T0_DELTA) {
+        // No need to reset if secondary needs to send delta again upon receiving
+        // forceReattemptException
         this.deltaBits = 0x0;
         this.hasDelta = false;
       }
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    // this.deltaBits = DataSerializer.readByte(in);
     this.intVar = DataSerializer.readPrimitiveInt(in);
     this.str = DataSerializer.readString(in);
     this.doubleVar = DataSerializer.readDouble(in);
     this.byteArr = DataSerializer.readByteArray(in);
-    this.testObj = (TestObjectWithIdentifier) DataSerializer.readObject(in);
-    // if (deltaBits != 0) {
-    // this.hasDelta = true;
-    // }
+    this.testObj = DataSerializer.readObject(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
-    // DataSerializer.writeByte(this.deltaBits, out);
     DataSerializer.writePrimitiveInt(this.intVar, out);
     DataSerializer.writeString(this.str, out);
     DataSerializer.writeDouble(this.doubleVar, out);
     DataSerializer.writeByteArray(this.byteArr, out);
     DataSerializer.writeObject(this.testObj, out);
   }
-
 }

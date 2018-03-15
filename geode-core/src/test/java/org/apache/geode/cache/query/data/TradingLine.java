@@ -14,10 +14,11 @@
  */
 package org.apache.geode.cache.query.data;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TradingLine {
+public class TradingLine implements Serializable {
 
   private Map<String, String> alternateReferences;
 

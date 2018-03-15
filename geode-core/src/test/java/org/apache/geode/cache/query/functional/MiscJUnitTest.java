@@ -12,15 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * MiscJUnitTest.java JUnit based test
- *
- * Created on March 10, 2005, 6:36 PM
- */
 package org.apache.geode.cache.query.functional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -76,8 +74,9 @@ public class MiscJUnitTest {
         "SELECT DISTINCT * FROM (SELECT DISTINCT * FROM /Portfolios where status = 'active') p  where p.ID = 0");
     Collection result = (Collection) query.execute();
     Portfolio p = (Portfolio) (result.iterator().next());
-    if (!p.status.equals("active") || p.getID() != 0)
+    if (!p.status.equals("active") || p.getID() != 0) {
       fail(query.getQueryString());
+    }
   }
 
   @Ignore("TODO: test is disabled")
@@ -92,8 +91,9 @@ public class MiscJUnitTest {
         "SELECT DISTINCT * FROM /Portfolios WHERE NOT (SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty");
     Collection result = (Collection) query.execute();
     Portfolio p = (Portfolio) (result.iterator().next());
-    if (!p.positions.containsKey("IBM"))
+    if (!p.positions.containsKey("IBM")) {
       fail(query.getQueryString());
+    }
   }
 
   @Ignore("TODO: test is disabled")
@@ -104,13 +104,15 @@ public class MiscJUnitTest {
     Query query =
         CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM /Data where voidMethod");
     Collection result = (Collection) query.execute();
-    if (result.size() != 0)
+    if (result.size() != 0) {
       fail(query.getQueryString());
+    }
     query = CacheUtils.getQueryService()
         .newQuery("SELECT DISTINCT * FROM /Data where voidMethod = null ");
     result = (Collection) query.execute();
-    if (result.size() != 1)
+    if (result.size() != 1) {
       fail(query.getQueryString());
+    }
   }
 
   @Ignore("TODO: test is disabled")
@@ -120,8 +122,9 @@ public class MiscJUnitTest {
     for (int i = 0; i < testData.length; i++) {
       Query query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM " + testData[i]);
       Object result = query.execute();
-      if (!result.equals(QueryService.UNDEFINED))
+      if (!result.equals(QueryService.UNDEFINED)) {
         fail(query.getQueryString());
+      }
     }
   }
 
@@ -141,8 +144,9 @@ public class MiscJUnitTest {
     StructType type = (StructType) result.getCollectionType().getElementType();
     String names[] = type.getFieldNames();
     List list = result.asList();
-    if (list.size() < 1)
+    if (list.size() < 1) {
       fail("Test failed as the resultset's size is zero");
+    }
     for (int i = 0; i < list.size(); ++i) {
       Struct stc = (Struct) list.get(i);
       if (!stc.get(names[2]).equals("YHOO")) {
@@ -159,15 +163,6 @@ public class MiscJUnitTest {
     region.put("2", new Portfolio(2));
     region.put("3", new Portfolio(3));
     QueryService qs = CacheUtils.getQueryService();
-    /*
-     * String qStr = "Select distinct structset.sos, structset.key " +
-     * "from /portfolios pfos, pfos.positions.values outerPos, " +
-     * "(SELECT DISTINCT key: key, sos: pos.sharesOutstanding "+
-     * "from /portfolios.entries pf, pf.value.positions.values pos " +
-     * "where outerPos.secId != 'IBM' AND " +
-     * "pf.key IN (select distinct * from pf.value.collectionHolderMap['0'].arr)) structset " +
-     * "where structset.sos > 2000";
-     */
 
     String qStr =
         "Select distinct * from /portfolios pf, pf.positions.values where status = 'active' and secId = 'IBM'";
@@ -186,8 +181,9 @@ public class MiscJUnitTest {
         "/portfolios pf, positions.values, pf.collectionHolderMap chm, chm.value.arr itr");
     Query q = qs.newQuery(qStr);
     SelectResults result = (SelectResults) q.execute();
-    if (result.size() == 0)
+    if (result.size() == 0) {
       fail("Test failed as size is zero");
+    }
   }
 
   @Test
@@ -221,12 +217,8 @@ public class MiscJUnitTest {
 
   @Test
   public void testBug40428_1() throws Exception {
-    Object shortData1 = new Object() {
-      public short shortField = 4;
-    };
-    Object shortData2 = new Object() {
-      public short shortField = 5;
-    };
+    HasShort shortData1 = new HasShort((short) 4);
+    HasShort shortData2 = new HasShort((short) 5);
     Region region = CacheUtils.createRegion("shortFieldTest", Object.class);
     region.put("0", shortData1);
     QueryService qs = CacheUtils.getQueryService();
@@ -244,12 +236,8 @@ public class MiscJUnitTest {
 
   @Test
   public void testBug40428_2() throws Exception {
-    Object shortData1 = new Object() {
-      public short shortField = 4;
-    };
-    Object shortData2 = new Object() {
-      public short shortField = 5;
-    };
+    HasShort shortData1 = new HasShort((short) 4);
+    HasShort shortData2 = new HasShort((short) 5);
 
     Region region = CacheUtils.createRegion("shortFieldTest", Object.class);
     region.put("0", shortData1);
@@ -312,7 +300,7 @@ public class MiscJUnitTest {
     String queryStr = " select distinct r.name, pVal, r.\"type\"  "
         + " from /new_pos r , r.positions.values pVal where "
         + "  (r.name='name_11' OR r.name='name_12') AND pVal.mktValue >=1.00";
-    this.bug40333Simulation(region, queryStr);
+    bug40333Simulation(region, queryStr);
   }
 
   /**
@@ -334,7 +322,7 @@ public class MiscJUnitTest {
     String queryStr = " select distinct r.name, pVal, r.\"type\"  "
         + " from /new_pos r , r.positions.values pVal where "
         + "  (r.name='name_11' OR r.name='name_12') AND pVal.mktValue < 1.00";
-    this.bug40333Simulation(region, queryStr);
+    bug40333Simulation(region, queryStr);
   }
 
   /**
@@ -350,7 +338,7 @@ public class MiscJUnitTest {
     String queryStr = " select distinct r.name, pVal, r.\"type\"  "
         + " from /new_pos r , r.positions.values pVal where "
         + " ( r.name IN Set('name_11' , 'name_12') OR false ) AND pVal.mktValue = 1.00";
-    this.bug40333Simulation(region, queryStr);
+    bug40333Simulation(region, queryStr);
   }
 
   /**
@@ -372,7 +360,7 @@ public class MiscJUnitTest {
     String queryStr = " select distinct r.name, pVal, r.\"type\"  "
         + " from /new_pos r , r.positions.values pVal where "
         + " ( r.name IN Set('name_11' , 'name_12') OR false ) AND pVal.mktValue < 1.00";
-    this.bug40333Simulation(region, queryStr);
+    bug40333Simulation(region, queryStr);
   }
 
   private void bug40333Simulation(final Region region, final String queryStr) throws Exception {
@@ -387,10 +375,10 @@ public class MiscJUnitTest {
     final boolean[] keepGoing = new boolean[] {true};
 
     Thread indexCreatorDestroyer = new Thread(new Runnable() {
+      @Override
       public void run() {
         boolean continueRunning = true;
         do {
-
           synchronized (lock) {
             continueRunning = keepGoing[0];
           }
@@ -423,7 +411,6 @@ public class MiscJUnitTest {
           }
         } while (continueRunning);
       }
-
     });
 
     indexCreatorDestroyer.start();
@@ -433,6 +420,7 @@ public class MiscJUnitTest {
     final int numTimesToRun = 75;
     for (int i = 0; i < THREAD_COUNT; ++i) {
       queryThreads[i] = new Thread(new Runnable() {
+        @Override
         public void run() {
           boolean continueRunning = true;
           for (int i = 0; i < numTimesToRun && continueRunning; ++i) {
@@ -474,7 +462,6 @@ public class MiscJUnitTest {
     synchronized (lock) {
       assertFalse(expectionOccurred[0]);
     }
-
   }
 
   @Test
@@ -558,5 +545,13 @@ public class MiscJUnitTest {
     assertEquals(result.size(), 1);
     pf = (Portfolio) result.iterator().next();
     assertEquals(pf.getID(), 3);
+  }
+
+  private static class HasShort implements Serializable {
+    public final short shortField;
+
+    HasShort(short shortField) {
+      this.shortField = shortField;
+    }
   }
 }

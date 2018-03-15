@@ -15,9 +15,16 @@
 package org.apache.geode.cache.query;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.util.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -43,22 +50,19 @@ import org.apache.geode.pdx.internal.PdxString;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-/**
- *
- *
- */
 @Category({IntegrationTest.class, OQLQueryTest.class})
 public class PdxStringQueryJUnitTest {
-  private InternalCache cache;
-  private Region region;
-  private String regName = "exampleRegion";
-  QueryService queryService;
-  QueryObserver observer;
 
   private static final int NO_INDEX = 0;
   private static final int INDEX_TYPE_COMPACTRANGE = 0;
   private static final int INDEX_TYPE_PRIMARYKEY = 2;
   private static final int INDEX_TYPE_RANGE = 1;
+
+  private InternalCache cache;
+  private Region region;
+  private String regName = "exampleRegion";
+  private QueryService queryService;
+  private QueryObserver observer;
 
   @Before
   public void setUp() {
@@ -258,7 +262,7 @@ public class PdxStringQueryJUnitTest {
     region.clear();
   }
 
-  public void putPdxInstances() throws Exception {
+  private void putPdxInstances() throws Exception {
     PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.cache);
     pf.writeInt("ID", 111);
     pf.writeString("status", "active");
@@ -288,7 +292,7 @@ public class PdxStringQueryJUnitTest {
     region.put("VMW", pi);
   }
 
-  public void putPdxInstancesWithREUpdateInProgress() throws Exception {
+  private void putPdxInstancesWithREUpdateInProgress() throws Exception {
     PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.cache);
     pf.writeInt("ID", 111);
     pf.writeString("status", "active");
@@ -320,7 +324,7 @@ public class PdxStringQueryJUnitTest {
     makeREUpdateInProgress();
   }
 
-  public void makeREUpdateInProgress() {
+  private void makeREUpdateInProgress() {
     Iterator entryItr = region.entrySet().iterator();
     while (entryItr.hasNext()) {
       Region.Entry nonTxEntry = (Region.Entry) entryItr.next();
@@ -330,7 +334,7 @@ public class PdxStringQueryJUnitTest {
     }
   }
 
-  public void putHeterogeneousObjects() throws Exception {
+  private void putHeterogeneousObjects() throws Exception {
     PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.cache);
     pf.writeInt("ID", 111);
     pf.writeString("secId", "IBM");
@@ -612,7 +616,6 @@ public class PdxStringQueryJUnitTest {
       validateResult(secIdsList, iter.next());
     }
     cache.setPdxReadSerializedOverride(false);
-
   }
 
   private void validateStringResult(Object str1, Object str2) {
@@ -635,7 +638,8 @@ public class PdxStringQueryJUnitTest {
     assertTrue(list.contains(str2));
   }
 
-  public static class TestObject {
+  private static class TestObject implements Serializable {
+
     private int ID;
     private String secId;
     private String status;
@@ -685,6 +689,5 @@ public class PdxStringQueryJUnitTest {
     public void setStatus(String status) {
       this.status = status;
     }
-
   }
 }
