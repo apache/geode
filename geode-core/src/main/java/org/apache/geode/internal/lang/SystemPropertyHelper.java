@@ -22,11 +22,10 @@ import java.util.Optional;
  *
  * @since Geode 1.4.0
  */
-
 public class SystemPropertyHelper {
-  private static final String GEODE_PREFIX = "geode.";
-  private static final String GEMFIRE_PREFIX = "gemfire.";
 
+  public static final String GEODE_PREFIX = "geode.";
+  public static final String GEMFIRE_PREFIX = "gemfire.";
 
   /**
    * When set to "true" enables asynchronous eviction algorithm (defaults to true). For more details
@@ -57,6 +56,8 @@ public class SystemPropertyHelper {
   public static final String EVICTION_SCAN_THRESHOLD_PERCENT = "EvictionScanThresholdPercent";
 
   public static final String EVICTION_SEARCH_MAX_ENTRIES = "lru.maxSearchEntries";
+
+  public static final String EARLY_ENTRY_EVENT_SERIALIZATION = "earlyEntryEventSerialization";
 
   /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It

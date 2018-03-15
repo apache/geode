@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -29,9 +28,9 @@ import org.apache.geode.internal.Version;
 /**
  * Internal tokens used as region values. These tokens are never seen from the public API.
  *
+ * <p>
  * These classes are Serializable and implement readResolve to support canonicalization in the face
  * of copysharing.
- *
  */
 public abstract class Token {
 
@@ -108,6 +107,10 @@ public abstract class Token {
     return o == DESTROYED;
   }
 
+  public static boolean isToken(Object o) {
+    return o instanceof Token;
+  }
+
   /**
    * Singleton token indicating an Invalid Entry.
    */
@@ -125,12 +128,15 @@ public abstract class Token {
       return INVALID;
     }
 
+    @Override
     public int getDSFID() {
       return TOKEN_INVALID;
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {}
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
     public boolean isSerializedValue(byte[] value) {
@@ -141,7 +147,6 @@ public abstract class Token {
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -180,17 +185,19 @@ public abstract class Token {
       return DESTROYED;
     }
 
+    @Override
     public int getDSFID() {
       return TOKEN_DESTROYED;
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {}
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -209,17 +216,19 @@ public abstract class Token {
       return TOMBSTONE;
     }
 
+    @Override
     public int getDSFID() {
       return TOKEN_TOMBSTONE;
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {}
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -238,17 +247,19 @@ public abstract class Token {
       return REMOVED_PHASE1;
     }
 
+    @Override
     public int getDSFID() {
       return TOKEN_REMOVED;
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {}
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -267,17 +278,19 @@ public abstract class Token {
       return REMOVED_PHASE2;
     }
 
+    @Override
     public int getDSFID() {
       return TOKEN_REMOVED2;
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {}
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -315,17 +328,19 @@ public abstract class Token {
       return END_OF_STREAM;
     }
 
+    @Override
     public int getDSFID() {
       return END_OF_STREAM_TOKEN;
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
+    @Override
     public void toData(DataOutput out) throws IOException {}
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
