@@ -27,11 +27,12 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.JarFileRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class})
 public class ConcurrentDeployDUnitTest {
 
   @Rule
@@ -66,9 +67,9 @@ public class ConcurrentDeployDUnitTest {
     AsyncInvocation gfsh2Invocation = gfsh2.invokeAsync(() -> loopThroughDeployAndUndeploys(jar1));
     AsyncInvocation gfsh3Invocation = gfsh3.invokeAsync(() -> loopThroughDeployAndUndeploys(jar1));
 
-    gfsh1Invocation.await(5, TimeUnit.MINUTES);
-    gfsh2Invocation.await(5, TimeUnit.MINUTES);
-    gfsh3Invocation.await(5, TimeUnit.MINUTES);
+    gfsh1Invocation.await(30, TimeUnit.MINUTES);
+    gfsh2Invocation.await(30, TimeUnit.MINUTES);
+    gfsh3Invocation.await(30, TimeUnit.MINUTES);
   }
 
   @After
