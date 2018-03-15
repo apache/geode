@@ -148,6 +148,20 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
   }
 
   @Override
+  public V putIfAbsent(K key, V value) throws IOException {
+    final RegionAPI.PutIfAbsentRequest.Builder putIfAbsentRequest = RegionAPI.PutIfAbsentRequest
+        .newBuilder().setRegionName(name).setEntry(ValueEncoder.encodeEntry(key, value));
+
+    final Message request = Message.newBuilder().setPutIfAbsentRequest(putIfAbsentRequest).build();
+
+    final RegionAPI.PutIfAbsentResponse putIfAbsentResponse = protobufChannel
+        .sendRequest(request, MessageTypeCase.PUTIFABSENTRESPONSE).getPutIfAbsentResponse();
+
+
+    return (V) ValueEncoder.decodeValue(putIfAbsentResponse.getOldValue());
+  }
+
+  @Override
   public void remove(K key) throws IOException {
     final Message request = Message.newBuilder()
         .setRemoveRequest(

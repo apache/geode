@@ -147,7 +147,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   }
 
   @Test
-  public void singeNullKey() throws Exception {
+  public void singleNullKey() throws Exception {
     HashSet<BasicTypes.EncodedValue> testKeys = new HashSet<>();
     testKeys.add(serializationService.encode(NO_VALUE_PRESENT_FOR_THIS_KEY));
     RegionAPI.GetAllRequest getAllRequest =
@@ -158,7 +158,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     assertTrue(result instanceof Success);
     RegionAPI.GetAllResponse message = (RegionAPI.GetAllResponse) result.getMessage();
     assertEquals(1, message.getEntriesCount());
-    assertFalse(message.getEntries(0).hasValue());
+    assertEquals(null, serializationService.decode(message.getEntries(0).getValue()));
     assertEquals(NO_VALUE_PRESENT_FOR_THIS_KEY, message.getEntries(0).getKey().getStringResult());
 
     verify(regionStub, times(1)).get(NO_VALUE_PRESENT_FOR_THIS_KEY);

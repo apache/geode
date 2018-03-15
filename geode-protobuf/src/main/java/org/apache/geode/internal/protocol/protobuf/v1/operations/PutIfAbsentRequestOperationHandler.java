@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
@@ -30,45 +29,50 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
-public class GetRequestOperationHandler
-    implements ProtobufOperationHandler<RegionAPI.GetRequest, RegionAPI.GetResponse> {
-  private static final Logger logger = LogService.getLogger();
+public class PutIfAbsentRequestOperationHandler implements
+    ProtobufOperationHandler<RegionAPI.PutIfAbsentRequest, RegionAPI.PutIfAbsentResponse> {
+  private static final Logger logger = LogManager.getLogger();
 
   @Override
-  public Result<RegionAPI.GetResponse> process(ProtobufSerializationService serializationService,
-      RegionAPI.GetRequest request, MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, EncodingException, DecodingException {
-    String regionName = request.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
+  public Result<RegionAPI.PutIfAbsentResponse> process(
+      ProtobufSerializationService serializationService, RegionAPI.PutIfAbsentRequest request,
+      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException,
+      ConnectionStateException, EncodingException, DecodingException {
+
+    final String regionName = request.getRegionName();
+
+    Region<Object, Object> region;
+    try {
+      region = messageExecutionContext.getCache().getRegion(regionName);
+    } catch (IllegalArgumentException ex) {
+      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+          "Invalid region name: \"" + regionName + "\"");
+    }
+
     if (region == null) {
-      logger.error("Received get request for nonexistent region: {}", regionName);
+      logger.error("Received PutIfAbsentRequest for nonexistent region: {}", regionName);
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
           "Region \"" + regionName + "\" not found");
     }
 
-    try {
-      messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
+    final BasicTypes.Entry entry = request.getEntry();
 
-      Object decodedKey = serializationService.decode(request.getKey());
-      if (decodedKey == null) {
-        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key.");
-      }
-      Object resultValue = region.get(decodedKey);
+    Object decodedValue = serializationService.decode(entry.getValue());
+    Object decodedKey = serializationService.decode(entry.getKey());
 
-      BasicTypes.EncodedValue encodedValue = serializationService.encode(resultValue);
-      return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
-    } finally {
-      messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
-    }
+    final Object oldValue = region.putIfAbsent(decodedKey, decodedValue);
+
+    return Success.of(RegionAPI.PutIfAbsentResponse.newBuilder()
+        .setOldValue(serializationService.encode(oldValue)).build());
   }
 
-  public static ResourcePermission determineRequiredPermission(RegionAPI.GetRequest request,
+  public static ResourcePermission determineRequiredPermission(RegionAPI.PutIfAbsentRequest request,
       ProtobufSerializationService serializer) throws DecodingException {
     return new ResourcePermission(ResourcePermission.Resource.DATA,
-        ResourcePermission.Operation.READ, request.getRegionName(),
-        serializer.decode(request.getKey()).toString());
+        ResourcePermission.Operation.WRITE, request.getRegionName(),
+        serializer.decode(request.getEntry().getKey()).toString());
   }
 }

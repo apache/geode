@@ -32,6 +32,15 @@ message PutResponse {
     // message presence indicates success.
 }
 
+message PutIfAbsentRequest {
+    string regionName = 1;
+    Entry entry = 2;
+}
+
+message PutIfAbsentResponse {
+    EncodedValue oldValue = 1;
+}
+
 message GetRequest {
     string regionName = 1;
     EncodedValue key = 2;
