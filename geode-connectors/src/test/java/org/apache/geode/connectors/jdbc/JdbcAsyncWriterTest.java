@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.internal.cache.InternalCache;
@@ -82,6 +83,16 @@ public class JdbcAsyncWriterTest {
   }
 
   @Test
+  public void ignoresLoadEvent() throws Exception {
+    writer.processEvents(Collections.singletonList(createMockEvent(Operation.LOCAL_LOAD_CREATE)));
+
+    verify(sqlHandler, times(0)).write(any(), any(), any(), any());
+    assertThat(writer.getIgnoredEvents()).isEqualTo(1);
+    assertThat(writer.getTotalEvents()).isEqualTo(1);
+    assertThat(writer.getFailedEvents()).isEqualTo(0);
+  }
+
+  @Test
   public void writesMultipleProvidedEvents() throws Exception {
     List<AsyncEvent> events = new ArrayList<>();
     events.add(createMockEvent());
@@ -95,9 +106,14 @@ public class JdbcAsyncWriterTest {
     assertThat(writer.getTotalEvents()).isEqualTo(3);
   }
 
-  private AsyncEvent createMockEvent() {
+  private AsyncEvent createMockEvent(Operation op) {
     AsyncEvent event = mock(AsyncEvent.class);
+    when(event.getOperation()).thenReturn(op);
     when(event.getRegion()).thenReturn(region);
     return event;
+  }
+
+  private AsyncEvent createMockEvent() {
+    return createMockEvent(Operation.CREATE);
   }
 }

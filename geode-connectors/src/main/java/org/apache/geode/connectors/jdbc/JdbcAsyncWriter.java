@@ -39,10 +39,10 @@ import org.apache.geode.pdx.PdxInstance;
 public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventListener {
   private static final Logger logger = LogService.getLogger();
 
-  private LongAdder totalEvents = new LongAdder();
-  private LongAdder successfulEvents = new LongAdder();
-  private LongAdder failedEvents = new LongAdder();
-  private LongAdder ignoredEvents = new LongAdder();
+  private final LongAdder totalEvents = new LongAdder();
+  private final LongAdder successfulEvents = new LongAdder();
+  private final LongAdder failedEvents = new LongAdder();
+  private final LongAdder ignoredEvents = new LongAdder();
 
   @SuppressWarnings("unused")
   public JdbcAsyncWriter() {

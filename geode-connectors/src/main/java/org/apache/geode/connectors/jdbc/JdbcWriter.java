@@ -37,7 +37,7 @@ import org.apache.geode.pdx.PdxInstance;
 @Experimental
 public class JdbcWriter<K, V> extends AbstractJdbcCallback implements CacheWriter<K, V> {
 
-  private LongAdder totalEvents = new LongAdder();
+  private final LongAdder totalEvents = new LongAdder();
 
   @SuppressWarnings("unused")
   public JdbcWriter() {
