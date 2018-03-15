@@ -53,8 +53,8 @@ public class TableMetaDataManagerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
 
-    assertThat(tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
-        .isEqualTo(KEY_COLUMN);
+    TableMetaData data = tableMetaDataManager.getTableMetaData(connection, TABLE_NAME);
+    assertThat(data.getKeyColumnName()).isEqualTo(KEY_COLUMN);
     verify(connection).getMetaData();
   }
 
@@ -63,10 +63,8 @@ public class TableMetaDataManagerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
 
-    assertThat(tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
-        .isEqualTo(KEY_COLUMN);
-    assertThat(tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
-        .isEqualTo(KEY_COLUMN);
+    tableMetaDataManager.getTableMetaData(connection, TABLE_NAME);
+    tableMetaDataManager.getTableMetaData(connection, TABLE_NAME);
     verify(connection).getMetaData();
   }
 
@@ -74,7 +72,7 @@ public class TableMetaDataManagerTest {
   public void throwsExceptionWhenFailsToGetTableMetadata() throws Exception {
     when(connection.getMetaData()).thenThrow(SQLException.class);
 
-    assertThatThrownBy(() -> tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThatThrownBy(() -> tableMetaDataManager.getTableMetaData(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class);
   }
 
@@ -87,7 +85,7 @@ public class TableMetaDataManagerTest {
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     when(resultSet.getString("TABLE_NAME")).thenReturn("otherTable");
 
-    assertThatThrownBy(() -> tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThatThrownBy(() -> tableMetaDataManager.getTableMetaData(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class);
   }
 
@@ -96,7 +94,7 @@ public class TableMetaDataManagerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true);
 
-    assertThatThrownBy(() -> tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThatThrownBy(() -> tableMetaDataManager.getTableMetaData(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class);
   }
 
@@ -110,7 +108,7 @@ public class TableMetaDataManagerTest {
     when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
     when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toUpperCase());
 
-    assertThatThrownBy(() -> tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThatThrownBy(() -> tableMetaDataManager.getTableMetaData(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class)
         .hasMessage("Duplicate tables that match region name");
   }
@@ -120,7 +118,7 @@ public class TableMetaDataManagerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(false);
 
-    assertThatThrownBy(() -> tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThatThrownBy(() -> tableMetaDataManager.getTableMetaData(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class);
   }
 

@@ -94,7 +94,9 @@ public class SqlHandlerTest {
     connection = mock(Connection.class);
     when(region.getRegionService()).thenReturn(cache);
     tableMetaDataManager = mock(TableMetaDataManager.class);
-    when(tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME)).thenReturn(KEY_COLUMN);
+    TableMetaData data = mock(TableMetaData.class);
+    when(data.getKeyColumnName()).thenReturn(KEY_COLUMN);
+    when(tableMetaDataManager.getTableMetaData(connection, TABLE_NAME)).thenReturn(data);
     connectorService = mock(JdbcConnectorService.class);
     handler = new SqlHandler(manager, tableMetaDataManager, connectorService);
     key = "key";

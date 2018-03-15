@@ -31,25 +31,25 @@ import org.apache.geode.connectors.jdbc.JdbcConnectorException;
  * remembered so that it does not need to be recomputed for the same table name.
  */
 public class TableMetaDataManager {
-  private final ConcurrentMap<String, String> tableToPrimaryKeyMap = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, TableMetaData> tableToMetaDataMap = new ConcurrentHashMap<>();
 
-  public String getKeyColumnName(Connection connection, String tableName) {
-    return tableToPrimaryKeyMap.computeIfAbsent(tableName,
-        k -> computeKeyColumnName(connection, k));
+  public TableMetaData getTableMetaData(Connection connection, String tableName) {
+    return tableToMetaDataMap.computeIfAbsent(tableName, k -> computeTableMetaData(connection, k));
   }
 
-  private String computeKeyColumnName(Connection connection, String tableName) {
-    String key;
+  private TableMetaData computeTableMetaData(Connection connection, String tableName) {
+    TableMetaData result;
     try {
       DatabaseMetaData metaData = connection.getMetaData();
       try (ResultSet tables = metaData.getTables(null, null, "%", null)) {
         String realTableName = getTableNameFromMetaData(tableName, tables);
-        key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
+        String key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
+        result = new TableMetaDataImpl(key);
       }
     } catch (SQLException e) {
       throw JdbcConnectorException.createException(e);
     }
-    return key;
+    return result;
   }
 
   private String getTableNameFromMetaData(String tableName, ResultSet tables) throws SQLException {

@@ -105,7 +105,7 @@ public class SqlHandler {
   }
 
   private String getKeyColumnName(Connection connection, String tableName) {
-    return this.tableMetaDataManager.getKeyColumnName(connection, tableName);
+    return this.tableMetaDataManager.getTableMetaData(connection, tableName).getKeyColumnName();
   }
 
   private void setValuesInStatement(PreparedStatement statement, List<ColumnValue> columnList)
