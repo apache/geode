@@ -71,7 +71,7 @@ public class SqlHandlerTest {
   private JdbcDataSource dataSource;
   private ConnectionConfiguration connectionConfig;
   private JdbcConnectorService connectorService;
-  private TableKeyColumnManager tableKeyColumnManager;
+  private TableMetaDataManager tableMetaDataManager;
   private Connection connection;
   private Region region;
   private InternalCache cache;
@@ -93,10 +93,10 @@ public class SqlHandlerTest {
     cache = mock(InternalCache.class);
     connection = mock(Connection.class);
     when(region.getRegionService()).thenReturn(cache);
-    tableKeyColumnManager = mock(TableKeyColumnManager.class);
-    when(tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME)).thenReturn(KEY_COLUMN);
+    tableMetaDataManager = mock(TableMetaDataManager.class);
+    when(tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME)).thenReturn(KEY_COLUMN);
     connectorService = mock(JdbcConnectorService.class);
-    handler = new SqlHandler(manager, tableKeyColumnManager, connectorService);
+    handler = new SqlHandler(manager, tableMetaDataManager, connectorService);
     key = "key";
     value = mock(PdxInstanceImpl.class);
     when(value.getPdxType()).thenReturn(mock(PdxType.class));

@@ -61,9 +61,9 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
     if (sqlHandler == null) {
       this.cache = cache;
       JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-      TableKeyColumnManager tableKeyColumnManager = new TableKeyColumnManager();
+      TableMetaDataManager tableMetaDataManager = new TableMetaDataManager();
       DataSourceManager manager = new DataSourceManager(new HikariJdbcDataSourceFactory());
-      sqlHandler = new SqlHandler(manager, tableKeyColumnManager, service);
+      sqlHandler = new SqlHandler(manager, tableMetaDataManager, service);
     }
   }
 }

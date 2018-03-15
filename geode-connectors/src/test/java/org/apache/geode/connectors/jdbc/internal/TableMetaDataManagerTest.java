@@ -35,16 +35,16 @@ import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class TableKeyColumnManagerTest {
+public class TableMetaDataManagerTest {
   private static final String TABLE_NAME = "testTable";
   private static final String KEY_COLUMN = "keyColumn";
 
-  private TableKeyColumnManager tableKeyColumnManager;
+  private TableMetaDataManager tableMetaDataManager;
   private Connection connection;
 
   @Before
   public void setup() throws Exception {
-    tableKeyColumnManager = new TableKeyColumnManager();
+    tableMetaDataManager = new TableMetaDataManager();
     connection = mock(Connection.class);
   }
 
@@ -53,7 +53,7 @@ public class TableKeyColumnManagerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
 
-    assertThat(tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThat(tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
         .isEqualTo(KEY_COLUMN);
     verify(connection).getMetaData();
   }
@@ -63,9 +63,9 @@ public class TableKeyColumnManagerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
 
-    assertThat(tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThat(tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
         .isEqualTo(KEY_COLUMN);
-    assertThat(tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThat(tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
         .isEqualTo(KEY_COLUMN);
     verify(connection).getMetaData();
   }
@@ -74,7 +74,7 @@ public class TableKeyColumnManagerTest {
   public void throwsExceptionWhenFailsToGetTableMetadata() throws Exception {
     when(connection.getMetaData()).thenThrow(SQLException.class);
 
-    assertThatThrownBy(() -> tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThatThrownBy(() -> tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class);
   }
 
@@ -87,7 +87,7 @@ public class TableKeyColumnManagerTest {
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     when(resultSet.getString("TABLE_NAME")).thenReturn("otherTable");
 
-    assertThatThrownBy(() -> tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThatThrownBy(() -> tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class);
   }
 
@@ -96,7 +96,7 @@ public class TableKeyColumnManagerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true);
 
-    assertThatThrownBy(() -> tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThatThrownBy(() -> tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class);
   }
 
@@ -110,7 +110,7 @@ public class TableKeyColumnManagerTest {
     when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
     when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toUpperCase());
 
-    assertThatThrownBy(() -> tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThatThrownBy(() -> tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class)
         .hasMessage("Duplicate tables that match region name");
   }
@@ -120,7 +120,7 @@ public class TableKeyColumnManagerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(false);
 
-    assertThatThrownBy(() -> tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME))
+    assertThatThrownBy(() -> tableMetaDataManager.getKeyColumnName(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class);
   }
 

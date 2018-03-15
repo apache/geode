@@ -34,12 +34,12 @@ import org.apache.geode.pdx.PdxInstance;
 public class SqlHandler {
   private final JdbcConnectorService configService;
   private final DataSourceManager manager;
-  private final TableKeyColumnManager tableKeyColumnManager;
+  private final TableMetaDataManager tableMetaDataManager;
 
-  public SqlHandler(DataSourceManager manager, TableKeyColumnManager tableKeyColumnManager,
+  public SqlHandler(DataSourceManager manager, TableMetaDataManager tableMetaDataManager,
       JdbcConnectorService configService) {
     this.manager = manager;
-    this.tableKeyColumnManager = tableKeyColumnManager;
+    this.tableMetaDataManager = tableMetaDataManager;
     this.configService = configService;
   }
 
@@ -105,7 +105,7 @@ public class SqlHandler {
   }
 
   private String getKeyColumnName(Connection connection, String tableName) {
-    return this.tableKeyColumnManager.getKeyColumnName(connection, tableName);
+    return this.tableMetaDataManager.getKeyColumnName(connection, tableName);
   }
 
   private void setValuesInStatement(PreparedStatement statement, List<ColumnValue> columnList)
