@@ -39,7 +39,7 @@ public class CreateJndiBindingFunction implements InternalFunction<JndiBindingsT
         CliStrings.format(RESULT_MESSAGE, configuration.getJndiName(), context.getMemberName())));
   }
 
-  private static Map getParamsAsMap(JndiBindingsType.JndiBinding binding) {
+  static Map getParamsAsMap(JndiBindingsType.JndiBinding binding) {
     Map params = new HashMap();
     params.put("blocking-timeout-seconds", binding.getBlockingTimeoutSeconds());
     params.put("conn-pooled-datasource-class", binding.getConnPooledDatasourceClass());

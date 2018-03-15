@@ -35,7 +35,6 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
-import org.apache.geode.management.internal.cli.functions.JndiBindingConfiguration;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -119,8 +118,7 @@ public class CreateJndiBindingCommand extends GfshCommand {
       @CliOption(key = MAX_POOL_SIZE, help = MAX_POOL_SIZE__HELP) Integer maxPoolSize,
       @CliOption(key = PASSWORD, help = PASSWORD__HELP) String password,
       @CliOption(key = TRANSACTION_TYPE, help = TRANSACTION_TYPE__HELP) String transactionType,
-      @CliOption(key = TYPE, mandatory = true,
-          help = TYPE__HELP) JndiBindingConfiguration.DATASOURCE_TYPE type,
+      @CliOption(key = TYPE, mandatory = true, help = TYPE__HELP) DATASOURCE_TYPE type,
       @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
       @CliOption(key = XA_DATASOURCE_CLASS, help = XA_DATASOURCE_CLASS__HELP) String xaDataSource,
       @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,

@@ -37,6 +37,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -65,7 +66,7 @@ public class CreateJndiBindingFunctionTest {
   public void createJndiBindingIsSuccessful() throws Exception {
     JndiBindingsType.JndiBinding config = new JndiBindingsType.JndiBinding();
     config.setJndiName("jndi1");
-    config.setType(JndiBindingConfiguration.DATASOURCE_TYPE.SIMPLE.getType());
+    config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
     config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
     when(context.getArguments()).thenReturn(config);
