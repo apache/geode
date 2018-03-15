@@ -20,10 +20,11 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Bucket;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Member;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.RefusalReason;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.Bucket;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.RefusalReason;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
@@ -103,7 +104,7 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
       }
     } else {
       throw new IllegalStateException("Unable to move bucket for " + model.getName() + ". "
-          + reason.formatMessage(sourceMember, targetMember, bucket));
+          + reason.formatMessage(targetMember, bucket));
     }
 
     return false;

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.partitioned.rebalance;
+package org.apache.geode.internal.cache.partitioned.rebalance.model;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.partitioned.InternalPartitionDetails;
 import org.apache.geode.internal.cache.partitioned.OfflineMemberDetails;
 import org.apache.geode.internal.cache.partitioned.PRLoad;
 import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
+import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -98,7 +99,7 @@ public class PartitionedRegionLoadModel {
    * A member to represent inconsistent data. For example, if two members think they are the primary
    * for a bucket, we will set the primary to invalid, so it won't be a candidate for rebalancing.
    */
-  final MemberRollup INVALID_MEMBER = new MemberRollup(null, false, false);
+  public static final MemberRollup INVALID_MEMBER = new MemberRollup(null, null, false, false);
 
   private final BucketRollup[] buckets;
 
@@ -188,7 +189,7 @@ public class PartitionedRegionLoadModel {
           (InternalDistributedMember) memberDetails.getDistributedMember();
 
       boolean isCritical = criticalMembers.contains(memberId);
-      Member member = new Member(memberId, memberDetails.getPRLoad().getWeight(),
+      Member member = new Member(addressComparor, memberId, memberDetails.getPRLoad().getWeight(),
           memberDetails.getConfiguredMaxMemory(), isCritical, enforceLocalMaxMemory);
       regionMember.put(memberId, member);
 
@@ -221,7 +222,7 @@ public class PartitionedRegionLoadModel {
       MemberRollup memberSum = this.members.get(memberId);
       boolean isCritical = criticalMembers.contains(memberId);
       if (memberSum == null) {
-        memberSum = new MemberRollup(memberId, isCritical, enforceLocalMaxMemory);
+        memberSum = new MemberRollup(addressComparor, memberId, isCritical, enforceLocalMaxMemory);
         this.members.put(memberId, memberSum);
       }
 
@@ -405,7 +406,7 @@ public class PartitionedRegionLoadModel {
         });
   }
 
-  protected void remoteOverRedundancyBucket(BucketRollup bucket, Member targetMember) {
+  public void remoteOverRedundancyBucket(BucketRollup bucket, Member targetMember) {
     Move bestMove = new Move(null, targetMember, bucket);
     Map<String, Long> colocatedRegionSizes = getColocatedRegionSizes(bucket);
 
@@ -517,7 +518,7 @@ public class PartitionedRegionLoadModel {
     return noMove;
   }
 
-  protected boolean movePrimary(Move bestMove) {
+  public boolean movePrimary(Move bestMove) {
     Member bestSource = bestMove.getSource();
     Member bestTarget = bestMove.getTarget();
     Bucket bestBucket = bestMove.getBucket();
@@ -572,8 +573,8 @@ public class PartitionedRegionLoadModel {
     for (Bucket bucket : this.buckets) {
       if (bucket != null) {
         for (FixedPartitionAttributesImpl fpa : FPAs) {
-          if (fpa.hasBucket(bucket.id) && fpa.isPrimary()) {
-            Member source = bucket.primary;
+          if (fpa.hasBucket(bucket.getId()) && fpa.isPrimary()) {
+            Member source = bucket.getPrimary();
             bucket.getPrimary();
             if (source != target) {
               // HACK: In case we don't know who is Primary at this time
@@ -584,7 +585,7 @@ public class PartitionedRegionLoadModel {
               if (logger.isDebugEnabled()) {
                 logger.debug(
                     "PRLM#movePrimariesForFPR: For Bucket#{}, moving primary from source {} to target {}",
-                    bucket.getId(), bucket.primary, target);
+                    bucket.getId(), bucket.getPrimary(), target);
               }
               boolean successfulMove =
                   this.operator.movePrimary(srcDM, target.getDistributedMember(), bucket.getId());
@@ -764,7 +765,7 @@ public class PartitionedRegionLoadModel {
     return bestMove;
   }
 
-  protected boolean moveBucket(Move bestMove) {
+  public boolean moveBucket(Move bestMove) {
     Member bestSource = bestMove.getSource();
     Member bestTarget = bestMove.getTarget();
     BucketRollup bestBucket = (BucketRollup) bestMove.getBucket();
@@ -891,684 +892,4 @@ public class PartitionedRegionLoadModel {
     return result.toString();
   }
 
-  /**
-   * Represents the sum of all of the colocated regions on a given member. Also, holds a map of all
-   * of the colocated regions hosted on this member.
-   */
-  private class MemberRollup extends Member {
-    private final Map<String, Member> colocatedMembers = new HashMap<String, Member>();
-    private final boolean invalid = false;
-
-    public MemberRollup(InternalDistributedMember memberId, boolean isCritical,
-        boolean enforceLocalMaxMemory) {
-      super(memberId, isCritical, enforceLocalMaxMemory);
-    }
-
-    /**
-     * Indicates that this member doesn't have all of the colocated regions
-     */
-    public boolean isInvalid() {
-      return invalid;
-    }
-
-    public boolean addColocatedMember(String region, Member member) {
-      if (!getColocatedMembers().containsKey(region)) {
-        this.getColocatedMembers().put(region, member);
-        this.weight += member.weight;
-        this.localMaxMemory += member.localMaxMemory;
-        return true;
-      }
-      return false;
-    }
-
-
-    public Member getColocatedMember(String region) {
-      return getColocatedMembers().get(region);
-    }
-
-    /**
-     * Update the load on this member rollup with a change in size of one of the bucket rollups
-     * hosted by this member
-     */
-    public void updateLoad(float load, float primaryLoad, float bytes) {
-      this.totalLoad += load;
-      this.totalPrimaryLoad += primaryLoad;
-      this.totalBytes += bytes;
-    }
-
-    @Override
-    public boolean addBucket(Bucket bucket) {
-      if (super.addBucket(bucket)) {
-        BucketRollup bucketRollup = (BucketRollup) bucket;
-        for (Map.Entry<String, Member> entry : getColocatedMembers().entrySet()) {
-          String region = entry.getKey();
-          Member member = entry.getValue();
-          Bucket colocatedBucket = bucketRollup.getColocatedBuckets().get(region);
-          if (colocatedBucket != null) {
-            member.addBucket(colocatedBucket);
-          }
-        }
-        return true;
-      }
-      return false;
-    }
-
-    @Override
-    public boolean removeBucket(Bucket bucket) {
-      if (super.removeBucket(bucket)) {
-        BucketRollup bucketRollup = (BucketRollup) bucket;
-        for (Map.Entry<String, Member> entry : getColocatedMembers().entrySet()) {
-          String region = entry.getKey();
-          Member member = entry.getValue();
-          Bucket colocatedBucket = bucketRollup.getColocatedBuckets().get(region);
-          if (colocatedBucket != null) {
-            member.removeBucket(colocatedBucket);
-          }
-        }
-        return true;
-      }
-      return false;
-    }
-
-    @Override
-    public boolean addPrimary(Bucket bucket) {
-      if (super.addPrimary(bucket)) {
-        BucketRollup bucketRollup = (BucketRollup) bucket;
-        for (Map.Entry<String, Member> entry : getColocatedMembers().entrySet()) {
-          String region = entry.getKey();
-          Member member = entry.getValue();
-          Bucket colocatedBucket = bucketRollup.getColocatedBuckets().get(region);
-          if (colocatedBucket != null) {
-            member.addPrimary(colocatedBucket);
-          }
-        }
-        return true;
-      }
-      return false;
-    }
-
-    @Override
-    public boolean removePrimary(Bucket bucket) {
-      if (super.removePrimary(bucket)) {
-        BucketRollup bucketRollup = (BucketRollup) bucket;
-        for (Map.Entry<String, Member> entry : getColocatedMembers().entrySet()) {
-          String region = entry.getKey();
-          Member member = entry.getValue();
-          Bucket colocatedBucket = bucketRollup.getColocatedBuckets().get(region);
-          if (colocatedBucket != null) {
-            member.removePrimary(colocatedBucket);
-          }
-        }
-        return true;
-      }
-      return false;
-    }
-
-    @Override
-    public RefusalReason willAcceptBucket(Bucket bucket, Member source, boolean checkIPAddress) {
-      RefusalReason reason = super.willAcceptBucket(bucket, source, checkIPAddress);
-      if (reason.willAccept()) {
-        BucketRollup bucketRollup = (BucketRollup) bucket;
-        MemberRollup sourceRollup = (MemberRollup) source;
-        for (Map.Entry<String, Member> entry : getColocatedMembers().entrySet()) {
-          String region = entry.getKey();
-          Member member = entry.getValue();
-          Bucket colocatedBucket = bucketRollup.getColocatedBuckets().get(region);
-          Member colocatedSource =
-              sourceRollup == null ? null : sourceRollup.getColocatedMembers().get(region);
-          if (colocatedBucket != null) {
-            reason = member.willAcceptBucket(colocatedBucket, colocatedSource, checkIPAddress);
-            if (!reason.willAccept()) {
-              return reason;
-            }
-          }
-        }
-        return RefusalReason.NONE;
-      }
-      return reason;
-    }
-
-    Map<String, Member> getColocatedMembers() {
-      return this.colocatedMembers;
-    }
-  }
-
-  /**
-   * Represents the sum of all of colocated buckets with a given bucket id.
-   */
-  protected class BucketRollup extends Bucket {
-    private final Map<String, Bucket> colocatedBuckets = new HashMap<String, Bucket>();
-
-    public BucketRollup(int id) {
-      super(id);
-    }
-
-    /**
-     * @param region
-     * @param b
-     */
-    public boolean addColocatedBucket(String region, Bucket b) {
-      if (!this.getColocatedBuckets().containsKey(region)) {
-        this.getColocatedBuckets().put(region, b);
-        this.load += b.getLoad();
-        this.primaryLoad += b.getPrimaryLoad();
-        this.bytes += b.getBytes();
-        this.offlineMembers.addAll(b.getOfflineMembers());
-
-        // Update the load on the members hosting this bucket
-        // to reflect the fact that the bucket is larger now.
-        for (Member member : getMembersHosting()) {
-          MemberRollup rollup = (MemberRollup) member;
-          float primaryLoad = 0;
-          if (this.getPrimary() == member) {
-            primaryLoad = b.getPrimaryLoad();
-          }
-          rollup.updateLoad(b.getLoad(), primaryLoad, b.getBytes());
-        }
-        return true;
-      }
-
-      return false;
-    }
-
-    @Override
-    public boolean addMember(Member targetMember) {
-      if (super.addMember(targetMember)) {
-        MemberRollup memberRollup = (MemberRollup) targetMember;
-        for (Map.Entry<String, Bucket> entry : getColocatedBuckets().entrySet()) {
-          String region = entry.getKey();
-          Bucket bucket = entry.getValue();
-          Member member = memberRollup.getColocatedMembers().get(region);
-          if (member != null) {
-            bucket.addMember(member);
-          }
-        }
-        return true;
-      }
-      return false;
-    }
-
-    @Override
-    public boolean removeMember(Member targetMember) {
-      if (super.removeMember(targetMember)) {
-        MemberRollup memberRollup = (MemberRollup) targetMember;
-        for (Map.Entry<String, Bucket> entry : getColocatedBuckets().entrySet()) {
-          String region = entry.getKey();
-          Bucket bucket = entry.getValue();
-          Member member = memberRollup.getColocatedMembers().get(region);
-          if (member != null) {
-            bucket.removeMember(member);
-          }
-        }
-        return true;
-      }
-      return false;
-    }
-
-    @Override
-    public void setPrimary(Member targetMember, float primaryLoad) {
-      super.setPrimary(targetMember, primaryLoad);
-      if (targetMember != null) {
-        MemberRollup memberRollup = (MemberRollup) targetMember;
-        for (Map.Entry<String, Bucket> entry : getColocatedBuckets().entrySet()) {
-          String region = entry.getKey();
-          Bucket bucket = entry.getValue();
-          Member member = memberRollup.getColocatedMembers().get(region);
-          if (member != null) {
-            bucket.setPrimary(member, primaryLoad);
-          }
-        }
-      }
-    }
-
-    Map<String, Bucket> getColocatedBuckets() {
-      return this.colocatedBuckets;
-    }
-  }
-
-  /**
-   * Represents a single member of the distributed system.
-   */
-  protected class Member implements Comparable<Member> {
-    private final InternalDistributedMember memberId;
-    protected float weight;
-    protected float totalLoad;
-    protected float totalPrimaryLoad;
-    protected long totalBytes;
-    protected long localMaxMemory;
-    private final Set<Bucket> buckets = new TreeSet<Bucket>();
-    private final Set<Bucket> primaryBuckets = new TreeSet<Bucket>();
-    private final boolean isCritical;
-    private final boolean enforceLocalMaxMemory;
-
-    public Member(InternalDistributedMember memberId, boolean isCritical,
-        boolean enforceLocalMaxMemory) {
-      this.memberId = memberId;
-      this.isCritical = isCritical;
-      this.enforceLocalMaxMemory = enforceLocalMaxMemory;
-    }
-
-    public Member(InternalDistributedMember memberId, float weight, long localMaxMemory,
-        boolean isCritical, boolean enforceLocalMaxMemory) {
-      this(memberId, isCritical, enforceLocalMaxMemory);
-      this.weight = weight;
-      this.localMaxMemory = localMaxMemory;
-    }
-
-    /**
-     * @param bucket
-     * @param sourceMember the member we will be moving this bucket off of
-     * @param checkZone true if we should not put two copies of a bucket on two nodes with the same
-     *        IP address.
-     */
-    public RefusalReason willAcceptBucket(Bucket bucket, Member sourceMember, boolean checkZone) {
-      // make sure this member is not already hosting this bucket
-      if (getBuckets().contains(bucket)) {
-        return RefusalReason.ALREADY_HOSTING;
-      }
-      // Check the ip address
-      if (checkZone) {
-        // If the source member is equivalent to the target member, go
-        // ahead and allow the bucket move (it's not making our redundancy worse).
-        // TODO we could have some logic to prefer moving to different ip addresses
-        // Probably that logic should be another stage after redundancy recovery, like
-        // improveRedundancy.
-        boolean sourceIsEquivalent = sourceMember != null
-            && addressComparor.areSameZone(getMemberId(), sourceMember.getDistributedMember());
-        if (sourceMember == null || !sourceIsEquivalent) {
-          for (Member hostingMember : bucket.getMembersHosting()) {
-            if ((!hostingMember.equals(sourceMember) || addressComparor.enforceUniqueZones())
-                && addressComparor.areSameZone(getMemberId(),
-                    hostingMember.getDistributedMember())) {
-              if (logger.isDebugEnabled()) {
-                logger.debug(
-                    "Member {} would prefer not to host {} because it is already on another member with the same redundancy zone",
-                    this, bucket);
-              }
-              return RefusalReason.SAME_ZONE;
-            }
-          }
-        }
-      }
-
-      // check the localMaxMemory
-      if (this.enforceLocalMaxMemory && this.totalBytes + bucket.getBytes() > this.localMaxMemory) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Member {} won't host bucket {} because it doesn't have enough space", this,
-              bucket);
-        }
-        return RefusalReason.LOCAL_MAX_MEMORY_FULL;
-      }
-
-      // check to see if the heap is critical
-      if (isCritical) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Member {} won't host bucket {} because it's heap is critical", this,
-              bucket);
-        }
-        return RefusalReason.CRITICAL_HEAP;
-      }
-
-      return RefusalReason.NONE;
-    }
-
-    public boolean addBucket(Bucket bucket) {
-      if (getBuckets().add(bucket)) {
-        bucket.addMember(this);
-        this.totalBytes += bucket.getBytes();
-        this.totalLoad += bucket.getLoad();
-        return true;
-      }
-      return false;
-    }
-
-    public boolean removeBucket(Bucket bucket) {
-      if (getBuckets().remove(bucket)) {
-        bucket.removeMember(this);
-        this.totalBytes -= bucket.getBytes();
-        this.totalLoad -= bucket.getLoad();
-        return true;
-      }
-      return false;
-    }
-
-    public boolean removePrimary(Bucket bucket) {
-      if (getPrimaryBuckets().remove(bucket)) {
-        this.totalPrimaryLoad -= bucket.getPrimaryLoad();
-        return true;
-      }
-      return false;
-    }
-
-    public boolean addPrimary(Bucket bucket) {
-      if (getPrimaryBuckets().add(bucket)) {
-        this.totalPrimaryLoad += bucket.getPrimaryLoad();
-        return true;
-      }
-      return false;
-    }
-
-    public int getBucketCount() {
-      return getBuckets().size();
-    }
-
-    public long getConfiguredMaxMemory() {
-      return this.localMaxMemory;
-    }
-
-    public InternalDistributedMember getDistributedMember() {
-      return getMemberId();
-    }
-
-    public int getPrimaryCount() {
-      int primaryCount = 0;
-      for (Bucket bucket : getBuckets()) {
-        if (this.equals(bucket.primary)) {
-          primaryCount++;
-        }
-      }
-      return primaryCount;
-    }
-
-    public long getSize() {
-      return this.totalBytes;
-    }
-
-    public float getTotalLoad() {
-      return this.totalLoad;
-    }
-
-    public float getWeight() {
-      return this.weight;
-    }
-
-    @Override
-    public String toString() {
-      return "Member(id=" + getMemberId() + ")";
-    }
-
-    public float getPrimaryLoad() {
-      return this.totalPrimaryLoad;
-    }
-
-    protected Set<Bucket> getBuckets() {
-      return this.buckets;
-    }
-
-    private InternalDistributedMember getMemberId() {
-      return this.memberId;
-    }
-
-    private Set<Bucket> getPrimaryBuckets() {
-      return this.primaryBuckets;
-    }
-
-    @Override
-    public int hashCode() {
-      return memberId.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object other) {
-      if (!(other instanceof Member)) {
-        return false;
-      }
-      Member o = (Member) other;
-      return this.memberId.equals(o.memberId);
-    }
-
-    public int compareTo(Member other) {
-      // memberId is InternalDistributedMember which implements Comparable
-      return this.memberId.compareTo(other.memberId);
-    }
-  }
-
-  /**
-   * Represents a single bucket.
-   */
-  protected class Bucket implements Comparable<Bucket> {
-    protected long bytes;
-    private final int id;
-    protected float load;
-    protected float primaryLoad;
-    private int redundancy = -1;
-    private final Set<Member> membersHosting = new TreeSet<Member>();
-    private Member primary;
-    protected Set<PersistentMemberID> offlineMembers = new HashSet<PersistentMemberID>();
-
-    public Bucket(int id) {
-      this.id = id;
-    }
-
-    public Bucket(int id, float load, long bytes, Set<PersistentMemberID> offlineMembers) {
-      this(id);
-      this.load = load;
-      this.bytes = bytes;
-      this.offlineMembers = offlineMembers;
-    }
-
-    public void setPrimary(Member member, float primaryLoad) {
-      if (this.primary == INVALID_MEMBER) {
-        return;
-      }
-      if (this.primary != null) {
-        this.primary.removePrimary(this);
-      }
-      this.primary = member;
-      this.primaryLoad = primaryLoad;
-      if (primary != INVALID_MEMBER && primary != null) {
-        addMember(primary);
-        member.addPrimary(this);
-      }
-    }
-
-    /**
-     * @param targetMember
-     */
-    public boolean addMember(Member targetMember) {
-      if (this.getMembersHosting().add(targetMember)) {
-        this.redundancy++;
-        targetMember.addBucket(this);
-        return true;
-      }
-
-      return false;
-    }
-
-    public boolean removeMember(Member targetMember) {
-      if (this.getMembersHosting().remove(targetMember)) {
-        if (targetMember == this.primary) {
-          setPrimary(null, 0);
-        }
-        this.redundancy--;
-        targetMember.removeBucket(this);
-        return true;
-      }
-      return false;
-    }
-
-    public int getRedundancy() {
-      return this.redundancy + offlineMembers.size();
-    }
-
-    public int getOnlineRedundancy() {
-      return this.redundancy;
-    }
-
-    public float getLoad() {
-      return this.load;
-    }
-
-    public int getId() {
-      return this.id;
-    }
-
-    public long getBytes() {
-      return this.bytes;
-    }
-
-    @Override
-    public String toString() {
-      return "Bucket(id=" + getId() + ",load=" + load + ")";
-    }
-
-    public float getPrimaryLoad() {
-      return this.primaryLoad;
-    }
-
-    public Set<Member> getMembersHosting() {
-      return this.membersHosting;
-    }
-
-    public Member getPrimary() {
-      return this.primary;
-    }
-
-    public Collection<? extends PersistentMemberID> getOfflineMembers() {
-      return offlineMembers;
-    }
-
-    @Override
-    public int hashCode() {
-      return this.id;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-      if (!(other instanceof Bucket)) {
-        return false;
-      }
-      Bucket o = (Bucket) other;
-      return this.id == o.id;
-    }
-
-    public int compareTo(Bucket other) {
-      if (this.id < other.id) {
-        return -1;
-      } else if (this.id > other.id) {
-        return 1;
-      } else {
-        return 0;
-      }
-    }
-  }
-
-  /**
-   * Represents a move from one node to another. Used to keep track of moves that we have already
-   * attempted that have failed.
-   */
-  protected static class Move {
-    private final Member source;
-    private final Member target;
-    private final Bucket bucket;
-
-    public Move(Member source, Member target, Bucket bucket) {
-      super();
-      this.source = source;
-      this.target = target;
-      this.bucket = bucket;
-    }
-
-    /**
-     * @return the source
-     */
-    public Member getSource() {
-      return this.source;
-    }
-
-    /**
-     * @return the target
-     */
-    public Member getTarget() {
-      return this.target;
-    }
-
-    /**
-     * @return the bucket
-     */
-    public Bucket getBucket() {
-      return this.bucket;
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((this.bucket == null) ? 0 : this.bucket.hashCode());
-      result = prime * result + ((this.source == null) ? 0 : this.source.hashCode());
-      result = prime * result + ((this.target == null) ? 0 : this.target.hashCode());
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
-      Move other = (Move) obj;
-      if (this.bucket == null) {
-        if (other.bucket != null)
-          return false;
-      } else if (!this.bucket.equals(other.bucket))
-        return false;
-      if (this.source == null) {
-        if (other.source != null)
-          return false;
-      } else if (!this.source.equals(other.source))
-        return false;
-      if (this.target == null) {
-        if (other.target != null)
-          return false;
-      } else if (!this.target.equals(other.target))
-        return false;
-      return true;
-    }
-  }
-
-  public interface AddressComparor {
-
-    boolean enforceUniqueZones();
-
-    /**
-     * Return true if the two addresses are equivalent
-     */
-    boolean areSameZone(InternalDistributedMember member1, InternalDistributedMember member2);
-  }
-
-  public static enum RefusalReason {
-    NONE, ALREADY_HOSTING, UNITIALIZED_MEMBER, SAME_ZONE, LOCAL_MAX_MEMORY_FULL, CRITICAL_HEAP;
-
-    public boolean willAccept() {
-      return this == NONE;
-    }
-
-    public String formatMessage(Member source, Member target, Bucket bucket) {
-      switch (this) {
-        case NONE:
-          return "No reason, the move should be allowed.";
-        case ALREADY_HOSTING:
-          return "Target member " + target.getMemberId() + " is already hosting bucket "
-              + bucket.getId();
-        case UNITIALIZED_MEMBER:
-          return "Target member " + target.getMemberId() + " is not fully initialized";
-        case SAME_ZONE:
-          return "Target member " + target.getMemberId()
-              + " is in the same redundancy zone as other members hosting bucket " + bucket.getId()
-              + ": " + bucket.getMembersHosting();
-        case LOCAL_MAX_MEMORY_FULL:
-          return "Target member " + target.getMemberId()
-              + " does not have space within it's local max memory for bucket " + bucket.getId()
-              + ". Bucket Size " + bucket.getBytes() + " local max memory: " + target.localMaxMemory
-              + " remaining: " + target.totalBytes;
-        case CRITICAL_HEAP:
-          return "Target member " + target.getMemberId()
-              + " has reached its critical heap percentage, and cannot accept more data";
-        default:
-          return this.toString();
-      }
-    }
-  }
 }

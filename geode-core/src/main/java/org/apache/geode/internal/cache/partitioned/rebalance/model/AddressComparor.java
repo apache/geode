@@ -12,26 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.partitioned.rebalance;
+package org.apache.geode.internal.cache.partitioned.rebalance.model;
 
-import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-/**
- * A base class for rebalance directors that provides some default implementations of methods on
- * rebalance director.
- *
- *
- */
-public abstract class RebalanceDirectorAdapter implements RebalanceDirector {
+public interface AddressComparor {
 
-  @Override
-  public boolean isRebalanceNecessary(boolean redundancyImpaired, boolean withPersistence) {
-    return true;
-  }
+  boolean enforceUniqueZones();
 
-  @Override
-  public void initialize(PartitionedRegionLoadModel model) {
-    membershipChanged(model);
-
-  }
+  /**
+   * Return true if the two addresses are equivalent
+   */
+  boolean areSameZone(InternalDistributedMember member1, InternalDistributedMember member2);
 }
