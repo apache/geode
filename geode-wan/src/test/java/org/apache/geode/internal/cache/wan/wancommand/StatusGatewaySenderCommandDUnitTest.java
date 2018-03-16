@@ -19,14 +19,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.createAndStartReceiver;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.createSender;
-import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMemberIdCallable;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMember;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.startSender;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.fail;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.pause;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateGatewaySenderMXBeanProxy;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
 
@@ -48,13 +46,14 @@ import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({DistributedTest.class, WanTest.class})
-public class StatusGatewaySenderCommandDUnitTest {
+@SuppressWarnings("serial")
+public class StatusGatewaySenderCommandDUnitTest implements Serializable {
 
   @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   private MemberVM locatorSite1;
   private MemberVM locatorSite2;
@@ -80,7 +79,6 @@ public class StatusGatewaySenderCommandDUnitTest {
 
   @Test
   public void testGatewaySenderStatus() throws Exception {
-
     Integer lnPort = locatorSite1.getPort();
     Integer nyPort = locatorSite2.getPort();
 
@@ -103,24 +101,33 @@ public class StatusGatewaySenderCommandDUnitTest {
     server3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
     server3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
 
-    pause(10000);
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Parallel", false, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Parallel", false, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Parallel", false, false));
+
     String command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial";
     CommandResult cmdResult = gfsh.executeCommand(command);
+    assertThat(cmdResult).isNotNull();
 
-    if (cmdResult != null) {
-      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
-          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
-          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
-      List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-      assertEquals(3, result_Status.size());
-      assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
-      String strCmdResult = cmdResult.toString();
-      getLogWriter().info("testGatewaySenderStatus : " + strCmdResult + ">>>>> ");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-    } else {
-      fail("testListGatewaySender failed as did not get CommandResult");
-    }
+    TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+        .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+    List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
+    assertThat(result_Status).hasSize(3);
+    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_RUNNING);
+    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
     server1.invoke(() -> startSender("ln_Serial"));
     server1.invoke(() -> startSender("ln_Parallel"));
@@ -131,35 +138,36 @@ public class StatusGatewaySenderCommandDUnitTest {
     server3.invoke(() -> startSender("ln_Serial"));
     server3.invoke(() -> startSender("ln_Parallel"));
 
-    pause(10000);
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Parallel", true, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Parallel", true, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Parallel", true, false));
+
     command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial";
     cmdResult = gfsh.executeCommand(command);
+    assertThat(cmdResult).isNotNull();
 
-    if (cmdResult != null) {
-      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
-          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
-          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
-      List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-      assertEquals(3, result_Status.size());
-      assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
-      /*
-       * tableResultData = ((CompositeResultData) cmdResult.getResultData())
-       * .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
-       * .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER); List<String> result_hosts =
-       * tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER); assertEquals(2,
-       * result_hosts.size()); String strCmdResult = cmdResult.toString();
-       * getLogWriter().info("testGatewaySenderStatus : " + strCmdResult + ">>>>> ");
-       * assertEquals(Result.Status.OK, cmdResult.getStatus());
-       */
-    } else {
-      fail("testListGatewaySender failed as did not get CommandResult");
-    }
+    tableResultData = ((CompositeResultData) cmdResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+        .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+    result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
+    assertThat(result_Status).hasSize(3);
+    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
   }
 
   @Test
   public void testGatewaySenderStatus_OnMember() throws Exception {
-
     Integer lnPort = locatorSite1.getPort();
     Integer nyPort = locatorSite2.getPort();
 
@@ -182,25 +190,34 @@ public class StatusGatewaySenderCommandDUnitTest {
     server3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
     server3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
 
-    final DistributedMember server1DM = (DistributedMember) server1.invoke(getMemberIdCallable());
-    pause(10000);
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Parallel", false, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Parallel", false, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Parallel", false, false));
+
+    DistributedMember server1DM = getMember(server1.getVM());
     String command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial --" + CliStrings.MEMBER + "=" + server1DM.getId();
     CommandResult cmdResult = gfsh.executeCommand(command);
+    assertThat(cmdResult).isNotNull();
 
-    if (cmdResult != null) {
-      String strCmdResult = cmdResult.toString();
-      getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
-      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
-          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
-          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
-      List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-      assertEquals(1, result_Status.size());
-      assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-    } else {
-      fail("testListGatewaySender failed as did not get CommandResult");
-    }
+    TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+        .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+    List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
+    assertThat(result_Status).hasSize(1);
+    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_RUNNING);
+    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
     server1.invoke(() -> startSender("ln_Serial"));
     server1.invoke(() -> startSender("ln_Parallel"));
@@ -208,41 +225,43 @@ public class StatusGatewaySenderCommandDUnitTest {
     server2.invoke(() -> startSender("ln_Serial"));
     server2.invoke(() -> startSender("ln_Parallel"));
 
-    pause(10000);
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Parallel", true, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Parallel", true, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Parallel", false, false));
+
     command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial --" + CliStrings.MEMBER + "=" + server1DM.getId();
     cmdResult = gfsh.executeCommand(command);
+    assertThat(cmdResult).isNotNull();
 
-    if (cmdResult != null) {
-      String strCmdResult = cmdResult.toString();
-      getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
-      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
-          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
-          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
-      List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-      assertEquals(1, result_Status.size());
-      assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-    } else {
-      fail("testListGatewaySender failed as did not get CommandResult");
-    }
+    tableResultData = ((CompositeResultData) cmdResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+        .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+    result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
+    assertThat(result_Status).hasSize(1);
+    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
+    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    final DistributedMember server3DM = (DistributedMember) server3.invoke(getMemberIdCallable());
+    DistributedMember server3DM = getMember(server3.getVM());
     command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial --" + CliStrings.MEMBER + "=" + server3DM.getId();
     cmdResult = gfsh.executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = cmdResult.toString();
-      getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-    } else {
-      fail("testListGatewaySender failed as did not get CommandResult");
-    }
+    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
   }
 
   @Test
   public void testGatewaySenderStatus_OnGroups() throws Exception {
-
     Integer lnPort = locatorSite1.getPort();
     Integer nyPort = locatorSite2.getPort();
 
@@ -266,29 +285,38 @@ public class StatusGatewaySenderCommandDUnitTest {
     server3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
     server3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
 
-    pause(10000);
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Parallel", false, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Parallel", false, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Parallel", false, false));
+
     String command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial --" + CliStrings.GROUP + "=Serial_Sender";
     CommandResult cmdResult = gfsh.executeCommand(command);
+    assertThat(cmdResult).isNotNull();
 
-    if (cmdResult != null) {
-      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
-          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
-          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
-      List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-      assertEquals(2, result_Status.size());
-      assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
-      tableResultData = ((CompositeResultData) cmdResult.getResultData())
-          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
-          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
-      List<String> result_hosts = tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER);
-      assertEquals(1, result_hosts.size());
-      String strCmdResult = cmdResult.toString();
-      getLogWriter().info("testGatewaySenderStatus_OnGroups : " + strCmdResult + ">>>>> ");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-    } else {
-      fail("testListGatewaySender failed as did not get CommandResult");
-    }
+    TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+        .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+    List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
+    assertThat(result_Status).hasSize(2);
+    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_RUNNING);
+    tableResultData = ((CompositeResultData) cmdResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
+        .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+    List<String> result_hosts = tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER);
+    assertThat(result_hosts).hasSize(1);
+    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
     server1.invoke(() -> startSender("ln_Serial"));
     server1.invoke(() -> startSender("ln_Parallel"));
@@ -296,29 +324,39 @@ public class StatusGatewaySenderCommandDUnitTest {
     server2.invoke(() -> startSender("ln_Serial"));
     server2.invoke(() -> startSender("ln_Parallel"));
 
-    pause(10000);
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Parallel", true, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Parallel", true, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Serial", false, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()),
+        "ln_Parallel", false, false));
+
     command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial --" + CliStrings.GROUP + "=Serial_Sender";
     cmdResult = gfsh.executeCommand(command);
+    assertThat(cmdResult).isNotNull();
 
-    if (cmdResult != null) {
-      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
-          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
-          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
-      List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-      assertEquals(2, result_Status.size());
-      assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
-      tableResultData = ((CompositeResultData) cmdResult.getResultData())
-          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
-          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
-      List<String> result_hosts = tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER);
-      assertEquals(1, result_hosts.size());
-      String strCmdResult = cmdResult.toString();
-      getLogWriter().info("testGatewaySenderStatus_OnGroups : " + strCmdResult + ">>>>> ");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-    } else {
-      fail("testListGatewaySender failed as did not get CommandResult");
-    }
+    tableResultData = ((CompositeResultData) cmdResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+        .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+    result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
+    assertThat(result_Status).hasSize(2);
+    assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
+
+    tableResultData = ((CompositeResultData) cmdResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
+        .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+    result_hosts = tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER);
+    assertThat(result_hosts).hasSize(1);
+    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
   }
 
   private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {

@@ -14,8 +14,7 @@
  */
 package org.apache.geode.modules.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,6 +37,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

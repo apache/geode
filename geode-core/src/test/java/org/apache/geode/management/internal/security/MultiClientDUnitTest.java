@@ -46,13 +46,18 @@ import org.apache.geode.test.junit.rules.VMProvider;
 
 @Category(DistributedTest.class)
 public class MultiClientDUnitTest {
-  private static int KEY_COUNT = 20;
+  private static final int KEY_COUNT = 20;
 
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(7);
 
-  private static MemberVM locator, server1, server2;
-  private static ClientVM client3, client4, client5, client6;
+  private static MemberVM locator;
+  private static MemberVM server1;
+  private static MemberVM server2;
+  private static ClientVM client3;
+  private static ClientVM client4;
+  private static ClientVM client5;
+  private static ClientVM client6;
 
   @BeforeClass
   public static void beforeClass() throws Exception {

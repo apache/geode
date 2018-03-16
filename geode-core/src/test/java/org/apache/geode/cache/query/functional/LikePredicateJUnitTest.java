@@ -12,15 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * InOperatorTest.java
- *
- * Created on March 24, 2005, 5:08 PM
- */
 package org.apache.geode.cache.query.functional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
@@ -79,8 +78,6 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests simple % terminated pattern with atleast one preceding character
-   *
-   * @throws Exception
    */
   private void likePercentageTerminated_1(boolean useBindParam) throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -95,7 +92,7 @@ public class LikePredicateJUnitTest {
       Portfolio pf = new Portfolio(i);
       pf.status = base + ch;
       ch += 1;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     base = "abd";
@@ -104,14 +101,11 @@ public class LikePredicateJUnitTest {
       Portfolio pf = new Portfolio(i);
       pf.status = base + ch;
       ch += 1;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
 
-    Query q;
-    SelectResults results;
-    SelectResults expectedResults;
     String predicate = "";
     if (useBindParam) {
       predicate = "$1";
@@ -119,7 +113,8 @@ public class LikePredicateJUnitTest {
       predicate = " 'abc%'";
     }
 
-    q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    SelectResults results;
     if (useBindParam) {
       results = (SelectResults) q.execute(new Object[] {"abc%"});
     } else {
@@ -127,9 +122,10 @@ public class LikePredicateJUnitTest {
     }
     ResultsBag bag = new ResultsBag(null);
     for (int i = 1; i < 6; ++i) {
-      bag.add(region.get(new Integer(i)));
+      bag.add(region.get(i));
     }
-    expectedResults = new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
+    SelectResults expectedResults =
+        new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
     SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
@@ -138,10 +134,12 @@ public class LikePredicateJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -157,7 +155,6 @@ public class LikePredicateJUnitTest {
     rs[0][1] = expectedResults;
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     QueryObserverHolder.setInstance(old);
-
   }
 
   @Test
@@ -172,8 +169,6 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests a pattern which just contains a single % indicating all match
-   *
-   * @throws Exception
    */
   private void likePercentageTerminated_2(boolean useBindParam) throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -188,7 +183,7 @@ public class LikePredicateJUnitTest {
       Portfolio pf = new Portfolio(i);
       pf.status = base + ch;
       ch += 1;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     base = "abd";
@@ -197,14 +192,11 @@ public class LikePredicateJUnitTest {
       Portfolio pf = new Portfolio(i);
       pf.status = base + ch;
       ch += 1;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
 
-    Query q;
-    SelectResults results;
-    SelectResults expectedResults;
     String predicate = "";
     if (useBindParam) {
       predicate = "$1";
@@ -212,7 +204,8 @@ public class LikePredicateJUnitTest {
       predicate = " '%'";
     }
 
-    q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    SelectResults results;
     if (useBindParam) {
       results = (SelectResults) q.execute(new Object[] {"%"});
     } else {
@@ -220,9 +213,10 @@ public class LikePredicateJUnitTest {
     }
     ResultsBag bag = new ResultsBag(null);
     for (int i = 1; i < 11; ++i) {
-      bag.add(region.get(new Integer(i)));
+      bag.add(region.get(i));
     }
-    expectedResults = new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
+    SelectResults expectedResults =
+        new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
     SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
@@ -231,10 +225,12 @@ public class LikePredicateJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -250,7 +246,6 @@ public class LikePredicateJUnitTest {
     rs[0][1] = expectedResults;
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     QueryObserverHolder.setInstance(old);
-
   }
 
   @Test
@@ -265,8 +260,6 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests a simple % terminated like predicate with an OR condition
-   *
-   * @throws Exception
    */
   private void likePercentageTerminated_3(boolean useBindPrm) throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -281,7 +274,7 @@ public class LikePredicateJUnitTest {
       Portfolio pf = new Portfolio(i);
       pf.status = base + ch;
       ch += 1;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     base = "abd";
@@ -290,22 +283,20 @@ public class LikePredicateJUnitTest {
       Portfolio pf = new Portfolio(i);
       pf.status = base + ch;
       ch += 1;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
 
-    Query q;
-    SelectResults results;
-    SelectResults expectedResults;
     String predicate = "";
     if (useBindPrm) {
       predicate = "$1";
     } else {
       predicate = " 'abc%'";
     }
-    q = qs.newQuery(
+    Query q = qs.newQuery(
         "SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate + " OR ps.ID > 6");
+    SelectResults results;
     if (useBindPrm) {
       results = (SelectResults) q.execute(new Object[] {"abc%"});
     } else {
@@ -314,10 +305,11 @@ public class LikePredicateJUnitTest {
     ResultsBag bag = new ResultsBag(null);
     for (int i = 1; i < 11; ++i) {
       if (i != 6) {
-        bag.add(region.get(new Integer(i)));
+        bag.add(region.get(i));
       }
     }
-    expectedResults = new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
+    SelectResults expectedResults =
+        new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
     SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
@@ -327,10 +319,12 @@ public class LikePredicateJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertFalse(indexCalled);
       }
@@ -351,10 +345,12 @@ public class LikePredicateJUnitTest {
 
       private int i = 0;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled[i++] = true;
       }
 
+      @Override
       public void endQuery() {
         for (int i = 0; i < indexCalled.length; ++i) {
           assertTrue(indexCalled[i]);
@@ -373,7 +369,6 @@ public class LikePredicateJUnitTest {
     rs[0][1] = expectedResults;
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     QueryObserverHolder.setInstance(old);
-
   }
 
   @Test
@@ -388,8 +383,6 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests a simple % terminated like predicate with an AND condition
-   *
-   * @throws Exception
    */
   private void likePercentageTerminated_4(boolean useBindPrm) throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -398,7 +391,6 @@ public class LikePredicateJUnitTest {
 
     Region region = cache.createRegion("pos", regionAttributes);
 
-
     String base = "abc";
     String pattern = base;
     // so we will get string like abcdcdcdcdcdc
@@ -406,7 +398,7 @@ public class LikePredicateJUnitTest {
       Portfolio pf = new Portfolio(i);
       pattern += "dc";
       pf.status = pattern;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     base = "abd";
@@ -417,22 +409,20 @@ public class LikePredicateJUnitTest {
       pattern += "dc";
       pf.status = pattern;
 
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
 
-    Query q;
-    SelectResults results;
-    SelectResults expectedResults;
     String predicate = "";
     if (useBindPrm) {
       predicate = "$1";
     } else {
       predicate = " 'abc%'";
     }
-    q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate
+    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate
         + " AND ps.ID > 2 AND ps.ID < 150");
+    SelectResults results;
     if (useBindPrm) {
       results = (SelectResults) q.execute(new Object[] {"abc%"});
     } else {
@@ -440,9 +430,10 @@ public class LikePredicateJUnitTest {
     }
     ResultsBag bag = new ResultsBag(null);
     for (int i = 3; i < 150; ++i) {
-      bag.add(region.get(new Integer(i)));
+      bag.add(region.get(i));
     }
-    expectedResults = new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
+    SelectResults expectedResults =
+        new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
     SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
@@ -453,10 +444,12 @@ public class LikePredicateJUnitTest {
 
       private int i = 0;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled[i++] = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled[0]);
         assertFalse(indexCalled[1]);
@@ -478,10 +471,12 @@ public class LikePredicateJUnitTest {
 
       private int i = 0;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled[i++] = true;
       }
 
+      @Override
       public void endQuery() {
         // Only one indexed condition should be called
         boolean indexInvoked = false;
@@ -490,7 +485,6 @@ public class LikePredicateJUnitTest {
         }
         assertTrue(indexInvoked);
       }
-
     });
 
     if (useBindPrm) {
@@ -503,7 +497,6 @@ public class LikePredicateJUnitTest {
     rs[0][1] = expectedResults;
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     QueryObserverHolder.setInstance(old);
-
   }
 
   @Test
@@ -515,8 +508,6 @@ public class LikePredicateJUnitTest {
   public void testLikePercentageTerminated_5_withBindPrms() throws Exception {
     likePercentageTerminated_5(true);
   }
-
-
 
   private void likePercentageTerminated_5(boolean useBindPrm) throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -531,22 +522,20 @@ public class LikePredicateJUnitTest {
       Portfolio pf = new Portfolio(i);
       pf.status = base + ch;
       ch += 1;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
 
-    Query q;
-    SelectResults results;
-    SelectResults expectedResults;
     String predicate = "";
     if (useBindPrm) {
       predicate = "$1";
     } else {
       predicate = " 'a%c%'";
     }
-    q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
 
+    SelectResults results;
     if (useBindPrm) {
       results = (SelectResults) q.execute(new Object[] {"a%bc%"});
     } else {
@@ -555,9 +544,10 @@ public class LikePredicateJUnitTest {
 
     ResultsBag bag = new ResultsBag(null);
     for (int i = 1; i < 6; ++i) {
-      bag.add(region.get(new Integer(i)));
+      bag.add(region.get(i));
     }
-    expectedResults = new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
+    SelectResults expectedResults =
+        new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
     SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     // Create Index
@@ -618,8 +608,6 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests simple non % or non _ terminated string which in effect means equality
-   *
-   * @throws Exception
    */
   private void equalityForm_1(boolean useBindPrms) throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -634,7 +622,7 @@ public class LikePredicateJUnitTest {
       Portfolio pf = new Portfolio(i);
       pf.status = base + ch;
       ch += 1;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     base = "abd";
@@ -643,21 +631,19 @@ public class LikePredicateJUnitTest {
       Portfolio pf = new Portfolio(i);
       pf.status = base + ch;
       ch += 1;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
 
-    Query q;
-    SelectResults results;
-    SelectResults expectedResults;
     String predicate = "";
     if (useBindPrms) {
       predicate = "$1";
     } else {
       predicate = " 'abcd'";
     }
-    q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    SelectResults results;
     if (useBindPrms) {
       results = (SelectResults) q.execute(new Object[] {"abcd"});
     } else {
@@ -666,8 +652,9 @@ public class LikePredicateJUnitTest {
 
     ResultsBag bag = new ResultsBag(null);
 
-    bag.add(region.get(new Integer(1)));
-    expectedResults = new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
+    bag.add(region.get(1));
+    SelectResults expectedResults =
+        new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
 
     SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
@@ -677,10 +664,12 @@ public class LikePredicateJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -696,7 +685,6 @@ public class LikePredicateJUnitTest {
     rs[0][1] = expectedResults;
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     QueryObserverHolder.setInstance(old);
-
   }
 
   @Test
@@ -711,8 +699,6 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests simple \% or \ _ terminated string which in effect means equality
-   *
-   * @throws Exception
    */
   private void equalityForm_2(boolean useBindPrms) throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -726,7 +712,7 @@ public class LikePredicateJUnitTest {
     for (int i = 1; i < 6; ++i) {
       Portfolio pf = new Portfolio(i);
       pf.status = base + str;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     base = "abc";
@@ -734,21 +720,19 @@ public class LikePredicateJUnitTest {
     for (int i = 6; i < 11; ++i) {
       Portfolio pf = new Portfolio(i);
       pf.status = base + str;
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
 
-    Query q, q1;
-    SelectResults results;
-    SelectResults expectedResults;
     String predicate = "";
     if (useBindPrms) {
       predicate = "$1";
     } else {
       predicate = " 'abcd\\_'";
     }
-    q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    SelectResults results;
     if (useBindPrms) {
       results = (SelectResults) q.execute(new Object[] {"abcd\\_"});
     } else {
@@ -758,9 +742,10 @@ public class LikePredicateJUnitTest {
     ResultsBag bag = new ResultsBag(null);
 
     for (int i = 1; i < 6; ++i) {
-      bag.add(region.get(new Integer(i)));
+      bag.add(region.get(i));
     }
-    expectedResults = new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
+    SelectResults expectedResults =
+        new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
 
     SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
@@ -770,7 +755,7 @@ public class LikePredicateJUnitTest {
     } else {
       predicate = " 'abcd\\%'";
     }
-    q1 = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
+    Query q1 = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
     if (useBindPrms) {
       results = (SelectResults) q1.execute(new Object[] {"abcd\\%"});
     } else {
@@ -778,7 +763,7 @@ public class LikePredicateJUnitTest {
     }
     bag = new ResultsBag(null);
     for (int i = 6; i < 11; ++i) {
-      bag.add(region.get(new Integer(i)));
+      bag.add(region.get(i));
     }
     SelectResults expectedResults1 =
         new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
@@ -792,10 +777,12 @@ public class LikePredicateJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -819,7 +806,6 @@ public class LikePredicateJUnitTest {
     rs1[0][1] = expectedResults1;
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs1, this);
     QueryObserverHolder.setInstance(old);
-
   }
 
   @Test
@@ -834,8 +820,6 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests for regular expression meta chars. This has no special meaning with Like.
-   *
-   * @throws Exception
    */
   private void regexMetaChar(boolean useBindPrms) throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -850,12 +834,12 @@ public class LikePredicateJUnitTest {
 
     // Add values to region.
     for (int i = 0; i < values.length; i++) {
-      region.put(new Integer(i), values[i]);
+      region.put(i, values[i]);
     }
 
     // Add % and _ with escape char.
-    region.put(new Integer(values.length + 1), "act%+ive");
-    region.put(new Integer(values.length + 2), "act_+ive");
+    region.put(values.length + 1, "act%+ive");
+    region.put(values.length + 2, "act_+ive");
 
     QueryService qs = cache.getQueryService();
     Query q;
@@ -907,8 +891,6 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests with combination of % and _ Supported from 6.6
-   *
-   * @throws Exception
    */
   private void enhancedLike(boolean useBindPrms) throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -919,18 +901,17 @@ public class LikePredicateJUnitTest {
 
     String[] values = new String[] {"active",};
 
-    String[] likePredicates = new String[] {"active", "act%%ve", "a%e", "%ctiv%", "%c%iv%",
-        "%ctive", "%%ti%", "activ_", "_ctive", "ac_ive", "_c_iv_", "_ctiv%", "__tive", "act__e",
-        "a%iv_", "a_tiv%", "%", "ac%",};
-
     for (int i = 0; i < values.length; i++) {
-      region.put(new Integer(i), values[i]);
+      region.put(i, values[i]);
     }
 
     QueryService qs = cache.getQueryService();
     Query q;
     SelectResults results;
 
+    String[] likePredicates = new String[] {"active", "act%%ve", "a%e", "%ctiv%", "%c%iv%",
+        "%ctive", "%%ti%", "activ_", "_ctive", "ac_ive", "_c_iv_", "_ctiv%", "__tive", "act__e",
+        "a%iv_", "a_tiv%", "%", "ac%",};
     for (int i = 0; i < likePredicates.length; i++) {
       if (!useBindPrms) {
         q = qs.newQuery("select p from /pos.values p where p like '" + likePredicates[i] + "'");
@@ -987,21 +968,18 @@ public class LikePredicateJUnitTest {
     String[] values = new String[] {"ac\\tive", "X\\\\X", "Y%Y", "Z\\%Z", "pass\\ive",
         "inact\\%+ive", "1inact\\_+ive",};
 
-    String[] likePredicates = new String[] {"ac\\\\tive", "ac\\\\%", "ac_tive", "Y\\%Y", "X__X",
-        "X%X", "Z\\\\\\%Z", "inact\\\\%+ive", "1inact\\\\_+ive",};
-
-    String[] result = new String[] {"ac\\tive", "ac\\tive", "ac\\tive", "Y%Y", "X\\\\X", "X\\\\X",
-        "Z\\%Z", "inact\\%+ive", "1inact\\_+ive",};
-
-
     for (int i = 0; i < values.length; i++) {
-      region.put(new Integer(i), values[i]);
+      region.put(i, values[i]);
     }
 
     QueryService qs = cache.getQueryService();
     Query q;
     SelectResults results;
 
+    String[] result = new String[] {"ac\\tive", "ac\\tive", "ac\\tive", "Y%Y", "X\\\\X", "X\\\\X",
+        "Z\\%Z", "inact\\%+ive", "1inact\\_+ive",};
+    String[] likePredicates = new String[] {"ac\\\\tive", "ac\\\\%", "ac_tive", "Y\\%Y", "X__X",
+        "X%X", "Z\\\\\\%Z", "inact\\\\%+ive", "1inact\\\\_+ive",};
     for (int i = 0; i < likePredicates.length; i++) {
       if (!useBindPrms) {
         q = qs.newQuery("select p from /pos.values p where p like '" + likePredicates[i] + "'");
@@ -1040,8 +1018,6 @@ public class LikePredicateJUnitTest {
 
   /**
    * Query with index on other fields.
-   *
-   * @throws Exception
    */
   @Test
   public void testLikeWithOtherIndexedField() throws Exception {
@@ -1060,19 +1036,14 @@ public class LikePredicateJUnitTest {
       } else if ((i <= 2)) {
         pf.pkid = "2";
       }
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
 
-    Query q;
-    SelectResults results;
-    SelectResults expectedResults;
-
+    Query q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%'");
+    SelectResults results = (SelectResults) q.execute();
     int expectedResultSize = 2;
-
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%'");
-    results = (SelectResults) q.execute();
     if (results.size() != expectedResultSize) {
       fail("Unexpected result. expected :" + expectedResultSize + " found : " + results.size());
     }
@@ -1086,7 +1057,7 @@ public class LikePredicateJUnitTest {
 
     // Query to be compared with indexed results.
     q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' and ps.pkid = '1' ");
-    expectedResults = (SelectResults) q.execute();
+    SelectResults expectedResults = (SelectResults) q.execute();
     if (expectedResults.size() != expectedResultSize) {
       fail("Unexpected result. expected :" + expectedResultSize + " found : "
           + expectedResults.size());
@@ -1098,10 +1069,12 @@ public class LikePredicateJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -1126,13 +1099,10 @@ public class LikePredicateJUnitTest {
     }
 
     QueryObserverHolder.setInstance(old);
-
   }
 
   /**
    * Query with index on other fields.
-   *
-   * @throws Exception
    */
   @Test
   public void testLikeWithOtherIndexedField2() throws Exception {
@@ -1152,19 +1122,14 @@ public class LikePredicateJUnitTest {
       } else if ((i <= 2)) {
         pf.pkid = "2";
       }
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
 
-    Query q;
-    SelectResults results;
-    SelectResults expectedResults;
-
+    Query q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%'");
+    SelectResults results = (SelectResults) q.execute();
     int expectedResultSize = 2;
-
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%'");
-    results = (SelectResults) q.execute();
     if (results.size() != expectedResultSize) {
       fail("Unexpected result. expected :" + expectedResultSize + " found : " + results.size());
     }
@@ -1196,7 +1161,7 @@ public class LikePredicateJUnitTest {
 
     // Query to be compared with indexed results.
     q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE ps.status like '%b%' and ps.pkid = '1' ");
-    expectedResults = (SelectResults) q.execute();
+    SelectResults expectedResults = (SelectResults) q.execute();
     if (expectedResults.size() != expectedResultSize) {
       fail("Unexpected result. expected :" + expectedResultSize + " found : "
           + expectedResults.size());
@@ -1210,10 +1175,12 @@ public class LikePredicateJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -1256,7 +1223,6 @@ public class LikePredicateJUnitTest {
     }
 
     QueryObserverHolder.setInstance(old);
-
   }
 
   @Test
@@ -1267,7 +1233,6 @@ public class LikePredicateJUnitTest {
 
     Region region = cache.createRegion("pos", regionAttributes);
     QueryService qs = cache.getQueryService();
-    Query q;
     String[] queries = new String[] {
         " SELECT  status, pkid FROM /pos  WHERE status like 'inactive' and pkid like '1' ",
         " SELECT  status, pkid FROM /pos  WHERE status like 'active' or pkid like '1' ",
@@ -1301,9 +1266,10 @@ public class LikePredicateJUnitTest {
 
     for (int i = 0; i < 20; i++) {
       Portfolio pf = new Portfolio(i);
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
+    Query q;
     for (int i = 0; i < queries.length; i++) {
       q = qs.newQuery(queries[i]);
       sr[i][0] = (SelectResults) q.execute();
@@ -1320,17 +1286,15 @@ public class LikePredicateJUnitTest {
       try {
         sr[i][1] = (SelectResults) q.execute();
       } catch (Exception e) {
-        fail("Query execution failed for: " + queries[i]);
+        throw new RuntimeException("Query execution failed for: " + queries[i], e);
       }
     }
 
     // compare results.
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
 
-    SelectResults results = null;
-
     q = qs.newQuery("SELECT  status  FROM /pos  WHERE status like 'inactive' and pkid like '1' ");
-    results = (SelectResults) q.execute();
+    SelectResults results = (SelectResults) q.execute();
     if (results.size() != 1) {
       fail("Unexpected result. expected :" + 1 + " found : " + results.size());
     }
@@ -1467,7 +1431,6 @@ public class LikePredicateJUnitTest {
     if (results.size() != 0) {
       fail("Unexpected result. expected :" + 0 + " found : " + results.size());
     }
-
   }
 
   @Test
@@ -1489,7 +1452,7 @@ public class LikePredicateJUnitTest {
       } else if (i == 3) {
         pf.status = null;
       }
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
@@ -1532,14 +1495,12 @@ public class LikePredicateJUnitTest {
 
     ResultsBag bag = new ResultsBag(null);
     for (int i = 1; i < 6; ++i) {
-      bag.add(region.get(new Integer(i)));
+      bag.add(region.get(i));
     }
   }
 
   /**
    * Tests with combination of % and _ and NOT with LIKE Supported from 6.6
-   *
-   * @throws Exception
    */
   private void enhancedNotLike(boolean useBindPrms, boolean useIndex) throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -1550,16 +1511,8 @@ public class LikePredicateJUnitTest {
 
     String[] values = new String[] {"active", "inactive",};
 
-    String[] likePredicates1 = new String[] {"active", "act%%ve", "a%e", "activ_", "ac_ive",
-        "act__e", "a%iv_", "a_tiv%", "ac%",};
-
-    String[] likePredicates2 = new String[] {"%ctiv%", "%c%iv%", "%ctive", "%%ti%", "%",};
-
-    String[] likePredicates3 = new String[] {
-
-        "___ctive", "___c_iv_", "___ctiv%", "____tive",};
     for (int i = 0; i < values.length; i++) {
-      region.put(new Integer(i), values[i]);
+      region.put(i, values[i]);
     }
 
     QueryService qs = cache.getQueryService();
@@ -1570,6 +1523,8 @@ public class LikePredicateJUnitTest {
     Query q;
     SelectResults results;
 
+    String[] likePredicates1 = new String[] {"active", "act%%ve", "a%e", "activ_", "ac_ive",
+        "act__e", "a%iv_", "a_tiv%", "ac%",};
     for (int i = 0; i < likePredicates1.length; i++) {
       if (!useBindPrms) {
         q = qs.newQuery("select p from /pos p where NOT (p like '" + likePredicates1[i] + "')");
@@ -1586,6 +1541,7 @@ public class LikePredicateJUnitTest {
       }
     }
 
+    String[] likePredicates2 = new String[] {"%ctiv%", "%c%iv%", "%ctive", "%%ti%", "%",};
     for (int i = 0; i < likePredicates2.length; i++) {
       if (!useBindPrms) {
         q = qs.newQuery("select p from /pos p where NOT (p like '" + likePredicates2[i] + "')");
@@ -1601,6 +1557,7 @@ public class LikePredicateJUnitTest {
       }
     }
 
+    String[] likePredicates3 = new String[] {"___ctive", "___c_iv_", "___ctiv%", "____tive",};
     for (int i = 0; i < likePredicates3.length; i++) {
       if (!useBindPrms) {
         q = qs.newQuery("select p from /pos p where NOT (p like '" + likePredicates3[i] + "')");
@@ -1648,7 +1605,6 @@ public class LikePredicateJUnitTest {
     enhancedNotLike2(false, true);
   }
 
-
   private void enhancedNotLike2(boolean useBindPrms, boolean useIndex) throws Exception {
     Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
@@ -1659,24 +1615,22 @@ public class LikePredicateJUnitTest {
     String[] values = new String[] {"ac\\tive", "X\\\\X", "Y%Y", "Z\\%Z", "pass\\ive",
         "inact\\%+ive", "1inact\\_+ive",};
 
-    String[] likePredicates = new String[] {"ac\\\\tive", "ac\\\\%", "ac_tive", "Y\\%Y", "X__X",
-        "X%X", "Z\\\\\\%Z", "inact\\\\%+ive", "1inact\\\\_+ive",};
-
     String[] result = new String[] {"ac\\tive", "ac\\tive", "ac\\tive", "Y%Y", "X\\\\X", "X\\\\X",
         "Z\\%Z", "inact\\%+ive", "1inact\\_+ive",};
 
-
     for (int i = 0; i < values.length; i++) {
-      region.put(new Integer(i), values[i]);
+      region.put(i, values[i]);
     }
 
     QueryService qs = cache.getQueryService();
-    Query q;
-    SelectResults results;
     if (useIndex) {
       qs.createIndex("p", IndexType.FUNCTIONAL, "p", "/pos.values p");
     }
+    String[] likePredicates = new String[] {"ac\\\\tive", "ac\\\\%", "ac_tive", "Y\\%Y", "X__X",
+        "X%X", "Z\\\\\\%Z", "inact\\\\%+ive", "1inact\\\\_+ive",};
     for (int i = 0; i < likePredicates.length; i++) {
+      SelectResults results;
+      Query q;
       if (!useBindPrms) {
         q = qs
             .newQuery("select p from /pos.values p where NOT (p like '" + likePredicates[i] + "')");
@@ -1694,8 +1648,6 @@ public class LikePredicateJUnitTest {
 
   /**
    * Query with index on other fields.
-   *
-   * @throws Exception
    */
   @Test
   public void testNotLikeWithOtherIndexedField2() throws Exception {
@@ -1715,19 +1667,14 @@ public class LikePredicateJUnitTest {
       } else if ((i <= 2)) {
         pf.pkid = "2";
       }
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
     QueryService qs = cache.getQueryService();
 
-    Query q;
-    SelectResults results;
-    SelectResults expectedResults;
-
+    Query q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%')");
+    SelectResults results = (SelectResults) q.execute();
     int expectedResultSize = 2;
-
-    q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%')");
-    results = (SelectResults) q.execute();
     if (results.size() != expectedResultSize * 4) {
       fail("Unexpected result. expected :" + expectedResultSize * 4 + " found : " + results.size());
     }
@@ -1759,7 +1706,7 @@ public class LikePredicateJUnitTest {
 
     // Query to be compared with indexed results.
     q = qs.newQuery(" SELECT  *  FROM /pos ps WHERE NOT (ps.status like '%b%' and ps.pkid = '1' )");
-    expectedResults = (SelectResults) q.execute();
+    SelectResults expectedResults = (SelectResults) q.execute();
     if (expectedResults.size() != 8) {
       fail("Unexpected result. expected :" + size + " found : " + expectedResults.size());
     }
@@ -1768,7 +1715,6 @@ public class LikePredicateJUnitTest {
     qs.createIndex("pkid", IndexType.FUNCTIONAL, "ps.pkid", "/pos ps");
     qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", "/pos ps");
     qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", "/pos ps");
-
 
     results = (SelectResults) q.execute();
     SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
@@ -1789,10 +1735,12 @@ public class LikePredicateJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -1818,7 +1766,6 @@ public class LikePredicateJUnitTest {
     }
 
     QueryObserverHolder.setInstance(old);
-
   }
 
   @Test
@@ -1881,14 +1828,10 @@ public class LikePredicateJUnitTest {
     assertEquals(sr.size(), 1);
   }
 
-
   /**
    * Test to verify that query executes using index even when the index is being removed during the
    * execution
-   *
-   * @throws Exception
    */
-
   @Test
   public void testRemoveIndexDuringQueryinRR() throws Exception {
     removeIndexDuringQuery(false);
@@ -1901,7 +1844,6 @@ public class LikePredicateJUnitTest {
 
   private void removeIndexDuringQuery(boolean isPr) throws Exception {
     String regionName = "exampleRegion";
-    String name = "/" + regionName;
 
     Cache cache = CacheUtils.getCache();
     Region r1 = null;
@@ -1912,16 +1854,19 @@ public class LikePredicateJUnitTest {
     }
 
     QueryService qs = cache.getQueryService();
+    String name = "/" + regionName;
     qs.createIndex("status", "status", name);
     assertEquals(cache.getQueryService().getIndexes().size(), 1);
 
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -1956,7 +1901,6 @@ public class LikePredicateJUnitTest {
 
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs);
     QueryObserverHolder.setInstance(old);
-
   }
 
   @Test
@@ -1995,13 +1939,11 @@ public class LikePredicateJUnitTest {
     assertEquals(2, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
 
-
     executeQueryMultipleTimes(
         "SELECT distinct *  FROM /pos ps WHERE ps.ID >= 0 and ps.status like 'in%ve'", false);
     assertEquals(6, i1.getStatistics().getTotalUses());
     assertEquals(2, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
-
 
     executeQueryMultipleTimes(
         "SELECT distinct *  FROM /pos ps1, /pos2 ps2 WHERE ps1.status like 'in%ve' or ps2.description like 'X%X'",
@@ -2009,7 +1951,6 @@ public class LikePredicateJUnitTest {
     assertEquals(8, i1.getStatistics().getTotalUses());
     assertEquals(2, i2.getStatistics().getTotalUses());
     assertEquals(2, i3.getStatistics().getTotalUses());
-
   }
 
   @Test
@@ -2040,13 +1981,11 @@ public class LikePredicateJUnitTest {
     assertEquals(0, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
 
-
     executeQueryMultipleTimes(
         "SELECT distinct *  FROM /pos ps WHERE ps.status like $1 or ps.description like $2", true);
     assertEquals(4, i1.getStatistics().getTotalUses());
     assertEquals(2, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
-
 
     executeQueryMultipleTimes(
         "SELECT distinct *  FROM /pos ps WHERE ps.ID >= 0 and ps.status like $1", true);
@@ -2054,18 +1993,15 @@ public class LikePredicateJUnitTest {
     assertEquals(2, i2.getStatistics().getTotalUses());
     assertEquals(0, i3.getStatistics().getTotalUses());
 
-
     executeQueryMultipleTimes(
         "SELECT distinct *  FROM /pos ps1, /pos2 ps2 WHERE ps1.status like $1 or ps2.description like $2",
         true);
     assertEquals(8, i1.getStatistics().getTotalUses());
     assertEquals(2, i2.getStatistics().getTotalUses());
     assertEquals(2, i3.getStatistics().getTotalUses());
-
   }
 
   private void executeQueryMultipleTimes(String queryStr, boolean useBindParam) throws Exception {
-
     QueryService qs = CacheUtils.getCache().getQueryService();
     Region region = CacheUtils.getCache().getRegion("pos");
 
@@ -2079,8 +2015,7 @@ public class LikePredicateJUnitTest {
       results = (SelectResults) q.execute();
     }
 
-    // Execute the query again to verify if it is still using
-    // the index
+    // Execute the query again to verify if it is still using the index
     if (useBindParam) {
       results = (SelectResults) q.execute(new Object[] {"in%ve", "X%X"});
     } else {
@@ -2098,7 +2033,7 @@ public class LikePredicateJUnitTest {
     executeInvalidQueryWithLike(true);
   }
 
-  private void executeInvalidQueryWithLike(boolean useBindParam) {
+  private void executeInvalidQueryWithLike(boolean useBindParam) throws Exception {
     Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
     RegionAttributes regionAttributes = attributesFactory.create();
@@ -2110,8 +2045,6 @@ public class LikePredicateJUnitTest {
     region.put("key-" + 11, new PortfolioModifiedStatus(11));
     QueryService qs = cache.getQueryService();
 
-    Query[] q = new Query[4];
-    SelectResults[][] results = new SelectResults[2][2];
     String predicate = "";
     String predicate2 = "";
     if (useBindParam) {
@@ -2122,76 +2055,47 @@ public class LikePredicateJUnitTest {
       predicate2 = " 'inactive'";
     }
 
-    boolean exceptionThrown = false;
+    Query[] q = new Query[4];
     q[0] = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status like " + predicate);
     q[1] = qs.newQuery("SELECT distinct *  FROM /pos ps WHERE ps.status = " + predicate2);
     q[2] =
         qs.newQuery("SELECT distinct *  FROM /pos ps WHERE NOT (ps.status like " + predicate + ")");
     q[3] =
         qs.newQuery("SELECT distinct *  FROM /pos ps WHERE NOT (ps.status = " + predicate2 + ")");
-    try {
-      if (useBindParam) {
-        results[0][0] = (SelectResults) q[0].execute(new Object[] {"%nactive"});
-        results[0][1] = (SelectResults) q[1].execute(new Object[] {"inactive"});
-        results[1][0] = (SelectResults) q[2].execute(new Object[] {"%nactive"});
-        results[1][1] = (SelectResults) q[3].execute(new Object[] {"inactive"});
-      } else {
-        results[0][0] = (SelectResults) q[0].execute();
-        results[0][1] = (SelectResults) q[1].execute();
-        results[1][0] = (SelectResults) q[2].execute();
-        results[1][1] = (SelectResults) q[3].execute();
-      }
-    } catch (Exception e) {
-      exceptionThrown = true;
-      fail("Query execution failed " + e);
+    SelectResults[][] results = new SelectResults[2][2];
+    if (useBindParam) {
+      results[0][0] = (SelectResults) q[0].execute(new Object[] {"%nactive"});
+      results[0][1] = (SelectResults) q[1].execute(new Object[] {"inactive"});
+      results[1][0] = (SelectResults) q[2].execute(new Object[] {"%nactive"});
+      results[1][1] = (SelectResults) q[3].execute(new Object[] {"inactive"});
+    } else {
+      results[0][0] = (SelectResults) q[0].execute();
+      results[0][1] = (SelectResults) q[1].execute();
+      results[1][0] = (SelectResults) q[2].execute();
+      results[1][1] = (SelectResults) q[3].execute();
     }
     assertTrue(results[0][0].size() > 0);
     assertTrue(CacheUtils.compareResultsOfWithAndWithoutIndex(results));
-    assertFalse("Query exception should not have been thrown", exceptionThrown);
 
-    try {
-      qs.createIndex("IDindex", "ps.ID", "/pos ps");
-    } catch (Exception e) {
-      fail("Index creation failed");
-    }
+    qs.createIndex("IDindex", "ps.ID", "/pos ps");
 
-    exceptionThrown = false;
-    try {
-      if (useBindParam) {
-        results[0][0] = (SelectResults) q[0].execute(new Object[] {"%nactive"});
-        results[0][1] = (SelectResults) q[1].execute(new Object[] {"inactive"});
-        results[1][0] = (SelectResults) q[2].execute(new Object[] {"%nactive"});
-        results[1][1] = (SelectResults) q[3].execute(new Object[] {"inactive"});
-      } else {
-        results[0][0] = (SelectResults) q[0].execute();
-        results[0][1] = (SelectResults) q[1].execute();
-        results[1][0] = (SelectResults) q[2].execute();
-        results[1][1] = (SelectResults) q[3].execute();
-      }
-    } catch (Exception e) {
-      exceptionThrown = true;
-      fail("Query execution failed " + e);
+    if (useBindParam) {
+      results[0][0] = (SelectResults) q[0].execute(new Object[] {"%nactive"});
+      results[0][1] = (SelectResults) q[1].execute(new Object[] {"inactive"});
+      results[1][0] = (SelectResults) q[2].execute(new Object[] {"%nactive"});
+      results[1][1] = (SelectResults) q[3].execute(new Object[] {"inactive"});
+    } else {
+      results[0][0] = (SelectResults) q[0].execute();
+      results[0][1] = (SelectResults) q[1].execute();
+      results[1][0] = (SelectResults) q[2].execute();
+      results[1][1] = (SelectResults) q[3].execute();
     }
     assertTrue(results[0][0].size() > 0);
     assertTrue(CacheUtils.compareResultsOfWithAndWithoutIndex(results));
-    assertFalse("Query exception should not have been thrown", exceptionThrown);
   }
 
   @Test
   public void testUndefined() throws Exception {
-    String[] queries = {"select * from /pos where status.toUpperCase() like '%ACT%'",
-        "select * from /pos where status.toUpperCase() like 'ACT%'",
-        "select * from /pos where status.toUpperCase() like '%IVE'",
-        "select * from /pos where status.toUpperCase() like 'ACT_VE'",
-        "select * from /pos where status like '%CT%'",
-        "select * from /pos where status like 'ACT%'",
-        "select * from /pos where status like 'ACT_VE'",
-        "select * from /pos where position1.secId like '%B%'",
-        "select * from /pos where position1.secId like 'IB%'",
-        "select * from /pos where position1.secId like 'I_M'",
-        "select * from /pos p, p.positions.values pos where pos.secId like '%B%'",
-        "select * from /pos p, p.positions.values pos where pos.secId like 'IB%'",
-        "select * from /pos p, p.positions.values pos where pos.secId like 'I_M'",};
     Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
     RegionAttributes regionAttributes = attributesFactory.create();
@@ -2211,6 +2115,19 @@ public class LikePredicateJUnitTest {
       region.put("key-" + i, p);
     }
 
+    String[] queries = {"select * from /pos where status.toUpperCase() like '%ACT%'",
+        "select * from /pos where status.toUpperCase() like 'ACT%'",
+        "select * from /pos where status.toUpperCase() like '%IVE'",
+        "select * from /pos where status.toUpperCase() like 'ACT_VE'",
+        "select * from /pos where status like '%CT%'",
+        "select * from /pos where status like 'ACT%'",
+        "select * from /pos where status like 'ACT_VE'",
+        "select * from /pos where position1.secId like '%B%'",
+        "select * from /pos where position1.secId like 'IB%'",
+        "select * from /pos where position1.secId like 'I_M'",
+        "select * from /pos p, p.positions.values pos where pos.secId like '%B%'",
+        "select * from /pos p, p.positions.values pos where pos.secId like 'IB%'",
+        "select * from /pos p, p.positions.values pos where pos.secId like 'I_M'",};
     SelectResults[][] res = new SelectResults[queries.length][2];
 
     QueryService qs = CacheUtils.getCache().getQueryService();
@@ -2222,7 +2139,7 @@ public class LikePredicateJUnitTest {
         results = (SelectResults) q.execute();
         res[i][0] = results;
       } catch (Exception e) {
-        fail("Query execution failed for query " + queries[i] + " with exception: " + e);
+        throw new RuntimeException("Query execution failed for query " + queries[i], e);
       }
       if (i < 10) {
         assertEquals("Query " + queries[i] + " should return 5 results and not " + results.size(),
@@ -2233,13 +2150,9 @@ public class LikePredicateJUnitTest {
       }
     }
 
-    try {
-      qs.createIndex("status", "status", region.getFullPath());
-      qs.createIndex("position1secId", "pos1.secId", region.getFullPath());
-      qs.createIndex("secId", "pos.secId", region.getFullPath() + " pos, pos.secId");
-    } catch (Exception e) {
-      fail("Index creation failed");
-    }
+    qs.createIndex("status", "status", region.getFullPath());
+    qs.createIndex("position1secId", "pos1.secId", region.getFullPath());
+    qs.createIndex("secId", "pos.secId", region.getFullPath() + " pos, pos.secId");
 
     for (int i = 0; i < queries.length; i++) {
       Query q = qs.newQuery(queries[i]);
@@ -2247,7 +2160,7 @@ public class LikePredicateJUnitTest {
         results = (SelectResults) q.execute();
         res[i][1] = results;
       } catch (Exception e) {
-        fail("Query execution failed for query " + queries[i] + " with exception: " + e);
+        throw new RuntimeException("Query execution failed for query " + queries[i], e);
       }
       if (i < 10) {
         assertEquals("Query " + queries[i] + " should return 5 results and not " + results.size(),
@@ -2281,10 +2194,10 @@ public class LikePredicateJUnitTest {
       }
     }
   }
-  private class PortfolioModifiedStatus {
+
+  private static class PortfolioModifiedStatus implements Serializable {
     public PortfolioModifiedStatus(int id) {
       String[] status = {"inactive", "active"};
     }
   }
-
 }

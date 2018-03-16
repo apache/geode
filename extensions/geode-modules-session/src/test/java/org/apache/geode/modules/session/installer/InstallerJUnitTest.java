@@ -29,10 +29,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SessionTest;
 
-
-@Category({IntegrationTest.class, SessionTest.class})
+@Category(IntegrationTest.class)
 public class InstallerJUnitTest {
 
   @Rule

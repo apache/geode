@@ -19,9 +19,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.modules.session.catalina.Tomcat6DeltaSessionManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SessionTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({IntegrationTest.class, SessionTest.class})
+@Category(IntegrationTest.class)
 public class Tomcat6SessionsJUnitTest extends TestSessionsBase {
 
   // Set up the session manager we need

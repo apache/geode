@@ -86,7 +86,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
 
   public static void createLocator(Integer port1, Integer port2, Integer port3,
       Integer startingPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
@@ -98,7 +98,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   }
 
   public static void createReceiver(Integer port1, Integer port2, Integer port3) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS,
@@ -120,7 +120,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   }
 
   public static void createServer(Integer port1, Integer port2, Integer port3) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS,
@@ -141,7 +141,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   }
 
   public static void disconnect() {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     test.getSystem().disconnect();
   }
 

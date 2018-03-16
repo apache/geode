@@ -73,7 +73,7 @@ public class DescribeRegionDUnitTest {
   private static MemberVM accessor;
 
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(6);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

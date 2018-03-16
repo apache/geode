@@ -12,21 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * Address.java
- *
- * Created on March 2, 2005, 12:23 PM
- */
-
 package org.apache.geode.cache.query.data;
 
-import java.util.*;
+import java.io.Serializable;
+import java.util.Set;
 
-
-/**
- *
- */
-public class Address {
+public class Address implements Serializable {
   public String zipCode;
   public String city;
 
@@ -45,5 +36,4 @@ public class Address {
     this.street = street;
     this.phoneNo = phoneNo;
   }
-
-}// end of class
+}

@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ClusterConfigLocatorRestartDUnitTest {
 
   @Rule
-  public ClusterStartupRule rule = new ClusterStartupRule();
+  public ClusterStartupRule rule = new ClusterStartupRule(5);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

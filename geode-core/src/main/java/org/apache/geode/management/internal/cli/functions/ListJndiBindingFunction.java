@@ -16,14 +16,12 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.naming.Context;
-import javax.naming.NameClassPair;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -36,7 +34,6 @@ public class ListJndiBindingFunction implements InternalFunction {
 
   @Override
   public void execute(FunctionContext context) {
-    List<NameClassPair> namePairs = new ArrayList<>();
     CliFunctionResult result;
 
     try {

@@ -1543,10 +1543,12 @@ public class TXCommitMessage extends PooledDistributionMessage
         if (!this.op.isDestroy()) {
           this.didDestroy = in.readBoolean();
           if (!this.op.isInvalidate()) {
-            boolean isToken = in.readBoolean();
-            if (isToken) {
+            boolean isTokenOrByteArray = in.readBoolean();
+            if (isTokenOrByteArray) {
+              // token or byte[]
               this.value = DataSerializer.readObject(in);
             } else {
+              // CachedDeserializable, Object, or PDX
               this.value = CachedDeserializableFactory.create(DataSerializer.readByteArray(in),
                   GemFireCacheImpl.getInstance());
             }

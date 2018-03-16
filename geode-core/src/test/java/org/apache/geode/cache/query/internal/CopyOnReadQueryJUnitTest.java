@@ -34,35 +34,24 @@ import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-/**
- *
- *
- */
 @Category({IntegrationTest.class, OQLQueryTest.class})
 public class CopyOnReadQueryJUnitTest {
 
-  static int numObjects = 10;
-  static int objectsAndResultsMultiplier = 100;
-  QueryTestUtils utils;
-  static String regionName = "portfolios";
-  static final String indexName = "testIndex";
-  String[] queries = {"select * from /" + regionName + " p where p.indexKey = 1",
+  private static int numObjects = 10;
+  private static int objectsAndResultsMultiplier = 100;
+  private static String regionName = "portfolios";
+  private static final String indexName = "testIndex";
+
+  private QueryTestUtils utils;
+  private String[] queries = {"select * from /" + regionName + " p where p.indexKey = 1",
       "select distinct * from /" + regionName + " p where p.indexKey = 1 order by p.indexKey",
       "select * from /" + regionName + " p, p.positions.values pv where pv.secId = '1'",
       "select * from /" + regionName + " p where p in (select * from /" + regionName
-          + " pi where pi.indexKey = 1)",
+          + " pi where pi.indexKey = 1)"};
 
-      // "select * from /" + regionName + " p where p.ID = ELEMENT(select pi.ID from /" + regionName
-      // + " pi where pi.ID = 1)"
-  };
+  private int[] expectedResults = {1, 1, 1, 1};
 
-  int[] expectedResults = {1, 1, 1, 1// ,
-                                     // 1
-  };
-
-  boolean[] containsInnerQuery = {false, false, false, true
-
-  };
+  private boolean[] containsInnerQuery = {false, false, false, true};
 
   @Before
   public void setUp() throws java.lang.Exception {
@@ -78,14 +67,6 @@ public class CopyOnReadQueryJUnitTest {
     utils.closeCache();
   }
 
-
-  /**
-   *
-   * @param region
-   * @param numObjects
-   * @param objectsAndResultsMultiplier number of similar objects to put into the cache so that
-   *        results from queries will be satisfied by the multiple
-   */
   private void createData(Region region, int numObjects, int objectsAndResultsMultiplier) {
     for (int i = 0; i < numObjects; i++) {
       for (int j = 0; j < objectsAndResultsMultiplier; j++) {
@@ -153,7 +134,6 @@ public class CopyOnReadQueryJUnitTest {
     }
   }
 
-  // Test copy on read false
   @Test
   public void testCopyOnReadFalseWithHashIndexWithLocalRegion() throws Exception {
     utils.getCache().setCopyOnRead(false);
@@ -253,25 +233,6 @@ public class CopyOnReadQueryJUnitTest {
         objectsAndResultsMultiplier, true, false);
   }
 
-  // @Test
-  // public void testCopyOnReadFalseWithRangeIndexTupleWithPartitionedRegion() throws Exception {
-  // utils.getCache().setCopyOnRead(false);
-  // utils.createPartitionRegion(regionName, null);
-  // utils.createIndex(indexName, "pv.secId", "/" + regionName + " p, p.positions.values pv");
-  // helpExecuteQueriesCopyOnReadFalse(queries, expectedResults, numObjects,
-  // objectsAndResultsMultiplier, true, true);
-  // }
-
-  /**
-   *
-   * @param queries
-   * @param expectedResults
-   * @param numObjects
-   * @param objectsAndResultsMultiplier
-   * @param hasIndex
-   * @param isPR
-   * @throws Exception
-   */
   private void helpExecuteQueriesCopyOnRead(String[] queries, int[] expectedResults, int numObjects,
       int objectsAndResultsMultiplier, boolean hasIndex, boolean isPR) throws Exception {
     Region region = utils.getCache().getRegion("/" + regionName);
@@ -286,16 +247,6 @@ public class CopyOnReadQueryJUnitTest {
     }
   }
 
-  /**
-   *
-   * @param queries
-   * @param expectedResults
-   * @param numObjects
-   * @param objectsAndResultsMultiplier
-   * @param hasIndex
-   * @param isPR
-   * @throws Exception
-   */
   private void helpExecuteQueriesCopyOnReadFalse(String[] queries, int[] expectedResults,
       int numObjects, int objectsAndResultsMultiplier, boolean hasIndex, boolean isPR)
       throws Exception {
@@ -386,7 +337,6 @@ public class CopyOnReadQueryJUnitTest {
     // this point. These results themselves would have been copied
     assertEquals("Unexpected number of Portfolio instances",
         numInstances + expectedResultsSizeMultiplied * 2, Portfolio.instanceCount.get());
-
   }
 
   private void helpTestCopyOnReadFalse(String queryString, int expectedResultsSize, int numObjects,
@@ -444,8 +394,5 @@ public class CopyOnReadQueryJUnitTest {
     // deserialized value
     assertEquals("Unexpected number of Portfolio instances" + queryString, numInstances,
         Portfolio.instanceCount.get());
-
   }
-
-
 }

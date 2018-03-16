@@ -291,6 +291,13 @@ org/apache/geode/internal/cache/RemoteOperationException,true,-59598896567920490
 org/apache/geode/internal/cache/SearchLoadAndWriteProcessor$TryAgainException,false
 org/apache/geode/internal/cache/TXCommitMessage$CommitExceptionCollectingException,true,589384721273797822,cacheExceptions:java/util/Set,fatalExceptions:java/util/Map,id:org/apache/geode/internal/cache/TXId,regionExceptions:java/util/Map
 org/apache/geode/internal/cache/TXCommitMessage$RegionCommitList,true,-8910813949027683641
+org/apache/geode/internal/cache/configuration/EnumActionDestroyOverflow,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/EnumReadableWritable,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/JndiBindingsType$JndiBinding,false,blockingTimeoutSeconds:java/lang/String,configProperty:java/util/List,connPooledDatasourceClass:java/lang/String,connectionUrl:java/lang/String,idleTimeoutSeconds:java/lang/String,initPoolSize:java/lang/String,jdbcDriverClass:java/lang/String,jndiName:java/lang/String,loginTimeoutSeconds:java/lang/String,managedConnFactoryClass:java/lang/String,maxPoolSize:java/lang/String,password:java/lang/String,transactionType:java/lang/String,type:java/lang/String,userName:java/lang/String,xaDatasourceClass:java/lang/String
+org/apache/geode/internal/cache/configuration/RegionAttributesDataPolicy,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/RegionAttributesIndexUpdateType,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/RegionAttributesMirrorType,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/RegionAttributesScope,false,value:java/lang/String
 org/apache/geode/internal/cache/control/InternalResourceManager$ResourceType,false,id:int
 org/apache/geode/internal/cache/control/MemoryThresholds$MemoryState,false
 org/apache/geode/internal/cache/control/PartitionRebalanceDetailsImpl,true,5880667005758250156,bucketCreateBytes:long,bucketCreateTime:long,bucketCreatesCompleted:int,bucketRemoveBytes:long,bucketRemoveTime:long,bucketRemovesCompleted:int,bucketTransferBytes:long,bucketTransferTime:long,bucketTransfersCompleted:int,partitionMemberDetailsAfter:java/util/Set,partitionMemberDetailsBefore:java/util/Set,primaryTransferTime:long,primaryTransfersCompleted:int,time:long
@@ -473,6 +480,7 @@ org/apache/geode/management/internal/beans/QueryDataFunction$QueryDataFunctionRe
 org/apache/geode/management/internal/beans/stats/StatType,false
 org/apache/geode/management/internal/cli/AbstractCliAroundInterceptor$Response,false,text:java/lang/String
 org/apache/geode/management/internal/cli/CliUtil$DeflaterInflaterData,true,1104813333595216795,data:byte[],dataLength:int
+org/apache/geode/management/internal/cli/commands/CreateJndiBindingCommand$DATASOURCE_TYPE,false,type:java/lang/String
 org/apache/geode/management/internal/cli/domain/AsyncEventQueueDetails,true,1,batchSize:int,diskStoreName:java/lang/String,id:java/lang/String,listener:java/lang/String,listenerProperties:java/util/Properties,maxQueueMemory:int,persistent:boolean
 org/apache/geode/management/internal/cli/domain/CacheServerInfo,true,1,bindAddress:java/lang/String,isRunning:boolean,port:int
 org/apache/geode/management/internal/cli/domain/ClassName,true,1,className:java/lang/String,initProperties:java/util/Properties
@@ -545,8 +553,6 @@ org/apache/geode/management/internal/cli/functions/GetRegionsFunction,true,1
 org/apache/geode/management/internal/cli/functions/GetStackTracesFunction,true,1
 org/apache/geode/management/internal/cli/functions/GetSubscriptionQueueSizeFunction,true,1
 org/apache/geode/management/internal/cli/functions/ImportDataFunction,true,1
-org/apache/geode/management/internal/cli/functions/JndiBindingConfiguration,false,blockingTimeout:java/lang/Integer,connectionPoolDatasource:java/lang/String,connectionUrl:java/lang/String,datasourceConfigurations:java/util/List,idleTimeout:java/lang/Integer,initPoolSize:java/lang/Integer,jdbcDriver:java/lang/String,jndiName:java/lang/String,loginTimeout:java/lang/Integer,managedConnFactory:java/lang/String,maxPoolSize:java/lang/Integer,password:java/lang/String,transactionType:java/lang/String,type:org/apache/geode/management/internal/cli/functions/JndiBindingConfiguration$DATASOURCE_TYPE,username:java/lang/String,xaDatasource:java/lang/String
-org/apache/geode/management/internal/cli/functions/JndiBindingConfiguration$DATASOURCE_TYPE,false,type:java/lang/String
 org/apache/geode/management/internal/cli/functions/ListAsyncEventQueuesFunction,true,1
 org/apache/geode/management/internal/cli/functions/ListDeployedFunction,true,1
 org/apache/geode/management/internal/cli/functions/ListDiskStoresFunction,false

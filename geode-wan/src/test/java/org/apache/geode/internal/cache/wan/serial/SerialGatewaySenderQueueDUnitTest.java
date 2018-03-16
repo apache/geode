@@ -214,7 +214,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     Integer remoteLocPort =
         (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, localLocPort));
 
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + localLocPort + "]");
@@ -276,7 +276,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     Integer remoteLocPort =
         (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, localLocPort));
 
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + localLocPort + "]");

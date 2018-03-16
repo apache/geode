@@ -27,11 +27,11 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.AcceptanceTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-@Category(AcceptanceTest.class)
+@Category(DistributedTest.class)
 public class AlterAsyncEventQueueCommandDUnitTest {
 
   @Rule
@@ -40,7 +40,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static MemberVM locator, server1, server2;
+  private static MemberVM locator, server1;
 
   @Before
   public void beforeClass() throws Exception {
@@ -63,7 +63,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
       assertThat(queue.getBatchSize()).isEqualTo(100);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(1000);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
       assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
     });
 
@@ -76,7 +76,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
       assertThat(queue.getBatchSize()).isEqualTo(100);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(1000);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
       assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });

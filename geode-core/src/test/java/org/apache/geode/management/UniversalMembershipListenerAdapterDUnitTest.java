@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -119,8 +119,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   private final MembershipNotification leftClientNotification = new MembershipNotification();
   private final MembershipNotification crashedClientNotification = new MembershipNotification();
 
-  @ClassRule
-  public static DistributedRestoreSystemProperties distributedRestoreSystemProperties =
+  @Rule
+  public DistributedRestoreSystemProperties distributedRestoreSystemProperties =
       new DistributedRestoreSystemProperties();
 
   @Before
