@@ -26,9 +26,7 @@ import static org.mockito.Mockito.spy;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlType;
 
 import org.junit.Before;
@@ -40,7 +38,6 @@ import org.apache.geode.internal.cache.configuration.CacheConfig;
 import org.apache.geode.internal.cache.configuration.CacheElement;
 import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.cache.configuration.RegionConfig;
-import org.apache.geode.internal.cache.configuration.RegionElement;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -151,19 +148,23 @@ public class InternalClusterConfigurationServiceTest {
       jndiBinding.setJndiName("jndiOne");
       jndiBinding.setJdbcDriverClass("com.sun.ABC");
       jndiBinding.setType("SimpleDataSource");
+      jndiBinding.getConfigProperty()
+          .add(new JndiBindingsType.JndiBinding.ConfigProperty("test", "test", "test"));
       cacheConfig.getJndiBindings().add(jndiBinding);
       return cacheConfig;
     });
 
     assertThat(configuration.getCacheXmlContent()).containsOnlyOnce("</jndi-bindings>");
     assertThat(configuration.getCacheXmlContent()).contains(
-        "<jndi-binding jdbc-driver-class=\"com.sun.ABC\" jndi-name=\"jndiOne\" type=\"SimpleDataSource\"/>");
+        "<jndi-binding jdbc-driver-class=\"com.sun.ABC\" jndi-name=\"jndiOne\" type=\"SimpleDataSource\">");
+    assertThat(configuration.getCacheXmlContent())
+        .contains("config-property-name>test</config-property-name>");
   }
 
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"id", "value"})
   @XmlRootElement(name = "custom-one", namespace = "http://geode.apache.org/schema/CustomOne")
-  public static class ElementOne implements CacheElement, RegionElement {
+  public static class ElementOne implements CacheElement {
     private String id;
     private String value;
 
@@ -193,7 +194,7 @@ public class InternalClusterConfigurationServiceTest {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"id", "value"})
   @XmlRootElement(name = "custom-two", namespace = "http://geode.apache.org/schema/CustomTwo")
-  public static class ElementTwo implements CacheElement, RegionElement {
+  public static class ElementTwo implements CacheElement {
     private String id;
     private String value;
 

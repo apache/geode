@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.datasource.ConfigProperty;
+import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
@@ -37,7 +37,7 @@ public class ConfigPropertyConverterTest {
 
   @Test
   public void validJson() {
-    ConfigProperty configProperty =
+    JndiBindingsType.JndiBinding.ConfigProperty configProperty =
         converter.convertFromText("{'name':'name','type':'type','value':'value'}", null, null);
     assertThat(configProperty.getName()).isEqualTo("name");
     assertThat(configProperty.getType()).isEqualTo("type");
@@ -59,7 +59,7 @@ public class ConfigPropertyConverterTest {
 
   @Test
   public void validWhenTypeMissing() {
-    ConfigProperty configProperty =
+    JndiBindingsType.JndiBinding.ConfigProperty configProperty =
         converter.convertFromText("{'name':'name','value':'value'}", null, null);
     assertThat(configProperty.getName()).isEqualTo("name");
     assertThat(configProperty.getType()).isNull();
