@@ -14,22 +14,22 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.fail;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -39,10 +39,10 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category({IntegrationTest.class, ClientSubscriptionTest.class})
-public class RegisterInterestIntegrationTest {
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
+public class RegisterInterestDistributedTest {
 
   private MemberVM locator;
   private int locatorPort;
@@ -61,7 +61,6 @@ public class RegisterInterestIntegrationTest {
 
   @Test
   public void registerInterestAllKeysShouldRegisterForAllKeys() throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort);
 
     Region region =
@@ -75,12 +74,11 @@ public class RegisterInterestIntegrationTest {
       regionOnServer.put(1, 2);
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> assertEquals(3, region.size()));
+    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(3));
   }
 
   @Test
   public void registerInterestAllKeysWithInterestPolicyShouldRegisterForAllKeys() throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort);
 
     Region region =
@@ -94,30 +92,25 @@ public class RegisterInterestIntegrationTest {
       regionOnServer.put(1, 2);
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> assertEquals(3, region.keySet().size()));
+    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(3));
   }
 
   @Test
   public void nonDurableClientRegisterInterestForAllKeysWithDurableFlagShouldThrowException()
       throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort);
 
-    try {
-      Region region = clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-          .create("region");
-      region.registerInterestForAllKeys(InterestResultPolicy.KEYS, true);
-      fail();
-    } catch (IllegalStateException e) {
-      assertEquals("Durable flag only applicable for durable clients.", e.getMessage());
-    }
+    Region region =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
+
+    assertThatThrownBy(() -> region.registerInterestForAllKeys(InterestResultPolicy.KEYS, true))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Durable flag only applicable for durable clients.");
   }
 
   @Test
   public void durableClientRegisterInterestAllKeysWithDurableFlagShouldRegisterInterest()
       throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort, true);
 
     Region region =
@@ -132,14 +125,12 @@ public class RegisterInterestIntegrationTest {
       regionOnServer.put(1, 2);
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> assertEquals(3, region.keySet().size()));
+    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(3));
   }
 
   @Test
   public void durableClientRegisterInterestAllKeysAndReceiveValuesFalseShouldRegisterForAllKeys()
       throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort, true);
 
     Region region =
@@ -154,15 +145,12 @@ public class RegisterInterestIntegrationTest {
       regionOnServer.put(1, 2);
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> assertEquals(3, region.keySet().size()));
+    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(3));
   }
-
 
   @Test
   public void registerInterestForKeysShouldRegisterInterestForEachObjectInTheIterable()
       throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort);
 
     Set keysList = new HashSet();
@@ -180,13 +168,12 @@ public class RegisterInterestIntegrationTest {
       regionOnServer.put("should not be interested", "in this key/value");
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> assertEquals(2, region.size()));
+    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(2));
   }
 
   @Test
   public void registerInterestForKeysWithInterestPolicyShouldRegisterInterestForEachObjectInTheIterable()
       throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort);
 
     Set keysList = new HashSet();
@@ -204,7 +191,7 @@ public class RegisterInterestIntegrationTest {
       regionOnServer.put("should not be interested", "in this key/value");
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> assertEquals(2, region.size()));
+    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(2));
   }
 
   @Test
@@ -228,32 +215,29 @@ public class RegisterInterestIntegrationTest {
       regionOnServer.put("should not be interested", "in this key/value");
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> assertEquals(2, region.size()));
+    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(2));
   }
 
   @Test
   public void nonDurableClientWhenRegisterInterestForKeysShouldThrowException() throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort);
 
     Set keysList = new HashSet();
     keysList.add("some key");
     keysList.add(1);
 
-    try {
-      Region region = clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-          .create("region");
-      region.registerInterestForKeys(keysList, InterestResultPolicy.KEYS, true);
-      fail();
-    } catch (IllegalStateException e) {
-      assertEquals("Durable flag only applicable for durable clients.", e.getMessage());
-    }
+    Region region =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
+
+    assertThatThrownBy(
+        () -> region.registerInterestForKeys(keysList, InterestResultPolicy.KEYS, true))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Durable flag only applicable for durable clients.");
   }
 
   @Test
   public void durableClientWhenRegisterInterestForKeyShouldCorrectlyRegisterInterest()
       throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort, true);
 
     Set keysList = new HashSet();
@@ -272,13 +256,12 @@ public class RegisterInterestIntegrationTest {
       regionOnServer.put("should not be interested", "in this key/value");
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> assertEquals(2, region.size()));
+    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(2));
   }
 
   @Test
   public void durableClientWhenRegisterInterestForKeysAndReturnValueFalseShouldCorrectlyRegisterInterest()
       throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort, true);
 
     Set keysList = new HashSet();
@@ -297,26 +280,23 @@ public class RegisterInterestIntegrationTest {
       regionOnServer.put("should not be interested", "in this key/value");
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> assertEquals(2, region.size()));
+    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(2));
   }
 
   @Test
   public void readyForEventsBeforeAnyPoolsAreCreatedShouldNotResultInIllegalStateException()
       throws Exception {
-
     ClientCache clientCache = createClientCache(locatorPort, true);
 
-    clientCache.readyForEvents();
-    // No exception should be thrown.
+    assertThatCode(() -> clientCache.readyForEvents()).doesNotThrowAnyException();
   }
 
   private ClientCache createClientCache(Integer locatorPort) {
     return createClientCache(locatorPort, false);
   }
 
-
   private ClientCache createClientCache(Integer locatorPort, boolean isDurable) {
-    ClientCacheFactory ccf = null;
+    ClientCacheFactory ccf;
     if (isDurable) {
       Properties props = new Properties();
       props.setProperty("durable-client-id", "31");
@@ -334,10 +314,7 @@ public class RegisterInterestIntegrationTest {
 
   private void createServerRegion(MemberVM server, RegionShortcut regionShortcut) {
     server.invoke(() -> {
-      Region regionOnServer =
-          ClusterStartupRule.getCache().createRegionFactory(regionShortcut).create("region");
+      ClusterStartupRule.getCache().createRegionFactory(regionShortcut).create("region");
     });
   }
-
-
 }
