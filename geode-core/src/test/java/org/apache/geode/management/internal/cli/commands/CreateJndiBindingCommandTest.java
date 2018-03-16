@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -105,7 +105,8 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void returnsErrorIfBindingAlreadyExistsAndIfUnspecified()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     Element existingBinding = mock(Element.class);
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
@@ -119,7 +120,8 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void skipsIfBindingAlreadyExistsAndIfSpecified()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     Element existingBinding = mock(Element.class);
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
@@ -134,7 +136,8 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void skipsIfBindingAlreadyExistsAndIfSpecifiedTrue()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     Element existingBinding = mock(Element.class);
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
@@ -149,7 +152,8 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void returnsErrorIfBindingAlreadyExistsAndIfSpecifiedFalse()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     Element existingBinding = mock(Element.class);
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
@@ -165,7 +169,8 @@ public class CreateJndiBindingCommandTest {
   public void updateXmlShouldClusterConfigurationWithJndiConfiguration()
       throws IOException, ParserConfigurationException, SAXException, TransformerException {
     Configuration clusterConfig = new Configuration("cluster");
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     Region configRegion = mock(Region.class);
 
     doReturn(configRegion).when(clusterConfigService).getConfigurationRegion();
@@ -252,7 +257,8 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig()
       throws IOException, ParserConfigurationException, SAXException, TransformerException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
 
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
@@ -319,7 +325,8 @@ public class CreateJndiBindingCommandTest {
         "Tried creating jndi binding \"name\" on \"server1\"");
     List<CliFunctionResult> results = new ArrayList<>();
     results.add(result);
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
 
     doReturn(members).when(command).findMembers(any(), any());
     doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());

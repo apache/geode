@@ -29,8 +29,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.management.cli.Result;
@@ -1194,7 +1194,7 @@ public class AlterRuntimeCommandDUnitTest {
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     locator.invoke(() -> {
-      ClusterConfigurationService sharedConfig =
+      InternalClusterConfigurationService sharedConfig =
           ClusterStartupRule.getLocator().getSharedConfiguration();
       Properties properties = sharedConfig.getConfiguration("Group1").getGemfireProperties();
       assertThat(properties.get(LOG_LEVEL)).isEqualTo("fine");

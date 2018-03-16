@@ -39,7 +39,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
@@ -94,7 +94,7 @@ public class ClusterConfig implements Serializable {
     // verify info exists in memory
     locatorVM.invoke(() -> {
       InternalLocator internalLocator = ClusterStartupRule.getLocator();
-      ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
+      InternalClusterConfigurationService sc = internalLocator.getSharedConfiguration();
 
       // verify no extra configs exist in memory
       Set<String> actualGroupConfigs = sc.getConfigurationRegion().keySet();

@@ -44,7 +44,7 @@ public class CacheConfigIntegrationTest {
     xmlFile = temporaryFolder.newFile("cache.xml");
     CacheConfig cacheConfig = new CacheConfig();
     cacheConfig.setVersion("1.0");
-    ClusterConfigurationService service = new ClusterConfigurationService();
+    InternalClusterConfigurationService service = new InternalClusterConfigurationService();
     String xml = service.marshall(cacheConfig);
     FileUtils.writeStringToFile(xmlFile, xml, "UTF-8");
 

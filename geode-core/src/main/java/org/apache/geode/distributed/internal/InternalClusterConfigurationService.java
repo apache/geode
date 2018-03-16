@@ -79,6 +79,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -104,7 +105,7 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 @SuppressWarnings({"deprecation", "unchecked"})
-public class ClusterConfigurationService {
+public class InternalClusterConfigurationService implements ClusterConfigurationService {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -143,7 +144,7 @@ public class ClusterConfigurationService {
   private DistributedLockService sharedConfigLockingService;
 
   @TestingOnly
-  ClusterConfigurationService() {
+  InternalClusterConfigurationService() {
     configDirPath = null;
     configDiskDirPath = null;
     cache = null;
@@ -151,7 +152,7 @@ public class ClusterConfigurationService {
     initJaxbContext();
   }
 
-  public ClusterConfigurationService(InternalCache cache) throws IOException {
+  public InternalClusterConfigurationService(InternalCache cache) throws IOException {
     this.cache = cache;
     Properties properties = cache.getDistributedSystem().getProperties();
     // resolve the cluster config dir
@@ -229,7 +230,7 @@ public class ClusterConfigurationService {
     try {
       Region<String, Configuration> configRegion = getConfigurationRegion();
       if (groups == null || groups.length == 0) {
-        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
+        groups = new String[] {InternalClusterConfigurationService.CLUSTER_CONFIG};
       }
       for (String group : groups) {
         Configuration configuration = configRegion.get(group);
@@ -298,7 +299,7 @@ public class ClusterConfigurationService {
     lockSharedConfiguration();
     try {
       if (groups == null) {
-        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
+        groups = new String[] {InternalClusterConfigurationService.CLUSTER_CONFIG};
       }
       Region<String, Configuration> configRegion = getConfigurationRegion();
       for (String group : groups) {
@@ -344,7 +345,7 @@ public class ClusterConfigurationService {
     lockSharedConfiguration();
     try {
       if (groups == null) {
-        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
+        groups = new String[] {InternalClusterConfigurationService.CLUSTER_CONFIG};
       }
       Region<String, Configuration> configRegion = getConfigurationRegion();
       for (String group : groups) {
@@ -506,7 +507,7 @@ public class ClusterConfigurationService {
     try {
       if (loadSharedConfigFromDir) {
         logger.info("Reading cluster configuration from '{}' directory",
-            ClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
+            InternalClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
         loadSharedConfigurationFromDisk();
       } else {
         persistSecuritySettings(configRegion);
@@ -533,10 +534,11 @@ public class ClusterConfigurationService {
     Properties securityProps = this.cache.getDistributedSystem().getSecurityProperties();
 
     Configuration clusterPropertiesConfig =
-        configRegion.get(ClusterConfigurationService.CLUSTER_CONFIG);
+        configRegion.get(InternalClusterConfigurationService.CLUSTER_CONFIG);
     if (clusterPropertiesConfig == null) {
-      clusterPropertiesConfig = new Configuration(ClusterConfigurationService.CLUSTER_CONFIG);
-      configRegion.put(ClusterConfigurationService.CLUSTER_CONFIG, clusterPropertiesConfig);
+      clusterPropertiesConfig =
+          new Configuration(InternalClusterConfigurationService.CLUSTER_CONFIG);
+      configRegion.put(InternalClusterConfigurationService.CLUSTER_CONFIG, clusterPropertiesConfig);
     }
     // put security-manager and security-post-processor in the cluster config
     Properties clusterProperties = clusterPropertiesConfig.getGemfireProperties();
@@ -561,7 +563,7 @@ public class ClusterConfigurationService {
     try {
       if (isLocked) {
         configResponse = new ConfigurationResponse();
-        groups.add(ClusterConfigurationService.CLUSTER_CONFIG);
+        groups.add(InternalClusterConfigurationService.CLUSTER_CONFIG);
         logger.info("Building up configuration response with following configurations: {}", groups);
 
         for (String group : groups) {

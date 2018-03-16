@@ -34,7 +34,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -159,7 +159,7 @@ public class CreateJndiBindingCommand extends GfshCommand {
 
     Result result;
     boolean persisted = false;
-    ClusterConfigurationService service = getSharedConfiguration();
+    InternalClusterConfigurationService service = getSharedConfiguration();
 
     if (service != null) {
       Element existingBinding =

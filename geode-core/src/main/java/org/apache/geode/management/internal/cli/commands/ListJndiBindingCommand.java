@@ -24,7 +24,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.configuration.CacheConfig;
 import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.logging.LogService;
@@ -54,7 +54,7 @@ public class ListJndiBindingCommand extends GfshCommand {
     TabularResultData configTable = null;
     TabularResultData memberTable = null;
 
-    ClusterConfigurationService ccService = getSharedConfiguration();
+    InternalClusterConfigurationService ccService = getSharedConfiguration();
     if (ccService != null) {
       configTable = resultSection.addTable();
       configTable.setHeader("Configured JNDI bindings: ");

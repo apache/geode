@@ -45,7 +45,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -62,12 +62,12 @@ public class CreateAsyncEventQueueCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private CreateAsyncEventQueueCommand command;
-  private ClusterConfigurationService service;
+  private InternalClusterConfigurationService service;
 
   @Before
   public void before() throws Exception {
     command = spy(CreateAsyncEventQueueCommand.class);
-    service = mock(ClusterConfigurationService.class);
+    service = mock(InternalClusterConfigurationService.class);
     doReturn(service).when(command).getSharedConfiguration();
   }
 
