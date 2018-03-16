@@ -105,7 +105,7 @@ public class SqlHandler {
   }
 
   private String getKeyColumnName(Connection connection, String tableName) {
-    return this.tableMetaDataManager.getTableMetaData(connection, tableName).getKeyColumnName();
+    return this.tableMetaDataManager.getTableMetaDataView(connection, tableName).getKeyColumnName();
   }
 
   private void setValuesInStatement(PreparedStatement statement, List<ColumnValue> columnList)
@@ -200,7 +200,8 @@ public class SqlHandler {
   <K> List<ColumnValue> getColumnToValueList(Connection connection, RegionMapping regionMapping,
       K key, PdxInstance value, Operation operation) {
     String tableName = regionMapping.getRegionToTableName();
-    TableMetaData tableMetaData = this.tableMetaDataManager.getTableMetaData(connection, tableName);
+    TableMetaDataView tableMetaData =
+        this.tableMetaDataManager.getTableMetaDataView(connection, tableName);
     String keyColumnName = tableMetaData.getKeyColumnName();
     ColumnValue keyColumnValue =
         new ColumnValue(true, keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
@@ -215,7 +216,7 @@ public class SqlHandler {
     return result;
   }
 
-  private List<ColumnValue> createColumnValueList(TableMetaData tableMetaData,
+  private List<ColumnValue> createColumnValueList(TableMetaDataView tableMetaData,
       RegionMapping regionMapping, PdxInstance value, String keyColumnName) {
     List<ColumnValue> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {

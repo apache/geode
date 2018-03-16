@@ -16,32 +16,8 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.util.HashMap;
+public interface TableMetaDataView {
+  public String getKeyColumnName();
 
-public class TableMetaDataImpl implements TableMetaData {
-
-  private final String keyColumnName;
-  private final HashMap<String, Integer> columnNameToTypeMap = new HashMap<>();
-
-  public TableMetaDataImpl(String keyColumnName) {
-    this.keyColumnName = keyColumnName;
-  }
-
-  @Override
-  public String getKeyColumnName() {
-    return this.keyColumnName;
-  }
-
-  @Override
-  public int getColumnDataType(String columnName) {
-    Integer dataType = this.columnNameToTypeMap.get(columnName);
-    if (dataType == null) {
-      return 0;
-    }
-    return dataType;
-  }
-
-  public void addDataType(String columnName, int dataType) {
-    this.columnNameToTypeMap.put(columnName, dataType);
-  }
+  public int getColumnDataType(String columnName);
 }

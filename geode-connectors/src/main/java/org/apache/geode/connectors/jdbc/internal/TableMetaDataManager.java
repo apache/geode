@@ -31,20 +31,22 @@ import org.apache.geode.connectors.jdbc.JdbcConnectorException;
  * remembered so that it does not need to be recomputed for the same table name.
  */
 public class TableMetaDataManager {
-  private final ConcurrentMap<String, TableMetaData> tableToMetaDataMap = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, TableMetaDataView> tableToMetaDataMap =
+      new ConcurrentHashMap<>();
 
-  public TableMetaData getTableMetaData(Connection connection, String tableName) {
-    return tableToMetaDataMap.computeIfAbsent(tableName, k -> computeTableMetaData(connection, k));
+  public TableMetaDataView getTableMetaDataView(Connection connection, String tableName) {
+    return tableToMetaDataMap.computeIfAbsent(tableName,
+        k -> computeTableMetaDataView(connection, k));
   }
 
-  private TableMetaData computeTableMetaData(Connection connection, String tableName) {
-    TableMetaDataImpl result;
+  private TableMetaDataView computeTableMetaDataView(Connection connection, String tableName) {
+    TableMetaData result;
     try {
       DatabaseMetaData metaData = connection.getMetaData();
       try (ResultSet tables = metaData.getTables(null, null, "%", null)) {
         String realTableName = getTableNameFromMetaData(tableName, tables);
         String key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
-        result = new TableMetaDataImpl(key);
+        result = new TableMetaData(key);
         getDataTypesFromMetaData(realTableName, metaData, result);
       }
     } catch (SQLException e) {
@@ -73,26 +75,28 @@ public class TableMetaDataManager {
 
   private String getPrimaryKeyColumnNameFromMetaData(String tableName, DatabaseMetaData metaData)
       throws SQLException {
-    ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, tableName);
-    if (!primaryKeys.next()) {
-      throw new JdbcConnectorException(
-          "The table " + tableName + " does not have a primary key column.");
+    try (ResultSet primaryKeys = metaData.getPrimaryKeys(null, null, tableName)) {
+      if (!primaryKeys.next()) {
+        throw new JdbcConnectorException(
+            "The table " + tableName + " does not have a primary key column.");
+      }
+      String key = primaryKeys.getString("COLUMN_NAME");
+      if (primaryKeys.next()) {
+        throw new JdbcConnectorException(
+            "The table " + tableName + " has more than one primary key column.");
+      }
+      return key;
     }
-    String key = primaryKeys.getString("COLUMN_NAME");
-    if (primaryKeys.next()) {
-      throw new JdbcConnectorException(
-          "The table " + tableName + " has more than one primary key column.");
-    }
-    return key;
   }
 
   private void getDataTypesFromMetaData(String tableName, DatabaseMetaData metaData,
-      TableMetaDataImpl result) throws SQLException {
-    ResultSet columnData = metaData.getColumns(null, null, tableName, "%");
-    while (columnData.next()) {
-      String columnName = columnData.getString("COLUMN_NAME");
-      int dataType = columnData.getInt("DATA_TYPE");
-      result.addDataType(columnName, dataType);
+      TableMetaData result) throws SQLException {
+    try (ResultSet columnData = metaData.getColumns(null, null, tableName, "%")) {
+      while (columnData.next()) {
+        String columnName = columnData.getString("COLUMN_NAME");
+        int dataType = columnData.getInt("DATA_TYPE");
+        result.addDataType(columnName, dataType);
+      }
     }
   }
 }

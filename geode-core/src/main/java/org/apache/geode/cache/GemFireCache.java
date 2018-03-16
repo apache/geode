@@ -218,6 +218,9 @@ public interface GemFireCache extends RegionService {
    * Registers PDX meta-data given an instance of a domain class that will be serialized
    * with PDX.
    * <p>
+   * Note that this method serializes the given instance so PDX must already be configured
+   * to do the serialization.
+   * <p>
    * Note that if the instance is not of a class that will be serialized with PDX
    * then no meta-data is registered.
    * <p>

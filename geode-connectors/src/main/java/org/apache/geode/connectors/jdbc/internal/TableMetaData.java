@@ -16,8 +16,39 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-public interface TableMetaData {
-  public String getKeyColumnName();
+import java.util.HashMap;
 
-  public int getColumnDataType(String columnName);
+import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+
+public class TableMetaData implements TableMetaDataView {
+
+  private final String keyColumnName;
+  private final HashMap<String, Integer> columnNameToTypeMap = new HashMap<>();
+
+  public TableMetaData(String keyColumnName) {
+    this.keyColumnName = keyColumnName;
+  }
+
+  @Override
+  public String getKeyColumnName() {
+    return this.keyColumnName;
+  }
+
+  @Override
+  public int getColumnDataType(String columnName) {
+    Integer dataType = this.columnNameToTypeMap.get(columnName.toLowerCase());
+    if (dataType == null) {
+      return 0;
+    }
+    return dataType;
+  }
+
+  public void addDataType(String columnName, int dataType) {
+    Integer previousDataType = this.columnNameToTypeMap.put(columnName.toLowerCase(), dataType);
+    if (previousDataType != null) {
+      throw new JdbcConnectorException(
+          "Column names must be different in case. Two columns both have the name "
+              + columnName.toLowerCase());
+    }
+  }
 }
