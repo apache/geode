@@ -224,17 +224,14 @@ public class LuceneServiceImpl implements InternalLuceneService {
       LuceneSerializer serializer) {
     validateRegionAttributes(region.getAttributes());
 
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
-
     region.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName, regionPath, fields,
         analyzer, fieldAnalyzers, serializer));
 
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     LuceneIndexImpl luceneIndex = beforeDataRegionCreated(indexName, regionPath,
         region.getAttributes(), analyzer, fieldAnalyzers, aeqId, serializer, fields);
 
     afterDataRegionCreated(luceneIndex);
-
-    region.addAsyncEventQueueId(aeqId, true);
 
     createLuceneIndexOnDataRegion(region, luceneIndex);
   }
@@ -309,15 +306,18 @@ public class LuceneServiceImpl implements InternalLuceneService {
    */
   public void afterDataRegionCreated(InternalLuceneIndex index) {
     index.initialize();
-    registerIndex(index);
+
     if (this.managementListener != null) {
       this.managementListener.afterIndexCreated(index);
     }
 
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(index.getName(), index.getRegionPath());
+
+    ((LuceneIndexImpl) index).getDataRegion().addAsyncEventQueueId(aeqId, true);
     PartitionedRepositoryManager repositoryManager =
         (PartitionedRepositoryManager) index.getRepositoryManager();
     repositoryManager.allowRepositoryComputation();
-
+    registerIndex(index);
   }
 
   public LuceneIndexImpl beforeDataRegionCreated(final String indexName, final String regionPath,
