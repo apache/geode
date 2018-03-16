@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -133,6 +134,9 @@ public class TableMetaDataManagerTest {
     when(primaryKeys.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
+
+    ResultSet columnResultSet = mock(ResultSet.class);
+    when(metadata.getColumns(any(), any(), eq(TABLE_NAME), any())).thenReturn(columnResultSet);
 
     return primaryKeys;
   }
