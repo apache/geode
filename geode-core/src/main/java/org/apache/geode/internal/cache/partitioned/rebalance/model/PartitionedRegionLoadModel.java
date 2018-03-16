@@ -104,8 +104,7 @@ public class PartitionedRegionLoadModel {
   /**
    * A map of all members that host this partitioned region
    */
-  private final Map<InternalDistributedMember, MemberRollup> members =
-      new HashMap<>();
+  private final Map<InternalDistributedMember, MemberRollup> members = new HashMap<>();
 
   /**
    * The set of all regions that are colocated in this model.
@@ -179,8 +178,7 @@ public class PartitionedRegionLoadModel {
     // region. Each bucket has a reference to all of the members
     // that host it and each member has a reference to all of the buckets
     // it hosts
-    Map<InternalDistributedMember, Member> regionMember =
-        new HashMap<>();
+    Map<InternalDistributedMember, Member> regionMember = new HashMap<>();
     Bucket[] regionBuckets = new Bucket[this.buckets.length];
     for (InternalPartitionDetails memberDetails : memberDetailSet) {
       InternalDistributedMember memberId =

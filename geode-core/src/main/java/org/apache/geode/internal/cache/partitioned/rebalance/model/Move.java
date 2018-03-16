@@ -62,9 +62,8 @@ public class Move {
       return false;
     }
     Move move = (Move) o;
-    return Objects.equals(source, move.source) &&
-        Objects.equals(target, move.target) &&
-        Objects.equals(bucket, move.bucket);
+    return Objects.equals(source, move.source) && Objects.equals(target, move.target)
+        && Objects.equals(bucket, move.bucket);
   }
 
   @Override
