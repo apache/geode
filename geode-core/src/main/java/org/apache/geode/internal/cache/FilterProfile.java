@@ -817,6 +817,11 @@ public class FilterProfile implements DataSerializableFixedID {
     return (serverCqName + this.hashCode());
   }
 
+  void processRegisterCq(String serverCqName, ServerCQ ServerCQ, boolean addToCqMap) {
+    processRegisterCq(serverCqName, ServerCQ, addToCqMap, GemFireCacheImpl.getInstance());
+  }
+
+
   /**
    * adds a new CQ to this profile during a delta operation or deserialization
    *
@@ -824,32 +829,32 @@ public class FilterProfile implements DataSerializableFixedID {
    * @param ServerCQ the new query object
    * @param addToCqMap whether to add the query to this.cqs
    */
-  void processRegisterCq(String serverCqName, ServerCQ ServerCQ, boolean addToCqMap) {
+  void processRegisterCq(String serverCqName, ServerCQ ServerCQ, boolean addToCqMap,
+      GemFireCacheImpl cache) {
     ServerCQ cq = (ServerCQ) ServerCQ;
     try {
-      CqService cqService = GemFireCacheImpl.getInstance().getCqService();
+      CqService cqService = cache.getCqService();
       cqService.start();
       cq.setCqService(cqService);
       CqStateImpl cqState = (CqStateImpl) cq.getState();
       cq.setName(generateCqName(serverCqName));
       cq.registerCq(null, null, cqState.getState());
     } catch (Exception ex) {
-      // Change it to Info level.
-      if (logger.isDebugEnabled()) {
-        logger.debug("Error while initializing the CQs with FilterProfile for CQ {}, Error : {}",
-            serverCqName, ex.getMessage(), ex);
-      }
+      logger.info("Error while initializing the CQs with FilterProfile for CQ {}, Error : {}",
+          serverCqName, ex.getMessage(), ex);
+
     }
     if (logger.isDebugEnabled()) {
       logger.debug("Adding CQ to remote members FilterProfile using name: {}", serverCqName);
-    }
-    if (addToCqMap) {
-      this.cqs.put(serverCqName, cq);
     }
 
     // The region's FilterProfile is accessed through CQ reference as the
     // region is not set on the FilterProfile created for the peer nodes.
     if (cq.getCqBaseRegion() != null) {
+      if (addToCqMap) {
+        this.cqs.put(serverCqName, cq);
+      }
+
       FilterProfile pf = cq.getCqBaseRegion().getFilterProfile();
       if (pf != null) {
         pf.incCqCount();
