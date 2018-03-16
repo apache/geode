@@ -27,7 +27,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -39,9 +39,9 @@ import org.apache.geode.management.internal.configuration.domain.Configuration;
 public class ConfigurationChangeListener extends CacheListenerAdapter<String, Configuration> {
   private static final Logger logger = LogService.getLogger();
 
-  private final ClusterConfigurationService sharedConfig;
+  private final InternalClusterConfigurationService sharedConfig;
 
-  public ConfigurationChangeListener(ClusterConfigurationService sharedConfig) {
+  public ConfigurationChangeListener(InternalClusterConfigurationService sharedConfig) {
     this.sharedConfig = sharedConfig;
   }
 

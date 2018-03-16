@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -39,13 +39,13 @@ public class GfshCommandJUnitTest {
 
   private GfshCommand command;
   private Gfsh gfsh;
-  private ClusterConfigurationService clusterConfigurationService;
+  private InternalClusterConfigurationService clusterConfigurationService;
 
   @Before
   public void before() throws Exception {
     command = spy(GfshCommand.class);
     gfsh = mock(Gfsh.class);
-    clusterConfigurationService = mock(ClusterConfigurationService.class);
+    clusterConfigurationService = mock(InternalClusterConfigurationService.class);
   }
 
   @Test

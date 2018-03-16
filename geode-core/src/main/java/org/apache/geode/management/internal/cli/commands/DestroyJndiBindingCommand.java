@@ -31,7 +31,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
@@ -65,7 +65,7 @@ public class DestroyJndiBindingCommand extends GfshCommand {
 
     Result result;
     boolean persisted = false;
-    ClusterConfigurationService service = getSharedConfiguration();
+    InternalClusterConfigurationService service = getSharedConfiguration();
     if (service != null) {
       Element existingBinding =
           service.getXmlElement("cluster", "jndi-binding", "jndi-name", jndiName);

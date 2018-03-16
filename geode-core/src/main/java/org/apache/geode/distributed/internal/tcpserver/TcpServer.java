@@ -44,10 +44,10 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.cache.UnsupportedVersionException;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
@@ -204,7 +204,7 @@ public class TcpServer {
   }
 
   public void restarting(InternalDistributedSystem ds, InternalCache cache,
-      ClusterConfigurationService sharedConfig) throws IOException {
+      InternalClusterConfigurationService sharedConfig) throws IOException {
     this.shuttingDown = false;
     this.handler.restarting(ds, cache, sharedConfig);
     startServerThread();

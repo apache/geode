@@ -25,7 +25,6 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -39,23 +38,17 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.datasource.ConfigProperty;
-import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyJndiBindingFunction;
-import org.apache.geode.management.internal.cli.functions.JndiBindingConfiguration;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -85,7 +78,8 @@ public class DestroyJndiBindingCommandTest {
   @Test
   public void returnsErrorIfBindingDoesNotExistAndIfExistsUnspecified()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsError()
@@ -95,7 +89,8 @@ public class DestroyJndiBindingCommandTest {
   @Test
   public void skipsIfBindingDoesNotExistAndIfExistsSpecified()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists").statusIsSuccess()
@@ -105,7 +100,8 @@ public class DestroyJndiBindingCommandTest {
   @Test
   public void skipsIfBindingDoesNotExistAndIfExistsSpecifiedTrue()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=true").statusIsSuccess()
@@ -115,7 +111,8 @@ public class DestroyJndiBindingCommandTest {
   @Test
   public void returnsErrorIfBindingDoesNotExistAndIfExistsSpecifiedFalse()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(null).when(clusterConfigService).getXmlElement(any(), any(), any(), any());
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=false").statusIsError()
@@ -125,7 +122,8 @@ public class DestroyJndiBindingCommandTest {
   @Test
   public void removeJndiBindingFromXmlShouldRemoveBindingFromClusterConfiguration()
       throws IOException, ParserConfigurationException, SAXException, TransformerException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     Region configRegion = mock(Region.class);
 
     Configuration clusterConfig = new Configuration("cluster");
@@ -156,7 +154,8 @@ public class DestroyJndiBindingCommandTest {
   @Test
   public void removeJndiBindingFromXmlIsNoOpWhenNoBindingFoundInClusterConfiguration()
       throws IOException, ParserConfigurationException, SAXException, TransformerException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     Region configRegion = mock(Region.class);
     Configuration clusterConfig = new Configuration("cluster");
 
@@ -184,7 +183,8 @@ public class DestroyJndiBindingCommandTest {
   @Test
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig()
       throws IOException, ParserConfigurationException, SAXException, TransformerException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     Element existingBinding = mock(Element.class);
 
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
@@ -244,7 +244,8 @@ public class DestroyJndiBindingCommandTest {
         new CliFunctionResult("server1", true, "Jndi binding \"name\" destroyed on \"server1\"");
     List<CliFunctionResult> results = new ArrayList<>();
     results.add(result);
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     Element existingBinding = mock(Element.class);
 
     doReturn(members).when(command).findMembers(any(), any());

@@ -1086,7 +1086,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         LocalizedStrings.AbstractDistributionConfig_USE_SHARED_CONFIGURATION.toLocalizedString());
     m.put(LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
         LocalizedStrings.AbstractDistributionConfig_LOAD_SHARED_CONFIGURATION_FROM_DIR
-            .toLocalizedString(ClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME));
+            .toLocalizedString(
+                InternalClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME));
     m.put(CLUSTER_CONFIGURATION_DIR,
         LocalizedStrings.AbstractDistributionConfig_CLUSTER_CONFIGURATION_DIR.toLocalizedString());
     m.put(SSL_SERVER_ALIAS, LocalizedStrings.AbstractDistributionConfig_SERVER_SSL_ALIAS_0

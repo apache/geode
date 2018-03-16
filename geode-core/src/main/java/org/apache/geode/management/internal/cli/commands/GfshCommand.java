@@ -27,7 +27,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
@@ -65,7 +65,7 @@ public abstract class GfshCommand implements CommandMarker {
     return getGfsh() != null && getGfsh().isConnectedAndReady();
   }
 
-  public ClusterConfigurationService getSharedConfiguration() {
+  public InternalClusterConfigurationService getSharedConfiguration() {
     InternalLocator locator = InternalLocator.getLocator();
     return locator == null ? null : locator.getSharedConfiguration();
   }
@@ -74,7 +74,7 @@ public abstract class GfshCommand implements CommandMarker {
     if (result == null) {
       throw new IllegalArgumentException("Result should not be null");
     }
-    ClusterConfigurationService sc = getSharedConfiguration();
+    InternalClusterConfigurationService sc = getSharedConfiguration();
     if (sc == null) {
       result.setCommandPersisted(false);
     } else {
