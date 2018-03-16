@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -50,7 +50,7 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     HARegionQueueAttributes hrqa = new HARegionQueueAttributes();
     hrqa.setBlockingQueueCapacity(1);
 
-    HARegionQueue hrq = createHARegionQueue(this.testName.getMethodName(), hrqa);
+    HARegionQueue hrq = createHARegionQueue(testName.getMethodName(), hrqa);
     hrq.setPrimary(true); // fix for 40314 - capacity constraint is checked for primary only.
 
     EventID id1 = new EventID(new byte[] {1}, 1, 1);
@@ -69,12 +69,12 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     });
     thread.start();
 
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> threadStarted.get());
+    await().atMost(1, TimeUnit.MINUTES).until(() -> threadStarted.get());
 
     Conflatable conf = (Conflatable) hrq.take();
     assertThat(conf, notNullValue());
 
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> !thread.isAlive());
+    await().atMost(1, TimeUnit.MINUTES).until(() -> !thread.isAlive());
   }
 
   /**
@@ -86,7 +86,7 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     HARegionQueueAttributes hrqa = new HARegionQueueAttributes();
     hrqa.setBlockingQueueCapacity(1);
 
-    HARegionQueue hrq = createHARegionQueue(this.testName.getMethodName(), hrqa);
+    HARegionQueue hrq = createHARegionQueue(testName.getMethodName(), hrqa);
     hrq.setPrimary(true);// fix for 40314 - capacity constraint is checked for primary only.
 
     EventID id1 = new EventID(new byte[] {1}, 1, 1);
@@ -105,14 +105,14 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     });
     thread.start();
 
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> threadStarted.get());
+    await().atMost(1, TimeUnit.MINUTES).until(() -> threadStarted.get());
 
     Conflatable conf = (Conflatable) hrq.peek();
     assertThat(conf, notNullValue());
 
     hrq.remove();
 
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> !thread.isAlive());
+    await().atMost(1, TimeUnit.MINUTES).until(() -> !thread.isAlive());
   }
 
   /**
@@ -128,7 +128,7 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     hrqa.setBlockingQueueCapacity(1);
     hrqa.setExpiryTime(1);
 
-    HARegionQueue hrq = this.createHARegionQueue(this.testName.getMethodName(), hrqa);
+    HARegionQueue hrq = createHARegionQueue(testName.getMethodName(), hrqa);
 
     EventID id1 = new EventID(new byte[] {1}, 1, 1);
 
@@ -147,8 +147,8 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     });
     thread.start();
 
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> threadStarted.get());
+    await().atMost(1, TimeUnit.MINUTES).until(() -> threadStarted.get());
 
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> !thread.isAlive());
+    await().atMost(1, TimeUnit.MINUTES).until(() -> !thread.isAlive());
   }
 }
