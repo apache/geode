@@ -16,13 +16,16 @@
 package org.apache.geode.management.internal.configuration;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -54,8 +57,7 @@ public class ClusterConfigLocatorRestartDUnitTest {
     locator0.invokeAsync(() -> MembershipManagerHelper
         .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance()));
 
-    // Wait some time to reconnect
-    Thread.sleep(10000);
+    waitForLocatorToReconnect(locator0);
 
     rule.startServerVM(3, locator0.getPort());
 
@@ -90,8 +92,7 @@ public class ClusterConfigLocatorRestartDUnitTest {
     server3.invokeAsync(() -> MembershipManagerHelper
         .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance()));
 
-    // Wait some time to reconnect
-    Thread.sleep(10000);
+    waitForLocatorToReconnect(locator1);
 
     rule.startServerVM(4, locator1.getPort(), locator0.getPort());
 
@@ -103,4 +104,10 @@ public class ClusterConfigLocatorRestartDUnitTest {
     Host.getHost(0).getVM(0).bounce();
   }
 
+  private void waitForLocatorToReconnect(MemberVM locator) {
+    Awaitility.waitAtMost(30, TimeUnit.SECONDS).until(() -> locator.invoke(() -> {
+      InternalLocator intLocator = InternalLocator.getLocator();
+      return intLocator != null && intLocator.isSharedConfigurationRunning();
+    }));
+  }
 }
