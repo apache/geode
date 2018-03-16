@@ -50,6 +50,13 @@ public class GfshJunitTest {
   }
 
   @Test
+  public void wrapTextWithNoSpace() {
+    assertThat(Gfsh.wrapText("for datasource", 0, 6)).isEqualTo("for\ndatas\nource");
+    assertThat(Gfsh.wrapText("for data sour ", 0, 6)).isEqualTo("for\ndata\nsour ");
+    assertThat(Gfsh.wrapText("for data sour ", 0, 5)).isEqualTo("for\ndata\nsour\n");
+  }
+
+  @Test
   public void getAppContextPath() throws Exception {
     gfsh = new Gfsh();
     assertThat(gfsh.getEnvAppContextPath()).isEqualTo("");
