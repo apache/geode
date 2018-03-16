@@ -717,6 +717,9 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       }
     }
     final AsyncEventQueueStats statistics = ((AsyncEventQueueImpl) queue).getStatistics();
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .until(() -> assertEquals("Expected queue entries: " + queueSize + " but actual entries: "
+            + statistics.getEventQueueSize(), queueSize, statistics.getEventQueueSize()));
     assertEquals(queueSize, statistics.getEventQueueSize());
     assertEquals(eventsReceived, statistics.getEventsReceived());
     assertEquals(eventsQueued, statistics.getEventsQueued());
