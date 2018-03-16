@@ -33,7 +33,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -193,7 +193,7 @@ public class DiskStoreCommandsDUnitTest {
 
   private boolean diskStoreExistsInClusterConfig(MemberVM jmxManager) {
     boolean result = jmxManager.invoke(() -> {
-      ClusterConfigurationService sharedConfig =
+      InternalClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       String xmlFromConfig;
       xmlFromConfig = sharedConfig.getConfiguration(GROUP).getCacheXmlContent();

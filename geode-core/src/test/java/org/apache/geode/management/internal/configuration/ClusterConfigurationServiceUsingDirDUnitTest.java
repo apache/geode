@@ -44,7 +44,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -65,7 +65,7 @@ public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTes
           return;
         }
 
-        ClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
+        InternalClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
         if (sharedConfig != null) {
           sharedConfig.destroySharedConfiguration();
         }

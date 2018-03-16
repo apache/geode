@@ -21,7 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -110,7 +110,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     gfsh.connectAndVerify(locator);
 
     locator.invoke(() -> {
-      ClusterConfigurationService service =
+      InternalClusterConfigurationService service =
           ClusterStartupRule.getLocator().getSharedConfiguration();
       assertThat(service.getConfiguration("cluster").getCacheXmlContent())
           .doesNotContain("async-event-queue");
@@ -120,7 +120,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
         .tableHasRowCount("Member", 1).tableHasColumnWithExactValuesInAnyOrder("Status", "Success");
 
     locator.invoke(() -> {
-      ClusterConfigurationService service =
+      InternalClusterConfigurationService service =
           ClusterStartupRule.getLocator().getSharedConfiguration();
       Configuration configuration = service.getConfiguration("cluster");
       configuration.getCacheXmlContent().contains("id=queue");

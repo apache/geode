@@ -38,7 +38,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.configuration.CacheConfig;
 import org.apache.geode.internal.cache.configuration.JndiBindingsType;
@@ -58,7 +58,7 @@ public class DestroyJndiBindingCommandTest {
   private DestroyJndiBindingCommand command;
   private InternalCache cache;
   private CacheConfig cacheConfig;
-  private ClusterConfigurationService ccService;
+  private InternalClusterConfigurationService ccService;
 
   private static String COMMAND = "destroy jndi-binding ";
 
@@ -68,7 +68,7 @@ public class DestroyJndiBindingCommandTest {
     command = spy(DestroyJndiBindingCommand.class);
     doReturn(cache).when(command).getCache();
     cacheConfig = mock(CacheConfig.class);
-    ccService = mock(ClusterConfigurationService.class);
+    ccService = mock(InternalClusterConfigurationService.class);
     doReturn(ccService).when(command).getSharedConfiguration();
     when(ccService.getCacheConfig(any())).thenReturn(cacheConfig);
     doCallRealMethod().when(ccService).updateCacheConfig(any(), any());

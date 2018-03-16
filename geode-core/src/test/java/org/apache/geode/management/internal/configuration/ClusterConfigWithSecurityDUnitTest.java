@@ -30,7 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -78,7 +78,7 @@ public class ClusterConfigWithSecurityDUnitTest {
     // the second locator should inherit the first locator's security props
     locator1.invoke(() -> {
       InternalLocator locator = ClusterStartupRule.getLocator();
-      ClusterConfigurationService sc = locator.getSharedConfiguration();
+      InternalClusterConfigurationService sc = locator.getSharedConfiguration();
       Properties clusterConfigProps = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(clusterConfigProps.getProperty(SECURITY_MANAGER))
           .isEqualTo(SimpleTestSecurityManager.class.getName());
@@ -98,7 +98,7 @@ public class ClusterConfigWithSecurityDUnitTest {
 
     locator0.invoke(() -> {
       InternalLocator locator = ClusterStartupRule.getLocator();
-      ClusterConfigurationService sc = locator.getSharedConfiguration();
+      InternalClusterConfigurationService sc = locator.getSharedConfiguration();
       Properties properties = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(properties.getProperty(MCAST_PORT)).isEqualTo("0");
       assertThat(properties.getProperty(LOG_FILE_SIZE_LIMIT)).isEqualTo("8000");

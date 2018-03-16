@@ -46,12 +46,12 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class InternalClusterConfigurationServiceTest {
   private String xml;
   private CacheConfig unmarshalled;
-  private ClusterConfigurationService service;
+  private InternalClusterConfigurationService service;
   private Configuration configuration;
 
   @Before
   public void setUp() throws Exception {
-    service = spy(ClusterConfigurationService.class);
+    service = spy(InternalClusterConfigurationService.class);
     configuration = new Configuration("cluster");
     doReturn(configuration).when(service).getConfiguration(any());
     doReturn(mock(Region.class)).when(service).getConfigurationRegion();

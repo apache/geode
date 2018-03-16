@@ -173,7 +173,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
 
-  private ClusterConfigurationService sharedConfig;
+  private InternalClusterConfigurationService sharedConfig;
 
   private volatile boolean isSharedConfigurationStarted = false;
 
@@ -485,7 +485,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     this.server.start();
   }
 
-  public ClusterConfigurationService getSharedConfiguration() {
+  public InternalClusterConfigurationService getSharedConfiguration() {
     return this.sharedConfig;
   }
 
@@ -1042,7 +1042,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       }
       this.productUseLog.monitorUse(newSystem);
       if (isSharedConfigurationEnabled()) {
-        this.sharedConfig = new ClusterConfigurationService(newCache);
+        this.sharedConfig = new InternalClusterConfigurationService(newCache);
         startSharedConfigurationService();
       }
       if (!this.server.isAlive()) {
@@ -1163,7 +1163,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
     @Override
     public void restarting(DistributedSystem ds, GemFireCache cache,
-        ClusterConfigurationService sharedConfig) {
+        InternalClusterConfigurationService sharedConfig) {
       if (ds != null) {
         for (TcpHandler handler : this.allHandlers) {
           handler.restarting(ds, cache, sharedConfig);
@@ -1327,7 +1327,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     try {
       if (locator.sharedConfig == null) {
         // locator.sharedConfig will already be created in case of auto-reconnect
-        locator.sharedConfig = new ClusterConfigurationService(locator.myCache);
+        locator.sharedConfig = new InternalClusterConfigurationService(locator.myCache);
       }
       locator.sharedConfig.initSharedConfiguration(locator.loadFromSharedConfigDir());
       logger.info(

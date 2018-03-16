@@ -51,8 +51,8 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConfigSource;
@@ -174,7 +174,7 @@ public class ClusterConfigurationLoader {
 
     // apply the cluster config first
     Configuration clusterConfiguration =
-        requestedConfiguration.get(ClusterConfigurationService.CLUSTER_CONFIG);
+        requestedConfiguration.get(InternalClusterConfigurationService.CLUSTER_CONFIG);
     if (clusterConfiguration != null) {
       String cacheXmlContent = clusterConfiguration.getCacheXmlContent();
       if (StringUtils.isNotBlank(cacheXmlContent)) {
@@ -226,7 +226,7 @@ public class ClusterConfigurationLoader {
 
     // apply the cluster config first
     Configuration clusterConfiguration =
-        requestedConfiguration.get(ClusterConfigurationService.CLUSTER_CONFIG);
+        requestedConfiguration.get(InternalClusterConfigurationService.CLUSTER_CONFIG);
     if (clusterConfiguration != null) {
       runtimeProps.putAll(clusterConfiguration.getGemfireProperties());
     }

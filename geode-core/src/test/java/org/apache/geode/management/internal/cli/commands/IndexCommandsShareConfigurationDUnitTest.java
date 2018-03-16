@@ -41,7 +41,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
@@ -114,7 +114,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     assertTrue(indexIsListed());
 
     locator.invoke(() -> {
-      ClusterConfigurationService sharedConfig =
+      InternalClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       String xmlFromConfig;
       try {
@@ -132,7 +132,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      ClusterConfigurationService sharedConfig =
+      InternalClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       String xmlFromConfig;
       try {

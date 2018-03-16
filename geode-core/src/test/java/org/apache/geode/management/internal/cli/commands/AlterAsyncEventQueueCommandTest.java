@@ -40,7 +40,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -54,13 +54,13 @@ public class AlterAsyncEventQueueCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private AlterAsyncEventQueueCommand command;
-  private ClusterConfigurationService service;
+  private InternalClusterConfigurationService service;
   private Region<String, Configuration> configRegion;
 
   @Before
   public void before() throws Exception {
     command = spy(AlterAsyncEventQueueCommand.class);
-    service = mock(ClusterConfigurationService.class);
+    service = mock(InternalClusterConfigurationService.class);
     doReturn(service).when(command).getSharedConfiguration();
     configRegion = mock(Region.class);
     when(service.getConfigurationRegion()).thenReturn(configRegion);

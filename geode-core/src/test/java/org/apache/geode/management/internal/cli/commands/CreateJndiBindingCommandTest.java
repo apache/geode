@@ -40,7 +40,7 @@ import org.mockito.ArgumentCaptor;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.configuration.CacheConfig;
 import org.apache.geode.internal.cache.configuration.JndiBindingsType;
@@ -98,7 +98,8 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void returnsErrorIfBindingAlreadyExistsAndIfUnspecified()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
     JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
 
@@ -114,7 +115,8 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void skipsIfBindingAlreadyExistsAndIfSpecified()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
     JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
 
@@ -131,7 +133,8 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void skipsIfBindingAlreadyExistsAndIfSpecifiedTrue()
       throws ParserConfigurationException, SAXException, IOException {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
     JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
 
@@ -147,7 +150,8 @@ public class CreateJndiBindingCommandTest {
 
   @Test
   public void returnsErrorIfBindingAlreadyExistsAndIfSpecifiedFalse() {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
     JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
 
@@ -174,7 +178,8 @@ public class CreateJndiBindingCommandTest {
 
   @Test
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig() {
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
 
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
@@ -238,7 +243,8 @@ public class CreateJndiBindingCommandTest {
         "Tried creating jndi binding \"name\" on \"server1\"");
     List<CliFunctionResult> results = new ArrayList<>();
     results.add(result);
-    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+    InternalClusterConfigurationService clusterConfigService =
+        mock(InternalClusterConfigurationService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
 
     doReturn(members).when(command).findMembers(any(), any());

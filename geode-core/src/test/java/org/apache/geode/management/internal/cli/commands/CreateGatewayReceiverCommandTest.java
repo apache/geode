@@ -32,7 +32,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -50,14 +50,14 @@ public class CreateGatewayReceiverCommandTest {
   private CreateGatewayReceiverCommand command;
   private InternalCache cache;
   private List<CliFunctionResult> functionResults;
-  private ClusterConfigurationService ccService;
+  private InternalClusterConfigurationService ccService;
   private CliFunctionResult result1;
   private XmlEntity xmlEntity;
 
   @Before
   public void before() {
     command = spy(CreateGatewayReceiverCommand.class);
-    ccService = mock(ClusterConfigurationService.class);
+    ccService = mock(InternalClusterConfigurationService.class);
     xmlEntity = mock(XmlEntity.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();

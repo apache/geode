@@ -279,7 +279,7 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   }
 
   public void restarting(DistributedSystem ds, GemFireCache cache,
-      ClusterConfigurationService sharedConfig) {
+      InternalClusterConfigurationService sharedConfig) {
     if (ds != null) {
       this.loadSnapshot = new LocatorLoadSnapshot();
       this.ds = (InternalDistributedSystem) ds;
