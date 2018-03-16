@@ -72,6 +72,7 @@ public class SqlHandlerTest {
   private ConnectionConfiguration connectionConfig;
   private JdbcConnectorService connectorService;
   private TableMetaDataManager tableMetaDataManager;
+  private TableMetaDataView tableMetaDataView;
   private Connection connection;
   private Region region;
   private InternalCache cache;
@@ -94,9 +95,10 @@ public class SqlHandlerTest {
     connection = mock(Connection.class);
     when(region.getRegionService()).thenReturn(cache);
     tableMetaDataManager = mock(TableMetaDataManager.class);
-    TableMetaDataView data = mock(TableMetaDataView.class);
-    when(data.getKeyColumnName()).thenReturn(KEY_COLUMN);
-    when(tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME)).thenReturn(data);
+    tableMetaDataView = mock(TableMetaDataView.class);
+    when(tableMetaDataView.getKeyColumnName()).thenReturn(KEY_COLUMN);
+    when(tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME))
+        .thenReturn(tableMetaDataView);
     connectorService = mock(JdbcConnectorService.class);
     handler = new SqlHandler(manager, tableMetaDataManager, connectorService);
     key = "key";
@@ -227,6 +229,26 @@ public class SqlHandlerTest {
     verify(statement).setObject(2, createKey);
     verify(statement).close();
   }
+
+  @Test
+  public void writeWithNullFieldWithDataTypeFromMetaData() throws Exception {
+    String fieldName = "fieldName";
+    Object fieldValue = null;
+    int dataType = 79;
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
+    when(regionMapping.getColumnNameForField(fieldName)).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setNull(1, dataType);
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
 
   @Test
   public void insertActionSucceeds() throws Exception {

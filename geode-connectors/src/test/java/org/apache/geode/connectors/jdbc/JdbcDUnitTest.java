@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -104,16 +105,39 @@ public class JdbcDUnitTest implements Serializable {
       Statement statement = connection.createStatement();
       statement.execute("Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, "
           + "aboolean smallint, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
-          + "along bigint, " + "afloat float, " + "adouble float, " + "astring varchar(10), "
+          + "along bigint, " + "afloat float, " + "adouble double, " + "astring varchar(10), "
           + "adate timestamp, " + "anobject varchar(20), " + "abytearray blob(100), "
           + "achar char(1))");
     });
   }
 
-  private void insertDataForAllSupportedFieldsTable(String key,
-      ClassWithSupportedPdxFields classWithSupportedPdxFields) {
+  private void insertNullDataForAllSupportedFieldsTable(String key) {
     server.invoke(() -> {
-      ClassWithSupportedPdxFields data = classWithSupportedPdxFields;
+      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+
+      String insertQuery = "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      System.out.println("### Query is :" + insertQuery);
+      PreparedStatement statement = connection.prepareStatement(insertQuery);
+      statement.setObject(1, key);
+      statement.setNull(2, Types.SMALLINT);
+      statement.setNull(3, Types.SMALLINT);
+      statement.setNull(4, Types.SMALLINT);
+      statement.setNull(5, Types.INTEGER);
+      statement.setNull(6, Types.BIGINT);
+      statement.setNull(7, Types.FLOAT);
+      statement.setNull(8, Types.DOUBLE);
+      statement.setNull(9, Types.VARCHAR);
+      statement.setNull(10, Types.TIMESTAMP);
+      statement.setNull(11, Types.VARCHAR);
+      statement.setNull(12, Types.BLOB);
+      statement.setNull(13, Types.CHAR);
+
+      statement.execute();
+    });
+  }
+
+  private void insertDataForAllSupportedFieldsTable(String key, ClassWithSupportedPdxFields data) {
+    server.invoke(() -> {
       Connection connection = DriverManager.getConnection(CONNECTION_URL);
 
       String insertQuery = "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -351,6 +375,28 @@ public class JdbcDUnitTest implements Serializable {
   }
 
   @Test
+  public void clientPutsAndGetsWithNullFieldsWithPdxClassName() throws Exception {
+    createTableForAllSupportedFields();
+    ClientVM client = getClientVM();
+    createClientRegion(client);
+
+    createRegionUsingGfsh(true, false, true);
+    createJdbcConnection();
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    client.invoke(() -> {
+      String key = "id1";
+      ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields();
+      Region<String, ClassWithSupportedPdxFields> region =
+          ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
+      region.put(key, value);
+      region.invalidate(key);
+
+      ClassWithSupportedPdxFields result = region.get(key);
+      assertThat(result).isEqualTo(value);
+    });
+  }
+
+  @Test
   public void clientRegistersPdxAndReadsFromDBWithPdxClassName() throws Exception {
     createTableForAllSupportedFields();
     ClientVM client = getClientVM();
@@ -364,6 +410,33 @@ public class JdbcDUnitTest implements Serializable {
 
     server.invoke(() -> {
       insertDataForAllSupportedFieldsTable(key, value);
+    });
+
+    client.invoke(() -> {
+      ClusterStartupRule.getClientCache().registerPdxMetaData(new ClassWithSupportedPdxFields());
+
+      Region<String, ClassWithSupportedPdxFields> region =
+          ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
+
+      ClassWithSupportedPdxFields result = region.get(key);
+      assertThat(result).isEqualTo(value);
+    });
+  }
+
+  @Test
+  public void clientRegistersPdxAndReadsFromDBContainingNullColumnsWithPdxClassName()
+      throws Exception {
+    createTableForAllSupportedFields();
+    ClientVM client = getClientVM();
+    createClientRegion(client);
+    createRegionUsingGfsh(true, false, true);
+    createJdbcConnection();
+    createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
+    String key = "id1";
+    ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields();
+
+    server.invoke(() -> {
+      insertNullDataForAllSupportedFieldsTable(key);
     });
 
     client.invoke(() -> {

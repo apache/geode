@@ -65,7 +65,6 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
     cache.setPdxReadSerializedOverride(true);
     try {
       for (AsyncEvent event : events) {
-
         try {
           getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
               getPdxInstance(event));

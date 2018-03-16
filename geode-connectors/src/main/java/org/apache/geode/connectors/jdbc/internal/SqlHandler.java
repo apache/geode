@@ -225,7 +225,7 @@ public class SqlHandler {
         continue;
       }
       ColumnValue columnValue = new ColumnValue(false, columnName, value.getField(fieldName),
-          tableMetaData.getColumnDataType(keyColumnName));
+          tableMetaData.getColumnDataType(columnName));
       result.add(columnValue);
     }
     return result;

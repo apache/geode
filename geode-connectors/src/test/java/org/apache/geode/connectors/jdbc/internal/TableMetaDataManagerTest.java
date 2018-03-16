@@ -44,7 +44,7 @@ public class TableMetaDataManagerTest {
   private Connection connection;
   DatabaseMetaData databaseMetaData;
   ResultSet tablesResultSet;
-  ResultSet primaryKeys;
+  ResultSet primaryKeysResultSet;
   ResultSet columnResultSet;
 
   @Before
@@ -55,8 +55,9 @@ public class TableMetaDataManagerTest {
     when(connection.getMetaData()).thenReturn(databaseMetaData);
     tablesResultSet = mock(ResultSet.class);
     when(databaseMetaData.getTables(any(), any(), any(), any())).thenReturn(tablesResultSet);
-    primaryKeys = mock(ResultSet.class);
-    when(databaseMetaData.getPrimaryKeys(any(), any(), anyString())).thenReturn(primaryKeys);
+    primaryKeysResultSet = mock(ResultSet.class);
+    when(databaseMetaData.getPrimaryKeys(any(), any(), anyString()))
+        .thenReturn(primaryKeysResultSet);
     columnResultSet = mock(ResultSet.class);
     when(databaseMetaData.getColumns(any(), any(), eq(TABLE_NAME), any()))
         .thenReturn(columnResultSet);
@@ -65,7 +66,7 @@ public class TableMetaDataManagerTest {
   @Test
   public void returnsSinglePrimaryKeyColumnName() throws Exception {
     setupPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
 
     TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
     assertThat(data.getKeyColumnName()).isEqualTo(KEY_COLUMN);
@@ -75,7 +76,7 @@ public class TableMetaDataManagerTest {
   @Test
   public void secondCallDoesNotUseMetaData() throws Exception {
     setupPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
 
     tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
     tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
@@ -104,7 +105,7 @@ public class TableMetaDataManagerTest {
   @Test
   public void throwsExceptionIfTableHasCompositePrimaryKey() throws Exception {
     setupPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true);
+    when(primaryKeysResultSet.next()).thenReturn(true);
 
     assertThatThrownBy(() -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class)
@@ -125,7 +126,7 @@ public class TableMetaDataManagerTest {
   @Test
   public void throwsExceptionWhenNoPrimaryKeyInTable() throws Exception {
     setupPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(false);
+    when(primaryKeysResultSet.next()).thenReturn(false);
 
     assertThatThrownBy(() -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class)
@@ -135,7 +136,7 @@ public class TableMetaDataManagerTest {
   @Test
   public void unknownColumnsDataTypeIsZero() throws SQLException {
     setupPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
 
     TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
     int dataType = data.getColumnDataType("unknownColumn");
@@ -146,7 +147,7 @@ public class TableMetaDataManagerTest {
   @Test
   public void validateExpectedDataTypes() throws SQLException {
     setupPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
     when(columnResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
     String columnName1 = "columnName1";
     int columnDataType1 = 1;
@@ -162,12 +163,36 @@ public class TableMetaDataManagerTest {
 
     assertThat(dataType1).isEqualTo(columnDataType1);
     assertThat(dataType2).isEqualTo(columnDataType2);
+    verify(primaryKeysResultSet).close();
+    verify(columnResultSet).close();
+  }
+
+  @Test
+  public void validateThatCloseOnPrimaryKeysResultSetIsCalledByGetTableMetaDataView()
+      throws SQLException {
+    setupPrimaryKeysMetaData();
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
+
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
+
+    verify(primaryKeysResultSet).close();
+  }
+
+  @Test
+  public void validateThatCloseOnColumnResultSetIsCalledByGetTableMetaDataView()
+      throws SQLException {
+    setupPrimaryKeysMetaData();
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
+
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
+
+    verify(columnResultSet).close();
   }
 
   @Test
   public void lookingUpDataTypeWithNameThatDiffersInCaseWillFindIt() throws SQLException {
     setupPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
     when(columnResultSet.next()).thenReturn(true).thenReturn(false);
     String columnName1 = "columnName1";
     int columnDataType1 = 1;
@@ -183,7 +208,7 @@ public class TableMetaDataManagerTest {
   @Test
   public void throwsExceptionWhenTwoColumnsWithSameCaseInsensitiveNameExist() throws Exception {
     setupPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
     when(columnResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
     when(columnResultSet.getString("COLUMN_NAME")).thenReturn("colName").thenReturn("COLNAME");
 
@@ -194,7 +219,7 @@ public class TableMetaDataManagerTest {
 
 
   private void setupPrimaryKeysMetaData() throws SQLException {
-    when(primaryKeys.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN);
+    when(primaryKeysResultSet.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN);
     when(tablesResultSet.next()).thenReturn(true).thenReturn(false);
     when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
   }
