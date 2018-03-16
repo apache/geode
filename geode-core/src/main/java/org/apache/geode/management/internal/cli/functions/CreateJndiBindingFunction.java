@@ -15,12 +15,15 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
@@ -33,7 +36,8 @@ public class CreateJndiBindingFunction implements InternalFunction<JndiBindingsT
   public void execute(FunctionContext<JndiBindingsType.JndiBinding> context) {
     ResultSender<Object> resultSender = context.getResultSender();
     JndiBindingsType.JndiBinding configuration = context.getArguments();
-    JNDIInvoker.mapDatasource(getParamsAsMap(configuration), configuration.getConfigProperty());
+    JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
+        convert(configuration.getConfigProperty()));
 
     resultSender.lastResult(new CliFunctionResult(context.getMemberName(), true,
         CliStrings.format(RESULT_MESSAGE, configuration.getJndiName(), context.getMemberName())));
@@ -57,5 +61,16 @@ public class CreateJndiBindingFunction implements InternalFunction<JndiBindingsT
     params.put("user-name", binding.getUserName());
     params.put("xa-datasource-class", binding.getXaDatasourceClass());
     return params;
+  }
+
+  static List<ConfigProperty> convert(
+      List<JndiBindingsType.JndiBinding.ConfigProperty> properties) {
+    return properties.stream().map(p -> {
+      ConfigProperty prop = new ConfigProperty();
+      prop.setName(p.getName());
+      prop.setType(p.getType());
+      prop.setValue(p.getValue());
+      return prop;
+    }).collect(Collectors.toList());
   }
 }

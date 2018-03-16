@@ -22,7 +22,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.*;
+import javax.naming.Binding;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.NoInitialContextException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
@@ -32,6 +38,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.datasource.AbstractDataSource;
 import org.apache.geode.internal.datasource.ClientConnectionFactoryWrapper;
+import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.datasource.DataSourceFactory;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -310,7 +317,7 @@ public class JNDIInvoker {
    *
    * @param map contains Datasource configuration properties.
    */
-  public static void mapDatasource(Map map, List props) {
+  public static void mapDatasource(Map map, List<ConfigProperty> props) {
     String value = (String) map.get("type");
     String jndiName = "";
     LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
@@ -330,7 +337,7 @@ public class JNDIInvoker {
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else if (value.equals("SimpleDataSource")) {
-        ds = DataSourceFactory.getSimpleDataSource(map, props);
+        ds = DataSourceFactory.getSimpleDataSource(map);
         ctx.rebind("java:/" + jndiName, ds);
         dataSourceList.add(ds);
         if (writer.fineEnabled())

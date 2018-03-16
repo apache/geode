@@ -63,8 +63,10 @@ public class ListJndiBindingFunctionTest {
     config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
     config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
+    config.getConfigProperty()
+        .add(new JndiBindingsType.JndiBinding.ConfigProperty("test", "test", "test"));
     JNDIInvoker.mapDatasource(CreateJndiBindingFunction.getParamsAsMap(config),
-        config.getConfigProperty());
+        CreateJndiBindingFunction.convert(config.getConfigProperty()));
   }
 
   @Test

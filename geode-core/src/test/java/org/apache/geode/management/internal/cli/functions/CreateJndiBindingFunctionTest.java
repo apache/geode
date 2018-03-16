@@ -21,6 +21,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -35,6 +37,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.configuration.JndiBindingsType;
+import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
@@ -86,4 +89,17 @@ public class CreateJndiBindingFunctionTest {
         "java:TransactionManager");
   }
 
+  @Test
+  public void convert() {
+    JndiBindingsType.JndiBinding.ConfigProperty propA =
+        new JndiBindingsType.JndiBinding.ConfigProperty("name", "type", "value");
+
+    List<ConfigProperty> converted =
+        CreateJndiBindingFunction.convert(Collections.singletonList(propA));
+    assertThat(converted).hasSize(1);
+    ConfigProperty propB = converted.get(0);
+    assertThat(propB.getName()).isEqualTo("name");
+    assertThat(propB.getType()).isEqualTo("type");
+    assertThat(propB.getValue()).isEqualTo("value");
+  }
 }
