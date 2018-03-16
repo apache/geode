@@ -91,7 +91,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   private static final Set<String> testHistory = new LinkedHashSet<>();
 
   /** This VM's connection to the distributed system */
-  private static InternalDistributedSystem system;
+  protected static InternalDistributedSystem system;
   private static Class lastSystemCreatedInTest;
   private static Properties lastSystemProperties;
   private static volatile String testMethodName;
