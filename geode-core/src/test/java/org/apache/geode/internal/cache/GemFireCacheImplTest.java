@@ -15,9 +15,11 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.io.NotSerializableException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -29,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.SerializationException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
@@ -115,6 +118,36 @@ public class GemFireCacheImplTest {
     }
     verify(he, times(1)).close();
     verify(ohe, times(1)).close();
+  }
+
+  @Test
+  public void registerPdxMetaDataThrowsIfInstanceNotSerializable() {
+    InternalDistributedSystem ds = Fakes.distributedSystem();
+    CacheConfig cc = new CacheConfig();
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+    GemFireCacheImpl gfc = GemFireCacheImpl.createWithAsyncEventListeners(ds, cc, typeRegistry);
+    try {
+      assertThatThrownBy(() -> gfc.registerPdxMetaData(new Object()))
+          .isInstanceOf(SerializationException.class).hasMessage("Serialization failed")
+          .hasCauseInstanceOf(NotSerializableException.class);
+    } finally {
+      gfc.close();
+    }
+  }
+
+  @Test
+  public void registerPdxMetaDataThrowsIfInstanceIsNotPDX() {
+    InternalDistributedSystem ds = Fakes.distributedSystem();
+    CacheConfig cc = new CacheConfig();
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+    GemFireCacheImpl gfc = GemFireCacheImpl.createWithAsyncEventListeners(ds, cc, typeRegistry);
+    try {
+      assertThatThrownBy(() -> gfc.registerPdxMetaData("string"))
+          .isInstanceOf(SerializationException.class)
+          .hasMessage("The instance is not PDX serializable");
+    } finally {
+      gfc.close();
+    }
   }
 
   @Test
