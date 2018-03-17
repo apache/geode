@@ -21,8 +21,10 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -52,10 +54,22 @@ public class ServerLauncherDUnitTest {
   public static class TestManagementListener extends UniversalMembershipListenerAdapter {
 
     public static boolean crashed = false;
+    public static boolean joined = false;
+    public static boolean left = false;
 
     @Override
     public void memberCrashed(MembershipEvent event) {
       crashed = true;
+    }
+
+    @Override
+    public void memberJoined(MembershipEvent event) {
+      joined = true;
+    }
+
+    @Override
+    public void memberLeft(MembershipEvent event) {
+      left = true;
     }
   }
 
@@ -77,7 +91,8 @@ public class ServerLauncherDUnitTest {
 
     launchServer(locator.getPort());
 
-    Thread.sleep(5000);
+    Awaitility.waitAtMost(10, TimeUnit.SECONDS).until(
+        () -> locator.invoke(() -> TestManagementListener.joined && TestManagementListener.left));
 
     assertThat(locator.invoke(() -> TestManagementListener.crashed)).isFalse();
   }
