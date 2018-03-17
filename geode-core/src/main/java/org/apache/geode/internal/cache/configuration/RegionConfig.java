@@ -147,7 +147,7 @@ import org.w3c.dom.Element;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"regionAttributes", "index", "entry", "regionElements", "region"})
-public class RegionConfig {
+public class RegionConfig implements CacheElement {
 
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionAttributesType> regionAttributes;
@@ -361,6 +361,11 @@ public class RegionConfig {
    */
   public void setRefid(String value) {
     this.refid = value;
+  }
+
+  @Override
+  public String getId() {
+    return getName();
   }
 
 
