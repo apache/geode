@@ -42,6 +42,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -129,6 +130,7 @@ public abstract class PulseAcceptanceTestBase {
   }
 
   @Test
+  @Ignore("flaky")
   public void testClusterGridViewMemberDetails() {
     searchByIdAndClick("default_grid_button");
     List<WebElement> elements =
@@ -348,6 +350,7 @@ public abstract class PulseAcceptanceTestBase {
   }
 
   @Test
+  @Ignore("flaky")
   public void testTopologyPopUpData() {
     testTreeMapPopUpData(CLUSTER_VIEW_GRID_ID);
   }
