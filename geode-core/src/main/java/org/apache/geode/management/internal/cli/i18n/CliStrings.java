@@ -2248,6 +2248,8 @@ public class CliStrings {
       "Could not instantiate class \"{0}\" specified for \"{1}\".";
   public static final String CREATE_GATEWAYSENDER__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
       "Could not access class \"{0}\" specified for \"{1}\".";
+  public static final String CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS =
+      "Gateway Sender cannot be created until all members are the current version";
 
   /* stop gateway-receiver */
   public static final String START_GATEWAYSENDER = "start gateway-sender";

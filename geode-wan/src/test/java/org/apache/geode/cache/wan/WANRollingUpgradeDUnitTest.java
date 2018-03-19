@@ -19,14 +19,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -44,7 +43,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -52,7 +50,8 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.BatchRemovalThreadHelper;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -64,6 +63,7 @@ import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @SuppressWarnings("ConstantConditions")
@@ -84,6 +84,9 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
   // the old version of Geode we're testing against
   private String oldVersion;
+
+  @Rule
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   public WANRollingUpgradeDUnitTest(String version) {
     oldVersion = version;
@@ -500,7 +503,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     VM site1Server2 = host.getVM(oldVersion, 2);
     VM site1Client = host.getVM(oldVersion, 3);
 
-    // Get old site members
+    // Get current site members
     VM site2Locator = host.getVM(VersionManager.CURRENT_VERSION, 4);
     VM site2Server1 = host.getVM(VersionManager.CURRENT_VERSION, 5);
     VM site2Server2 = host.getVM(VersionManager.CURRENT_VERSION, 6);
@@ -512,7 +515,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     final String site1Locators = hostName + "[" + site1LocatorPort + "]";
     final int site1DistributedSystemId = 0;
 
-    // Get old site locator properties
+    // Get current site locator properties
     final int site2LocatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     DistributedTestUtils.deleteLocatorStateFile(site2LocatorPort);
     final String site2Locators = hostName + "[" + site2LocatorPort + "]";
@@ -530,7 +533,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
                 !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                     || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
-    // Start old site locator
+    // Start current site locator
     site2Locator.invoke(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
         site2Locators, site1Locators));
 
@@ -548,12 +551,12 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     rollStartAndConfigureServerToCurrent(site1Server2, site1Locators, site2DistributedSystemId,
         regionName, site1SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
 
-    // Start and configure old site servers
+    // Start and configure old current servers
     String site2SenderId = getName() + "_gatewaysender_" + site1DistributedSystemId;
     startAndConfigureServers(site2Server1, site2Server2, site2Locators, site1DistributedSystemId,
         regionName, site2SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
 
-    // Do puts from mixed site client and verify events on old site
+    // Do puts from mixed site client and verify events on current site
     int numPuts = 100;
     doClientPutsAndVerifyEvents(site1Client, site1Server1, site1Server2, site2Server1, site2Server2,
         hostName, site1LocatorPort, regionName, numPuts, site1SenderId, false);
@@ -561,6 +564,23 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
   private void startLocator(int port, int distributedSystemId, String locators,
       String remoteLocators) throws IOException {
+    Properties props = getLocatorProperties(distributedSystemId, locators, remoteLocators);
+    Locator.startLocatorAndDS(port, null, props);
+  }
+
+  private int startLocatorWithJmxManager(int port, int distributedSystemId, String locators,
+      String remoteLocators) throws IOException {
+    Properties props = getLocatorProperties(distributedSystemId, locators, remoteLocators);
+    int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    props.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
+    props.put(DistributionConfig.JMX_MANAGER_NAME, "true");
+    props.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
+    Locator.startLocatorAndDS(port, null, props);
+    return jmxPort;
+  }
+
+  private Properties getLocatorProperties(int distributedSystemId, String locators,
+      String remoteLocators) {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME,
@@ -569,7 +589,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, remoteLocators);
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, DUnitLauncher.logLevel);
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    Locator.startLocatorAndDS(port, null, props);
+    return props;
   }
 
   private void stopLocator() throws Exception {
@@ -705,6 +725,87 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     } finally {
       ie.remove();
     }
+  }
+
+  @Test
+  public void testCreateGatewaySenderMixedSiteOneCurrentSiteTwo() throws Exception {
+    final Host host = Host.getHost(0);
+
+    // Get mixed site members
+    VM site1Locator = host.getVM(oldVersion, 0);
+    VM site1Server1 = host.getVM(oldVersion, 1);
+    VM site1Server2 = host.getVM(oldVersion, 2);
+
+    // Get current site members
+    VM site2Locator = host.getVM(VersionManager.CURRENT_VERSION, 4);
+    VM site2Server1 = host.getVM(VersionManager.CURRENT_VERSION, 5);
+    VM site2Server2 = host.getVM(VersionManager.CURRENT_VERSION, 6);
+
+    // Get mixed site locator properties
+    String hostName = NetworkUtils.getServerHostName(host);
+    final int site1LocatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    DistributedTestUtils.deleteLocatorStateFile(site1LocatorPort);
+    final String site1Locators = hostName + "[" + site1LocatorPort + "]";
+    final int site1DistributedSystemId = 0;
+
+    // Get current site locator properties
+    final int site2LocatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    DistributedTestUtils.deleteLocatorStateFile(site2LocatorPort);
+    final String site2Locators = hostName + "[" + site2LocatorPort + "]";
+    final int site2DistributedSystemId = 1;
+
+    // Start mixed site locator
+    site1Locator.invoke(() -> startLocator(site1LocatorPort, site1DistributedSystemId,
+        site1Locators, site2Locators));
+
+    // Locators before 1.4 handled configuration asynchronously.
+    // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+    site1Locator.invoke(
+        () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+            .until(() -> assertTrue(
+                !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                    || InternalLocator.getLocator().isSharedConfigurationRunning())));
+
+    // Start current site locator
+    site2Locator.invoke(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
+        site2Locators, site1Locators));
+
+    // Start current site servers with receivers
+    site2Server1.invoke(() -> createCache(site2Locators));
+    site2Server1.invoke(() -> createGatewayReceiver());
+    site2Server2.invoke(() -> createCache(site2Locators));
+    site2Server2.invoke(() -> createGatewayReceiver());
+
+    // Start mixed site servers
+    site1Server1.invoke(() -> createCache(site1Locators));
+    site1Server2.invoke(() -> createCache(site1Locators));
+
+    // Roll mixed site locator to current with jmx manager
+    site1Locator.invoke(() -> stopLocator());
+    VM site1RolledLocator = host.getVM(VersionManager.CURRENT_VERSION, site1Locator.getId());
+    int jmxManagerPort =
+        site1RolledLocator.invoke(() -> startLocatorWithJmxManager(site1LocatorPort,
+            site1DistributedSystemId, site1Locators, site2Locators));
+
+    // Roll one mixed site server to current
+    site1Server2.invoke(() -> closeCache());
+    VM site1Server2RolledServer = host.getVM(VersionManager.CURRENT_VERSION, site1Server2.getId());
+    site1Server2RolledServer.invoke(() -> createCache(site1Locators));
+
+    // Use gfsh to attempt to create a gateway sender in the mixed site servers
+    this.gfsh.connectAndVerify(jmxManagerPort, GfshCommandRule.PortType.jmxManager);
+    this.gfsh
+        .executeAndAssertThat(getCreateGatewaySenderCommand("toSite2", site2DistributedSystemId))
+        .statusIsError()
+        .containsOutput(CliStrings.CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
+  }
+
+  private String getCreateGatewaySenderCommand(String id, int remoteDsId) {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, id);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
+        String.valueOf(remoteDsId));
+    return csb.toString();
   }
 
   private void createCache(String locators) {
