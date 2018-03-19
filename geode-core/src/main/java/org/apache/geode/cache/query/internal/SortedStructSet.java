@@ -22,8 +22,10 @@ import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.query.internal.types.*;
 import org.apache.geode.cache.query.types.*;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
  * A TreeSet constrained to contain Structs of all the same type. To conserve on objects, we store
@@ -343,10 +345,12 @@ public class SortedStructSet extends TreeSet
     this.modifiable = in.readBoolean();
     int size = in.readInt();
     this.structType = (StructTypeImpl) DataSerializer.readObject(in);
-    for (int j = size; j > 0; j--) {
-      Object[] fieldValues = DataSerializer.readObject(in);
-      this.addFieldValues(fieldValues);
-    }
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      for (int j = size; j > 0; j--) {
+        Object[] fieldValues = DataSerializer.readObject(in);
+        this.addFieldValues(fieldValues);
+      }
+    });
   }
 
   public void toData(DataOutput out) throws IOException {

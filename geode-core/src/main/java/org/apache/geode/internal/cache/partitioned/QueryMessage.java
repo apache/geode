@@ -44,6 +44,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.streaming.StreamingOperation.StreamingReplyMessage;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ForceReattemptException;
@@ -53,6 +54,7 @@ import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public class QueryMessage extends StreamingPartitionOperation.StreamingPartitionMessage {
   private static final Logger logger = LogService.getLogger();
@@ -299,7 +301,9 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     super.fromData(in);
     this.queryString = DataSerializer.readString(in);
     this.buckets = DataSerializer.readArrayList(in);
-    this.parameters = DataSerializer.readObjectArray(in);
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      this.parameters = DataSerializer.readObjectArray(in);
+    });
     this.cqQuery = DataSerializer.readBoolean(in);
     this.isPdxSerialized = DataSerializer.readBoolean(in);
     this.traceOn = DataSerializer.readBoolean(in);

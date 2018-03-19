@@ -28,8 +28,10 @@ import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.query.internal.types.*;
 import org.apache.geode.cache.query.types.*;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
  * A Set constrained to contain Structs of all the same type. To conserve on objects, we store the
@@ -431,9 +433,11 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     int size = in.readInt();
     this.structType = (StructTypeImpl) DataSerializer.readObject(in);
-    for (int j = size; j > 0; j--) {
-      this.add(DataSerializer.readObject(in));
-    }
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      for (int j = size; j > 0; j--) {
+        this.add(DataSerializer.readObject(in));
+      }
+    });
   }
 
   public void toData(DataOutput out) throws IOException {

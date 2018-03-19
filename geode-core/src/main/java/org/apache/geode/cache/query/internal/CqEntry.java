@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 
@@ -90,7 +91,7 @@ public class CqEntry implements DataSerializableFixedID {
   /* DataSerializableFixedID methods ---------------------------------------- */
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.key = DataSerializer.readObject(in);
+    this.key = InternalDataSerializer.readUserObject(in);
     this.value = DataSerializer.readObject(in);
   }
 

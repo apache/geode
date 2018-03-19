@@ -1471,7 +1471,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         ReplyProcessor21.setMessageRPId(this.processorId);
       }
       this.regionName = in.readUTF();
-      this.key = DataSerializer.readObject(in);
+      this.key = InternalDataSerializer.readUserObject(in);
       this.timeoutMs = in.readInt();
       if ((flags & HAS_TTL) != 0) {
         this.ttl = (int) InternalDataSerializer.readSignedVL(in);
@@ -1707,9 +1707,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.key = DataSerializer.readObject(in);
+      this.key = InternalDataSerializer.readUserObject(in);
       this.processorId = in.readInt();
-      this.result = DataSerializer.readObject(in);
+      this.result = InternalDataSerializer.readUserObject(in);
       this.lastModified = in.readLong();
       this.isPresent = in.readBoolean();
       this.isSerialized = in.readBoolean();
@@ -1826,7 +1826,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         ReplyProcessor21.setMessageRPId(this.processorId);
       }
       this.regionName = in.readUTF();
-      this.key = DataSerializer.readObject(in);
+      this.key = InternalDataSerializer.readUserObject(in);
       this.timeoutMs = in.readInt();
       if ((flags & HAS_TTL) != 0) {
         this.ttl = (int) InternalDataSerializer.readSignedVL(in);
@@ -2198,8 +2198,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       super.fromData(in);
       this.processorId = in.readInt();
       this.regionName = in.readUTF();
-      this.key = DataSerializer.readObject(in);
-      this.aCallbackArgument = DataSerializer.readObject(in);
+      this.key = InternalDataSerializer.readUserObject(in);
+      this.aCallbackArgument = InternalDataSerializer.readUserObject(in);
       this.timeoutMs = in.readInt();
       this.ttl = in.readInt();
       this.idleTime = in.readInt();
@@ -2377,7 +2377,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       super.fromData(in);
       this.processorId = in.readInt();
       this.result = DataSerializer.readByteArray(in);
-      this.aCallbackArgument = DataSerializer.readObject(in);
+      this.aCallbackArgument = InternalDataSerializer.readUserObject(in);
       this.e = (Exception) DataSerializer.readObject(in);
       this.isSerialized = in.readBoolean();
       this.requestorTimedOut = in.readBoolean();

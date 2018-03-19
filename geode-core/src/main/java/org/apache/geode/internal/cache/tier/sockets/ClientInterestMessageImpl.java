@@ -21,6 +21,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.InterestType;
@@ -213,7 +214,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.eventId = (EventID) DataSerializer.readObject(in);
     this.regionName = DataSerializer.readString(in);
-    this.keyOfInterest = DataSerializer.readObject(in);
+    this.keyOfInterest = InternalDataSerializer.readObject(in);
     this.isDurable = DataSerializer.readPrimitiveBoolean(in);
     this.forUpdatesAsInvalidates = DataSerializer.readPrimitiveBoolean(in);
     this.interestType = DataSerializer.readPrimitiveInt(in);

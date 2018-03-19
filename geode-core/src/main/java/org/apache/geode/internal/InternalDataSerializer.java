@@ -1749,7 +1749,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    *
    * @throws IOException If the serializer that can deserialize the object is not registered.
    */
-  private static Object readUserObject(DataInput in, int serializerId)
+  private static Object readUserClass(DataInput in, int serializerId)
       throws IOException, ClassNotFoundException {
     DataSerializer serializer = InternalDataSerializer.getSerializer(serializerId);
 
@@ -2249,7 +2249,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
 
   private static boolean disallowJavaSerialization() {
-    Boolean v = DISALLOW_JAVA_SERIALIZATION.get();
+    Boolean v = disallowJavaSerializationForThread.get();
     return v != null && v;
   }
 
@@ -2699,22 +2699,16 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
       logger.trace(LogMarker.SERIALIZER, "readDSFID: header={}", header);
     }
-    boolean readSerializedOverride = PdxInstanceImpl.getPdxReadSerialized();
-    PdxInstanceImpl.setPdxReadSerialized(false);
-    try {
-      if (header == DS_FIXED_ID_BYTE) {
-        return DSFIDFactory.create(in.readByte(), in);
-      } else if (header == DS_FIXED_ID_SHORT) {
-        return DSFIDFactory.create(in.readShort(), in);
-      } else if (header == DS_NO_FIXED_ID) {
-        return readDataSerializableFixedID(in);
-      } else if (header == DS_FIXED_ID_INT) {
-        return DSFIDFactory.create(in.readInt(), in);
-      } else {
-        throw new IllegalStateException("unexpected byte: " + header + " while reading dsfid");
-      }
-    } finally {
-      PdxInstanceImpl.setPdxReadSerialized(readSerializedOverride);
+    if (header == DS_FIXED_ID_BYTE) {
+      return DSFIDFactory.create(in.readByte(), in);
+    } else if (header == DS_FIXED_ID_SHORT) {
+      return DSFIDFactory.create(in.readShort(), in);
+    } else if (header == DS_NO_FIXED_ID) {
+      return readDataSerializableFixedID(in);
+    } else if (header == DS_FIXED_ID_INT) {
+      return DSFIDFactory.create(in.readInt(), in);
+    } else {
+      throw new IllegalStateException("unexpected byte: " + header + " while reading dsfid");
     }
   }
 
@@ -2786,19 +2780,12 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
   }
 
-  private static DataSerializer dvddeserializer;
-
-  // TODO: registerDVDDeserializer is unused
-  public static void registerDVDDeserializer(DataSerializer dvddeslzr) {
-    dvddeserializer = dvddeslzr;
-  }
-
   /**
    * Just like readObject but make sure and pdx deserialized is not a PdxInstance.
    *
    * @since GemFire 6.6.2
    */
-  public static <T> T readNonPdxInstanceObject(final DataInput in)
+  public static <T> T readDeserializedObject(final DataInput in)
       throws IOException, ClassNotFoundException {
     boolean wouldReadSerialized = PdxInstanceImpl.getPdxReadSerialized();
     if (!wouldReadSerialized) {
@@ -2811,6 +2798,54 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         PdxInstanceImpl.setPdxReadSerialized(true);
       }
     }
+  }
+
+  /**
+   * Just like readObject but override PdxInstanceImpl.getPdxReadSerialized(), allowing
+   * the result to be a PdxInstance if pdx-read-serialized is enabled on the cache.
+   * Use this to read cache keys, values and callback values in DataSerializableFixedID
+   * fromData methods, which have pdx-read-serialize disabled.
+   */
+  public static <T> T readUserObject(final DataInput in)
+      throws IOException, ClassNotFoundException {
+    boolean wouldReadSerialized = PdxInstanceImpl.getPdxReadSerialized();
+    if (wouldReadSerialized) {
+      return DataSerializer.readObject(in);
+    } else {
+      PdxInstanceImpl.setPdxReadSerialized(true);
+      try {
+        return DataSerializer.readObject(in);
+      } finally {
+        PdxInstanceImpl.setPdxReadSerialized(false);
+      }
+    }
+  }
+
+  /**
+   * This method is used by DataSerializableFixedID objects in their fromData methods
+   * to deserialize application objects such as keys, values and callback arguments.
+   * It allows the value to be read as a PdxInstance instead of being completely
+   * deserialized into a POJO.
+   *
+   * @param runnable code performing deserialization with PdxInstanceImpl.setPdxReadSerialized set
+   *        to true
+   * @throws ClassNotFoundException
+   * @throws IOException
+   */
+  public static void doWithPdxReadSerialized(RunnableThrowingException runnable)
+      throws ClassNotFoundException, IOException {
+    boolean isAlreadySet = PdxInstanceImpl.getPdxReadSerialized();
+    if (!isAlreadySet) {
+      PdxInstanceImpl.setPdxReadSerialized(true);
+    }
+    try {
+      runnable.run();
+    } finally {
+      if (!isAlreadySet) {
+        PdxInstanceImpl.setPdxReadSerialized(false);
+      }
+    }
+
   }
 
   public static Object basicReadObject(final DataInput in)
@@ -2906,11 +2941,11 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       case TIME_UNIT:
         return readTimeUnit(in);
       case USER_CLASS:
-        return readUserObject(in, in.readByte());
+        return readUserClass(in, in.readByte());
       case USER_CLASS_2:
-        return readUserObject(in, in.readShort());
+        return readUserClass(in, in.readShort());
       case USER_CLASS_4:
-        return readUserObject(in, in.readInt());
+        return readUserClass(in, in.readInt());
       case VECTOR:
         return readVector(in);
       case STACK:
@@ -3861,4 +3896,14 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       classCache.clear();
     }
   }
+
+
+  /**
+   * @see #doWithPdxReadSerialized
+   */
+  @FunctionalInterface
+  public interface RunnableThrowingException {
+    void run() throws ClassNotFoundException, IOException;
+  }
+
 }
