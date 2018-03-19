@@ -49,10 +49,6 @@ public class SSLTest {
   private final String DEFAULT_STORE = "default.keystore";
   private final String KEY_STORE = TestUtil.getResourcePath(SSLTest.class, DEFAULT_STORE);
   private final String TRUST_STORE = TestUtil.getResourcePath(SSLTest.class, DEFAULT_STORE);
-  private final String SSL_PROTOCOLS = "any";
-  private final String SSL_CIPHERS = "any";
-  private static final String TEST_USERNAME = "cluster";
-  private static final String TEST_PASSWORD = TEST_USERNAME;
   private Locator locator;
   private Cache cache;
   private Driver driver;
@@ -65,8 +61,6 @@ public class SSLTest {
     // Create a cache
     Properties properties = new Properties();
     properties.put(SSL_ENABLED_COMPONENTS, "server");
-    properties.put(ConfigurationProperties.SSL_PROTOCOLS, SSL_PROTOCOLS);
-    properties.put(ConfigurationProperties.SSL_CIPHERS, SSL_CIPHERS);
     properties.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(true));
     properties.put(SSL_KEYSTORE_TYPE, "jks");
     properties.put(SSL_KEYSTORE, KEY_STORE);
