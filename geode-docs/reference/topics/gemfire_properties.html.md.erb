@@ -525,9 +525,7 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 <tr class="even">
 <td>security-client-dhalgo</td>
 <td><strong>Deprecated.</strong> Use <code class="ph codeph">ssl-enabled-components</code> instead.
-<br>Used for authentication. For secure transmission of sensitive credentials like passwords, you can encrypt the credentials using the Diffie-Hellman\
- key exchange algorithm. Do this by setting the security-client-dhalgo system property on the clients to the name of a valid symmetric key cipher supp\
-orted by the JDK.</td>
+<br>Used for authentication. For secure transmission of sensitive credentials like passwords, you can encrypt the credentials using the Diffie-Hellman key exchange algorithm. Do this by setting the security-client-dhalgo system property on the clients to the name of a valid symmetric key cipher supported by the JDK.</td>
 <td>S, L</td>
 <td><em>not set</em></td>
 </tr>
@@ -575,6 +573,12 @@ orted by the JDK.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
+<td>security-udp-dhalgo</td>
+<td>Specifies a string that defines the name of a valid symmetric key cipher supported by the JDK. When defined, the named cipher will be used for server to server UDP communications.</td>
+<td>S</td>
+<td><em>not set</em></td>
+</tr>
+<tr class="even">
 <td>serializable-object-filter</td>
 <td>A semicolon-separated list of items that become full class names of objects that the system will serialize when the property validate-serializable-objects is set to true. The list is expanded using the patterns specified in the <code>createFilter</code> method at
 <a href="https://docs.oracle.com/javase/9/docs/api/java/io/ObjectInputFilter.Config.html">https://docs.oracle.com/javase/9/docs/api/java/io/ObjectInputFilter.Config.html</a>.</td>
@@ -606,7 +610,7 @@ orted by the JDK.</td>
 
 <tr>
 <td>ssl-enabled-components</td>
-<td>Components for which to enable SSL. Comma-separated list of one or more of (cluster, gateway, http, jmx, locator, server) or "all".</td>
+<td>Components for which to enable SSL. Comma-separated list of one or more of (cluster, gateway, http, jmx, locator, server) or "all". When defining this property, also set <code>security-udp-dhalgo</code> to secure UDP cluster communications.</td>
 <td>S, L</td>
 <td>all</td>
 </tr>
