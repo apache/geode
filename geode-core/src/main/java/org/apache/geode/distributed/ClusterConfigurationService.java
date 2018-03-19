@@ -20,7 +20,6 @@ package org.apache.geode.distributed;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.configuration.CacheConfig;
@@ -135,8 +134,15 @@ public interface ClusterConfigurationService {
 
   default <T extends CacheElement> List<T> findCustomCacheElements(CacheConfig cacheConfig,
       Class<T> classT) {
-    return cacheConfig.getCustomCacheElements().stream().filter(classT::isInstance)
-        .map(classT::cast).collect(Collectors.toList());
+
+    List<T> newList = new ArrayList<>();
+    // streaming won't work here, because it's trying to cast element into CacheElement
+    for (Object element : cacheConfig.getCustomCacheElements()) {
+      if (classT.isInstance(element)) {
+        newList.add(classT.cast(element));
+      }
+    }
+    return newList;
   }
 
   default <T extends CacheElement> T findCustomCacheElement(CacheConfig cacheConfig,
@@ -146,13 +152,19 @@ public interface ClusterConfigurationService {
 
   default <T extends CacheElement> List<T> findCustomRegionElements(CacheConfig cacheConfig,
       String regionPath, Class<T> classT) {
+    List<T> newList = new ArrayList<>();
     RegionConfig regionConfig = findRegionConfiguration(cacheConfig, regionPath);
     if (regionConfig == null) {
-      return new ArrayList<>();
+      return newList;
     }
 
-    return regionConfig.getCustomRegionElements().stream().filter(classT::isInstance)
-        .map(classT::cast).collect(Collectors.toList());
+    // streaming won't work here, because it's trying to cast element into CacheElement
+    for (Object element : regionConfig.getCustomRegionElements()) {
+      if (classT.isInstance(element)) {
+        newList.add(classT.cast(element));
+      }
+    }
+    return newList;
   }
 
   default <T extends CacheElement> T findCustomRegionElement(CacheConfig cacheConfig,

@@ -298,6 +298,7 @@ org/apache/geode/internal/cache/configuration/RegionAttributesDataPolicy,false,v
 org/apache/geode/internal/cache/configuration/RegionAttributesIndexUpdateType,false,value:java/lang/String
 org/apache/geode/internal/cache/configuration/RegionAttributesMirrorType,false,value:java/lang/String
 org/apache/geode/internal/cache/configuration/RegionAttributesScope,false,value:java/lang/String
+org/apache/geode/internal/cache/configuration/RegionConfig,false,entry:java/util/List,index:java/util/List,name:java/lang/String,refid:java/lang/String,region:java/util/List,regionAttributes:java/util/List,regionElements:java/util/List
 org/apache/geode/internal/cache/control/InternalResourceManager$ResourceType,false,id:int
 org/apache/geode/internal/cache/control/MemoryThresholds$MemoryState,false
 org/apache/geode/internal/cache/control/PartitionRebalanceDetailsImpl,true,5880667005758250156,bucketCreateBytes:long,bucketCreateTime:long,bucketCreatesCompleted:int,bucketRemoveBytes:long,bucketRemoveTime:long,bucketRemovesCompleted:int,bucketTransferBytes:long,bucketTransferTime:long,bucketTransfersCompleted:int,partitionMemberDetailsAfter:java/util/Set,partitionMemberDetailsBefore:java/util/Set,primaryTransferTime:long,primaryTransfersCompleted:int,time:long
