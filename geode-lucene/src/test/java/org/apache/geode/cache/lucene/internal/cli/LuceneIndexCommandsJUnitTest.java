@@ -650,18 +650,12 @@ public class LuceneIndexCommandsJUnitTest {
 
   private static class LuceneTestIndexCommands extends LuceneIndexCommands {
 
-    private final InternalCache cache;
     private final Execution functionExecutor;
 
     protected LuceneTestIndexCommands(final InternalCache cache, final Execution functionExecutor) {
       assert cache != null : "The InternalCache cannot be null!";
-      this.cache = cache;
+      setCache(cache);
       this.functionExecutor = functionExecutor;
-    }
-
-    @Override
-    public Cache getCache() {
-      return this.cache;
     }
 
     @Override
