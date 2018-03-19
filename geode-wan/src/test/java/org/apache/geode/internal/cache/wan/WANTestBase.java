@@ -276,20 +276,38 @@ public class WANTestBase extends DistributedTestCase {
     String remoteLocator = remoteLocatorBuffer.toString();
     remoteLocator = remoteLocator.replace(" ", "");
     props.setProperty(REMOTE_LOCATORS, remoteLocator);
-    test.getSystem(props);
+    test.startLocatorDistributedSystem(props);
+  }
+
+  private void startLocator(int dsId, int locatorPort, int startLocatorPort, int remoteLocPort,
+      boolean startServerLocator) {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
+    props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
+    props.setProperty(START_LOCATOR, "localhost[" + startLocatorPort + "],server="
+        + startServerLocator + ",peer=true,hostname-for-clients=localhost");
+    if (remoteLocPort != -1) {
+      props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
+    }
+    startLocatorDistributedSystem(props);
+  }
+
+  private void startLocatorDistributedSystem(Properties props) {
+    // Start start the locator with a LOCATOR_DM_TYPE and not a NORMAL_DM_TYPE
+    System.setProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE, "true");
+    try {
+      getSystem(props);
+    } finally {
+      System.clearProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE);
+    }
   }
 
   public static Integer createFirstLocatorWithDSId(int dsId) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + port + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    test.getSystem(props);
+    test.startLocator(dsId, port, port, -1, true);
     return port;
   }
 
@@ -297,13 +315,7 @@ public class WANTestBase extends DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + port + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
-    test.getSystem(props);
+    test.startLocator(dsId, port, port, -1, false);
     return port;
   }
 
@@ -311,13 +323,7 @@ public class WANTestBase extends DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    test.getSystem(props);
+    test.startLocator(dsId, locatorPort, port, -1, true);
     return port;
   }
 
@@ -325,13 +331,7 @@ public class WANTestBase extends DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
-    test.getSystem(props);
+    test.startLocator(dsId, locatorPort, port, -1, false);
     return port;
   }
 
@@ -339,28 +339,13 @@ public class WANTestBase extends DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + port + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    test.startLocator(dsId, port, port, remoteLocPort, true);
     return port;
   }
 
   public static void bringBackLocatorOnOldPort(int dsId, int remoteLocPort, int oldPort) {
     WANTestBase test = new WANTestBase();
-    Properties props = test.getDistributedSystemProperties();
-    props.put(LOG_LEVEL, "fine");
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + oldPort + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + oldPort + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    test.startLocator(dsId, oldPort, oldPort, remoteLocPort, true);
   }
 
 
@@ -368,14 +353,7 @@ public class WANTestBase extends DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + port + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
-    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    test.startLocator(dsId, port, port, remoteLocPort, false);
     return port;
   }
 
@@ -383,14 +361,7 @@ public class WANTestBase extends DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + localPort + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    test.startLocator(dsId, localPort, port, remoteLocPort, true);
     return port;
   }
 
@@ -398,7 +369,6 @@ public class WANTestBase extends DistributedTestCase {
       String hostnameForClients) throws IOException {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
@@ -413,14 +383,7 @@ public class WANTestBase extends DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + localPort + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
-    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    test.startLocator(dsId, localPort, port, remoteLocPort, false);
     return port;
   }
 

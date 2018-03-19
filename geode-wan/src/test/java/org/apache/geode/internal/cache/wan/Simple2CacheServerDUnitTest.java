@@ -24,10 +24,6 @@ import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -35,19 +31,12 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.ha.HAContainerRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({DistributedTest.class, WanTest.class})
@@ -67,18 +56,18 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
 
   public void doMultipleCacheServer(boolean durable) throws Exception {
     Integer lnPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    vm1.invoke(() -> WANTestBase.createCache(lnPort));
-    vm1.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
+    vm2.invoke(() -> WANTestBase.createCache(lnPort));
+    vm2.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
         null, 1, 100, isOffHeap()));
-    int serverPort = vm1.invoke(() -> WANTestBase.createCacheServer());
-    int serverPort2 = vm1.invoke(() -> WANTestBase.createCacheServer());
+    int serverPort = vm2.invoke(() -> WANTestBase.createCacheServer());
+    int serverPort2 = vm2.invoke(() -> WANTestBase.createCacheServer());
 
     if (durable) {
-      vm1.invoke(() -> setCacheClientProxyTestHook());
+      vm2.invoke(() -> setCacheClientProxyTestHook());
     } else {
-      vm2.invoke(() -> setClientServerObserver());
+      vm3.invoke(() -> setClientServerObserver());
     }
-    vm2.invoke(() -> CacheClientNotifierDUnitTest.createClientWithLocator(lnPort, "localhost",
+    vm3.invoke(() -> CacheClientNotifierDUnitTest.createClientWithLocator(lnPort, "localhost",
         getTestMethodName() + "_PR", "123", durable));
 
     vm0.invoke(() -> WANTestBase.createCache(lnPort));
@@ -87,26 +76,26 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
     int serverPort3 = vm0.invoke(() -> WANTestBase.createCacheServer());
 
     if (durable) {
-      vm1.invoke(() -> checkResultAndUnsetCacheClientProxyTestHook());
+      vm2.invoke(() -> checkResultAndUnsetCacheClientProxyTestHook());
     } else {
-      vm2.invoke(() -> checkResultAndUnsetClientServerObserver());
+      vm3.invoke(() -> checkResultAndUnsetClientServerObserver());
     }
     Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
-      return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm1);
+      return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm2);
     });
 
     // close the current primary cache server, then re-test
-    int serverPortAtVM1 = vm1.invoke(() -> findCacheServerForPrimaryProxy());
+    int serverPortAtVM1 = vm2.invoke(() -> findCacheServerForPrimaryProxy());
     if (serverPortAtVM1 != 0) {
-      vm1.invoke(() -> CacheClientNotifierDUnitTest.closeACacheServer(serverPortAtVM1));
-      LogService.getLogger().info("Closed cache server on vm1:" + serverPortAtVM1);
+      vm2.invoke(() -> CacheClientNotifierDUnitTest.closeACacheServer(serverPortAtVM1));
+      LogService.getLogger().info("Closed cache server on vm2:" + serverPortAtVM1);
       Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
-        return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm1);
+        return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm2);
       });
     } else {
       vm0.invoke(() -> CacheClientNotifierDUnitTest.closeACacheServer(serverPort3));
       LogService.getLogger().info("Closed cache server on vm0:" + serverPort3);
-      assertTrue(checkProxyIsPrimary(vm1));
+      assertTrue(checkProxyIsPrimary(vm2));
     }
     disconnectAllFromDS();
   }
