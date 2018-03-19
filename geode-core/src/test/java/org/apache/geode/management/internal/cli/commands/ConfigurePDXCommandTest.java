@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -60,7 +60,7 @@ public class ConfigurePDXCommandTest {
   private XmlEntity xmlEntity;
   private CacheCreation cacheCreation;
   private ConfigurePDXCommand command;
-  private ClusterConfigurationService clusterConfigurationService;
+  private InternalClusterConfigurationService clusterConfigurationService;
 
   @Before
   public void setUp() throws Exception {
@@ -68,7 +68,7 @@ public class ConfigurePDXCommandTest {
     xmlEntity = mock(XmlEntity.class);
     command = spy(ConfigurePDXCommand.class);
     cacheCreation = spy(CacheCreation.class);
-    clusterConfigurationService = mock(ClusterConfigurationService.class);
+    clusterConfigurationService = mock(InternalClusterConfigurationService.class);
 
     doReturn(cache).when(command).getCache();
     doReturn(xmlEntity).when(command).createXmlEntity(any());
