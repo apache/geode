@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 
-public class PDXRenameCommand extends GfshCommand {
+public class PDXRenameCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   public Result pdxRename(@CliOption(key = CliStrings.PDX_RENAME_OLD, mandatory = true,

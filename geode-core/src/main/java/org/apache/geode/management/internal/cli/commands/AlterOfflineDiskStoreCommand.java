@@ -29,7 +29,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
-public class AlterOfflineDiskStoreCommand extends GfshCommand {
+public class AlterOfflineDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.ALTER_DISK_STORE, help = CliStrings.ALTER_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   public Result alterOfflineDiskStore(

@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
  * The GfshCommandJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the GfshCommand class for implementing GemFire shell (Gfsh) commands.
  *
- * @see org.apache.geode.management.internal.cli.commands.GfshCommand
+ * @see org.apache.geode.management.cli.GfshCommand
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery
  * @see org.jmock.lib.legacy.ClassImposteriser

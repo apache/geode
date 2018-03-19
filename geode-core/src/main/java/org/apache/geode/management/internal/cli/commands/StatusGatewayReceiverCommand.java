@@ -36,7 +36,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StatusGatewayReceiverCommand extends GfshCommand {
+public class StatusGatewayReceiverCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.STATUS_GATEWAYRECEIVER,
       help = CliStrings.STATUS_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)

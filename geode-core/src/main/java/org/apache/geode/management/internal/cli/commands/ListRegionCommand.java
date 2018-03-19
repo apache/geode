@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListRegionCommand extends GfshCommand {
+public class ListRegionCommand extends InternalGfshCommand {
   private static final GetRegionsFunction getRegionsFunction = new GetRegionsFunction();
 
   @CliCommand(value = {CliStrings.LIST_REGION}, help = CliStrings.LIST_REGION__HELP)

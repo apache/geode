@@ -28,7 +28,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class EchoCommand extends GfshCommand {
+public class EchoCommand extends InternalGfshCommand {
   @CliCommand(value = {CliStrings.ECHO}, help = CliStrings.ECHO__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result echo(@CliOption(key = {CliStrings.ECHO__STR, ""}, specifiedDefaultValue = "",

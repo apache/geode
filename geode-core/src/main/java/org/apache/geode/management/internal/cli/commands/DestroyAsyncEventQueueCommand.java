@@ -24,6 +24,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -35,7 +36,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyAsyncEventQueueCommand extends GfshCommand {
+public class DestroyAsyncEventQueueCommand extends InternalGfshCommand {
   public static final String DESTROY_ASYNC_EVENT_QUEUE = "destroy async-event-queue";
   public static final String DESTROY_ASYNC_EVENT_QUEUE__HELP = "destroy an Async Event Queue";
   public static final String DESTROY_ASYNC_EVENT_QUEUE__ID = "id";
@@ -72,7 +73,8 @@ public class DestroyAsyncEventQueueCommand extends GfshCommand {
     XmlEntity xmlEntity = findXmlEntity(functionResults);
     if (xmlEntity != null) {
       persistClusterConfiguration(commandResult,
-          () -> getConfigurationService().deleteXmlEntity(xmlEntity, onGroups));
+          () -> ((InternalClusterConfigurationService) getConfigurationService())
+              .deleteXmlEntity(xmlEntity, onGroups));
     }
     return commandResult;
   }

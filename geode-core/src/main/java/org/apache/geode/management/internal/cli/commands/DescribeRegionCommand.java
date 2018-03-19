@@ -44,7 +44,7 @@ import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeRegionCommand extends GfshCommand {
+public class DescribeRegionCommand extends InternalGfshCommand {
   public static final Logger logger = LogService.getLogger();
 
   private static final GetRegionDescriptionFunction getRegionDescription =

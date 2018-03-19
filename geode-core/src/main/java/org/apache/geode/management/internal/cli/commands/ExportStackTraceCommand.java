@@ -46,7 +46,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ExportStackTraceCommand extends GfshCommand {
+public class ExportStackTraceCommand extends InternalGfshCommand {
   public static final String STACK_TRACE_FOR_MEMBER = "*** Stack-trace for member ";
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
 

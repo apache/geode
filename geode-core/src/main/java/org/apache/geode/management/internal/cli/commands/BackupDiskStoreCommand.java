@@ -36,7 +36,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class BackupDiskStoreCommand extends GfshCommand {
+public class BackupDiskStoreCommand extends InternalGfshCommand {
   /**
    * Internally, we also verify the resource operation permissions CLUSTER:WRITE:DISK if the region
    * is persistent

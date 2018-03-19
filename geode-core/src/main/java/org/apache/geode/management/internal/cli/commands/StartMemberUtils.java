@@ -139,7 +139,7 @@ public class StartMemberUtils {
     }
   }
 
-  static void addCurrentLocators(GfshCommand gfshCommand, final List<String> commandLine,
+  static void addCurrentLocators(InternalGfshCommand gfshCommand, final List<String> commandLine,
       final Properties gemfireProperties) throws MalformedObjectNameException {
     if (StringUtils.isBlank(gemfireProperties.getProperty(LOCATORS))) {
       String currentLocators = getCurrentLocators(gfshCommand);
@@ -150,7 +150,7 @@ public class StartMemberUtils {
     }
   }
 
-  private static String getCurrentLocators(GfshCommand gfshCommand)
+  private static String getCurrentLocators(InternalGfshCommand gfshCommand)
       throws MalformedObjectNameException {
     String delimitedLocators = "";
     try {

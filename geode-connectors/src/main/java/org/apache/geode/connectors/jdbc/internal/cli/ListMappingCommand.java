@@ -27,7 +27,7 @@ import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class ListMappingCommand extends GfshCommand {
+public class ListMappingCommand extends InternalGfshCommand {
   static final String LIST_MAPPING = "list jdbc-mappings";
   static final String LIST_MAPPING__HELP = EXPERIMENTAL + "Display jdbc mappings for all members.";
 
