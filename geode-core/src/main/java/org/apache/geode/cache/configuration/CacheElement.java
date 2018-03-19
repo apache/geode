@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.io.Serializable;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
 
+@Experimental
 public interface CacheElement extends Identifiable<String>, Serializable {
 }

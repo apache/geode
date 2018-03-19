@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,16 +26,22 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.geode.annotations.Experimental;
+
 
 /**
+ *
+ * A "cache-writer" element describes a region's CacheWriter.
+ *
+ *
  * <p>
- * Java class for class-with-parameters-type complex type.
+ * Java class for cache-writer-type complex type.
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="class-with-parameters-type">
+ * &lt;complexType name="cache-writer-type">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
@@ -50,9 +56,10 @@ import javax.xml.bind.annotation.XmlType;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "class-with-parameters-type", namespace = "http://geode.apache.org/schema/cache",
+@XmlType(name = "cache-writer-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"className", "parameter"})
-public class ClassWithParametersType {
+@Experimental
+public class CacheWriterType {
 
   @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
       required = true)

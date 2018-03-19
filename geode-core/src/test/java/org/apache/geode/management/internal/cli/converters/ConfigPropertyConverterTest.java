@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 

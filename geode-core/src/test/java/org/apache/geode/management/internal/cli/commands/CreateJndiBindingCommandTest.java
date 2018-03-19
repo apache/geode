@@ -39,11 +39,11 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.xml.sax.SAXException;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.configuration.CacheConfig;
-import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;

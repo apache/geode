@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +25,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -56,6 +58,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cache-loader-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"className", "parameter"})
+@Experimental
 public class CacheLoaderType {
 
   @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",

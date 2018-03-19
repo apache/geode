@@ -28,10 +28,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;

@@ -23,7 +23,7 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.internal.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.JndiBindingsType;
 
 /***
  * Added converter to enable auto-completion for index-type

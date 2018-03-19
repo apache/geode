@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.internal.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 

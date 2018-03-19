@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;

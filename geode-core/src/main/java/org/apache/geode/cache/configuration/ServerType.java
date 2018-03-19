@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +27,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -96,6 +98,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "server-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"group", "clientSubscription", "customLoadProbe"})
 @XmlSeeAlso({CacheConfig.CacheServer.class})
+@Experimental
 public class ServerType {
 
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")

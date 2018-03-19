@@ -16,13 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -69,6 +71,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "dynamic-region-factory-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"diskDir"})
+@Experimental
 public class DynamicRegionFactoryType {
 
   @XmlElement(name = "disk-dir", namespace = "http://geode.apache.org/schema/cache")

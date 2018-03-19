@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +25,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -79,6 +81,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "cache-transaction-manager-type",
     namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"transactionListener", "transactionWriter"})
+@Experimental
 public class CacheTransactionManagerType {
 
   @XmlElement(name = "transaction-listener", namespace = "http://geode.apache.org/schema/cache")

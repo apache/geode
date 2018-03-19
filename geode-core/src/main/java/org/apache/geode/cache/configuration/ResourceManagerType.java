@@ -16,12 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -53,6 +55,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "resource-manager-type", namespace = "http://geode.apache.org/schema/cache")
+@Experimental
 public class ResourceManagerType {
 
   @XmlAttribute(name = "critical-heap-percentage")

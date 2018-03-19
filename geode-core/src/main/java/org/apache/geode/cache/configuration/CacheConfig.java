@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -33,6 +33,8 @@ import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.w3c.dom.Element;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -263,6 +265,7 @@ import org.w3c.dom.Element;
         "diskStore", "pdx", "regionAttributes", "jndiBindings", "region", "functionService",
         "resourceManager", "serializationRegistration", "backup", "initializer", "cacheElements"})
 @XmlRootElement(name = "cache", namespace = "http://geode.apache.org/schema/cache")
+@Experimental
 public class CacheConfig {
 
   @XmlElement(name = "cache-transaction-manager",

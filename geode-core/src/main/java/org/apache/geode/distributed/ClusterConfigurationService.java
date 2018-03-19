@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.cache.configuration.CacheConfig;
-import org.apache.geode.internal.cache.configuration.CacheElement;
-import org.apache.geode.internal.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 

@@ -16,41 +16,46 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.geode.annotations.Experimental;
+
 
 /**
  * <p>
- * Java class for enum-action-destroy-overflow.
+ * Java class for region-attributesMirror-type.
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
  * <p>
  *
  * <pre>
- * &lt;simpleType name="enum-action-destroy-overflow">
+ * &lt;simpleType name="region-attributesMirror-type">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="local-destroy"/>
- *     &lt;enumeration value="overflow-to-disk"/>
+ *     &lt;enumeration value="keys"/>
+ *     &lt;enumeration value="keys-values"/>
+ *     &lt;enumeration value="none"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  *
  */
-@XmlType(name = "enum-action-destroy-overflow", namespace = "http://geode.apache.org/schema/cache")
+@XmlType(name = "region-attributesMirror-type", namespace = "http://geode.apache.org/schema/cache")
 @XmlEnum
-public enum EnumActionDestroyOverflow {
+@Experimental
+public enum RegionAttributesMirrorType {
 
-  @XmlEnumValue("local-destroy")
-  LOCAL_DESTROY("local-destroy"), @XmlEnumValue("overflow-to-disk")
-  OVERFLOW_TO_DISK("overflow-to-disk");
+  @XmlEnumValue("keys")
+  KEYS("keys"), @XmlEnumValue("keys-values")
+  KEYS_VALUES("keys-values"), @XmlEnumValue("none")
+  NONE("none");
   private final String value;
 
-  EnumActionDestroyOverflow(String v) {
+  RegionAttributesMirrorType(String v) {
     value = v;
   }
 
@@ -58,8 +63,8 @@ public enum EnumActionDestroyOverflow {
     return value;
   }
 
-  public static EnumActionDestroyOverflow fromValue(String v) {
-    for (EnumActionDestroyOverflow c : EnumActionDestroyOverflow.values()) {
+  public static RegionAttributesMirrorType fromValue(String v) {
+    for (RegionAttributesMirrorType c : RegionAttributesMirrorType.values()) {
       if (c.value.equals(v)) {
         return c;
       }
