@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,20 +26,24 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.geode.annotations.Experimental;
+
 
 /**
  *
- * A "declarable" element specifies a Declarable object to be placed in a Region entry.
+ * A "initializer" element specifies a Declarable object whose init method
+ * will be called after all other cache.xml initialization is
+ * complete.
  *
  *
  * <p>
- * Java class for declarable-type complex type.
+ * Java class for initializer-type complex type.
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="declarable-type">
+ * &lt;complexType name="initializer-type">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
@@ -54,9 +58,10 @@ import javax.xml.bind.annotation.XmlType;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "declarable-type", namespace = "http://geode.apache.org/schema/cache",
+@XmlType(name = "initializer-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"className", "parameter"})
-public class DeclarableType {
+@Experimental
+public class InitializerType {
 
   @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
       required = true)

@@ -16,35 +16,37 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
  *
- * An "expiration-attributes" element describes expiration.
+ * The "function service" element configures the behavior of the function service.
+ * The function service allows users to execute functions on data stored in Geode.
  *
  *
  * <p>
- * Java class for expiration-attributes-type complex type.
+ * Java class for function-service-type complex type.
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="expiration-attributes-type">
+ * &lt;complexType name="function-service-type">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="custom-expiry" minOccurs="0">
+ *         &lt;element name="function" maxOccurs="unbounded" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -57,17 +59,6 @@ import javax.xml.bind.annotation.XmlType;
  *           &lt;/complexType>
  *         &lt;/element>
  *       &lt;/sequence>
- *       &lt;attribute name="action">
- *         &lt;simpleType>
- *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *             &lt;enumeration value="destroy"/>
- *             &lt;enumeration value="invalidate"/>
- *             &lt;enumeration value="local-destroy"/>
- *             &lt;enumeration value="local-invalidate"/>
- *           &lt;/restriction>
- *         &lt;/simpleType>
- *       &lt;/attribute>
- *       &lt;attribute name="timeout" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -76,87 +67,42 @@ import javax.xml.bind.annotation.XmlType;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "expiration-attributes-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"customExpiry"})
-public class ExpirationAttributesType {
+@XmlType(name = "function-service-type", namespace = "http://geode.apache.org/schema/cache",
+    propOrder = {"function"})
+@Experimental
+public class FunctionServiceType {
 
-  @XmlElement(name = "custom-expiry", namespace = "http://geode.apache.org/schema/cache")
-  protected ExpirationAttributesType.CustomExpiry customExpiry;
-  @XmlAttribute(name = "action")
-  protected String action;
-  @XmlAttribute(name = "timeout", required = true)
-  protected String timeout;
+  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
+  protected List<FunctionServiceType.Function> function;
 
   /**
-   * Gets the value of the customExpiry property.
+   * Gets the value of the function property.
    *
-   * @return
-   *         possible object is
-   *         {@link ExpirationAttributesType.CustomExpiry }
+   * <p>
+   * This accessor method returns a reference to the live list,
+   * not a snapshot. Therefore any modification you make to the
+   * returned list will be present inside the JAXB object.
+   * This is why there is not a <CODE>set</CODE> method for the function property.
    *
-   */
-  public ExpirationAttributesType.CustomExpiry getCustomExpiry() {
-    return customExpiry;
-  }
-
-  /**
-   * Sets the value of the customExpiry property.
+   * <p>
+   * For example, to add a new item, do as follows:
    *
-   * @param value
-   *        allowed object is
-   *        {@link ExpirationAttributesType.CustomExpiry }
+   * <pre>
+   * getFunction().add(newItem);
+   * </pre>
    *
-   */
-  public void setCustomExpiry(ExpirationAttributesType.CustomExpiry value) {
-    this.customExpiry = value;
-  }
-
-  /**
-   * Gets the value of the action property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * <p>
+   * Objects of the following type(s) are allowed in the list
+   * {@link FunctionServiceType.Function }
+   *
    *
    */
-  public String getAction() {
-    return action;
-  }
-
-  /**
-   * Sets the value of the action property.
-   *
-   * @param value
-   *        allowed object is
-   *        {@link String }
-   *
-   */
-  public void setAction(String value) {
-    this.action = value;
-  }
-
-  /**
-   * Gets the value of the timeout property.
-   *
-   * @return
-   *         possible object is
-   *         {@link String }
-   *
-   */
-  public String getTimeout() {
-    return timeout;
-  }
-
-  /**
-   * Sets the value of the timeout property.
-   *
-   * @param value
-   *        allowed object is
-   *        {@link String }
-   *
-   */
-  public void setTimeout(String value) {
-    this.timeout = value;
+  public List<FunctionServiceType.Function> getFunction() {
+    if (function == null) {
+      function = new ArrayList<FunctionServiceType.Function>();
+    }
+    return this.function;
   }
 
 
@@ -184,7 +130,7 @@ public class ExpirationAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"className", "parameter"})
-  public static class CustomExpiry {
+  public static class Function {
 
     @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
         required = true)

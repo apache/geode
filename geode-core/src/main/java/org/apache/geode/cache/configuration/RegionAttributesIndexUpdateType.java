@@ -16,45 +16,45 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.geode.annotations.Experimental;
+
 
 /**
  * <p>
- * Java class for region-attributesScope.
+ * Java class for region-attributesIndex-update-type.
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
  * <p>
  *
  * <pre>
- * &lt;simpleType name="region-attributesScope">
+ * &lt;simpleType name="region-attributesIndex-update-type">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="distributed-ack"/>
- *     &lt;enumeration value="distributed-no-ack"/>
- *     &lt;enumeration value="global"/>
- *     &lt;enumeration value="local"/>
+ *     &lt;enumeration value="asynchronous"/>
+ *     &lt;enumeration value="synchronous"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  *
  */
-@XmlType(name = "region-attributesScope", namespace = "http://geode.apache.org/schema/cache")
+@XmlType(name = "region-attributesIndex-update-type",
+    namespace = "http://geode.apache.org/schema/cache")
 @XmlEnum
-public enum RegionAttributesScope {
+@Experimental
+public enum RegionAttributesIndexUpdateType {
 
-  @XmlEnumValue("distributed-ack")
-  DISTRIBUTED_ACK("distributed-ack"), @XmlEnumValue("distributed-no-ack")
-  DISTRIBUTED_NO_ACK("distributed-no-ack"), @XmlEnumValue("global")
-  GLOBAL("global"), @XmlEnumValue("local")
-  LOCAL("local");
+  @XmlEnumValue("asynchronous")
+  ASYNCHRONOUS("asynchronous"), @XmlEnumValue("synchronous")
+  SYNCHRONOUS("synchronous");
   private final String value;
 
-  RegionAttributesScope(String v) {
+  RegionAttributesIndexUpdateType(String v) {
     value = v;
   }
 
@@ -62,8 +62,8 @@ public enum RegionAttributesScope {
     return value;
   }
 
-  public static RegionAttributesScope fromValue(String v) {
-    for (RegionAttributesScope c : RegionAttributesScope.values()) {
+  public static RegionAttributesIndexUpdateType fromValue(String v) {
+    for (RegionAttributesIndexUpdateType c : RegionAttributesIndexUpdateType.values()) {
       if (c.value.equals(v)) {
         return c;
       }

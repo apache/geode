@@ -22,9 +22,9 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
-import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;

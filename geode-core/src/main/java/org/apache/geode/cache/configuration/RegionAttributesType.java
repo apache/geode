@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +26,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -330,6 +332,7 @@ import javax.xml.bind.annotation.XmlType;
         "entryTimeToLive", "entryIdleTime", "diskWriteAttributes", "diskDirs",
         "partitionAttributes", "membershipAttributes", "subscriptionAttributes", "cacheLoader",
         "cacheWriter", "cacheListener", "compressor", "evictionAttributes"})
+@Experimental
 public class RegionAttributesType {
 
   @XmlElement(name = "key-constraint", namespace = "http://geode.apache.org/schema/cache")

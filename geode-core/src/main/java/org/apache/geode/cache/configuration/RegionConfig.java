@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +29,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.w3c.dom.Element;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -147,6 +149,7 @@ import org.w3c.dom.Element;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"regionAttributes", "index", "entry", "regionElements", "region"})
+@Experimental
 public class RegionConfig implements CacheElement {
 
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")

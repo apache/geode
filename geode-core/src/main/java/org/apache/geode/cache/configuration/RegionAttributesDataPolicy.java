@@ -16,11 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -48,6 +50,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlType(name = "region-attributesData-policy", namespace = "http://geode.apache.org/schema/cache")
 @XmlEnum
+@Experimental
 public enum RegionAttributesDataPolicy {
 
   @XmlEnumValue("empty")

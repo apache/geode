@@ -16,12 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -49,6 +51,7 @@ import javax.xml.bind.annotation.XmlValue;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "string-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"value"})
+@Experimental
 public class StringType {
 
   @XmlValue

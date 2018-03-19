@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.internal.cache.configuration;
+package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +26,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.geode.annotations.Experimental;
 
 
 /**
@@ -103,6 +105,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "jndi-bindings-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"jndiBinding"})
+@Experimental
 public class JndiBindingsType {
 
   @XmlElement(name = "jndi-binding", namespace = "http://geode.apache.org/schema/cache")
@@ -198,6 +201,7 @@ public class JndiBindingsType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"configProperty"})
+  @Experimental
   public static class JndiBinding implements CacheElement {
 
     @XmlElement(name = "config-property", namespace = "http://geode.apache.org/schema/cache")

@@ -35,10 +35,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.configuration.CacheConfig;
-import org.apache.geode.internal.cache.configuration.CacheElement;
-import org.apache.geode.internal.cache.configuration.JndiBindingsType;
-import org.apache.geode.internal.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.junit.categories.UnitTest;
