@@ -157,7 +157,7 @@ public class CreateRegionCommandTest {
     doReturn(resultCollector).when(command).executeFunction(any(), any(), any(Set.class));
     when(resultCollector.getResult()).thenReturn(Collections.emptyList());
     DistributedSystemMXBean dsMBean = mock(DistributedSystemMXBean.class);
-    doReturn(dsMBean).when(command).getDSMBean(any());
+    doReturn(dsMBean).when(command).getDSMBean();
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(any(),
         any());
     doReturn(true).when(command).verifyDistributedRegionMbean(any(), any());

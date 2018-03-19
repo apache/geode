@@ -68,7 +68,7 @@ public class CreateAsyncEventQueueCommandTest {
   public void before() throws Exception {
     command = spy(CreateAsyncEventQueueCommand.class);
     service = mock(InternalClusterConfigurationService.class);
-    doReturn(service).when(command).getSharedConfiguration();
+    doReturn(service).when(command).getConfigurationService();
   }
 
   @Test
@@ -188,7 +188,7 @@ public class CreateAsyncEventQueueCommandTest {
 
   @Test
   public void command_succeeded_but_no_cluster_config_service() throws Exception {
-    doReturn(null).when(command).getSharedConfiguration();
+    doReturn(null).when(command).getConfigurationService();
     doReturn(Collections.emptySet()).when(command).getMembers(any(), any());
 
     List<CliFunctionResult> functionResults = new ArrayList<>();

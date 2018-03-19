@@ -28,7 +28,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ManagementService;
@@ -68,9 +67,8 @@ public class DescribeClientCommand extends GfshCommand {
     CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
     CompositeResultData.SectionResultData sectionResult =
         compositeResultData.addSection("InfoSection");
-    InternalCache cache = getCache();
 
-    ManagementService service = ManagementService.getExistingManagementService(cache);
+    ManagementService service = getManagementService();
     ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
     if (cacheServers.length == 0) {
       return ResultBuilder.createGemFireErrorResult(

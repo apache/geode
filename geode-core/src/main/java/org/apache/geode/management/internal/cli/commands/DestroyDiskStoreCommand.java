@@ -64,7 +64,7 @@ public class DestroyDiskStoreCommand extends GfshCommand {
 
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, groups));
+          () -> getConfigurationService().deleteXmlEntity(xmlEntity, groups));
     }
 
     return result;

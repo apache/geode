@@ -55,7 +55,7 @@ public class DestroyJndiBindingCommand extends GfshCommand {
 
     Result result;
     boolean persisted = false;
-    InternalClusterConfigurationService service = getSharedConfiguration();
+    InternalClusterConfigurationService service = getConfigurationService();
     if (service != null) {
       service.updateCacheConfig("cluster", cc -> {
         List<JndiBindingsType.JndiBinding> bindings = cc.getJndiBindings();

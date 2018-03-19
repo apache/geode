@@ -27,6 +27,7 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.QueryInvalidException;
@@ -67,7 +68,7 @@ public class QueryCommand extends GfshCommand {
   }
 
   private DataCommandResult select(String query) {
-    InternalCache cache = getCache();
+    Cache cache = getCache();
     DataCommandResult dataResult;
 
     if (StringUtils.isEmpty(query)) {
@@ -94,19 +95,19 @@ public class QueryCommand extends GfshCommand {
 
       // authorize data read on these regions
       for (String region : regions) {
-        cache.getSecurityService().authorize(Resource.DATA, Operation.READ, region);
+        authorize(Resource.DATA, Operation.READ, region);
       }
 
       regionsInQuery = Collections.unmodifiableSet(regions);
       if (regionsInQuery.size() > 0) {
         Set<DistributedMember> members =
-            CliUtil.getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);
+            CliUtil.getQueryRegionsAssociatedMembers(regionsInQuery, (InternalCache) cache, false);
         if (members != null && members.size() > 0) {
           DataCommandFunction function = new DataCommandFunction();
           DataCommandRequest request = new DataCommandRequest();
           request.setCommand(CliStrings.QUERY);
           request.setQuery(query);
-          Subject subject = cache.getSecurityService().getSubject();
+          Subject subject = getSubject();
           if (subject != null) {
             request.setPrincipal(subject.getPrincipal());
           }

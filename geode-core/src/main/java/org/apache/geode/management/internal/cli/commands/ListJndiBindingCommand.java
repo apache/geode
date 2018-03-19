@@ -54,7 +54,7 @@ public class ListJndiBindingCommand extends GfshCommand {
     TabularResultData configTable = null;
     TabularResultData memberTable = null;
 
-    InternalClusterConfigurationService ccService = getSharedConfiguration();
+    InternalClusterConfigurationService ccService = getConfigurationService();
     if (ccService != null) {
       configTable = resultSection.addTable();
       configTable.setHeader("Configured JNDI bindings: ");

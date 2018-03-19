@@ -61,7 +61,7 @@ public class AlterAsyncEventQueueCommandTest {
   public void before() throws Exception {
     command = spy(AlterAsyncEventQueueCommand.class);
     service = mock(InternalClusterConfigurationService.class);
-    doReturn(service).when(command).getSharedConfiguration();
+    doReturn(service).when(command).getConfigurationService();
     configRegion = mock(Region.class);
     when(service.getConfigurationRegion()).thenReturn(configRegion);
     when(service.lockSharedConfiguration()).thenReturn(true);
@@ -111,7 +111,7 @@ public class AlterAsyncEventQueueCommandTest {
 
   @Test
   public void cluster_config_service_not_available() throws Exception {
-    doReturn(null).when(command).getSharedConfiguration();
+    doReturn(null).when(command).getConfigurationService();
     gfsh.executeAndAssertThat(command, "alter async-event-queue --id=test --batch-size=100")
         .statusIsError().containsOutput("Cluster Configuration Service is not available");
   }

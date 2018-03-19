@@ -119,7 +119,7 @@ public class CreateDiskStoreCommand extends GfshCommand {
 
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, groups));
+          () -> getConfigurationService().addXmlEntity(xmlEntity, groups));
     }
 
     return result;

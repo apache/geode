@@ -101,7 +101,7 @@ public class ExportLogsCommand extends GfshCommand {
 
     long totalEstimatedExportSize = 0;
     Result result;
-    InternalCache cache = getCache();
+    InternalCache cache = (InternalCache) getCache();
     try {
       Set<DistributedMember> targetMembers = getMembersIncludingLocators(groups, memberIds);
 

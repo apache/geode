@@ -46,7 +46,7 @@ public class StatusClusterConfigServiceCommand extends GfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_LOCATOR)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result statusSharedConfiguration() {
-    final InternalCache cache = getCache();
+    final InternalCache cache = (InternalCache) getCache();
     final Set<DistributedMember> locators = new HashSet<>(
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
     if (locators.isEmpty()) {

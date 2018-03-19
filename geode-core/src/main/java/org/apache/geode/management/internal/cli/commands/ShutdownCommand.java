@@ -68,7 +68,7 @@ public class ShutdownCommand extends GfshCommand {
 
       // convert to milliseconds
       long timeout = userSpecifiedTimeout * 1000;
-      InternalCache cache = getCache();
+      InternalCache cache = (InternalCache) getCache();
       int numDataNodes = getAllNormalMembers().size();
       Set<DistributedMember> locators = getAllMembers();
       Set<DistributedMember> dataNodes = getAllNormalMembers();

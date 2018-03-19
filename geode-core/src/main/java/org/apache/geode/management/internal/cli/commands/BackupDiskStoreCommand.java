@@ -51,11 +51,11 @@ public class BackupDiskStoreCommand extends GfshCommand {
       @CliOption(key = CliStrings.BACKUP_DISK_STORE__BASELINEDIR,
           help = CliStrings.BACKUP_DISK_STORE__BASELINEDIR__HELP) String baselineDir) {
 
-    getSecurityService().authorize(ResourcePermission.Resource.CLUSTER,
-        ResourcePermission.Operation.WRITE, ResourcePermission.Target.DISK);
+    authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
+        ResourcePermission.Target.DISK);
     Result result;
     try {
-      InternalCache cache = getCache();
+      InternalCache cache = (InternalCache) getCache();
       DistributionManager dm = cache.getDistributionManager();
       BackupStatus backupStatus;
 

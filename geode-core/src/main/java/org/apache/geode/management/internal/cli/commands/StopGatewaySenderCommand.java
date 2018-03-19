@@ -59,9 +59,8 @@ public class StopGatewaySenderCommand extends GfshCommand {
       senderId = senderId.trim();
     }
 
-    InternalCache cache = getCache();
-    SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    InternalCache cache = (InternalCache) getCache();
+    SystemManagementService service = (SystemManagementService) getManagementService();
 
     GatewaySenderMXBean bean;
 

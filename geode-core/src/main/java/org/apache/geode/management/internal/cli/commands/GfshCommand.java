@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.cache.Cache;
@@ -26,11 +27,11 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -39,6 +40,7 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * Encapsulates common functionality for implementing command classes for the Geode shell (gfsh).
@@ -55,7 +57,7 @@ public abstract class GfshCommand implements CommandMarker {
     this.cache = (InternalCache) cache;
   }
 
-  public InternalCache getCache() {
+  public Cache getCache() {
     return cache;
   }
 
@@ -65,7 +67,7 @@ public abstract class GfshCommand implements CommandMarker {
     return getGfsh() != null && getGfsh().isConnectedAndReady();
   }
 
-  public InternalClusterConfigurationService getSharedConfiguration() {
+  public InternalClusterConfigurationService getConfigurationService() {
     InternalLocator locator = InternalLocator.getLocator();
     return locator == null ? null : locator.getSharedConfiguration();
   }
@@ -74,7 +76,7 @@ public abstract class GfshCommand implements CommandMarker {
     if (result == null) {
       throw new IllegalArgumentException("Result should not be null");
     }
-    InternalClusterConfigurationService sc = getSharedConfiguration();
+    InternalClusterConfigurationService sc = getConfigurationService();
     if (sc == null) {
       result.setCommandPersisted(false);
     } else {
@@ -96,8 +98,23 @@ public abstract class GfshCommand implements CommandMarker {
     return getGfsh() != null;
   }
 
-  public SecurityService getSecurityService() {
-    return getCache().getSecurityService();
+  public void authorize(ResourcePermission.Resource resource,
+      ResourcePermission.Operation operation, ResourcePermission.Target target) {
+    cache.getSecurityService().authorize(resource, operation, target);
+  }
+
+  public void authorize(ResourcePermission.Resource resource,
+      ResourcePermission.Operation operation, String target) {
+    cache.getSecurityService().authorize(resource, operation, target);
+  }
+
+  public void authorize(ResourcePermission.Resource resource,
+      ResourcePermission.Operation operation, String target, String key) {
+    cache.getSecurityService().authorize(resource, operation, target, key);
+  }
+
+  public Subject getSubject() {
+    return cache.getSecurityService().getSubject();
   }
 
   public Gfsh getGfsh() {
@@ -121,7 +138,7 @@ public abstract class GfshCommand implements CommandMarker {
    * this will return the member found or null if no member with that name
    */
   public DistributedMember findMember(final String memberName) {
-    return CliUtil.getDistributedMemberByNameOrId(memberName, getCache());
+    return CliUtil.getDistributedMemberByNameOrId(memberName, (InternalCache) getCache());
   }
 
   /**
@@ -146,7 +163,7 @@ public abstract class GfshCommand implements CommandMarker {
    * if no members matches these names, an empty set would return, this does not include locators
    */
   public Set<DistributedMember> findMembers(String[] groups, String[] members) {
-    return CliUtil.findMembers(groups, members, getCache());
+    return CliUtil.findMembers(groups, members, (InternalCache) getCache());
   }
 
   /**
@@ -164,7 +181,7 @@ public abstract class GfshCommand implements CommandMarker {
    * if no members matches these names, an empty set would return
    */
   public Set<DistributedMember> findMembersIncludingLocators(String[] groups, String[] members) {
-    return CliUtil.findMembersIncludingLocators(groups, members, getCache());
+    return CliUtil.findMembersIncludingLocators(groups, members, (InternalCache) getCache());
   }
 
   /**
@@ -207,6 +224,6 @@ public abstract class GfshCommand implements CommandMarker {
   }
 
   public Set<DistributedMember> findMembersWithAsyncEventQueue(String queueId) {
-    return CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId);
+    return CliUtil.getMembersWithAsyncEventQueue((InternalCache) getCache(), queueId);
   }
 }

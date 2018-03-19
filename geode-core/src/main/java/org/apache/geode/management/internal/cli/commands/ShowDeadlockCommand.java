@@ -27,7 +27,6 @@ import org.apache.geode.distributed.internal.deadlock.DeadlockDetector;
 import org.apache.geode.distributed.internal.deadlock.Dependency;
 import org.apache.geode.distributed.internal.deadlock.DependencyGraph;
 import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetector;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -51,8 +50,6 @@ public class ShowDeadlockCommand extends GfshCommand {
         return ResultBuilder
             .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, ".txt"));
       }
-      InternalCache cache = getCache();
-
       Set<DistributedMember> allMembers = getAllMembers();
       GemFireDeadlockDetector gfeDeadLockDetector = new GemFireDeadlockDetector(allMembers);
       DependencyGraph dependencyGraph = gfeDeadLockDetector.find();

@@ -99,7 +99,7 @@ public class UndeployCommand extends GfshCommand {
       Result result = ResultBuilder.buildResult(tabularData);
       if (tabularData.getStatus().equals(Result.Status.OK)) {
         persistClusterConfiguration(result,
-            () -> getSharedConfiguration().removeJars(jars, groups));
+            () -> getConfigurationService().removeJars(jars, groups));
       }
       return result;
     } catch (VirtualMachineError e) {

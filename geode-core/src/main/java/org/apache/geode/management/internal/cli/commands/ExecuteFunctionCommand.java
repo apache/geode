@@ -101,7 +101,7 @@ public class ExecuteFunctionCommand extends GfshCommand {
     }
     args[4] = onRegion;
 
-    Subject currentUser = getSecurityService().getSubject();
+    Subject currentUser = getSubject();
     if (currentUser != null) {
       args[5] = currentUser.getSession().getAttribute(CREDENTIALS_SESSION_ATTRIBUTE);
     } else {
