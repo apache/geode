@@ -22,9 +22,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.internal.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,6 +38,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
@@ -46,9 +50,11 @@ public class SSLTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
-  private final String DEFAULT_STORE = "default.keystore";
-  private final String KEY_STORE = TestUtil.getResourcePath(SSLTest.class, DEFAULT_STORE);
-  private final String TRUST_STORE = TestUtil.getResourcePath(SSLTest.class, DEFAULT_STORE);
+  private final String SERVER_KEY_STORE = TestUtil.getResourcePath(SSLTest.class, "cacheserver.keystore");
+  private final String SERVER_TRUST_STORE = TestUtil.getResourcePath(SSLTest.class, "cacheserver.truststore");
+
+  private final String CLIENT_KEY_STORE = TestUtil.getResourcePath(SSLTest.class, "client.keystore");
+  private final String CLIENT_TRUST_STORE = TestUtil.getResourcePath(SSLTest.class, "client.truststore");
   private Locator locator;
   private Cache cache;
   private Driver driver;
@@ -60,19 +66,21 @@ public class SSLTest {
 
     // Create a cache
     Properties properties = new Properties();
-    properties.put(SSL_ENABLED_COMPONENTS, "server");
+    properties.put(SSL_ENABLED_COMPONENTS, "server,locator");
     properties.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(true));
     properties.put(SSL_KEYSTORE_TYPE, "jks");
-    properties.put(SSL_KEYSTORE, KEY_STORE);
+    properties.put(SSL_KEYSTORE, SERVER_KEY_STORE);
     properties.put(SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(SSL_TRUSTSTORE, TRUST_STORE);
+    properties.put(SSL_TRUSTSTORE, SERVER_TRUST_STORE);
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
+    properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
     CacheFactory cf = new CacheFactory(properties);
     cf.set(ConfigurationProperties.MCAST_PORT, "0");
     cache = cf.create();
+    cache.createRegionFactory(RegionShortcut.REPLICATE).create("region");
 
     // Start a locator
-    locator = Locator.startLocatorAndDS(0, null, new Properties());
+    locator = Locator.startLocatorAndDS(0, null, null);
     locatorPort = locator.getPort();
 
     // do not start a cache server
@@ -100,7 +108,12 @@ public class SSLTest {
     CacheServer server = cache.addCacheServer();
     server.setPort(0);
     server.start();
-    driver = new DriverFactory().addLocator("localhost", locatorPort).create();
+    driver = new DriverFactory().addLocator("localhost", locatorPort)
+        .setTrustStorePath(CLIENT_TRUST_STORE)
+        .setKeyStorePath(CLIENT_KEY_STORE)
+        .create();
+    Set<String> regionsOnServer = driver.getRegionNames();
+    assertEquals(Collections.singleton("region"), regionsOnServer);
     assertTrue(driver.isConnected());
   }
 }
