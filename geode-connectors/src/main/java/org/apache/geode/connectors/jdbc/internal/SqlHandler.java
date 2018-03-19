@@ -34,12 +34,12 @@ import org.apache.geode.pdx.PdxInstance;
 public class SqlHandler {
   private final JdbcConnectorService configService;
   private final DataSourceManager manager;
-  private final TableKeyColumnManager tableKeyColumnManager;
+  private final TableMetaDataManager tableMetaDataManager;
 
-  public SqlHandler(DataSourceManager manager, TableKeyColumnManager tableKeyColumnManager,
+  public SqlHandler(DataSourceManager manager, TableMetaDataManager tableMetaDataManager,
       JdbcConnectorService configService) {
     this.manager = manager;
-    this.tableKeyColumnManager = tableKeyColumnManager;
+    this.tableMetaDataManager = tableMetaDataManager;
     this.configService = configService;
   }
 
@@ -105,7 +105,7 @@ public class SqlHandler {
   }
 
   private String getKeyColumnName(Connection connection, String tableName) {
-    return this.tableKeyColumnManager.getKeyColumnName(connection, tableName);
+    return this.tableMetaDataManager.getTableMetaDataView(connection, tableName).getKeyColumnName();
   }
 
   private void setValuesInStatement(PreparedStatement statement, List<ColumnValue> columnList)
@@ -117,7 +117,11 @@ public class SqlHandler {
       if (value instanceof Character) {
         value = ((Character) value).toString();
       }
-      statement.setObject(index, value);
+      if (value == null) {
+        statement.setNull(index, columnValue.getDataType());
+      } else {
+        statement.setObject(index, value);
+      }
     }
   }
 
@@ -196,27 +200,32 @@ public class SqlHandler {
   <K> List<ColumnValue> getColumnToValueList(Connection connection, RegionMapping regionMapping,
       K key, PdxInstance value, Operation operation) {
     String tableName = regionMapping.getRegionToTableName();
-    String keyColumnName = getKeyColumnName(connection, tableName);
-    ColumnValue keyColumnValue = new ColumnValue(true, keyColumnName, key);
+    TableMetaDataView tableMetaData =
+        this.tableMetaDataManager.getTableMetaDataView(connection, tableName);
+    String keyColumnName = tableMetaData.getKeyColumnName();
+    ColumnValue keyColumnValue =
+        new ColumnValue(true, keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
 
     if (operation.isDestroy() || operation.isGet()) {
       return Collections.singletonList(keyColumnValue);
     }
 
-    List<ColumnValue> result = createColumnValueList(regionMapping, value, keyColumnName);
+    List<ColumnValue> result =
+        createColumnValueList(tableMetaData, regionMapping, value, keyColumnName);
     result.add(keyColumnValue);
     return result;
   }
 
-  private List<ColumnValue> createColumnValueList(RegionMapping regionMapping, PdxInstance value,
-      String keyColumnName) {
+  private List<ColumnValue> createColumnValueList(TableMetaDataView tableMetaData,
+      RegionMapping regionMapping, PdxInstance value, String keyColumnName) {
     List<ColumnValue> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
       String columnName = regionMapping.getColumnNameForField(fieldName);
       if (columnName.equalsIgnoreCase(keyColumnName)) {
         continue;
       }
-      ColumnValue columnValue = new ColumnValue(false, columnName, value.getField(fieldName));
+      ColumnValue columnValue = new ColumnValue(false, columnName, value.getField(fieldName),
+          tableMetaData.getColumnDataType(columnName));
       result.add(columnValue);
     }
     return result;

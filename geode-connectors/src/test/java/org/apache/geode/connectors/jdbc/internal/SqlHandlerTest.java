@@ -71,7 +71,8 @@ public class SqlHandlerTest {
   private JdbcDataSource dataSource;
   private ConnectionConfiguration connectionConfig;
   private JdbcConnectorService connectorService;
-  private TableKeyColumnManager tableKeyColumnManager;
+  private TableMetaDataManager tableMetaDataManager;
+  private TableMetaDataView tableMetaDataView;
   private Connection connection;
   private Region region;
   private InternalCache cache;
@@ -93,10 +94,13 @@ public class SqlHandlerTest {
     cache = mock(InternalCache.class);
     connection = mock(Connection.class);
     when(region.getRegionService()).thenReturn(cache);
-    tableKeyColumnManager = mock(TableKeyColumnManager.class);
-    when(tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME)).thenReturn(KEY_COLUMN);
+    tableMetaDataManager = mock(TableMetaDataManager.class);
+    tableMetaDataView = mock(TableMetaDataView.class);
+    when(tableMetaDataView.getKeyColumnName()).thenReturn(KEY_COLUMN);
+    when(tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME))
+        .thenReturn(tableMetaDataView);
     connectorService = mock(JdbcConnectorService.class);
-    handler = new SqlHandler(manager, tableKeyColumnManager, connectorService);
+    handler = new SqlHandler(manager, tableMetaDataManager, connectorService);
     key = "key";
     value = mock(PdxInstanceImpl.class);
     when(value.getPdxType()).thenReturn(mock(PdxType.class));
@@ -207,6 +211,44 @@ public class SqlHandlerTest {
     verify(statement).setObject(2, createKey);
     verify(statement).close();
   }
+
+  @Test
+  public void writeWithNullField() throws Exception {
+    String fieldName = "fieldName";
+    Object fieldValue = null;
+    int dataType = 0;
+    when(regionMapping.getColumnNameForField(fieldName)).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setNull(1, dataType);
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
+  @Test
+  public void writeWithNullFieldWithDataTypeFromMetaData() throws Exception {
+    String fieldName = "fieldName";
+    Object fieldValue = null;
+    int dataType = 79;
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
+    when(regionMapping.getColumnNameForField(fieldName)).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setNull(1, dataType);
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
 
   @Test
   public void insertActionSucceeds() throws Exception {

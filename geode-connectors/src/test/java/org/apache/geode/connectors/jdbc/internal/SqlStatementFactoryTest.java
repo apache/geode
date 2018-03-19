@@ -36,9 +36,9 @@ public class SqlStatementFactoryTest {
 
   @Before
   public void setup() {
-    columnValues.add(new ColumnValue(false, "column0", null));
-    columnValues.add(new ColumnValue(true, KEY_COLUMN_NAME, null));
-    columnValues.add(new ColumnValue(false, "column2", null));
+    columnValues.add(new ColumnValue(false, "column0", null, 0));
+    columnValues.add(new ColumnValue(true, KEY_COLUMN_NAME, null, 0));
+    columnValues.add(new ColumnValue(false, "column2", null, 0));
   }
 
   @Test
@@ -46,7 +46,7 @@ public class SqlStatementFactoryTest {
     String expectedStatement =
         String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, KEY_COLUMN_NAME);
     List<ColumnValue> keyColumn = new ArrayList<>();
-    keyColumn.add(new ColumnValue(true, KEY_COLUMN_NAME, null));
+    keyColumn.add(new ColumnValue(true, KEY_COLUMN_NAME, null, 0));
 
     String statement = factory.createSelectQueryString(TABLE_NAME, keyColumn);
 
@@ -58,7 +58,7 @@ public class SqlStatementFactoryTest {
     String expectedStatement =
         String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, KEY_COLUMN_NAME);
     List<ColumnValue> keyColumn = new ArrayList<>();
-    keyColumn.add(new ColumnValue(true, KEY_COLUMN_NAME, null));
+    keyColumn.add(new ColumnValue(true, KEY_COLUMN_NAME, null, 0));
 
     String statement = factory.createDestroySqlString(TABLE_NAME, keyColumn);
 
