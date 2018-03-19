@@ -95,7 +95,6 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   public ClusterStartupRule(final int vmCount) {
     this.vmCount = vmCount;
-    DUnitLauncher.launchIfNeeded();
   }
 
   public static ClientCache getClientCache() {
@@ -112,6 +111,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   @Override
   protected void before() throws Throwable {
+    DUnitLauncher.launchIfNeeded();
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
     }
