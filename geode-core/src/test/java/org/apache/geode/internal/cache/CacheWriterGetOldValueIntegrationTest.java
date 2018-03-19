@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,11 +36,14 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+/**
+ * FlakyTest: GEODE-4832: Caused by prior IntegrationTest(s) leaving behind a disk store file in
+ * current working directory.
+ */
+@Category({IntegrationTest.class, FlakyTest.class})
 public class CacheWriterGetOldValueIntegrationTest {
 
   private GemFireCacheImpl cache = null;
