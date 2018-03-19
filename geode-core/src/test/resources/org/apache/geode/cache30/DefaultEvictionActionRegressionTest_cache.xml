@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+    "http://www.gemstone.com/dtd/cache7_0.dtd">
+
+<!-- This file has no eviction action specified with lru-memory-size -->
+<cache>
+  <vm-root-region name="example-region">
+    <region-attributes scope="distributed-no-ack" data-policy="replicate" id="sample">
+		<eviction-attributes><lru-memory-size maximum="1"></lru-memory-size></eviction-attributes></region-attributes>
+  </vm-root-region>
+</cache>

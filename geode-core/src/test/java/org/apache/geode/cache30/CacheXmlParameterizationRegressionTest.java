@@ -14,7 +14,9 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -22,7 +24,6 @@ import java.io.File;
 import java.util.Properties;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,45 +36,49 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- *
+ * TRAC #40255: Parameterization of XML configuration file
  */
 @Category(IntegrationTest.class)
-@Ignore("Test is broken and was named Bug40255JUnitDisabledTest")
-public class Bug40255JUnitTest {
+@Ignore("Test is broken and was named *JUnitDisabledTest")
+public class CacheXmlParameterizationRegressionTest {
 
-  private static final String BUG_40255_XML =
-      Bug40255JUnitTest.class.getResource("bug40255xmlparameterization.xml").getFile();
-  private static final String BUG_40255_PROPS =
-      Bug40255JUnitTest.class.getResource("bug40255_gemfire.properties").getFile();
+  private static final String CACHE_XML = CacheXmlParameterizationRegressionTest.class
+      .getResource("CacheXmlParameterizationRegressionTest_cache.xml").getFile();
+  private static final String GEMFIRE_PROPERTIES = CacheXmlParameterizationRegressionTest.class
+      .getResource("CacheXmlParameterizationRegressionTest_gemfire.properties").getFile();
 
   private static final String ATTR_PROPERTY_STRING = "region.disk.store";
-
   private static final String ATTR_PROPERTY_VALUE = "teststore";
-
   private static final String NESTED_ATTR_PROPERTY_STRING = "custom-nested.test";
-
   private static final String NESTED_ATTR_PROPERTY_VALUE = "disk";
-
   private static final String ELEMENT_PROPERTY_STRING = "custom-string.element";
-
   private static final String ELEMENT_PROPERTY_VALUE = "example-string";
-
   private static final String CONCAT_ELEMENT_PROPERTY_STRING = "concat.test";
-
   private static final String CONCAT_ELEMENT_PROPERTY_VALUE = "-name";
-
   private static final String ELEMENT_KEY_VALUE = "example-value";
 
-  DistributedSystem ds;
-  Cache cache;
+  private DistributedSystem ds;
+  private Cache cache;
+
+  @After
+  public void tearDown() throws Exception {
+    if (cache != null) {
+      cache.close();
+      cache = null;
+    }
+    if (ds != null) {
+      ds.disconnect();
+      ds = null;
+    }
+  }
 
   @Test
   public void testResolveReplacePropertyStringForLonerCache() {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    System.setProperty("gemfirePropertyFile", BUG_40255_PROPS);
-    props.setProperty(CACHE_XML_FILE, BUG_40255_XML);
+    System.setProperty("gemfirePropertyFile", GEMFIRE_PROPERTIES);
+    props.setProperty(CACHE_XML_FILE, CACHE_XML);
     System.setProperty(NESTED_ATTR_PROPERTY_STRING, NESTED_ATTR_PROPERTY_VALUE);
     System.setProperty(ATTR_PROPERTY_STRING, ATTR_PROPERTY_VALUE);
     System.setProperty(ELEMENT_PROPERTY_STRING, ELEMENT_PROPERTY_VALUE);
@@ -83,10 +88,10 @@ public class Bug40255JUnitTest {
     File dir = new File("persistData1");
     dir.mkdir();
 
-    this.ds = DistributedSystem.connect(props);
-    this.cache = CacheFactory.create(this.ds);
+    ds = DistributedSystem.connect(props);
+    cache = CacheFactory.create(ds);
 
-    Region exampleRegion = this.cache.getRegion("example-region");
+    Region exampleRegion = cache.getRegion("example-region");
     RegionAttributes<Object, Object> attrs = exampleRegion.getAttributes();
 
     // Check if disk store got same name as passed in system properties in setup().
@@ -103,8 +108,8 @@ public class Bug40255JUnitTest {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "10333");
     props.setProperty(LOCATORS, "");
-    System.setProperty("gemfirePropertyFile", BUG_40255_PROPS);
-    props.setProperty(CACHE_XML_FILE, BUG_40255_XML);
+    System.setProperty("gemfirePropertyFile", GEMFIRE_PROPERTIES);
+    props.setProperty(CACHE_XML_FILE, CACHE_XML);
     System.setProperty(NESTED_ATTR_PROPERTY_STRING, NESTED_ATTR_PROPERTY_VALUE);
     System.setProperty(ATTR_PROPERTY_STRING, ATTR_PROPERTY_VALUE);
     System.setProperty(ELEMENT_PROPERTY_STRING, ELEMENT_PROPERTY_VALUE);
@@ -114,10 +119,10 @@ public class Bug40255JUnitTest {
     File dir = new File("persistData1");
     dir.mkdir();
 
-    this.ds = DistributedSystem.connect(props);
-    this.cache = CacheFactory.create(this.ds);
+    ds = DistributedSystem.connect(props);
+    cache = CacheFactory.create(ds);
 
-    Region exampleRegion = this.cache.getRegion("example-region");
+    Region exampleRegion = cache.getRegion("example-region");
     RegionAttributes<Object, Object> attrs = exampleRegion.getAttributes();
 
     // Check if disk store got same name as passed in system properties in setup().
@@ -126,19 +131,4 @@ public class Bug40255JUnitTest {
     assertEquals(exampleRegion.get(ELEMENT_PROPERTY_VALUE + CONCAT_ELEMENT_PROPERTY_VALUE),
         ELEMENT_KEY_VALUE);
   }
-
-  @After
-  public void tearDown() throws Exception {
-    if (this.cache != null) {
-      this.cache.close();
-      this.cache = null;
-    }
-    if (this.ds != null) {
-      this.ds.disconnect();
-      this.ds = null;
-    }
-  }
-
-  @Before
-  public void setUp() throws Exception {}
 }

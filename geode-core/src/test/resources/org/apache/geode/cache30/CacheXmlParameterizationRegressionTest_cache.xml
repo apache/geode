@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+    "http://www.gemstone.com/dtd/cache7_0.dtd">
+
+<!-- This file has no eviction action specified with lru-memory-size -->
+<cache>
+	<disk-store name="teststore" auto-compact="true" max-oplog-size="1024" queue-size="10000" time-interval="15">
+	<disk-dirs>
+		<disk-dir dir-size="4096">persistData1</disk-dir>
+	</disk-dirs>
+    </disk-store>
+  <vm-root-region name="example-region">
+    <region-attributes disk-store-name="${custom-region.${custom-nested.test}.store}"  refid="REPLICATE_PERSISTENT" disk-synchronous="false" id="sample">
+	</region-attributes>
+	<entry>
+		<key><string>${custom-string.element}${concat.test}</string></key>
+		<value><string>example-value</string></value>
+	</entry>
+	<entry>
+		<key><string>${custom-string.element}</string></key>
+		<value><string>${concat.test}</string></value>
+	</entry>
+  </vm-root-region>
+</cache>

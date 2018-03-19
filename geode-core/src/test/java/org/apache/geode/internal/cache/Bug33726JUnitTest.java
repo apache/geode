@@ -19,11 +19,14 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
-import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -36,25 +39,9 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class Bug33726JUnitTest {
 
-  boolean[] flags = new boolean[2];
-  // private boolean failed = false;
-  // private boolean done = false;
-  static boolean isOK = false;
+  private boolean[] flags = new boolean[2];
 
-  public Bug33726JUnitTest() {
-
-  }
-
-  public void setup() {
-
-  }
-
-  @After
-  public void tearDown() {
-
-  }
-
-
+  private static boolean isOK = false;
 
   @Test
   public void testAfterRegionCreate() {

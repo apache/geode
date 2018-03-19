@@ -14,8 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+import static org.junit.Assert.fail;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -41,8 +41,11 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
+/**
+ * TRAC #40751: A RuntimeException from a user's toData method causes a hang
+ */
 @Category({DistributedTest.class, MembershipTest.class})
-public class Bug40751DUnitTest extends JUnit4CacheTestCase {
+public class ValueToDataThrowsRuntimeExceptionRegressionTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
@@ -58,6 +61,7 @@ public class Bug40751DUnitTest extends JUnit4CacheTestCase {
       VM vm1 = host.getVM(2);
 
       SerializableRunnable createDataRegion = new SerializableRunnable("createRegion") {
+        @Override
         public void run() {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();
@@ -71,6 +75,7 @@ public class Bug40751DUnitTest extends JUnit4CacheTestCase {
       vm0.invoke(createDataRegion);
 
       SerializableRunnable createEmptyRegion = new SerializableRunnable("createRegion") {
+        @Override
         public void run() {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();
@@ -91,6 +96,7 @@ public class Bug40751DUnitTest extends JUnit4CacheTestCase {
       vm1.invoke(createEmptyRegion);
     } finally {
       Invoke.invokeInEveryVM(new SerializableCallable() {
+        @Override
         public Object call() throws Exception {
           System.getProperties().remove("p2p.oldIO");
           System.getProperties().remove("p2p.nodirectBuffers");
@@ -102,7 +108,6 @@ public class Bug40751DUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = new Properties();
@@ -113,19 +118,20 @@ public class Bug40751DUnitTest extends JUnit4CacheTestCase {
     return props;
   }
 
-
   private static class MyClass implements DataSerializable {
 
+    public MyClass() {
+      // nothing
+    }
 
-    public MyClass() {}
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      // nothing
+    }
 
-
-
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
-
+    @Override
     public void toData(DataOutput out) throws IOException {
       throw new RuntimeException("A Fake runtime exception in toData");
     }
-
   }
 }

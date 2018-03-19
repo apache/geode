@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.query;
+package org.apache.geode.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.fail;
@@ -26,11 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.data.Address;
 import org.apache.geode.cache.query.data.Data;
 import org.apache.geode.cache.query.data.Employee;
@@ -38,13 +33,15 @@ import org.apache.geode.cache.query.data.Manager;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
- * Junit test for checking the value constraint region attributes.
+ * Verifies that value constraint is used by Region.put
+ *
+ * <p>
+ * TRAC #32947: value constraint not enforced on Region.put or Region.create
  */
-@Category({IntegrationTest.class, OQLQueryTest.class})
-public class Bug32947ValueConstraintJUnitTest {
+@Category(IntegrationTest.class)
+public class ValueConstraintRegressionTest {
 
   private DistributedSystem distributedSystem;
   private Cache cache;
@@ -64,7 +61,7 @@ public class Bug32947ValueConstraintJUnitTest {
   }
 
   @Test
-  public void testBug32947ValueConstraints() throws Exception {
+  public void testValueConstraints() throws Exception {
     AttributesFactory factory = new AttributesFactory();
     factory.setValueConstraint(Portfolio.class);
     RegionAttributes regionAttributes = factory.create();
