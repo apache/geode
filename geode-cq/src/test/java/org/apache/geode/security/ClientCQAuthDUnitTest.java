@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
@@ -20,6 +19,7 @@ import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -42,17 +42,26 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClientCQAuthDUnitTest {
 
+  private static final String REGION_NAME = "AuthRegion";
+
+  private VM client1;
+  private VM client2;
+  private VM client3;
+
   @Rule
   public ClusterStartupRule startupRule = new ClusterStartupRule();
-  private static String REGION_NAME = "AuthRegion";
-  private final VM client1 = startupRule.getVM(1);
-  private final VM client2 = startupRule.getVM(2);
-  private final VM client3 = startupRule.getVM(3);
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule()
       .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName())
       .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
+
+  @Before
+  public void setUp() {
+    client1 = startupRule.getVM(1);
+    client2 = startupRule.getVM(2);
+    client3 = startupRule.getVM(3);
+  }
 
   @Test
   public void verifyCQPermissions() {
