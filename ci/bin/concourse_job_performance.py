@@ -115,6 +115,6 @@ if failed_build_count > 0:
                   color("{} failures".format(count), fg='red'),
                   color("({}% success rate)".format(((completed_build_count - count)/completed_build_count) * 100), fg='blue'))
             for build in failures[failure]:
-                print(color("  Failed build {} ".format(build['name']), fg='red'), color("at {}{}".format(url, build['url']), fg='magenta', style='bold'))
+                print(color("  Failed build {} ".format(build['name']), fg='red'), color("at {}/teams/{}/pipelines/{}/jobs/{}/builds/{}".format(url, build['team_name'],build['pipeline_name'], build['job_name'], build['name']), fg='magenta', style='bold'))
 else:
     print(color("No failures! 100% success rate", fg='green',style='bold'))
