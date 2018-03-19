@@ -18,6 +18,7 @@
 package org.apache.geode.distributed.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -38,6 +39,7 @@ import org.apache.geode.internal.cache.configuration.CacheConfig;
 import org.apache.geode.internal.cache.configuration.CacheElement;
 import org.apache.geode.internal.cache.configuration.JndiBindingsType;
 import org.apache.geode.internal.cache.configuration.RegionConfig;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -46,17 +48,22 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class InternalClusterConfigurationServiceTest {
   private String xml;
   private CacheConfig unmarshalled;
-  private InternalClusterConfigurationService service;
+  private InternalClusterConfigurationService service, service2;
   private Configuration configuration;
 
   @Before
   public void setUp() throws Exception {
     service = spy(InternalClusterConfigurationService.class);
+    service2 = spy(InternalClusterConfigurationService.class);
     configuration = new Configuration("cluster");
     doReturn(configuration).when(service).getConfiguration(any());
+    doReturn(configuration).when(service2).getConfiguration(any());
     doReturn(mock(Region.class)).when(service).getConfigurationRegion();
+    doReturn(mock(Region.class)).when(service2).getConfigurationRegion();
     doReturn(true).when(service).lockSharedConfiguration();
+    doReturn(true).when(service2).lockSharedConfiguration();
     doNothing().when(service).unlockSharedConfiguration();
+    doNothing().when(service2).unlockSharedConfiguration();
   }
 
   @Test
@@ -111,6 +118,38 @@ public class InternalClusterConfigurationServiceTest {
   }
 
   @Test
+  public void xmlWithCustomElementsCanBeUnMarshalledByAnotherService() {
+    service.saveCustomCacheElement("cluster", new ElementOne("one"));
+    service.saveCustomCacheElement("cluster", new ElementTwo("two"));
+
+    String prettyXml = configuration.getCacheXmlContent();
+    System.out.println(prettyXml);
+
+    // the xml is sent to another locator, and can interpreted ocrrectly
+    service2.updateCacheConfig("cluster", cc -> {
+      return cc;
+    });
+
+    ElementOne elementOne = service2.getCustomCacheElement("cluster", "one", ElementOne.class);
+    assertThat(elementOne.getId()).isEqualTo("one");
+
+    String uglyXml = configuration.getCacheXmlContent();
+    System.out.println(uglyXml);
+    assertThat(uglyXml).isNotEqualTo(prettyXml);
+
+    // the xml can be unmarshalled correctly by the first locator
+    CacheConfig cacheConfig = service.getCacheConfig("cluster");
+    service.updateCacheConfig("cluster", cc -> {
+      return cc;
+    });
+    assertThat(cacheConfig.getCustomCacheElements()).hasSize(2);
+    assertThat(cacheConfig.getCustomCacheElements().get(0)).isInstanceOf(ElementOne.class);
+    assertThat(cacheConfig.getCustomCacheElements().get(1)).isInstanceOf(ElementTwo.class);
+
+    assertThat(configuration.getCacheXmlContent()).isEqualTo(prettyXml);
+  }
+
+  @Test
   public void updateRegionConfig() {
     service.updateCacheConfig("cluster", cacheConfig -> {
       RegionConfig regionConfig = new RegionConfig();
@@ -161,6 +200,82 @@ public class InternalClusterConfigurationServiceTest {
         .contains("config-property-name>test</config-property-name>");
   }
 
+  @Test
+  public void addCustomCacheElement() {
+    ElementOne customOne = new ElementOne("testOne");
+    service.saveCustomCacheElement("cluster", customOne);
+    System.out.println(configuration.getCacheXmlContent());
+    assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
+
+    ElementTwo customTwo = new ElementTwo("testTwo");
+    service.saveCustomCacheElement("cluster", customTwo);
+    System.out.println(configuration.getCacheXmlContent());
+    assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
+    assertThat(configuration.getCacheXmlContent()).contains("custom-two>");
+  }
+
+  @Test
+  public void updateCustomCacheElement() {
+    ElementOne customOne = new ElementOne("testOne");
+    service.saveCustomCacheElement("cluster", customOne);
+    System.out.println(configuration.getCacheXmlContent());
+    assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
+    assertThat(configuration.getCacheXmlContent()).contains("<id>testOne</id>");
+    assertThat(configuration.getCacheXmlContent()).doesNotContain("<value>");
+
+    customOne = service.getCustomCacheElement("cluster", "testOne", ElementOne.class);
+    customOne.setValue("valueOne");
+    service.saveCustomCacheElement("cluster", customOne);
+    System.out.println(configuration.getCacheXmlContent());
+    assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
+    assertThat(configuration.getCacheXmlContent()).contains("<id>testOne</id>");
+    assertThat(configuration.getCacheXmlContent()).contains("<value>valueOne</value>");
+  }
+
+  @Test
+  public void deleteCustomCacheElement() {
+    ElementOne customOne = new ElementOne("testOne");
+    service.saveCustomCacheElement("cluster", customOne);
+    System.out.println(configuration.getCacheXmlContent());
+    assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
+
+    service.deleteCustomCacheElement("cluster", "testOne", ElementOne.class);
+    System.out.println(configuration.getCacheXmlContent());
+    assertThat(configuration.getCacheXmlContent()).doesNotContain("custom-one>");
+  }
+
+  @Test
+  public void updateCustomRegionElement() {
+    // start with a cache.xml that has region info
+    service.updateCacheConfig("cluster", cacheConfig -> {
+      setBasicValues(cacheConfig);
+      return cacheConfig;
+    });
+
+    ElementOne one = new ElementOne("elementOne");
+    one.setValue("valueOne");
+
+    assertThatThrownBy(() -> service.saveCustomRegionElement("cluster", "noSuchRegion", one))
+        .isInstanceOf(EntityNotFoundException.class)
+        .hasMessageContaining("region noSuchRegion does not exist in group cluster");
+
+    service.saveCustomRegionElement("cluster", "testRegion", one);
+    System.out.println(configuration.getCacheXmlContent());
+    assertThat(configuration.getCacheXmlContent()).contains("region name=\"testRegion\"");
+    assertThat(configuration.getCacheXmlContent())
+        .containsPattern("\\w*:custom-one\\W*\\w*:region");
+
+    ElementOne retrieved =
+        service.getCustomRegionElement("cluster", "testRegion", "elementOne", ElementOne.class);
+    assertThat(retrieved.getId()).isEqualTo("elementOne");
+    assertThat(retrieved.getValue()).isEqualTo("valueOne");
+
+    service.deleteCustomRegionElement("cluster", "testRegion", "elementOne", ElementOne.class);
+    System.out.println(configuration.getCacheXmlContent());
+    assertThat(configuration.getCacheXmlContent()).doesNotContain("custom-one>");
+  }
+
+
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"id", "value"})
   @XmlRootElement(name = "custom-one", namespace = "http://geode.apache.org/schema/CustomOne")
@@ -178,8 +293,8 @@ public class InternalClusterConfigurationServiceTest {
       this.value = value;
     }
 
-    public ElementOne(String value) {
-      this.id = value;
+    public ElementOne(String id) {
+      this.id = id;
     }
 
     public String getId() {
@@ -208,8 +323,8 @@ public class InternalClusterConfigurationServiceTest {
       this.value = value;
     }
 
-    public ElementTwo(String value) {
-      this.id = value;
+    public ElementTwo(String id) {
+      this.id = id;
     }
 
     public String getId() {

@@ -105,7 +105,7 @@ public class CreateJndiBindingCommandTest {
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(existingBinding).when(clusterConfigService).findElement(any(), any());
+    doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
@@ -122,7 +122,7 @@ public class CreateJndiBindingCommandTest {
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(existingBinding).when(clusterConfigService).findElement(any(), any());
+    doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND
@@ -140,7 +140,7 @@ public class CreateJndiBindingCommandTest {
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(existingBinding).when(clusterConfigService).findElement(any(), any());
+    doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND
@@ -157,7 +157,7 @@ public class CreateJndiBindingCommandTest {
 
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(existingBinding).when(clusterConfigService).findElement(any(), any());
+    doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND
@@ -185,7 +185,7 @@ public class CreateJndiBindingCommandTest {
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(null).when(clusterConfigService).findElement(any(), any());
+    doReturn(null).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
@@ -251,7 +251,7 @@ public class CreateJndiBindingCommandTest {
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(null).when(clusterConfigService).findElement(any(), any());
+    doReturn(null).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND

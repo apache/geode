@@ -152,7 +152,7 @@ public class CreateJndiBindingCommand extends GfshCommand {
     if (service != null) {
       CacheConfig cacheConfig = service.getCacheConfig("cluster");
       JndiBindingsType.JndiBinding existing =
-          service.findElement(cacheConfig.getJndiBindings(), jndiName);
+          service.findIdentifiable(cacheConfig.getJndiBindings(), jndiName);
       if (existing != null) {
         throw new EntityExistsException(
             CliStrings.format("Jndi binding with jndi-name \"{0}\" already exists.", jndiName),

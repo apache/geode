@@ -93,7 +93,6 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
@@ -826,11 +825,11 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     return configDir;
   }
 
-  private Collection<Class> bindClasses = new ArrayList<>();
+  Collection<Class> bindClasses = new ArrayList<>();
   private Marshaller marshaller;
   private Unmarshaller unmarshaller;
 
-  private void initJaxbContext() {
+  void initJaxbContext() {
     try {
       JAXBContext jaxbContext =
           JAXBContext.newInstance(bindClasses.toArray(new Class[bindClasses.size()]));
@@ -867,13 +866,21 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     return unmarshaller;
   }
 
+  @Override
   public CacheConfig getCacheConfig(String group,
       Class<? extends CacheElement>... additionalBindClass) {
+    if (group == null) {
+      group = CLUSTER_CONFIG;
+    }
     return unMarshall(getConfiguration(group).getCacheXmlContent(), additionalBindClass);
   }
 
+  @Override
   public void updateCacheConfig(String group, UnaryOperator<CacheConfig> mutator,
-      Class... additionalBindClass) {
+      Class<? extends CacheElement>... additionalBindClass) {
+    if (group == null) {
+      group = CLUSTER_CONFIG;
+    }
     lockSharedConfiguration();
     try {
       CacheConfig cacheConfig = getCacheConfig(group, additionalBindClass);
@@ -888,10 +895,6 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     } finally {
       unlockSharedConfiguration();
     }
-  }
-
-  public <T extends Identifiable<String>> T findElement(List<T> list, String id) {
-    return list.stream().filter(o -> o.getId().equals(id)).findFirst().orElse(null);
   }
 
   String marshall(CacheConfig config, Class<? extends CacheElement>... additionalClass) {

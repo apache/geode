@@ -83,28 +83,28 @@ public class DestroyJndiBindingCommandTest {
 
   @Test
   public void returnsErrorIfBindingDoesNotExistAndIfExistsUnspecified() {
-    when(ccService.findElement(any(), any())).thenReturn(null);
+    when(ccService.findIdentifiable(any(), any())).thenReturn(null);
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsError()
         .containsOutput("does not exist.");
   }
 
   @Test
   public void skipsIfBindingDoesNotExistAndIfExistsSpecified() {
-    when(ccService.findElement(any(), any())).thenReturn(null);
+    when(ccService.findIdentifiable(any(), any())).thenReturn(null);
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists").statusIsSuccess()
         .containsOutput("does not exist.");
   }
 
   @Test
   public void skipsIfBindingDoesNotExistAndIfExistsSpecifiedTrue() {
-    when(ccService.findElement(any(), any())).thenReturn(null);
+    when(ccService.findIdentifiable(any(), any())).thenReturn(null);
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=true").statusIsSuccess()
         .containsOutput("does not exist.");
   }
 
   @Test
   public void returnsErrorIfBindingDoesNotExistAndIfExistsSpecifiedFalse() {
-    when(ccService.findElement(any(), any())).thenReturn(null);
+    when(ccService.findIdentifiable(any(), any())).thenReturn(null);
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=false").statusIsError()
         .containsOutput("does not exist.");
   }
@@ -121,7 +121,8 @@ public class DestroyJndiBindingCommandTest {
   @Test
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig() {
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    when(ccService.findElement(any(), any())).thenReturn(mock(JndiBindingsType.JndiBinding.class));
+    when(ccService.findIdentifiable(any(), any()))
+        .thenReturn(mock(JndiBindingsType.JndiBinding.class));
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .containsOutput(
@@ -176,7 +177,8 @@ public class DestroyJndiBindingCommandTest {
 
     doReturn(members).when(command).findMembers(any(), any());
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
-    when(ccService.findElement(any(), any())).thenReturn(mock(JndiBindingsType.JndiBinding.class));
+    when(ccService.findIdentifiable(any(), any()))
+        .thenReturn(mock(JndiBindingsType.JndiBinding.class));
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .tableHasColumnOnlyWithValues("Member", "server1")
