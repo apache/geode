@@ -109,33 +109,43 @@ public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
 
     RegionAPI.GetRequest getRequest = generateGetRequest(key);
     GetRequestOperationHandler operationHandler = new GetRequestOperationHandler();
-    Result result = operationHandler.process(serializationService, getRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(getCache()));
+    getCache().setReadSerializedForCurrentThread(true);
+    try {
+      Result result = operationHandler.process(serializationService, getRequest,
+          TestExecutionContext.getNoAuthCacheExecutionContext(getCache()));
 
-    Assert.assertTrue(result instanceof Success);
-    RegionAPI.GetResponse response = (RegionAPI.GetResponse) result.getMessage();
-    assertEquals(BasicTypes.EncodedValue.ValueCase.JSONOBJECTRESULT,
-        response.getResult().getValueCase());
-    String actualValue = response.getResult().getJsonObjectResult();
-    assertEquals(jsonDocument, actualValue);
+      Assert.assertTrue(result instanceof Success);
+      RegionAPI.GetResponse response = (RegionAPI.GetResponse) result.getMessage();
+      assertEquals(BasicTypes.EncodedValue.ValueCase.JSONOBJECTRESULT,
+          response.getResult().getValueCase());
+      String actualValue = response.getResult().getJsonObjectResult();
+      assertEquals(jsonDocument, actualValue);
+    } finally {
+      getCache().setReadSerializedForCurrentThread(false);
+    }
   }
 
   @Test
   public void testThatGetAllReturnsJSONDocumentForPdxInstance() throws Exception {
     storeTestDocument();
 
-    RegionAPI.GetAllRequest getRequest = generateGetAllRequest(key);
-    GetAllRequestOperationHandler operationHandler = new GetAllRequestOperationHandler();
-    Result result = operationHandler.process(serializationService, getRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(getCache()));
+    getCache().setReadSerializedForCurrentThread(true);
+    try {
+      RegionAPI.GetAllRequest getRequest = generateGetAllRequest(key);
+      GetAllRequestOperationHandler operationHandler = new GetAllRequestOperationHandler();
+      Result result = operationHandler.process(serializationService, getRequest,
+          TestExecutionContext.getNoAuthCacheExecutionContext(getCache()));
 
-    Assert.assertTrue(result instanceof Success);
-    RegionAPI.GetAllResponse response = (RegionAPI.GetAllResponse) result.getMessage();
-    BasicTypes.Entry entry = response.getEntriesList().get(0);
-    BasicTypes.EncodedValue entryValue = entry.getValue();
-    assertEquals(BasicTypes.EncodedValue.ValueCase.JSONOBJECTRESULT, entryValue.getValueCase());
-    String actualValue = entryValue.getJsonObjectResult();
-    assertEquals(jsonDocument, actualValue);
+      Assert.assertTrue(result instanceof Success);
+      RegionAPI.GetAllResponse response = (RegionAPI.GetAllResponse) result.getMessage();
+      BasicTypes.Entry entry = response.getEntriesList().get(0);
+      BasicTypes.EncodedValue entryValue = entry.getValue();
+      assertEquals(BasicTypes.EncodedValue.ValueCase.JSONOBJECTRESULT, entryValue.getValueCase());
+      String actualValue = entryValue.getJsonObjectResult();
+      assertEquals(jsonDocument, actualValue);
+    } finally {
+      getCache().setReadSerializedForCurrentThread(false);
+    }
   }
 
   @Test

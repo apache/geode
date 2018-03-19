@@ -15,10 +15,11 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
 
 @Experimental
@@ -36,9 +37,10 @@ public abstract class MessageExecutionContext {
     return protobufConnectionStateProcessor;
   }
 
-  public abstract InternalCache getCache() throws InvalidExecutionContextException;
+  public abstract AuthorizingCache getAuthorizingCache() throws InvalidExecutionContextException;
 
-  public abstract Locator getLocator() throws InvalidExecutionContextException;
+  public abstract AuthorizingLocator getAuthorizingLocator()
+      throws InvalidExecutionContextException;
 
   /**
    * Returns the statistics for recording operation stats. In a unit test environment this may not
@@ -52,4 +54,6 @@ public abstract class MessageExecutionContext {
       ProtobufConnectionStateProcessor protobufConnectionStateProcessor) {
     this.protobufConnectionStateProcessor = protobufConnectionStateProcessor;
   }
+
+  public abstract void setAuthorizor(Authorizer authorizer);
 }

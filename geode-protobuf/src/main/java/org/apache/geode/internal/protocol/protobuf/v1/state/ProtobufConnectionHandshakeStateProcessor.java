@@ -24,6 +24,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ProtocolVersionHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
@@ -43,13 +44,15 @@ public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnec
         "Connection processing should never be asked to validate an operation");
   }
 
-  private ProtobufConnectionStateProcessor nextConnectionState() {
+  private ProtobufConnectionStateProcessor nextConnectionState(
+      MessageExecutionContext executionContext) {
     if (securityService.isIntegratedSecurity()) {
       return new ProtobufConnectionAuthenticatingStateProcessor(securityService);
     } else if (securityService.isPeerSecurityRequired()
         || securityService.isClientSecurityRequired()) {
       return new LegacySecurityProtobufConnectionStateProcessor();
     } else {
+      executionContext.setAuthorizor(new NoSecurityAuthorizer());
       // Noop authenticator...no security
       return new NoSecurityProtobufConnectionStateProcessor();
     }
@@ -65,7 +68,7 @@ public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnec
 
     if (ProtocolVersionHandler.handleVersionMessage(messageStream, outputStream,
         executionContext.getStatistics())) {
-      executionContext.setConnectionStateProcessor(nextConnectionState());
+      executionContext.setConnectionStateProcessor(nextConnectionState(executionContext));
     }
     return true;
   }

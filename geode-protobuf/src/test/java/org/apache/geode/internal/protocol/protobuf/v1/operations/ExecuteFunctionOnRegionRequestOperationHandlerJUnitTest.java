@@ -17,6 +17,7 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -26,24 +27,25 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
@@ -63,6 +65,9 @@ public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
   private ExecuteFunctionOnRegionRequestOperationHandler operationHandler;
   private ProtobufSerializationService serializationService;
   private TestFunction function;
+
+  @Rule
+  public final ExpectedException expectedException = ExpectedException.none();
 
   private static class TestFunction implements Function {
     // non-null iff function has been executed.
@@ -112,30 +117,23 @@ public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnRegionRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .setRegion(NOT_A_REGION).build();
 
+    expectedException.expect(RegionDestroyedException.class);
     final Result<FunctionAPI.ExecuteFunctionOnRegionResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
-
-    assertTrue(result instanceof Failure);
-
-    verify(cacheStub).getRegion(NOT_A_REGION);
   }
 
   @Test
   public void requiresPermissions() throws Exception {
-    final SecurityService securityService = mock(SecurityService.class);
-    doThrow(new NotAuthorizedException("we should catch this")).when(securityService)
-        .authorize(ResourcePermissions.DATA_WRITE);
-    when(cacheStub.getSecurityService()).thenReturn(securityService);
-
     final FunctionAPI.ExecuteFunctionOnRegionRequest request =
         FunctionAPI.ExecuteFunctionOnRegionRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .setRegion(TEST_REGION).build();
-    try {
-      operationHandler.process(serializationService, request, mockedMessageExecutionContext());
-      fail("Should not have been authorized.");
-    } catch (OperationNotAuthorizedException ex) {
-      // Expected failure
-    }
+    Authorizer authorizer = mock(Authorizer.class);
+    doThrow(new NotAuthorizedException("we should catch this")).when(authorizer)
+        .authorize(ResourcePermissions.DATA_WRITE);
+    ServerMessageExecutionContext context = new ServerMessageExecutionContext(cacheStub,
+        mock(ProtobufClientStatistics.class), null, authorizer);
+    expectedException.expect(NotAuthorizedException.class);
+    operationHandler.process(serializationService, request, context);
   }
 
   @Test
@@ -146,15 +144,14 @@ public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
 
     FunctionService.unregisterFunction(TEST_FUNCTION_ID);
 
+    expectedException.expect(IllegalArgumentException.class);
     final Result<FunctionAPI.ExecuteFunctionOnRegionResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
-    final ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();
-
-    assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST, errorMessage.getError().getErrorCode());
   }
 
   private ServerMessageExecutionContext mockedMessageExecutionContext() {
-    return new ServerMessageExecutionContext(cacheStub, mock(ProtobufClientStatistics.class), null);
+    return new ServerMessageExecutionContext(cacheStub, mock(ProtobufClientStatistics.class), null,
+        new NoSecurityAuthorizer());
   }
 }

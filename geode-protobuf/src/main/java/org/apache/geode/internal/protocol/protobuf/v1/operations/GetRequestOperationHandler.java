@@ -28,6 +28,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.security.ResourcePermission;
@@ -35,40 +36,23 @@ import org.apache.geode.security.ResourcePermission;
 @Experimental
 public class GetRequestOperationHandler
     implements ProtobufOperationHandler<RegionAPI.GetRequest, RegionAPI.GetResponse> {
-  private static final Logger logger = LogService.getLogger();
 
   @Override
   public Result<RegionAPI.GetResponse> process(ProtobufSerializationService serializationService,
       RegionAPI.GetRequest request, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, EncodingException, DecodingException {
     String regionName = request.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received get request for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
+
+
+    Object decodedKey = serializationService.decode(request.getKey());
+    if (decodedKey == null) {
+      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key.");
     }
 
-    try {
-      messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
+    AuthorizingCache authorizingCache = messageExecutionContext.getAuthorizingCache();
+    Object resultValue = authorizingCache.get(regionName, decodedKey);
 
-      Object decodedKey = serializationService.decode(request.getKey());
-      if (decodedKey == null) {
-        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key.");
-      }
-      Object resultValue = region.get(decodedKey);
-
-      BasicTypes.EncodedValue encodedValue = serializationService.encode(resultValue);
-      return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
-    } finally {
-      messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
-    }
-  }
-
-  public static ResourcePermission determineRequiredPermission(RegionAPI.GetRequest request,
-      ProtobufSerializationService serializer) throws DecodingException {
-    return new ResourcePermission(ResourcePermission.Resource.DATA,
-        ResourcePermission.Operation.READ, request.getRegionName(),
-        serializer.decode(request.getKey()).toString());
+    BasicTypes.EncodedValue encodedValue = serializationService.encode(resultValue);
+    return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
   }
 }

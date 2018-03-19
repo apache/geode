@@ -34,7 +34,6 @@ import org.apache.geode.security.ResourcePermission;
 
 public class PutIfAbsentRequestOperationHandler implements
     ProtobufOperationHandler<RegionAPI.PutIfAbsentRequest, RegionAPI.PutIfAbsentResponse> {
-  private static final Logger logger = LogManager.getLogger();
 
   @Override
   public Result<RegionAPI.PutIfAbsentResponse> process(
@@ -44,35 +43,15 @@ public class PutIfAbsentRequestOperationHandler implements
 
     final String regionName = request.getRegionName();
 
-    Region<Object, Object> region;
-    try {
-      region = messageExecutionContext.getCache().getRegion(regionName);
-    } catch (IllegalArgumentException ex) {
-      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
-          "Invalid region name: \"" + regionName + "\"");
-    }
-
-    if (region == null) {
-      logger.error("Received PutIfAbsentRequest for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
-    }
-
     final BasicTypes.Entry entry = request.getEntry();
 
     Object decodedValue = serializationService.decode(entry.getValue());
     Object decodedKey = serializationService.decode(entry.getKey());
 
-    final Object oldValue = region.putIfAbsent(decodedKey, decodedValue);
+    final Object oldValue = messageExecutionContext.getAuthorizingCache().putIfAbsent(regionName,
+        decodedKey, decodedValue);
 
     return Success.of(RegionAPI.PutIfAbsentResponse.newBuilder()
         .setOldValue(serializationService.encode(oldValue)).build());
-  }
-
-  public static ResourcePermission determineRequiredPermission(RegionAPI.PutIfAbsentRequest request,
-      ProtobufSerializationService serializer) throws DecodingException {
-    return new ResourcePermission(ResourcePermission.Resource.DATA,
-        ResourcePermission.Operation.WRITE, request.getRegionName(),
-        serializer.decode(request.getEntry().getKey()).toString());
   }
 }

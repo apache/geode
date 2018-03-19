@@ -59,20 +59,9 @@ public class GetServerOperationHandler
 
     messageExecutionContext
         .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
-    InternalLocator internalLocator = (InternalLocator) messageExecutionContext.getLocator();
 
-    // In order to ensure that proper checks are performed on the request we will use
-    // the locator's processRequest() API. We assume that all servers have Protobuf
-    // enabled.
-    ClientConnectionRequest clientConnectionRequest =
-        new ClientConnectionRequest(excludedServers, serverGroup);
-    ClientConnectionResponse connectionResponse = (ClientConnectionResponse) internalLocator
-        .getServerLocatorAdvisee().processRequest(clientConnectionRequest);
-
-    ServerLocation serverLocation = null;
-    if (connectionResponse != null && connectionResponse.hasResult()) {
-      serverLocation = connectionResponse.getServer();
-    }
+    ServerLocation serverLocation =
+        messageExecutionContext.getAuthorizingLocator().findServer(excludedServers, serverGroup);
 
     if (serverLocation == null) {
       StringBuilder builder = new StringBuilder("Unable to find a server");

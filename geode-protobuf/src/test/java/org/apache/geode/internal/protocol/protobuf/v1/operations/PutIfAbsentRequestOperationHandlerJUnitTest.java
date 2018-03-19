@@ -24,10 +24,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
@@ -46,6 +49,9 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
   private final String TEST_REGION = "test region";
   private Region regionMock;
   private PutIfAbsentRequestOperationHandler operationHandler;
+
+  @Rule
+  public final ExpectedException expectedException = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
@@ -108,16 +114,6 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
     verify(regionMock).putIfAbsent(null, TEST_VALUE);
   }
 
-  @Test
-  public void failsWithNoAuthCacheExecutionContext() throws Exception {
-    Result<RegionAPI.PutIfAbsentResponse> result1 = operationHandler.process(serializationService,
-        RegionAPI.PutIfAbsentRequest.newBuilder().build(),
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertEquals(BasicTypes.ErrorCode.SERVER_ERROR,
-        result1.getErrorMessage().getError().getErrorCode());
-  }
-
   @Test(expected = DecodingException.class)
   public void unsetEntrythrowsDecodingException() throws Exception {
     Result<RegionAPI.PutIfAbsentResponse> result1 =
@@ -130,23 +126,19 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
 
   @Test
   public void unsetRegionGetsServerError() throws Exception {
+    expectedException.expect(RegionDestroyedException.class);
     Result<RegionAPI.PutIfAbsentResponse> result1 =
         operationHandler.process(serializationService, generateTestRequest(false, true),
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertEquals(BasicTypes.ErrorCode.SERVER_ERROR,
-        result1.getErrorMessage().getError().getErrorCode());
   }
 
   @Test
   public void nonexistingRegionReturnsServerError() throws Exception {
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(null);
 
+    expectedException.expect(RegionDestroyedException.class);
     Result<RegionAPI.PutIfAbsentResponse> result1 = operationHandler.process(serializationService,
         generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertEquals(BasicTypes.ErrorCode.SERVER_ERROR,
-        result1.getErrorMessage().getError().getErrorCode());
   }
 
   /**
@@ -155,17 +147,6 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
   @Test(expected = UnsupportedOperationException.class)
   public void unsupportedOperation() throws Exception {
     when(regionMock.putIfAbsent(any(), any())).thenThrow(new UnsupportedOperationException());
-
-    Result<RegionAPI.PutIfAbsentResponse> result1 = operationHandler.process(serializationService,
-        generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-    assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST,
-        result1.getErrorMessage().getError().getErrorCode());
-  }
-
-  @Test
-  public void invalidRegionReturnsInvalidRequestError() throws Exception {
-    // doesn't test which regions are invalid; those are documented under Cache.getRegion.
-    when(cacheStub.getRegion(any())).thenThrow(new IllegalArgumentException());
 
     Result<RegionAPI.PutIfAbsentResponse> result1 = operationHandler.process(serializationService,
         generateTestRequest(), TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));

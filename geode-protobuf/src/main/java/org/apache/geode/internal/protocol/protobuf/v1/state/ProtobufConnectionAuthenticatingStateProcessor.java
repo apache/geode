@@ -22,6 +22,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.ShiroAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.security.AuthenticationRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
@@ -52,9 +53,11 @@ public class ProtobufConnectionAuthenticatingStateProcessor
     return this;
   }
 
-  public ProtobufConnectionStateProcessor authenticate(Properties properties)
+  public ProtobufConnectionStateProcessor authenticate(
+      MessageExecutionContext messageExecutionContext, Properties properties)
       throws AuthenticationFailedException {
     Subject subject = securityService.login(properties);
-    return new ProtobufConnectionAuthorizingStateProcessor(securityService, subject);
+    messageExecutionContext.setAuthorizor(new ShiroAuthorizer(securityService, subject));
+    return new ProtobufConnectionAuthorizingStateProcessor();
   }
 }

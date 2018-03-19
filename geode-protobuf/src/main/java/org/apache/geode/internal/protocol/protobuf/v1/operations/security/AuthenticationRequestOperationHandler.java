@@ -51,7 +51,8 @@ public class AuthenticationRequestOperationHandler implements
     properties.putAll(request.getCredentialsMap());
 
     try {
-      ProtobufConnectionStateProcessor nextState = stateProcessor.authenticate(properties);
+      ProtobufConnectionStateProcessor nextState =
+          stateProcessor.authenticate(messageExecutionContext, properties);
       messageExecutionContext.setConnectionStateProcessor(nextState);
       return Success
           .of(ConnectionAPI.AuthenticationResponse.newBuilder().setAuthenticated(true).build());

@@ -23,12 +23,15 @@ import java.util.HashSet;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
@@ -43,6 +46,9 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class GetSizeRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_REGION1 = "test region 1";
   private Region region1Stub;
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Before
   public void setUp() {
@@ -78,11 +84,9 @@ public class GetSizeRequestOperationHandlerJUnitTest extends OperationHandlerJUn
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     String unknownRegionName = "UNKNOWN_REGION";
-    Result result = operationHandler.process(serializationService,
+    expectedException.expect(RegionDestroyedException.class);
+    operationHandler.process(serializationService,
         MessageUtil.makeGetSizeRequest(unknownRegionName),
         getNoAuthCacheExecutionContext(emptyCache));
-    Assert.assertTrue(result instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();
-    Assert.assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
 }
