@@ -2537,25 +2537,31 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   private static Object readDataSerializableFixedID(final DataInput in)
       throws IOException, ClassNotFoundException {
-    Class c = readClass(in);
+    boolean readSerializedOverride = PdxInstanceImpl.getPdxReadSerialized();
+    PdxInstanceImpl.setPdxReadSerialized(false);
     try {
-      Constructor init = c.getConstructor(new Class[0]);
-      init.setAccessible(true);
-      Object o = init.newInstance(new Object[0]);
+      Class c = readClass(in);
+      try {
+        Constructor init = c.getConstructor(new Class[0]);
+        init.setAccessible(true);
+        Object o = init.newInstance(new Object[0]);
 
-      invokeFromData(o, in);
+        invokeFromData(o, in);
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read DataSerializableFixedID {}", o);
+        if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
+          logger.trace(LogMarker.SERIALIZER, "Read DataSerializableFixedID {}", o);
+        }
+
+        return o;
+
+      } catch (Exception ex) {
+        throw new SerializationException(
+            LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_0
+                .toLocalizedString(c.getName()),
+            ex);
       }
-
-      return o;
-
-    } catch (Exception ex) {
-      throw new SerializationException(
-          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_0
-              .toLocalizedString(c.getName()),
-          ex);
+    } finally {
+      PdxInstanceImpl.setPdxReadSerialized(readSerializedOverride);
     }
   }
 
@@ -2693,16 +2699,22 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
       logger.trace(LogMarker.SERIALIZER, "readDSFID: header={}", header);
     }
-    if (header == DS_FIXED_ID_BYTE) {
-      return DSFIDFactory.create(in.readByte(), in);
-    } else if (header == DS_FIXED_ID_SHORT) {
-      return DSFIDFactory.create(in.readShort(), in);
-    } else if (header == DS_NO_FIXED_ID) {
-      return readDataSerializableFixedID(in);
-    } else if (header == DS_FIXED_ID_INT) {
-      return DSFIDFactory.create(in.readInt(), in);
-    } else {
-      throw new IllegalStateException("unexpected byte: " + header + " while reading dsfid");
+    boolean readSerializedOverride = PdxInstanceImpl.getPdxReadSerialized();
+    PdxInstanceImpl.setPdxReadSerialized(false);
+    try {
+      if (header == DS_FIXED_ID_BYTE) {
+        return DSFIDFactory.create(in.readByte(), in);
+      } else if (header == DS_FIXED_ID_SHORT) {
+        return DSFIDFactory.create(in.readShort(), in);
+      } else if (header == DS_NO_FIXED_ID) {
+        return readDataSerializableFixedID(in);
+      } else if (header == DS_FIXED_ID_INT) {
+        return DSFIDFactory.create(in.readInt(), in);
+      } else {
+        throw new IllegalStateException("unexpected byte: " + header + " while reading dsfid");
+      }
+    } finally {
+      PdxInstanceImpl.setPdxReadSerialized(readSerializedOverride);
     }
   }
 
