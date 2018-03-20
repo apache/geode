@@ -55,10 +55,6 @@ public abstract class ProtobufUtilities {
    */
   public static BasicTypes.Entry createEntry(ProtobufSerializationService serializationService,
       Object unencodedKey, Object unencodedValue) throws EncodingException {
-    if (unencodedValue == null) {
-      return BasicTypes.Entry.newBuilder().setKey(serializationService.encode(unencodedKey))
-          .build();
-    }
     return createEntry(serializationService.encode(unencodedKey),
         serializationService.encode(unencodedValue));
   }

@@ -35,6 +35,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
+import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -77,6 +78,38 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
 
     verify(regionMock).putIfAbsent(TEST_KEY, TEST_VALUE);
     verify(regionMock, times(1)).putIfAbsent(any(), any());
+  }
+
+  @Test
+  public void nullValuePassedThrough() throws Exception {
+    final RegionAPI.PutIfAbsentRequest
+        request =
+        RegionAPI.PutIfAbsentRequest.newBuilder().setRegionName(TEST_REGION)
+            .setEntry(ProtobufUtilities.createEntry(serializationService, TEST_KEY, null))
+            .build();
+
+    Result<RegionAPI.PutIfAbsentResponse> response = operationHandler.process(serializationService,
+        request, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+
+    assertNull(serializationService.decode(response.getMessage().getOldValue()));
+
+    verify(regionMock).putIfAbsent(TEST_KEY,null);
+  }
+
+  @Test
+  public void nullKeyPassedThrough() throws Exception {
+    final RegionAPI.PutIfAbsentRequest
+        request =
+        RegionAPI.PutIfAbsentRequest.newBuilder().setRegionName(TEST_REGION)
+            .setEntry(ProtobufUtilities.createEntry(serializationService, null,TEST_VALUE))
+            .build();
+
+    Result<RegionAPI.PutIfAbsentResponse> response = operationHandler.process(serializationService,
+        request, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+
+    assertNull(serializationService.decode(response.getMessage().getOldValue()));
+
+    verify(regionMock).putIfAbsent(null,TEST_VALUE);
   }
 
   @Test
@@ -165,5 +198,4 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
   private RegionAPI.PutIfAbsentRequest generateTestRequest() throws EncodingException {
     return generateTestRequest(true, true);
   }
-
 }

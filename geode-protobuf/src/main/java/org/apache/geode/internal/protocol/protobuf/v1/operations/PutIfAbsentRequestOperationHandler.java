@@ -63,11 +63,6 @@ public class PutIfAbsentRequestOperationHandler implements
     Object decodedValue = serializationService.decode(entry.getValue());
     Object decodedKey = serializationService.decode(entry.getKey());
 
-    if (decodedKey == null || decodedValue == null) {
-      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
-          "Key and value must both be non-NULL");
-    }
-
     final Object oldValue = region.putIfAbsent(decodedKey, decodedValue);
 
     return Success.of(RegionAPI.PutIfAbsentResponse.newBuilder()
