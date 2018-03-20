@@ -31,33 +31,75 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Test for Bug 44418.
- *
  * If a new expiration time is specified that is shorter than an existing one, ensure the new
  * shorter time is honored.
+ *
+ * <p>
+ * TRAC #44418: Serious limits to CustomExpiry functionality
  *
  * @since GemFire 7.0
  */
 @Category(IntegrationTest.class)
-@SuppressWarnings({"unchecked", "rawtypes"})
-public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descriptive name
+public class ShorteningExpirationTimeRegressionTest {
 
-  DistributedSystem ds;
-  Cache cache;
+  /**
+   * Initial expiration time for entry
+   */
+  private static final int LONG_WAIT_MS = 1000 * 60 * 3;
 
-  private static final int LONG_WAIT_MS = 1000 * 60 * 3; // Initial expiration time for entry
-  private static final int TEST_WAIT_MS = 1000 * 60 * 1; // How long to wait for entry to expire
-  private static final int SHORT_WAIT_MS = 1; // New short expiration time for entry
-  private static final int POLL_INTERVAL_MS = 1; // How often to check for expiration
+  /**
+   * How long to wait for entry to expire
+   */
+  private static final int TEST_WAIT_MS = 1000 * 60 * 1;
+
+  /**
+   * New short expiration time for entry
+   */
+  private static final int SHORT_WAIT_MS = 1;
+
+  /**
+   * How often to check for expiration
+   */
+  private static final int POLL_INTERVAL_MS = 1;
+
   private static final String TEST_KEY = "key";
+
+  private DistributedSystem ds;
+  private Cache cache;
+
+  @Before
+  public void setUp() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    ds = DistributedSystem.connect(props);
+    cache = CacheFactory.create(ds);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (cache != null) {
+      cache.close();
+      cache = null;
+    }
+    if (ds != null) {
+      ds.disconnect();
+      ds = null;
+    }
+  }
 
   @Category(FlakyTest.class) // GEODE-1139: time sensitive, thread sleep, expiration
   @Test
@@ -65,9 +107,8 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
 
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
-      final Region r =
-          this.cache.createRegionFactory(RegionShortcut.LOCAL).setStatisticsEnabled(true)
-              .setCustomEntryTimeToLive(new CustomExpiryTestClass()).create("bug44418");
+      final Region r = cache.createRegionFactory(RegionShortcut.LOCAL).setStatisticsEnabled(true)
+          .setCustomEntryTimeToLive(new CustomExpiryTestClass()).create("bug44418");
 
       r.put(TEST_KEY, "longExpire");
       // should take LONG_WAIT_MS to expire.
@@ -89,9 +130,8 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
 
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
-      final Region r =
-          this.cache.createRegionFactory(RegionShortcut.LOCAL).setStatisticsEnabled(true)
-              .setCustomEntryIdleTimeout(new CustomExpiryTestClass()).create("bug44418");
+      final Region r = cache.createRegionFactory(RegionShortcut.LOCAL).setStatisticsEnabled(true)
+          .setCustomEntryIdleTimeout(new CustomExpiryTestClass()).create("bug44418");
 
       r.put(TEST_KEY, "longExpire");
       // should take LONG_WAIT_MS to expire.
@@ -121,43 +161,25 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
     return true;
   }
 
-  @After
-  public void tearDown() throws Exception {
-    if (this.cache != null) {
-      this.cache.close();
-      this.cache = null;
-    }
-    if (this.ds != null) {
-      this.ds.disconnect();
-      this.ds = null;
-    }
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    this.ds = DistributedSystem.connect(props);
-    this.cache = CacheFactory.create(this.ds);
-  }
-
   private class CustomExpiryTestClass implements CustomExpiry {
+
     private boolean secondTime;
 
     @Override
-    public void close() {}
+    public void close() {
+      // nothing
+    }
 
     @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       ExpirationAttributes result;
-      if (!this.secondTime) {
-        result = new ExpirationAttributes(LONG_WAIT_MS); // Set long expiration first time entry
-                                                         // referenced
-        this.secondTime = true;
+      if (!secondTime) {
+        // Set long expiration first time entry referenced
+        result = new ExpirationAttributes(LONG_WAIT_MS);
+        secondTime = true;
       } else {
-        result = new ExpirationAttributes(SHORT_WAIT_MS); // Set short expiration second time entry
-                                                          // referenced
+        // Set short expiration second time entry referenced
+        result = new ExpirationAttributes(SHORT_WAIT_MS);
       }
       return result;
     }

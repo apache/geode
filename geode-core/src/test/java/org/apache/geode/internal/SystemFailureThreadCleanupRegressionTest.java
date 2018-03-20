@@ -24,17 +24,16 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
+/**
+ * TRAC #49856: Some GemFire Threads not cleaned up in cache close.
+ */
 @Category(IntegrationTest.class)
-public class Bug49856JUnitTest {
-
-  public Bug49856JUnitTest() {}
+public class SystemFailureThreadCleanupRegressionTest {
 
   @Test
   public void testNoGFThreadsRunningPostCacheClose() throws Exception {
-
     ClientCacheFactory ccf = new ClientCacheFactory();
     GemFireCacheImpl cache = (GemFireCacheImpl) ccf.create();
 
@@ -54,7 +53,6 @@ public class Bug49856JUnitTest {
   private void checkThreads(boolean expectThreads) {
     boolean proctorRunning = false;
     boolean watchDogRunning = false;
-    boolean loggerConsumerRunning = false;
 
     for (Thread t : Thread.getAllStackTraces().keySet()) {
       if (t.getName().contains("SystemFailure WatchDog")) {
@@ -74,5 +72,4 @@ public class Bug49856JUnitTest {
       assertTrue(sb.toString(), !proctorRunning && !watchDogRunning);
     }
   }
-
 }

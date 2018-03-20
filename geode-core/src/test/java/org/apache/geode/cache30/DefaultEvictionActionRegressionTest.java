@@ -14,17 +14,24 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -33,51 +40,53 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * CacheXmlParser when cache.xml has eviction attributes with no eviction action specified. which
  * was being set to EvictionAction.NONE
  *
+ * <p>
+ * TRAC #40662: LRU behavior different when action isn't specified
+ *
  * @since GemFire 6.6
  */
 @Category(IntegrationTest.class)
-@Ignore("Test is broken and was named Bug40662JUnitDisabledTest")
-public class Bug40662JUnitTest {
+public class DefaultEvictionActionRegressionTest {
 
-  private static final String BUG_40662_XML =
-      Bug40662JUnitTest.class.getResource("bug40662noevictionaction.xml").getFile();
+  private static final String BUG_40662_XML = DefaultEvictionActionRegressionTest.class
+      .getResource("DefaultEvictionActionRegressionTest_cache.xml").getFile();
 
-  DistributedSystem ds;
-  Cache cache;
+  private DistributedSystem ds;
+  private Cache cache;
+
+  @Before
+  public void setUp() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(CACHE_XML_FILE, BUG_40662_XML);
+    ds = DistributedSystem.connect(props);
+    cache = CacheFactory.create(ds);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (cache != null) {
+      cache.close();
+      cache = null;
+    }
+    if (ds != null) {
+      ds.disconnect();
+      ds = null;
+    }
+  }
 
   /**
    * Test for checking eviction action in eviction attributes if no evicition action is specified in
    * cache.xml
    */
+  @Test
   public void testEvictionActionSetLocalDestroyPass() {
-    Region exampleRegion = this.cache.getRegion("example-region");
+    Region exampleRegion = cache.getRegion("example-region");
     RegionAttributes<Object, Object> attrs = exampleRegion.getAttributes();
     EvictionAttributes evicAttrs = attrs.getEvictionAttributes();
 
     // Default eviction action is LOCAL_DESTROY always.
     assertEquals(EvictionAction.LOCAL_DESTROY, evicAttrs.getAction());
   }
-
-  @After
-  protected void tearDown() throws Exception {
-    if (this.cache != null) {
-      this.cache.close();
-      this.cache = null;
-    }
-    if (this.ds != null) {
-      this.ds.disconnect();
-      this.ds = null;
-    }
-  }
-
-  @Before
-  protected void setUp() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    props.setProperty(CACHE_XML_FILE, BUG_40662_XML);
-    this.ds = DistributedSystem.connect(props);
-    this.cache = CacheFactory.create(this.ds);
-  }
-
 }
