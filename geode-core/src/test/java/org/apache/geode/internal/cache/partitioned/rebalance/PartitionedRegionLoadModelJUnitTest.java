@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned.rebalance;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -32,7 +32,6 @@ import java.util.Random;
 import java.util.Set;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -40,12 +39,16 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.OfflineMemberDetails;
+import org.apache.geode.internal.cache.partitioned.OfflineMemberDetailsImpl;
+import org.apache.geode.internal.cache.partitioned.PRLoad;
+import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator.Completion;
 import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.AddressComparor;
 import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.SimulatedBucketOperator;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.AddressComparor;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.test.junit.categories.UnitTest;
 

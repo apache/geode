@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned.rebalance;
 
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
 
 /**
  * A director to move buckets to improve the load balance of a PR. This is most commonly used as an
