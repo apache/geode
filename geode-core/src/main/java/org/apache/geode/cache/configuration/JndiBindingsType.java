@@ -659,7 +659,7 @@ public class JndiBindingsType {
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "",
         propOrder = {"configPropertyName", "configPropertyType", "configPropertyValue"})
-    public static class ConfigProperty {
+    public static class ConfigProperty implements CacheElement {
 
       @XmlElement(name = "config-property-name", namespace = "http://geode.apache.org/schema/cache",
           required = true)
@@ -677,6 +677,16 @@ public class JndiBindingsType {
         this.configPropertyName = name;
         this.configPropertyType = type;
         this.configPropertyValue = value;
+      }
+
+      /**
+       * Get the id of the element. The id is the same as the name.
+       *
+       * @return the id of the element
+       */
+      @Override
+      public String getId() {
+        return getName();
       }
 
       /**

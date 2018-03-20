@@ -123,6 +123,7 @@ org/apache/geode/cache/client/internal/pooling/ConnectionDestroyedException,true
 org/apache/geode/cache/configuration/EnumActionDestroyOverflow,false,value:java/lang/String
 org/apache/geode/cache/configuration/EnumReadableWritable,false,value:java/lang/String
 org/apache/geode/cache/configuration/JndiBindingsType$JndiBinding,false,blockingTimeoutSeconds:java/lang/String,configProperty:java/util/List,connPooledDatasourceClass:java/lang/String,connectionUrl:java/lang/String,idleTimeoutSeconds:java/lang/String,initPoolSize:java/lang/String,jdbcDriverClass:java/lang/String,jndiName:java/lang/String,loginTimeoutSeconds:java/lang/String,managedConnFactoryClass:java/lang/String,maxPoolSize:java/lang/String,password:java/lang/String,transactionType:java/lang/String,type:java/lang/String,userName:java/lang/String,xaDatasourceClass:java/lang/String
+org/apache/geode/cache/configuration/JndiBindingsType$JndiBinding$ConfigProperty,false,configPropertyName:java/lang/String,configPropertyType:java/lang/String,configPropertyValue:java/lang/String
 org/apache/geode/cache/configuration/RegionAttributesDataPolicy,false,value:java/lang/String
 org/apache/geode/cache/configuration/RegionAttributesIndexUpdateType,false,value:java/lang/String
 org/apache/geode/cache/configuration/RegionAttributesMirrorType,false,value:java/lang/String
