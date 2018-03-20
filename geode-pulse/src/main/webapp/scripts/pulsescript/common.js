@@ -114,6 +114,26 @@ function getCookie(c_name) {
   }
 }
 
+function openHelpGuide() {
+    $.getJSON("pulseVersion", function(data) {
+        var pulseVersion = data.pulseVersion;
+        if (data.pulseVersion != undefined && data.pulseVersion != "") {
+            //1.6.0-SNAPSHOT
+            var pulseGuideLocation;
+            var tokens = pulseVersion.split(".");
+            if(pulseVersion.indexOf("SNAPSHOT") > 0) {
+                //fall back to one version older guide in case if its snapshot.
+                pulseGuideLocation = tokens[0] + (tokens[1] - 1);
+            } else {
+                pulseGuideLocation = tokens[0]+tokens[1];
+            }
+            var url = `http://geode.apache.org/docs/guide/${pulseGuideLocation}/tools_modules/pulse/pulse-overview.html`;
+            window.open(url, '_blank');
+        }
+    });
+    return false;
+}
+
 // function used for setting cookies
 function setCookie(c_name, value, exdays) {
   var exdate = new Date();
