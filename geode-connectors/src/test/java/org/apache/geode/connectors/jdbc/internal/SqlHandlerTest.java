@@ -97,6 +97,7 @@ public class SqlHandlerTest {
     when(region.getRegionService()).thenReturn(cache);
     tableMetaDataManager = mock(TableMetaDataManager.class);
     tableMetaDataView = mock(TableMetaDataView.class);
+    when(tableMetaDataView.getTableName()).thenReturn(TABLE_NAME);
     when(tableMetaDataView.getKeyColumnName()).thenReturn(KEY_COLUMN);
     when(tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME))
         .thenReturn(tableMetaDataView);
@@ -403,7 +404,7 @@ public class SqlHandlerTest {
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
 
     List<ColumnValue> columnValueList =
-        handler.getColumnToValueList(connection, regionMapping, key, value, Operation.GET);
+        handler.getColumnToValueList(tableMetaDataView, regionMapping, key, value, Operation.GET);
 
     assertThat(columnValueList).hasSize(1);
     assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);
@@ -418,8 +419,8 @@ public class SqlHandlerTest {
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
     when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
 
-    List<ColumnValue> columnValueList =
-        handler.getColumnToValueList(connection, regionMapping, key, value, Operation.UPDATE);
+    List<ColumnValue> columnValueList = handler.getColumnToValueList(tableMetaDataView,
+        regionMapping, key, value, Operation.UPDATE);
 
     assertThat(columnValueList).hasSize(2);
     assertThat(columnValueList.get(0).getColumnName()).isEqualTo(nonKeyColumn);
@@ -431,8 +432,8 @@ public class SqlHandlerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
 
-    List<ColumnValue> columnValueList =
-        handler.getColumnToValueList(connection, regionMapping, key, value, Operation.DESTROY);
+    List<ColumnValue> columnValueList = handler.getColumnToValueList(tableMetaDataView,
+        regionMapping, key, value, Operation.DESTROY);
 
     assertThat(columnValueList).hasSize(1);
     assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);

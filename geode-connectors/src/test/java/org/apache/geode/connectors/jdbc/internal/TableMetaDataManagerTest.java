@@ -27,6 +27,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -168,6 +171,26 @@ public class TableMetaDataManagerTest {
   }
 
   @Test
+  public void validateExpectedColumnNames() throws SQLException {
+    setupPrimaryKeysMetaData();
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
+    when(columnResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+    String columnName1 = "columnName1";
+    int columnDataType1 = 1;
+    String columnName2 = "columnName2";
+    int columnDataType2 = 2;
+    when(columnResultSet.getString("COLUMN_NAME")).thenReturn(columnName1).thenReturn(columnName2);
+    when(columnResultSet.getInt("DATA_TYPE")).thenReturn(columnDataType1)
+        .thenReturn(columnDataType2);
+    Set<String> expectedColumnNames = new HashSet<>(Arrays.asList(columnName1, columnName2));
+
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
+    Set<String> columnNames = data.getColumnNames();
+
+    assertThat(columnNames).isEqualTo(expectedColumnNames);
+  }
+
+  @Test
   public void validateThatCloseOnPrimaryKeysResultSetIsCalledByGetTableMetaDataView()
       throws SQLException {
     setupPrimaryKeysMetaData();
@@ -190,33 +213,14 @@ public class TableMetaDataManagerTest {
   }
 
   @Test
-  public void lookingUpDataTypeWithNameThatDiffersInCaseWillFindIt() throws SQLException {
+  public void validateTableNameIsSetByGetTableMetaDataView() throws SQLException {
     setupPrimaryKeysMetaData();
     when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
-    when(columnResultSet.next()).thenReturn(true).thenReturn(false);
-    String columnName1 = "columnName1";
-    int columnDataType1 = 1;
-    when(columnResultSet.getString("COLUMN_NAME")).thenReturn(columnName1);
-    when(columnResultSet.getInt("DATA_TYPE")).thenReturn(columnDataType1);
 
     TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
-    int dataType1 = data.getColumnDataType(columnName1.toUpperCase());
 
-    assertThat(dataType1).isEqualTo(columnDataType1);
+    assertThat(data.getTableName()).isEqualTo(TABLE_NAME);
   }
-
-  @Test
-  public void throwsExceptionWhenTwoColumnsWithSameCaseInsensitiveNameExist() throws Exception {
-    setupPrimaryKeysMetaData();
-    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
-    when(columnResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
-    when(columnResultSet.getString("COLUMN_NAME")).thenReturn("colName").thenReturn("COLNAME");
-
-    assertThatThrownBy(() -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME))
-        .isInstanceOf(JdbcConnectorException.class).hasMessage(
-            "Column names must be different in case. Two columns both have the name colname");
-  }
-
 
   private void setupPrimaryKeysMetaData() throws SQLException {
     when(primaryKeysResultSet.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN);
