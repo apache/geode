@@ -16,9 +16,7 @@ package org.apache.geode.internal.protocol.protobuf.v1.utilities;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
 /**
@@ -26,8 +24,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
  * mainly focused on helper functions which can be used in building BasicTypes for use in other
  * messages or those used to create the top level Message objects.
  * <p>
- * Helper functions specific to creating ClientProtocol.Messages can be found at
- * {@link ProtobufRequestUtilities}
  */
 @Experimental
 public abstract class ProtobufUtilities {
@@ -59,22 +55,8 @@ public abstract class ProtobufUtilities {
    */
   public static BasicTypes.Entry createEntry(ProtobufSerializationService serializationService,
       Object unencodedKey, Object unencodedValue) throws EncodingException {
-    if (unencodedValue == null) {
-      return BasicTypes.Entry.newBuilder().setKey(serializationService.encode(unencodedKey))
-          .build();
-    }
     return createEntry(serializationService.encode(unencodedKey),
         serializationService.encode(unencodedValue));
   }
 
-  /**
-   * This creates a protobuf message containing a ClientProtocol.Message
-   *
-   * @param getAllRequest - The request for the message
-   * @return a protobuf Message containing the above parameters
-   */
-  public static ClientProtocol.Message createProtobufRequestWithGetAllRequest(
-      RegionAPI.GetAllRequest getAllRequest) {
-    return ClientProtocol.Message.newBuilder().setGetAllRequest(getAllRequest).build();
-  }
 }

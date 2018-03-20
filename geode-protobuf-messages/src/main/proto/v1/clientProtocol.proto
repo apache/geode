@@ -78,6 +78,9 @@ message Message {
 
         ClearRequest clearRequest = 32;
         ClearResponse clearResponse = 33;
+
+        PutIfAbsentRequest putIfAbsentRequest = 34;
+        PutIfAbsentResponse putIfAbsentResponse = 35;
     }
 }
 
