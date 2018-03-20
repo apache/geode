@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
+import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,35 +28,54 @@ import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- * FlakyTest: GEODE-4832: Caused by prior IntegrationTest(s) leaving behind a disk store file in
- * current working directory.
- */
-@Category({IntegrationTest.class, FlakyTest.class})
+@Category(IntegrationTest.class)
 public class CacheWriterGetOldValueIntegrationTest {
 
   private final Map<String, String> expectedValues = new HashMap<>();
 
   private InternalCache cache;
+  private Region<String, String> region;
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public TestName testName = new TestName();
 
   @Before
   public void setUp() throws Exception {
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0").create();
+
+    File dir = temporaryFolder.newFolder(testName.getMethodName());
+
+    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(new File[] {dir});
+
+    DiskStore diskStore = diskStoreFactory.create(testName.getMethodName());
+
+    RegionFactory<String, String> regionFactory = cache.createRegionFactory();
+    regionFactory.setEvictionAttributes(createLRUEntryAttributes(1, OVERFLOW_TO_DISK));
+    regionFactory.setDataPolicy(DataPolicy.NORMAL);
+    regionFactory.setDiskStoreName(diskStore.getName());
+
+    region = regionFactory.create(testName.getMethodName());
   }
 
   @After
@@ -64,7 +86,6 @@ public class CacheWriterGetOldValueIntegrationTest {
 
   @Test
   public void doPutAll() {
-    Region<String, String> region = createOverflowRegion();
     put(region, "k1", "v1");
     put(region, "k2", "v2");
 
@@ -81,7 +102,6 @@ public class CacheWriterGetOldValueIntegrationTest {
 
   @Test
   public void doRemoveAll() {
-    Region<String, String> region = createOverflowRegion();
     put(region, "k1", "v1");
     put(region, "k2", "v2");
 
@@ -104,7 +124,6 @@ public class CacheWriterGetOldValueIntegrationTest {
   }
 
   private void doOldValueTest(boolean useTx) {
-    Region<String, String> region = createOverflowRegion();
     put(region, "k1", "v1");
     put(region, "k2", "v2");
 
@@ -274,13 +293,4 @@ public class CacheWriterGetOldValueIntegrationTest {
       seenEntries.put(event.getKey(), event.getOldValue());
     }
   }
-
-  private <K, V> Region<K, V> createOverflowRegion() {
-    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
-    regionFactory.setEvictionAttributes(
-        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
-    regionFactory.setDataPolicy(DataPolicy.NORMAL);
-    return regionFactory.create("region");
-  }
-
 }
