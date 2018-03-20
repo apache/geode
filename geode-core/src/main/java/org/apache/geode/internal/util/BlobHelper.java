@@ -85,7 +85,7 @@ public class BlobHelper {
       PdxInstanceImpl.setPdxReadSerialized(allowPdxReadSerialized);
     }
     try {
-      return deserializeBlob(blob, version, in, true);
+      return deserializeBlob(blob, version, in);
     } finally {
       if (readPdx != allowPdxReadSerialized) {
         PdxInstanceImpl.setPdxReadSerialized(readPdx);
