@@ -23,6 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -33,6 +34,10 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
   private String clusterJar;
   private String group1Jar;
   private String group2Jar;
+
+
+  @Rule
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();

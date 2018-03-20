@@ -35,6 +35,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.xml.sax.SAXException;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
@@ -133,23 +134,39 @@ public class ExportImportClusterConfigurationCommands extends GfshCommand {
           help = CliStrings.IMPORT_SHARED_CONFIG__ZIP__HELP) String zip)
       throws IOException, TransformerException, SAXException, ParserConfigurationException {
 
-    InternalLocator locator = InternalLocator.getLocator();
+    InternalClusterConfigurationService sc = getSharedConfiguration();
 
-    if (!locator.isSharedConfigurationRunning()) {
-      ErrorResultData errorData = ResultBuilder.createErrorResultData();
-      errorData.addLine(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);
-      return ResultBuilder.buildResult(errorData);
+    if (sc == null) {
+      return ResultBuilder.createGemFireErrorResult(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);
     }
 
     Set<DistributedMember> servers = getAllNormalMembers();
 
-    Set<String> regionsWithData = servers.stream().map(this::getRegionNamesOnServer)
-        .flatMap(Collection::stream).collect(toSet());
+    // check if running servers are vanilla servers
+    if (servers.size() > 0) {
+      Set<String> groupNames = sc.getConfigurationRegion().keySet();
+      for (String groupName : groupNames) {
+        CacheConfig cacheConfig = sc.getCacheConfig(groupName);
+        if (cacheConfig.getRegion().size() > 0 || cacheConfig.getAsyncEventQueue().size() > 0
+            || cacheConfig.getDiskStore().size() > 0
+            || cacheConfig.getCustomCacheElements().size() > 0
+            || cacheConfig.getJndiBindings().size() > 0 || cacheConfig.getGatewayReceiver() != null
+            || cacheConfig.getGatewaySender().size() > 0) {
+          return ResultBuilder.createGemFireErrorResult(
+              "Running servers have existing cluster configuration applied already.");
+        }
+      }
 
-    if (!regionsWithData.isEmpty()) {
-      return ResultBuilder
-          .createGemFireErrorResult("Cannot import cluster configuration with existing regions: "
-              + regionsWithData.stream().collect(joining(",")));
+      // further checks in case any servers has regions not defined by the cluster configuration to
+      // avoid data loss.
+      Set<String> serverRegionNames = servers.stream().map(this::getRegionNamesOnServer)
+          .flatMap(Collection::stream).collect(toSet());
+
+      if (!serverRegionNames.isEmpty()) {
+        return ResultBuilder
+            .createGemFireErrorResult("Cannot import cluster configuration with existing regions: "
+                + serverRegionNames.stream().collect(joining(",")));
+      }
     }
 
     List<String> filePathFromShell = CommandExecutionContext.getFilePathFromShell();
@@ -157,8 +174,6 @@ public class ExportImportClusterConfigurationCommands extends GfshCommand {
     Result result;
     InfoResultData infoData = ResultBuilder.createInfoResultData();
     String zipFilePath = filePathFromShell.get(0);
-
-    InternalClusterConfigurationService sc = locator.getSharedConfiguration();
 
     // backup the old config
     for (Configuration config : sc.getConfigurationRegion().values()) {
@@ -173,16 +188,18 @@ public class ExportImportClusterConfigurationCommands extends GfshCommand {
     infoData.addLine(CliStrings.IMPORT_SHARED_CONFIG__SUCCESS__MSG);
 
     // Bounce the cache of each member
-    Set<CliFunctionResult> functionResults =
-        servers.stream().map(this::reCreateCache).collect(toSet());
+    if (servers.size() > 0) {
+      List<CliFunctionResult> functionResults =
+          executeAndGetFunctionResult(new RecreateCacheFunction(), null, servers);
 
-    for (CliFunctionResult functionResult : functionResults) {
-      if (functionResult.isSuccessful()) {
-        infoData.addLine("Successfully applied the imported cluster configuration on "
-            + functionResult.getMemberIdOrName());
-      } else {
-        infoData.addLine("Failed to apply the imported cluster configuration on "
-            + functionResult.getMemberIdOrName() + " due to " + functionResult.getMessage());
+      for (CliFunctionResult functionResult : functionResults) {
+        if (functionResult.isSuccessful()) {
+          infoData.addLine("Successfully applied the imported cluster configuration on "
+              + functionResult.getMemberIdOrName());
+        } else {
+          infoData.addLine("Failed to apply the imported cluster configuration on "
+              + functionResult.getMemberIdOrName() + " due to " + functionResult.getMessage());
+        }
       }
     }
 
@@ -193,13 +210,6 @@ public class ExportImportClusterConfigurationCommands extends GfshCommand {
   private Set<String> getRegionNamesOnServer(DistributedMember server) {
     ResultCollector rc = executeFunction(new GetRegionNamesFunction(), null, server);
     List<Set<String>> results = (List<Set<String>>) rc.getResult();
-
-    return results.get(0);
-  }
-
-  private CliFunctionResult reCreateCache(DistributedMember server) {
-    ResultCollector rc = executeFunction(new RecreateCacheFunction(), null, server);
-    List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
 
     return results.get(0);
   }
