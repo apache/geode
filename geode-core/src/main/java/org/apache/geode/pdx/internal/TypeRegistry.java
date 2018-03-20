@@ -17,6 +17,7 @@ package org.apache.geode.pdx.internal;
 import static java.lang.Integer.*;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
@@ -495,6 +496,14 @@ public class TypeRegistry {
    */
   public PdxType getPdxTypeForField(String fieldName, String className) {
     return this.distributedTypeRegistry.getPdxTypeForField(fieldName, className);
+  }
+
+  /**
+   * Returns all the PdxTypes for the given class name.
+   * An empty set will be returned if no types exist.
+   */
+  public Set<PdxType> getPdxTypesForClassName(String className) {
+    return this.distributedTypeRegistry.getPdxTypesForClassName(className);
   }
 
   public void addImportedType(int typeId, PdxType importedType) {

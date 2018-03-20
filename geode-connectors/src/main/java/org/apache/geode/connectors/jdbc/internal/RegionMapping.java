@@ -15,6 +15,8 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +24,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 @Experimental
 public class RegionMapping implements Serializable {
@@ -52,7 +56,7 @@ public class RegionMapping implements Serializable {
       ConcurrentMap<String, String> fieldToColumnMap) {
     ConcurrentMap<String, String> reverseMap = new ConcurrentHashMap<>();
     for (Map.Entry<String, String> entry : fieldToColumnMap.entrySet()) {
-      String reverseMapKey = entry.getValue().toLowerCase();
+      String reverseMapKey = entry.getValue();
       String reverseMapValue = entry.getKey();
       if (reverseMap.containsKey(reverseMapKey)) {
         throw new IllegalArgumentException(
@@ -115,15 +119,54 @@ public class RegionMapping implements Serializable {
         columnName = fieldName;
       }
       fieldToColumnMap.put(fieldName, columnName);
-      columnToFieldMap.put(columnName.toLowerCase(), fieldName);
+      columnToFieldMap.put(columnName, fieldName);
     }
     return columnName;
   }
 
-  public String getFieldNameForColumn(String columnName) {
-    String canonicalColumnName = columnName.toLowerCase();
-    String fieldName = columnToFieldMap.get(canonicalColumnName);
-    return fieldName != null ? fieldName : canonicalColumnName;
+  public String getFieldNameForColumn(String columnName, TypeRegistry typeRegistry) {
+    String fieldName = columnToFieldMap.get(columnName);
+    if (fieldName == null) {
+      if (getPdxClassName() == null || typeRegistry == null) {
+        fieldName = columnName.toLowerCase();
+      } else {
+        Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(getPdxClassName());
+        for (PdxType pdxType : pdxTypes) {
+          if (pdxType.getPdxField(columnName) != null) {
+            fieldName = columnName;
+            break;
+          }
+        }
+        if (fieldName == null) {
+          HashSet<String> matchingFieldNames = new HashSet<>();
+          for (PdxType pdxType : pdxTypes) {
+            for (String existingFieldName : pdxType.getFieldNames()) {
+              if (existingFieldName.equalsIgnoreCase(columnName)) {
+                matchingFieldNames.add(existingFieldName);
+              }
+            }
+          }
+          if (matchingFieldNames.isEmpty()) {
+            if (pdxTypes.isEmpty()) {
+              throw new JdbcConnectorException(
+                  "The class " + getPdxClassName() + " has not been pdx serialized.");
+            } else {
+              throw new JdbcConnectorException("The class " + getPdxClassName()
+                  + " does not have a field that matches the column " + columnName);
+            }
+          } else if (matchingFieldNames.size() > 1) {
+            throw new JdbcConnectorException(
+                "Could not determine what pdx field to use for the column name " + columnName
+                    + " because the pdx fields " + matchingFieldNames + "all match it.");
+          } else {
+            fieldName = matchingFieldNames.iterator().next();
+          }
+        }
+      }
+      fieldToColumnMap.put(fieldName, columnName);
+      columnToFieldMap.put(columnName, fieldName);
+    }
+    return fieldName;
   }
 
   public Map<String, String> getFieldToColumnMap() {

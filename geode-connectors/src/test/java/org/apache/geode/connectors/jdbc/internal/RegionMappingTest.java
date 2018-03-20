@@ -75,7 +75,7 @@ public class RegionMappingTest {
     assertThat(mapping.getColumnToFieldMap()).isEmpty();
     assertThat(mapping.getRegionToTableName()).isNull();
     assertThat(mapping.getColumnNameForField("fieldName", null)).isEqualTo("fieldName");
-    assertThat(mapping.getFieldNameForColumn("columnName")).isEqualTo("columnname");
+    assertThat(mapping.getFieldNameForColumn("columnName", null)).isEqualTo("columnname");
   }
 
   @Test
@@ -132,7 +132,7 @@ public class RegionMappingTest {
     expectedFieldMap.put(fieldName1, fieldName1);
     Map<String, String> expectedColumnMap = new HashMap<>();
     expectedColumnMap.put("column", "otherField");
-    expectedColumnMap.put(fieldName1.toLowerCase(), fieldName1);
+    expectedColumnMap.put(fieldName1, fieldName1);
 
     String columName = mapping.getColumnNameForField(fieldName1, null);
 
@@ -197,7 +197,7 @@ public class RegionMappingTest {
 
     mapping = new RegionMapping(null, null, null, null, true, fieldMap);
 
-    assertThat(mapping.getFieldNameForColumn("columnName")).isEqualTo("columnname");
+    assertThat(mapping.getFieldNameForColumn("columnName", null)).isEqualTo("columnname");
   }
 
   @Test
@@ -225,7 +225,7 @@ public class RegionMappingTest {
 
     mapping = new RegionMapping(null, null, null, null, true, fieldMap);
 
-    assertThat(mapping.getFieldNameForColumn(columnName1)).isEqualTo(fieldName1);
+    assertThat(mapping.getFieldNameForColumn(columnName1, null)).isEqualTo(fieldName1);
   }
 
   @Test
@@ -240,10 +240,9 @@ public class RegionMappingTest {
     assertThat(mapping.getFieldToColumnMap()).containsEntry(fieldName1, columnName1)
         .containsEntry(fieldName2, columnName2);
     assertThat(mapping.getColumnToFieldMap().size()).isEqualTo(2);
-    assertThat(mapping.getColumnToFieldMap()).containsOnlyKeys(columnName1.toLowerCase(),
-        columnName2.toLowerCase());
-    assertThat(mapping.getColumnToFieldMap()).containsEntry(columnName1.toLowerCase(), fieldName1)
-        .containsEntry(columnName2.toLowerCase(), fieldName2);
+    assertThat(mapping.getColumnToFieldMap()).containsOnlyKeys(columnName1, columnName2);
+    assertThat(mapping.getColumnToFieldMap()).containsEntry(columnName1, fieldName1)
+        .containsEntry(columnName2, fieldName2);
   }
 
   @Test

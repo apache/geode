@@ -25,6 +25,7 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 class SqlToPdxInstanceCreator {
   private final InternalCache cache;
@@ -46,11 +47,13 @@ class SqlToPdxInstanceCreator {
     if (resultSet.next()) {
       ResultSetMetaData metaData = resultSet.getMetaData();
       int ColumnsNumber = metaData.getColumnCount();
+      TypeRegistry typeRegistry = cache.getPdxRegistry();
       for (int i = 1; i <= ColumnsNumber; i++) {
         String columnName = metaData.getColumnName(i);
         if (regionMapping.isPrimaryKeyInValue() || !keyColumnName.equalsIgnoreCase(columnName)) {
-          String fieldName = mapColumnNameToFieldName(columnName, regionMapping);
-          FieldType fieldType = getFieldType(cache, regionMapping.getPdxClassName(), fieldName);
+          String fieldName = regionMapping.getFieldNameForColumn(columnName, typeRegistry);
+          FieldType fieldType =
+              getFieldType(typeRegistry, regionMapping.getPdxClassName(), fieldName);
           writeField(factory, resultSet, i, fieldName, fieldType);
         }
       }
@@ -61,10 +64,6 @@ class SqlToPdxInstanceCreator {
       pdxInstance = factory.create();
     }
     return pdxInstance;
-  }
-
-  private String mapColumnNameToFieldName(String columnName, RegionMapping regionMapping) {
-    return regionMapping.getFieldNameForColumn(columnName);
   }
 
   private PdxInstanceFactory getPdxInstanceFactory(InternalCache cache,
@@ -184,12 +183,12 @@ class SqlToPdxInstanceCreator {
     }
   }
 
-  private FieldType getFieldType(InternalCache cache, String pdxClassName, String fieldName) {
+  private FieldType getFieldType(TypeRegistry typeRegistry, String pdxClassName, String fieldName) {
     if (pdxClassName == null) {
       return FieldType.OBJECT;
     }
 
-    PdxType pdxType = cache.getPdxRegistry().getPdxTypeForField(fieldName, pdxClassName);
+    PdxType pdxType = typeRegistry.getPdxTypeForField(fieldName, pdxClassName);
     if (pdxType != null) {
       PdxField pdxField = pdxType.getPdxField(fieldName);
       if (pdxField != null) {
