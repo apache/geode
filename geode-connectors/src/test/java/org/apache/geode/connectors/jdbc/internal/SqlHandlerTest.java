@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -182,7 +183,7 @@ public class SqlHandlerTest {
   public void writeWithCharField() throws Exception {
     String fieldName = "fieldName";
     Object fieldValue = 'S';
-    when(regionMapping.getColumnNameForField(fieldName)).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -199,7 +200,7 @@ public class SqlHandlerTest {
   public void writeWithNonCharField() throws Exception {
     String fieldName = "fieldName";
     int fieldValue = 100;
-    when(regionMapping.getColumnNameForField(fieldName)).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -217,7 +218,7 @@ public class SqlHandlerTest {
     String fieldName = "fieldName";
     Object fieldValue = null;
     int dataType = 0;
-    when(regionMapping.getColumnNameForField(fieldName)).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -236,7 +237,7 @@ public class SqlHandlerTest {
     Object fieldValue = null;
     int dataType = 79;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(fieldName)).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -412,8 +413,8 @@ public class SqlHandlerTest {
   public void returnsCorrectColumnsForUpsertOperations() throws Exception {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     String nonKeyColumn = "otherColumn";
-    when(regionMapping.getColumnNameForField(KEY_COLUMN)).thenReturn(KEY_COLUMN);
-    when(regionMapping.getColumnNameForField(nonKeyColumn)).thenReturn(nonKeyColumn);
+    when(regionMapping.getColumnNameForField(eq(KEY_COLUMN), any())).thenReturn(KEY_COLUMN);
+    when(regionMapping.getColumnNameForField(eq(nonKeyColumn), any())).thenReturn(nonKeyColumn);
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
     when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
 

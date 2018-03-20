@@ -50,7 +50,7 @@ public class RegionMappingBuilderTest {
     assertThat(regionMapping.getPdxClassName()).isEqualTo("pdxClassName");
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("configName");
     assertThat(regionMapping.isPrimaryKeyInValue()).isTrue();
-    assertThat(regionMapping.getColumnNameForField("fieldName")).isEqualTo("columnName");
+    assertThat(regionMapping.getColumnNameForField("fieldName", null)).isEqualTo("columnName");
   }
 
   @Test
@@ -70,7 +70,7 @@ public class RegionMappingBuilderTest {
 
     assertThat(regionMapping.getRegionName()).isEqualTo("regionName");
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("configName");
-    assertThat(regionMapping.getFieldToColumnMap()).isNull();
+    assertThat(regionMapping.getFieldToColumnMap()).isEmpty();
   }
 
   @Test
@@ -79,8 +79,8 @@ public class RegionMappingBuilderTest {
     RegionMapping regionMapping =
         new RegionMappingBuilder().withFieldToColumnMappings(fieldMappings).build();
 
-    assertThat(regionMapping.getColumnNameForField("field1")).isEqualTo("column1");
-    assertThat(regionMapping.getColumnNameForField("field2")).isEqualTo("column2");
+    assertThat(regionMapping.getColumnNameForField("field1", null)).isEqualTo("column1");
+    assertThat(regionMapping.getColumnNameForField("field2", null)).isEqualTo("column2");
   }
 
   @Test
@@ -89,8 +89,8 @@ public class RegionMappingBuilderTest {
     RegionMapping regionMapping =
         new RegionMappingBuilder().withFieldToColumnMappings(fieldMappings).build();
 
-    assertThat(regionMapping.getColumnNameForField("field1")).isEqualTo("column1");
-    assertThat(regionMapping.getColumnNameForField("field2")).isEqualTo("column2");
+    assertThat(regionMapping.getColumnNameForField("field1", null)).isEqualTo("column1");
+    assertThat(regionMapping.getColumnNameForField("field2", null)).isEqualTo("column2");
   }
 
   @Test

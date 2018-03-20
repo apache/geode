@@ -15,11 +15,13 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 
 @Experimental
 public class RegionMapping implements Serializable {
@@ -28,8 +30,8 @@ public class RegionMapping implements Serializable {
   private final String tableName;
   private final String connectionConfigName;
   private final Boolean primaryKeyInValue;
-  private final Map<String, String> fieldToColumnMap;
-  private final Map<String, String> columnToFieldMap;
+  private final ConcurrentMap<String, String> fieldToColumnMap;
+  private final ConcurrentMap<String, String> columnToFieldMap;
 
   public RegionMapping(String regionName, String pdxClassName, String tableName,
       String connectionConfigName, Boolean primaryKeyInValue,
@@ -39,16 +41,16 @@ public class RegionMapping implements Serializable {
     this.tableName = tableName;
     this.connectionConfigName = connectionConfigName;
     this.primaryKeyInValue = primaryKeyInValue;
-    this.fieldToColumnMap =
-        fieldToColumnMap == null ? null : Collections.unmodifiableMap(fieldToColumnMap);
-    this.columnToFieldMap = createReverseMap(fieldToColumnMap);
+    this.fieldToColumnMap = new ConcurrentHashMap<>();
+    if (fieldToColumnMap != null) {
+      this.fieldToColumnMap.putAll(fieldToColumnMap);
+    }
+    this.columnToFieldMap = createReverseMap(this.fieldToColumnMap);
   }
 
-  private static Map<String, String> createReverseMap(Map<String, String> fieldToColumnMap) {
-    if (fieldToColumnMap == null) {
-      return null;
-    }
-    Map<String, String> reverseMap = new HashMap<>();
+  private static ConcurrentMap<String, String> createReverseMap(
+      ConcurrentMap<String, String> fieldToColumnMap) {
+    ConcurrentMap<String, String> reverseMap = new ConcurrentHashMap<>();
     for (Map.Entry<String, String> entry : fieldToColumnMap.entrySet()) {
       String reverseMapKey = entry.getValue().toLowerCase();
       String reverseMapValue = entry.getKey();
@@ -58,7 +60,7 @@ public class RegionMapping implements Serializable {
       }
       reverseMap.put(reverseMapKey, reverseMapValue);
     }
-    return Collections.unmodifiableMap(reverseMap);
+    return reverseMap;
   }
 
   public String getConnectionConfigName() {
@@ -88,20 +90,39 @@ public class RegionMapping implements Serializable {
     return tableName;
   }
 
-  public String getColumnNameForField(String fieldName) {
-    String columnName = null;
-    if (fieldToColumnMap != null) {
-      columnName = fieldToColumnMap.get(fieldName);
+  public String getColumnNameForField(String fieldName, TableMetaDataView tableMetaDataView) {
+    String columnName = fieldToColumnMap.get(fieldName);
+    if (columnName == null) {
+      if (tableMetaDataView != null) {
+        Set<String> columnNames = tableMetaDataView.getColumnNames();
+        if (columnNames.contains(fieldName)) {
+          // exact match
+          columnName = fieldName;
+        } else {
+          for (String candidate : columnNames) {
+            if (candidate.equalsIgnoreCase(fieldName)) {
+              if (columnName != null) {
+                throw new JdbcConnectorException(
+                    "The SQL table has at least two columns that match the PDX field: "
+                        + fieldName);
+              }
+              columnName = candidate;
+            }
+          }
+        }
+      }
+      if (columnName == null) {
+        columnName = fieldName;
+      }
+      fieldToColumnMap.put(fieldName, columnName);
+      columnToFieldMap.put(columnName.toLowerCase(), fieldName);
     }
-    return columnName != null ? columnName : fieldName;
+    return columnName;
   }
 
   public String getFieldNameForColumn(String columnName) {
     String canonicalColumnName = columnName.toLowerCase();
-    String fieldName = null;
-    if (this.columnToFieldMap != null) {
-      fieldName = columnToFieldMap.get(canonicalColumnName);
-    }
+    String fieldName = columnToFieldMap.get(canonicalColumnName);
     return fieldName != null ? fieldName : canonicalColumnName;
   }
 
@@ -144,8 +165,7 @@ public class RegionMapping implements Serializable {
         : that.connectionConfigName != null) {
       return false;
     }
-    return fieldToColumnMap != null ? fieldToColumnMap.equals(that.fieldToColumnMap)
-        : that.fieldToColumnMap == null;
+    return fieldToColumnMap.equals(that.fieldToColumnMap);
   }
 
   @Override
@@ -155,7 +175,7 @@ public class RegionMapping implements Serializable {
     result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
     result = 31 * result + (connectionConfigName != null ? connectionConfigName.hashCode() : 0);
     result = 31 * result + (primaryKeyInValue ? 1 : 0);
-    result = 31 * result + (fieldToColumnMap != null ? fieldToColumnMap.hashCode() : 0);
+    result = 31 * result + fieldToColumnMap.hashCode();
     return result;
   }
 

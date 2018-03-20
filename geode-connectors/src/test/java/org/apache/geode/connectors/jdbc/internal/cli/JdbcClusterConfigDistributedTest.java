@@ -139,8 +139,8 @@ public class JdbcClusterConfigDistributedTest implements Serializable {
     assertThat(regionMapping.getTableName()).isEqualTo(tableName);
     assertThat(regionMapping.getPdxClassName()).isEqualTo(pdxClass);
     assertThat(regionMapping.isPrimaryKeyInValue()).isEqualTo(keyInValue);
-    assertThat(regionMapping.getColumnNameForField("field1")).isEqualTo("column1");
-    assertThat(regionMapping.getColumnNameForField("field2")).isEqualTo("column2");
+    assertThat(regionMapping.getColumnNameForField("field1", null)).isEqualTo("column1");
+    assertThat(regionMapping.getColumnNameForField("field2", null)).isEqualTo("column2");
   }
 
 }

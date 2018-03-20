@@ -210,17 +210,17 @@ public class SqlHandler {
       return Collections.singletonList(keyColumnValue);
     }
 
-    List<ColumnValue> result =
-        createColumnValueList(tableMetaData, regionMapping, value, keyColumnName);
+    List<ColumnValue> result = createColumnValueList(tableMetaData, regionMapping, value);
     result.add(keyColumnValue);
     return result;
   }
 
   private List<ColumnValue> createColumnValueList(TableMetaDataView tableMetaData,
-      RegionMapping regionMapping, PdxInstance value, String keyColumnName) {
+      RegionMapping regionMapping, PdxInstance value) {
+    final String keyColumnName = tableMetaData.getKeyColumnName();
     List<ColumnValue> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
-      String columnName = regionMapping.getColumnNameForField(fieldName);
+      String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);
       if (columnName.equalsIgnoreCase(keyColumnName)) {
         continue;
       }

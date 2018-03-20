@@ -234,7 +234,7 @@ public class ElementTypeTest {
     ElementType.FIELD_MAPPING.startElement(stack, attributes);
 
     RegionMapping regionMapping = ((RegionMappingBuilder) stack.pop()).build();
-    assertThat(regionMapping.getColumnNameForField("fieldName")).isEqualTo("columnName");
+    assertThat(regionMapping.getColumnNameForField("fieldName", null)).isEqualTo("columnName");
   }
 
   @Test

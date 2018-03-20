@@ -84,6 +84,11 @@ public class JdbcLoaderIntegrationTest {
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
   }
 
+  private void createEmployeeTableWithQuotes() throws Exception {
+    statement.execute("Create Table \"" + REGION_TABLE_NAME
+        + "\" (\"id\" varchar(10) primary key not null, \"name\" varchar(10), \"age\" int, \"Age\" int)");
+  }
+
   private void createClassWithSupportedPdxFieldsTable() throws Exception {
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, " + "aboolean smallint, " + "abyte smallint, "

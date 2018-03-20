@@ -17,6 +17,7 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import java.util.HashMap;
+import java.util.Set;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 
@@ -41,6 +42,11 @@ public class TableMetaData implements TableMetaDataView {
       return 0;
     }
     return dataType;
+  }
+
+  @Override
+  public Set<String> getColumnNames() {
+    return columnNameToTypeMap.keySet();
   }
 
   public void addDataType(String columnName, int dataType) {
