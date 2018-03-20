@@ -82,34 +82,30 @@ public class PutIfAbsentRequestOperationHandlerJUnitTest extends OperationHandle
 
   @Test
   public void nullValuePassedThrough() throws Exception {
-    final RegionAPI.PutIfAbsentRequest
-        request =
+    final RegionAPI.PutIfAbsentRequest request =
         RegionAPI.PutIfAbsentRequest.newBuilder().setRegionName(TEST_REGION)
-            .setEntry(ProtobufUtilities.createEntry(serializationService, TEST_KEY, null))
-            .build();
+            .setEntry(ProtobufUtilities.createEntry(serializationService, TEST_KEY, null)).build();
 
     Result<RegionAPI.PutIfAbsentResponse> response = operationHandler.process(serializationService,
         request, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertNull(serializationService.decode(response.getMessage().getOldValue()));
 
-    verify(regionMock).putIfAbsent(TEST_KEY,null);
+    verify(regionMock).putIfAbsent(TEST_KEY, null);
   }
 
   @Test
   public void nullKeyPassedThrough() throws Exception {
-    final RegionAPI.PutIfAbsentRequest
-        request =
-        RegionAPI.PutIfAbsentRequest.newBuilder().setRegionName(TEST_REGION)
-            .setEntry(ProtobufUtilities.createEntry(serializationService, null,TEST_VALUE))
-            .build();
+    final RegionAPI.PutIfAbsentRequest request = RegionAPI.PutIfAbsentRequest.newBuilder()
+        .setRegionName(TEST_REGION)
+        .setEntry(ProtobufUtilities.createEntry(serializationService, null, TEST_VALUE)).build();
 
     Result<RegionAPI.PutIfAbsentResponse> response = operationHandler.process(serializationService,
         request, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertNull(serializationService.decode(response.getMessage().getOldValue()));
 
-    verify(regionMock).putIfAbsent(null,TEST_VALUE);
+    verify(regionMock).putIfAbsent(null, TEST_VALUE);
   }
 
   @Test
