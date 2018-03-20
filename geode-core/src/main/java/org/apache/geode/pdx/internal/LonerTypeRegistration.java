@@ -15,6 +15,7 @@
 package org.apache.geode.pdx.internal;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.InternalCache;
@@ -144,6 +145,11 @@ public class LonerTypeRegistration implements TypeRegistration {
   @Override
   public PdxType getPdxTypeForField(String fieldName, String className) {
     return delegate.getPdxTypeForField(fieldName, className);
+  }
+
+  @Override
+  public Set<PdxType> getPdxTypesForClassName(String className) {
+    return delegate.getPdxTypesForClassName(className);
   }
 
   @Override

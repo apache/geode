@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -50,6 +49,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.FieldType;
@@ -2648,7 +2648,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       public Object call() throws Exception {
         TypeRegistration registration = getCache().getPdxRegistry().getTypeRegistration();
         Assert.assertTrue(registration instanceof PeerTypeRegistration);
-        Map<String, Set<PdxType>> m = ((PeerTypeRegistration) registration).getClassToType();
+        Map<String, CopyOnWriteHashSet<PdxType>> m =
+            ((PeerTypeRegistration) registration).getClassToType();
         assertEquals(1, m.size());
         assertEquals("PdxVersionedNewPortfolio", m.keySet().iterator().next());
         assertEquals(2, m.values().iterator().next().size());
@@ -2665,7 +2666,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       public Object call() throws Exception {
         TypeRegistration registration = getCache().getPdxRegistry().getTypeRegistration();
         Assert.assertTrue(registration instanceof PeerTypeRegistration);
-        Map<String, Set<PdxType>> m = ((PeerTypeRegistration) registration).getClassToType();
+        Map<String, CopyOnWriteHashSet<PdxType>> m =
+            ((PeerTypeRegistration) registration).getClassToType();
         assertEquals(1, m.size());
         assertEquals("PdxVersionedNewPortfolio", m.keySet().iterator().next());
         assertEquals(2, m.values().iterator().next().size());
