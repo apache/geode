@@ -17,7 +17,6 @@ package org.apache.geode.test.dunit.rules.tests;
 import static org.apache.geode.test.junit.runners.TestRunner.runTestWithExpectedFailure;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -27,7 +26,6 @@ import org.junit.runner.notification.Failure;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Ignore("GEODE-4885")
 @Category(UnitTest.class)
 public class DistributedRestoreSystemPropertiesTest {
 
