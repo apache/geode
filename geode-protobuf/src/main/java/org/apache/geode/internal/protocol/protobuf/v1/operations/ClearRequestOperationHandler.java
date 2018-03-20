@@ -19,11 +19,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
-import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
@@ -33,25 +28,20 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class ClearRequestOperationHandler
-    implements ProtobufOperationHandler<RegionAPI.ClearRequest, RegionAPI.ClearResponse> {
+    extends AbstractRegionRequestOperationHandler<RegionAPI.ClearRequest, RegionAPI.ClearResponse> {
   private static final Logger logger = LogManager.getLogger();
 
   @Override
-  public Result<RegionAPI.ClearResponse> process(ProtobufSerializationService serializationService,
-      RegionAPI.ClearRequest request, MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, DecodingException {
-
-    String regionName = request.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received clear request for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
-    }
-
+  protected Result<RegionAPI.ClearResponse> doOp(ProtobufSerializationService serializationService,
+      RegionAPI.ClearRequest request, Region<Object, Object> region) {
     region.clear();
 
     return Success.of(RegionAPI.ClearResponse.newBuilder().build());
+  }
+
+  @Override
+  protected String getRegionName(RegionAPI.ClearRequest request) {
+    return request.getRegionName();
   }
 
   public static ResourcePermission determineRequiredPermission(RegionAPI.ClearRequest request,

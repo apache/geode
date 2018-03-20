@@ -14,16 +14,10 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
-import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
@@ -33,20 +27,10 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class PutRequestOperationHandler
-    implements ProtobufOperationHandler<RegionAPI.PutRequest, RegionAPI.PutResponse> {
-  private static final Logger logger = LogService.getLogger();
-
+    extends AbstractRegionRequestOperationHandler<RegionAPI.PutRequest, RegionAPI.PutResponse> {
   @Override
-  public Result<RegionAPI.PutResponse> process(ProtobufSerializationService serializationService,
-      RegionAPI.PutRequest request, MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, DecodingException {
-    String regionName = request.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received put request for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
-    }
+  public Result<RegionAPI.PutResponse> doOp(ProtobufSerializationService serializationService,
+      RegionAPI.PutRequest request, Region<Object, Object> region) throws DecodingException {
 
     BasicTypes.Entry entry = request.getEntry();
 
@@ -59,6 +43,11 @@ public class PutRequestOperationHandler
 
     region.put(decodedKey, decodedValue);
     return Success.of(RegionAPI.PutResponse.newBuilder().build());
+  }
+
+  @Override
+  protected String getRegionName(RegionAPI.PutRequest request) {
+    return request.getRegionName();
   }
 
   public static ResourcePermission determineRequiredPermission(RegionAPI.PutRequest request,

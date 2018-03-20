@@ -14,16 +14,10 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
-import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
@@ -32,23 +26,11 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.De
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class RemoveRequestOperationHandler
-    implements ProtobufOperationHandler<RegionAPI.RemoveRequest, RegionAPI.RemoveResponse> {
-  private static final Logger logger = LogManager.getLogger();
-
+public class RemoveRequestOperationHandler extends
+    AbstractRegionRequestOperationHandler<RegionAPI.RemoveRequest, RegionAPI.RemoveResponse> {
   @Override
-  public Result<RegionAPI.RemoveResponse> process(ProtobufSerializationService serializationService,
-      RegionAPI.RemoveRequest request, MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, DecodingException {
-
-    String regionName = request.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received remove request for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
-    }
-
+  protected Result<RegionAPI.RemoveResponse> doOp(ProtobufSerializationService serializationService,
+      RegionAPI.RemoveRequest request, Region<Object, Object> region) {
     Object decodedKey = serializationService.decode(request.getKey());
     if (decodedKey == null) {
       return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
@@ -57,6 +39,11 @@ public class RemoveRequestOperationHandler
     region.remove(decodedKey);
 
     return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
+  }
+
+  @Override
+  protected String getRegionName(RegionAPI.RemoveRequest request) {
+    return request.getRegionName();
   }
 
   public static ResourcePermission determineRequiredPermission(RegionAPI.RemoveRequest request,

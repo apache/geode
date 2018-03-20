@@ -18,51 +18,37 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
-import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class GetRequestOperationHandler
-    implements ProtobufOperationHandler<RegionAPI.GetRequest, RegionAPI.GetResponse> {
+    extends AbstractRegionRequestOperationHandler<RegionAPI.GetRequest, RegionAPI.GetResponse> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<RegionAPI.GetResponse> process(ProtobufSerializationService serializationService,
-      RegionAPI.GetRequest request, MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, EncodingException, DecodingException {
-    String regionName = request.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received get request for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
+  protected Result<RegionAPI.GetResponse> doOp(ProtobufSerializationService serializationService,
+      RegionAPI.GetRequest request, Region<Object, Object> region) {
+    Object decodedKey = serializationService.decode(request.getKey());
+    if (decodedKey == null) {
+      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key.");
     }
+    Object resultValue = region.get(decodedKey);
 
-    try {
-      messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
+    BasicTypes.EncodedValue encodedValue = serializationService.encode(resultValue);
+    return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
+  }
 
-      Object decodedKey = serializationService.decode(request.getKey());
-      if (decodedKey == null) {
-        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key.");
-      }
-      Object resultValue = region.get(decodedKey);
-
-      BasicTypes.EncodedValue encodedValue = serializationService.encode(resultValue);
-      return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
-    } finally {
-      messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
-    }
+  @Override
+  protected String getRegionName(RegionAPI.GetRequest request) {
+    return request.getRegionName();
   }
 
   public static ResourcePermission determineRequiredPermission(RegionAPI.GetRequest request,
