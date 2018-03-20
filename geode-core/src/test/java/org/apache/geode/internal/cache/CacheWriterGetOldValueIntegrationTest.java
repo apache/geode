@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -61,12 +63,10 @@ public class CacheWriterGetOldValueIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0").create();
-
-    File dir = temporaryFolder.newFolder(testName.getMethodName());
+    cache = (InternalCache) new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0").create();
 
     DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-    diskStoreFactory.setDiskDirs(new File[] {dir});
+    diskStoreFactory.setDiskDirs(new File[] {temporaryFolder.getRoot()});
 
     DiskStore diskStore = diskStoreFactory.create(testName.getMethodName());
 
