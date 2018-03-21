@@ -15,6 +15,7 @@
 
 package org.apache.geode.test.dunit;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 
 import hydra.MethExecutor;
@@ -62,7 +63,7 @@ public class LocalVM extends VM {
     throw new UnsupportedOperationException("Not supported by LocalVM");
   }
 
-  protected static class LocalDUnitVMIF implements RemoteDUnitVMIF {
+  protected static class LocalDUnitVMIF implements RemoteDUnitVMIF, Serializable {
 
     @Override
     public MethExecutorResult executeMethodOnObject(final Object target, final String methodName)
