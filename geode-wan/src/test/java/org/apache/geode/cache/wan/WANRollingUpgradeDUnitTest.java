@@ -14,6 +14,15 @@
  */
 package org.apache.geode.cache.wan;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -42,7 +51,6 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -572,9 +580,9 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
       String remoteLocators) throws IOException {
     Properties props = getLocatorProperties(distributedSystemId, locators, remoteLocators);
     int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    props.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
-    props.put(DistributionConfig.JMX_MANAGER_NAME, "true");
-    props.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
+    props.put(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+    props.put(JMX_MANAGER, "true");
+    props.put(JMX_MANAGER_START, "true");
     Locator.startLocatorAndDS(port, null, props);
     return jmxPort;
   }
@@ -582,13 +590,12 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
   private Properties getLocatorProperties(int distributedSystemId, String locators,
       String remoteLocators) {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME,
-        String.valueOf(distributedSystemId));
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, remoteLocators);
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, DUnitLauncher.logLevel);
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, String.valueOf(distributedSystemId));
+    props.setProperty(LOCATORS, locators);
+    props.setProperty(REMOTE_LOCATORS, remoteLocators);
+    props.setProperty(LOG_LEVEL, DUnitLauncher.logLevel);
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     return props;
   }
 
@@ -810,9 +817,9 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
   private void createCache(String locators) {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, DUnitLauncher.logLevel);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, locators);
+    props.setProperty(LOG_LEVEL, DUnitLauncher.logLevel);
     getCache(props);
   }
 
