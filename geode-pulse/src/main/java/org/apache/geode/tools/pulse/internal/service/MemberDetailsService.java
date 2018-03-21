@@ -17,9 +17,8 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
+import static org.apache.geode.tools.pulse.internal.data.PulseConstants.TWO_PLACE_DECIMAL_FORMAT;
 import static org.apache.geode.tools.pulse.internal.util.NameUtil.makeCompliantName;
-
-import java.text.DecimalFormat;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,7 +30,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
@@ -60,7 +58,6 @@ public class MemberDetailsService implements PulseService {
 
     JsonNode requestDataJSON = mapper.readTree(request.getParameter("pulseData"));
     String memberName = requestDataJSON.get("MemberDetails").get("memberName").textValue();
-    DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
 
     Cluster.Member clusterMember = cluster.getMember(makeCompliantName(memberName));
     if (clusterMember != null) {
@@ -71,7 +68,7 @@ public class MemberDetailsService implements PulseService {
       responseJSON.put("clusterName", cluster.getServerName());
       responseJSON.put("userName", userName);
       double loadAvg = clusterMember.getLoadAverage();
-      responseJSON.put("loadAverage", Double.valueOf(df2.format(loadAvg)));
+      responseJSON.put("loadAverage", TWO_PLACE_DECIMAL_FORMAT.format(loadAvg));
       responseJSON.put("sockets", clusterMember.getTotalFileDescriptorOpen());
       responseJSON.put("threads", clusterMember.getNumThreads());
       responseJSON.put("offHeapFreeSize", clusterMember.getOffHeapFreeSize());
@@ -84,7 +81,7 @@ public class MemberDetailsService implements PulseService {
       Long diskUsageVal = clusterMember.getTotalDiskUsage();
       Double diskUsage = diskUsageVal.doubleValue() / 1024;
 
-      responseJSON.put("diskStorageUsed", Double.valueOf(df2.format(diskUsage)));
+      responseJSON.put("diskStorageUsed", TWO_PLACE_DECIMAL_FORMAT.format(diskUsage));
 
       Cluster.Alert[] alertsList = cluster.getAlertsList();
 
