@@ -29,7 +29,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -129,7 +129,7 @@ public class AlterCompressorDUnitTest {
       // add the compressor to the region attributes and put it back in cluster config
       // this is just a hack to change the cache.xml so that when server restarts it restarts
       // with new region attributes
-      ClusterConfigurationService ccService =
+      InternalClusterConfigurationService ccService =
           ClusterStartupRule.getLocator().getSharedConfiguration();
       Configuration configuration = ccService.getConfiguration("dataStore");
       String modifiedXml =
@@ -170,7 +170,7 @@ public class AlterCompressorDUnitTest {
       // remove the compressor to the region attributes and put it back in cluster config
       // this is just a hack to change the cache.xml so that when server restarts it restarts
       // with new region attributes
-      ClusterConfigurationService ccService =
+      InternalClusterConfigurationService ccService =
           ClusterStartupRule.getLocator().getSharedConfiguration();
       Configuration configuration = ccService.getConfiguration("dataStore");
       String modifiedXml = removeCompressor(configuration.getCacheXmlContent());

@@ -50,6 +50,16 @@ public class GfshJunitTest {
   }
 
   @Test
+  public void wrapTextWithNoSpace() {
+    assertThat(Gfsh.wrapText("for datasource", 0, 6))
+        .isEqualTo("for" + Gfsh.LINE_SEPARATOR + "datas" + Gfsh.LINE_SEPARATOR + "ource");
+    assertThat(Gfsh.wrapText("for data sour ", 0, 6))
+        .isEqualTo("for" + Gfsh.LINE_SEPARATOR + "data" + Gfsh.LINE_SEPARATOR + "sour ");
+    assertThat(Gfsh.wrapText("for data sour ", 0, 5)).isEqualTo(
+        "for" + Gfsh.LINE_SEPARATOR + "data" + Gfsh.LINE_SEPARATOR + "sour" + Gfsh.LINE_SEPARATOR);
+  }
+
+  @Test
   public void getAppContextPath() throws Exception {
     gfsh = new Gfsh();
     assertThat(gfsh.getEnvAppContextPath()).isEqualTo("");

@@ -16,8 +16,9 @@ package org.apache.geode.internal.cache.partitioned.rebalance;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.BucketRollup;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.BucketRollup;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
 import org.apache.geode.internal.logging.LogService;
 
 /**

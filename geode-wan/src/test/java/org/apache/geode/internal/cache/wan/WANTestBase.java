@@ -36,6 +36,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMO
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.test.dunit.Host.getHost;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -76,6 +77,8 @@ import javax.management.ObjectName;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -131,7 +134,6 @@ import org.apache.geode.internal.cache.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.execute.data.CustId;
@@ -162,6 +164,7 @@ import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.pdx.SimpleClass1;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
@@ -175,7 +178,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
 
 @Category(DistributedTest.class)
-public class WANTestBase extends JUnit4DistributedTestCase {
+public class WANTestBase extends DistributedTestCase {
 
   protected static Cache cache;
   protected static Region region;
@@ -213,34 +216,20 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
   private static final Logger logger = LogService.getLogger();
 
-  public WANTestBase() {
-    super();
+  @BeforeClass
+  public static void beforeClassWANTestBase() throws Exception {
+    vm0 = getHost(0).getVM(0);
+    vm1 = getHost(0).getVM(1);
+    vm2 = getHost(0).getVM(2);
+    vm3 = getHost(0).getVM(3);
+    vm4 = getHost(0).getVM(4);
+    vm5 = getHost(0).getVM(5);
+    vm6 = getHost(0).getVM(6);
+    vm7 = getHost(0).getVM(7);
   }
 
-  /**
-   * @deprecated Use the no arg constructor, or better yet, don't construct this class
-   */
-  @Deprecated
-  public WANTestBase(final String ignored) {}
-
-  @Override
-  public final void preSetUp() throws Exception {
-    final Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-    vm4 = host.getVM(4);
-    vm5 = host.getVM(5);
-    vm6 = host.getVM(6);
-    vm7 = host.getVM(7);
-    // Need to set the test name after the VMs are created
-  }
-
-  @Override
-  public final void postSetUp() throws Exception {
-    // this is done to vary the number of dispatchers for sender
-    // during every test method run
+  @Before
+  public void setUpWANTestBase() throws Exception {
     shuffleNumDispatcherThreads();
     Invoke.invokeInEveryVM(() -> setNumDispatcherThreadsForTheRun(dispatcherThreads.get(0)));
     IgnoredException.addIgnoredException("Connection refused");
@@ -249,7 +238,9 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     postSetUpWANTestBase();
   }
 
-  protected void postSetUpWANTestBase() throws Exception {}
+  protected void postSetUpWANTestBase() throws Exception {
+    // nothing
+  }
 
   public static void shuffleNumDispatcherThreads() {
     Collections.shuffle(dispatcherThreads);
@@ -286,20 +277,38 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     String remoteLocator = remoteLocatorBuffer.toString();
     remoteLocator = remoteLocator.replace(" ", "");
     props.setProperty(REMOTE_LOCATORS, remoteLocator);
-    test.getSystem(props);
+    test.startLocatorDistributedSystem(props);
+  }
+
+  private void startLocator(int dsId, int locatorPort, int startLocatorPort, int remoteLocPort,
+      boolean startServerLocator) {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
+    props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
+    props.setProperty(START_LOCATOR, "localhost[" + startLocatorPort + "],server="
+        + startServerLocator + ",peer=true,hostname-for-clients=localhost");
+    if (remoteLocPort != -1) {
+      props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
+    }
+    startLocatorDistributedSystem(props);
+  }
+
+  private void startLocatorDistributedSystem(Properties props) {
+    // Start start the locator with a LOCATOR_DM_TYPE and not a NORMAL_DM_TYPE
+    System.setProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE, "true");
+    try {
+      getSystem(props);
+    } finally {
+      System.clearProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE);
+    }
   }
 
   public static Integer createFirstLocatorWithDSId(int dsId) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + port + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    test.getSystem(props);
+    test.startLocator(dsId, port, port, -1, true);
     return port;
   }
 
@@ -307,13 +316,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + port + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
-    test.getSystem(props);
+    test.startLocator(dsId, port, port, -1, false);
     return port;
   }
 
@@ -321,13 +324,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    test.getSystem(props);
+    test.startLocator(dsId, locatorPort, port, -1, true);
     return port;
   }
 
@@ -335,13 +332,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
-    test.getSystem(props);
+    test.startLocator(dsId, locatorPort, port, -1, false);
     return port;
   }
 
@@ -349,28 +340,13 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + port + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    test.startLocator(dsId, port, port, remoteLocPort, true);
     return port;
   }
 
   public static void bringBackLocatorOnOldPort(int dsId, int remoteLocPort, int oldPort) {
     WANTestBase test = new WANTestBase();
-    Properties props = test.getDistributedSystemProperties();
-    props.put(LOG_LEVEL, "fine");
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + oldPort + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + oldPort + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    test.startLocator(dsId, oldPort, oldPort, remoteLocPort, true);
   }
 
 
@@ -378,14 +354,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + port + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
-    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    test.startLocator(dsId, port, port, remoteLocPort, false);
     return port;
   }
 
@@ -393,14 +362,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + localPort + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    test.startLocator(dsId, localPort, port, remoteLocPort, true);
     return port;
   }
 
@@ -408,7 +370,6 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       String hostnameForClients) throws IOException {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
@@ -423,14 +384,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    props.setProperty(LOCATORS, "localhost[" + localPort + "]");
-    props.setProperty(START_LOCATOR,
-        "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
-    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    test.startLocator(dsId, localPort, port, remoteLocPort, false);
     return port;
   }
 
@@ -3656,7 +3610,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     cleanupVM();
     List<AsyncInvocation> invocations = new ArrayList<AsyncInvocation>();
-    final Host host = Host.getHost(0);
+    final Host host = getHost(0);
     for (int i = 0; i < host.getVMCount(); i++) {
       invocations.add(host.getVM(i).invokeAsync(() -> WANTestBase.cleanupVM()));
     }

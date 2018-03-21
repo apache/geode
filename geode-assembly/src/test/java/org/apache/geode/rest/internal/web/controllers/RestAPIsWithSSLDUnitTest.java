@@ -14,6 +14,7 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE_PASSWORD;
@@ -82,7 +83,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -347,6 +347,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_KEYSTORE_TYPE,
           CLUSTER_SSL_KEYSTORE_TYPE);
       sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_PROTOCOLS, CLUSTER_SSL_PROTOCOLS);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_CIPHERS, CLUSTER_SSL_CIPHERS);
       sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION,
           CLUSTER_SSL_REQUIRE_AUTHENTICATION);
       sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_TRUSTSTORE,
@@ -359,6 +360,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, null);
       sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_KEYSTORE_TYPE, null);
       sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_PROTOCOLS, null);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_CIPHERS, null);
       sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION, null);
       sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_TRUSTSTORE, null);
       sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD, null);
@@ -369,6 +371,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       sslPropertyConverter(sslProperties, props, SSL_KEYSTORE_PASSWORD, null);
       sslPropertyConverter(sslProperties, props, SSL_KEYSTORE_TYPE, null);
       sslPropertyConverter(sslProperties, props, SSL_PROTOCOLS, null);
+      sslPropertyConverter(sslProperties, props, SSL_CIPHERS, null);
       sslPropertyConverter(sslProperties, props, SSL_REQUIRE_AUTHENTICATION, null);
       sslPropertyConverter(sslProperties, props, SSL_TRUSTSTORE, null);
       sslPropertyConverter(sslProperties, props, SSL_TRUSTSTORE_PASSWORD, null);
@@ -623,7 +626,6 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     validateConnection(restEndpoint, "TLS", props);
   }
 
-  @Ignore("GEODE-3814, GEODE-3891")
   @Test
   public void testSSLWithTLSv11Protocol() throws Exception {
     Properties props = new Properties();
@@ -633,7 +635,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "TLSv1.1");
-    // props.setProperty(SSL_CIPHERS, "TLS_RSA_WITH_AES_256_CBC_SHA");
+    props.setProperty(SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
     props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     String restEndpoint = startInfraWithSSL(props, false);
@@ -672,7 +674,6 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   @Test
   public void testSSLWithCipherSuite() throws Exception {
-    System.setProperty("javax.net.debug", "ssl");
     Properties props = new Properties();
     props.setProperty(SSL_KEYSTORE, findTrustedJKSWithSingleEntry().getCanonicalPath());
     props.setProperty(SSL_TRUSTSTORE, findTrustedJKSWithSingleEntry().getCanonicalPath());
@@ -687,7 +688,9 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     ssl.init(null, null, new java.security.SecureRandom());
     String[] cipherSuites = ssl.getSocketFactory().getSupportedCipherSuites();
 
-    props.setProperty(SSL_CIPHERS, cipherSuites[0]);
+    // This is the safest in terms of support across various JDK releases
+    String rsaCipher = Arrays.stream(cipherSuites).filter(c -> c.contains("RSA")).findFirst().get();
+    props.setProperty(SSL_CIPHERS, rsaCipher);
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.2", props);
@@ -784,7 +787,6 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     validateConnection(restEndpoint, "TLS", props);
   }
 
-  @Ignore("GEODE-3814, GEODE-3891")
   @Test
   public void testSSLWithTLSv11ProtocolLegacy() throws Exception {
     Properties props = new Properties();
@@ -793,6 +795,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
         findTrustedJKSWithSingleEntry().getCanonicalPath());
     props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.1");
+    props.setProperty(HTTP_SERVICE_SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.1", props);
@@ -839,7 +842,8 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     ssl.init(null, null, new java.security.SecureRandom());
     String[] cipherSuites = ssl.getSocketFactory().getSupportedCipherSuites();
 
-    props.setProperty(HTTP_SERVICE_SSL_CIPHERS, cipherSuites[0]);
+    String rsaCipher = Arrays.stream(cipherSuites).filter(c -> c.contains("RSA")).findFirst().get();
+    props.setProperty(HTTP_SERVICE_SSL_CIPHERS, rsaCipher);
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.2", props);
@@ -847,6 +851,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   @Test
   public void testSSLWithMultipleCipherSuiteLegacy() throws Exception {
+    System.setProperty("javax.net.debug", "ssl,handshake");
     Properties props = new Properties();
     props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
     props.setProperty(HTTP_SERVICE_SSL_KEYSTORE,

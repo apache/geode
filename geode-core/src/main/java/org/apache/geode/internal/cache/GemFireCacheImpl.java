@@ -89,6 +89,7 @@ import org.apache.geode.GemFireCacheException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.LogWriter;
+import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.internal.SystemMemberCacheEventProcessor;
 import org.apache.geode.cache.AttributesFactory;
@@ -153,13 +154,13 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.CacheTime;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
@@ -173,6 +174,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.backup.BackupService;
@@ -221,6 +223,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.internal.JmxManagerAdvisee;
@@ -1054,8 +1057,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           .create(LocalizedStrings.GemFireCache_RECEIVED_SHARED_CONFIGURATION_FROM_LOCATORS));
       logger.info(response.describeConfig());
 
-      Configuration clusterConfig =
-          response.getRequestedConfiguration().get(ClusterConfigurationService.CLUSTER_CONFIG);
+      Configuration clusterConfig = response.getRequestedConfiguration()
+          .get(InternalClusterConfigurationService.CLUSTER_CONFIG);
       Properties clusterSecProperties =
           clusterConfig == null ? new Properties() : clusterConfig.getGemfireProperties();
 
@@ -5331,6 +5334,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     TypeRegistry pdxRegistry = this.getPdxRegistry();
     if (pdxRegistry != null) {
       pdxRegistry.setPdxReadSerializedOverride(pdxReadSerialized);
+    }
+  }
+
+  @Override
+  public void registerPdxMetaData(Object instance) {
+    try {
+      byte[] blob = BlobHelper.serializeToBlob(instance);
+      if (blob.length == 0 || blob[0] != DSCODE.PDX) {
+        throw new SerializationException("The instance is not PDX serializable");
+      }
+    } catch (IOException e) {
+      throw new SerializationException("Serialization failed", e);
     }
   }
 }

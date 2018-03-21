@@ -413,7 +413,7 @@ public class Gfsh extends JLineShell {
         final int spaceCharIndex = string.lastIndexOf(" ", index);
 
         // If no spaces were found then there's no logical way to split the string
-        if (spaceCharIndex == -1) {
+        if (spaceCharIndex == -1 || spaceCharIndex < startOfCurrentLine) {
           stringBuf.append(string.substring(startOfCurrentLine, index)).append(LINE_SEPARATOR);
 
           // Else split the string cleanly between words

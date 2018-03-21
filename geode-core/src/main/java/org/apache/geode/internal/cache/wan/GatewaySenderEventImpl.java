@@ -33,7 +33,6 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.Conflatable;
@@ -62,8 +61,8 @@ import org.apache.geode.internal.size.Sizeable;
  * @since GemFire 7.0
  *
  */
-public class GatewaySenderEventImpl implements AsyncEvent, DataSerializableFixedID, Conflatable,
-    Sizeable, Releasable, VersionedDataSerializable {
+public class GatewaySenderEventImpl
+    implements AsyncEvent, DataSerializableFixedID, Conflatable, Sizeable, Releasable {
   private static final long serialVersionUID = -5690172020872255422L;
 
   protected static final Object TOKEN_NULL = new Object();
@@ -171,8 +170,6 @@ public class GatewaySenderEventImpl implements AsyncEvent, DataSerializableFixed
   protected Long shadowKey = Long.valueOf(-1L);
 
   protected boolean isInitialized;
-
-  private transient boolean isConcurrencyConflict = false;
 
   /**
    * Is this thread in the process of serializing this event?
@@ -315,7 +312,6 @@ public class GatewaySenderEventImpl implements AsyncEvent, DataSerializableFixed
     if (initialize) {
       initialize();
     }
-    this.isConcurrencyConflict = event.isConcurrencyConflict();
   }
 
   /**
@@ -677,13 +673,7 @@ public class GatewaySenderEventImpl implements AsyncEvent, DataSerializableFixed
     return GATEWAY_SENDER_EVENT_IMPL;
   }
 
-  @Override
   public void toData(DataOutput out) throws IOException {
-    toDataPre_GEODE_1_5_0_0(out);
-    DataSerializer.writeBoolean(this.isConcurrencyConflict, out);
-  }
-
-  public void toDataPre_GEODE_1_5_0_0(DataOutput out) throws IOException {
     // Make sure we are initialized before we serialize.
     initialize();
     out.writeShort(VERSION);
@@ -707,13 +697,7 @@ public class GatewaySenderEventImpl implements AsyncEvent, DataSerializableFixed
     DataSerializer.writeObject(this.key, out);
   }
 
-  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    fromDataPre_GEODE_1_5_0_0(in);
-    this.isConcurrencyConflict = DataSerializer.readBoolean(in);
-  }
-
-  public void fromDataPre_GEODE_1_5_0_0(DataInput in) throws IOException, ClassNotFoundException {
     short version = in.readShort();
     if (version != VERSION) {
       // warning?`
@@ -760,8 +744,7 @@ public class GatewaySenderEventImpl implements AsyncEvent, DataSerializableFixed
         .append(";creationTime=").append(this.creationTime).append(";shadowKey=")
         .append(this.shadowKey).append(";timeStamp=").append(this.versionTimeStamp)
         .append(";acked=").append(this.isAcked).append(";dispatched=").append(this.isDispatched)
-        .append(";bucketId=").append(this.bucketId).append(";isConcurrencyConflict=")
-        .append(this.isConcurrencyConflict).append("]");
+        .append(";bucketId=").append(this.bucketId).append("]");
     return buffer.toString();
   }
 
@@ -1145,14 +1128,6 @@ public class GatewaySenderEventImpl implements AsyncEvent, DataSerializableFixed
     return bucketId;
   }
 
-  public boolean isConcurrencyConflict() {
-    return isConcurrencyConflict;
-  }
-
-  public boolean setConcurrencyConflict(boolean isConcurrencyConflict) {
-    return this.isConcurrencyConflict = isConcurrencyConflict;
-  }
-
   /**
    * @param tailKey the tailKey to set
    */
@@ -1169,7 +1144,7 @@ public class GatewaySenderEventImpl implements AsyncEvent, DataSerializableFixed
 
   @Override
   public Version[] getSerializationVersions() {
-    return new Version[] {Version.GEODE_150};
+    return null;
   }
 
   public int getSerializedValueSize() {

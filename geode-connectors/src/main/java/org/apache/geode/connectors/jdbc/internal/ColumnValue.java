@@ -14,15 +14,19 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import java.sql.JDBCType;
+
 class ColumnValue {
   private final boolean isKey;
   private final String columnName;
   private final Object value;
+  private final int dataType;
 
-  ColumnValue(boolean isKey, String columnName, Object value) {
+  ColumnValue(boolean isKey, String columnName, Object value, int dataType) {
     this.isKey = isKey;
     this.columnName = columnName;
     this.value = value;
+    this.dataType = dataType;
   }
 
   boolean isKey() {
@@ -37,8 +41,13 @@ class ColumnValue {
     return value;
   }
 
+  int getDataType() {
+    return dataType;
+  }
+
   @Override
   public String toString() {
-    return "ColumnValue [isKey=" + isKey + ", columnName=" + columnName + ", value=" + value + "]";
+    return "ColumnValue [isKey=" + isKey + ", columnName=" + columnName + ", value=" + value
+        + ", dataType=" + JDBCType.valueOf(dataType) + "]";
   }
 }

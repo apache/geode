@@ -27,6 +27,7 @@ import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 
 /**
  * This object handles an incoming stream containing protobuf messages. It parses the protobuf

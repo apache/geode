@@ -28,11 +28,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -57,12 +59,13 @@ public class DestroyJndiBindingFunctionTest {
 
     JNDIInvoker.mapTransactions(distributedSystem);
 
-    JndiBindingConfiguration config = new JndiBindingConfiguration();
+    JndiBindingsType.JndiBinding config = new JndiBindingsType.JndiBinding();
     config.setJndiName("jndi1");
-    config.setType(JndiBindingConfiguration.DATASOURCE_TYPE.SIMPLE);
-    config.setJdbcDriver("org.apache.derby.jdbc.EmbeddedDriver");
+    config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
+    config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
-    JNDIInvoker.mapDatasource(config.getParamsAsMap(), config.getDatasourceConfigurations());
+    JNDIInvoker.mapDatasource(CreateJndiBindingFunction.getParamsAsMap(config),
+        CreateJndiBindingFunction.convert(config.getConfigProperty()));
   }
 
   @Test

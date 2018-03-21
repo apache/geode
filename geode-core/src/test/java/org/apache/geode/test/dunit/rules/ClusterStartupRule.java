@@ -13,12 +13,12 @@
  * the License.
  *
  */
-
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
 import java.io.Serializable;
@@ -38,6 +38,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
@@ -50,12 +51,15 @@ import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-
 /**
  * A rule to help you start locators and servers inside of a
  * <a href="https://cwiki.apache.org/confluence/display/GEODE/Distributed-Unit-Tests">DUnit
  * test</a>. This rule will start Servers and Locators inside of the four remote {@link VM}s created
  * by the DUnit framework.
+ *
+ * <p>
+ * If you use this Rule in any test that uses more than the default of 4 VMs in DUnit, then
+ * you must specify the total number of VMs via the {@link #ClusterStartupRule(int)} constructor.
  */
 public class ClusterStartupRule extends ExternalResource implements Serializable {
   /**
@@ -76,7 +80,9 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return ((ServerStarterRule) memberStarter).getServer();
   }
 
-  private DistributedRestoreSystemProperties restoreSystemProperties =
+  private final int vmCount;
+
+  private final DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
 
   private Map<Integer, VMProvider> occupiedVMs;
@@ -84,7 +90,11 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   private boolean logFile = false;
 
   public ClusterStartupRule() {
-    DUnitLauncher.launchIfNeeded();
+    this(NUM_VMS);
+  }
+
+  public ClusterStartupRule(final int vmCount) {
+    this.vmCount = vmCount;
   }
 
   public static ClientCache getClientCache() {
@@ -101,6 +111,10 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   @Override
   protected void before() throws Throwable {
+    DUnitLauncher.launchIfNeeded();
+    for (int i = 0; i < vmCount; i++) {
+      Host.getHost(0).getVM(i);
+    }
     restoreSystemProperties.before();
     occupiedVMs = new HashMap<>();
   }

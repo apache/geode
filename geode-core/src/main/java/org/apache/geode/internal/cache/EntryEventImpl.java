@@ -863,7 +863,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   @Unretained
-  protected Object basicGetNewValue() {
+  public Object basicGetNewValue() {
     generateNewValueFromBytesIfNeeded();
     Object result = this.newValue;
     if (!this.offHeapOk && isOffHeapReference(result)) {

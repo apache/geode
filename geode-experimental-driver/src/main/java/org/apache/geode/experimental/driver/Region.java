@@ -86,17 +86,6 @@ public interface Region<K, V> {
   void clear() throws IOException;
 
   /**
-   * Puts the <code>value</code> into this region for the <code>key</code> if <code>key</code> does
-   * not already have a value associated with it.
-   *
-   * @return null if the value was set; the current value otherwise.
-   *         NOTE that if the value in the region was set to null, this method will return null
-   *         without setting a new value.
-   * @throws IOException
-   */
-  V putIfAbsent(K key, V value) throws IOException;
-
-  /**
    * Removes any value associated with the <code>key</code> from this region.
    *
    * @param key Unique key associated with a value.

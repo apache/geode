@@ -18,7 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
-import static org.apache.geode.distributed.internal.ClusterConfigurationService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
+import static org.apache.geode.distributed.internal.InternalClusterConfigurationService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getAllDistributedSystemProperties;
 import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
@@ -27,7 +27,6 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -42,7 +41,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 
-import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.QueryTestUtils;

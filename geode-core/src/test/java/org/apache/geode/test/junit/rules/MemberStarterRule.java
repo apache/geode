@@ -276,7 +276,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
-    await().atMost(2, TimeUnit.SECONDS).until(
+    await().atMost(30, TimeUnit.SECONDS).until(
         () -> CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId).size() == serverCount);
   }
 

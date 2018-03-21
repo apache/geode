@@ -12,11 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * ReservedKeywordsJUnitTest.java JUnit based test
- *
- * Created on March 10, 2005, 7:14 PM
- */
 package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.fail;
@@ -35,8 +30,6 @@ import org.apache.geode.cache.query.data.Keywords;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-/**
- */
 @Category({IntegrationTest.class, OQLQueryTest.class})
 public class ReservedKeywordsJUnitTest {
 
@@ -63,8 +56,9 @@ public class ReservedKeywordsJUnitTest {
       CacheUtils.log(qStr);
       query = CacheUtils.getQueryService().newQuery(qStr);
       result = (Collection) query.execute();
-      if (result.size() != 1)
+      if (result.size() != 1) {
         fail(query.getQueryString());
+      }
     }
     for (int i = 0; i < keywords.length; i++) {
       String qStr =
@@ -72,8 +66,9 @@ public class ReservedKeywordsJUnitTest {
       CacheUtils.log(qStr);
       query = CacheUtils.getQueryService().newQuery(qStr);
       result = (Collection) query.execute();
-      if (result.size() != 1)
+      if (result.size() != 1) {
         fail(query.getQueryString());
+      }
     }
   }
 }

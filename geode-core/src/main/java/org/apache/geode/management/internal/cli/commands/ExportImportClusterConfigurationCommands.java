@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -93,7 +93,7 @@ public class ExportImportClusterConfigurationCommands extends GfshCommand {
     }
 
     File zipFile = tempDir.resolve("exportedCC.zip").toFile();
-    ClusterConfigurationService sc = locator.getSharedConfiguration();
+    InternalClusterConfigurationService sc = locator.getSharedConfiguration();
 
     Result result;
     try {
@@ -158,7 +158,7 @@ public class ExportImportClusterConfigurationCommands extends GfshCommand {
     InfoResultData infoData = ResultBuilder.createInfoResultData();
     String zipFilePath = filePathFromShell.get(0);
 
-    ClusterConfigurationService sc = locator.getSharedConfiguration();
+    InternalClusterConfigurationService sc = locator.getSharedConfiguration();
 
     // backup the old config
     for (Configuration config : sc.getConfigurationRegion().values()) {

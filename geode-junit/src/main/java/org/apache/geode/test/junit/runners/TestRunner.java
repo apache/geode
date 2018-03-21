@@ -49,4 +49,24 @@ public class TestRunner {
 
     return result;
   }
+
+  public static Failure runTestWithExpectedFailure(final Class<?> test) {
+    JUnitCore junitCore = new JUnitCore();
+    Result result = junitCore.run(Request.aClass(test).getRunner());
+
+    List<Failure> failures = result.getFailures();
+    assertThat(failures).hasSize(1);
+
+    return failures.get(0);
+  }
+
+  public static List<Failure> runTestWithExpectedFailures(final Class<?> test) {
+    JUnitCore junitCore = new JUnitCore();
+    Result result = junitCore.run(Request.aClass(test).getRunner());
+
+    List<Failure> failures = result.getFailures();
+    assertThat(failures).isNotEmpty();
+
+    return failures;
+  }
 }

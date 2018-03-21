@@ -12,17 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * Manager.java
- *
- * Created on April 7, 2005, 6:05 PM
- */
 package org.apache.geode.cache.query.data;
 
 import java.util.Set;
 
-/**
- */
 public class Manager extends Employee {
 
   public int manager_id;

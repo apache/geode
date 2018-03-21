@@ -21,6 +21,7 @@ public class ServerLauncherDUnitTestHelper {
     int locatorPort = Integer.parseInt(args[0]);
 
     System.setProperty("gemfire.disableShutdownHook", "true");
+    System.setProperty("gemfire.server-port", "0");
 
     final ServerLauncher serverLauncher =
         new ServerLauncher.Builder().setCommand(ServerLauncher.Command.START)

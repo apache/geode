@@ -279,10 +279,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       } finally {
         this.activePrimaryMoveLock.unlock();
         if (needToSendProfileUpdate) {
-          if (this.getBucket() instanceof BucketRegionQueue) {
-            BucketRegionQueue brq = (BucketRegionQueue) this.getBucket();
-            brq.decQueueSize(brq.size());
-          }
           sendProfileUpdate();
         }
       }
@@ -316,6 +312,10 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         if (b != null) {
           BucketAdvisor ba = b.getBucketAdvisor();
           deposedChildPrimaries = ba.deposePrimary() && deposedChildPrimaries;
+          if (b instanceof BucketRegionQueue) {
+            BucketRegionQueue brq = (BucketRegionQueue) b;
+            brq.decQueueSize(brq.size());
+          }
         }
       }
     }

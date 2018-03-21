@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.wan.wancommand;
 
+import static org.apache.geode.management.MXBeanAwaitility.await;
+import static org.apache.geode.management.MXBeanAwaitility.awaitGatewayReceiverMXBeanProxy;
+import static org.apache.geode.management.MXBeanAwaitility.awaitGatewaySenderMXBeanProxy;
+import static org.apache.geode.management.MXBeanAwaitility.awaitMemberMXBeanProxy;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,14 +45,17 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerAdvisor;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.management.GatewayReceiverMXBean;
+import org.apache.geode.management.GatewaySenderMXBean;
+import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.VM;
@@ -323,6 +330,37 @@ public class WANCommandUtils implements Serializable {
         }
       }
     }
+  }
+
+  public static void validateMemberMXBeanProxy(final InternalDistributedMember member) {
+    MemberMXBean memberMXBean = awaitMemberMXBeanProxy(member);
+    assertThat(memberMXBean).isNotNull();
+  }
+
+  public static void validateGatewaySenderMXBeanProxy(final InternalDistributedMember member,
+      final String senderId, final boolean isRunning, final boolean isPaused) {
+    GatewaySenderMXBean gatewaySenderMXBean = awaitGatewaySenderMXBeanProxy(member, senderId);
+    await("Awaiting GatewaySenderMXBean.isRunning(" + isRunning + ").isPaused(" + isPaused + ")")
+        .until(() -> {
+          assertThat(gatewaySenderMXBean.isRunning()).isEqualTo(isRunning);
+          assertThat(gatewaySenderMXBean.isPaused()).isEqualTo(isPaused);
+        });
+    assertThat(gatewaySenderMXBean).isNotNull();
+  }
+
+  public static void validateGatewayReceiverMXBeanProxy(final InternalDistributedMember member,
+      final boolean isRunning) {
+    GatewayReceiverMXBean gatewayReceiverMXBean = awaitGatewayReceiverMXBeanProxy(member);
+    await("Awaiting GatewayReceiverMXBean.isRunning(" + isRunning + ")").until(() -> {
+      assertThat(gatewayReceiverMXBean.isRunning()).isEqualTo(isRunning);
+    });
+    assertThat(gatewayReceiverMXBean).isNotNull();
+  }
+
+  public static InternalDistributedMember getMember(final VM vm) {
+    return vm.invoke(() -> {
+      return ClusterStartupRule.getCache().getMyId();
+    });
   }
 
   public static SerializableCallableIF<DistributedMember> getMemberIdCallable() {

@@ -21,6 +21,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -31,18 +33,21 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class CreateJndiBindingFunctionTest {
 
   private CreateJndiBindingFunction createBindingFunction;
-  private FunctionContext<JndiBindingConfiguration> context;
+  private FunctionContext<JndiBindingsType.JndiBinding> context;
   private DistributedSystem distributedSystem;
   private ResultSender resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
@@ -62,10 +67,10 @@ public class CreateJndiBindingFunctionTest {
 
   @Test
   public void createJndiBindingIsSuccessful() throws Exception {
-    JndiBindingConfiguration config = new JndiBindingConfiguration();
+    JndiBindingsType.JndiBinding config = new JndiBindingsType.JndiBinding();
     config.setJndiName("jndi1");
-    config.setType(JndiBindingConfiguration.DATASOURCE_TYPE.SIMPLE);
-    config.setJdbcDriver("org.apache.derby.jdbc.EmbeddedDriver");
+    config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
+    config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
     when(context.getArguments()).thenReturn(config);
     when(context.getMemberName()).thenReturn("mock-member");
@@ -84,4 +89,17 @@ public class CreateJndiBindingFunctionTest {
         "java:TransactionManager");
   }
 
+  @Test
+  public void convert() {
+    JndiBindingsType.JndiBinding.ConfigProperty propA =
+        new JndiBindingsType.JndiBinding.ConfigProperty("name", "type", "value");
+
+    List<ConfigProperty> converted =
+        CreateJndiBindingFunction.convert(Collections.singletonList(propA));
+    assertThat(converted).hasSize(1);
+    ConfigProperty propB = converted.get(0);
+    assertThat(propB.getName()).isEqualTo("name");
+    assertThat(propB.getType()).isEqualTo("type");
+    assertThat(propB.getValue()).isEqualTo("value");
+  }
 }

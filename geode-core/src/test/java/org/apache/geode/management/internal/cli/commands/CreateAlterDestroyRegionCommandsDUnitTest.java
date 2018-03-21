@@ -55,7 +55,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -180,7 +180,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Make sure the region exists in the shared config
     Host.getHost(0).getVM(0).invoke(() -> {
-      ClusterConfigurationService sharedConfig =
+      InternalClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       try {
         assertTrue(
@@ -222,7 +222,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Make sure the region was altered in the shared config
     Host.getHost(0).getVM(0).invoke(() -> {
-      ClusterConfigurationService sharedConfig =
+      InternalClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       try {
         assertTrue(sharedConfig.getConfiguration(groupName).getCacheXmlContent().contains("45635"));

@@ -51,6 +51,6 @@ public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
-        oldRepository);
+        oldRepository, this);
   }
 }

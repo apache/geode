@@ -14,7 +14,10 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,6 +44,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * @since GemFire 8.1
  */
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
 
   @Override
@@ -74,8 +78,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(1, extension.getXmlGeneratorCounter.get());
 
-    @SuppressWarnings("unchecked")
-    final Extensible<Cache> c = (Extensible<Cache>) getCache();
+    final Extensible<Cache> c = getCache();
     assertNotNull(c);
     final MockCacheExtension m =
         (MockCacheExtension) c.getExtensionPoint().getExtensions().iterator().next();
@@ -96,7 +99,6 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final String regionName = "testRegionExtension";
     final CacheCreation cache = new CacheCreation();
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-    @SuppressWarnings("unchecked")
     Extensible<Region<?, ?>> region =
         (Extensible<Region<?, ?>>) cache.createRegion(regionName, attrs);
 
@@ -113,7 +115,6 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(1, extension.getXmlGeneratorCounter.get());
 
-    @SuppressWarnings("unchecked")
     final Extensible<Region<?, ?>> r = (Extensible<Region<?, ?>>) getCache().getRegion(regionName);
     assertNotNull(r);
     final MockRegionExtension m =
@@ -136,7 +137,6 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final String regionName = "testRegionExtension";
     final CacheCreation cache = new CacheCreation();
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
-    @SuppressWarnings("unchecked")
     Extensible<Region<?, ?>> region =
         (Extensible<Region<?, ?>>) cache.createRegion(regionName, attrs);
 
@@ -160,5 +160,4 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
       }
     }
   }
-
 }

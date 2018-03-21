@@ -27,7 +27,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -202,7 +202,8 @@ public class MockExtensionCommands implements CommandMarker {
 
     final Result result = ResultBuilder.buildResult(tabularResultData);
 
-    ClusterConfigurationService ccService = InternalLocator.getLocator().getSharedConfiguration();
+    InternalClusterConfigurationService ccService =
+        InternalLocator.getLocator().getSharedConfiguration();
     System.out.println("MockExtensionCommands: persisting xmlEntity=" + xmlEntity);
     if (null != xmlEntity.get()) {
       if (addXmlElement) {

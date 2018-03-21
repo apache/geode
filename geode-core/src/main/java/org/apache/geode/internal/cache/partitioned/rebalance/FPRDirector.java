@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned.rebalance;
 
+import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
+
 /**
  * The FPR director performs rebalancing operations for a fixed partitioned region. There two things
  * a fixed partitioned region does during rebalancing: - Create redundant buckets in a known

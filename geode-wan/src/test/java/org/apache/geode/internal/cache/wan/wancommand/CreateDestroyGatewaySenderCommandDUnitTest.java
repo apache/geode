@@ -21,6 +21,7 @@ import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.ver
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderState;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -43,14 +44,19 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 @Category({DistributedTest.class, WanTest.class})
-public class CreateDestroyGatewaySenderCommandDUnitTest {
+@SuppressWarnings("serial")
+public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable {
 
-  public static final String CREATE =
+  private static final String SERVER_3 = "server-3";
+  private static final String SERVER_4 = "server-4";
+  private static final String SERVER_5 = "server-5";
+
+  private static final String CREATE =
       "create gateway-sender --id=ln " + "--remote-distributed-system-id=2";
-  public static final String DESTROY = "destroy gateway-sender --id=ln ";
+  private static final String DESTROY = "destroy gateway-sender --id=ln ";
 
   @ClassRule
-  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -91,9 +97,9 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
   @Test
   public void testCreateDestroyGatewaySenderWithDefault() throws Exception {
     gfsh.executeAndAssertThat(CREATE).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"ln\" created on \"server-3\"",
-        "GatewaySender \"ln\" created on \"server-4\"",
-        "GatewaySender \"ln\" created on \"server-5\"");
+        "Status", "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
+        "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
+        "GatewaySender \"ln\" created on \"" + SERVER_5 + "\"");
 
     VMProvider.invokeInEveryMember(() -> verifySenderState("ln", true, false), server1, server2,
         server3);
@@ -106,9 +112,9 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"ln\" destroyed on \"server-3\"",
-        "GatewaySender \"ln\" destroyed on \"server-4\"",
-        "GatewaySender \"ln\" destroyed on \"server-5\"");
+        "Status", "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
+        "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
+        "GatewaySender \"ln\" destroyed on \"" + SERVER_5 + "\"");
 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
@@ -118,11 +124,10 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
           .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).doesNotContain("gateway-sender id=\"ln\"");
     });
-
   }
 
   /**
-   * + * GatewaySender with given attribute values +
+   * GatewaySender with given attribute values +
    */
   @Test
   public void testCreateDestroyGatewaySender() throws Exception {
@@ -143,10 +148,9 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD";
     gfsh.executeAndAssertThat(command).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"ln\" created on \"server-3\"",
-        "GatewaySender \"ln\" created on \"server-4\"",
-        "GatewaySender \"ln\" created on \"server-5\"");
-
+        "Status", "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
+        "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
+        "GatewaySender \"ln\" created on \"" + SERVER_5 + "\"");
 
     VMProvider.invokeInEveryMember(() -> {
       verifySenderState("ln", false, false);
@@ -156,9 +160,9 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"ln\" destroyed on \"server-3\"",
-        "GatewaySender \"ln\" destroyed on \"server-4\"",
-        "GatewaySender \"ln\" destroyed on \"server-5\"");
+        "Status", "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
+        "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
+        "GatewaySender \"ln\" destroyed on \"" + SERVER_5 + "\"");
 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
@@ -189,11 +193,11 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         + "=org.apache.geode.cache30.MyGatewayEventFilter1,org.apache.geode.cache30.MyGatewayEventFilter2";
 
     gfsh.executeAndAssertThat(command).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"ln\" created on \"server-3\"",
-        "GatewaySender \"ln\" created on \"server-4\"",
-        "GatewaySender \"ln\" created on \"server-5\"");
+        "Status", "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
+        "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
+        "GatewaySender \"ln\" created on \"" + SERVER_5 + "\"");
 
-    List<String> eventFilters = new ArrayList<String>();
+    List<String> eventFilters = new ArrayList<>();
     eventFilters.add("org.apache.geode.cache30.MyGatewayEventFilter1");
     eventFilters.add("org.apache.geode.cache30.MyGatewayEventFilter2");
 
@@ -203,12 +207,11 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
           false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, eventFilters, null);
     }, server1, server2, server3);
 
-
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"ln\" destroyed on \"server-3\"",
-        "GatewaySender \"ln\" destroyed on \"server-4\"",
-        "GatewaySender \"ln\" destroyed on \"server-5\"");
+        "Status", "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
+        "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
+        "GatewaySender \"ln\" destroyed on \"" + SERVER_5 + "\"");
 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
@@ -238,11 +241,11 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         + CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER
         + "=org.apache.geode.cache30.MyGatewayTransportFilter1";
     gfsh.executeAndAssertThat(command).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"ln\" created on \"server-3\"",
-        "GatewaySender \"ln\" created on \"server-4\"",
-        "GatewaySender \"ln\" created on \"server-5\"");
+        "Status", "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
+        "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
+        "GatewaySender \"ln\" created on \"" + SERVER_5 + "\"");
 
-    List<String> transportFilters = new ArrayList<String>();
+    List<String> transportFilters = new ArrayList<>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
 
     VMProvider.invokeInEveryMember(() -> {
@@ -251,12 +254,11 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
           false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, transportFilters);
     }, server1, server2, server3);
 
-
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"ln\" destroyed on \"server-3\"",
-        "GatewaySender \"ln\" destroyed on \"server-4\"",
-        "GatewaySender \"ln\" destroyed on \"server-5\"");
+        "Status", "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
+        "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
+        "GatewaySender \"ln\" destroyed on \"" + SERVER_5 + "\"");
 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
@@ -269,7 +271,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
   public void testCreateDestroyGatewaySender_OnMember() throws Exception {
     gfsh.executeAndAssertThat(CREATE + " --member=" + server1.getName()).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status",
-            "GatewaySender \"ln\" created on \"server-3\"");
+            "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"");
 
     server1.invoke(() -> {
       verifySenderState("ln", true, false);
@@ -279,7 +281,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
 
     gfsh.executeAndAssertThat(DESTROY + " --member=" + server1.getName()).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status",
-            "GatewaySender \"ln\" destroyed on \"server-3\"");
+            "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"");
 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1);
   }
@@ -291,7 +293,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
   public void testCreateDestroyGatewaySender_Group() throws Exception {
     gfsh.executeAndAssertThat(CREATE + " --group=senderGroup1").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status",
-            "GatewaySender \"ln\" created on \"server-3\"");
+            "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"");
 
     server1.invoke(() -> {
       verifySenderState("ln", true, false);
@@ -301,27 +303,27 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
 
     gfsh.executeAndAssertThat(DESTROY + " --group=senderGroup1").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status",
-            "GatewaySender \"ln\" destroyed on \"server-3\"");
+            "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"");
 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1);
   }
 
   /**
-   * + * Parallel GatewaySender with given attribute values +
+   * Parallel GatewaySender with given attribute values +
    */
   @Test
   public void testCreateDestroyParallelGatewaySender() throws Exception {
     gfsh.executeAndAssertThat(CREATE + " --parallel").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status",
-            "GatewaySender \"ln\" created on \"server-3\"",
-            "GatewaySender \"ln\" created on \"server-4\"",
-            "GatewaySender \"ln\" created on \"server-5\"");
+            "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
+            "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
+            "GatewaySender \"ln\" created on \"" + SERVER_5 + "\"");
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Status", "GatewaySender \"ln\" destroyed on \"server-3\"",
-        "GatewaySender \"ln\" destroyed on \"server-4\"",
-        "GatewaySender \"ln\" destroyed on \"server-5\"");
+        "Status", "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
+        "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
+        "GatewaySender \"ln\" destroyed on \"" + SERVER_5 + "\"");
 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);

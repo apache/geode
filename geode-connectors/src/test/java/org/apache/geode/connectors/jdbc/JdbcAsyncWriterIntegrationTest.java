@@ -30,13 +30,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
+import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
@@ -104,23 +104,9 @@ public class JdbcAsyncWriterIntegrationTest {
   }
 
   @Test
-  public void canInsertIntoTable() throws Exception {
-    employees.put("1", pdxEmployee1);
-    employees.put("2", pdxEmployee2);
-
-    awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(2));
-
-    ResultSet resultSet =
-        statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
-    assertRecordMatchesEmployee(resultSet, "1", employee1);
-    assertRecordMatchesEmployee(resultSet, "2", employee2);
-    assertThat(resultSet.next()).isFalse();
-  }
-
-  @Test
   public void verifyThatPdxFieldNamedSameAsPrimaryKeyIsIgnored() throws Exception {
     PdxInstance pdx1 = cache.createPdxInstanceFactory("Employee").writeString("name", "Emp1")
-        .writeInt("age", 55).writeInt("id", 3).create();
+        .writeObject("age", 55).writeInt("id", 3).create();
     employees.put("1", pdx1);
 
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(1));
@@ -254,7 +240,7 @@ public class JdbcAsyncWriterIntegrationTest {
 
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(),
+    return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
         TestConfigService.getTestConfigService());
   }
 

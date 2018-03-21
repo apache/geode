@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
@@ -54,14 +54,14 @@ public class CreateGatewaySenderCommandTest {
   private CreateGatewaySenderCommand command;
   private InternalCache cache;
   private List<CliFunctionResult> functionResults;
-  private ClusterConfigurationService ccService;
+  private InternalClusterConfigurationService ccService;
   private CliFunctionResult result1, result2;
   private XmlEntity xmlEntity;
 
   @Before
   public void before() {
     command = spy(CreateGatewaySenderCommand.class);
-    ccService = mock(ClusterConfigurationService.class);
+    ccService = mock(InternalClusterConfigurationService.class);
     xmlEntity = mock(XmlEntity.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();

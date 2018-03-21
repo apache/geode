@@ -54,7 +54,7 @@ public class JdbcLoader<K, V> extends AbstractJdbcCallback implements CacheLoade
     try {
       return (V) getSqlHandler().read(helper.getRegion(), helper.getKey());
     } catch (SQLException e) {
-      throw new JdbcConnectorException(e);
+      throw JdbcConnectorException.createException(e);
     }
   }
 }

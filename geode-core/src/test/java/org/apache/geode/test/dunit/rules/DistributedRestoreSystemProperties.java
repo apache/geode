@@ -14,25 +14,25 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static java.lang.System.*;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Properties;
-
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-
-import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.junit.rules.accessible.AccessibleRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 
 /**
  * Distributed version of RestoreSystemProperties which affects all DUnit JVMs including the Locator
  * JVM.
  */
-public class DistributedRestoreSystemProperties extends RestoreSystemProperties
+public class DistributedRestoreSystemProperties extends AccessibleRestoreSystemProperties
     implements SerializableTestRule {
 
-  private static volatile Properties originalProperties;
+  private static final AccessibleRestoreSystemProperties restoreSystemProperties =
+      new AccessibleRestoreSystemProperties();
 
   private final RemoteInvoker invoker;
+
+  private volatile int beforeVmCount;
 
   public DistributedRestoreSystemProperties() {
     this(new RemoteInvoker());
@@ -45,29 +45,39 @@ public class DistributedRestoreSystemProperties extends RestoreSystemProperties
 
   @Override
   public void before() throws Throwable {
-    super.before();
-    this.invoker.invokeInEveryVMAndController(new SerializableRunnable() {
-      @Override
-      public void run() {
-        if (originalProperties == null) {
-          originalProperties = getProperties();
-          setProperties(new Properties(originalProperties));
-        }
-      }
-    });
+    beforeVmCount = getVMCount();
+
+    invoker.invokeInEveryVMAndController(() -> invokeBefore());
   }
 
   @Override
   public void after() {
-    super.after();
-    this.invoker.invokeInEveryVMAndController(new SerializableRunnable() {
-      @Override
-      public void run() {
-        if (originalProperties != null) {
-          setProperties(originalProperties);
-          originalProperties = null;
-        }
+    int afterVmCount = getVMCount();
+    assertThat(afterVmCount).isEqualTo(beforeVmCount);
+
+    invoker.invokeInEveryVMAndController(() -> invokeAfter());
+  }
+
+  private void invokeBefore() throws Exception {
+    try {
+      restoreSystemProperties.before();
+    } catch (Throwable throwable) {
+      if (throwable instanceof Exception) {
+        throw (Exception) throwable;
       }
-    });
+      throw new RuntimeException(throwable);
+    }
+  }
+
+  private void invokeAfter() {
+    restoreSystemProperties.after();
+  }
+
+  private int getVMCount() {
+    try {
+      return getHost(0).getVMCount();
+    } catch (IllegalArgumentException e) {
+      throw new IllegalStateException("DUnit VMs have not been launched");
+    }
   }
 }

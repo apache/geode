@@ -27,7 +27,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -139,7 +139,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
 
     locator.invoke(() -> {
       // Make sure the indexes exist in the cluster config
-      ClusterConfigurationService sharedConfig =
+      InternalClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent()).contains(index1Name,
           index2Name);
@@ -201,7 +201,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
 
     locator.invoke(() -> {
       // Make sure the indexes exist in the cluster config
-      ClusterConfigurationService sharedConfig =
+      InternalClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       assertThat(sharedConfig.getConfiguration("group1").getCacheXmlContent()).contains(index2Name,
           index1Name);

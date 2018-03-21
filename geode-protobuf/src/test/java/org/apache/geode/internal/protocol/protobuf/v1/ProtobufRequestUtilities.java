@@ -17,7 +17,10 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 
 /**
  * This class contains helper functions for generating ClientProtocol.Message objects
@@ -86,20 +89,6 @@ public abstract class ProtobufRequestUtilities {
     RegionAPI.PutRequest putRequest =
         RegionAPI.PutRequest.newBuilder().setRegionName(region).setEntry(entry).build();
     return ClientProtocol.Message.newBuilder().setPutRequest(putRequest).build();
-  }
-
-  /**
-   * Creates a request object containing a RegionAPI.PutIfAbsentRequest
-   *
-   * @param region - Name of the region to put data in
-   * @param entry - Encoded key,value pair, see createEntry in {@link ProtobufRequestUtilities}
-   * @return Request object containing the passed params.
-   */
-  public static ClientProtocol.Message createPutIfAbsentRequest(String region,
-      BasicTypes.Entry entry) {
-    RegionAPI.PutIfAbsentRequest putIfAbsentRequest =
-        RegionAPI.PutIfAbsentRequest.newBuilder().setRegionName(region).setEntry(entry).build();
-    return ClientProtocol.Message.newBuilder().setPutIfAbsentRequest(putIfAbsentRequest).build();
   }
 
   /**

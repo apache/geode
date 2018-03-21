@@ -32,13 +32,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.rules.EmbeddedPulseRule;
 import org.apache.geode.test.junit.rules.HttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, PulseTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PulseConnectivityTest {

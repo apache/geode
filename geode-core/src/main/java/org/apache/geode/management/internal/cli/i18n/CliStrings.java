@@ -41,8 +41,8 @@ import java.text.MessageFormat;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
@@ -2412,7 +2412,7 @@ public class CliStrings {
   public static final String START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM__HELP =
       "When \" " + START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM
           + " \" is set to true, the locator loads the cluster configuration from the \""
-          + ClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME + "\" directory.";
+          + InternalClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME + "\" directory.";
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR = "cluster-config-dir";
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR__HELP =
       "Directory used by the cluster configuration service to store the cluster configuration on the filesystem";
@@ -3116,11 +3116,12 @@ public class CliStrings {
   public static final String CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES =
       "portable-auto-serializable-classes";
   public static final String CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES__HELP =
-      "the patterns which are matched against domain class names to determine whether they should be serialized";
+      "The patterns that are matched against domain class names to determine whether they should be serialized. Serialization done by the auto-serializer will throw an exception if the object of these classes are not portable to non-java languages (check-portability=true).";
 
   public static final String CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES = "auto-serializable-classes";
   public static final String CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES__HELP =
-      "the patterns which are matched against domain class names to determine whether they should be serialized, serialization done by the auto-serializer will throw an exception if the object of these classes are not portable to non-java languages";
+      "The patterns that are matched against domain class names to determine whether they should be auto-serialized. Serialization done by the auto-serializer will not throw an exception if the object of these classes are not portable to non-java languages (check-portability=false).";
+
   public static final String CONFIGURE_PDX__NORMAL__MEMBERS__WARNING =
       "The command would only take effect on new data members joining the distributed system. It won't affect the existing data members";
   public static final String CONFIGURE_PDX__ERROR__MESSAGE =

@@ -14,10 +14,15 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.number.OrderingComparison.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -37,6 +42,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.TestName;
@@ -53,7 +59,6 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -61,7 +66,8 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * This is a test for the APIs of a HARegionQueue and verifies that the head, tail and size counters
  * are updated properly.
  *
- * TODO: need to rewrite a bunch of tests in HARegionQueueJUnitTest
+ * <p>
+ * TODO: use ExecutorServiceRule instead of raw threads (move CyclicBarrier into rule if needed)
  */
 @Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class HARegionQueueJUnitTest {
@@ -76,8 +82,7 @@ public class HARegionQueueJUnitTest {
   private HARegionQueue haRegionQueue;
 
   @Rule
-  public DistributedRestoreSystemProperties restoreSystemProperties =
-      new DistributedRestoreSystemProperties();
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Rule
   public ErrorCollector errorCollector = new ErrorCollector();
@@ -87,12 +92,12 @@ public class HARegionQueueJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    this.cache = createCache();
+    cache = createCache();
   }
 
   @After
   public void tearDown() throws Exception {
-    this.cache.close();
+    cache.close();
     hrqForTestSafeConflationRemoval = null;
   }
 
@@ -105,10 +110,10 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testQueuePutWithoutConflation() throws Exception {
-    this.haRegionQueue = createHARegionQueue(this.testName.getMethodName());
+    haRegionQueue = createHARegionQueue(testName.getMethodName());
     int putPerProducer = 20;
     createAndRunProducers(false, false, false, putPerProducer);
-    assertThat(this.haRegionQueue.size(), is(putPerProducer * TOTAL_PUT_THREADS));
+    assertThat(haRegionQueue.size(), is(putPerProducer * TOTAL_PUT_THREADS));
   }
 
   /**
@@ -121,10 +126,10 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testQueuePutWithConflation() throws Exception {
-    this.haRegionQueue = createHARegionQueue(this.testName.getMethodName());
+    haRegionQueue = createHARegionQueue(testName.getMethodName());
     int putPerProducer = 20;
     createAndRunProducers(true, false, true, putPerProducer);
-    assertThat(this.haRegionQueue.size(), is(putPerProducer));
+    assertThat(haRegionQueue.size(), is(putPerProducer));
   }
 
   /**
@@ -137,10 +142,10 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testQueuePutWithDuplicates() throws Exception {
-    this.haRegionQueue = createHARegionQueue(this.testName.getMethodName());
+    haRegionQueue = createHARegionQueue(testName.getMethodName());
     int putPerProducer = 20;
     createAndRunProducers(false, false, true, putPerProducer);
-    assertThat(this.haRegionQueue.size(), is(putPerProducer * TOTAL_PUT_THREADS));
+    assertThat(haRegionQueue.size(), is(putPerProducer * TOTAL_PUT_THREADS));
   }
 
   /*
@@ -148,11 +153,11 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testAddDispatchedMessageObject() throws Exception {
-    this.haRegionQueue = createHARegionQueue(this.testName.getMethodName());
+    haRegionQueue = createHARegionQueue(testName.getMethodName());
     assertThat(HARegionQueue.getDispatchedMessagesMapForTesting().isEmpty(), is(true));
 
-    this.haRegionQueue.addDispatchedMessage(new ThreadIdentifier(new byte[1], 1), 1);
-    this.haRegionQueue.addDispatchedMessage(new ThreadIdentifier(new byte[1], 2), 2);
+    haRegionQueue.addDispatchedMessage(new ThreadIdentifier(new byte[1], 1), 1);
+    haRegionQueue.addDispatchedMessage(new ThreadIdentifier(new byte[1], 2), 2);
 
     assertThat(!HARegionQueue.getDispatchedMessagesMapForTesting().isEmpty(), is(true));
   }
@@ -162,8 +167,8 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testBlockQueue() throws Exception {
-    HARegionQueue regionQueue = HARegionQueue.getHARegionQueueInstance(
-        this.testName.getMethodName(), this.cache, HARegionQueue.BLOCKING_HA_QUEUE, false);
+    HARegionQueue regionQueue = HARegionQueue.getHARegionQueueInstance(testName.getMethodName(),
+        cache, HARegionQueue.BLOCKING_HA_QUEUE, false);
     Thread[] threads = new Thread[10];
     int threadsLength = threads.length;
     CyclicBarrier barrier = new CyclicBarrier(threadsLength + 1);
@@ -202,8 +207,7 @@ public class HARegionQueueJUnitTest {
     Thread.sleep(5000);
 
     EventID id = new EventID(new byte[] {1}, 1, 1);
-    regionQueue
-        .put(new ConflatableObject("key", "value", id, false, this.testName.getMethodName()));
+    regionQueue.put(new ConflatableObject("key", "value", id, false, testName.getMethodName()));
 
     long startTime = System.currentTimeMillis();
     for (Thread thread : threads) {
@@ -225,13 +229,13 @@ public class HARegionQueueJUnitTest {
     HARegionQueueAttributes haa = new HARegionQueueAttributes();
     haa.setExpiryTime(1);
 
-    HARegionQueue regionQueue = createHARegionQueue(this.testName.getMethodName(), haa);
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName(), haa);
     long start = System.currentTimeMillis();
 
     regionQueue.put(new ConflatableObject("key", "value", new EventID(new byte[] {1}, 1, 1), true,
-        this.testName.getMethodName()));
+        testName.getMethodName()));
 
-    Map map = (Map) regionQueue.getConflationMapForTesting().get(this.testName.getMethodName());
+    Map map = (Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName());
     waitAtLeast(1000, start, () -> {
       assertThat(map, is(Collections.emptyMap()));
       assertThat(regionQueue.getRegion().keys(), is(Collections.emptySet()));
@@ -246,14 +250,14 @@ public class HARegionQueueJUnitTest {
     HARegionQueueAttributes haa = new HARegionQueueAttributes();
     haa.setExpiryTime(1);
 
-    HARegionQueue regionQueue = createHARegionQueue(this.testName.getMethodName(), haa);
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName(), haa);
     long start = System.currentTimeMillis();
 
     regionQueue.put(new ConflatableObject("key", "value", new EventID(new byte[] {1}, 1, 1), true,
-        this.testName.getMethodName()));
+        testName.getMethodName()));
 
     regionQueue.put(new ConflatableObject("key", "newValue", new EventID(new byte[] {1}, 1, 2),
-        true, this.testName.getMethodName()));
+        true, testName.getMethodName()));
 
     assertThat(
         " Expected region size not to be zero since expiry time has not been exceeded but it is not so ",
@@ -263,10 +267,9 @@ public class HARegionQueueJUnitTest {
         !regionQueue.getAvalaibleIds().isEmpty(), is(true));
     assertThat(
         " Expected conflation map size not  to be zero since expiry time has not been exceeded but it is not so "
-            + ((Map) regionQueue.getConflationMapForTesting().get(this.testName.getMethodName()))
+            + ((Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName()))
                 .get("key"),
-        ((Map) regionQueue.getConflationMapForTesting().get(this.testName.getMethodName()))
-            .get("key"),
+        ((Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName())).get("key"),
         not(sameInstance(null)));
     assertThat(
         " Expected eventID map size not to be zero since expiry time has not been exceeded but it is not so ",
@@ -275,7 +278,7 @@ public class HARegionQueueJUnitTest {
     waitAtLeast(1000, start, () -> {
       assertThat(regionQueue.getRegion().keys(), is(Collections.emptySet()));
       assertThat(regionQueue.getAvalaibleIds(), is(Collections.emptySet()));
-      assertThat(regionQueue.getConflationMapForTesting().get(this.testName.getMethodName()),
+      assertThat(regionQueue.getConflationMapForTesting().get(testName.getMethodName()),
           is(Collections.emptyMap()));
       assertThat(regionQueue.getEventsMapForTesting(), is(Collections.emptyMap()));
     });
@@ -289,13 +292,11 @@ public class HARegionQueueJUnitTest {
     HARegionQueueAttributes haa = new HARegionQueueAttributes();
     haa.setExpiryTime(45);
 
-    HARegionQueue regionQueue = createHARegionQueue(this.testName.getMethodName(), haa);
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName(), haa);
     EventID ev1 = new EventID(new byte[] {1}, 1, 1);
     EventID ev2 = new EventID(new byte[] {1}, 1, 2);
-    Conflatable cf1 =
-        new ConflatableObject("key", "value", ev1, true, this.testName.getMethodName());
-    Conflatable cf2 =
-        new ConflatableObject("key", "value2", ev2, true, this.testName.getMethodName());
+    Conflatable cf1 = new ConflatableObject("key", "value", ev1, true, testName.getMethodName());
+    Conflatable cf2 = new ConflatableObject("key", "value2", ev2, true, testName.getMethodName());
 
     regionQueue.put(cf1);
     long tailKey = regionQueue.tailKey.get();
@@ -324,11 +325,11 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testQRMComingBeforeLocalPut() throws Exception {
-    HARegionQueue regionQueue = createHARegionQueue(this.testName.getMethodName());
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName());
     EventID id = new EventID(new byte[] {1}, 1, 1);
 
     regionQueue.removeDispatchedEvents(id);
-    regionQueue.put(new ConflatableObject("key", "value", id, true, this.testName.getMethodName()));
+    regionQueue.put(new ConflatableObject("key", "value", id, true, testName.getMethodName()));
 
     assertThat(" Expected key to be null since QRM for the message id had already arrived ",
         !regionQueue.getRegion().containsKey(1L), is(true));
@@ -342,7 +343,7 @@ public class HARegionQueueJUnitTest {
     HARegionQueueAttributes harqAttr = new HARegionQueueAttributes();
     harqAttr.setExpiryTime(1);
 
-    HARegionQueue regionQueue = createHARegionQueue(this.testName.getMethodName(), harqAttr);
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName(), harqAttr);
     EventID id = new EventID(new byte[] {1}, 1, 1);
     long start = System.currentTimeMillis();
 
@@ -363,9 +364,9 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testPutPath() throws Exception {
-    HARegionQueue regionQueue = createHARegionQueue(this.testName.getMethodName());
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName());
     Conflatable cf = new ConflatableObject("key", "value", new EventID(new byte[] {1}, 1, 1), true,
-        this.testName.getMethodName());
+        testName.getMethodName());
 
     regionQueue.put(cf);
 
@@ -375,8 +376,7 @@ public class HARegionQueueJUnitTest {
         !regionQueue.getAvalaibleIds().isEmpty(), is(true));
     assertThat(
         " Expected conflation map to have entry for this key since expiry time has not been exceeded but it is not so ",
-        ((Map) regionQueue.getConflationMapForTesting().get(this.testName.getMethodName()))
-            .get("key"),
+        ((Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName())).get("key"),
         is(1L));
     assertThat(
         " Expected eventID map size not to be zero since expiry time has not been exceeded but it is not so ",
@@ -389,13 +389,13 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testQRMDispatch() throws Exception {
-    HARegionQueue regionQueue = createHARegionQueue(this.testName.getMethodName());
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName());
     Conflatable[] cf = new Conflatable[10];
 
     // put 10 conflatable objects
     for (int i = 0; i < 10; i++) {
       cf[i] = new ConflatableObject("key" + i, "value", new EventID(new byte[] {1}, 1, i), true,
-          this.testName.getMethodName());
+          testName.getMethodName());
       regionQueue.put(cf[i]);
     }
 
@@ -414,15 +414,13 @@ public class HARegionQueueJUnitTest {
 
     // verify 1-5 not in conflation map
     for (int i = 0; i < 5; i++) {
-      assertThat(
-          !((Map) regionQueue.getConflationMapForTesting().get(this.testName.getMethodName()))
-              .containsKey("key" + i),
-          is(true));
+      assertThat(!((Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName()))
+          .containsKey("key" + i), is(true));
     }
 
     // verify 6-10 in conflation map
     for (int i = 5; i < 10; i++) {
-      assertThat(((Map) regionQueue.getConflationMapForTesting().get(this.testName.getMethodName()))
+      assertThat(((Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName()))
           .containsKey("key" + i), is(true));
     }
 
@@ -455,7 +453,7 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testQRMBeforePut() throws Exception {
-    HARegionQueue regionQueue = createHARegionQueue(this.testName.getMethodName());
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName());
 
     EventID[] ids = new EventID[10];
 
@@ -469,8 +467,7 @@ public class HARegionQueueJUnitTest {
 
     // put 10 conflatable objects
     for (int i = 0; i < 10; i++) {
-      cf[i] =
-          new ConflatableObject("key" + i, "value", ids[i], true, this.testName.getMethodName());
+      cf[i] = new ConflatableObject("key" + i, "value", ids[i], true, testName.getMethodName());
       regionQueue.put(cf[i]);
     }
 
@@ -490,15 +487,13 @@ public class HARegionQueueJUnitTest {
 
     // verify 1-8 not in conflation map
     for (int i = 0; i < 7; i++) {
-      assertThat(
-          !((Map) regionQueue.getConflationMapForTesting().get(this.testName.getMethodName()))
-              .containsKey("key" + i),
-          is(true));
+      assertThat(!((Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName()))
+          .containsKey("key" + i), is(true));
     }
 
     // verify 8-10 in conflation map
     for (int i = 7; i < 10; i++) {
-      assertThat(((Map) regionQueue.getConflationMapForTesting().get(this.testName.getMethodName()))
+      assertThat(((Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName()))
           .containsKey("key" + i), is(true));
     }
 
@@ -530,22 +525,20 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testConflation() throws Exception {
-    HARegionQueue regionQueue = createHARegionQueue(this.testName.getMethodName());
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName());
     EventID ev1 = new EventID(new byte[] {1}, 1, 1);
     EventID ev2 = new EventID(new byte[] {1}, 2, 2);
-    Conflatable cf1 =
-        new ConflatableObject("key", "value", ev1, true, this.testName.getMethodName());
-    Conflatable cf2 =
-        new ConflatableObject("key", "value2", ev2, true, this.testName.getMethodName());
+    Conflatable cf1 = new ConflatableObject("key", "value", ev1, true, testName.getMethodName());
+    Conflatable cf2 = new ConflatableObject("key", "value2", ev2, true, testName.getMethodName());
     regionQueue.put(cf1);
 
     Map conflationMap = regionQueue.getConflationMapForTesting();
-    assertThat(((Map) conflationMap.get(this.testName.getMethodName())).get("key"), is(1L));
+    assertThat(((Map) conflationMap.get(testName.getMethodName())).get("key"), is(1L));
 
     regionQueue.put(cf2);
 
     // verify the conflation map has recorded the new key
-    assertThat(((Map) conflationMap.get(this.testName.getMethodName())).get("key"), is(2L));
+    assertThat(((Map) conflationMap.get(testName.getMethodName())).get("key"), is(2L));
     // the old key should not be present
     assertThat(!regionQueue.getRegion().containsKey(1L), is(true));
     // available ids should not contain the old id (the old position)
@@ -564,17 +557,17 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testQRM() throws Exception {
-    RegionQueue regionqueue = createHARegionQueue(this.testName.getMethodName());
+    RegionQueue regionqueue = createHARegionQueue(testName.getMethodName());
 
     for (int i = 0; i < 10; ++i) {
       regionqueue.put(new ConflatableObject("key" + (i + 1), "value",
-          new EventID(new byte[] {1}, 1, i + 1), true, this.testName.getMethodName()));
+          new EventID(new byte[] {1}, 1, i + 1), true, testName.getMethodName()));
     }
 
     EventID qrmID = new EventID(new byte[] {1}, 1, 5);
     ((HARegionQueue) regionqueue).removeDispatchedEvents(qrmID);
     Map conflationMap = ((HARegionQueue) regionqueue).getConflationMapForTesting();
-    assertThat(((Map) conflationMap.get(this.testName.getMethodName())).size(), is(5));
+    assertThat(((Map) conflationMap.get(testName.getMethodName())).size(), is(5));
 
     Set availableIDs = ((HARegionQueue) regionqueue).getAvalaibleIds();
     Set counters = ((HARegionQueue) regionqueue).getCurrentCounterSet(qrmID);
@@ -583,8 +576,7 @@ public class HARegionQueueJUnitTest {
     assertThat(counters.size(), is(5));
 
     for (int i = 5; i < 10; ++i) {
-      assertThat(
-          ((Map) (conflationMap.get(this.testName.getMethodName()))).containsKey("key" + (i + 1)),
+      assertThat(((Map) (conflationMap.get(testName.getMethodName()))).containsKey("key" + (i + 1)),
           is(true));
       assertThat(availableIDs.contains((long) (i + 1)), is(true));
       assertThat(counters.contains((long) (i + 1)), is(true));
@@ -600,7 +592,7 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testSafeConflationRemoval() throws Exception {
-    hrqForTestSafeConflationRemoval = new HARQTestClass("testSafeConflationRemoval", this.cache);
+    hrqForTestSafeConflationRemoval = new HARQTestClass("testSafeConflationRemoval", cache);
     Conflatable cf1 = new ConflatableObject("key1", "value", new EventID(new byte[] {1}, 1, 1),
         true, "testSafeConflationRemoval");
 
@@ -635,7 +627,7 @@ public class HARegionQueueJUnitTest {
   @Test
   public void testConcurrentDispatcherAndRemovalForSameRegionSameThreadId() throws Exception {
     long numberOfIterations = 1000;
-    HARegionQueue hrq = createHARegionQueue(this.testName.getMethodName());
+    HARegionQueue hrq = createHARegionQueue(testName.getMethodName());
     HARegionQueue.stopQRMThread();
     ThreadIdentifier[] ids = new ThreadIdentifier[(int) numberOfIterations];
 
@@ -735,7 +727,7 @@ public class HARegionQueueJUnitTest {
   @Test
   public void testConcurrentDispatcherAndRemovalForSameRegionDifferentThreadId() throws Exception {
     int numberOfIterations = 1000;
-    HARegionQueue hrq = createHARegionQueue(this.testName.getMethodName());
+    HARegionQueue hrq = createHARegionQueue(testName.getMethodName());
     HARegionQueue.stopQRMThread();
     ThreadIdentifier[] ids = new ThreadIdentifier[(int) numberOfIterations];
 
@@ -831,11 +823,11 @@ public class HARegionQueueJUnitTest {
   @Test
   public void testConcurrentDispatcherAndRemovalForMultipleRegionsSameThreadId() throws Exception {
     int numberOfIterations = 10000;
-    HARegionQueue hrq1 = createHARegionQueue(this.testName.getMethodName() + "-1");
-    HARegionQueue hrq2 = createHARegionQueue(this.testName.getMethodName() + "-2");
-    HARegionQueue hrq3 = createHARegionQueue(this.testName.getMethodName() + "-3");
-    HARegionQueue hrq4 = createHARegionQueue(this.testName.getMethodName() + "-4");
-    HARegionQueue hrq5 = createHARegionQueue(this.testName.getMethodName() + "-5");
+    HARegionQueue hrq1 = createHARegionQueue(testName.getMethodName() + "-1");
+    HARegionQueue hrq2 = createHARegionQueue(testName.getMethodName() + "-2");
+    HARegionQueue hrq3 = createHARegionQueue(testName.getMethodName() + "-3");
+    HARegionQueue hrq4 = createHARegionQueue(testName.getMethodName() + "-4");
+    HARegionQueue hrq5 = createHARegionQueue(testName.getMethodName() + "-5");
 
     HARegionQueue.stopQRMThread();
 
@@ -945,11 +937,11 @@ public class HARegionQueueJUnitTest {
   public void testConcurrentDispatcherAndRemovalForMultipleRegionsDifferentThreadId()
       throws Exception {
     int numberOfIterations = 1000;
-    HARegionQueue hrq1 = createHARegionQueue(this.testName.getMethodName() + "-1");
-    HARegionQueue hrq2 = createHARegionQueue(this.testName.getMethodName() + "-2");
-    HARegionQueue hrq3 = createHARegionQueue(this.testName.getMethodName() + "-3");
-    HARegionQueue hrq4 = createHARegionQueue(this.testName.getMethodName() + "-4");
-    HARegionQueue hrq5 = createHARegionQueue(this.testName.getMethodName() + "-5");
+    HARegionQueue hrq1 = createHARegionQueue(testName.getMethodName() + "-1");
+    HARegionQueue hrq2 = createHARegionQueue(testName.getMethodName() + "-2");
+    HARegionQueue hrq3 = createHARegionQueue(testName.getMethodName() + "-3");
+    HARegionQueue hrq4 = createHARegionQueue(testName.getMethodName() + "-4");
+    HARegionQueue hrq5 = createHARegionQueue(testName.getMethodName() + "-5");
 
     HARegionQueue.stopQRMThread();
 
@@ -1063,7 +1055,7 @@ public class HARegionQueueJUnitTest {
   @Test
   public void testBlockingQueueForConcurrentPeekAndTake() throws Exception {
     TestBlockingHARegionQueue regionQueue =
-        new TestBlockingHARegionQueue("testBlockQueueForConcurrentPeekAndTake", this.cache);
+        new TestBlockingHARegionQueue("testBlockQueueForConcurrentPeekAndTake", cache);
     Thread[] threads = new Thread[3];
 
     for (int i = 0; i < 3; i++) {
@@ -1100,12 +1092,11 @@ public class HARegionQueueJUnitTest {
     EventID id1 = new EventID(new byte[] {1}, 1, 2);
 
     regionQueue.takeFirst = true;
-    regionQueue.put(new ConflatableObject("key", "value", id, true, this.testName.getMethodName()));
+    regionQueue.put(new ConflatableObject("key", "value", id, true, testName.getMethodName()));
 
     Thread.sleep(2000);
 
-    regionQueue
-        .put(new ConflatableObject("key1", "value1", id1, true, this.testName.getMethodName()));
+    regionQueue.put(new ConflatableObject("key1", "value1", id1, true, testName.getMethodName()));
 
     long startTime = System.currentTimeMillis();
     for (int k = 0; k < 3; k++) {
@@ -1125,7 +1116,7 @@ public class HARegionQueueJUnitTest {
   @Test
   public void testBlockingQueueForTakeWhenPeekInProgress() throws Exception {
     TestBlockingHARegionQueue regionQueue =
-        new TestBlockingHARegionQueue("testBlockQueueForTakeWhenPeekInProgress", this.cache);
+        new TestBlockingHARegionQueue("testBlockQueueForTakeWhenPeekInProgress", cache);
     Thread[] threads = new Thread[3];
 
     for (int i = 0; i < 3; i++) {
@@ -1162,12 +1153,11 @@ public class HARegionQueueJUnitTest {
     EventID id1 = new EventID(new byte[] {1}, 1, 2);
 
     regionQueue.takeWhenPeekInProgress = true;
-    regionQueue.put(new ConflatableObject("key", "value", id, true, this.testName.getMethodName()));
+    regionQueue.put(new ConflatableObject("key", "value", id, true, testName.getMethodName()));
 
     Thread.sleep(2000);
 
-    regionQueue
-        .put(new ConflatableObject("key1", "value1", id1, true, this.testName.getMethodName()));
+    regionQueue.put(new ConflatableObject("key1", "value1", id1, true, testName.getMethodName()));
 
     long startTime = System.currentTimeMillis();
     for (int k = 0; k < 3; k++) {
@@ -1199,7 +1189,7 @@ public class HARegionQueueJUnitTest {
     haa.setExpiryTime(3);
 
     RegionQueue regionqueue =
-        new HARegionQueue.TestOnlyHARegionQueue(this.testName.getMethodName(), this.cache, haa) {
+        new HARegionQueue.TestOnlyHARegionQueue(testName.getMethodName(), cache, haa) {
           @Override
           CacheListener createCacheListenerForHARegion() {
 
@@ -1244,8 +1234,7 @@ public class HARegionQueueJUnitTest {
         };
 
     EventID ev1 = new EventID(new byte[] {1}, 1, 1);
-    Conflatable cf1 =
-        new ConflatableObject("key", "value", ev1, true, this.testName.getMethodName());
+    Conflatable cf1 = new ConflatableObject("key", "value", ev1, true, testName.getMethodName());
     regionqueue.put(cf1);
 
     synchronized (this) {
@@ -1297,8 +1286,7 @@ public class HARegionQueueJUnitTest {
 
     for (int i = 0; i < 10; ++i) {
       EventID ev1 = new EventID(new byte[] {1}, 1, i);
-      Conflatable cf1 =
-          new ConflatableObject("key", "value", ev1, false, this.testName.getMethodName());
+      Conflatable cf1 = new ConflatableObject("key", "value", ev1, false, testName.getMethodName());
       regionQueue.put(cf1);
     }
 
@@ -1324,10 +1312,10 @@ public class HARegionQueueJUnitTest {
     haa.setExpiryTime(300);
 
     if (createBlockingQueue) {
-      return HARegionQueue.getHARegionQueueInstance(this.testName.getMethodName(), this.cache, haa,
+      return HARegionQueue.getHARegionQueueInstance(testName.getMethodName(), cache, haa,
           HARegionQueue.BLOCKING_HA_QUEUE, false);
     } else {
-      return HARegionQueue.getHARegionQueueInstance(this.testName.getMethodName(), this.cache, haa,
+      return HARegionQueue.getHARegionQueueInstance(testName.getMethodName(), cache, haa,
           HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
     }
   }
@@ -1341,13 +1329,13 @@ public class HARegionQueueJUnitTest {
     System.setProperty(HARegionQueue.REGION_ENTRY_EXPIRY_TIME, "1");
 
     HARegionQueueAttributes haa = new HARegionQueueAttributes();
-    HARegionQueue regionQueue = createHARegionQueue(this.testName.getMethodName(), haa);
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName(), haa);
     long start = System.currentTimeMillis();
 
     regionQueue.put(new ConflatableObject("key", "value", new EventID(new byte[] {1}, 1, 1), true,
-        this.testName.getMethodName()));
+        testName.getMethodName()));
 
-    Map map = (Map) regionQueue.getConflationMapForTesting().get(this.testName.getMethodName());
+    Map map = (Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName());
     assertThat(!map.isEmpty(), is(true));
 
     waitAtLeast(1000, start, () -> {
@@ -1363,14 +1351,14 @@ public class HARegionQueueJUnitTest {
   @Test
   public void testUpdateOfMessageSyncInterval() throws Exception {
     int initialMessageSyncInterval = 5;
-    this.cache.setMessageSyncInterval(initialMessageSyncInterval);
-    createHARegionQueue(this.testName.getMethodName());
+    cache.setMessageSyncInterval(initialMessageSyncInterval);
+    createHARegionQueue(testName.getMethodName());
 
     assertThat("messageSyncInterval not set properly", HARegionQueue.getMessageSyncInterval(),
         is(initialMessageSyncInterval));
 
     int updatedMessageSyncInterval = 10;
-    this.cache.setMessageSyncInterval(updatedMessageSyncInterval);
+    cache.setMessageSyncInterval(updatedMessageSyncInterval);
 
     Awaitility.await().atMost(1, TimeUnit.MINUTES)
         .until(() -> assertThat("messageSyncInterval not updated.",
@@ -1454,7 +1442,7 @@ public class HARegionQueueJUnitTest {
    */
   private HARegionQueue createHARegionQueue(String name)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-    return HARegionQueue.getHARegionQueueInstance(name, this.cache, queueType(), false);
+    return HARegionQueue.getHARegionQueueInstance(name, cache, queueType(), false);
   }
 
   /**
@@ -1462,7 +1450,7 @@ public class HARegionQueueJUnitTest {
    */
   HARegionQueue createHARegionQueue(String name, HARegionQueueAttributes attrs)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-    return HARegionQueue.getHARegionQueueInstance(name, this.cache, attrs, queueType(), false);
+    return HARegionQueue.getHARegionQueueInstance(name, cache, attrs, queueType(), false);
   }
 
   /**
@@ -1535,26 +1523,26 @@ public class HARegionQueueJUnitTest {
     Producer(String name, String keyPrefix, long startingId, long totalPuts,
         boolean createConflatableEvents) {
       super(name);
-      this.producerName = name;
+      producerName = name;
       this.keyPrefix = keyPrefix;
       this.startingId = startingId;
       this.totalPuts = totalPuts;
-      this.createConflatables = createConflatableEvents;
+      createConflatables = createConflatableEvents;
       setDaemon(true);
     }
 
     /** Create Conflatable objects and put them into the Queue. */
     @Override
     public void run() {
-      if (this.producerName == null) {
-        this.producerName = Thread.currentThread().getName();
+      if (producerName == null) {
+        producerName = Thread.currentThread().getName();
       }
-      for (long i = 0; i < this.totalPuts; i++) {
+      for (long i = 0; i < totalPuts; i++) {
         try {
           String regionName = "test";
-          ConflatableObject event = new ConflatableObject(this.keyPrefix + i, "val" + i,
-              new EventID(new byte[] {1}, this.startingId, this.startingId + i),
-              this.createConflatables, regionName);
+          ConflatableObject event = new ConflatableObject(keyPrefix + i, "val" + i,
+              new EventID(new byte[] {1}, startingId, startingId + i), createConflatables,
+              regionName);
 
           haRegionQueue.put(event);
           Thread.sleep(sleepTime);

@@ -48,9 +48,9 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 import com.google.common.collect.Maps;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
@@ -58,6 +58,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.util.test.TestUtil;
@@ -68,22 +69,29 @@ import org.apache.geode.util.test.TestUtil;
  * ssl settings cleanly.
  */
 @Category(DistributedTest.class)
-@SuppressWarnings({"serial", "unused"})
+@SuppressWarnings("serial")
 public class JMXMBeanDUnitTest implements Serializable {
 
-  private ClusterStartupRule lsRule = new ClusterStartupRule();
-  private transient MBeanServerConnectionRule jmxConnector = new MBeanServerConnectionRule();
-  private transient RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  private transient CleanupDUnitVMsRule cleanupDUnitVMsRule = new CleanupDUnitVMsRule();
-
-  @Rule
-  public transient RuleChain ruleChain = RuleChain.outerRule(cleanupDUnitVMsRule)
-      .around(restoreSystemProperties).around(lsRule).around(jmxConnector);
+  private static Properties legacySSLProperties;
+  private static Properties sslProperties;
+  private static Properties sslPropertiesWithMultiKey;
+  private static String singleKeystore;
+  private static String multiKeystore;
+  private static String multiKeyTruststore;
 
   private int jmxPort;
-  private Properties locatorProperties = null;
-  private static Properties legacySSLProperties, sslProperties, sslPropertiesWithMultiKey;
-  private static String singleKeystore, multiKeystore, multiKeyTruststore;
+  private Properties locatorProperties;
+
+  @ClassRule
+  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+
+  private transient CleanupDUnitVMsRule cleanupDUnitVMsRule = new CleanupDUnitVMsRule();
+  private ClusterStartupRule lsRule = new ClusterStartupRule();
+  private transient MBeanServerConnectionRule jmxConnector = new MBeanServerConnectionRule();
+
+  @Rule
+  public transient RuleChain ruleChain =
+      RuleChain.outerRule(cleanupDUnitVMsRule).around(lsRule).around(jmxConnector);
 
   @BeforeClass
   public static void beforeClass() {
@@ -153,7 +161,6 @@ public class JMXMBeanDUnitTest implements Serializable {
     lsRule.startLocatorVM(0, locatorProperties);
     remotelyValidateJmxConnection(false);
   }
-
 
   @Test
   public void testJMXOverSSLWithMultiKey() throws Exception {

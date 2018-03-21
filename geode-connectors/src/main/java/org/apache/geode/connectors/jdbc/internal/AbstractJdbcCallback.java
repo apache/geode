@@ -14,17 +14,16 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.util.Properties;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheCallback;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.InternalCache;
 
 @Experimental
 public abstract class AbstractJdbcCallback implements CacheCallback {
 
   private volatile SqlHandler sqlHandler;
-  protected volatile InternalCache cache;
+  protected InternalCache cache;
 
   protected AbstractJdbcCallback() {
     // nothing
@@ -42,11 +41,6 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
     }
   }
 
-  @Override
-  public void init(Properties props) {
-    // nothing
-  }
-
   protected SqlHandler getSqlHandler() {
     return sqlHandler;
   }
@@ -57,12 +51,17 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
     }
   }
 
+  protected boolean eventCanBeIgnored(Operation operation) {
+    return operation.isLoad();
+  }
+
   private synchronized void initialize(InternalCache cache) {
     if (sqlHandler == null) {
       this.cache = cache;
       JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
+      TableMetaDataManager tableMetaDataManager = new TableMetaDataManager();
       DataSourceManager manager = new DataSourceManager(new HikariJdbcDataSourceFactory());
-      sqlHandler = new SqlHandler(manager, service);
+      sqlHandler = new SqlHandler(manager, tableMetaDataManager, service);
     }
   }
 }

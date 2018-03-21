@@ -16,59 +16,58 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.result.ResultBuilder.buildResult;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyJndiBindingFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DestroyJndiBindingCommand extends GfshCommand {
-  static final String CREATE_JNDIBINDING = "destroy jndi-binding";
-  static final String CREATE_JNDIBINDING__HELP =
+  static final String DESTROY_JNDIBINDING = "destroy jndi-binding";
+  static final String DESTROY_JNDIBINDING__HELP =
       "Destroy a jndi binding that holds the configuration for the XA datasource.";
   static final String JNDI_NAME = "name";
   static final String JNDI_NAME__HELP = "Name of the binding to be destroyed.";
+  static final String IFEXISTS_HELP =
+      "Skip the destroy operation when a jndi binding with the same name does not exists. Without specifying this option, this command execution results into an error.";
 
-  @CliCommand(value = CREATE_JNDIBINDING, help = CREATE_JNDIBINDING__HELP)
+  @CliCommand(value = DESTROY_JNDIBINDING, help = DESTROY_JNDIBINDING__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public Result destroyJDNIBinding(
-      @CliOption(key = JNDI_NAME, mandatory = true, help = JNDI_NAME__HELP) String jndiName)
-      throws IOException, SAXException, ParserConfigurationException, TransformerException {
+      @CliOption(key = JNDI_NAME, mandatory = true, help = JNDI_NAME__HELP) String jndiName,
+      @CliOption(key = CliStrings.IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false") boolean ifExists) {
 
     Result result;
     boolean persisted = false;
-    ClusterConfigurationService service = getSharedConfiguration();
+    InternalClusterConfigurationService service = getSharedConfiguration();
     if (service != null) {
-      Element existingBinding =
-          service.getXmlElement("cluster", "jndi-binding", "jndi-name", jndiName);
-      if (existingBinding == null) {
-        return ResultBuilder.createUserErrorResult(
-            CliStrings.format("Jndi binding with jndi-name \"{0}\" does not exist.", jndiName));
-      }
-      removeJndiBindingFromXml(jndiName);
+      service.updateCacheConfig("cluster", cc -> {
+        List<JndiBindingsType.JndiBinding> bindings = cc.getJndiBindings();
+        JndiBindingsType.JndiBinding binding = service.findIdentifiable(bindings, jndiName);
+        if (binding == null) {
+          throw new EntityNotFoundException(
+              CliStrings.format("Jndi binding with jndi-name \"{0}\" does not exist.", jndiName),
+              ifExists);
+        }
+        bindings.remove(binding);
+        return cc;
+      });
       persisted = true;
     }
 
@@ -88,32 +87,5 @@ public class DestroyJndiBindingCommand extends GfshCommand {
     }
     result.setCommandPersisted(persisted);
     return result;
-  }
-
-  void removeJndiBindingFromXml(String jndiName)
-      throws TransformerException, IOException, SAXException, ParserConfigurationException {
-    // cluster group config should always be present
-    Configuration config = getSharedConfiguration().getConfiguration("cluster");
-
-    Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
-    NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
-
-    boolean updatedXml = false;
-    if (jndiBindings != null && jndiBindings.getLength() > 0) {
-      for (int i = 0; i < jndiBindings.getLength(); i++) {
-        Element eachBinding = (Element) jndiBindings.item(i);
-        if (eachBinding.getAttribute("jndi-name").equals(jndiName)) {
-          eachBinding.getParentNode().removeChild(eachBinding);
-          updatedXml = true;
-        }
-      }
-    }
-
-    if (updatedXml) {
-      String newXml = XmlUtils.prettyXml(document.getFirstChild());
-      config.setCacheXmlContent(newXml);
-
-      getSharedConfiguration().getConfigurationRegion().put("cluster", config);
-    }
   }
 }

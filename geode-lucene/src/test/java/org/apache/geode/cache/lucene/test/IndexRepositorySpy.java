@@ -50,10 +50,10 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
 
   @Override
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-      InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
-      throws IOException {
-    final IndexRepository indexRepo =
-        super.computeIndexRepository(bucketId, serializer, index, userRegion, oldRepository);
+      InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository,
+      PartitionedRepositoryManager partitionedRepositoryManager) throws IOException {
+    final IndexRepository indexRepo = super.computeIndexRepository(bucketId, serializer, index,
+        userRegion, oldRepository, partitionedRepositoryManager);
     if (indexRepo == null) {
       return null;
     }

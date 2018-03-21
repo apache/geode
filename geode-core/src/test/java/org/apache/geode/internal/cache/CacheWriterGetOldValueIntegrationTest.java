@@ -14,45 +14,68 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
+import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class CacheWriterGetOldValueIntegrationTest {
 
-  private GemFireCacheImpl cache = null;
+  private final Map<String, String> expectedValues = new HashMap<>();
+
+  private InternalCache cache;
+  private Region<String, String> region;
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public TestName testName = new TestName();
 
   @Before
   public void setUp() throws Exception {
-    createCache();
-  }
+    cache = (InternalCache) new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0").create();
 
-  private void createCache() {
-    cache =
-        (GemFireCacheImpl) new CacheFactory().set("locators", "").set("mcast-port", "0").create();
+    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(new File[] {temporaryFolder.getRoot()});
+
+    DiskStore diskStore = diskStoreFactory.create(testName.getMethodName());
+
+    RegionFactory<String, String> regionFactory = cache.createRegionFactory();
+    regionFactory.setEvictionAttributes(createLRUEntryAttributes(1, OVERFLOW_TO_DISK));
+    regionFactory.setDataPolicy(DataPolicy.NORMAL);
+    regionFactory.setDiskStoreName(diskStore.getName());
+
+    region = regionFactory.create(testName.getMethodName());
   }
 
   @After
@@ -62,153 +85,149 @@ public class CacheWriterGetOldValueIntegrationTest {
   }
 
   @Test
-  public void getOldValueInCacheWriterReturnsValueOfEvictedEntry() {
-    doTest(false);
-  }
-
-  @Test
-  public void getOldValueWithTransactionInCacheWriterReturnsValueOfEvictedEntry() {
-    doTest(true);
-  }
-
-  @Test
   public void doPutAll() {
-    PutAllCacheWriter<String, String> cw;
-    Region<String, String> r = createOverflowRegion();
-    put(r, "k1", "v1");
-    put(r, "k2", "v2");
-    cw = new PutAllCacheWriter<>();
-    r.getAttributesMutator().setCacheWriter(cw);
-    HashMap<String, String> putAllMap = new HashMap<>();
+    put(region, "k1", "v1");
+    put(region, "k2", "v2");
+
+    PutAllCacheWriter<String, String> cacheWriter = new PutAllCacheWriter<>();
+    region.getAttributesMutator().setCacheWriter(cacheWriter);
+
+    Map<String, String> putAllMap = new HashMap<>();
     putAllMap.put("k1", "update1");
     putAllMap.put("k2", "update2");
-    r.putAll(putAllMap);
+    region.putAll(putAllMap);
 
-    assertThat(cw.getSeenEntries()).isEqualTo(this.expectedValues);
+    assertThat(cacheWriter.getSeenEntries()).isEqualTo(expectedValues);
   }
 
   @Test
   public void doRemoveAll() {
-    RemoveAllCacheWriter<String, String> cw;
-    Region<String, String> r = createOverflowRegion();
-    put(r, "k1", "v1");
-    put(r, "k2", "v2");
-    cw = new RemoveAllCacheWriter<>();
-    r.getAttributesMutator().setCacheWriter(cw);
-    r.removeAll(Arrays.asList("k1", "k2"));
+    put(region, "k1", "v1");
+    put(region, "k2", "v2");
 
-    assertThat(cw.getSeenEntries()).isEqualTo(this.expectedValues);
+    RemoveAllCacheWriter<String, String> cacheWriter = new RemoveAllCacheWriter<>();
+    region.getAttributesMutator().setCacheWriter(cacheWriter);
+
+    region.removeAll(Arrays.asList("k1", "k2"));
+
+    assertThat(cacheWriter.getSeenEntries()).isEqualTo(expectedValues);
   }
 
-  private void doTest(boolean useTx) {
-    String evictedKey;
-    String unevictedKey;
-    String evictedValue;
-    String unevictedValue;
-    CacheWriterWithExpectedOldValue<String, String> cw;
+  @Test
+  public void getOldValueInCacheWriterReturnsValueOfEvictedEntry() {
+    doOldValueTest(false);
+  }
 
-    Region<String, String> r = createOverflowRegion();
-    put(r, "k1", "v1");
-    put(r, "k2", "v2");
+  @Test
+  public void getOldValueWithTransactionInCacheWriterReturnsValueOfEvictedEntry() {
+    doOldValueTest(true);
+  }
+
+  private void doOldValueTest(boolean useTx) {
+    put(region, "k1", "v1");
+    put(region, "k2", "v2");
 
     beginTx(useTx);
-    unevictedKey = getUnevictedKey(r);
-    unevictedValue = expectedValues.get(unevictedKey);
-    cw = new CacheWriterWithExpectedOldValue<>(unevictedValue);
-    r.getAttributesMutator().setCacheWriter(cw);
-    assertThat(put(r, unevictedKey, "update1")).isEqualTo(unevictedValue);
-    assertThat(cw.getUnexpectedEvents()).isEmpty();
+    String unevictedKey = getUnevictedKey(region);
+    String unevictedValue = expectedValues.get(unevictedKey);
+    CacheWriterWithExpectedOldValue<String, String> cacheWriter =
+        new CacheWriterWithExpectedOldValue<>(unevictedValue);
+    region.getAttributesMutator().setCacheWriter(cacheWriter);
+    assertThat(put(region, unevictedKey, "update1")).isEqualTo(unevictedValue);
+    assertThat(cacheWriter.getUnexpectedEvents()).isEmpty();
     endTx(useTx);
 
     beginTx(useTx);
-    evictedKey = getEvictedKey(r);
-    evictedValue = expectedValues.get(evictedKey);
-    cw = new CacheWriterWithExpectedOldValue<>(evictedValue);
-    r.getAttributesMutator().setCacheWriter(cw);
-    assertThat(put(r, evictedKey, "update2")).isEqualTo(useTx ? evictedValue : null);
-    assertThat(cw.getUnexpectedEvents()).isEmpty();
+    String evictedKey = getEvictedKey(region);
+    String evictedValue = expectedValues.get(evictedKey);
+    cacheWriter = new CacheWriterWithExpectedOldValue<>(evictedValue);
+    region.getAttributesMutator().setCacheWriter(cacheWriter);
+    assertThat(put(region, evictedKey, "update2")).isEqualTo(useTx ? evictedValue : null);
+    assertThat(cacheWriter.getUnexpectedEvents()).isEmpty();
     endTx(useTx);
 
     beginTx(useTx);
-    evictedKey = getEvictedKey(r);
+    evictedKey = getEvictedKey(region);
     evictedValue = expectedValues.get(evictedKey);
-    cw = new CacheWriterWithExpectedOldValue<>(evictedValue);
-    r.getAttributesMutator().setCacheWriter(cw);
-    assertThat(r.destroy(evictedKey)).isEqualTo(useTx ? evictedValue : null);
-    assertThat(cw.getUnexpectedEvents()).isEmpty();
+    cacheWriter = new CacheWriterWithExpectedOldValue<>(evictedValue);
+    region.getAttributesMutator().setCacheWriter(cacheWriter);
+    assertThat(region.destroy(evictedKey)).isEqualTo(useTx ? evictedValue : null);
+    assertThat(cacheWriter.getUnexpectedEvents()).isEmpty();
     endTx(useTx);
   }
 
   private void beginTx(boolean useTx) {
     if (useTx) {
-      this.cache.getCacheTransactionManager().begin();
+      cache.getCacheTransactionManager().begin();
     }
   }
 
   private void endTx(boolean useTx) {
     if (useTx) {
-      this.cache.getCacheTransactionManager().commit();
+      cache.getCacheTransactionManager().commit();
     }
   }
 
-  private final HashMap<String, String> expectedValues = new HashMap<>();
-
-  private String put(Region<String, String> r, String k, String v) {
-    String result = r.put(k, v);
-    expectedValues.put(k, v);
+  private String put(Map<String, String> region, String key, String value) {
+    String result = region.put(key, value);
+    expectedValues.put(key, value);
     return result;
   }
 
-  private String getEvictedKey(Region<String, String> r) {
-    InternalRegion ir = (InternalRegion) r;
+  private String getEvictedKey(Region<String, String> region) {
+    InternalRegion internalRegion = (InternalRegion) region;
+    RegionEntry regionEntry = internalRegion.getRegionEntry("k1");
+
     String evictedKey = null;
-    RegionEntry re = ir.getRegionEntry("k1");
-    if (re.getValueAsToken() == null) {
+    if (regionEntry.getValueAsToken() == null) {
       evictedKey = "k1";
     }
-    re = ir.getRegionEntry("k2");
-    if (re.getValueAsToken() == null) {
+    regionEntry = internalRegion.getRegionEntry("k2");
+    if (regionEntry.getValueAsToken() == null) {
       evictedKey = "k2";
     }
+
     assertThat(evictedKey).isNotNull();
     return evictedKey;
   }
 
-  private String getUnevictedKey(Region<String, String> r) {
-    InternalRegion ir = (InternalRegion) r;
+  private String getUnevictedKey(Region<String, String> region) {
+    InternalRegion internalRegion = (InternalRegion) region;
+    RegionEntry regionEntry = internalRegion.getRegionEntry("k1");
+
     String unevictedKey = null;
-    RegionEntry re = ir.getRegionEntry("k1");
-    if (re.getValueAsToken() != null) {
+    if (regionEntry.getValueAsToken() != null) {
       unevictedKey = "k1";
     }
-    re = ir.getRegionEntry("k2");
-    if (re.getValueAsToken() != null) {
+    regionEntry = internalRegion.getRegionEntry("k2");
+    if (regionEntry.getValueAsToken() != null) {
       unevictedKey = "k2";
     }
+
     assertThat(unevictedKey).isNotNull();
     return unevictedKey;
   }
 
   private static class CacheWriterWithExpectedOldValue<K, V> extends CacheWriterAdapter<K, V> {
     private final V expectedOldValue;
-    private final ArrayList<EntryEvent<K, V>> unexpectedEvents = new ArrayList<>();
+    private final List<EntryEvent<K, V>> unexpectedEvents = new ArrayList<>();
 
     CacheWriterWithExpectedOldValue(V expectedOldValue) {
       this.expectedOldValue = expectedOldValue;
     }
 
     public List<EntryEvent<K, V>> getUnexpectedEvents() {
-      return this.unexpectedEvents;
+      return unexpectedEvents;
     }
 
     private void checkEvent(EntryEvent<K, V> event) {
-      if (this.expectedOldValue == null) {
+      if (expectedOldValue == null) {
         if (event.getOldValue() != null) {
-          this.unexpectedEvents.add(event);
+          unexpectedEvents.add(event);
         }
       } else {
-        if (!this.expectedOldValue.equals(event.getOldValue())) {
-          this.unexpectedEvents.add(event);
+        if (!expectedOldValue.equals(event.getOldValue())) {
+          unexpectedEvents.add(event);
         }
       }
     }
@@ -230,10 +249,10 @@ public class CacheWriterGetOldValueIntegrationTest {
   }
 
   private static class PutAllCacheWriter<K, V> extends CacheWriterAdapter<K, V> {
-    private final HashMap<K, V> seenEntries = new HashMap<>();
+    private final Map<K, V> seenEntries = new HashMap<>();
 
-    public HashMap<K, V> getSeenEntries() {
-      return this.seenEntries;
+    public Map<K, V> getSeenEntries() {
+      return seenEntries;
     }
 
     @Override
@@ -253,10 +272,10 @@ public class CacheWriterGetOldValueIntegrationTest {
   }
 
   private static class RemoveAllCacheWriter<K, V> extends CacheWriterAdapter<K, V> {
-    private final HashMap<K, V> seenEntries = new HashMap<>();
+    private final Map<K, V> seenEntries = new HashMap<>();
 
-    public HashMap<K, V> getSeenEntries() {
-      return this.seenEntries;
+    public Map<K, V> getSeenEntries() {
+      return seenEntries;
     }
 
     @Override
@@ -274,13 +293,4 @@ public class CacheWriterGetOldValueIntegrationTest {
       seenEntries.put(event.getKey(), event.getOldValue());
     }
   }
-
-  private <K, V> Region<K, V> createOverflowRegion() {
-    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
-    regionFactory.setEvictionAttributes(
-        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
-    regionFactory.setDataPolicy(DataPolicy.NORMAL);
-    return regionFactory.create("region");
-  }
-
 }

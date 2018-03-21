@@ -68,9 +68,10 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, AEQTest.class})
 public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
   public AsyncEventListenerDUnitTest() {
@@ -1518,6 +1519,11 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         () -> AsyncEventQueueTestBase.getAllPrimaryBucketsOnTheNode(getTestMethodName() + "_PR"));
 
     LogWriterUtils.getLogWriter().info("Primary buckets on vm2: " + primaryBucketsvm2);
+
+    // before shutdown vm2, both vm1 and vm2 should have 40 events in primary queue
+    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 80, 80, 0));
+    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 80, 80, 0));
+
     // ---------------------------- Kill vm2 --------------------------
     vm2.invoke(() -> AsyncEventQueueTestBase.killSender());
     // ----------------------------------------------------------------
@@ -1526,6 +1532,8 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     vm3.invoke(createCacheRunnable(lnPort));
     vm3.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueueWithListener2("ln", true, 100, 5,
         false, null));
+    // vm3 will move some primary buckets from vm1, but vm1's primary queue size did not reduce
+    vm3.invoke(pauseAsyncEventQueueRunnable());
     vm3.invoke(() -> AsyncEventQueueTestBase.createPRWithRedundantCopyWithAsyncEventQueue(
         getTestMethodName() + "_PR", "ln", isOffHeap()));
 
@@ -1534,7 +1542,17 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     String regionName = getTestMethodName() + "_PR";
     Set<Integer> primaryBucketsvm3 = (Set<Integer>) vm3
         .invoke(() -> AsyncEventQueueTestBase.getAllPrimaryBucketsOnTheNode(regionName));
+    LogWriterUtils.getLogWriter().info("Primary buckets on vm3: " + primaryBucketsvm3);
+    Set<Integer> primaryBucketsvm1 = (Set<Integer>) vm1.invoke(
+        () -> AsyncEventQueueTestBase.getAllPrimaryBucketsOnTheNode(getTestMethodName() + "_PR"));
+    LogWriterUtils.getLogWriter()
+        .info("After shutdown vm2, started vm3, Primary buckets on vm1: " + primaryBucketsvm1);
 
+    // vm1.invoke(()->AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 80, 80, 80, 0));
+    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 80, 80, 0));
+    vm3.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 0, 0, 0));
+
+    vm3.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln"));
     vm1.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln"));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty("ln"));

@@ -62,8 +62,7 @@ public class DataSourceFactory {
    * @throws DataSourceCreateException
    * @return ??
    */
-  public static DataSource getSimpleDataSource(Map configMap, List props)
-      throws DataSourceCreateException {
+  public static DataSource getSimpleDataSource(Map configMap) throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     if (configs.getJDBCDriver() == null) {
       logger.error(LocalizedMessage.create(
@@ -101,8 +100,8 @@ public class DataSourceFactory {
    * @return javax.sql.DataSource
    * @throws DataSourceCreateException
    */
-  public static ClientConnectionFactoryWrapper getManagedDataSource(Map configMap, List props)
-      throws DataSourceCreateException {
+  public static ClientConnectionFactoryWrapper getManagedDataSource(Map configMap,
+      List<ConfigProperty> props) throws DataSourceCreateException {
     Object cf = null;
     ManagedConnectionFactory mcf = null;
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
@@ -155,7 +154,7 @@ public class DataSourceFactory {
    * @throws DataSourceCreateException
    * @return ???
    */
-  public static DataSource getPooledDataSource(Map configMap, List props)
+  public static DataSource getPooledDataSource(Map configMap, List<ConfigProperty> props)
       throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     String connpoolClassName = configs.getConnectionPoolDSClass();
@@ -190,7 +189,7 @@ public class DataSourceFactory {
    * @throws DataSourceCreateException
    * @return ???
    */
-  public static DataSource getTranxDataSource(Map configMap, List props)
+  public static DataSource getTranxDataSource(Map configMap, List<ConfigProperty> props)
       throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     String xaClassName = configs.getXADSClass();

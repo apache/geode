@@ -28,9 +28,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.internal.SystemManagementService;
 
-class MXBeanAwaitility {
+public class MXBeanAwaitility {
 
-  static LocatorMXBean awaitLocalLocatorMXBean() {
+  public static LocatorMXBean awaitLocalLocatorMXBean() {
     SystemManagementService service = getSystemManagementService();
 
     await().atMost(2, MINUTES).until(() -> assertThat(service.getLocalLocatorMXBean()).isNotNull());
@@ -38,7 +38,7 @@ class MXBeanAwaitility {
     return service.getLocalLocatorMXBean();
   }
 
-  static LocatorMXBean awaitLocatorMXBeanProxy(final DistributedMember member) {
+  public static LocatorMXBean awaitLocatorMXBeanProxy(final DistributedMember member) {
     SystemManagementService service = getSystemManagementService();
     ObjectName objectName = service.getLocatorMBeanName(member);
 
@@ -49,24 +49,49 @@ class MXBeanAwaitility {
     return service.getMBeanProxy(objectName, LocatorMXBean.class);
   }
 
-  static SystemManagementService getSystemManagementService() {
+  public static GatewaySenderMXBean awaitGatewaySenderMXBeanProxy(final DistributedMember member,
+      final String senderId) {
+    SystemManagementService service = getSystemManagementService();
+    ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
+
+    String alias = "Awaiting GatewaySenderMXBean proxy for " + member;
+    await(alias).until(
+        () -> assertThat(service.getMBeanProxy(objectName, GatewaySenderMXBean.class)).isNotNull());
+
+    return service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
+  }
+
+  public static GatewayReceiverMXBean awaitGatewayReceiverMXBeanProxy(
+      final DistributedMember member) {
+    SystemManagementService service = getSystemManagementService();
+    ObjectName objectName = service.getGatewayReceiverMBeanName(member);
+
+    String alias = "Awaiting GatewayReceiverMXBean proxy for " + member;
+    await(alias)
+        .until(() -> assertThat(service.getMBeanProxy(objectName, GatewayReceiverMXBean.class))
+            .isNotNull());
+
+    return service.getMBeanProxy(objectName, GatewayReceiverMXBean.class);
+  }
+
+  public static SystemManagementService getSystemManagementService() {
     Cache cache = GemFireCacheImpl.getInstance();
     return (SystemManagementService) ManagementService.getExistingManagementService(cache);
   }
 
-  static ConditionFactory await() {
+  public static ConditionFactory await() {
     return Awaitility.await().atMost(2, MINUTES);
   }
 
-  static ConditionFactory await(final String alias) {
+  public static ConditionFactory await(final String alias) {
     return Awaitility.await(alias).atMost(2, MINUTES);
   }
 
-  static MemberMXBean awaitMemberMXBeanProxy(final DistributedMember member) {
+  public static MemberMXBean awaitMemberMXBeanProxy(final DistributedMember member) {
     return awaitMemberMXBeanProxy(member, getSystemManagementService());
   }
 
-  static MemberMXBean awaitMemberMXBeanProxy(final DistributedMember member,
+  public static MemberMXBean awaitMemberMXBeanProxy(final DistributedMember member,
       final SystemManagementService managementService) {
     ObjectName objectName = managementService.getMemberMBeanName(member);
 
