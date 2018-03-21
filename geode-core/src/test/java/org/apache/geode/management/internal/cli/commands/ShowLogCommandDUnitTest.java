@@ -166,6 +166,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
           CliUtil.getDistributedMemberByNameOrId(SERVER2_NAME, ClusterStartupRule.getCache());
 
       ShowLogCommand showLogCommand = new ShowLogCommand();
+      showLogCommand.setCache(ClusterStartupRule.getCache());
 
       boolean server1isConnected = showLogCommand.getMemberMxBean(server1) != null;
       boolean server2isConnected = showLogCommand.getMemberMxBean(server2) != null;
