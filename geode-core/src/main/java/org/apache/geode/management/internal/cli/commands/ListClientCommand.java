@@ -24,7 +24,6 @@ import javax.management.ObjectName;
 
 import org.springframework.shell.core.annotation.CliCommand;
 
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -51,8 +50,7 @@ public class ListClientCommand extends GfshCommand {
     String headerText = "ClientList";
     resultTable = resultTable.setHeader(headerText);
 
-    InternalCache cache = getCache();
-    ManagementService service = ManagementService.getExistingManagementService(cache);
+    ManagementService service = getManagementService();
     ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
 
     if (cacheServers.length == 0) {

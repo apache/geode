@@ -151,7 +151,7 @@ public class ConfigurePDXCommand extends GfshCommand {
     XmlEntity xmlEntity = createXmlEntity(cache);
     result = ResultBuilder.buildResult(ird);
     persistClusterConfiguration(result,
-        () -> getSharedConfiguration().addXmlEntity(xmlEntity, null));
+        () -> getConfigurationService().addXmlEntity(xmlEntity, null));
     return result;
   }
 

@@ -52,7 +52,7 @@ public class LocateEntryCommand extends GfshCommand {
           help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean recursive) {
 
-    getSecurityService().authorize(Resource.DATA, Operation.READ, regionPath, key);
+    authorize(Resource.DATA, Operation.READ, regionPath, key);
 
     DataCommandResult dataResult;
 

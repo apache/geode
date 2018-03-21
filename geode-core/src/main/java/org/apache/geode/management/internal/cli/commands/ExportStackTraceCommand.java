@@ -34,6 +34,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -98,7 +99,7 @@ public class ExportStackTraceCommand extends GfshCommand {
       }
     }
 
-    InternalDistributedSystem ads = getCache().getInternalDistributedSystem();
+    InternalDistributedSystem ads = ((InternalCache) getCache()).getInternalDistributedSystem();
     String filePath = writeStacksToFile(dumps, fileName);
     resultData.addLine(CliStrings.format(CliStrings.EXPORT_STACKTRACE__SUCCESS, filePath));
     resultData.addLine(CliStrings.EXPORT_STACKTRACE__HOST + ads.getDistributedMember().getHost());

@@ -25,11 +25,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.cli.CliMetaData;
@@ -67,7 +67,7 @@ public class ChangeLogLevelCommand extends GfshCommand {
           .createUserErrorResult(CliStrings.CHANGE_LOGLEVEL__MSG__SPECIFY_GRP_OR_MEMBER);
     }
 
-    InternalCache cache = getCache();
+    Cache cache = getCache();
 
     Set<DistributedMember> dsMembers = new HashSet<>();
     Set<DistributedMember> ds = getAllMembers();

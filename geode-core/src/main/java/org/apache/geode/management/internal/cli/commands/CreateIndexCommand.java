@@ -80,7 +80,7 @@ public class CreateIndexCommand extends GfshCommand {
 
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, group));
+          () -> getConfigurationService().addXmlEntity(xmlEntity, group));
     }
     return result;
   }

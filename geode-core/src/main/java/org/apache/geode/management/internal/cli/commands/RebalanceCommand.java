@@ -81,8 +81,8 @@ public class RebalanceCommand extends GfshCommand {
     List<Future<Result>> commandResult = new ArrayList<>();
     Result result;
     try {
-      commandResult.add(commandExecutors.submit(
-          new ExecuteRebalanceWithTimeout(includeRegions, excludeRegions, simulate, getCache())));
+      commandResult.add(commandExecutors.submit(new ExecuteRebalanceWithTimeout(includeRegions,
+          excludeRegions, simulate, (InternalCache) getCache())));
 
       Future<Result> fs = commandResult.get(0);
       if (timeout > 0) {

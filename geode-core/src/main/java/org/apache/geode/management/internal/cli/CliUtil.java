@@ -179,8 +179,8 @@ public class CliUtil {
    */
   @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
-    return new HashSet<DistributedMember>(cache.getInternalDistributedSystem()
-        .getDistributionManager().getNormalDistributionManagerIds());
+    return new HashSet<DistributedMember>(
+        cache.getDistributionManager().getNormalDistributionManagerIds());
   }
 
   /**

@@ -48,6 +48,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.LuceneSerializer;
@@ -649,18 +650,12 @@ public class LuceneIndexCommandsJUnitTest {
 
   private static class LuceneTestIndexCommands extends LuceneIndexCommands {
 
-    private final InternalCache cache;
     private final Execution functionExecutor;
 
     protected LuceneTestIndexCommands(final InternalCache cache, final Execution functionExecutor) {
       assert cache != null : "The InternalCache cannot be null!";
-      this.cache = cache;
+      setCache(cache);
       this.functionExecutor = functionExecutor;
-    }
-
-    @Override
-    public InternalCache getCache() {
-      return this.cache;
     }
 
     @Override

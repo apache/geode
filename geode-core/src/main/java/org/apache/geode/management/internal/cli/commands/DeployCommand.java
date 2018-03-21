@@ -136,7 +136,7 @@ public class DeployCommand extends GfshCommand {
     }
 
     Result result = ResultBuilder.buildResult(tabularData);
-    InternalClusterConfigurationService sc = getSharedConfiguration();
+    InternalClusterConfigurationService sc = getConfigurationService();
     if (sc == null) {
       result.setCommandPersisted(false);
     } else {

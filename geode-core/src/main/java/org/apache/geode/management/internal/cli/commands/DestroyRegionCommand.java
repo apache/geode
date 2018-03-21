@@ -70,7 +70,7 @@ public class DestroyRegionCommand extends GfshCommand {
     // if at least one member returns with successful deletion, we will need to update cc
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, null));
+          () -> getConfigurationService().deleteXmlEntity(xmlEntity, null));
     }
     return result;
   }

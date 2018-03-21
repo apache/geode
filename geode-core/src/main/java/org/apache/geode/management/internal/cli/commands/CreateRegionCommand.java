@@ -193,7 +193,7 @@ public class CreateRegionCommand extends GfshCommand {
           CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUTESFROM_IS_REQUIRED);
     }
 
-    InternalCache cache = getCache();
+    InternalCache cache = (InternalCache) getCache();
 
     /*
      * Adding name collision check for regions created with regionShortcut only.
@@ -351,11 +351,11 @@ public class CreateRegionCommand extends GfshCommand {
       functionArgs.setValueConstraint(valueConstraint);
     }
 
-    DistributedSystemMXBean dsMBean = getDSMBean(cache);
+    DistributedSystemMXBean dsMBean = getDSMBean();
     // validating colocation
     if (functionArgs.hasPartitionAttributes()) {
       if (prColocatedWith != null) {
-        ManagementService mgmtService = ManagementService.getExistingManagementService(cache);
+        ManagementService mgmtService = getManagementService();
         DistributedRegionMXBean distributedRegionMXBean =
             mgmtService.getDistributedRegionMXBean(prColocatedWith);
         if (distributedRegionMXBean == null) {
@@ -417,8 +417,8 @@ public class CreateRegionCommand extends GfshCommand {
     if ((functionArgs.getRegionShortcut() != null
         && functionArgs.getRegionShortcut().isPersistent())
         || isAttributePersistent(functionArgs.getRegionAttributes())) {
-      getSecurityService().authorize(ResourcePermission.Resource.CLUSTER,
-          ResourcePermission.Operation.WRITE, ResourcePermission.Target.DISK);
+      authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
+          ResourcePermission.Target.DISK);
     }
 
     // validating the groups
@@ -441,7 +441,7 @@ public class CreateRegionCommand extends GfshCommand {
     if (xmlEntity != null) {
       verifyDistributedRegionMbean(cache, regionPath);
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, groups));
+          () -> getConfigurationService().addXmlEntity(xmlEntity, groups));
     }
     return result;
   }
@@ -522,7 +522,7 @@ public class CreateRegionCommand extends GfshCommand {
   }
 
   private boolean isClusterWideSameConfig(InternalCache cache, String regionPath) {
-    ManagementService managementService = ManagementService.getExistingManagementService(cache);
+    ManagementService managementService = getManagementService();
 
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
 
@@ -559,7 +559,7 @@ public class CreateRegionCommand extends GfshCommand {
       return false;
     }
 
-    ManagementService managementService = ManagementService.getExistingManagementService(cache);
+    ManagementService managementService = getManagementService();
     DistributedSystemMXBean dsMBean = managementService.getDistributedSystemMXBean();
 
     String[] allRegionPaths = dsMBean.listAllRegionPaths();
@@ -567,7 +567,7 @@ public class CreateRegionCommand extends GfshCommand {
   }
 
   private boolean diskStoreExists(InternalCache cache, String diskStoreName) {
-    ManagementService managementService = ManagementService.getExistingManagementService(cache);
+    ManagementService managementService = getManagementService();
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
     Map<String, String[]> diskstore = dsMXBean.listMemberDiskstore();
 
@@ -588,8 +588,8 @@ public class CreateRegionCommand extends GfshCommand {
         && attributes.getDataPolicy().toString().contains("PERSISTENT");
   }
 
-  DistributedSystemMXBean getDSMBean(InternalCache cache) {
-    ManagementService managementService = ManagementService.getExistingManagementService(cache);
+  DistributedSystemMXBean getDSMBean() {
+    ManagementService managementService = getManagementService();
     return managementService.getDistributedSystemMXBean();
   }
 

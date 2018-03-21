@@ -96,13 +96,13 @@ public class CreateGatewayReceiverCommand extends GfshCommand {
     }
 
     // has xml but unable to persist to cluster config, need to print warning message and return
-    if (onMember != null || getSharedConfiguration() == null) {
+    if (onMember != null || getConfigurationService() == null) {
       result.setCommandPersisted(false);
       return result;
     }
 
     // update cluster config
-    getSharedConfiguration().addXmlEntity(xmlEntity, onGroups);
+    getConfigurationService().addXmlEntity(xmlEntity, onGroups);
     return result;
   }
 

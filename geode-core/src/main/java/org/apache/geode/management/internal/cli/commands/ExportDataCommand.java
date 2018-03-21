@@ -55,7 +55,7 @@ public class ExportDataCommand extends GfshCommand {
           specifiedDefaultValue = "true",
           help = CliStrings.EXPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
-    getSecurityService().authorize(Resource.DATA, Operation.READ, regionName);
+    authorize(Resource.DATA, Operation.READ, regionName);
     final DistributedMember targetMember = getMember(memberNameOrId);
 
     Optional<Result> validationResult = validatePath(filePath, dirPath, parallel);

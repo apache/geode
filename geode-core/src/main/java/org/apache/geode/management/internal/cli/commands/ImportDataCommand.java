@@ -55,7 +55,7 @@ public class ImportDataCommand extends GfshCommand {
           specifiedDefaultValue = "true",
           help = CliStrings.IMPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
-    getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionName);
+    authorize(Resource.DATA, Operation.WRITE, regionName);
 
     final DistributedMember targetMember = getMember(memberNameOrId);
 

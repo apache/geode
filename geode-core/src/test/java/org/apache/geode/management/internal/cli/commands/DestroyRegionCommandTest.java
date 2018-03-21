@@ -61,7 +61,7 @@ public class DestroyRegionCommandTest {
     xmlEntity = mock(XmlEntity.class);
     command = spy(DestroyRegionCommand.class);
     ccService = mock(InternalClusterConfigurationService.class);
-    doReturn(ccService).when(command).getSharedConfiguration();
+    doReturn(ccService).when(command).getConfigurationService();
     doReturn(mock(InternalCache.class)).when(command).getCache();
 
     List<CliFunctionResult> functionResults = new ArrayList<>();
