@@ -104,24 +104,22 @@ public class RegionMapping implements Serializable {
   public String getColumnNameForField(String fieldName, TableMetaDataView tableMetaDataView) {
     String columnName = fieldToColumnMap.get(fieldName);
     if (columnName == null) {
-      if (tableMetaDataView != null) {
-        Set<String> columnNames = tableMetaDataView.getColumnNames();
-        if (columnNames.contains(fieldName)) {
-          // exact match
-          columnName = fieldName;
-        } else {
-          for (String candidate : columnNames) {
-            if (candidate.equalsIgnoreCase(fieldName)) {
-              if (columnName != null) {
-                throw new JdbcConnectorException(
-                    "The SQL table has at least two columns that match the PDX field: "
-                        + fieldName);
-              }
-              columnName = candidate;
+      Set<String> columnNames = tableMetaDataView.getColumnNames();
+      if (columnNames.contains(fieldName)) {
+        // exact match
+        columnName = fieldName;
+      } else {
+        for (String candidate : columnNames) {
+          if (candidate.equalsIgnoreCase(fieldName)) {
+            if (columnName != null) {
+              throw new JdbcConnectorException(
+                  "The SQL table has at least two columns that match the PDX field: " + fieldName);
             }
+            columnName = candidate;
           }
         }
       }
+
       if (columnName == null) {
         columnName = fieldName;
       }
@@ -164,13 +162,12 @@ public class RegionMapping implements Serializable {
   }
 
   /**
-   * Given a column name and a set of pdx types, find
-   * the field name in those types that match, ignoring case,
-   * the column name.
-   *
+   * Given a column name and a set of pdx types, find the field name in those types that match,
+   * ignoring case, the column name.
+   * 
+   * @return the matching field name or null if no match
    * @throws JdbcConnectorException if no fields match
    * @throws JdbcConnectorException if more than one field matches
-   * @return the matching field name or null if no match
    */
   private String findCaseInsensitiveMatch(String columnName, Set<PdxType> pdxTypes) {
     HashSet<String> matchingFieldNames = new HashSet<>();
@@ -193,9 +190,9 @@ public class RegionMapping implements Serializable {
   }
 
   /**
-   * Given a column name, search the given pdxTypes for a field whose name
-   * exactly matches the column name.
-   *
+   * Given a column name, search the given pdxTypes for a field whose name exactly matches the
+   * column name.
+   * 
    * @return the matching field name or null if no match
    */
   private String findExactMatch(String columnName, Set<PdxType> pdxTypes) {

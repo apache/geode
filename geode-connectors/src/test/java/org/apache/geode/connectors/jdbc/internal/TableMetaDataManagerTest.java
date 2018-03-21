@@ -116,10 +116,40 @@ public class TableMetaDataManagerTest {
   }
 
   @Test
-  public void throwsExceptionWhenTwoTablesHasCaseInsensitiveSameName() throws Exception {
+  public void returnsExactMatchTableNameWhenTwoTablesHasCaseInsensitiveSameName() throws Exception {
+    setupPrimaryKeysMetaData();
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
     when(tablesResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
-    when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
+    when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toUpperCase())
+        .thenReturn(TABLE_NAME);
+
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
+
+    assertThat(data.getTableName()).isEqualTo(TABLE_NAME);
+  }
+
+  @Test
+  public void returnsMatchTableNameWhenMetaDataHasOneInexactMatch() throws Exception {
+    setupPrimaryKeysMetaData();
+    when(databaseMetaData.getColumns(any(), any(), eq(TABLE_NAME.toUpperCase()), any()))
+        .thenReturn(columnResultSet);
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
+    when(tablesResultSet.next()).thenReturn(true).thenReturn(false);
     when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toUpperCase());
+
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
+
+    assertThat(data.getTableName()).isEqualTo(TABLE_NAME.toUpperCase());
+  }
+
+  @Test
+  public void throwsExceptionWhenTwoTablesHasCaseInsensitiveSameName() throws Exception {
+    setupPrimaryKeysMetaData();
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
+    when(tablesResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+
+    when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toLowerCase())
+        .thenReturn(TABLE_NAME.toUpperCase());
 
     assertThatThrownBy(() -> tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME))
         .isInstanceOf(JdbcConnectorException.class)
