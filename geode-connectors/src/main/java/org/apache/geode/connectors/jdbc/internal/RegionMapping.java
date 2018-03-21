@@ -135,22 +135,32 @@ public class RegionMapping implements Serializable {
     String fieldName = columnToFieldMap.get(columnName);
     if (fieldName == null) {
       if (getPdxClassName() == null) {
-        fieldName = columnName.toLowerCase();
-      } else {
-        Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(getPdxClassName());
-        if (pdxTypes.isEmpty()) {
-          throw new JdbcConnectorException(
-              "The class " + getPdxClassName() + " has not been pdx serialized.");
+        if (columnName.equals(columnName.toUpperCase())) {
+          fieldName = columnName.toLowerCase();
+        } else {
+          fieldName = columnName;
         }
+      } else {
+        Set<PdxType> pdxTypes = getPdxTypesForClassName(typeRegistry);
         fieldName = findExactMatch(columnName, pdxTypes);
         if (fieldName == null) {
           fieldName = findCaseInsensitiveMatch(columnName, pdxTypes);
         }
       }
+      assert fieldName != null;
       fieldToColumnMap.put(fieldName, columnName);
       columnToFieldMap.put(columnName, fieldName);
     }
     return fieldName;
+  }
+
+  private Set<PdxType> getPdxTypesForClassName(TypeRegistry typeRegistry) {
+    Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(getPdxClassName());
+    if (pdxTypes.isEmpty()) {
+      throw new JdbcConnectorException(
+          "The class " + getPdxClassName() + " has not been pdx serialized.");
+    }
+    return pdxTypes;
   }
 
   /**

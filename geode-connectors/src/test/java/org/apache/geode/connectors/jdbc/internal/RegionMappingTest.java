@@ -80,7 +80,7 @@ public class RegionMappingTest {
     assertThat(mapping.getColumnNameForField("fieldName", mock(TableMetaDataView.class)))
         .isEqualTo("fieldName");
     assertThat(mapping.getFieldNameForColumn("columnName", mock(TypeRegistry.class)))
-        .isEqualTo("columnname");
+        .isEqualTo("columnName");
   }
 
   @Test
@@ -195,13 +195,32 @@ public class RegionMappingTest {
   }
 
   @Test
-  public void returnsFieldNameIfColumnNotMapped() {
+  public void ifMixedCaseColumnNameNotMappedReturnsItAsFieldName() {
     fieldMap.put("otherField", "column");
 
     mapping = new RegionMapping(null, null, null, null, true, fieldMap);
 
-    assertThat(mapping.getFieldNameForColumn("columnName", null)).isEqualTo("columnname");
+    assertThat(mapping.getFieldNameForColumn("columnName", null)).isEqualTo("columnName");
   }
+
+  @Test
+  public void ifLowerCaseColumnNameNotMappedReturnsItAsFieldName() {
+    fieldMap.put("otherField", "column");
+
+    mapping = new RegionMapping(null, null, null, null, true, fieldMap);
+
+    assertThat(mapping.getFieldNameForColumn("columnname", null)).isEqualTo("columnname");
+  }
+
+  @Test
+  public void ifUpperCaseColumnNameNotMappedReturnsItLowerCasedAsFieldName() {
+    fieldMap.put("otherField", "column");
+
+    mapping = new RegionMapping(null, null, null, null, true, fieldMap);
+
+    assertThat(mapping.getFieldNameForColumn("COLUMNNAME", null)).isEqualTo("columnname");
+  }
+
 
   @Test
   public void throwsIfColumnNotMappedAndPdxClassNameDoesNotExist() {

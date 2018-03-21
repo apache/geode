@@ -367,6 +367,7 @@ public class JdbcDUnitTest implements Serializable {
     });
   }
 
+  @Test
   public void getReadsFromDBWithPdxClassName() throws Exception {
     createTable();
     createRegionUsingGfsh(true, false, true);
