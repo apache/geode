@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -50,7 +51,8 @@ public class RegionMappingBuilderTest {
     assertThat(regionMapping.getPdxClassName()).isEqualTo("pdxClassName");
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("configName");
     assertThat(regionMapping.isPrimaryKeyInValue()).isTrue();
-    assertThat(regionMapping.getColumnNameForField("fieldName", null)).isEqualTo("columnName");
+    assertThat(regionMapping.getColumnNameForField("fieldName", mock(TableMetaDataView.class)))
+        .isEqualTo("columnName");
   }
 
   @Test
@@ -70,7 +72,7 @@ public class RegionMappingBuilderTest {
 
     assertThat(regionMapping.getRegionName()).isEqualTo("regionName");
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("configName");
-    assertThat(regionMapping.getFieldToColumnMap()).isEmpty();
+    assertThat(regionMapping.getFieldToColumnMap()).isNull();
   }
 
   @Test
@@ -79,8 +81,10 @@ public class RegionMappingBuilderTest {
     RegionMapping regionMapping =
         new RegionMappingBuilder().withFieldToColumnMappings(fieldMappings).build();
 
-    assertThat(regionMapping.getColumnNameForField("field1", null)).isEqualTo("column1");
-    assertThat(regionMapping.getColumnNameForField("field2", null)).isEqualTo("column2");
+    assertThat(regionMapping.getColumnNameForField("field1", mock(TableMetaDataView.class)))
+        .isEqualTo("column1");
+    assertThat(regionMapping.getColumnNameForField("field2", mock(TableMetaDataView.class)))
+        .isEqualTo("column2");
   }
 
   @Test
@@ -89,8 +93,10 @@ public class RegionMappingBuilderTest {
     RegionMapping regionMapping =
         new RegionMappingBuilder().withFieldToColumnMappings(fieldMappings).build();
 
-    assertThat(regionMapping.getColumnNameForField("field1", null)).isEqualTo("column1");
-    assertThat(regionMapping.getColumnNameForField("field2", null)).isEqualTo("column2");
+    assertThat(regionMapping.getColumnNameForField("field1", mock(TableMetaDataView.class)))
+        .isEqualTo("column1");
+    assertThat(regionMapping.getColumnNameForField("field2", mock(TableMetaDataView.class)))
+        .isEqualTo("column2");
   }
 
   @Test

@@ -15,8 +15,9 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,34 +38,40 @@ public class RegionMapping implements Serializable {
   private final ConcurrentMap<String, String> fieldToColumnMap;
   private final ConcurrentMap<String, String> columnToFieldMap;
 
+  private final Map<String, String> configuredFieldToColumnMap;
+
   public RegionMapping(String regionName, String pdxClassName, String tableName,
       String connectionConfigName, Boolean primaryKeyInValue,
-      Map<String, String> fieldToColumnMap) {
+      Map<String, String> configuredFieldToColumnMap) {
     this.regionName = regionName;
     this.pdxClassName = pdxClassName;
     this.tableName = tableName;
     this.connectionConfigName = connectionConfigName;
     this.primaryKeyInValue = primaryKeyInValue;
     this.fieldToColumnMap = new ConcurrentHashMap<>();
-    if (fieldToColumnMap != null) {
-      this.fieldToColumnMap.putAll(fieldToColumnMap);
+    this.columnToFieldMap = new ConcurrentHashMap<>();
+    if (configuredFieldToColumnMap != null) {
+      this.configuredFieldToColumnMap =
+          Collections.unmodifiableMap(new HashMap<>(configuredFieldToColumnMap));
+      initializeFieldMaps();
+    } else {
+      this.configuredFieldToColumnMap = null;
     }
-    this.columnToFieldMap = createReverseMap(this.fieldToColumnMap);
   }
 
-  private static ConcurrentMap<String, String> createReverseMap(
-      ConcurrentMap<String, String> fieldToColumnMap) {
-    ConcurrentMap<String, String> reverseMap = new ConcurrentHashMap<>();
-    for (Map.Entry<String, String> entry : fieldToColumnMap.entrySet()) {
+  private void initializeFieldMaps() {
+    fieldToColumnMap.clear();
+    fieldToColumnMap.putAll(configuredFieldToColumnMap);
+    columnToFieldMap.clear();
+    for (Map.Entry<String, String> entry : configuredFieldToColumnMap.entrySet()) {
       String reverseMapKey = entry.getValue();
       String reverseMapValue = entry.getKey();
-      if (reverseMap.containsKey(reverseMapKey)) {
+      if (columnToFieldMap.containsKey(reverseMapKey)) {
         throw new IllegalArgumentException(
             "The field " + reverseMapValue + " can not be mapped to more than one column.");
       }
-      reverseMap.put(reverseMapKey, reverseMapValue);
+      columnToFieldMap.put(reverseMapKey, reverseMapValue);
     }
-    return reverseMap;
   }
 
   public String getConnectionConfigName() {
@@ -150,7 +157,7 @@ public class RegionMapping implements Serializable {
    * Given a column name and a set of pdx types, find
    * the field name in those types that match, ignoring case,
    * the column name.
-   * 
+   *
    * @throws JdbcConnectorException if no fields match
    * @throws JdbcConnectorException if more than one field matches
    * @return the matching field name or null if no match
@@ -178,7 +185,7 @@ public class RegionMapping implements Serializable {
   /**
    * Given a column name, search the given pdxTypes for a field whose name
    * exactly matches the column name.
-   * 
+   *
    * @return the matching field name or null if no match
    */
   private String findExactMatch(String columnName, Set<PdxType> pdxTypes) {
@@ -191,14 +198,7 @@ public class RegionMapping implements Serializable {
   }
 
   public Map<String, String> getFieldToColumnMap() {
-    return fieldToColumnMap;
-  }
-
-  /**
-   * For unit tests
-   */
-  Map<String, String> getColumnToFieldMap() {
-    return this.columnToFieldMap;
+    return configuredFieldToColumnMap;
   }
 
   @Override

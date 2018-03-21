@@ -70,15 +70,17 @@ public class RegionMappingTest {
   @Test
   public void initiatedWithNullValues() {
     mapping = new RegionMapping(null, null, null, null, false, null);
+
     assertThat(mapping.getTableName()).isNull();
     assertThat(mapping.getRegionName()).isNull();
     assertThat(mapping.getConnectionConfigName()).isNull();
     assertThat(mapping.getPdxClassName()).isNull();
-    assertThat(mapping.getFieldToColumnMap()).isEmpty();
-    assertThat(mapping.getColumnToFieldMap()).isEmpty();
+    assertThat(mapping.getFieldToColumnMap()).isNull();
     assertThat(mapping.getRegionToTableName()).isNull();
-    assertThat(mapping.getColumnNameForField("fieldName", null)).isEqualTo("fieldName");
-    assertThat(mapping.getFieldNameForColumn("columnName", null)).isEqualTo("columnname");
+    assertThat(mapping.getColumnNameForField("fieldName", mock(TableMetaDataView.class)))
+        .isEqualTo("fieldName");
+    assertThat(mapping.getFieldNameForColumn("columnName", mock(TypeRegistry.class)))
+        .isEqualTo("columnname");
   }
 
   @Test
@@ -137,11 +139,9 @@ public class RegionMappingTest {
     expectedColumnMap.put("column", "otherField");
     expectedColumnMap.put(fieldName1, fieldName1);
 
-    String columName = mapping.getColumnNameForField(fieldName1, null);
+    String columnName = mapping.getColumnNameForField(fieldName1, mock(TableMetaDataView.class));
 
-    assertThat(columName).isEqualTo(fieldName1);
-    assertThat(mapping.getFieldToColumnMap()).isEqualTo(expectedFieldMap);
-    assertThat(mapping.getColumnToFieldMap()).isEqualTo(expectedColumnMap);
+    assertThat(columnName).isEqualTo(fieldName1);
   }
 
   @Test
@@ -283,7 +283,8 @@ public class RegionMappingTest {
 
     mapping = new RegionMapping(null, null, null, null, true, fieldMap);
 
-    assertThat(mapping.getColumnNameForField(fieldName1, null)).isEqualTo(columnName1);
+    assertThat(mapping.getColumnNameForField(fieldName1, mock(TableMetaDataView.class)))
+        .isEqualTo(columnName1);
   }
 
   @Test
@@ -309,17 +310,11 @@ public class RegionMappingTest {
   public void returnsAllMappings() {
     fieldMap.put(fieldName1, columnName1);
     fieldMap.put(fieldName2, columnName2);
-
     mapping = new RegionMapping(null, null, null, null, true, fieldMap);
 
-    assertThat(mapping.getFieldToColumnMap().size()).isEqualTo(2);
-    assertThat(mapping.getFieldToColumnMap()).containsOnlyKeys(fieldName1, fieldName2);
-    assertThat(mapping.getFieldToColumnMap()).containsEntry(fieldName1, columnName1)
-        .containsEntry(fieldName2, columnName2);
-    assertThat(mapping.getColumnToFieldMap().size()).isEqualTo(2);
-    assertThat(mapping.getColumnToFieldMap()).containsOnlyKeys(columnName1, columnName2);
-    assertThat(mapping.getColumnToFieldMap()).containsEntry(columnName1, fieldName1)
-        .containsEntry(columnName2, fieldName2);
+    Map<String, String> actualFieldMap = mapping.getFieldToColumnMap();
+
+    assertThat(actualFieldMap).isEqualTo(fieldMap);
   }
 
   @Test
