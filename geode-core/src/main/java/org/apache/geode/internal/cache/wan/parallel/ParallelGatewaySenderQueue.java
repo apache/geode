@@ -1577,8 +1577,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
      * Constructor : Creates and initializes the thread
      */
     public BatchRemovalThread(InternalCache c, ParallelGatewaySenderQueue queue) {
-      super("BatchRemovalThread");
-      // TODO:REF: Name for this thread ?
+      super("BatchRemovalThread for GatewaySender_" + queue.sender.getId() + "_" + queue.index);
       this.setDaemon(true);
       this.cache = c;
       this.parallelQueue = queue;
