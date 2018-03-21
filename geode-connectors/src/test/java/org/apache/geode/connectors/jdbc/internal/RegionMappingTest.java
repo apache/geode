@@ -34,6 +34,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.pdx.internal.PdxField;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -198,6 +201,80 @@ public class RegionMappingTest {
     mapping = new RegionMapping(null, null, null, null, true, fieldMap);
 
     assertThat(mapping.getFieldNameForColumn("columnName", null)).isEqualTo("columnname");
+  }
+
+  @Test
+  public void throwsIfColumnNotMappedAndPdxClassNameDoesNotExist() {
+    mapping = new RegionMapping(null, "pdxClassName", null, null, true, null);
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+    when(typeRegistry.getPdxTypesForClassName("pdxClassName")).thenReturn(Collections.emptySet());
+    expectedException.expect(JdbcConnectorException.class);
+    expectedException.expectMessage("The class pdxClassName has not been pdx serialized.");
+
+    mapping.getFieldNameForColumn("columnName", typeRegistry);
+  }
+
+  @Test
+  public void throwsIfColumnNotMappedAndPdxClassNameDoesExistButHasNoMatchingFields() {
+    String pdxClassName = "pdxClassName";
+    String columnName = "columnName";
+    mapping = new RegionMapping(null, pdxClassName, null, null, true, null);
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+    HashSet<PdxType> pdxTypes = new HashSet<>(Arrays.asList(mock(PdxType.class)));
+    when(typeRegistry.getPdxTypesForClassName(pdxClassName)).thenReturn(pdxTypes);
+    expectedException.expect(JdbcConnectorException.class);
+    expectedException.expectMessage("The class " + pdxClassName
+        + " does not have a field that matches the column " + columnName);
+
+    mapping.getFieldNameForColumn(columnName, typeRegistry);
+  }
+
+  @Test
+  public void throwsIfColumnNotMappedAndPdxClassNameDoesExistButHasMoreThanOneMatchingFields() {
+    String pdxClassName = "pdxClassName";
+    String columnName = "columnName";
+    mapping = new RegionMapping(null, pdxClassName, null, null, true, null);
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+    PdxType pdxType = mock(PdxType.class);
+    when(pdxType.getFieldNames())
+        .thenReturn(Arrays.asList(columnName.toLowerCase(), columnName.toUpperCase()));
+    HashSet<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
+    when(typeRegistry.getPdxTypesForClassName(pdxClassName)).thenReturn(pdxTypes);
+    expectedException.expect(JdbcConnectorException.class);
+    expectedException.expectMessage(
+        "Could not determine what pdx field to use for the column name " + columnName);
+
+    mapping.getFieldNameForColumn(columnName, typeRegistry);
+  }
+
+  @Test
+  public void returnsIfColumnNotMappedAndPdxClassNameDoesExistAndHasOneFieldThatInexactlyMatches() {
+    String pdxClassName = "pdxClassName";
+    String columnName = "columnName";
+    mapping = new RegionMapping(null, pdxClassName, null, null, true, null);
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+    PdxType pdxType = mock(PdxType.class);
+    when(pdxType.getFieldNames())
+        .thenReturn(Arrays.asList("someOtherField", columnName.toUpperCase()));
+    HashSet<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
+    when(typeRegistry.getPdxTypesForClassName(pdxClassName)).thenReturn(pdxTypes);
+
+    assertThat(mapping.getFieldNameForColumn(columnName, typeRegistry))
+        .isEqualTo(columnName.toUpperCase());
+  }
+
+  @Test
+  public void returnsIfColumnNotMappedAndPdxClassNameDoesExistAndHasOneFieldThatExactlyMatches() {
+    String pdxClassName = "pdxClassName";
+    String columnName = "columnName";
+    mapping = new RegionMapping(null, pdxClassName, null, null, true, null);
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+    PdxType pdxType = mock(PdxType.class);
+    when(pdxType.getPdxField(columnName)).thenReturn(mock(PdxField.class));
+    HashSet<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
+    when(typeRegistry.getPdxTypesForClassName(pdxClassName)).thenReturn(pdxTypes);
+
+    assertThat(mapping.getFieldNameForColumn(columnName, typeRegistry)).isEqualTo(columnName);
   }
 
   @Test
