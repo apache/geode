@@ -25,9 +25,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
  * This class contains helper functions for assistance in creating protobuf objects. This class is
  * mainly focused on helper functions which can be used in building BasicTypes for use in other
  * messages or those used to create the top level Message objects.
- * <p>
- * Helper functions specific to creating ClientProtocol.Messages can be found at
- * {@link ProtobufRequestUtilities}
  */
 @Experimental
 public abstract class ProtobufUtilities {
