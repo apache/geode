@@ -853,7 +853,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 5.0
    */
   @Override
-  protected InternalDistributedMember getMyId() {
+  public InternalDistributedMember getMyId() {
     return this.cache.getInternalDistributedSystem().getDistributedMember();
   }
 
