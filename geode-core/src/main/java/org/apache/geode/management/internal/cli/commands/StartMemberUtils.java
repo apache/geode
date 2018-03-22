@@ -52,6 +52,7 @@ public class StartMemberUtils {
   static final int CMS_INITIAL_OCCUPANCY_FRACTION = 60;
   private static final ThreePhraseGenerator nameGenerator = new ThreePhraseGenerator();
 
+  static final String EXTENSIONS_PATHNAME = IOUtils.appendToPath(GEODE_HOME, "extensions");
   static final String CORE_DEPENDENCIES_JAR_PATHNAME =
       IOUtils.appendToPath(GEODE_HOME, "lib", "geode-dependencies.jar");
   static final String GEODE_JAR_PATHNAME =
@@ -231,13 +232,22 @@ public class StartMemberUtils {
     jarFilePathnames =
         (jarFilePathnames != null ? jarFilePathnames : ArrayUtils.EMPTY_STRING_ARRAY);
 
-    // And finally, include all GemFire dependencies on the CLASSPATH...
+    // Now, include all GemFire dependencies on the CLASSPATH...
     for (String jarFilePathname : jarFilePathnames) {
       if (StringUtils.isNotBlank(jarFilePathname)) {
         classpath.append((classpath.length() == 0) ? StringUtils.EMPTY : File.pathSeparator);
         classpath.append(jarFilePathname);
       }
     }
+
+    // And finally, include all extension dependencies on the CLASS`PATH...
+    for (String extensionsJarPathname : getExtensionsJars()) {
+      if (StringUtils.isNotBlank(extensionsJarPathname)) {
+        classpath.append((classpath.length() == 0) ? StringUtils.EMPTY : File.pathSeparator);
+        classpath.append(extensionsJarPathname);
+      }
+    }
+
     return classpath.toString();
   }
 
@@ -251,5 +261,19 @@ public class StartMemberUtils {
       }
     }
     return gemfireJarPath;
+  }
+
+  private static String[] getExtensionsJars() {
+    File extensionsDirectory = new File(EXTENSIONS_PATHNAME);
+    File[] extensionsJars = extensionsDirectory.listFiles();
+
+    if (extensionsJars != null) {
+      // assume `extensions` directory does not contain any subdirectories. It only contains jars.
+      return Arrays.stream(extensionsJars).filter(file -> file.isFile())
+          .map(file -> IOUtils.appendToPath(GEODE_HOME, "extensions", file.getName()))
+          .toArray(String[]::new);
+    } else {
+      return ArrayUtils.EMPTY_STRING_ARRAY;
+    }
   }
 }
