@@ -49,7 +49,7 @@ public class DescribeJndiBindingCommand extends GfshCommand {
     Result result = null;
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
 
-    InternalClusterConfigurationService ccService = getSharedConfiguration();
+    InternalClusterConfigurationService ccService = getConfigurationService();
     if (ccService != null) {
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       List<JndiBindingsType.JndiBinding> jndiBindings = cacheConfig.getJndiBindings();
