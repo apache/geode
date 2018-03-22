@@ -26,21 +26,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-/**
- * The GfshCommandJUnitTest class is a test suite of test cases testing the contract and
- * functionality of the GfshCommand class for implementing GemFire shell (Gfsh) commands.
- *
- * @see org.apache.geode.management.cli.GfshCommand
- * @see org.jmock.Expectations
- * @see org.jmock.Mockery
- * @see org.jmock.lib.legacy.ClassImposteriser
- * @see org.junit.Assert
- * @see org.junit.Test
- * @since GemFire 7.0
- */
-
 @Category(IntegrationTest.class)
-public class DescribeConnectionCommandJUnitTest {
+public class DescribeConnectionCommandIntegrationTest {
   public static Logger logger = LogService.getLogger();
 
   @ClassRule

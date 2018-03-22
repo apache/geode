@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.shiro.subject.Subject;
+import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
@@ -37,7 +38,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public abstract class GfshCommand {
+public abstract class GfshCommand implements CommandMarker {
   private InternalCache cache;
 
   public void authorize(ResourcePermission.Resource resource,
