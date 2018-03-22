@@ -39,6 +39,7 @@ public class RegionMapping implements Serializable {
   private final ConcurrentMap<String, String> columnToFieldMap;
 
   private final Map<String, String> configuredFieldToColumnMap;
+  private final Map<String, String> configuredColumnToFieldMap;
 
   public RegionMapping(String regionName, String pdxClassName, String tableName,
       String connectionConfigName, Boolean primaryKeyInValue,
@@ -53,25 +54,26 @@ public class RegionMapping implements Serializable {
     if (configuredFieldToColumnMap != null) {
       this.configuredFieldToColumnMap =
           Collections.unmodifiableMap(new HashMap<>(configuredFieldToColumnMap));
-      initializeFieldMaps();
+      this.configuredColumnToFieldMap =
+          Collections.unmodifiableMap(createReverseMap(configuredFieldToColumnMap));
     } else {
       this.configuredFieldToColumnMap = null;
+      this.configuredColumnToFieldMap = null;
     }
   }
 
-  private void initializeFieldMaps() {
-    fieldToColumnMap.clear();
-    fieldToColumnMap.putAll(configuredFieldToColumnMap);
-    columnToFieldMap.clear();
-    for (Map.Entry<String, String> entry : configuredFieldToColumnMap.entrySet()) {
+  private static Map<String, String> createReverseMap(Map<String, String> input) {
+    Map<String, String> output = new HashMap<>();
+    for (Map.Entry<String, String> entry : input.entrySet()) {
       String reverseMapKey = entry.getValue();
       String reverseMapValue = entry.getKey();
-      if (columnToFieldMap.containsKey(reverseMapKey)) {
+      if (output.containsKey(reverseMapKey)) {
         throw new IllegalArgumentException(
             "The field " + reverseMapValue + " can not be mapped to more than one column.");
       }
-      columnToFieldMap.put(reverseMapKey, reverseMapValue);
+      output.put(reverseMapKey, reverseMapValue);
     }
+    return output;
   }
 
   public String getConnectionConfigName() {
@@ -101,16 +103,28 @@ public class RegionMapping implements Serializable {
     return tableName;
   }
 
+  private String getConfiguredColumnNameForField(String fieldName) {
+    String result = fieldName;
+    if (configuredFieldToColumnMap != null) {
+      String mapResult = configuredFieldToColumnMap.get(fieldName);
+      if (mapResult != null) {
+        result = mapResult;
+      }
+    }
+    return result;
+  }
+
   public String getColumnNameForField(String fieldName, TableMetaDataView tableMetaDataView) {
     String columnName = fieldToColumnMap.get(fieldName);
     if (columnName == null) {
+      String configuredColumnName = getConfiguredColumnNameForField(fieldName);
       Set<String> columnNames = tableMetaDataView.getColumnNames();
-      if (columnNames.contains(fieldName)) {
+      if (columnNames.contains(configuredColumnName)) {
         // exact match
-        columnName = fieldName;
+        columnName = configuredColumnName;
       } else {
         for (String candidate : columnNames) {
-          if (candidate.equalsIgnoreCase(fieldName)) {
+          if (candidate.equalsIgnoreCase(configuredColumnName)) {
             if (columnName != null) {
               throw new JdbcConnectorException(
                   "The SQL table has at least two columns that match the PDX field: " + fieldName);
@@ -121,7 +135,7 @@ public class RegionMapping implements Serializable {
       }
 
       if (columnName == null) {
-        columnName = fieldName;
+        columnName = configuredColumnName;
       }
       fieldToColumnMap.put(fieldName, columnName);
       columnToFieldMap.put(columnName, fieldName);
@@ -129,20 +143,32 @@ public class RegionMapping implements Serializable {
     return columnName;
   }
 
+  private String getConfiguredFieldNameForColumn(String columnName) {
+    String result = columnName;
+    if (configuredColumnToFieldMap != null) {
+      String mapResult = configuredColumnToFieldMap.get(columnName);
+      if (mapResult != null) {
+        result = mapResult;
+      }
+    }
+    return result;
+  }
+
   public String getFieldNameForColumn(String columnName, TypeRegistry typeRegistry) {
     String fieldName = columnToFieldMap.get(columnName);
     if (fieldName == null) {
+      String configuredFieldName = getConfiguredFieldNameForColumn(columnName);
       if (getPdxClassName() == null) {
-        if (columnName.equals(columnName.toUpperCase())) {
-          fieldName = columnName.toLowerCase();
+        if (configuredFieldName.equals(configuredFieldName.toUpperCase())) {
+          fieldName = configuredFieldName.toLowerCase();
         } else {
-          fieldName = columnName;
+          fieldName = configuredFieldName;
         }
       } else {
         Set<PdxType> pdxTypes = getPdxTypesForClassName(typeRegistry);
-        fieldName = findExactMatch(columnName, pdxTypes);
+        fieldName = findExactMatch(configuredFieldName, pdxTypes);
         if (fieldName == null) {
-          fieldName = findCaseInsensitiveMatch(columnName, pdxTypes);
+          fieldName = findCaseInsensitiveMatch(columnName, configuredFieldName, pdxTypes);
         }
       }
       assert fieldName != null;
@@ -164,16 +190,17 @@ public class RegionMapping implements Serializable {
   /**
    * Given a column name and a set of pdx types, find the field name in those types that match,
    * ignoring case, the column name.
-   * 
+   *
    * @return the matching field name or null if no match
    * @throws JdbcConnectorException if no fields match
    * @throws JdbcConnectorException if more than one field matches
    */
-  private String findCaseInsensitiveMatch(String columnName, Set<PdxType> pdxTypes) {
+  private String findCaseInsensitiveMatch(String columnName, String configuredFieldName,
+      Set<PdxType> pdxTypes) {
     HashSet<String> matchingFieldNames = new HashSet<>();
     for (PdxType pdxType : pdxTypes) {
       for (String existingFieldName : pdxType.getFieldNames()) {
-        if (existingFieldName.equalsIgnoreCase(columnName)) {
+        if (existingFieldName.equalsIgnoreCase(configuredFieldName)) {
           matchingFieldNames.add(existingFieldName);
         }
       }
@@ -192,7 +219,7 @@ public class RegionMapping implements Serializable {
   /**
    * Given a column name, search the given pdxTypes for a field whose name exactly matches the
    * column name.
-   * 
+   *
    * @return the matching field name or null if no match
    */
   private String findExactMatch(String columnName, Set<PdxType> pdxTypes) {
@@ -236,7 +263,10 @@ public class RegionMapping implements Serializable {
         : that.connectionConfigName != null) {
       return false;
     }
-    return fieldToColumnMap.equals(that.fieldToColumnMap);
+
+    return (configuredFieldToColumnMap != null
+        ? configuredFieldToColumnMap.equals(that.configuredFieldToColumnMap)
+        : that.configuredFieldToColumnMap == null);
   }
 
   @Override
@@ -246,7 +276,8 @@ public class RegionMapping implements Serializable {
     result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
     result = 31 * result + (connectionConfigName != null ? connectionConfigName.hashCode() : 0);
     result = 31 * result + (primaryKeyInValue ? 1 : 0);
-    result = 31 * result + fieldToColumnMap.hashCode();
+    result = 31 * result
+        + (configuredFieldToColumnMap != null ? configuredFieldToColumnMap.hashCode() : 0);
     return result;
   }
 
@@ -255,6 +286,6 @@ public class RegionMapping implements Serializable {
     return "RegionMapping{" + "regionName='" + regionName + '\'' + ", pdxClassName='" + pdxClassName
         + '\'' + ", tableName='" + tableName + '\'' + ", connectionConfigName='"
         + connectionConfigName + '\'' + ", primaryKeyInValue=" + primaryKeyInValue
-        + ", fieldToColumnMap=" + fieldToColumnMap + '}';
+        + ", fieldToColumnMap=" + configuredFieldToColumnMap + '}';
   }
 }
