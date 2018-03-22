@@ -17,12 +17,14 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.MalformedObjectNameException;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -529,9 +531,29 @@ public class StartServerCommand extends GfshCommand {
     List<String> jarFilePathnames = new ArrayList<>();
 
     jarFilePathnames.add(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
+    // include all extension dependencies on the CLASSPATH...
+    for (String extensionsJarPathname : getExtensionsJars()) {
+      if (org.apache.commons.lang.StringUtils.isNotBlank(extensionsJarPathname)) {
+        jarFilePathnames.add(extensionsJarPathname);
+      }
+    }
 
     return StartMemberUtils.toClasspath(includeSystemClasspath,
         jarFilePathnames.toArray(new String[jarFilePathnames.size()]), userClasspath);
+  }
+
+  private String[] getExtensionsJars() {
+    File extensionsDirectory = new File(StartMemberUtils.EXTENSIONS_PATHNAME);
+    File[] extensionsJars = extensionsDirectory.listFiles();
+
+    if (extensionsJars != null) {
+      // assume `extensions` directory does not contain any subdirectories. It only contains jars.
+      return Arrays.stream(extensionsJars).filter(file -> file.isFile()).map(
+          file -> IOUtils.appendToPath(StartMemberUtils.GEODE_HOME, "extensions", file.getName()))
+          .toArray(String[]::new);
+    } else {
+      return ArrayUtils.EMPTY_STRING_ARRAY;
+    }
   }
 
   private void addJvmOptionsForOutOfMemoryErrors(final List<String> commandLine) {

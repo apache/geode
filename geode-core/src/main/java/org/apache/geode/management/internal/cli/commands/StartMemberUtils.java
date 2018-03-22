@@ -232,22 +232,13 @@ public class StartMemberUtils {
     jarFilePathnames =
         (jarFilePathnames != null ? jarFilePathnames : ArrayUtils.EMPTY_STRING_ARRAY);
 
-    // Now, include all GemFire dependencies on the CLASSPATH...
+    // And finally, include all GemFire dependencies on the CLASSPATH...
     for (String jarFilePathname : jarFilePathnames) {
       if (StringUtils.isNotBlank(jarFilePathname)) {
         classpath.append((classpath.length() == 0) ? StringUtils.EMPTY : File.pathSeparator);
         classpath.append(jarFilePathname);
       }
     }
-
-    // And finally, include all extension dependencies on the CLASS`PATH...
-    for (String extensionsJarPathname : getExtensionsJars()) {
-      if (StringUtils.isNotBlank(extensionsJarPathname)) {
-        classpath.append((classpath.length() == 0) ? StringUtils.EMPTY : File.pathSeparator);
-        classpath.append(extensionsJarPathname);
-      }
-    }
-
     return classpath.toString();
   }
 
@@ -261,19 +252,5 @@ public class StartMemberUtils {
       }
     }
     return gemfireJarPath;
-  }
-
-  private static String[] getExtensionsJars() {
-    File extensionsDirectory = new File(EXTENSIONS_PATHNAME);
-    File[] extensionsJars = extensionsDirectory.listFiles();
-
-    if (extensionsJars != null) {
-      // assume `extensions` directory does not contain any subdirectories. It only contains jars.
-      return Arrays.stream(extensionsJars).filter(file -> file.isFile())
-          .map(file -> IOUtils.appendToPath(GEODE_HOME, "extensions", file.getName()))
-          .toArray(String[]::new);
-    } else {
-      return ArrayUtils.EMPTY_STRING_ARRAY;
-    }
   }
 }

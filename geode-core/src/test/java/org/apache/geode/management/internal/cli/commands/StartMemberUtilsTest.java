@@ -26,7 +26,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -103,6 +102,31 @@ public class StartMemberUtilsTest {
 
     gemfireClasspath = StartMemberUtils.toClasspath(false, otherJars);
     assertThat(gemfireClasspath).startsWith(customGeodeCore);
+  }
+
+  @Test
+  public void testExtensionsJars() throws IOException {
+
+    // when there is no `extensions` directory
+    String gemfireClasspath = StartMemberUtils.toClasspath(true, new String[0]);
+    assertThat(gemfireClasspath).doesNotContain("extensions");
+
+    if (File.separatorChar == '/') {
+      File extensionsDirectory = new File("/tmp/extensions");
+      try {
+
+        boolean result = extensionsDirectory.mkdir();
+        assertThat(result).isTrue();
+        File jarFile = new File("/tmp/extensions/test.jar");
+        result = jarFile.createNewFile();
+        assertThat(result).isTrue();
+        gemfireClasspath =
+            StartMemberUtils.toClasspath(true, new String[]{jarFile.getAbsolutePath()});
+        assertThat(gemfireClasspath).contains(jarFile.getName());
+      } finally {
+        FileUtils.deleteDirectory(extensionsDirectory);
+      }
+    }
   }
 
   @Test
