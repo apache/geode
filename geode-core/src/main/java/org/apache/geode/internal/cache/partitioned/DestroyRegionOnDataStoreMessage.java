@@ -77,8 +77,9 @@ public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
 
 
     org.apache.logging.log4j.Logger logger = pr.getLogger();
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace("DestroyRegionOnDataStore operateOnRegion: " + pr.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE,
+          "DestroyRegionOnDataStore operateOnRegion: " + pr.getFullPath());
     }
     pr.destroyRegion(callbackArg);
     return true;

@@ -256,15 +256,16 @@ public abstract class DistributedCacheOperation {
     if (this.containsRegionContentChange()) {
       viewVersion = region.getDistributionAdvisor().startOperation();
     }
-    if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-      logger.trace(LogMarker.STATE_FLUSH_OP, "dispatching operation in view version {}",
+    if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+      logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "dispatching operation in view version {}",
           viewVersion);
     }
     try {
       _distribute();
     } catch (InvalidVersionException e) {
-      if (logger.isTraceEnabled()) {
-        logger.trace(LogMarker.DM, "PutAll failed since versions were missing; retrying again", e);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
+            "PutAll failed since versions were missing; retrying again", e);
       }
 
       if (test_InvalidVersionAction != null) {
@@ -284,8 +285,8 @@ public abstract class DistributedCacheOperation {
     if (viewVersion != -1) {
       region.getDistributionAdvisor().endOperation(viewVersion);
       if (logger.isTraceEnabled()) {
-        logger.trace(LogMarker.STATE_FLUSH_OP, "done dispatching operation in view version {}",
-            viewVersion);
+        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
+            "done dispatching operation in view version {}", viewVersion);
       }
     }
   }
@@ -1180,7 +1181,8 @@ public abstract class DistributedCacheOperation {
             if (!rgn.isEventTrackerInitialized()
                 && (rgn.getDataPolicy().withReplication() || rgn.getDataPolicy().withPreloaded())) {
               if (logger.isTraceEnabled()) {
-                logger.trace(LogMarker.DM_BRIDGE_SERVER, "Ignoring possible duplicate event");
+                logger.trace(LogMarker.DM_BRIDGE_SERVER_VERBOSE,
+                    "Ignoring possible duplicate event");
               }
               return;
             }

@@ -767,17 +767,17 @@ class OverflowOplog implements CompactableOplog, Flushable {
           olf.bytesFlushed = startPos;
           this.stats.incOplogSeeks();
         }
-        if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES)) {
-          logger.trace(LogMarker.PERSIST_WRITES, "writeOpLogBytes startPos={} oplog#{}", startPos,
-              getOplogId());
+        if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
+          logger.trace(LogMarker.PERSIST_WRITES_VERBOSE, "writeOpLogBytes startPos={} oplog#{}",
+              startPos, getOplogId());
         }
         long oldBytesFlushed = olf.bytesFlushed;
         long bytesWritten = this.opState.write();
         if ((startPos + bytesWritten) > olf.currSize) {
           olf.currSize = startPos + bytesWritten;
         }
-        if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES)) {
-          logger.trace(LogMarker.PERSIST_WRITES,
+        if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
+          logger.trace(LogMarker.PERSIST_WRITES_VERBOSE,
               "writeOpLogBytes bytesWritten={} oldBytesFlushed={} byteFlushed={} oplog#{}",
               bytesWritten, oldBytesFlushed, olf.bytesFlushed, getOplogId());
         }
@@ -792,7 +792,6 @@ class OverflowOplog implements CompactableOplog, Flushable {
         // // Moved the set of lastWritePos to after write
         // // so if write throws an exception it will not be updated.
         // // This fixes bug 40449.
-        // this.lastWritePos = startPos;
       }
     }
     return startPos;
@@ -809,9 +808,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
         writePosition = myRAF.getFilePointer();
         bb = attemptWriteBufferGet(writePosition, offsetInOplog, valueLength, userBits);
         if (bb == null) {
-          if (/*
-               * !getParent().isSync() since compactor groups writes &&
-               */ (offsetInOplog + valueLength) > this.crf.bytesFlushed && !this.closed) {
+          if ((offsetInOplog + valueLength) > this.crf.bytesFlushed && !this.closed) {
             flushAll(); // fix for bug 41205
             writePosition = myRAF.getFilePointer();
           }
@@ -823,16 +820,6 @@ class OverflowOplog implements CompactableOplog, Flushable {
           this.stats.incOplogSeeks();
           byte[] valueBytes = new byte[valueLength];
           myRAF.readFully(valueBytes);
-          // if (EntryBits.isSerialized(userBits)) {
-          // try {
-          // org.apache.geode.internal.util.BlobHelper.deserializeBlob(valueBytes);
-          // } catch (IOException ex) {
-          // throw new RuntimeException("DEBUG readPos=" + readPosition + " len=" + valueLength +
-          // "doneApp=" + doneAppending + " userBits=" + userBits, ex);
-          // } catch (ClassNotFoundException ex2) {
-          // throw new RuntimeException(ex2);
-          // }
-          // }
           this.stats.incOplogReads();
           bb = new BytesAndBits(valueBytes, userBits);
         } finally {

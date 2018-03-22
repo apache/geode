@@ -1089,7 +1089,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
             synchronized (this.cacheServerSet) {
               future = new AdminFutureTask(vm.getId(), new Callable() {
                 public Object call() throws Exception {
-                  logger.info(LogMarker.DM,
+                  logger.info(LogMarker.DM_MARKER,
                       LocalizedMessage.create(
                           LocalizedStrings.AdminDistributedSystemImpl_ADDING_NEW_CACHESERVER_FOR__0,
                           vm));
@@ -1104,7 +1104,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
             synchronized (this.applicationSet) {
               future = new AdminFutureTask(vm.getId(), new Callable() {
                 public Object call() throws Exception {
-                  logger.info(LogMarker.DM,
+                  logger.info(LogMarker.DM_MARKER,
                       LocalizedMessage.create(
                           LocalizedStrings.AdminDistributedSystemImpl_ADDING_NEW_APPLICATION_FOR__0,
                           vm));

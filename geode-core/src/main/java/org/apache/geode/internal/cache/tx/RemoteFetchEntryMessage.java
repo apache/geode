@@ -184,25 +184,25 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
      */
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
-      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
+      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM_VERBOSE);
 
       final long startTime = getTimestamp();
       if (isDebugEnabled) {
-        logger.trace(LogMarker.DM,
+        logger.trace(LogMarker.DM_VERBOSE,
             "FetchEntryReplyMessage process invoking reply processor with processorId:{}",
             this.processorId);
       }
 
       if (processor == null) {
         if (isDebugEnabled) {
-          logger.trace(LogMarker.DM, "FetchEntryReplyMessage processor not found");
+          logger.trace(LogMarker.DM_VERBOSE, "FetchEntryReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
       if (isDebugEnabled) {
-        logger.trace(LogMarker.DM, "{}  processed  {}", processor, this);
+        logger.trace(LogMarker.DM_VERBOSE, "{}  processed  {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
@@ -274,8 +274,9 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
           if (this.returnValue != null) {
             this.returnValue.setRegion(this.region);
           }
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "FetchEntryResponse return value is {}", this.returnValue);
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "FetchEntryResponse return value is {}",
+                this.returnValue);
           }
         }
       } finally {

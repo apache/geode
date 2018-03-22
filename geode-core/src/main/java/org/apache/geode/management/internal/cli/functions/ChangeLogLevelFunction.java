@@ -57,14 +57,13 @@ public class ChangeLogLevelFunction implements InternalFunction {
       Level log4jLevel = LogLevel.getLevel(logLevel);
       logwriterLogger.setLevel(log4jLevel);
       System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, logLevel);
-      // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, "GFSH Changed log level to {}", log4jLevel);
+      logger.info(LogMarker.CONFIG_MARKER, "GFSH Changed log level to {}", log4jLevel);
       result.put(cache.getDistributedSystem().getDistributedMember().getId(),
           "New log level is " + log4jLevel);
       context.getResultSender().lastResult(result);
     } catch (Exception ex) {
-      // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, "GFSH Changing log level exception {}", ex.getMessage(), ex);
+      logger.info(LogMarker.CONFIG_MARKER, "GFSH Changing log level exception {}", ex.getMessage(),
+          ex);
       result.put(cache.getDistributedSystem().getDistributedMember().getId(),
           "ChangeLogLevelFunction exception " + ex.getMessage());
       context.getResultSender().lastResult(result);

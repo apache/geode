@@ -737,9 +737,6 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
               "This process should have storage" + " for this operation: " + this.toString());
         }
         try {
-          // the event must show it's true origin for cachewriter invocation
-          // event.setOriginRemote(true);
-          // this.op = r.doCacheWriteBeforePut(event, ifNew); // TODO fix this for bug 37072
           ev.setOriginRemote(false);
           result =
               r.getDataView().putEntryOnRemote(ev, this.ifNew, this.ifOld, this.expectedOldValue,
@@ -747,30 +744,17 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
           if (!this.result) { // make sure the region hasn't gone away
             r.checkReadiness();
-            // sbawaska: I cannot see how ifOld and ifNew can both be false, hence removing
-            // if (!this.ifNew && !this.ifOld) {
-            // // no reason to be throwing an exception, so let's retry
-            // ForceReattemptException fre = new ForceReattemptException(
-            // LocalizedStrings.PutMessage_UNABLE_TO_PERFORM_PUT_BUT_OPERATION_SHOULD_NOT_FAIL_0.toLocalizedString());
-            // fre.setHash(key.hashCode());
-            // sendReply(getSender(), getProcessorId(), dm,
-            // new ReplyException(fre), r, startTime);
-            // sendReply = false;
-            // }
           }
-        } catch (CacheWriterException cwe) {
+        } catch (CacheWriterException | PrimaryBucketException cwe) {
           sendReply(getSender(), getProcessorId(), dm, new ReplyException(cwe), r, startTime);
-          return false;
-        } catch (PrimaryBucketException pbe) {
-          sendReply(getSender(), getProcessorId(), dm, new ReplyException(pbe), r, startTime);
           return false;
         } catch (InvalidDeltaException ide) {
           sendReply(getSender(), getProcessorId(), dm, new ReplyException(ide), r, startTime);
           r.getCachePerfStats().incDeltaFullValuesRequested();
           return false;
         }
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "PutMessage {} with key: {} val: {}",
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "PutMessage {} with key: {} val: {}",
               (result ? "updated bucket" : "did not update bucket"), getKey(),
               (getValBytes() == null ? "null" : "(" + getValBytes().length + " bytes)"));
         }
@@ -944,14 +928,14 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "PutReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "PutReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "PutReplyMessage processor not found");
         }
         return;
       }
@@ -961,22 +945,15 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
 
     /** Return oldValue in serialized form */
     public Object getOldValue() {
-      // to fix bug 42951 why not just return this.oldValue?
       return this.oldValue;
-      // // oldValue field is in serialized form, either a CachedDeserializable,
-      // // a byte[], or null if not set
-      // if (this.oldValue instanceof CachedDeserializable) {
-      // return ((CachedDeserializable)this.oldValue).getDeserializedValue(null, null);
-      // }
-      // return this.oldValue;
     }
 
     @Override

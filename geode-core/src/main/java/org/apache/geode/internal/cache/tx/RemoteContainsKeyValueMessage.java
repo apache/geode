@@ -96,9 +96,9 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
   @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws CacheException, RemoteOperationException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "DistributedRemoteContainsKeyValueMessage operateOnRegion: {}",
-          r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE,
+          "DistributedRemoteContainsKeyValueMessage operateOnRegion: {}", r.getFullPath());
     }
 
     if (!(r instanceof PartitionedRegion)) { // prs already wait on initialization
@@ -112,13 +112,12 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
       replyVal = r.containsKey(this.key);
     }
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.debug(
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(
           "DistributedRemoteContainsKeyValueMessage sending reply back using processorId: {}",
           getProcessorId());
     }
 
-    // r.getPrStats().endPartitionMessagesProcessing(startTime);
     RemoteContainsKeyValueReplyMessage.send(getSender(), getProcessorId(), getReplySender(dm),
         replyVal);
 
@@ -193,8 +192,8 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
       final long startTime = getTimestamp();
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "ContainsKeyValueReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "ContainsKeyValueReplyMessage processor not found");
         }
         return;
       }
@@ -258,8 +257,8 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
           RemoteContainsKeyValueReplyMessage reply = (RemoteContainsKeyValueReplyMessage) msg;
           this.returnValue = reply.doesItContainKeyValue();
           this.returnValueReceived = true;
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "ContainsKeyValueResponse return value is {}",
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "ContainsKeyValueResponse return value is {}",
                 this.returnValue);
           }
         }

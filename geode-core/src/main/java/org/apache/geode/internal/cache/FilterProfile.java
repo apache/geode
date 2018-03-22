@@ -1291,8 +1291,8 @@ public class FilterProfile implements DataSerializableFixedID {
     Set clientsInv = Collections.emptySet();
     Set clients = Collections.emptySet();
 
-    if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-      logger.trace(LogMarker.BRIDGE_SERVER, "finding interested clients for {}", event);
+    if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+      logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "finding interested clients for {}", event);
     }
 
     FilterRoutingInfo frInfo = filterRoutingInfo;
@@ -1310,8 +1310,8 @@ public class FilterProfile implements DataSerializableFixedID {
         continue;
       }
 
-      if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-        logger.trace(LogMarker.BRIDGE_SERVER, "Processing {}", pf);
+      if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+        logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "Processing {}", pf);
       }
 
       if (!pf.hasInterest()) {
@@ -1615,17 +1615,9 @@ public class FilterProfile implements DataSerializableFixedID {
 
   @Override
   public String toString() {
-    final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.BRIDGE_SERVER);
-    return "FilterProfile(id=" + (this.isLocalProfile ? "local" : this.memberID)
-    // + "; allKeys: " + this.allKeyClients
-    // + "; keys: " + this.keysOfInterest
-    // + "; patterns: " + this.patternsOfInterest
-    // + "; filters: " + this.filtersOfInterest
-    // + "; allKeysInv: " + this.allKeyClientsInv
-    // + "; keysInv: " + this.keysOfInterestInv
-    // + "; patternsInv: " + this.patternsOfInterestInv
-    // + "; filtersInv: " + this.filtersOfInterestInv
-        + ";  numCQs: " + ((this.cqCount == null) ? 0 : this.cqCount.get())
+    final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE);
+    return "FilterProfile(id=" + (this.isLocalProfile ? "local" : this.memberID) + ";  numCQs: "
+        + ((this.cqCount == null) ? 0 : this.cqCount.get())
         + (isDebugEnabled ? (";  " + getClientMappingString()) : "")
         + (isDebugEnabled ? (";  " + getCqMappingString()) : "") + ")";
   }
@@ -2034,8 +2026,8 @@ public class FilterProfile implements DataSerializableFixedID {
             this.wireIDs.put(result, realId);
           }
         }
-        if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-          logger.trace(LogMarker.BRIDGE_SERVER, "Profile for {} mapped {} to {}",
+        if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+          logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "Profile for {} mapped {} to {}",
               region.getFullPath(), realId, result);
         }
       }

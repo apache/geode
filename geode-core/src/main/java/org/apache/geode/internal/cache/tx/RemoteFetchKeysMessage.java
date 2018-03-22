@@ -269,16 +269,16 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
       FetchKeysResponse processor = (FetchKeysResponse) p;
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "FetchKeysReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "FetchKeysReplyMessage processor not found");
         }
         return;
       }
 
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} Remote-processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} Remote-processed {}", processor, this);
       }
 
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
@@ -412,8 +412,8 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
           if (lastChunkReceived && (chunksExpected == chunksProcessed)) {
             doneProcessing = true;
           }
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM,
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE,
                 "{} chunksProcessed={},lastChunkReceived={},chunksExpected={},done={}", this,
                 chunksProcessed, lastChunkReceived, chunksExpected, doneProcessing);
           }

@@ -29,7 +29,6 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.Releasable;
 
@@ -115,10 +114,6 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
 
 
   public void addAll(ObjectPartList other) {
-    if (logger.isTraceEnabled(LogMarker.OBJECT_PART_LIST)) {
-      logger.trace(LogMarker.OBJECT_PART_LIST, "OPL.addAll: other={}\nthis={}", other, this);
-    }
-
     if (this.hasKeys) {
       if (other.keys != null) {
         if (this.keys == null) {
@@ -257,5 +252,4 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
       OffHeapHelper.release(v);
     }
   }
-
 }

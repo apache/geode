@@ -129,8 +129,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException, ForceReattemptException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.debug("FetchBulkEntriesMessage operateOnRegion: {}", pr.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "FetchBulkEntriesMessage operateOnRegion: {}",
+          pr.getFullPath());
     }
 
     FetchBulkEntriesReplyMessage.sendReply(pr, getSender(), getProcessorId(), dm, this.bucketKeys,
@@ -410,15 +411,15 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
       FetchBulkEntriesResponse processor = (FetchBulkEntriesResponse) p;
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "FetchBulkEntriesReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "FetchBulkEntriesReplyMessage processor not found");
         }
         return;
       }
       processor.processChunkResponse(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
 
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
@@ -521,7 +522,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
           Object key;
           int currentId;
 
-          final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
+          final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM_VERBOSE);
           while (in.available() > 0) {
             currentId = DataSerializer.readPrimitiveInt(in);
             if (currentId == -1) {
@@ -588,8 +589,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
             }
 
             if (isDebugEnabled) {
-              logger.trace(LogMarker.DM, "{} chunksProcessed={}, lastChunkReceived={},done={}",
-                  this, this.chunksProcessed, this.lastChunkReceived, doneProcessing);
+              logger.trace(LogMarker.DM_VERBOSE,
+                  "{} chunksProcessed={}, lastChunkReceived={},done={}", this, this.chunksProcessed,
+                  this.lastChunkReceived, doneProcessing);
             }
           }
         } catch (Exception e) {

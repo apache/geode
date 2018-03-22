@@ -312,8 +312,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
         successful = true; // not a cancel-exception, so don't complain any more about it
 
       } catch (RemoteOperationException e) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
               "RemotePutMessage caught an unexpected exception during distribution", e);
         }
       }
@@ -809,8 +809,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }

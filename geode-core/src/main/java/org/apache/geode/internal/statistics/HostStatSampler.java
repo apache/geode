@@ -181,9 +181,9 @@ public abstract class HostStatSampler
    */
   @Override
   public void run() {
-    final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS);
+    final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE);
     if (isDebugEnabled_STATISTICS) {
-      logger.trace(LogMarker.STATISTICS, "HostStatSampler started");
+      logger.trace(LogMarker.STATISTICS_VERBOSE, "HostStatSampler started");
     }
     boolean latchCountedDown = false;
     try {
@@ -229,12 +229,10 @@ public abstract class HostStatSampler
           sampleSpecialStats(true); // fixes bug 42527
         }
       }
-    } catch (InterruptedException ex) {
-      // Silently exit
-    } catch (CancelException ex) {
+    } catch (InterruptedException | CancelException ex) {
       // Silently exit
     } catch (RuntimeException ex) {
-      logger.fatal(LogMarker.STATISTICS, ex.getMessage(), ex);
+      logger.fatal(LogMarker.STATISTICS_MARKER, ex.getMessage(), ex);
       throw ex;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
@@ -248,7 +246,7 @@ public abstract class HostStatSampler
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(LogMarker.STATISTICS, ex.getMessage(), ex);
+      logger.fatal(LogMarker.STATISTICS_MARKER, ex.getMessage(), ex);
       throw ex;
     } finally {
       try {
@@ -265,7 +263,7 @@ public abstract class HostStatSampler
         }
       }
       if (isDebugEnabled_STATISTICS) {
-        logger.trace(LogMarker.STATISTICS, "HostStatSampler stopped");
+        logger.trace(LogMarker.STATISTICS_VERBOSE, "HostStatSampler stopped");
       }
     }
   }
@@ -344,7 +342,7 @@ public abstract class HostStatSampler
             statThread.interrupt();
             stop(false);
           } else {
-            logger.warn(LogMarker.STATISTICS, LocalizedMessage.create(
+            logger.warn(LogMarker.STATISTICS_MARKER, LocalizedMessage.create(
                 LocalizedStrings.HostStatSampler_HOSTSTATSAMPLER_THREAD_COULD_NOT_BE_STOPPED));
           }
         } else {
@@ -565,7 +563,7 @@ public abstract class HostStatSampler
       final long wakeupDelay = elapsedSleepTime - getNanoRate();
       if (wakeupDelay > STAT_SAMPLER_DELAY_THRESHOLD_NANOS) {
         this.samplerStats.incJvmPauses();
-        logger.warn(LogMarker.STATISTICS,
+        logger.warn(LogMarker.STATISTICS_MARKER,
             LocalizedMessage.create(
                 LocalizedStrings.HostStatSampler_STATISTICS_SAMPLING_THREAD_DETECTED_A_WAKEUP_DELAY_OF_0_MS_INDICATING_A_POSSIBLE_RESOURCE_ISSUE,
                 NanoTimer.nanosToMillis(wakeupDelay)));

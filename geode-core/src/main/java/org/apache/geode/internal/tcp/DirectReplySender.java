@@ -57,8 +57,9 @@ class DirectReplySender implements ReplySender {
     // fix for bug #42199 - cancellation check
     this.conn.getConduit().getDM().getCancelCriterion().checkCancelInProgress(null);
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "Sending a direct reply {} to {}", msg, conn.getRemoteAddress());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "Sending a direct reply {} to {}", msg,
+          conn.getRemoteAddress());
     }
     ArrayList<Connection> conns = new ArrayList<Connection>(1);
     conns.add(conn);
