@@ -33,7 +33,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeJndiBindingCommand extends GfshCommand {
+public class DescribeJndiBindingCommand extends InternalGfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   private static final String DESCRIBE_JNDI_BINDING = "describe jndi-binding";
@@ -49,7 +49,8 @@ public class DescribeJndiBindingCommand extends GfshCommand {
     Result result = null;
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
 
-    InternalClusterConfigurationService ccService = getConfigurationService();
+    InternalClusterConfigurationService ccService =
+        (InternalClusterConfigurationService) getConfigurationService();
     if (ccService != null) {
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       List<JndiBindingsType.JndiBinding> jndiBindings = cacheConfig.getJndiBindings();
