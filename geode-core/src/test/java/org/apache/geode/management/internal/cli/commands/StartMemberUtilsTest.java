@@ -111,22 +111,12 @@ public class StartMemberUtilsTest {
     String gemfireClasspath = StartMemberUtils.toClasspath(true, new String[0]);
     assertThat(gemfireClasspath).doesNotContain("extensions");
 
-    if (File.separatorChar == '/') {
-      File extensionsDirectory = new File("/tmp/extensions");
-      try {
+    File folder = temporaryFolder.newFolder("extensions");
+    File jarFile = new File(folder, "test.jar");
+    jarFile.createNewFile();
+    gemfireClasspath = StartMemberUtils.toClasspath(true, new String[] {jarFile.getAbsolutePath()});
+    assertThat(gemfireClasspath).contains(jarFile.getName());
 
-        boolean result = extensionsDirectory.mkdir();
-        assertThat(result).isTrue();
-        File jarFile = new File("/tmp/extensions/test.jar");
-        result = jarFile.createNewFile();
-        assertThat(result).isTrue();
-        gemfireClasspath =
-            StartMemberUtils.toClasspath(true, new String[]{jarFile.getAbsolutePath()});
-        assertThat(gemfireClasspath).contains(jarFile.getName());
-      } finally {
-        FileUtils.deleteDirectory(extensionsDirectory);
-      }
-    }
   }
 
   @Test
