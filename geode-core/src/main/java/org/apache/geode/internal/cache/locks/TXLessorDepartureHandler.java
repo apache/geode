@@ -36,6 +36,18 @@ import org.apache.geode.internal.logging.LogService;
 public class TXLessorDepartureHandler implements DLockLessorDepartureHandler {
   private static final Logger logger = LogService.getLogger();
 
+  private final Object stateLock = new Object();
+  private boolean processingDepartures;
+
+  @Override
+  public void waitForInProcessDepartures() throws InterruptedException {
+    synchronized (stateLock) {
+      while (processingDepartures) {
+        stateLock.wait();
+      }
+    }
+  }
+
   public void handleDepartureOf(InternalDistributedMember owner, DLockGrantor grantor) {
     // get DTLS
     TXLockService dtls = TXLockService.getDTLS();
@@ -74,12 +86,22 @@ public class TXLessorDepartureHandler implements DLockLessorDepartureHandler {
     try {
       dm.getWaitingThreadPool().execute(new Runnable() {
         public void run() {
-          for (int i = 0; i < batches.length; i++) {
-            TXLockBatch batch = (TXLockBatch) batches[i];
-            // send TXOriginatorDepartureMessage
-            Set participants = batch.getParticipants();
-            TXOriginatorRecoveryProcessor.sendMessage(participants, owner, batch.getTXLockId(),
-                grantor, dm);
+          synchronized (stateLock) {
+            processingDepartures = true;
+          }
+          try {
+            for (int i = 0; i < batches.length; i++) {
+              TXLockBatch batch = (TXLockBatch) batches[i];
+              // send TXOriginatorDepartureMessage
+              Set participants = batch.getParticipants();
+              TXOriginatorRecoveryProcessor.sendMessage(participants, owner, batch.getTXLockId(),
+                  grantor, dm);
+            }
+          } finally {
+            synchronized (stateLock) {
+              processingDepartures = false;
+              stateLock.notifyAll();
+            }
           }
         }
       });
