@@ -482,6 +482,12 @@ public class DLockGrantor {
           logger.trace(LogMarker.DLS, "[DLockGrantor.handleLockBatch] request: {}", request);
         }
 
+        DLockLessorDepartureHandler handler = this.dlock.getDLockLessorDepartureHandler();
+        // make sure the tx locks of departed members have been cleared so we don't have
+        // conflicts with non-existent members. This is done in a waiting-pool thread launched
+        // when the member-departure is announced.
+        handler.waitForInProcessDepartures();
+
         DLockBatch batch = (DLockBatch) request.getObjectName();
         this.resMgr.makeReservation((IdentityArrayList) batch.getReqs());
         if (isDebugEnabled_DLS) {
