@@ -117,6 +117,8 @@ public class TXLockServiceImpl extends TXLockService {
     boolean gotLocks = false;
     TXLockId txLockId = null;
     try {
+      // this.dlock.getDLockLessorDepartureHandler().waitForInProcessDepartures();
+
       synchronized (this.txLockIdList) {
         txLockId = new TXLockIdImpl(this.dlock.getDistributionManager().getId());
         this.txLockIdList.add(txLockId);
