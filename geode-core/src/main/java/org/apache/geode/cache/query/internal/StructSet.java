@@ -17,17 +17,27 @@ package org.apache.geode.cache.query.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import it.unimi.dsi.fastutil.objects.AbstractObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -431,9 +441,11 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     int size = in.readInt();
     this.structType = (StructTypeImpl) DataSerializer.readObject(in);
-    for (int j = size; j > 0; j--) {
-      this.add(DataSerializer.readObject(in));
-    }
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      for (int j = size; j > 0; j--) {
+        this.add(DataSerializer.readObject(in));
+      }
+    });
   }
 
   public void toData(DataOutput out) throws IOException {

@@ -24,6 +24,7 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.InternalDataSerializer;
 
 /**
  * FunctionContext for remote/target nodes
@@ -70,7 +71,7 @@ public class FunctionRemoteContext implements DataSerializable {
       this.function = (Function) object;
       this.isFnSerializationReqd = true;
     }
-    this.args = DataSerializer.readObject(in);
+    this.args = InternalDataSerializer.readUserObject(in);
     this.filter = (HashSet) DataSerializer.readHashSet(in);
     this.bucketSet = (HashSet) DataSerializer.readHashSet(in);
     this.isReExecute = DataSerializer.readBoolean(in);

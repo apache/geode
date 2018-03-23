@@ -53,6 +53,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
  * This message is used as the request for a get operation done in a transaction that is hosted on a
@@ -146,8 +147,8 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.key = DataSerializer.readObject(in);
-    this.cbArg = DataSerializer.readObject(in);
+    this.key = InternalDataSerializer.readUserObject(in);
+    this.cbArg = InternalDataSerializer.readUserObject(in);
     this.context = DataSerializer.readObject(in);
   }
 
@@ -366,7 +367,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
             return CachedDeserializableFactory.create(reply.valueInBytes,
                 getDistributionManager().getCache());
           } else {
-            return BlobHelper.deserializeBlob(reply.valueInBytes, reply.remoteVersion, null);
+            return BlobHelper.deserializeBlob(reply.valueInBytes, reply.remoteVersion, null, true);
           }
         }
         return null;

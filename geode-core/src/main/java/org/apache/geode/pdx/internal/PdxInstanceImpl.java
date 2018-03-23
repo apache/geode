@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -234,6 +235,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       }
       return this;
     }
+
     boolean wouldReadSerialized = PdxInstanceImpl.getPdxReadSerialized();
     if (!wouldReadSerialized) {
       return getUnmodifiableReader().basicGetObject();

@@ -315,7 +315,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      */
     public RemoveAllEntryData(DataInput in, EventID baseEventID, int idx, Version version,
         ByteArrayDataInput bytesIn) throws IOException, ClassNotFoundException {
-      this.key = DataSerializer.readObject(in);
+      this.key = InternalDataSerializer.readUserObject(in);
       this.oldValue = null;
       this.op = Operation.fromOrdinal(in.readByte());
       this.flags = in.readByte();

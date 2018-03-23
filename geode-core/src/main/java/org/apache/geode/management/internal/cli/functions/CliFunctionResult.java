@@ -25,8 +25,10 @@ import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
   private String memberIdOrName;
@@ -164,7 +166,9 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.memberIdOrName = DataSerializer.readString(in);
     this.successful = DataSerializer.readPrimitiveBoolean(in);
     this.xmlEntity = DataSerializer.readObject(in);
-    this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
+    });
     this.throwable = DataSerializer.readObject(in);
     this.byteData = DataSerializer.readByteArray(in);
   }
@@ -172,7 +176,9 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
     this.throwable = DataSerializer.readObject(in);
-    this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
+    });
   }
 
   public boolean isSuccessful() {
