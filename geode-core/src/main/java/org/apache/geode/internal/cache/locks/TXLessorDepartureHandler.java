@@ -42,10 +42,9 @@ public class TXLessorDepartureHandler implements DLockLessorDepartureHandler {
   @Override
   public void waitForInProcessDepartures() throws InterruptedException {
     synchronized (stateLock) {
-      if (!processingDepartures) {
-        return;
+      while (processingDepartures) {
+        stateLock.wait();
       }
-      stateLock.wait();
     }
   }
 
