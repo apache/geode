@@ -111,6 +111,7 @@ public class StartMemberUtilsTest {
     String gemfireClasspath = StartMemberUtils.toClasspath(true, new String[0]);
     assertThat(gemfireClasspath).doesNotContain("extensions");
 
+    // when there is a `test.jar` in `extensions` directory
     File folder = temporaryFolder.newFolder("extensions");
     File jarFile = new File(folder, "test.jar");
     jarFile.createNewFile();
