@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.DiskStoreUpgrader;
 
-public class UpgradeOfflineDiskStoreCommand extends GfshCommand {
+public class UpgradeOfflineDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.UPGRADE_OFFLINE_DISK_STORE,
       help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})

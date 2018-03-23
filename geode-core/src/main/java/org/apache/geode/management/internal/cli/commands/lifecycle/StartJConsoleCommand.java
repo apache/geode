@@ -34,7 +34,7 @@ import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -42,7 +42,7 @@ import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 import org.apache.geode.management.internal.cli.util.JdkTool;
 
-public class StartJConsoleCommand extends GfshCommand {
+public class StartJConsoleCommand extends InternalGfshCommand {
 
   @CliCommand(value = CliStrings.START_JCONSOLE, help = CliStrings.START_JCONSOLE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,

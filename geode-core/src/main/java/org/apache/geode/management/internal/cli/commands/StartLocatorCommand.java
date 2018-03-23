@@ -55,7 +55,7 @@ import org.apache.geode.management.internal.cli.util.HostUtils;
 import org.apache.geode.management.internal.configuration.utils.ClusterConfigurationStatusRetriever;
 import org.apache.geode.security.AuthenticationFailedException;
 
-public class StartLocatorCommand extends GfshCommand {
+public class StartLocatorCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.START_LOCATOR, help = CliStrings.START_LOCATOR__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})

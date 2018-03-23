@@ -28,7 +28,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class RevokeMissingDiskStoreCommand extends GfshCommand {
+public class RevokeMissingDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.REVOKE_MISSING_DISK_STORE,
       help = CliStrings.REVOKE_MISSING_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})

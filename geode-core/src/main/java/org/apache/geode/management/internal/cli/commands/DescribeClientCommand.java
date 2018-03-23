@@ -43,7 +43,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeClientCommand extends GfshCommand {
+public class DescribeClientCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,

@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShowDeadlockCommand extends GfshCommand {
+public class ShowDeadlockCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.SHOW_DEADLOCK, help = CliStrings.SHOW_DEADLOCK__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,

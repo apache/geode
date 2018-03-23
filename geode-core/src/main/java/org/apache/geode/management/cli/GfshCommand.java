@@ -12,16 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.management.cli;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.CommandMarker;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -29,74 +29,17 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.security.ResourcePermission;
 
-/**
- * Encapsulates common functionality for implementing command classes for the Geode shell (gfsh).
- * this provides wrapper around the static methods in CliUtils for easy mock of the commands
- *
- * this class should not have much implementation of its own other then those tested in
- * GfshCommandJUnitTest
- */
-@SuppressWarnings("unused")
+@Experimental
 public abstract class GfshCommand implements CommandMarker {
   private InternalCache cache;
-
-  public void setCache(Cache cache) {
-    this.cache = (InternalCache) cache;
-  }
-
-  public Cache getCache() {
-    return cache;
-  }
-
-  public static final String EXPERIMENTAL = "(Experimental) ";
-
-  public boolean isConnectedAndReady() {
-    return getGfsh() != null && getGfsh().isConnectedAndReady();
-  }
-
-  public InternalClusterConfigurationService getConfigurationService() {
-    InternalLocator locator = InternalLocator.getLocator();
-    return locator == null ? null : locator.getSharedConfiguration();
-  }
-
-  public void persistClusterConfiguration(Result result, Runnable runnable) {
-    if (result == null) {
-      throw new IllegalArgumentException("Result should not be null");
-    }
-    InternalClusterConfigurationService sc = getConfigurationService();
-    if (sc == null) {
-      result.setCommandPersisted(false);
-    } else {
-      runnable.run();
-      result.setCommandPersisted(true);
-    }
-  }
-
-  public XmlEntity findXmlEntity(List<CliFunctionResult> functionResults) {
-    return functionResults.stream().filter(CliFunctionResult::isSuccessful)
-        .map(CliFunctionResult::getXmlEntity).filter(Objects::nonNull).findFirst().orElse(null);
-  }
-
-  public boolean isDebugging() {
-    return getGfsh() != null && getGfsh().getDebug();
-  }
-
-  public boolean isLogging() {
-    return getGfsh() != null;
-  }
 
   public void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, ResourcePermission.Target target) {
@@ -113,12 +56,21 @@ public abstract class GfshCommand implements CommandMarker {
     cache.getSecurityService().authorize(resource, operation, target, key);
   }
 
-  public Subject getSubject() {
-    return cache.getSecurityService().getSubject();
+  public Cache getCache() {
+    return cache;
   }
 
-  public Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
+  public ClusterConfigurationService getConfigurationService() {
+    InternalLocator locator = InternalLocator.getLocator();
+    return locator == null ? null : locator.getSharedConfiguration();
+  }
+
+  public void setCache(Cache cache) {
+    this.cache = (InternalCache) cache;
+  }
+
+  public Subject getSubject() {
+    return cache.getSecurityService().getSubject();
   }
 
   /**
@@ -193,10 +145,6 @@ public abstract class GfshCommand implements CommandMarker {
       throw new EntityNotFoundException(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
     return matchingMembers;
-  }
-
-  public ManagementService getManagementService() {
-    return ManagementService.getExistingManagementService(getCache());
   }
 
   public Set<DistributedMember> findMembersForRegion(String regionPath) {

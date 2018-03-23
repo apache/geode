@@ -39,13 +39,14 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunct
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -62,12 +63,12 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * The LuceneIndexCommands class encapsulates all Geode shell (Gfsh) commands related to Lucene
  * indexes defined in Geode.
  *
- * @see GfshCommand
+ * @see InternalGfshCommand
  * @see LuceneIndexDetails
  * @see LuceneListIndexFunction
  */
 @SuppressWarnings("unused")
-public class LuceneIndexCommands extends GfshCommand {
+public class LuceneIndexCommands extends InternalGfshCommand {
   private static final LuceneCreateIndexFunction createIndexFunction =
       new LuceneCreateIndexFunction();
   private static final LuceneDescribeIndexFunction describeIndexFunction =
@@ -199,7 +200,8 @@ public class LuceneIndexCommands extends GfshCommand {
     result = ResultBuilder.buildResult(tabularResult);
     if (xmlEntity != null) {
       persistClusterConfiguration(result, () -> {
-        getConfigurationService().addXmlEntity(xmlEntity, null);
+        ((InternalClusterConfigurationService) getConfigurationService()).addXmlEntity(xmlEntity,
+            null);
       });
     }
     return result;
@@ -292,7 +294,8 @@ public class LuceneIndexCommands extends GfshCommand {
     if (xmlEntity != null) {
       persistClusterConfiguration(result, () -> {
         // Delete the xml entity to remove the index(es) in all groups
-        getConfigurationService().deleteXmlEntity(xmlEntity, null);
+        ((InternalClusterConfigurationService) getConfigurationService()).deleteXmlEntity(xmlEntity,
+            null);
       });
     }
 

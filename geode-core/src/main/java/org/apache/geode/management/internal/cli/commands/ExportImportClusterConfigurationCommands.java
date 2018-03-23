@@ -64,7 +64,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * Commands for the cluster configuration
  */
 @SuppressWarnings("unused")
-public class ExportImportClusterConfigurationCommands extends GfshCommand {
+public class ExportImportClusterConfigurationCommands extends InternalGfshCommand {
 
   @CliCommand(value = {CliStrings.EXPORT_SHARED_CONFIG},
       help = CliStrings.EXPORT_SHARED_CONFIG__HELP)

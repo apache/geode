@@ -27,6 +27,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -40,7 +41,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateDefinedIndexesCommand extends GfshCommand {
+public class CreateDefinedIndexesCommand extends InternalGfshCommand {
   private static final CreateDefinedIndexesFunction createDefinedIndexesFunction =
       new CreateDefinedIndexesFunction();
 
@@ -153,7 +154,8 @@ public class CreateDefinedIndexesCommand extends GfshCommand {
 
     for (XmlEntity xmlEntity : xmlEntities) {
       persistClusterConfiguration(result,
-          () -> getConfigurationService().addXmlEntity(xmlEntity, group));
+          () -> ((InternalClusterConfigurationService) getConfigurationService())
+              .addXmlEntity(xmlEntity, group));
     }
 
     return result;

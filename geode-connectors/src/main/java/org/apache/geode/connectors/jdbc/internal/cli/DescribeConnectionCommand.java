@@ -32,7 +32,7 @@ import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class DescribeConnectionCommand extends GfshCommand {
+public class DescribeConnectionCommand extends InternalGfshCommand {
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
   static final String DESCRIBE_CONNECTION__HELP =
       EXPERIMENTAL + "Describe the specified jdbc connection.";

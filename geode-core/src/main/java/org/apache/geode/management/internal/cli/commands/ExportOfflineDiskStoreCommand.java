@@ -28,7 +28,7 @@ import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
-public class ExportOfflineDiskStoreCommand extends GfshCommand {
+public class ExportOfflineDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.EXPORT_OFFLINE_DISK_STORE,
       help = CliStrings.EXPORT_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})

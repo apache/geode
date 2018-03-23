@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class LoadBalanceGatewaySenderCommand extends GfshCommand {
+public class LoadBalanceGatewaySenderCommand extends InternalGfshCommand {
 
   @CliCommand(value = CliStrings.LOAD_BALANCE_GATEWAYSENDER,
       help = CliStrings.LOAD_BALANCE_GATEWAYSENDER__HELP)

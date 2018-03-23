@@ -25,7 +25,7 @@ import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class DebugCommand extends GfshCommand {
+public class DebugCommand extends InternalGfshCommand {
   @CliCommand(value = {CliStrings.DEBUG}, help = CliStrings.DEBUG__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_DEBUG_UTIL})

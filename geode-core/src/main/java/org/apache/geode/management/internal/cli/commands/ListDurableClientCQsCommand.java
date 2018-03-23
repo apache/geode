@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListDurableClientCQsCommand extends GfshCommand {
+public class ListDurableClientCQsCommand extends InternalGfshCommand {
   DurableClientCommandsResultBuilder builder = new DurableClientCommandsResultBuilder();
 
   @CliCommand(value = CliStrings.LIST_DURABLE_CQS, help = CliStrings.LIST_DURABLE_CQS__HELP)

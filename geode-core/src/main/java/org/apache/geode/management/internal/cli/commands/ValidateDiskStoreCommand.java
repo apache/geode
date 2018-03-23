@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.DiskStoreValidater;
 
-public class ValidateDiskStoreCommand extends GfshCommand {
+public class ValidateDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.VALIDATE_DISK_STORE, help = CliStrings.VALIDATE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   public Result validateDiskStore(

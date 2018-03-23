@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyJndiBindingCommand extends GfshCommand {
+public class DestroyJndiBindingCommand extends InternalGfshCommand {
   static final String DESTROY_JNDIBINDING = "destroy jndi-binding";
   static final String DESTROY_JNDIBINDING__HELP =
       "Destroy a jndi binding that holds the configuration for the XA datasource.";
@@ -55,7 +55,8 @@ public class DestroyJndiBindingCommand extends GfshCommand {
 
     Result result;
     boolean persisted = false;
-    InternalClusterConfigurationService service = getConfigurationService();
+    InternalClusterConfigurationService service =
+        (InternalClusterConfigurationService) getConfigurationService();
     if (service != null) {
       service.updateCacheConfig("cluster", cc -> {
         List<JndiBindingsType.JndiBinding> bindings = cc.getJndiBindings();

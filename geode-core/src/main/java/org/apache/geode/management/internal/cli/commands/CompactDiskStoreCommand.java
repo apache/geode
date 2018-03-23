@@ -45,7 +45,7 @@ import org.apache.geode.management.internal.messages.CompactRequest;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CompactDiskStoreCommand extends GfshCommand {
+public class CompactDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.COMPACT_DISK_STORE, help = CliStrings.COMPACT_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,

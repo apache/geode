@@ -40,7 +40,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateJndiBindingCommand extends GfshCommand {
+public class CreateJndiBindingCommand extends InternalGfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   static final String CREATE_JNDIBINDING = "create jndi-binding";
@@ -147,7 +147,8 @@ public class CreateJndiBindingCommand extends GfshCommand {
 
     Result result;
     boolean persisted = false;
-    InternalClusterConfigurationService service = getConfigurationService();
+    InternalClusterConfigurationService service =
+        (InternalClusterConfigurationService) getConfigurationService();
 
     if (service != null) {
       CacheConfig cacheConfig = service.getCacheConfig("cluster");

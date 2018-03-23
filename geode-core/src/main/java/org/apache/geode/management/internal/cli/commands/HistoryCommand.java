@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
 
-public class HistoryCommand extends GfshCommand {
+public class HistoryCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.HISTORY, help = CliStrings.HISTORY__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result history(

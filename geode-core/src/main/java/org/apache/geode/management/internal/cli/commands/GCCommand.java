@@ -26,7 +26,6 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -40,7 +39,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class GCCommand extends GfshCommand {
+public class GCCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.GC, help = CliStrings.GC__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,

@@ -26,6 +26,7 @@ import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -44,7 +45,6 @@ public class CommandAvailabilityIndicatorTest {
         continue;
       }
 
-      GfshCommand gfshCommand = (GfshCommand) commandMarker;
       for (Method method : commandMarker.getClass().getMethods()) {
         CliCommand cliCommand = method.getAnnotation(CliCommand.class);
         CliMetaData cliMetaData = method.getAnnotation(CliMetaData.class);

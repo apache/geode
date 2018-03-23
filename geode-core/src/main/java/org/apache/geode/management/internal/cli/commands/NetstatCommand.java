@@ -47,7 +47,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class NetstatCommand extends GfshCommand {
+public class NetstatCommand extends InternalGfshCommand {
   private static final String NETSTAT_FILE_REQUIRED_EXTENSION = ".txt";
 
   @CliCommand(value = CliStrings.NETSTAT, help = CliStrings.NETSTAT__HELP)

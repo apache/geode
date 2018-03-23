@@ -40,7 +40,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListGatewayCommand extends GfshCommand {
+public class ListGatewayCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.LIST_GATEWAY, help = CliStrings.LIST_GATEWAY__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
