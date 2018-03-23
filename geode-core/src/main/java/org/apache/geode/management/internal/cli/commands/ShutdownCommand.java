@@ -46,7 +46,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShutdownCommand extends GfshCommand {
+public class ShutdownCommand extends InternalGfshCommand {
   private static final String DEFAULT_TIME_OUT = "10";
   private static final Logger logger = LogService.getLogger();
 
@@ -68,7 +68,7 @@ public class ShutdownCommand extends GfshCommand {
 
       // convert to milliseconds
       long timeout = userSpecifiedTimeout * 1000;
-      InternalCache cache = getCache();
+      InternalCache cache = (InternalCache) getCache();
       int numDataNodes = getAllNormalMembers().size();
       Set<DistributedMember> locators = getAllMembers();
       Set<DistributedMember> dataNodes = getAllNormalMembers();

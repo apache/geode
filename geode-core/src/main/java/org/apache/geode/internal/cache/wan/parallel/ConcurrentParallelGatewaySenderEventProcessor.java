@@ -189,7 +189,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
         if (ex != null) {
           throw new GatewaySenderException(
               LocalizedStrings.Sender_COULD_NOT_START_GATEWAYSENDER_0_BECAUSE_OF_EXCEPTION_1
-                  .toLocalizedString(new Object[] {this.getId(), ex.getMessage()}),
+                  .toLocalizedString(new Object[] {this.sender.getId(), ex.getMessage()}),
               ex.getCause());
         }
       }

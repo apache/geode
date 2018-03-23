@@ -71,6 +71,7 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -132,6 +133,7 @@ public class AnalyzeSerializablesJUnitTest {
     assumeThat(
         "AnalyzeSerializables requires Java 8 but tests are running with v" + getJavaVersion(),
         isJavaVersionAtLeast("1.8"), is(true));
+    TypeRegistry.init();
   }
 
   private List<DistributedSystemService> initializeServices() {

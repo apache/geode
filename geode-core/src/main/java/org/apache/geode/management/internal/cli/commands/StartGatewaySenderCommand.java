@@ -32,10 +32,9 @@ import javax.management.ObjectName;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.GatewaySenderMXBean;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -46,7 +45,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StartGatewaySenderCommand extends GfshCommand {
+public class StartGatewaySenderCommand extends InternalGfshCommand {
 
   @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
@@ -67,9 +66,8 @@ public class StartGatewaySenderCommand extends GfshCommand {
     Result result;
     final String id = senderId.trim();
 
-    final InternalCache cache = getCache();
-    final SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    final Cache cache = getCache();
+    final SystemManagementService service = (SystemManagementService) getManagementService();
 
     TabularResultData resultData = ResultBuilder.createTabularResultData();
 

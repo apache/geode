@@ -89,7 +89,7 @@ public class CreateDefinedIndexesCommandTest {
     InternalClusterConfigurationService mockService =
         mock(InternalClusterConfigurationService.class);
 
-    doReturn(mockService).when(command).getSharedConfiguration();
+    doReturn(mockService).when(command).getConfigurationService();
     doReturn(Collections.singleton(member)).when(command).findMembers(any(), any());
     doReturn(Arrays.asList(new CliFunctionResult(member.getId(), new Exception("MockException"),
         "Exception Message."))).when(resultCollector).getResult();
@@ -110,7 +110,7 @@ public class CreateDefinedIndexesCommandTest {
     InternalClusterConfigurationService mockService =
         mock(InternalClusterConfigurationService.class);
 
-    doReturn(mockService).when(command).getSharedConfiguration();
+    doReturn(mockService).when(command).getConfigurationService();
     doReturn(Collections.singleton(member)).when(command).findMembers(any(), any());
     doReturn(Arrays.asList(new CliFunctionResult(member.getId(), xmlEntity))).when(resultCollector)
         .getResult();
@@ -145,7 +145,7 @@ public class CreateDefinedIndexesCommandTest {
     CliFunctionResult member2Region2Result =
         new CliFunctionResult(member2.getId(), xmlEntityRegion2);
 
-    doReturn(mockService).when(command).getSharedConfiguration();
+    doReturn(mockService).when(command).getConfigurationService();
     doReturn(new HashSet<>(Arrays.asList(new DistributedMember[] {member1, member2}))).when(command)
         .findMembers(any(), any());
     doReturn(Arrays.asList(new CliFunctionResult[] {member1Region1Result, member1Region2Result,

@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class LocateEntryCommand extends GfshCommand {
+public class LocateEntryCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @CliCommand(value = {CliStrings.LOCATE_ENTRY}, help = CliStrings.LOCATE_ENTRY__HELP)
   public Result locateEntry(
@@ -52,7 +52,7 @@ public class LocateEntryCommand extends GfshCommand {
           help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean recursive) {
 
-    getSecurityService().authorize(Resource.DATA, Operation.READ, regionPath, key);
+    authorize(Resource.DATA, Operation.READ, regionPath, key);
 
     DataCommandResult dataResult;
 

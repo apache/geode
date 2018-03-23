@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class StatusClusterConfigServiceCommand extends GfshCommand {
+public class StatusClusterConfigServiceCommand extends InternalGfshCommand {
   private static final FetchSharedConfigurationStatusFunction fetchSharedConfigStatusFunction =
       new FetchSharedConfigurationStatusFunction();
 
@@ -46,7 +46,7 @@ public class StatusClusterConfigServiceCommand extends GfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_LOCATOR)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result statusSharedConfiguration() {
-    final InternalCache cache = getCache();
+    final InternalCache cache = (InternalCache) getCache();
     final Set<DistributedMember> locators = new HashSet<>(
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
     if (locators.isEmpty()) {

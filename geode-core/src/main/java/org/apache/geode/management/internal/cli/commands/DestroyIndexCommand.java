@@ -23,6 +23,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -36,7 +37,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyIndexCommand extends GfshCommand {
+public class DestroyIndexCommand extends InternalGfshCommand {
   private static final DestroyIndexFunction destroyIndexFunction = new DestroyIndexFunction();
 
   @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)
@@ -82,7 +83,8 @@ public class DestroyIndexCommand extends GfshCommand {
 
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, group));
+          () -> ((InternalClusterConfigurationService) getConfigurationService())
+              .deleteXmlEntity(xmlEntity, group));
     }
     return result;
   }

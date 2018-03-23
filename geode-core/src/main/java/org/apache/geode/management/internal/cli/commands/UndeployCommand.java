@@ -24,6 +24,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -36,7 +37,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class UndeployCommand extends GfshCommand {
+public class UndeployCommand extends InternalGfshCommand {
   private final UndeployFunction undeployFunction = new UndeployFunction();
 
   /**
@@ -99,7 +100,8 @@ public class UndeployCommand extends GfshCommand {
       Result result = ResultBuilder.buildResult(tabularData);
       if (tabularData.getStatus().equals(Result.Status.OK)) {
         persistClusterConfiguration(result,
-            () -> getSharedConfiguration().removeJars(jars, groups));
+            () -> ((InternalClusterConfigurationService) getConfigurationService()).removeJars(jars,
+                groups));
       }
       return result;
     } catch (VirtualMachineError e) {

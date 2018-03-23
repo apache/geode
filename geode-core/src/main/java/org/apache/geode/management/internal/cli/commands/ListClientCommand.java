@@ -24,7 +24,6 @@ import javax.management.ObjectName;
 
 import org.springframework.shell.core.annotation.CliCommand;
 
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -37,7 +36,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListClientCommand extends GfshCommand {
+public class ListClientCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.LIST_CLIENTS, help = CliStrings.LIST_CLIENT__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -51,8 +50,7 @@ public class ListClientCommand extends GfshCommand {
     String headerText = "ClientList";
     resultTable = resultTable.setHeader(headerText);
 
-    InternalCache cache = getCache();
-    ManagementService service = ManagementService.getExistingManagementService(cache);
+    ManagementService service = getManagementService();
     ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
 
     if (cacheServers.length == 0) {

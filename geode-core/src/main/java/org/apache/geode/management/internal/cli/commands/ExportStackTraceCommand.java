@@ -34,6 +34,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -45,7 +46,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ExportStackTraceCommand extends GfshCommand {
+public class ExportStackTraceCommand extends InternalGfshCommand {
   public static final String STACK_TRACE_FOR_MEMBER = "*** Stack-trace for member ";
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
 
@@ -98,7 +99,7 @@ public class ExportStackTraceCommand extends GfshCommand {
       }
     }
 
-    InternalDistributedSystem ads = getCache().getInternalDistributedSystem();
+    InternalDistributedSystem ads = ((InternalCache) getCache()).getInternalDistributedSystem();
     String filePath = writeStacksToFile(dumps, fileName);
     resultData.addLine(CliStrings.format(CliStrings.EXPORT_STACKTRACE__SUCCESS, filePath));
     resultData.addLine(CliStrings.EXPORT_STACKTRACE__HOST + ads.getDistributedMember().getHost());

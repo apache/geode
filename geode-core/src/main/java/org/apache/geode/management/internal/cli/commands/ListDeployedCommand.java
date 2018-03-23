@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListDeployedCommand extends GfshCommand {
+public class ListDeployedCommand extends InternalGfshCommand {
   private final ListDeployedFunction listDeployedFunction = new ListDeployedFunction();
 
   /**

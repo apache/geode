@@ -21,6 +21,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -34,7 +35,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyRegionCommand extends GfshCommand {
+public class DestroyRegionCommand extends InternalGfshCommand {
   @CliCommand(value = {CliStrings.DESTROY_REGION}, help = CliStrings.DESTROY_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
@@ -70,7 +71,8 @@ public class DestroyRegionCommand extends GfshCommand {
     // if at least one member returns with successful deletion, we will need to update cc
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, null));
+          () -> ((InternalClusterConfigurationService) getConfigurationService())
+              .deleteXmlEntity(xmlEntity, null));
     }
     return result;
   }

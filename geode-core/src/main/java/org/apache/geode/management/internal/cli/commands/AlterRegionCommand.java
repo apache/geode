@@ -26,6 +26,7 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -40,7 +41,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class AlterRegionCommand extends GfshCommand {
+public class AlterRegionCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   public Result alterRegion(
@@ -91,9 +92,10 @@ public class AlterRegionCommand extends GfshCommand {
       @CliOption(key = CliStrings.ALTER_REGION__EVICTIONMAX, specifiedDefaultValue = "0",
           help = CliStrings.ALTER_REGION__EVICTIONMAX__HELP) Integer evictionMax) {
     Result result;
-    getSecurityService().authorize(Resource.DATA, Operation.MANAGE, regionPath);
 
-    InternalCache cache = getCache();
+    authorize(Resource.DATA, Operation.MANAGE, regionPath);
+
+    InternalCache cache = (InternalCache) getCache();
 
     if (groups != null) {
       RegionCommandsUtils.validateGroups(cache, groups);
@@ -136,7 +138,8 @@ public class AlterRegionCommand extends GfshCommand {
     XmlEntity xmlEntity = findXmlEntity(regionAlterResults);
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, groups));
+          () -> ((InternalClusterConfigurationService) getConfigurationService())
+              .addXmlEntity(xmlEntity, groups));
     }
     return result;
   }

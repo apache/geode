@@ -49,7 +49,7 @@ import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ExportLogsCommand extends GfshCommand {
+public class ExportLogsCommand extends InternalGfshCommand {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -101,7 +101,7 @@ public class ExportLogsCommand extends GfshCommand {
 
     long totalEstimatedExportSize = 0;
     Result result;
-    InternalCache cache = getCache();
+    InternalCache cache = (InternalCache) getCache();
     try {
       Set<DistributedMember> targetMembers = getMembersIncludingLocators(groups, memberIds);
 

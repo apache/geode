@@ -23,12 +23,12 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyFunctionCommand extends GfshCommand {
+public class DestroyFunctionCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.DESTROY_FUNCTION, help = CliStrings.DESTROY_FUNCTION__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION},
       interceptor = "org.apache.geode.management.internal.cli.commands.DestroyFunctionCommand$Interceptor")
@@ -57,7 +57,7 @@ public class DestroyFunctionCommand extends GfshCommand {
       @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.DESTROY_FUNCTION__ONMEMBER__HELP) String memberId) {
     try {
-      InternalCache cache = getCache();
+      Cache cache = getCache();
       Set<DistributedMember> dsMembers = new HashSet<>();
       if (groups != null && memberId != null) {
         return ResultBuilder
@@ -89,8 +89,7 @@ public class DestroyFunctionCommand extends GfshCommand {
     }
   }
 
-  private Result executeFunction(InternalCache cache, Set<DistributedMember> DsMembers,
-      String functionId) {
+  private Result executeFunction(Cache cache, Set<DistributedMember> DsMembers, String functionId) {
     // unregister on a set of of members
     Function unregisterFunction = new UnregisterFunction();
     FunctionService.registerFunction(unregisterFunction);

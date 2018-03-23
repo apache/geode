@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class ShCommand extends GfshCommand {
+public class ShCommand extends InternalGfshCommand {
   @CliCommand(value = {CliStrings.SH}, help = CliStrings.SH__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result sh(
