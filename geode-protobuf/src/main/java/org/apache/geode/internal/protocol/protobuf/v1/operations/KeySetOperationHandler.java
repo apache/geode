@@ -15,49 +15,40 @@
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
-import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class KeySetOperationHandler
-    implements ProtobufOperationHandler<RegionAPI.KeySetRequest, RegionAPI.KeySetResponse> {
+public class KeySetOperationHandler extends
+    AbstractRegionRequestOperationHandler<RegionAPI.KeySetRequest, RegionAPI.KeySetResponse> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<RegionAPI.KeySetResponse> process(ProtobufSerializationService serializationService,
-      RegionAPI.KeySetRequest request, MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, EncodingException, DecodingException {
-    String regionName = request.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received request for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
-    }
-
+  protected Result<RegionAPI.KeySetResponse> doOp(ProtobufSerializationService serializationService,
+      RegionAPI.KeySetRequest request, Region<Object, Object> region) {
     Set keySet = region.keySet();
+
     RegionAPI.KeySetResponse.Builder builder = RegionAPI.KeySetResponse.newBuilder();
     keySet.stream().map(serializationService::encode)
         .forEach(value -> builder.addKeys((BasicTypes.EncodedValue) value));
 
     return Success.of(builder.build());
+  }
+
+  @Override
+  protected String getRegionName(RegionAPI.KeySetRequest request) {
+    return request.getRegionName();
   }
 
   public static ResourcePermission determineRequiredPermission(RegionAPI.KeySetRequest request,

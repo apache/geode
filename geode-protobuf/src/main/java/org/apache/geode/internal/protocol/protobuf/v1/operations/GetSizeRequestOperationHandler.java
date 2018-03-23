@@ -18,35 +18,26 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
-import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 
 @Experimental
-public class GetSizeRequestOperationHandler
-    implements ProtobufOperationHandler<RegionAPI.GetSizeRequest, RegionAPI.GetSizeResponse> {
+public class GetSizeRequestOperationHandler extends
+    AbstractRegionRequestOperationHandler<RegionAPI.GetSizeRequest, RegionAPI.GetSizeResponse> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<RegionAPI.GetSizeResponse> process(
+  protected Result<RegionAPI.GetSizeResponse> doOp(
       ProtobufSerializationService serializationService, RegionAPI.GetSizeRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
-    String regionName = request.getRegionName();
-
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received GetRegion request for non-existing region {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "No region exists for name: " + regionName);
-    }
-
+      Region<Object, Object> region) {
     return Success.of(RegionAPI.GetSizeResponse.newBuilder().setSize(region.size()).build());
+  }
+
+  @Override
+  protected String getRegionName(RegionAPI.GetSizeRequest request) {
+    return request.getRegionName();
   }
 }
