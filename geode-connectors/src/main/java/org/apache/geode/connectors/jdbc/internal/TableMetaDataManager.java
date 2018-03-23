@@ -46,7 +46,7 @@ public class TableMetaDataManager {
       try (ResultSet tables = metaData.getTables(null, null, "%", null)) {
         String realTableName = getTableNameFromMetaData(tableName, tables);
         String key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
-        result = new TableMetaData(key);
+        result = new TableMetaData(realTableName, key);
         getDataTypesFromMetaData(realTableName, metaData, result);
       }
     } catch (SQLException e) {
@@ -56,21 +56,27 @@ public class TableMetaDataManager {
   }
 
   private String getTableNameFromMetaData(String tableName, ResultSet tables) throws SQLException {
-    String realTableName = null;
+    String result = null;
+    int inexactMatches = 0;
+
     while (tables.next()) {
       String name = tables.getString("TABLE_NAME");
-      if (name.equalsIgnoreCase(tableName)) {
-        if (realTableName != null) {
-          throw new JdbcConnectorException("Duplicate tables that match region name");
-        }
-        realTableName = name;
+      if (name.equals(tableName)) {
+        return name;
+      } else if (name.equalsIgnoreCase(tableName)) {
+        inexactMatches++;
+        result = name;
       }
     }
 
-    if (realTableName == null) {
+    if (inexactMatches > 1) {
+      throw new JdbcConnectorException("Duplicate tables that match region name");
+    }
+
+    if (result == null) {
       throw new JdbcConnectorException("no table was found that matches " + tableName);
     }
-    return realTableName;
+    return result;
   }
 
   private String getPrimaryKeyColumnNameFromMetaData(String tableName, DatabaseMetaData metaData)

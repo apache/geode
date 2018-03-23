@@ -2,7 +2,7 @@ org/apache/geode/connectors/jdbc/JdbcConnectorException,true,1
 org/apache/geode/connectors/jdbc/internal/ConnectionConfigExistsException,false
 org/apache/geode/connectors/jdbc/internal/ConnectionConfigNotFoundException,false
 org/apache/geode/connectors/jdbc/internal/ConnectionConfiguration,false,name:java/lang/String,parameters:java/util/Map,password:java/lang/String,url:java/lang/String,user:java/lang/String
-org/apache/geode/connectors/jdbc/internal/RegionMapping,false,columnToFieldMap:java/util/Map,connectionConfigName:java/lang/String,fieldToColumnMap:java/util/Map,pdxClassName:java/lang/String,primaryKeyInValue:java/lang/Boolean,regionName:java/lang/String,tableName:java/lang/String
+org/apache/geode/connectors/jdbc/internal/RegionMapping,false,columnToFieldMap:java/util/concurrent/ConcurrentMap,configuredColumnToFieldMap:java/util/Map,configuredFieldToColumnMap:java/util/Map,connectionConfigName:java/lang/String,fieldToColumnMap:java/util/concurrent/ConcurrentMap,pdxClassName:java/lang/String,primaryKeyInValue:java/lang/Boolean,regionName:java/lang/String,tableName:java/lang/String
 org/apache/geode/connectors/jdbc/internal/RegionMappingExistsException,false
 org/apache/geode/connectors/jdbc/internal/RegionMappingNotFoundException,false
 org/apache/geode/connectors/jdbc/internal/cli/AlterConnectionFunction,false

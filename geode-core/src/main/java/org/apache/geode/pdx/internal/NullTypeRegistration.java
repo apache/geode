@@ -16,6 +16,7 @@ package org.apache.geode.pdx.internal;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.pdx.PdxInitializationException;
@@ -87,6 +88,11 @@ public class NullTypeRegistration implements TypeRegistration {
   @Override
   public PdxType getPdxTypeForField(String fieldName, String className) {
     return null;
+  }
+
+  @Override
+  public Set<PdxType> getPdxTypesForClassName(String className) {
+    return Collections.emptySet();
   }
 
   @Override
