@@ -103,7 +103,7 @@ public class CreateJndiBindingCommandTest {
     CacheConfig cacheConfig = mock(CacheConfig.class);
     JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
 
-    doReturn(clusterConfigService).when(command).getSharedConfiguration();
+    doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
     doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
@@ -120,7 +120,7 @@ public class CreateJndiBindingCommandTest {
     CacheConfig cacheConfig = mock(CacheConfig.class);
     JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
 
-    doReturn(clusterConfigService).when(command).getSharedConfiguration();
+    doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
     doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
@@ -138,7 +138,7 @@ public class CreateJndiBindingCommandTest {
     CacheConfig cacheConfig = mock(CacheConfig.class);
     JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
 
-    doReturn(clusterConfigService).when(command).getSharedConfiguration();
+    doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
     doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
@@ -155,7 +155,7 @@ public class CreateJndiBindingCommandTest {
     CacheConfig cacheConfig = mock(CacheConfig.class);
     JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
 
-    doReturn(clusterConfigService).when(command).getSharedConfiguration();
+    doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
     doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
@@ -169,7 +169,7 @@ public class CreateJndiBindingCommandTest {
   public void whenNoMembersFoundAndNoClusterConfigServiceRunningThenError() {
 
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(null).when(command).getSharedConfiguration();
+    doReturn(null).when(command).getConfigurationService();
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
@@ -183,7 +183,7 @@ public class CreateJndiBindingCommandTest {
     CacheConfig cacheConfig = mock(CacheConfig.class);
 
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(clusterConfigService).when(command).getSharedConfiguration();
+    doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
     doReturn(null).when(clusterConfigService).findIdentifiable(any(), any());
 
@@ -208,7 +208,7 @@ public class CreateJndiBindingCommandTest {
     results.add(result);
 
     doReturn(members).when(command).findMembers(any(), any());
-    doReturn(null).when(command).getSharedConfiguration();
+    doReturn(null).when(command).getConfigurationService();
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
 
     gfsh.executeAndAssertThat(command,
@@ -248,7 +248,7 @@ public class CreateJndiBindingCommandTest {
     CacheConfig cacheConfig = mock(CacheConfig.class);
 
     doReturn(members).when(command).findMembers(any(), any());
-    doReturn(clusterConfigService).when(command).getSharedConfiguration();
+    doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
     doReturn(null).when(clusterConfigService).findIdentifiable(any(), any());

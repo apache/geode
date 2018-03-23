@@ -216,7 +216,7 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
       final XmlEntity xmlEntity = XmlEntity.builder().withType(CacheXml.CACHE)
           .withAttributes(rumTimeCacheAttributes).build();
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().modifyXmlAndProperties(properties, xmlEntity, group));
+          () -> getConfigurationService().modifyXmlAndProperties(properties, xmlEntity, group));
       return result;
     } else {
       StringBuilder errorMessageBuilder = new StringBuilder();

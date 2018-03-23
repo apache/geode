@@ -36,6 +36,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMO
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.test.dunit.Host.getHost;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -3295,52 +3296,33 @@ public class WANTestBase extends DistributedTestCase {
    * @param senderId
    */
   public static void verifySenderPausedState(String senderId) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
+    GatewaySender sender = cache.getGatewaySender(senderId);
     assertTrue(sender.isPaused());
   }
 
   public static void verifySenderResumedState(String senderId) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
+    GatewaySender sender = cache.getGatewaySender(senderId);
     assertFalse(sender.isPaused());
     assertTrue(sender.isRunning());
   }
 
   public static void verifySenderStoppedState(String senderId) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
+    GatewaySender sender = cache.getGatewaySender(senderId);
     assertFalse(sender.isRunning());
   }
 
   public static void verifySenderRunningState(String senderId) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
+    GatewaySender sender = cache.getGatewaySender(senderId);
     assertTrue(sender.isRunning());
+  }
+
+  public static void verifySenderConnectedState(String senderId, boolean shouldBeConnected) {
+    AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+    if (shouldBeConnected) {
+      assertThat(sender.getEventProcessor().getDispatcher().isConnectedToRemote()).isTrue();
+    } else {
+      assertThat(sender.getEventProcessor().getDispatcher().isConnectedToRemote()).isFalse();
+    }
   }
 
   public static void verifyPool(String senderId, boolean poolShouldExist,

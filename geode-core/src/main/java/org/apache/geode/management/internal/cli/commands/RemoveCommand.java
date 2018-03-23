@@ -25,6 +25,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -53,16 +54,16 @@ public class RemoveCommand extends GfshCommand {
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean removeAllKeys,
       @CliOption(key = {CliStrings.REMOVE__KEYCLASS},
           help = CliStrings.REMOVE__KEYCLASS__HELP) String keyClass) {
-    InternalCache cache = getCache();
+    Cache cache = getCache();
 
     if (!removeAllKeys && (key == null)) {
       return createUserErrorResult(CliStrings.REMOVE__MSG__KEY_EMPTY);
     }
 
     if (removeAllKeys) {
-      cache.getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionPath);
+      authorize(Resource.DATA, Operation.WRITE, regionPath);
     } else {
-      cache.getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionPath, key);
+      authorize(Resource.DATA, Operation.WRITE, regionPath, key);
     }
 
     Region region = cache.getRegion(regionPath);
@@ -83,7 +84,8 @@ public class RemoveCommand extends GfshCommand {
       request.setRegionName(regionPath);
       dataResult = callFunctionForRegion(request, removefn, memberList);
     } else {
-      dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null, cache);
+      dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null,
+          (InternalCache) cache);
     }
 
     dataResult.setKeyClass(keyClass);

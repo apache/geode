@@ -24,6 +24,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -58,8 +59,8 @@ public class PutCommand extends GfshCommand {
           specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean putIfNotExists) {
 
-    InternalCache cache = getCache();
-    cache.getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionPath);
+    Cache cache = getCache();
+    authorize(Resource.DATA, Operation.WRITE, regionPath);
     DataCommandResult dataResult;
 
     @SuppressWarnings("rawtypes")
@@ -84,7 +85,7 @@ public class PutCommand extends GfshCommand {
       }
     } else {
       dataResult = putfn.put(key, value, putIfNotExists || putIfAbsent, keyClass, valueClass,
-          regionPath, cache);
+          regionPath, (InternalCache) cache);
     }
     dataResult.setKeyClass(keyClass);
     if (valueClass != null) {

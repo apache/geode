@@ -25,7 +25,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.De
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
@@ -86,6 +85,11 @@ public class ProtobufOpsProcessor {
       logger.error(exception);
       return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
           "Invalid execution context found for operation.");
+    } catch (UnsupportedOperationException exception) {
+      logger.error("Unsupported operation exception for request {}", requestType);
+      logger.error(exception);
+      return Failure.of(BasicTypes.ErrorCode.UNSUPPORTED_OPERATION,
+          "Unsupported operation:" + exception.getMessage());
     } finally {
       context.getStatistics().endOperation(startTime);
     }

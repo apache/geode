@@ -23,6 +23,8 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Version;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -116,6 +118,12 @@ public class CreateGatewaySenderCommand extends GfshCommand {
 
     Set<DistributedMember> membersToCreateGatewaySenderOn = getMembers(onGroups, onMember);
 
+    // Don't allow sender to be created if all members are not the current version.
+    if (!verifyAllCurrentVersion(membersToCreateGatewaySenderOn)) {
+      return ResultBuilder.createUserErrorResult(
+          CliStrings.CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
+    }
+
     List<CliFunctionResult> gatewaySenderCreateResults =
         executeAndGetFunctionResult(GatewaySenderCreateFunction.INSTANCE, gatewaySenderFunctionArgs,
             membersToCreateGatewaySenderOn);
@@ -129,14 +137,19 @@ public class CreateGatewaySenderCommand extends GfshCommand {
     }
 
     // has xml but unable to persist to cluster config, need to print warning message and return
-    if (onMember != null || getSharedConfiguration() == null) {
+    if (onMember != null || getConfigurationService() == null) {
       result.setCommandPersisted(false);
       return result;
     }
 
     // update cluster config
-    getSharedConfiguration().addXmlEntity(xmlEntity, onGroups);
+    getConfigurationService().addXmlEntity(xmlEntity, onGroups);
     return result;
+  }
+
+  private boolean verifyAllCurrentVersion(Set<DistributedMember> members) {
+    return members.stream().allMatch(
+        member -> ((InternalDistributedMember) member).getVersionObject().equals(Version.CURRENT));
   }
 
   public static class Interceptor extends AbstractCliAroundInterceptor {

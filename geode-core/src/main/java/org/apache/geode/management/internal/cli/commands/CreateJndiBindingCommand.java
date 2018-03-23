@@ -147,7 +147,7 @@ public class CreateJndiBindingCommand extends GfshCommand {
 
     Result result;
     boolean persisted = false;
-    InternalClusterConfigurationService service = getSharedConfiguration();
+    InternalClusterConfigurationService service = getConfigurationService();
 
     if (service != null) {
       CacheConfig cacheConfig = service.getCacheConfig("cluster");

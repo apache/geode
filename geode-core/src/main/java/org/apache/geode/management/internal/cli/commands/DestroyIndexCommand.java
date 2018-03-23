@@ -82,7 +82,7 @@ public class DestroyIndexCommand extends GfshCommand {
 
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, group));
+          () -> getConfigurationService().deleteXmlEntity(xmlEntity, group));
     }
     return result;
   }

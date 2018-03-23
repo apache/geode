@@ -72,7 +72,7 @@ public class DestroyAsyncEventQueueCommand extends GfshCommand {
     XmlEntity xmlEntity = findXmlEntity(functionResults);
     if (xmlEntity != null) {
       persistClusterConfiguration(commandResult,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, onGroups));
+          () -> getConfigurationService().deleteXmlEntity(xmlEntity, onGroups));
     }
     return commandResult;
   }

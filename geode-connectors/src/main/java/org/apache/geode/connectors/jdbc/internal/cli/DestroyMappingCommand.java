@@ -104,7 +104,7 @@ public class DestroyMappingCommand extends GfshCommand {
   private void updateClusterConfiguration(final Result result, final XmlEntity xmlEntity) {
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, null));
+          () -> getConfigurationService().addXmlEntity(xmlEntity, null));
     }
   }
 }

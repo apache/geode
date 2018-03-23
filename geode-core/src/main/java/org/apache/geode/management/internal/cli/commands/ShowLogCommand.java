@@ -20,9 +20,8 @@ import javax.management.ObjectName;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -46,11 +45,8 @@ public class ShowLogCommand extends GfshCommand {
           help = CliStrings.SHOW_LOG_MEMBER_HELP, mandatory = true) String memberNameOrId,
       @CliOption(key = CliStrings.SHOW_LOG_LINE_NUM, unspecifiedDefaultValue = "0",
           help = CliStrings.SHOW_LOG_LINE_NUM_HELP) int numberOfLines) {
-    Result result;
-
-    InternalCache cache = getCache();
     DistributedMember targetMember = getMember(memberNameOrId);
-    MemberMXBean targetMemberMXBean = getMemberMxBean(cache, targetMember);
+    MemberMXBean targetMemberMXBean = getMemberMxBean(targetMember);
 
     if (numberOfLines > ManagementConstants.MAX_SHOW_LOG_LINES) {
       numberOfLines = ManagementConstants.MAX_SHOW_LOG_LINES;
@@ -76,11 +72,10 @@ public class ShowLogCommand extends GfshCommand {
     return ResultBuilder.buildResult(resultData);
   }
 
-  public MemberMXBean getMemberMxBean(InternalCache cache, DistributedMember targetMember) {
-    SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+  public MemberMXBean getMemberMxBean(DistributedMember targetMember) {
+    SystemManagementService service = (SystemManagementService) getManagementService();
 
-    if (cache.getDistributedSystem().getDistributedMember().equals(targetMember)) {
+    if (getCache().getDistributedSystem().getDistributedMember().equals(targetMember)) {
       return service.getMemberMXBean();
     } else {
       ObjectName objectName = service.getMemberMBeanName(targetMember);

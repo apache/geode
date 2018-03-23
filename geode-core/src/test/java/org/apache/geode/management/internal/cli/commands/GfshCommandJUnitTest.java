@@ -64,14 +64,14 @@ public class GfshCommandJUnitTest {
 
   @Test
   public void persistClusterConfiguration() throws Exception {
-    when(command.getSharedConfiguration()).thenReturn(null);
+    when(command.getConfigurationService()).thenReturn(null);
     Result result = ResultBuilder.createInfoResult("info");
     Runnable runnable = mock(Runnable.class);
 
     command.persistClusterConfiguration(result, runnable);
     assertThat(result.failedToPersist()).isTrue();
 
-    when(command.getSharedConfiguration()).thenReturn(clusterConfigurationService);
+    when(command.getConfigurationService()).thenReturn(clusterConfigurationService);
     command.persistClusterConfiguration(result, runnable);
     assertThat(result.failedToPersist()).isFalse();
   }

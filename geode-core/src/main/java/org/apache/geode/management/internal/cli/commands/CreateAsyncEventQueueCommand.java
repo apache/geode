@@ -89,8 +89,8 @@ public class CreateAsyncEventQueueCommand extends GfshCommand {
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE__HELP) String[] listenerParamsAndValues) {
 
     if (persistent) {
-      getSecurityService().authorize(ResourcePermission.Resource.CLUSTER,
-          ResourcePermission.Operation.WRITE, ResourcePermission.Target.DISK);
+      authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
+          ResourcePermission.Target.DISK);
     }
     Properties listenerProperties = new Properties();
 
@@ -124,7 +124,7 @@ public class CreateAsyncEventQueueCommand extends GfshCommand {
     XmlEntity xmlEntity = findXmlEntity(results);
     if (xmlEntity != null) {
       persistClusterConfiguration(commandResult,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, groups));
+          () -> getConfigurationService().addXmlEntity(xmlEntity, groups));
     }
     return commandResult;
   }

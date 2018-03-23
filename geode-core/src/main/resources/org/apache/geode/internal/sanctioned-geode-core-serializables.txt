@@ -123,6 +123,7 @@ org/apache/geode/cache/client/internal/pooling/ConnectionDestroyedException,true
 org/apache/geode/cache/configuration/EnumActionDestroyOverflow,false,value:java/lang/String
 org/apache/geode/cache/configuration/EnumReadableWritable,false,value:java/lang/String
 org/apache/geode/cache/configuration/JndiBindingsType$JndiBinding,false,blockingTimeoutSeconds:java/lang/String,configProperty:java/util/List,connPooledDatasourceClass:java/lang/String,connectionUrl:java/lang/String,idleTimeoutSeconds:java/lang/String,initPoolSize:java/lang/String,jdbcDriverClass:java/lang/String,jndiName:java/lang/String,loginTimeoutSeconds:java/lang/String,managedConnFactoryClass:java/lang/String,maxPoolSize:java/lang/String,password:java/lang/String,transactionType:java/lang/String,type:java/lang/String,userName:java/lang/String,xaDatasourceClass:java/lang/String
+org/apache/geode/cache/configuration/JndiBindingsType$JndiBinding$ConfigProperty,false,configPropertyName:java/lang/String,configPropertyType:java/lang/String,configPropertyValue:java/lang/String
 org/apache/geode/cache/configuration/RegionAttributesDataPolicy,false,value:java/lang/String
 org/apache/geode/cache/configuration/RegionAttributesIndexUpdateType,false,value:java/lang/String
 org/apache/geode/cache/configuration/RegionAttributesMirrorType,false,value:java/lang/String
@@ -316,7 +317,7 @@ org/apache/geode/internal/cache/partitioned/PRLocallyDestroyedException,true,-12
 org/apache/geode/internal/cache/partitioned/PartitionMemberInfoImpl,true,8245020687604034289,bucketCount:int,configuredMaxMemory:long,distributedMember:org/apache/geode/distributed/DistributedMember,primaryCount:int,size:long
 org/apache/geode/internal/cache/partitioned/PartitionRegionInfoImpl,true,6462414089469761476,actualRedundantCopies:int,colocatedWith:java/lang/String,configuredBucketCount:int,configuredRedundantCopies:int,createdBucketCount:int,lowRedundancyBucketCount:int,memberDetails:java/util/Set,offlineMembers:org/apache/geode/internal/cache/partitioned/OfflineMemberDetails,regionPath:java/lang/String
 org/apache/geode/internal/cache/partitioned/RedundancyAlreadyMetException,true,-1876426827930995062
-org/apache/geode/internal/cache/partitioned/rebalance/PartitionedRegionLoadModel$RefusalReason,false
+org/apache/geode/internal/cache/partitioned/rebalance/model/RefusalReason,false
 org/apache/geode/internal/cache/persistence/OplogType,false,prefix:java/lang/String
 org/apache/geode/internal/cache/persistence/PersistentMemberState,false
 org/apache/geode/internal/cache/snapshot/ClientExporter$ClientArgs,true,1,options:org/apache/geode/cache/snapshot/SnapshotOptions,prSingleHop:boolean,region:java/lang/String

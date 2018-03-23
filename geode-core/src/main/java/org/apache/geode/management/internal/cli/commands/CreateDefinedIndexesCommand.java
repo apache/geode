@@ -153,7 +153,7 @@ public class CreateDefinedIndexesCommand extends GfshCommand {
 
     for (XmlEntity xmlEntity : xmlEntities) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, group));
+          () -> getConfigurationService().addXmlEntity(xmlEntity, group));
     }
 
     return result;

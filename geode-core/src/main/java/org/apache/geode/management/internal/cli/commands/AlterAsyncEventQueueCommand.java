@@ -85,7 +85,7 @@ public class AlterAsyncEventQueueCommand extends GfshCommand {
 
     // need not check if any running servers has this async-event-queue. A server with this queue id
     // may be shutdown, but we still need to update Cluster Configuration.
-    InternalClusterConfigurationService service = getSharedConfiguration();
+    InternalClusterConfigurationService service = getConfigurationService();
 
     if (service == null) {
       return ResultBuilder.createUserErrorResult("Cluster Configuration Service is not available. "

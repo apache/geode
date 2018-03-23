@@ -65,7 +65,7 @@ public class CompactDiskStoreCommand extends GfshCommand {
             CliStrings.format(CliStrings.COMPACT_DISK_STORE__DISKSTORE_0_DOES_NOT_EXIST,
                 new Object[] {diskStoreName}));
       } else {
-        InternalDistributedSystem ds = getCache().getInternalDistributedSystem();
+        InternalDistributedSystem ds = ((InternalCache) getCache()).getInternalDistributedSystem();
 
         Map<DistributedMember, PersistentID> overallCompactInfo = new HashMap<>();
 
@@ -167,8 +167,7 @@ public class CompactDiskStoreCommand extends GfshCommand {
   }
 
   private boolean diskStoreExists(String diskStoreName) {
-    InternalCache cache = getCache();
-    ManagementService managementService = ManagementService.getExistingManagementService(cache);
+    ManagementService managementService = getManagementService();
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
     Map<String, String[]> diskstore = dsMXBean.listMemberDiskstore();
 

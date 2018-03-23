@@ -25,6 +25,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -43,7 +44,8 @@ public class ListDiskStoresCommand extends GfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public Result listDiskStores() {
-    Set<DistributedMember> dataMembers = DiskStoreCommandsUtils.getNormalMembers(getCache());
+    Set<DistributedMember> dataMembers =
+        DiskStoreCommandsUtils.getNormalMembers((InternalCache) getCache());
 
     if (dataMembers.isEmpty()) {
       return ResultBuilder.createInfoResult(CliStrings.NO_CACHING_MEMBERS_FOUND_MESSAGE);

@@ -34,9 +34,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -162,16 +160,16 @@ public class ShowLogCommandDUnitTest implements Serializable {
 
   private static boolean allMembersAreConnected() {
     return manager.getVM().invoke(() -> {
-      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
       DistributedMember server1 =
           CliUtil.getDistributedMemberByNameOrId(SERVER1_NAME, ClusterStartupRule.getCache());
       DistributedMember server2 =
           CliUtil.getDistributedMemberByNameOrId(SERVER2_NAME, ClusterStartupRule.getCache());
 
       ShowLogCommand showLogCommand = new ShowLogCommand();
+      showLogCommand.setCache(ClusterStartupRule.getCache());
 
-      boolean server1isConnected = showLogCommand.getMemberMxBean(cache, server1) != null;
-      boolean server2isConnected = showLogCommand.getMemberMxBean(cache, server2) != null;
+      boolean server1isConnected = showLogCommand.getMemberMxBean(server1) != null;
+      boolean server2isConnected = showLogCommand.getMemberMxBean(server2) != null;
       return server1isConnected && server2isConnected;
     });
   }

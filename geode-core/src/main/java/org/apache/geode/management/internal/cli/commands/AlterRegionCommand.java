@@ -91,9 +91,10 @@ public class AlterRegionCommand extends GfshCommand {
       @CliOption(key = CliStrings.ALTER_REGION__EVICTIONMAX, specifiedDefaultValue = "0",
           help = CliStrings.ALTER_REGION__EVICTIONMAX__HELP) Integer evictionMax) {
     Result result;
-    getSecurityService().authorize(Resource.DATA, Operation.MANAGE, regionPath);
 
-    InternalCache cache = getCache();
+    authorize(Resource.DATA, Operation.MANAGE, regionPath);
+
+    InternalCache cache = (InternalCache) getCache();
 
     if (groups != null) {
       RegionCommandsUtils.validateGroups(cache, groups);
@@ -136,7 +137,7 @@ public class AlterRegionCommand extends GfshCommand {
     XmlEntity xmlEntity = findXmlEntity(regionAlterResults);
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, groups));
+          () -> getConfigurationService().addXmlEntity(xmlEntity, groups));
     }
     return result;
   }

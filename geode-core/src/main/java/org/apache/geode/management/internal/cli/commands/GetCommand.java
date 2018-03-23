@@ -25,6 +25,7 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -55,8 +56,8 @@ public class GetCommand extends GfshCommand {
           specifiedDefaultValue = "true",
           help = CliStrings.GET__LOAD__HELP) Boolean loadOnCacheMiss) {
 
-    InternalCache cache = getCache();
-    cache.getSecurityService().authorize(Resource.DATA, Operation.READ, regionPath, key);
+    Cache cache = getCache();
+    authorize(Resource.DATA, Operation.READ, regionPath, key);
     DataCommandResult dataResult;
 
     @SuppressWarnings("rawtypes")
@@ -72,7 +73,7 @@ public class GetCommand extends GfshCommand {
         request.setRegionName(regionPath);
         request.setValueClass(valueClass);
         request.setLoadOnCacheMiss(loadOnCacheMiss);
-        Subject subject = cache.getSecurityService().getSubject();
+        Subject subject = getSubject();
         if (subject != null) {
           request.setPrincipal(subject.getPrincipal());
         }
@@ -83,7 +84,8 @@ public class GetCommand extends GfshCommand {
             false);
       }
     } else {
-      dataResult = getfn.get(null, key, keyClass, valueClass, regionPath, loadOnCacheMiss, cache);
+      dataResult = getfn.get(null, key, keyClass, valueClass, regionPath, loadOnCacheMiss,
+          (InternalCache) cache);
     }
     dataResult.setKeyClass(keyClass);
     if (valueClass != null) {
