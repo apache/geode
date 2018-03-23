@@ -88,6 +88,22 @@ public class AuthorizingCacheImplTest {
   }
 
   @Test
+  public void getAllWithRegionLevelAuthorizationSucceeds() throws Exception {
+    authorize(DATA, READ, REGION, ALL);
+    Map<Object, Object> okValues = new HashMap<>();
+    Map<Object, Exception> exceptionValues = new HashMap<>();
+
+    when(region.get("b")).thenReturn("existing value");
+
+    authorizingCache.getAll(REGION, Arrays.asList("a", "b"), okValues::put, exceptionValues::put);
+
+    verify(region).get("a");
+    verify(region).get("b");
+    assertThat(okValues).containsOnly(entry("a", null), entry("b", "existing value"));
+    assertThat(exceptionValues).isEmpty();
+  }
+
+  @Test
   public void getAllWithFailure() throws Exception {
     authorize(DATA, READ, REGION, "b");
     Map<Object, Object> okValues = new HashMap<>();
@@ -140,6 +156,22 @@ public class AuthorizingCacheImplTest {
   public void putAll() throws Exception {
     authorize(DATA, WRITE, REGION, "a");
     authorize(DATA, WRITE, REGION, "c");
+    Map<Object, Object> entries = new HashMap<>();
+    entries.put("a", "b");
+    entries.put("c", "d");
+
+    Map<Object, Exception> exceptionValues = new HashMap<>();
+
+    authorizingCache.putAll(REGION, entries, exceptionValues::put);
+
+    verify(region).put("a", "b");
+    verify(region).put("c", "d");
+    assertThat(exceptionValues).isEmpty();
+  }
+
+  @Test
+  public void putAllWithRegionLevelAuthorizationSucceeds() throws Exception {
+    authorize(DATA, WRITE, REGION, ALL);
     Map<Object, Object> entries = new HashMap<>();
     entries.put("a", "b");
     entries.put("c", "d");

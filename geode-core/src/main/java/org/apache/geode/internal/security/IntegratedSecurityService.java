@@ -229,6 +229,11 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     Subject currentUser = getSubject();
+    authorize(context, currentUser);
+  }
+
+  @Override
+  public void authorize(ResourcePermission context, Subject currentUser) {
     try {
       currentUser.checkPermission(context);
     } catch (ShiroException e) {

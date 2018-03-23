@@ -59,6 +59,8 @@ public interface SecurityService {
 
   default void authorize(ResourcePermission context) {}
 
+  default void authorize(ResourcePermission context, Subject currentUser) {};
+
   default void close() {}
 
   default boolean needPostProcess() {

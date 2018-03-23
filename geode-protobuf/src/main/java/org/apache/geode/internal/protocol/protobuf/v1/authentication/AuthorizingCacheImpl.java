@@ -35,6 +35,8 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission;
 
 public class AuthorizingCacheImpl implements AuthorizingCache {
   protected final InternalCache cache;
@@ -50,13 +52,15 @@ public class AuthorizingCacheImpl implements AuthorizingCache {
   @Override
   public <K, V> void getAll(String regionName, Iterable<K> keys, BiConsumer<K, V> successConsumer,
       BiConsumer<K, Exception> failureConsumer) {
-    // TODO - this is doing a very inefficient get for each key
-
     Region<K, V> region = getRegion(regionName);
+
+    boolean authorized = tryAuthorizeAllKeys(DATA, READ, regionName);
 
     keys.forEach(key -> {
       try {
-        authorizer.authorize(DATA, READ, regionName, key);
+        if (!authorized) {
+          authorizer.authorize(DATA, READ, regionName, key);
+        }
         V value = (V) region.get(key);
         successConsumer.accept(key, value);
       } catch (Exception e) {
@@ -84,10 +88,14 @@ public class AuthorizingCacheImpl implements AuthorizingCache {
       BiConsumer<K, Exception> failureConsumer) {
     // TODO - this is doing a very inefficient put for each key
 
+    boolean authorized = tryAuthorizeAllKeys(DATA, WRITE, regionName);
+
     Region<K, V> region = getRegion(regionName);
     entries.forEach((key, value) -> {
       try {
-        authorizer.authorize(DATA, WRITE, regionName, key);
+        if (!authorized) {
+          authorizer.authorize(DATA, WRITE, regionName, key);
+        }
         region.put(key, value);
       } catch (Exception e) {
         failureConsumer.accept(key, e);
@@ -167,5 +175,20 @@ public class AuthorizingCacheImpl implements AuthorizingCache {
       throw new RegionDestroyedException("Region not found " + regionName, regionName);
     }
     return region;
+  }
+
+  /**
+   * Try to authorize the user for all keys.
+   *
+   * @return true if the user is authorized for all keys
+   */
+  private boolean tryAuthorizeAllKeys(ResourcePermission.Resource resource,
+      ResourcePermission.Operation operation, String regionName) {
+    try {
+      authorizer.authorize(resource, operation, regionName, ALL);
+      return true;
+    } catch (NotAuthorizedException e) {
+      return false;
+    }
   }
 }

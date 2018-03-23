@@ -31,11 +31,6 @@ public class ShiroAuthorizer implements Authorizer {
 
   @Override
   public void authorize(ResourcePermission permission) {
-    ThreadState threadState = securityService.bindSubject(subject);
-    try {
-      securityService.authorize(permission);
-    } finally {
-      threadState.restore();
-    }
+    securityService.authorize(permission, subject);
   }
 }
