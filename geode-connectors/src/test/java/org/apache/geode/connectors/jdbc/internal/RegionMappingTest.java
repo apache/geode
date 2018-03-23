@@ -326,6 +326,28 @@ public class RegionMappingTest {
   }
 
   @Test
+  public void returnsCachedFieldNameForColumn() {
+    fieldMap.put(fieldName1, columnName1);
+    mapping = new RegionMapping(null, null, null, null, true, fieldMap);
+    TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
+
+    mapping.getColumnNameForField(fieldName1, tableMetaDataView);
+
+    assertThat(mapping.getFieldNameForColumn(columnName1, null)).isEqualTo(fieldName1);
+  }
+
+  @Test
+  public void returnsCachedColumnNameForField() {
+    fieldMap.put(fieldName1, columnName1);
+    mapping = new RegionMapping(null, null, null, null, true, fieldMap);
+    mapping.getFieldNameForColumn(columnName1, null);
+
+    TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
+
+    assertThat(mapping.getColumnNameForField(fieldName1, tableMetaDataView)).isEqualTo(columnName1);
+  }
+
+  @Test
   public void returnsAllMappings() {
     fieldMap.put(fieldName1, columnName1);
     fieldMap.put(fieldName2, columnName2);
@@ -405,6 +427,60 @@ public class RegionMappingTest {
     mapping = new RegionMapping(null, null, null, null, false, null);
     boolean result = mapping.equals("not equal");
     assertThat(result).isFalse();
+  }
+
+  @Test
+  public void verifyMappingWithDifferentRegionNamesAreNotEqual() {
+    RegionMapping rm1 = new RegionMapping(null, null, null, null, false, null);
+    RegionMapping rm2 = new RegionMapping("name", null, null, null, false, null);
+    boolean result = rm1.equals(rm2);
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  public void verifyMappingWithDifferentPdxClassNameAreNotEqual() {
+    RegionMapping rm1 = new RegionMapping(null, null, null, null, false, null);
+    RegionMapping rm2 = new RegionMapping(null, "pdxClass", null, null, false, null);
+    boolean result = rm1.equals(rm2);
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  public void verifyMappingWithDifferentFieldMappingAreNotEqual() {
+    Map<String, String> fieldMap1 = new HashMap<>();
+    Map<String, String> fieldMap2 = new HashMap<>();
+    fieldMap1.put(fieldName1, columnName1);
+    fieldMap2.put(fieldName2, columnName2);
+
+    RegionMapping rm1 = new RegionMapping("name", "pdxClass", "tname", "cc", true, fieldMap1);
+    RegionMapping rm2 = new RegionMapping("name", "pdxClass", "tname", "cc", true, fieldMap2);
+    boolean result = rm1.equals(rm2);
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  public void verifyMappingWithOneFieldMappingNullAreNotEqual() {
+    Map<String, String> fieldMap1 = new HashMap<>();
+
+    RegionMapping rm1 = new RegionMapping("name", "pdxClass", "tname", "cc", true, fieldMap1);
+    RegionMapping rm2 = new RegionMapping("name", "pdxClass", "tname", "cc", true, null);
+    boolean result = rm1.equals(rm2);
+    assertThat(result).isFalse();
+
+    rm1 = new RegionMapping("name", "pdxClass", "tname", "cc", true, null);
+    rm2 = new RegionMapping("name", "pdxClass", "tname", "cc", true, fieldMap1);
+    result = rm1.equals(rm2);
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  public void verifyToStringForExpectedMessage() {
+    mapping = new RegionMapping("name", "pdxClass", "tname", "cc", true, null);
+
+    String result = mapping.toString();
+    System.out.println("DEBUG:" + result);
+
+    assertThat(result).contains("RegionMapping{regionName='");
   }
 
 }
