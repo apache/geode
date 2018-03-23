@@ -61,8 +61,8 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
 
   @Override
   public boolean equals(Object other) {
-    return other instanceof SortedStructSet && this.structType
-        .equals(((SortedStructSet) other).structType) && super.equals(other);
+    return other instanceof SortedStructSet
+        && this.structType.equals(((SortedStructSet) other).structType) && super.equals(other);
   }
 
   /** Add a Struct */
