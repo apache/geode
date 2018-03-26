@@ -90,8 +90,9 @@ import org.apache.geode.test.junit.categories.GfshTest;
  */
 @Category({DistributedTest.class, FlakyTest.class, GfshTest.class}) // GEODE-1182 GEODE-1249
                                                                     // GEODE-1404 GEODE-1430
-// GEODE-1487 GEODE-1496 GEODE-1561 GEODE-1822
-// GEODE-2006 GEODE-3530
+                                                                    // GEODE-1487 GEODE-1496
+                                                                    // GEODE-1561 GEODE-1822
+                                                                    // GEODE-2006 GEODE-3530
 @SuppressWarnings("serial")
 public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
