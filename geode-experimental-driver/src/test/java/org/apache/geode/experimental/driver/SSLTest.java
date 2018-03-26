@@ -52,11 +52,15 @@ public class SSLTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
-  private final String SERVER_KEY_STORE = TestUtil.getResourcePath(SSLTest.class, "cacheserver.keystore");
-  private final String SERVER_TRUST_STORE = TestUtil.getResourcePath(SSLTest.class, "cacheserver.truststore");
+  private final String SERVER_KEY_STORE =
+      TestUtil.getResourcePath(SSLTest.class, "cacheserver.keystore");
+  private final String SERVER_TRUST_STORE =
+      TestUtil.getResourcePath(SSLTest.class, "cacheserver.truststore");
 
-  private final String CLIENT_KEY_STORE = TestUtil.getResourcePath(SSLTest.class, "client.keystore");
-  private final String CLIENT_TRUST_STORE = TestUtil.getResourcePath(SSLTest.class, "client.truststore");
+  private final String CLIENT_KEY_STORE =
+      TestUtil.getResourcePath(SSLTest.class, "client.keystore");
+  private final String CLIENT_TRUST_STORE =
+      TestUtil.getResourcePath(SSLTest.class, "client.truststore");
   private Locator locator;
   private Cache cache;
   private Driver driver;
@@ -112,9 +116,7 @@ public class SSLTest {
     server.setPort(0);
     server.start();
     driver = new DriverFactory().addLocator("localhost", locatorPort)
-        .setTrustStorePath(CLIENT_TRUST_STORE)
-        .setKeyStorePath(CLIENT_KEY_STORE)
-        .create();
+        .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
     assertEquals(Collections.singleton("region"), regionsOnServer);
     assertTrue(driver.isConnected());
