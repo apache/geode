@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.examples;
 
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.TimeUnit;
@@ -23,7 +24,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -37,14 +37,14 @@ public class AsyncInvokeCallableExampleTest {
 
   @Test
   public void invokeAsyncAsFuture() throws Exception {
-    VM workerVM = Host.getHost(0).getVM(0);
+    VM workerVM = getVM(0);
     boolean success = workerVM.invokeAsync(() -> longRunningWorkWithResult()).get();
     assertThat(success).isTrue();
   }
 
   @Test
   public void invokeAsyncAsFutureWithTimeout() throws Exception {
-    VM workerVM = Host.getHost(0).getVM(0);
+    VM workerVM = getVM(0);
     boolean success =
         workerVM.invokeAsync(() -> longRunningWorkWithResult()).get(1, TimeUnit.MINUTES);
     assertThat(success).isTrue();
@@ -52,7 +52,7 @@ public class AsyncInvokeCallableExampleTest {
 
   @Test
   public void invokeAsyncWithExceptionOccurred() throws Exception {
-    VM workerVM = Host.getHost(0).getVM(0);
+    VM workerVM = getVM(0);
 
     AsyncInvocation<Boolean> asyncInvocation =
         workerVM.invokeAsync(() -> longRunningWorkThatThrowsException());
@@ -68,7 +68,7 @@ public class AsyncInvokeCallableExampleTest {
    */
   @Test(expected = AssertionError.class)
   public void invokeAsyncWithAwait() throws Exception {
-    Host.getHost(0).getVM(0).invokeAsync(() -> longRunningWorkThatThrowsException()).await();
+    getVM(0).invokeAsync(() -> longRunningWorkThatThrowsException()).await();
   }
 
   /**
@@ -77,8 +77,7 @@ public class AsyncInvokeCallableExampleTest {
    */
   @Test(expected = AssertionError.class)
   public void invokeAsyncWithAwaitWithTimeout() throws Exception {
-    Host.getHost(0).getVM(0).invokeAsync(() -> longRunningWorkThatThrowsException()).await(1,
-        TimeUnit.MINUTES);
+    getVM(0).invokeAsync(() -> longRunningWorkThatThrowsException()).await(1, TimeUnit.MINUTES);
   }
 
   private static boolean longRunningWorkWithResult() {

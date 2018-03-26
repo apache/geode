@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.ExpirationAction.INVALIDATE;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.Is.is;
@@ -82,7 +82,7 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    otherVM = getHost(0).getVM(0);
+    otherVM = getVM(0);
 
     otherVM.invoke(() -> {
       RegionFactory<String, String> regionFactory =

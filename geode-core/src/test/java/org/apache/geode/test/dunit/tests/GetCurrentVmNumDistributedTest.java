@@ -12,8 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.examples;
+package org.apache.geode.test.dunit.tests;
 
+import static org.apache.geode.test.dunit.VM.CONTROLLER_VM;
+import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
+import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,13 +29,21 @@ import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class DistributedTestRuleExampleTest {
+public class GetCurrentVmNumDistributedTest {
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Test
-  public void shouldHaveFourDUnitVMsByDefault() throws Exception {
-    assertThat(getVMCount()).isEqualTo(4);
+  public void returnsNegativeOneInController() {
+    assertThat(getCurrentVMNum()).isEqualTo(CONTROLLER_VM);
+  }
+
+  @Test
+  public void returnsWhichVmInVm() {
+    assertThat(getVMCount()).isGreaterThanOrEqualTo(DEFAULT_VM_COUNT);
+    for (int i = 0; i < getVMCount(); i++) {
+      assertThat(getVM(i).invoke(() -> getCurrentVMNum())).isEqualTo(i).isNotEqualTo(CONTROLLER_VM);
+    }
   }
 }

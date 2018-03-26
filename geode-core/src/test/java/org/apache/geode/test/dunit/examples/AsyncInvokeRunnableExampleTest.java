@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.dunit.examples;
 
+import static org.apache.geode.test.dunit.VM.getAllVMs;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +24,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -36,7 +37,7 @@ public class AsyncInvokeRunnableExampleTest {
 
   @Test
   public void invokeAsyncHelloWorldInEachVM() throws Exception {
-    for (VM vm : Host.getHost(0).getAllVMs()) {
+    for (VM vm : getAllVMs()) {
       vm.invokeAsync(() -> System.out.println(vm + " says Hello World!"));
     }
   }
@@ -44,7 +45,7 @@ public class AsyncInvokeRunnableExampleTest {
   @Test
   public void invokeAsyncHelloWorldInEachVMWithAwait() throws Exception {
     List<AsyncInvocation> invocations = new ArrayList<>();
-    for (VM vm : Host.getHost(0).getAllVMs()) {
+    for (VM vm : getAllVMs()) {
       AsyncInvocation invocation =
           vm.invokeAsync(() -> System.out.println(vm + " says Hello World!"));
       invocations.add(invocation);
