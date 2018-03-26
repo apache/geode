@@ -14,10 +14,12 @@
  */
 package org.apache.geode.experimental.driver;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
@@ -66,7 +68,7 @@ public class SSLTest {
 
     // Create a cache
     Properties properties = new Properties();
-    properties.put(SSL_ENABLED_COMPONENTS, "server,locator");
+    properties.put(SSL_ENABLED_COMPONENTS, "all");
     properties.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(true));
     properties.put(SSL_KEYSTORE_TYPE, "jks");
     properties.put(SSL_KEYSTORE, SERVER_KEY_STORE);
@@ -74,13 +76,14 @@ public class SSLTest {
     properties.put(SSL_TRUSTSTORE, SERVER_TRUST_STORE);
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
+
     CacheFactory cf = new CacheFactory(properties);
     cf.set(ConfigurationProperties.MCAST_PORT, "0");
     cache = cf.create();
     cache.createRegionFactory(RegionShortcut.REPLICATE).create("region");
 
     // Start a locator
-    locator = Locator.startLocatorAndDS(0, null, null);
+    locator = Locator.startLocatorAndDS(0, null, properties);
     locatorPort = locator.getPort();
 
     // do not start a cache server
@@ -88,8 +91,8 @@ public class SSLTest {
 
   @After
   public void cleanup() {
-    locator.stop();
     cache.close();
+    locator.stop();
   }
 
   @Test
