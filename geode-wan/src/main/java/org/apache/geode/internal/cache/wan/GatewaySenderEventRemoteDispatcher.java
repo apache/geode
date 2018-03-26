@@ -78,10 +78,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     try {
       initializeConnection();
     } catch (GatewaySenderException e) {
-      if (e.getCause() instanceof GemFireSecurityException) {
-        throw e;
-      }
-
+      // It is ok to ignore this exception. It is logged in the initializeConnection call.
     }
   }
 
@@ -168,7 +165,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         // if our pool is shutdown then just be silent
       } else if (t instanceof IOException || t instanceof ServerConnectivityException
           || t instanceof ConnectionDestroyedException || t instanceof MessageTooLargeException
-          || t instanceof IllegalStateException) {
+          || t instanceof IllegalStateException || t instanceof GemFireSecurityException) {
         this.processor.handleException();
         // If the cause is an IOException or a ServerException, sleep and retry.
         // Sleep for a bit and recheck.
@@ -431,58 +428,29 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
           }
         }
       } catch (ServerConnectivityException e) {
-        this.failedConnectCount++;
-        Throwable ex = null;
+        // Get the exception to throw
+        GatewaySenderException gse = getInitializeConnectionExceptionToThrow(e);
 
-        if (e.getCause() instanceof GemFireSecurityException) {
-          ex = e.getCause();
-          if (logConnectionFailure()) {
-            // only log this message once; another msg is logged once we connect
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.GatewayEventRemoteDispatcher_0_COULD_NOT_CONNECT_1,
-                new Object[] {this.processor.getSender().getId(), ex.getMessage()}));
-          }
-          throw new GatewaySenderException(ex);
-        }
-        List<ServerLocation> servers = this.sender.getProxy().getCurrentServers();
-        String ioMsg = null;
-        if (servers.size() == 0) {
-          ioMsg = LocalizedStrings.GatewayEventRemoteDispatcher_THERE_ARE_NO_ACTIVE_SERVERS
-              .toLocalizedString();
-        } else {
-          final StringBuilder buffer = new StringBuilder();
-          for (ServerLocation server : servers) {
-            String endpointName = String.valueOf(server);
-            if (buffer.length() > 0) {
-              buffer.append(", ");
-            }
-            buffer.append(endpointName);
-          }
-          ioMsg =
-              LocalizedStrings.GatewayEventRemoteDispatcher_NO_AVAILABLE_CONNECTION_WAS_FOUND_BUT_THE_FOLLOWING_ACTIVE_SERVERS_EXIST_0
-                  .toLocalizedString(buffer.toString());
-        }
-        ex = new IOException(ioMsg);
-        // Set the serverLocation to null so that a new connection can be
-        // obtained in next attempt
+        // Set the serverLocation to null so that a new connection can be obtained in next attempt
         this.sender.setServerLocation(null);
-        if (this.failedConnectCount == 1) {
+
+        // Log the exception if necessary
+        if (logConnectionFailure()) {
           // only log this message once; another msg is logged once we connect
           logger.warn(LocalizedMessage.create(
-              LocalizedStrings.GatewayEventRemoteDispatcher__0___COULD_NOT_CONNECT,
-              this.processor.getSender().getId()));
-
+              LocalizedStrings.GatewayEventRemoteDispatcher_0_COULD_NOT_CONNECT_1,
+              new Object[] {this.processor.getSender().getId(), gse.getCause().getMessage()}));
         }
-        // Wrap the IOException in a GatewayException so it can be processed the
-        // same as the other exceptions that might occur in sendBatch.
-        throw new GatewaySenderException(
-            LocalizedStrings.GatewayEventRemoteDispatcher__0___COULD_NOT_CONNECT
-                .toLocalizedString(this.processor.getSender().getId()),
-            ex);
+
+        // Increment failed connection count
+        this.failedConnectCount++;
+
+        // Throw the exception
+        throw gse;
       }
       if (this.failedConnectCount > 0) {
-        Object[] logArgs = new Object[] {this.processor.getSender().getId(), con,
-            Integer.valueOf(this.failedConnectCount)};
+        Object[] logArgs =
+            new Object[] {this.processor.getSender().getId(), con, this.failedConnectCount};
         logger.info(LocalizedMessage.create(
             LocalizedStrings.GatewayEventRemoteDispatcher_0_USING_1_AFTER_2_FAILED_CONNECT_ATTEMPTS,
             logArgs));
@@ -496,12 +464,45 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       this.processor.checkIfPdxNeedsResend(this.connection.getQueueStatus().getPdxSize());
     } catch (ConnectionDestroyedException e) {
       throw new GatewaySenderException(
-          LocalizedStrings.GatewayEventRemoteDispatcher__0___COULD_NOT_CONNECT
-              .toLocalizedString(this.processor.getSender().getId()),
+          LocalizedStrings.GatewayEventRemoteDispatcher_0_COULD_NOT_CONNECT_1.toLocalizedString(
+              new Object[] {this.processor.getSender().getId(), e.getMessage()}),
           e);
     } finally {
       this.connectionLifeCycleLock.writeLock().unlock();
     }
+  }
+
+  private GatewaySenderException getInitializeConnectionExceptionToThrow(
+      ServerConnectivityException e) {
+    GatewaySenderException gse = null;
+    if (e.getCause() instanceof GemFireSecurityException) {
+      gse = new GatewaySenderException(e.getCause());
+    } else {
+      List<ServerLocation> servers = this.sender.getProxy().getCurrentServers();
+      String ioMsg;
+      if (servers.size() == 0) {
+        ioMsg = LocalizedStrings.GatewayEventRemoteDispatcher_THERE_ARE_NO_ACTIVE_SERVERS
+            .toLocalizedString();
+      } else {
+        final StringBuilder buffer = new StringBuilder();
+        for (ServerLocation server : servers) {
+          String endpointName = String.valueOf(server);
+          if (buffer.length() > 0) {
+            buffer.append(", ");
+          }
+          buffer.append(endpointName);
+        }
+        ioMsg =
+            LocalizedStrings.GatewayEventRemoteDispatcher_NO_AVAILABLE_CONNECTION_WAS_FOUND_BUT_THE_FOLLOWING_ACTIVE_SERVERS_EXIST_0
+                .toLocalizedString(buffer.toString());
+      }
+      IOException ex = new IOException(ioMsg);
+      gse = new GatewaySenderException(
+          LocalizedStrings.GatewayEventRemoteDispatcher_0_COULD_NOT_CONNECT_1.toLocalizedString(
+              new Object[] {this.processor.getSender().getId(), ex.getMessage()}),
+          ex);
+    }
+    return gse;
   }
 
   protected boolean logConnectionFailure() {

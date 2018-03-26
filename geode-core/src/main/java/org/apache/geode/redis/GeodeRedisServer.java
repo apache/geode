@@ -144,7 +144,6 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 @Experimental
 public class GeodeRedisServer {
-
   /**
    * Thread used to start main method
    */
@@ -236,7 +235,7 @@ public class GeodeRedisServer {
    * The field that defines the name of the {@link Region} which holds all of the Redis meta data.
    * The current value of this field is {@code REDIS_META_DATA_REGION}.
    */
-  public static final String REDIS_META_DATA_REGION = "__ReDiS_MeTa_DaTa";
+  public static final String REDIS_META_DATA_REGION = "ReDiS_MeTa_DaTa";
 
   /**
    * The system property name used to set the default {@link Region} creation type. The property
@@ -493,7 +492,6 @@ public class GeodeRedisServer {
         t.setDaemon(true);
         return t;
       }
-
     };
 
     ThreadFactory workerThreadFactory = new ThreadFactory() {
@@ -505,7 +503,6 @@ public class GeodeRedisServer {
         t.setName("GeodeRedisServer-WorkerThread-" + counter.incrementAndGet());
         return t;
       }
-
     };
 
     bossGroup = null;
@@ -596,7 +593,6 @@ public class GeodeRedisServer {
   }
 
   private class MetaCacheListener extends CacheListenerAdapter<String, RedisDataType> {
-
     @Override
     public void afterCreate(EntryEvent<String, RedisDataType> event) {
       afterKeyCreate(event);
@@ -735,5 +731,4 @@ public class GeodeRedisServer {
     }
     return logLevel;
   }
-
 }

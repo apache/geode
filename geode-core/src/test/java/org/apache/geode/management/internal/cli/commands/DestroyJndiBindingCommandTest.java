@@ -69,7 +69,7 @@ public class DestroyJndiBindingCommandTest {
     doReturn(cache).when(command).getCache();
     cacheConfig = mock(CacheConfig.class);
     ccService = mock(InternalClusterConfigurationService.class);
-    doReturn(ccService).when(command).getSharedConfiguration();
+    doReturn(ccService).when(command).getConfigurationService();
     when(ccService.getCacheConfig(any())).thenReturn(cacheConfig);
     doCallRealMethod().when(ccService).updateCacheConfig(any(), any());
     when(ccService.getConfigurationRegion()).thenReturn(mock(Region.class));
@@ -112,7 +112,7 @@ public class DestroyJndiBindingCommandTest {
   @Test
   public void whenNoMembersFoundAndNoClusterConfigServiceRunningThenError() {
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(null).when(command).getSharedConfiguration();
+    doReturn(null).when(command).getConfigurationService();
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .containsOutput("No members found").hasFailToPersistError();
@@ -143,7 +143,7 @@ public class DestroyJndiBindingCommandTest {
     results.add(result);
 
     doReturn(members).when(command).findMembers(any(), any());
-    doReturn(null).when(command).getSharedConfiguration();
+    doReturn(null).when(command).getConfigurationService();
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()

@@ -28,7 +28,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -45,7 +44,7 @@ import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeRegionCommand extends GfshCommand {
+public class DescribeRegionCommand extends InternalGfshCommand {
   public static final Logger logger = LogService.getLogger();
 
   private static final GetRegionDescriptionFunction getRegionDescription =
@@ -101,7 +100,6 @@ public class DescribeRegionCommand extends GfshCommand {
   }
 
   List<?> getFunctionResultFromMembers(String regionName) {
-    InternalCache cache = getCache();
     ResultCollector<?, ?> rc =
         executeFunction(getRegionDescription, regionName, getAllNormalMembers());
 

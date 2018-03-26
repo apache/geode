@@ -49,6 +49,7 @@ import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
+import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -234,7 +235,8 @@ public class ElementTypeTest {
     ElementType.FIELD_MAPPING.startElement(stack, attributes);
 
     RegionMapping regionMapping = ((RegionMappingBuilder) stack.pop()).build();
-    assertThat(regionMapping.getColumnNameForField("fieldName")).isEqualTo("columnName");
+    assertThat(regionMapping.getColumnNameForField("fieldName", mock(TableMetaDataView.class)))
+        .isEqualTo("columnName");
   }
 
   @Test

@@ -74,7 +74,7 @@ public class ConfigurePDXCommandTest {
     doReturn(xmlEntity).when(command).createXmlEntity(any());
     doReturn(cacheCreation).when(command).getCacheCreation(anyBoolean());
     doReturn(Collections.emptySet()).when(command).getAllNormalMembers();
-    doReturn(clusterConfigurationService).when(command).getSharedConfiguration();
+    doReturn(clusterConfigurationService).when(command).getConfigurationService();
   }
 
   @Test

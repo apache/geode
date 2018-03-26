@@ -39,13 +39,14 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunct
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -62,12 +63,12 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * The LuceneIndexCommands class encapsulates all Geode shell (Gfsh) commands related to Lucene
  * indexes defined in Geode.
  *
- * @see GfshCommand
+ * @see InternalGfshCommand
  * @see LuceneIndexDetails
  * @see LuceneListIndexFunction
  */
 @SuppressWarnings("unused")
-public class LuceneIndexCommands extends GfshCommand {
+public class LuceneIndexCommands extends InternalGfshCommand {
   private static final LuceneCreateIndexFunction createIndexFunction =
       new LuceneCreateIndexFunction();
   private static final LuceneDescribeIndexFunction describeIndexFunction =
@@ -85,7 +86,7 @@ public class LuceneIndexCommands extends GfshCommand {
       specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
       help = LuceneCliStrings.LUCENE_LIST_INDEX__STATS__HELP) final boolean stats) {
 
-    getSecurityService().authorize(Resource.CLUSTER, Operation.READ, LucenePermission.TARGET);
+    authorize(Resource.CLUSTER, Operation.READ, LucenePermission.TARGET);
     return toTabularResult(getIndexListing(), stats);
   }
 
@@ -171,9 +172,9 @@ public class LuceneIndexCommands extends GfshCommand {
 
     Result result;
     // Every lucene index potentially writes to disk.
-    getSecurityService().authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
+    authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
 
-    final InternalCache cache = getCache();
+    final InternalCache cache = (InternalCache) getCache();
 
     // trim fields for any leading trailing spaces.
     String[] trimmedFields = Arrays.stream(fields).map(String::trim).toArray(String[]::new);
@@ -199,7 +200,8 @@ public class LuceneIndexCommands extends GfshCommand {
     result = ResultBuilder.buildResult(tabularResult);
     if (xmlEntity != null) {
       persistClusterConfiguration(result, () -> {
-        getSharedConfiguration().addXmlEntity(xmlEntity, null);
+        ((InternalClusterConfigurationService) getConfigurationService()).addXmlEntity(xmlEntity,
+            null);
       });
     }
     return result;
@@ -217,7 +219,7 @@ public class LuceneIndexCommands extends GfshCommand {
           help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__REGION_HELP) final String regionPath)
       throws Exception {
 
-    getSecurityService().authorize(Resource.CLUSTER, Operation.READ, LucenePermission.TARGET);
+    authorize(Resource.CLUSTER, Operation.READ, LucenePermission.TARGET);
     LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath);
     return toTabularResult(getIndexDetails(indexInfo), true);
   }
@@ -259,7 +261,7 @@ public class LuceneIndexCommands extends GfshCommand {
           unspecifiedDefaultValue = "false",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly)
       throws Exception {
-    getSecurityService().authorize(Resource.DATA, Operation.READ, regionPath);
+    authorize(Resource.DATA, Operation.READ, regionPath);
     LuceneQueryInfo queryInfo =
         new LuceneQueryInfo(indexName, regionPath, queryString, defaultField, limit, keysOnly);
     int pageSize = Integer.MAX_VALUE;
@@ -283,7 +285,7 @@ public class LuceneIndexCommands extends GfshCommand {
           CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__INDEX_CANNOT_BE_EMPTY));
     }
 
-    getSecurityService().authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
+    authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
     Result result;
     List<CliFunctionResult> accumulatedResults = new ArrayList<>();
     final XmlEntity xmlEntity =
@@ -292,7 +294,8 @@ public class LuceneIndexCommands extends GfshCommand {
     if (xmlEntity != null) {
       persistClusterConfiguration(result, () -> {
         // Delete the xml entity to remove the index(es) in all groups
-        getSharedConfiguration().deleteXmlEntity(xmlEntity, null);
+        ((InternalClusterConfigurationService) getConfigurationService()).deleteXmlEntity(xmlEntity,
+            null);
       });
     }
 
@@ -316,7 +319,6 @@ public class LuceneIndexCommands extends GfshCommand {
     // region members. Then send the function to the remaining members to handle the case where
     // the index has been created, but not the region
     XmlEntity xmlEntity = null;
-    InternalCache cache = getCache();
     Set<DistributedMember> regionMembers = findMembersForRegion(regionPath);
     Set<DistributedMember> normalMembers = getAllNormalMembers();
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath);
@@ -497,7 +499,7 @@ public class LuceneIndexCommands extends GfshCommand {
   protected ResultCollector<?, ?> executeFunctionOnRegion(Function function,
       LuceneFunctionSerializable functionArguments, boolean returnAllMembers) {
     Set<DistributedMember> targetMembers = CliUtil.getRegionAssociatedMembers(
-        functionArguments.getRegionPath(), getCache(), returnAllMembers);
+        functionArguments.getRegionPath(), (InternalCache) getCache(), returnAllMembers);
     if (targetMembers.isEmpty()) {
       throw new UserErrorException(CliStrings.format(
           LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULDNOT_FIND_MEMBERS_FOR_REGION_0,

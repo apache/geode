@@ -23,9 +23,10 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -35,7 +36,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class DestroyMappingCommand extends GfshCommand {
+public class DestroyMappingCommand extends InternalGfshCommand {
   static final String DESTROY_MAPPING = "destroy jdbc-mapping";
   static final String DESTROY_MAPPING__HELP = EXPERIMENTAL + "Destroy the specified mapping.";
   static final String DESTROY_MAPPING__REGION_NAME = "region";
@@ -104,7 +105,8 @@ public class DestroyMappingCommand extends GfshCommand {
   private void updateClusterConfiguration(final Result result, final XmlEntity xmlEntity) {
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, null));
+          () -> ((InternalClusterConfigurationService) getConfigurationService())
+              .addXmlEntity(xmlEntity, null));
     }
   }
 }

@@ -60,7 +60,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class RebalanceCommand extends GfshCommand {
+public class RebalanceCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
@@ -81,8 +81,8 @@ public class RebalanceCommand extends GfshCommand {
     List<Future<Result>> commandResult = new ArrayList<>();
     Result result;
     try {
-      commandResult.add(commandExecutors.submit(
-          new ExecuteRebalanceWithTimeout(includeRegions, excludeRegions, simulate, getCache())));
+      commandResult.add(commandExecutors.submit(new ExecuteRebalanceWithTimeout(includeRegions,
+          excludeRegions, simulate, (InternalCache) getCache())));
 
       Future<Result> fs = commandResult.get(0);
       if (timeout > 0) {

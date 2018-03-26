@@ -21,13 +21,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({DistributedTest.class, WanTest.class})
@@ -66,31 +64,58 @@ public class WANSSLDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException("Unexpected IOException");
     IgnoredException.addIgnoredException("SSL Error");
     IgnoredException.addIgnoredException("Unrecognized SSL message");
-    try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      vm2.invoke(() -> WANTestBase.createReceiverWithSSL(nyPort));
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-      vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    vm2.invoke(() -> WANTestBase.createReceiverWithSSL(nyPort));
 
-      vm4.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
 
-      vm2.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    String senderId = "ln";
+    vm4.invoke(
+        () -> WANTestBase.createSender(senderId, 2, false, 100, 10, false, false, null, true));
 
-      vm4.invoke(() -> WANTestBase.startSender("ln"));
+    String regionName = getTestMethodName() + "_RR";
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, isOffHeap()));
 
-      vm4.invoke(
-          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm4.invoke(() -> WANTestBase.startSender(senderId));
 
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    // Verify the sender is started
+    vm4.invoke(() -> verifySenderRunningState(senderId));
 
-      vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-      fail("Expected exception as only Receiver is SSL enabled. Not Sender");
-    } catch (Exception e) {
-      assertTrue(e.getCause().getMessage().contains("Server expecting SSL connection"));
-    }
+    // Verify the sender is not connected
+    vm4.invoke(() -> verifySenderConnectedState(senderId, false));
+
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln", isOffHeap()));
+
+    // Do some puts in the sender
+    int numPuts = 10;
+    vm4.invoke(() -> WANTestBase.doPuts(regionName, numPuts));
+
+    // Verify the sender is still started
+    vm4.invoke(() -> verifySenderRunningState(senderId));
+
+    // Verify the sender is still not connected
+    vm4.invoke(() -> verifySenderConnectedState(senderId, false));
+
+    // Verify the sender queue size
+    vm4.invoke(() -> testQueueSize(senderId, numPuts));
+
+    // Stop the receiver
+    vm2.invoke(() -> closeCache());
+    vm2.invoke(() -> closeSocketCreatorFactory());
+
+    // Restart the receiver with SSL disabled
+    createCacheInVMs(nyPort, vm2);
+    vm2.invoke(() -> createReplicatedRegion(regionName, null, isOffHeap()));
+    vm2.invoke(() -> createReceiver());
+
+    // Wait for the queue to drain
+    vm4.invoke(() -> checkQueueSize(senderId, 0));
+
+    // Verify region size on receiver
+    vm2.invoke(() -> validateRegionSize(regionName, numPuts));
   }
 
   @Test
@@ -143,5 +168,9 @@ public class WANSSLDUnitTest extends WANTestBase {
       return true;
     }
     return false;
+  }
+
+  private void closeSocketCreatorFactory() {
+    SocketCreatorFactory.close();
   }
 }

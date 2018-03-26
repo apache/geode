@@ -22,6 +22,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -34,7 +35,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyDiskStoreCommand extends GfshCommand {
+public class DestroyDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.DESTROY_DISK_STORE, help = CliStrings.DESTROY_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -64,7 +65,8 @@ public class DestroyDiskStoreCommand extends GfshCommand {
 
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, groups));
+          () -> ((InternalClusterConfigurationService) getConfigurationService())
+              .deleteXmlEntity(xmlEntity, groups));
     }
 
     return result;

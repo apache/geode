@@ -37,6 +37,7 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -65,7 +66,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * Commands for the cluster configuration
  */
 @SuppressWarnings("unused")
-public class ExportImportClusterConfigurationCommands extends GfshCommand {
+public class ExportImportClusterConfigurationCommands extends InternalGfshCommand {
 
   @CliCommand(value = {CliStrings.EXPORT_SHARED_CONFIG},
       help = CliStrings.EXPORT_SHARED_CONFIG__HELP)
@@ -134,7 +135,8 @@ public class ExportImportClusterConfigurationCommands extends GfshCommand {
           help = CliStrings.IMPORT_SHARED_CONFIG__ZIP__HELP) String zip)
       throws IOException, TransformerException, SAXException, ParserConfigurationException {
 
-    InternalClusterConfigurationService sc = getSharedConfiguration();
+    InternalClusterConfigurationService sc =
+        (InternalClusterConfigurationService) getConfigurationService();
 
     if (sc == null) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);

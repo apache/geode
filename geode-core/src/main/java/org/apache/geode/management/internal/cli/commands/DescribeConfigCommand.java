@@ -40,7 +40,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeConfigCommand extends GfshCommand {
+public class DescribeConfigCommand extends InternalGfshCommand {
   private final GetMemberConfigInformationFunction getMemberConfigFunction =
       new GetMemberConfigInformationFunction();
 

@@ -22,7 +22,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class ExitCommand extends GfshCommand {
+public class ExitCommand extends InternalGfshCommand {
   @CliCommand(value = {CliStrings.EXIT, "quit"}, help = CliStrings.EXIT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public ExitShellRequest exit() {

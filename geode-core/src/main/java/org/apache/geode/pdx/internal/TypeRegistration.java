@@ -15,6 +15,7 @@
 package org.apache.geode.pdx.internal;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.cache.wan.GatewaySender;
 
@@ -81,11 +82,15 @@ public interface TypeRegistration {
   /**
    * Returns PdxType having the field
    *
-   * @param fieldName
-   * @param className
    * @return PdxType or null if field not present
    */
   PdxType getPdxTypeForField(String fieldName, String className);
+
+  /**
+   * Returns all the PdxTypes for the given class name.
+   * An empty set will be returned if no types exist.
+   */
+  Set<PdxType> getPdxTypesForClassName(String className);
 
   /*
    * test hook

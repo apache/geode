@@ -37,7 +37,8 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
@@ -220,7 +221,7 @@ public class CommandManager {
     try {
       // geode's commands
       foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
-          GfshCommand.class.getPackage().getName(), CommandMarker.class);
+          InternalGfshCommand.class.getPackage().getName(), CommandMarker.class);
 
       for (Class<?> klass : foundClasses) {
         try {

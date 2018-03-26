@@ -23,9 +23,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.GatewayReceiverMXBean;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -38,7 +36,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StatusGatewayReceiverCommand extends GfshCommand {
+public class StatusGatewayReceiverCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.STATUS_GATEWAYRECEIVER,
       help = CliStrings.STATUS_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
@@ -54,9 +52,7 @@ public class StatusGatewayReceiverCommand extends GfshCommand {
 
     Result result;
 
-    InternalCache cache = getCache();
-    SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    SystemManagementService service = (SystemManagementService) getManagementService();
 
     CompositeResultData crd = ResultBuilder.createCompositeResultData();
     TabularResultData availableReceiverData =

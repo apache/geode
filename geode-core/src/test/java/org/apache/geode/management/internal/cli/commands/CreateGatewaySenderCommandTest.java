@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -33,9 +34,13 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -60,7 +65,7 @@ public class CreateGatewaySenderCommandTest {
     xmlEntity = mock(XmlEntity.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
-    doReturn(ccService).when(command).getSharedConfiguration();
+    doReturn(ccService).when(command).getConfigurationService();
     functionResults = new ArrayList<>();
     doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(),
         any(Set.class));
@@ -114,7 +119,7 @@ public class CreateGatewaySenderCommandTest {
   @Test
   public void whenNoCCService() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(null).when(command).getSharedConfiguration();
+    doReturn(null).when(command).getConfigurationService();
     result1 = new CliFunctionResult("member", xmlEntity, "result1");
     functionResults.add(result1);
     gfsh.executeAndAssertThat(command,
@@ -126,7 +131,7 @@ public class CreateGatewaySenderCommandTest {
   @Test
   public void whenCommandOnMember() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(ccService).when(command).getSharedConfiguration();
+    doReturn(ccService).when(command).getConfigurationService();
     result1 = new CliFunctionResult("member", xmlEntity, "result1");
     functionResults.add(result1);
     gfsh.executeAndAssertThat(command,
@@ -138,7 +143,7 @@ public class CreateGatewaySenderCommandTest {
   @Test
   public void whenNoXml() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(ccService).when(command).getSharedConfiguration();
+    doReturn(ccService).when(command).getConfigurationService();
     result1 = new CliFunctionResult("member", false, "result1");
     functionResults.add(result1);
 
@@ -147,5 +152,23 @@ public class CreateGatewaySenderCommandTest {
         "create gateway-sender --id=1 --remote-distributed-system-id=1").statusIsError()
         .hasNoFailToPersistError();
     verify(ccService, never()).deleteXmlEntity(any(), any());
+  }
+
+  @Test
+  public void whenMembersAreDifferentVersions() {
+    // Create a set of mixed version members
+    Set<DistributedMember> members = new HashSet<>();
+    InternalDistributedMember currentVersionMember = mock(InternalDistributedMember.class);
+    doReturn(Version.CURRENT).when(currentVersionMember).getVersionObject();
+    InternalDistributedMember oldVersionMember = mock(InternalDistributedMember.class);
+    doReturn(Version.GEODE_140).when(oldVersionMember).getVersionObject();
+    members.add(currentVersionMember);
+    members.add(oldVersionMember);
+    doReturn(members).when(command).getMembers(any(), any());
+
+    // Verify executing the command fails
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=1 --remote-distributed-system-id=1").statusIsError()
+        .containsOutput(CliStrings.CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
   }
 }

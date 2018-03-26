@@ -34,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -204,7 +205,7 @@ public class ListIndexCommandJUnitTest {
     }
 
     @Override
-    public InternalCache getCache() {
+    public Cache getCache() {
       return this.cache;
     }
 

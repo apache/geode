@@ -36,6 +36,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
@@ -181,7 +182,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.key = DataSerializer.readObject(in);
+    this.key = InternalDataSerializer.readUserObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
     this.eventId = (EventID) DataSerializer.readObject(in);
     this.versionTag = DataSerializer.readObject(in);

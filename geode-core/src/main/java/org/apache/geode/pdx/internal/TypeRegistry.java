@@ -17,6 +17,7 @@ package org.apache.geode.pdx.internal;
 import static java.lang.Integer.*;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
@@ -43,6 +44,20 @@ public class TypeRegistry {
   private static final boolean DISABLE_TYPE_REGISTRY =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "TypeRegistry.DISABLE_PDX_REGISTRY");
 
+  /**
+   * setting this to true disables DataSerializer from returning a PdxInstance if
+   * the instance can be deserialized into a POJO
+   */
+  private static final ThreadLocal<Boolean> disablePdxReadSerialized = new ThreadLocal<Boolean>();
+
+  /**
+   * setting this to true enables pdx-read-serialized for the current thread, regardless
+   * of the cache's setting for this attribute
+   */
+  private final ThreadLocal<Boolean> pdxReadSerializedOverride =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+
   private final Map<Integer, PdxType> idToType = new CopyOnWriteHashMap<>();
 
   private final Map<PdxType, Integer> typeToId = new CopyOnWriteHashMap<>();
@@ -65,8 +80,6 @@ public class TypeRegistry {
 
   private final InternalCache cache;
 
-  private final ThreadLocal<Boolean> pdxReadSerializedOverride =
-      ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   public TypeRegistry(InternalCache cache, boolean disableTypeRegistry) {
     this.cache = cache;
@@ -79,6 +92,24 @@ public class TypeRegistry {
       this.distributedTypeRegistry = new LonerTypeRegistration(cache);
     } else {
       this.distributedTypeRegistry = new PeerTypeRegistration(cache);
+    }
+  }
+
+  public static boolean getPdxReadSerialized() {
+    return disablePdxReadSerialized.get() == null;
+  }
+
+  /**
+   * Setting this to true causes pdx-read-serialized to be respected, which is the
+   * default. Setting this to false disables pdx-read-serialized while deserializing
+   * objects. This takes precendence over setPdxReadSerializedOverride, which affects
+   * the cache's setting of that attribute.
+   */
+  public static void setPdxReadSerialized(boolean readSerialized) {
+    if (!readSerialized) {
+      disablePdxReadSerialized.set(true);
+    } else {
+      disablePdxReadSerialized.remove();
     }
   }
 
@@ -316,6 +347,7 @@ public class TypeRegistry {
    */
   private static volatile boolean pdxSerializerWasSet = false;
 
+
   public static void init() {
     pdxSerializerWasSet = false;
   }
@@ -497,6 +529,14 @@ public class TypeRegistry {
     return this.distributedTypeRegistry.getPdxTypeForField(fieldName, className);
   }
 
+  /**
+   * Returns all the PdxTypes for the given class name.
+   * An empty set will be returned if no types exist.
+   */
+  public Set<PdxType> getPdxTypesForClassName(String className) {
+    return this.distributedTypeRegistry.getPdxTypesForClassName(className);
+  }
+
   public void addImportedType(int typeId, PdxType importedType) {
     PdxType existing = getType(typeId);
     if (existing != null && !existing.equals(importedType)) {
@@ -536,10 +576,17 @@ public class TypeRegistry {
     return result;
   }
 
+  /**
+   * should the cache's setting for pdx-read-serialized be ignored and PdxInstances
+   * be returned?
+   */
   public Boolean getPdxReadSerializedOverride() {
     return pdxReadSerializedOverride.get();
   }
 
+  /**
+   * enable pdx-read-serialized, ignoring the cache's setting.
+   */
   public void setPdxReadSerializedOverride(boolean overridePdxReadSerialized) {
     pdxReadSerializedOverride.set(overridePdxReadSerialized);
   }

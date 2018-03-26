@@ -39,7 +39,7 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 
-public class ExecuteFunctionCommand extends GfshCommand {
+public class ExecuteFunctionCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION},
       interceptor = "org.apache.geode.management.internal.cli.commands.ExecuteFunctionCommand$ExecuteFunctionCommandInterceptor")
@@ -101,7 +101,7 @@ public class ExecuteFunctionCommand extends GfshCommand {
     }
     args[4] = onRegion;
 
-    Subject currentUser = getSecurityService().getSubject();
+    Subject currentUser = getSubject();
     if (currentUser != null) {
       args[5] = currentUser.getSession().getAttribute(CREDENTIALS_SESSION_ATTRIBUTE);
     } else {

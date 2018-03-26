@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 
 /**
@@ -80,7 +81,7 @@ public class LatestLastAccessTimeMessage<K> extends PooledDistributionMessage
     super.fromData(in);
     this.processorId = DataSerializer.readPrimitiveInt(in);
     this.regionName = DataSerializer.readString(in);
-    this.key = DataSerializer.readObject(in);
+    this.key = InternalDataSerializer.readUserObject(in);
   }
 
   @Override

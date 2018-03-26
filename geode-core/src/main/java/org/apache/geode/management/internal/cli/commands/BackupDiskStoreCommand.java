@@ -36,7 +36,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class BackupDiskStoreCommand extends GfshCommand {
+public class BackupDiskStoreCommand extends InternalGfshCommand {
   /**
    * Internally, we also verify the resource operation permissions CLUSTER:WRITE:DISK if the region
    * is persistent
@@ -51,11 +51,11 @@ public class BackupDiskStoreCommand extends GfshCommand {
       @CliOption(key = CliStrings.BACKUP_DISK_STORE__BASELINEDIR,
           help = CliStrings.BACKUP_DISK_STORE__BASELINEDIR__HELP) String baselineDir) {
 
-    getSecurityService().authorize(ResourcePermission.Resource.CLUSTER,
-        ResourcePermission.Operation.WRITE, ResourcePermission.Target.DISK);
+    authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
+        ResourcePermission.Target.DISK);
     Result result;
     try {
-      InternalCache cache = getCache();
+      InternalCache cache = (InternalCache) getCache();
       DistributionManager dm = cache.getDistributionManager();
       BackupStatus backupStatus;
 

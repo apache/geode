@@ -22,10 +22,9 @@ import javax.management.ObjectName;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.GatewaySenderMXBean;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -36,7 +35,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class LoadBalanceGatewaySenderCommand extends GfshCommand {
+public class LoadBalanceGatewaySenderCommand extends InternalGfshCommand {
 
   @CliCommand(value = CliStrings.LOAD_BALANCE_GATEWAYSENDER,
       help = CliStrings.LOAD_BALANCE_GATEWAYSENDER__HELP)
@@ -52,9 +51,8 @@ public class LoadBalanceGatewaySenderCommand extends GfshCommand {
       senderId = senderId.trim();
     }
 
-    InternalCache cache = getCache();
-    SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    Cache cache = getCache();
+    SystemManagementService service = (SystemManagementService) getManagementService();
     TabularResultData resultData = ResultBuilder.createTabularResultData();
     Set<DistributedMember> dsMembers = getAllNormalMembers();
 

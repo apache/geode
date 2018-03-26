@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListFunctionCommand extends GfshCommand {
+public class ListFunctionCommand extends InternalGfshCommand {
   private final ListFunctionFunction listFunctionFunction = new ListFunctionFunction();
 
   @CliCommand(value = CliStrings.LIST_FUNCTION, help = CliStrings.LIST_FUNCTION__HELP)

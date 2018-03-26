@@ -44,7 +44,7 @@ public class SqlStatementFactoryTest {
   @Test
   public void getSelectQueryString() throws Exception {
     String expectedStatement =
-        String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, KEY_COLUMN_NAME);
+        String.format("SELECT * FROM \"%s\" WHERE \"%s\" = ?", TABLE_NAME, KEY_COLUMN_NAME);
     List<ColumnValue> keyColumn = new ArrayList<>();
     keyColumn.add(new ColumnValue(true, KEY_COLUMN_NAME, null, 0));
 
@@ -56,7 +56,7 @@ public class SqlStatementFactoryTest {
   @Test
   public void getDestroySqlString() throws Exception {
     String expectedStatement =
-        String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, KEY_COLUMN_NAME);
+        String.format("DELETE FROM \"%s\" WHERE \"%s\" = ?", TABLE_NAME, KEY_COLUMN_NAME);
     List<ColumnValue> keyColumn = new ArrayList<>();
     keyColumn.add(new ColumnValue(true, KEY_COLUMN_NAME, null, 0));
 
@@ -67,9 +67,9 @@ public class SqlStatementFactoryTest {
 
   @Test
   public void getUpdateSqlString() throws Exception {
-    String expectedStatement = String.format("UPDATE %s SET %s = ?, %s = ? WHERE %s = ?",
-        TABLE_NAME, columnValues.get(0).getColumnName(), columnValues.get(2).getColumnName(),
-        KEY_COLUMN_NAME);
+    String expectedStatement = String.format(
+        "UPDATE \"%s\" SET \"%s\" = ?, \"%s\" = ? WHERE \"%s\" = ?", TABLE_NAME,
+        columnValues.get(0).getColumnName(), columnValues.get(2).getColumnName(), KEY_COLUMN_NAME);
 
     String statement = factory.createUpdateSqlString(TABLE_NAME, columnValues);
 
@@ -78,9 +78,10 @@ public class SqlStatementFactoryTest {
 
   @Test
   public void getInsertSqlString() throws Exception {
-    String expectedStatement = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?,?,?)",
-        TABLE_NAME, columnValues.get(0).getColumnName(), columnValues.get(1).getColumnName(),
-        columnValues.get(2).getColumnName());
+    String expectedStatement =
+        String.format("INSERT INTO \"%s\" (\"%s\", \"%s\", \"%s\") VALUES (?,?,?)", TABLE_NAME,
+            columnValues.get(0).getColumnName(), columnValues.get(1).getColumnName(),
+            columnValues.get(2).getColumnName());
 
     String statement = factory.createInsertSqlString(TABLE_NAME, columnValues);
 

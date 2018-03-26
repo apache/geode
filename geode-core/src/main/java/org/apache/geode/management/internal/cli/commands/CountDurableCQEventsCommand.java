@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CountDurableCQEventsCommand extends GfshCommand {
+public class CountDurableCQEventsCommand extends InternalGfshCommand {
   DurableClientCommandsResultBuilder builder = new DurableClientCommandsResultBuilder();
 
   @CliCommand(value = CliStrings.COUNT_DURABLE_CQ_EVENTS,

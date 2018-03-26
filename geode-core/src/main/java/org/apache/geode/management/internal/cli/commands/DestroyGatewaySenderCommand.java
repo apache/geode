@@ -23,6 +23,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -37,7 +38,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyGatewaySenderCommand extends GfshCommand {
+public class DestroyGatewaySenderCommand extends InternalGfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.DESTROY_GATEWAYSENDER,
@@ -75,13 +76,14 @@ public class DestroyGatewaySenderCommand extends GfshCommand {
     }
 
     // has xml but unable to persist to cluster config, need to print warning message and return
-    if (onMember != null || getSharedConfiguration() == null) {
+    if (onMember != null || getConfigurationService() == null) {
       result.setCommandPersisted(false);
       return result;
     }
 
     // update cluster config
-    getSharedConfiguration().deleteXmlEntity(xmlEntity, onGroups);
+    ((InternalClusterConfigurationService) getConfigurationService()).deleteXmlEntity(xmlEntity,
+        onGroups);
     return result;
   }
 }

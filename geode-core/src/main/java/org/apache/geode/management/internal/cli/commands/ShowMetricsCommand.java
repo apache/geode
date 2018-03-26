@@ -30,7 +30,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -53,7 +52,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShowMetricsCommand extends GfshCommand {
+public class ShowMetricsCommand extends InternalGfshCommand {
   enum Category {
     cache,
     cacheserver,
@@ -143,8 +142,7 @@ public class ShowMetricsCommand extends GfshCommand {
    */
   private ResultData getSystemWideMetrics(String export_to_report_to, String[] categoriesArr,
       StringBuilder csvBuilder) {
-    final InternalCache cache = getCache();
-    final ManagementService managementService = ManagementService.getManagementService(cache);
+    final ManagementService managementService = getManagementService();
     DistributedSystemMXBean dsMxBean = managementService.getDistributedSystemMXBean();
     if (dsMxBean == null) {
       String errorMessage =
@@ -180,9 +178,8 @@ public class ShowMetricsCommand extends GfshCommand {
   private ResultData getMemberMetrics(DistributedMember distributedMember,
       String export_to_report_to, String[] categoriesArr, int cacheServerPort,
       StringBuilder csvBuilder) throws ResultDataException {
-    final InternalCache cache = getCache();
     final SystemManagementService managementService =
-        (SystemManagementService) ManagementService.getManagementService(cache);
+        (SystemManagementService) getManagementService();
 
     ObjectName memberMBeanName = managementService.getMemberMBeanName(distributedMember);
     MemberMXBean memberMxBean =
@@ -243,8 +240,7 @@ public class ShowMetricsCommand extends GfshCommand {
   private ResultData getDistributedRegionMetrics(String regionName, String export_to_report_to,
       String[] categoriesArr, StringBuilder csvBuilder) throws ResultDataException {
 
-    final InternalCache cache = getCache();
-    final ManagementService managementService = ManagementService.getManagementService(cache);
+    final ManagementService managementService = getManagementService();
 
     DistributedRegionMXBean regionMxBean = managementService.getDistributedRegionMXBean(regionName);
 
@@ -285,9 +281,8 @@ public class ShowMetricsCommand extends GfshCommand {
       DistributedMember distributedMember, String export_to_report_to, String[] categoriesArr,
       StringBuilder csvBuilder) throws ResultDataException {
 
-    final InternalCache cache = getCache();
     final SystemManagementService managementService =
-        (SystemManagementService) ManagementService.getManagementService(cache);
+        (SystemManagementService) getManagementService();
 
     ObjectName regionMBeanName =
         managementService.getRegionMBeanName(distributedMember, regionName);

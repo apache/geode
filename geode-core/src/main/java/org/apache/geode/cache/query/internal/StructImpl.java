@@ -27,6 +27,7 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
@@ -165,7 +166,9 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.type = (StructTypeImpl) DataSerializer.readObject(in);
-    this.values = DataSerializer.readObjectArray(in);
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      this.values = DataSerializer.readObjectArray(in);
+    });
     if (this.values != null) {
       for (Object o : values) {
         if (o instanceof PdxInstance) {

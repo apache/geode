@@ -699,7 +699,9 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
   V put(K key, V value, Object aCallbackArgument) throws TimeoutException, CacheWriterException;
 
   /**
-   * Creates a new entry in this region with the specified key and value.
+   * Creates a new entry in this region with the specified key and value if and only if an entry
+   * does not already exist for the specified key. If an entry already exists for the specified
+   * key, throws {@link EntryExistsException}.
    *
    * <p>
    * Updates the {@link CacheStatistics#getLastAccessedTime} and

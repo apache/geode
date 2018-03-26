@@ -33,7 +33,7 @@ public class ValueEncoderTest {
 
   @Test
   public void encodeAndDecode() throws Exception {
-    final Object[] objects = {37, (short) 37, (byte) 37, 37L, 37., 37.F, true, "hello, world",
+    final Object[] objects = {37, (short) 37, (byte) 37, 37L, 37., 37.F, true, "hello, world", null,
         JSONWrapper.wrapJSON(jsonDocument)};
     for (Object object : objects) {
       assertEquals(object, ValueEncoder.decodeValue(ValueEncoder.encodeValue(object)));

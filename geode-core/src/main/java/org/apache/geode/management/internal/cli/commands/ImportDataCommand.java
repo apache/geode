@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-public class ImportDataCommand extends GfshCommand {
+public class ImportDataCommand extends InternalGfshCommand {
   private final ImportDataFunction importDataFunction = new ImportDataFunction();
 
   @CliCommand(value = CliStrings.IMPORT_DATA, help = CliStrings.IMPORT_DATA__HELP)
@@ -55,7 +55,7 @@ public class ImportDataCommand extends GfshCommand {
           specifiedDefaultValue = "true",
           help = CliStrings.IMPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
-    getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionName);
+    authorize(Resource.DATA, Operation.WRITE, regionName);
 
     final DistributedMember targetMember = getMember(memberNameOrId);
 

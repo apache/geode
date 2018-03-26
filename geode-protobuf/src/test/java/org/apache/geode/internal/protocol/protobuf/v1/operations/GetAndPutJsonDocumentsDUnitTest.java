@@ -77,7 +77,7 @@ public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
 
   private static ProtobufSerializationService serializationService;
 
-  VM storingVM;
+  private VM storingVM;
 
   @Before
   public void setUp() throws Exception {
@@ -102,8 +102,6 @@ public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
       cache.close();
     }
   }
-
-
 
   @Test
   public void testThatGetReturnsJSONDocumentForPdxInstance() throws Exception {
