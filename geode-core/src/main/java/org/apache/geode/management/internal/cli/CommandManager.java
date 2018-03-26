@@ -129,7 +129,7 @@ public class CommandManager {
     for (String userCommandPackage : userCommandPackages) {
       try {
         Set<Class<?>> foundClasses = ClasspathScanLoadHelper
-            .scanPackageForClassesImplementing(userCommandPackage, CommandMarker.class);
+            .scanPackageForClassesImplementing(CommandMarker.class, userCommandPackage);
         for (Class<?> klass : foundClasses) {
           try {
             add((CommandMarker) klass.newInstance());
@@ -181,8 +181,8 @@ public class CommandManager {
     Set<Class<?>> foundClasses;
     // Converters
     try {
-      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
-          "org.apache.geode.management.internal.cli.converters", Converter.class);
+      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(Converter.class,
+          "org.apache.geode.management.internal.cli.converters");
       for (Class<?> klass : foundClasses) {
         try {
           Converter<?> object = (Converter<?>) klass.newInstance();
@@ -196,8 +196,8 @@ public class CommandManager {
       raiseExceptionIfEmpty(foundClasses, "Converters");
 
       // Spring shell's converters
-      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
-          "org.springframework.shell.converters", Converter.class);
+      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(Converter.class,
+          "org.springframework.shell.converters");
       for (Class<?> klass : foundClasses) {
         if (!SHL_CONVERTERS_TOSKIP.contains(klass)) {
           try {
@@ -220,8 +220,9 @@ public class CommandManager {
     Set<Class<?>> foundClasses;
     try {
       // geode's commands
-      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
-          InternalGfshCommand.class.getPackage().getName(), CommandMarker.class);
+      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(CommandMarker.class,
+          GfshCommand.class.getPackage().getName(),
+          InternalGfshCommand.class.getPackage().getName());
 
       for (Class<?> klass : foundClasses) {
         try {
