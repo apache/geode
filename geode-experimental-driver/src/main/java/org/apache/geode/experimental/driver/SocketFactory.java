@@ -92,7 +92,8 @@ public class SocketFactory {
   }
 
   public boolean isSsl() {
-    return !Objects.isNull(keyStorePath) && !keyStorePath.isEmpty();
+    return (!Objects.isNull(keyStorePath) && !keyStorePath.isEmpty())
+        || (!Objects.isNull(trustStorePath) && !trustStorePath.isEmpty());
   }
 
   public Socket connect() throws GeneralSecurityException, IOException {
@@ -146,6 +147,10 @@ public class SocketFactory {
 
   private TrustManager[] getTrustManagers()
       throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    if (Objects.isNull(trustStorePath)) {
+      return new TrustManager[0];
+    }
+
     String trustStoreType = "jks";
     KeyStore keyStore = KeyStore.getInstance(trustStoreType);
     FileInputStream fileInputStream = new FileInputStream(trustStorePath);
@@ -160,6 +165,10 @@ public class SocketFactory {
 
   private KeyManager[] getKeyManagers() throws KeyStoreException, IOException,
       NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
+    if (Objects.isNull(keyStorePath)) {
+      return new KeyManager[0];
+    }
+
     String keyStoreType = "jks";
     KeyStore keyStore = KeyStore.getInstance(keyStoreType);
     FileInputStream fileInputStream = new FileInputStream(keyStorePath);

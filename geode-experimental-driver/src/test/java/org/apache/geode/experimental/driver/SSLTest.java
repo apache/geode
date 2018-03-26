@@ -14,12 +14,10 @@
  */
 package org.apache.geode.experimental.driver;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
@@ -31,12 +29,15 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.net.ssl.SSLException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -44,6 +45,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -52,11 +54,17 @@ public class SSLTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+
   private final String SERVER_KEY_STORE =
       TestUtil.getResourcePath(SSLTest.class, "cacheserver.keystore");
   private final String SERVER_TRUST_STORE =
       TestUtil.getResourcePath(SSLTest.class, "cacheserver.truststore");
-
+  private final String BOGUSSERVER_KEY_STORE =
+      TestUtil.getResourcePath(SSLTest.class, "bogusserver.keystore");
+  private final String BOGUSCLIENT_KEY_STORE =
+      TestUtil.getResourcePath(SSLTest.class, "bogusclient.keystore");
   private final String CLIENT_KEY_STORE =
       TestUtil.getResourcePath(SSLTest.class, "client.keystore");
   private final String CLIENT_TRUST_STORE =
@@ -67,19 +75,20 @@ public class SSLTest {
   private int locatorPort;
 
   @Before
-  public void createServer() throws Exception {
+  public void enableProtobuf() throws Exception {
     System.setProperty("geode.feature-protobuf-protocol", "true");
+  }
 
+  private void startLocator(String keyStore, boolean twoWayAuthentication) throws IOException {
     // Create a cache
     Properties properties = new Properties();
     properties.put(SSL_ENABLED_COMPONENTS, "all");
-    properties.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(true));
     properties.put(SSL_KEYSTORE_TYPE, "jks");
-    properties.put(SSL_KEYSTORE, SERVER_KEY_STORE);
+    properties.put(SSL_KEYSTORE, keyStore);
     properties.put(SSL_KEYSTORE_PASSWORD, "password");
     properties.put(SSL_TRUSTSTORE, SERVER_TRUST_STORE);
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(twoWayAuthentication));
 
     CacheFactory cf = new CacheFactory(properties);
     cf.set(ConfigurationProperties.MCAST_PORT, "0");
@@ -89,34 +98,63 @@ public class SSLTest {
     // Start a locator
     locator = Locator.startLocatorAndDS(0, null, properties);
     locatorPort = locator.getPort();
+  }
 
-    // do not start a cache server
+  private void startServer() throws IOException {
+    CacheServer server = cache.addCacheServer();
+    server.setPort(0);
+    server.start();
   }
 
   @After
   public void cleanup() {
     cache.close();
     locator.stop();
+    SocketCreatorFactory.close();
   }
 
   @Test
   public void driverFailsToConnectWhenThereAreNoServers() throws Exception {
-    try {
-      driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-    } catch (IOException e) {
-      // success
-      return;
-    }
-    throw new AssertionError("expected an IOException");
+    startLocator(SERVER_KEY_STORE, true);
+    expectedException.expect(IOException.class);
+    driver = new DriverFactory().addLocator("localhost", locatorPort).create();
   }
 
   @Test
-  public void driverCanConnectWhenThereAreServers() throws Exception {
-    CacheServer server = cache.addCacheServer();
-    server.setPort(0);
-    server.start();
+  public void driverCanConnectWithTwoWayAuthentication() throws Exception {
+    startLocator(SERVER_KEY_STORE, true);
+    startServer();
     driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE).create();
+    Set<String> regionsOnServer = driver.getRegionNames();
+    assertEquals(Collections.singleton("region"), regionsOnServer);
+    assertTrue(driver.isConnected());
+  }
+
+  @Test
+  public void driverCannotConnectWithBogusClientKeystore() throws Exception {
+    startLocator(SERVER_KEY_STORE, true);
+    startServer();
+    expectedException.expect(SSLException.class);
+    driver = new DriverFactory().addLocator("localhost", locatorPort)
+        .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(BOGUSCLIENT_KEY_STORE).create();
+  }
+
+  @Test
+  public void driverCannotConnectWithBogusServerKeystore() throws Exception {
+    startLocator(BOGUSSERVER_KEY_STORE, true);
+    startServer();
+    expectedException.expect(SSLException.class);
+    driver = new DriverFactory().addLocator("localhost", locatorPort)
+        .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE).create();
+  }
+
+  @Test
+  public void driverCanConnectWithOneWayAuthentication() throws Exception {
+    startLocator(SERVER_KEY_STORE, false);
+    startServer();
+    driver = new DriverFactory().addLocator("localhost", locatorPort)
+        .setTrustStorePath(CLIENT_TRUST_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
     assertEquals(Collections.singleton("region"), regionsOnServer);
     assertTrue(driver.isConnected());
