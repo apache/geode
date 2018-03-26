@@ -45,7 +45,6 @@ import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-@SuppressWarnings("serial")
 public class ReplicateEntryIdleExpirationDistributedTest implements Serializable {
 
   @ClassRule
@@ -53,13 +52,13 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
 
   private static final AtomicBoolean KEEP_READING = new AtomicBoolean(true);
 
-  protected static final String KEY = "KEY";
-  protected static final String VALUE = "VALUE";
+  private static final String KEY = "KEY";
+  private static final String VALUE = "VALUE";
 
-  protected final VM member1 = getHost(0).getVM(0);
-  protected final VM member2 = getHost(0).getVM(1);
-  protected final VM member3 = getHost(0).getVM(2);
-  protected final String regionName = getClass().getSimpleName();
+  private final VM member1 = getHost(0).getVM(0);
+  private final VM member2 = getHost(0).getVM(1);
+  private final VM member3 = getHost(0).getVM(2);
+  private final String regionName = getClass().getSimpleName();
 
   @Rule
   public CacheRule cacheRule = CacheRule.builder().createCacheIn(member1).createCacheIn(member2)
@@ -124,7 +123,7 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
   }
 
   @Test
-  public void readsNormalMemberShouldPreventExpiration() throws Exception {
+  public void readsInNormalMemberShouldPreventExpiration() throws Exception {
     VM member4 = getHost(0).getVM(3);
     member4.invoke(() -> {
       KEEP_READING.set(true);
