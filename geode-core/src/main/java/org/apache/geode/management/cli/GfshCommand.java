@@ -47,7 +47,6 @@ public abstract class GfshCommand implements CommandMarker {
     return gfsh != null && gfsh.isConnectedAndReady();
   }
 
-
   public void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, ResourcePermission.Target target) {
     cache.getSecurityService().authorize(resource, operation, target);
