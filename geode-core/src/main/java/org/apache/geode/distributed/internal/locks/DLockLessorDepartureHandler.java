@@ -28,6 +28,4 @@ public interface DLockLessorDepartureHandler {
 
   void handleDepartureOf(InternalDistributedMember owner, DLockGrantor grantor);
 
-  public void waitForInProcessDepartures() throws InterruptedException;
-
 }
