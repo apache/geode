@@ -35,11 +35,18 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public abstract class GfshCommand implements CommandMarker {
   private InternalCache cache;
+
+  public boolean isConnectedAndReady() {
+    Gfsh gfsh = Gfsh.getCurrentInstance();
+    return gfsh != null && gfsh.isConnectedAndReady();
+  }
+
 
   public void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, ResourcePermission.Target target) {
@@ -169,9 +176,5 @@ public abstract class GfshCommand implements CommandMarker {
       Set<DistributedMember> targetMembers) {
     ResultCollector rc = executeFunction(function, args, targetMembers);
     return CliFunctionResult.cleanResults((List<?>) rc.getResult());
-  }
-
-  public Set<DistributedMember> findMembersWithAsyncEventQueue(String queueId) {
-    return CliUtil.getMembersWithAsyncEventQueue((InternalCache) getCache(), queueId);
   }
 }

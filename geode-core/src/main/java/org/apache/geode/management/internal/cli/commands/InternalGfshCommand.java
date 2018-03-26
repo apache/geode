@@ -37,10 +37,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 public abstract class InternalGfshCommand extends GfshCommand implements CommandMarker {
   public static final String EXPERIMENTAL = "(Experimental) ";
 
-  public boolean isConnectedAndReady() {
-    return getGfsh() != null && getGfsh().isConnectedAndReady();
-  }
-
   public void persistClusterConfiguration(Result result, Runnable runnable) {
     if (result == null) {
       throw new IllegalArgumentException("Result should not be null");
