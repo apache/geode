@@ -14,10 +14,12 @@
  */
 package org.apache.geode.experimental.driver;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
@@ -79,12 +81,15 @@ public class SSLTest {
     System.setProperty("geode.feature-protobuf-protocol", "true");
   }
 
-  private void startLocator(String keyStore, boolean twoWayAuthentication) throws IOException {
+  private void startLocator(String keyStore, boolean twoWayAuthentication, String protocols,
+      String ciphers) throws IOException {
     // Create a cache
     Properties properties = new Properties();
     properties.put(SSL_ENABLED_COMPONENTS, "all");
     properties.put(SSL_KEYSTORE_TYPE, "jks");
     properties.put(SSL_KEYSTORE, keyStore);
+    properties.put(SSL_PROTOCOLS, protocols);
+    properties.put(SSL_CIPHERS, ciphers);
     properties.put(SSL_KEYSTORE_PASSWORD, "password");
     properties.put(SSL_TRUSTSTORE, SERVER_TRUST_STORE);
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
@@ -115,14 +120,14 @@ public class SSLTest {
 
   @Test
   public void driverFailsToConnectWhenThereAreNoServers() throws Exception {
-    startLocator(SERVER_KEY_STORE, true);
+    startLocator(SERVER_KEY_STORE, true, "any", "any");
     expectedException.expect(IOException.class);
     driver = new DriverFactory().addLocator("localhost", locatorPort).create();
   }
 
   @Test
   public void driverCanConnectWithTwoWayAuthentication() throws Exception {
-    startLocator(SERVER_KEY_STORE, true);
+    startLocator(SERVER_KEY_STORE, true, "any", "any");
     startServer();
     driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE).create();
@@ -133,7 +138,7 @@ public class SSLTest {
 
   @Test
   public void driverCannotConnectWithBogusClientKeystore() throws Exception {
-    startLocator(SERVER_KEY_STORE, true);
+    startLocator(SERVER_KEY_STORE, true, "any", "any");
     startServer();
     expectedException.expect(SSLException.class);
     driver = new DriverFactory().addLocator("localhost", locatorPort)
@@ -142,7 +147,7 @@ public class SSLTest {
 
   @Test
   public void driverCannotConnectWithBogusServerKeystore() throws Exception {
-    startLocator(BOGUSSERVER_KEY_STORE, true);
+    startLocator(BOGUSSERVER_KEY_STORE, true, "any", "any");
     startServer();
     expectedException.expect(SSLException.class);
     driver = new DriverFactory().addLocator("localhost", locatorPort)
@@ -151,12 +156,32 @@ public class SSLTest {
 
   @Test
   public void driverCanConnectWithOneWayAuthentication() throws Exception {
-    startLocator(SERVER_KEY_STORE, false);
+    startLocator(SERVER_KEY_STORE, false, "any", "any");
     startServer();
     driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(CLIENT_TRUST_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
     assertEquals(Collections.singleton("region"), regionsOnServer);
     assertTrue(driver.isConnected());
+  }
+
+  @Test
+  public void driverCannotConnectIfProtocolsMismatch() throws Exception {
+    startLocator(SERVER_KEY_STORE, true, "TLSv1.1", "any");
+    startServer();
+    expectedException.expect(SSLException.class);
+    driver = new DriverFactory().addLocator("localhost", locatorPort)
+        .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE)
+        .setProtocols("TLSv1.2").create();
+  }
+
+  @Test
+  public void driverCannotConnectIfCiphersMismatch() throws Exception {
+    startLocator(SERVER_KEY_STORE, true, "any", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256");
+    startServer();
+    expectedException.expect(SSLException.class);
+    driver = new DriverFactory().addLocator("localhost", locatorPort)
+        .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE)
+        .setCiphers("TLS_DHE_DSS_WITH_AES_128_CBC_SHA").create();
   }
 }

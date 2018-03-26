@@ -41,6 +41,8 @@ public class SocketFactory {
   private int timeout = -1;
   private String keyStorePath;
   private String trustStorePath;
+  private String protocols;
+  private String ciphers;
 
   public SocketFactory() {
     // Do nothing.
@@ -91,24 +93,38 @@ public class SocketFactory {
     return this;
   }
 
+  public String getProtocols() {
+    return protocols;
+  }
+
+  public SocketFactory setProtocols(String protocols) {
+    this.protocols = protocols;
+    return this;
+  }
+
+  public String getCiphers() {
+    return ciphers;
+  }
+
+  public SocketFactory setCiphers(String ciphers) {
+    this.ciphers = ciphers;
+    return this;
+  }
+
   public boolean isSsl() {
     return (!Objects.isNull(keyStorePath) && !keyStorePath.isEmpty())
         || (!Objects.isNull(trustStorePath) && !trustStorePath.isEmpty());
   }
 
   public Socket connect() throws GeneralSecurityException, IOException {
-    Socket socket = null;
+    Socket socket;
 
-    final boolean clientSide = true;
     SocketAddress sockaddr = new InetSocketAddress(host, port);
     if (isSsl()) {
       final SSLContext sslContext = getSSLContextInstance();
       final KeyManager[] keyManagers = getKeyManagers();
       final TrustManager[] trustManagers = getTrustManagers();
       sslContext.init(keyManagers, trustManagers, null /* use the default secure random */);
-      if (sslContext == null) {
-        throw new IOException("SSL not configured correctly; please see the previous error.");
-      }
 
       javax.net.SocketFactory socketFactory = sslContext.getSocketFactory();
       socket = socketFactory.createSocket();
@@ -121,6 +137,12 @@ public class SocketFactory {
         if (timeout > 0) {
           sslSocket.setSoTimeout(timeout);
         }
+        if (protocols != null) {
+          sslSocket.setEnabledProtocols(protocols.split(" "));
+        }
+        if (ciphers != null) {
+          sslSocket.setEnabledCipherSuites(ciphers.split(" "));
+        }
         sslSocket.startHandshake();
       }
     } else {
@@ -131,18 +153,16 @@ public class SocketFactory {
     return socket;
   }
 
-  private SSLContext getSSLContextInstance() {
-    SSLContext sslContext = null;
+  private SSLContext getSSLContextInstance() throws IOException {
     String[] knownAlgorithms = {"SSL", "SSLv2", "SSLv3", "TLS", "TLSv1", "TLSv1.1", "TLSv1.2"};
     for (String algo : knownAlgorithms) {
       try {
-        sslContext = SSLContext.getInstance(algo);
-        break;
+        return SSLContext.getInstance(algo);
       } catch (NoSuchAlgorithmException e) {
         // continue
       }
     }
-    return sslContext;
+    throw new IOException("SSL not configured correctly, unable create an SSLContext");
   }
 
   private TrustManager[] getTrustManagers()

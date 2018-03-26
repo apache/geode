@@ -57,6 +57,16 @@ public class DriverFactory {
   private String trustStorePath;
 
   /**
+   * Space-separated list of the SSL protocols to enable.
+   */
+  private String protocols;
+
+  /**
+   * Space-separated list of the SSL cipher suites to enable.
+   */
+  private String ciphers;
+
+  /**
    * Adds a locator at <code>host</code> and <code>port</code> to the set of locators to use.
    *
    * @param host Internet address or host name.
@@ -113,12 +123,35 @@ public class DriverFactory {
   }
 
   /**
+   * Specifies the protocols to enable.
+   *
+   * @param protocols Space-separated list of the SSL protocols to enable.
+   * @return This driver factory.
+   */
+  public DriverFactory setProtocols(String protocols) {
+    this.protocols = protocols;
+    return this;
+  }
+
+  /**
+   * Specifies the cipher suites to enable.
+   *
+   * @param ciphers Space-separated list of the SSL cipher suites to enable.
+   * @return This driver factory.
+   */
+  public DriverFactory setCiphers(String ciphers) {
+    this.ciphers = ciphers;
+    return this;
+  }
+
+  /**
    * Creates a driver configured to use all the locators about which this driver factory knows.
    *
    * @return New driver.
    * @throws Exception
    */
   public Driver create() throws Exception {
-    return new ProtobufDriver(locators, username, password, keyStorePath, trustStorePath);
+    return new ProtobufDriver(locators, username, password, keyStorePath, trustStorePath, protocols,
+        ciphers);
   }
 }

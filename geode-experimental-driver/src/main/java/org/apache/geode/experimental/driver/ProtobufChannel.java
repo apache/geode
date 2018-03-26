@@ -40,8 +40,10 @@ class ProtobufChannel {
   final Socket socket;
 
   public ProtobufChannel(final Set<InetSocketAddress> locators, String username, String password,
-      String keyStorePath, String trustStorePath) throws GeneralSecurityException, IOException {
-    socket = connectToAServer(locators, username, password, keyStorePath, trustStorePath);
+      String keyStorePath, String trustStorePath, String protocols, String ciphers)
+      throws GeneralSecurityException, IOException {
+    socket = connectToAServer(locators, username, password, keyStorePath, trustStorePath, protocols,
+        ciphers);
   }
 
   public void close() throws IOException {
@@ -53,12 +55,12 @@ class ProtobufChannel {
   }
 
   private Socket connectToAServer(final Set<InetSocketAddress> locators, String username,
-      String password, String keyStorePath, String trustStorePath)
+      String password, String keyStorePath, String trustStorePath, String protocols, String ciphers)
       throws GeneralSecurityException, IOException {
     InetSocketAddress server =
-        findAServer(locators, username, password, keyStorePath, trustStorePath);
-    Socket socket =
-        createSocket(server.getAddress(), server.getPort(), keyStorePath, trustStorePath);
+        findAServer(locators, username, password, keyStorePath, trustStorePath, protocols, ciphers);
+    Socket socket = createSocket(server.getAddress(), server.getPort(), keyStorePath,
+        trustStorePath, protocols, ciphers);
     socket.setTcpNoDelay(true);
     socket.setSendBufferSize(65535);
     socket.setReceiveBufferSize(65535);
@@ -88,15 +90,15 @@ class ProtobufChannel {
    * @return The server chosen by the Locator service for this client
    */
   private InetSocketAddress findAServer(final Set<InetSocketAddress> locators, String username,
-      String password, String keyStorePath, String trustStorePath)
+      String password, String keyStorePath, String trustStorePath, String protocols, String ciphers)
       throws GeneralSecurityException, IOException {
     IOException lastException = null;
 
     for (InetSocketAddress locator : locators) {
       Socket locatorSocket = null;
       try {
-        locatorSocket =
-            createSocket(locator.getAddress(), locator.getPort(), keyStorePath, trustStorePath);
+        locatorSocket = createSocket(locator.getAddress(), locator.getPort(), keyStorePath,
+            trustStorePath, protocols, ciphers);
 
         final OutputStream outputStream = locatorSocket.getOutputStream();
         final InputStream inputStream = locatorSocket.getInputStream();
@@ -199,8 +201,10 @@ class ProtobufChannel {
   }
 
   private Socket createSocket(InetAddress host, int port, String keyStorePath,
-      String trustStorePath) throws GeneralSecurityException, IOException {
+      String trustStorePath, String protocols, String ciphers)
+      throws GeneralSecurityException, IOException {
     return new SocketFactory().setHost(host).setPort(port).setTimeout(5000)
-        .setKeyStorePath(keyStorePath).setTrustStorePath(trustStorePath).connect();
+        .setKeyStorePath(keyStorePath).setTrustStorePath(trustStorePath).setProtocols(protocols)
+        .setCiphers(ciphers).connect();
   }
 }

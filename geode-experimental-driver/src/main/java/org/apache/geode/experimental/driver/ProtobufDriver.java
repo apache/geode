@@ -50,11 +50,15 @@ public class ProtobufDriver implements Driver {
    * @param password User proof as a string; may be <code>null</code>.
    * @param keyStorePath Path to SSL key store; SSL is <em>not</em> used if <code>null</code>.
    * @param trustStorePath Path to SSL trust store; SSL is <em>not</em> used if <code>null</code>.
+   * @param protocols Space-separated list of the SSL protocols to enable.
+   * @param ciphers Space-separated list of the SSL cipher suites to enable.
    * @throws IOException
    */
   ProtobufDriver(Set<InetSocketAddress> locators, String username, String password,
-      String keyStorePath, String trustStorePath) throws GeneralSecurityException, IOException {
-    this.channel = new ProtobufChannel(locators, username, password, keyStorePath, trustStorePath);
+      String keyStorePath, String trustStorePath, String protocols, String ciphers)
+      throws GeneralSecurityException, IOException {
+    this.channel = new ProtobufChannel(locators, username, password, keyStorePath, trustStorePath,
+        protocols, ciphers);
   }
 
   @Override
