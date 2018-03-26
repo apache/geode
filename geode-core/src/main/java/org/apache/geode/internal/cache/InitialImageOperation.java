@@ -3024,7 +3024,7 @@ public class InitialImageOperation {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.entryBits = in.readByte();
       byte flags = in.readByte();
-      this.key = DataSerializer.readObject(in);
+      this.key = InternalDataSerializer.readUserObject(in);
 
       if (EntryBits.isTombstone(this.entryBits)) {
         this.value = Token.TOMBSTONE;

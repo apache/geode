@@ -25,6 +25,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -84,7 +85,7 @@ public class DestroyEntryMessage extends RegionAdminMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.action = (ExpirationAction) DataSerializer.readObject(in);
-    this.key = DataSerializer.readObject(in);
+    this.key = InternalDataSerializer.readUserObject(in);
   }
 
   @Override

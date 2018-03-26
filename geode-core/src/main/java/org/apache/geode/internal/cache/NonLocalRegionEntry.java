@@ -30,6 +30,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.eviction.EvictionList;
@@ -153,8 +154,8 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.key = DataSerializer.readObject(in);
-    this.value = DataSerializer.readObject(in);
+    this.key = InternalDataSerializer.readUserObject(in);
+    this.value = InternalDataSerializer.readUserObject(in);
     this.lastModified = in.readLong();
     this.isRemoved = in.readBoolean();
     this.versionTag = (VersionTag) DataSerializer.readObject(in);
