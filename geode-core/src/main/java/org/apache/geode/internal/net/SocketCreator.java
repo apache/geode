@@ -969,7 +969,7 @@ public class SocketCreator {
   /**
    * Will be a server socket... this one simply registers the listeners.
    *
-   * @param timeout the socket's timeout will be set to this.
+   * @param timeout the socket's timeout will be set to this (in milliseconds).
    */
   public void configureServerSSLSocket(Socket socket, int timeout) throws IOException {
     socket.setSoTimeout(timeout);
