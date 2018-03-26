@@ -25,10 +25,11 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, GfshTest.class})
 public class ConnectCommandDUnitTest {
 
   @Rule

@@ -43,8 +43,9 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-989 GEODE-3530
+@Category({DistributedTest.class, FlakyTest.class, GfshTest.class}) // GEODE-989 GEODE-3530
 @SuppressWarnings("serial")
 public class ShellCommandsDUnitTest extends CliCommandTestBase {
 

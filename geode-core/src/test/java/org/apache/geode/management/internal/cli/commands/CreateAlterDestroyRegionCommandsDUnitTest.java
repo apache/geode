@@ -72,8 +72,10 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-973 GEODE-2009 GEODE-3530
+@Category({DistributedTest.class, FlakyTest.class, GfshTest.class}) // GEODE-973 GEODE-2009
+                                                                    // GEODE-3530
 @SuppressWarnings("serial")
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
 
