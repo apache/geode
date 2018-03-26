@@ -16,6 +16,9 @@ package org.apache.geode.test.dunit.examples;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getLocatorPort;
+import static org.apache.geode.test.dunit.VM.getAllVMs;
+import static org.apache.geode.test.dunit.VM.getHostName;
+import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -30,7 +33,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedDisconnectRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
@@ -54,11 +56,11 @@ public class LocatorPortClusterExampleTest implements Serializable {
   @Before
   public void setUp() throws Exception {
     config = new Properties();
-    config.put(LOCATORS, Host.getHost(0).getHostName() + "[" + getLocatorPort() + "]");
+    config.put(LOCATORS, getHostName() + "[" + getLocatorPort() + "]");
 
     cache = (InternalCache) new CacheFactory(config).create();
 
-    for (VM vm : Host.getHost(0).getAllVMs()) {
+    for (VM vm : getAllVMs()) {
       vm.invoke(() -> {
         cache = (InternalCache) new CacheFactory(config).create();
       });
@@ -68,14 +70,14 @@ public class LocatorPortClusterExampleTest implements Serializable {
   @After
   public void tearDown() throws Exception {
     cache = null;
-    for (VM vm : Host.getHost(0).getAllVMs()) {
+    for (VM vm : getAllVMs()) {
       vm.invoke(() -> cache = null);
     }
   }
 
   @Test
   public void clusterHasDUnitVMCountPlusTwoByDefault() throws Exception {
-    int dunitVMCount = Host.getHost(0).getVMCount();
+    int dunitVMCount = getVMCount();
     assertThat(cache.getDistributionManager().getViewMembers()).hasSize(dunitVMCount + 2);
   }
 }

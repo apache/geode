@@ -14,7 +14,8 @@
  */
 package org.apache.geode.cache;
 
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.Matchers.anyOf;
@@ -72,7 +73,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   public SerializableTestName testName = new SerializableTestName();
 
   @Rule
-  public SharedCountersRule sharedCountersRule = SharedCountersRule.builder().build();
+  public SharedCountersRule sharedCountersRule = new SharedCountersRule();
 
   @Rule
   public SharedErrorCollector errorCollector = new SharedErrorCollector();
@@ -91,8 +92,8 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   public void afterCreateIsInvokedInEveryMember() throws Exception {
     CacheListener<String, Integer> listener = new CreateCountingCacheListener();
     Region<String, Integer> region = createRegion(regionName, listener);
-    for (int i = 0; i < getHost(0).getVMCount(); i++) {
-      getHost(0).getVM(i).invoke(() -> {
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
         createRegion(regionName, listener);
       });
     }
@@ -106,8 +107,8 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   public void afterUpdateIsInvokedInEveryMember() throws Exception {
     CacheListener<String, Integer> listener = new UpdateCountingCacheListener();
     Region<String, Integer> region = createRegion(regionName, listener);
-    for (int i = 0; i < getHost(0).getVMCount(); i++) {
-      getHost(0).getVM(i).invoke(() -> {
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
         createRegion(regionName, listener);
       });
     }
@@ -122,8 +123,8 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   public void afterInvalidateIsInvokedInEveryMember() throws Exception {
     CacheListener<String, Integer> listener = new InvalidateCountingCacheListener();
     Region<String, Integer> region = createRegion(regionName, listener);
-    for (int i = 0; i < getHost(0).getVMCount(); i++) {
-      getHost(0).getVM(i).invoke(() -> {
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
         createRegion(regionName, listener);
       });
     }
@@ -139,8 +140,8 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   public void afterDestroyIsInvokedInEveryMember() throws Exception {
     CacheListener<String, Integer> listener = new DestroyCountingCacheListener();
     Region<String, Integer> region = createRegion(regionName, listener);
-    for (int i = 0; i < getHost(0).getVMCount(); i++) {
-      getHost(0).getVM(i).invoke(() -> {
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
         createRegion(regionName, listener);
       });
     }
@@ -162,19 +163,19 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   }
 
   protected int expectedCreates() {
-    return getHost(0).getVMCount() + 1;
+    return getVMCount() + 1;
   }
 
   protected int expectedUpdates() {
-    return getHost(0).getVMCount() + 1;
+    return getVMCount() + 1;
   }
 
   protected int expectedInvalidates() {
-    return getHost(0).getVMCount() + 1;
+    return getVMCount() + 1;
   }
 
   protected int expectedDestroys() {
-    return getHost(0).getVMCount() + 1;
+    return getVMCount() + 1;
   }
 
   /**

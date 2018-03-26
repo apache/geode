@@ -18,7 +18,7 @@ import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PROXY;
 import static org.apache.geode.internal.i18n.LocalizedStrings.TXStateStub_LOCAL_DESTROY_NOT_ALLOWED_IN_TRANSACTION;
 import static org.apache.geode.internal.i18n.LocalizedStrings.TXStateStub_LOCAL_INVALIDATE_NOT_ALLOWED_IN_TRANSACTION;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -45,7 +45,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.serializable.SerializableErrorCollector;
 
 /**
  * Create and LocalDestroy/LocalInvalidate should create event with NewValue
@@ -75,12 +74,9 @@ public class CreateAndLocalDestroyInTXRegressionTest implements Serializable {
   @Rule
   public CacheRule cacheRule = new CacheRule();
 
-  @Rule
-  public SerializableErrorCollector errorCollector = new SerializableErrorCollector();
-
   @Before
   public void setUp() throws Exception {
-    otherVM = getHost(0).getVM(0);
+    otherVM = getVM(0);
     spyCacheListener = mock(CacheListener.class);
 
     otherVM.invoke(() -> {

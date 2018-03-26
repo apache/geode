@@ -66,6 +66,10 @@ public class SharedCountersRule extends DistributedExternalResource {
     return new Builder();
   }
 
+  public SharedCountersRule() {
+    this(new Builder(), new RemoteInvoker());
+  }
+
   SharedCountersRule(final Builder builder) {
     this(builder, new RemoteInvoker());
   }

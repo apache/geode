@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.partitioned;
 import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -88,8 +88,8 @@ public class BucketRebalanceStatRegressionTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    vm0 = getHost(0).getVM(0);
-    vm1 = getHost(0).getVM(1);
+    vm0 = getVM(0);
+    vm1 = getVM(1);
   }
 
   @After

@@ -15,6 +15,7 @@
 package org.apache.geode.test.dunit.examples;
 
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -30,7 +31,6 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.rules.DistributedDisconnectRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
@@ -52,7 +52,7 @@ public class CatchingUnexpectedExceptionExampleTest implements Serializable {
    */
   @Test
   public void createRegion_withTryCatch_dontDoThis() throws Exception {
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable("Create Region") {
+    getVM(0).invoke(new SerializableRunnable("Create Region") {
       @Override
       public void run() {
         try {
@@ -72,7 +72,7 @@ public class CatchingUnexpectedExceptionExampleTest implements Serializable {
    */
   @Test
   public void createRegion_withThrowsException_thisIsBetter() throws Exception {
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable("Create Region") {
+    getVM(0).invoke(new SerializableRunnable("Create Region") {
       @Override
       public void run() throws Exception {
         Cache cache = new CacheFactory().create();
@@ -88,7 +88,7 @@ public class CatchingUnexpectedExceptionExampleTest implements Serializable {
    */
   @Test
   public void createRegion_withLambda_thisIsBest() throws Exception {
-    Host.getHost(0).getVM(0).invoke("Create Region", () -> {
+    getVM(0).invoke("Create Region", () -> {
       Cache cache = new CacheFactory().create();
       RegionFactory regionFactory = cache.createRegionFactory(new AttributesFactory().create());
       LocalRegion region = (LocalRegion) regionFactory.create("region1");
