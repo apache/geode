@@ -83,33 +83,41 @@ public class TXLessorDepartureHandler implements DLockLessorDepartureHandler {
 
   private void sendRecoveryMsgs(final DistributionManager dm, final DLockBatch[] batches,
       final InternalDistributedMember owner, final DLockGrantor grantor) {
-    try {
-      dm.getWaitingThreadPool().execute(new Runnable() {
-        public void run() {
-          synchronized (stateLock) {
-            processingDepartures = true;
-          }
-          try {
-            for (int i = 0; i < batches.length; i++) {
-              TXLockBatch batch = (TXLockBatch) batches[i];
-              // send TXOriginatorDepartureMessage
-              Set participants = batch.getParticipants();
-              TXOriginatorRecoveryProcessor.sendMessage(participants, owner, batch.getTXLockId(),
-                  grantor, dm);
-            }
-          } finally {
-            synchronized (stateLock) {
-              processingDepartures = false;
-              stateLock.notifyAll();
-            }
-          }
+
+    synchronized (stateLock) {
+      processingDepartures = true;
+    }
+    Runnable recoverTx = () -> {
+      try {
+        for (int i = 0; i < batches.length; i++) {
+          TXLockBatch batch = (TXLockBatch) batches[i];
+          // send TXOriginatorDepartureMessage
+          Set participants = batch.getParticipants();
+          TXOriginatorRecoveryProcessor.sendMessage(participants, owner, batch.getTXLockId(),
+              grantor, dm);
         }
-      });
-    } catch (RejectedExecutionException e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Rejected sending recovery messages for departure of tx originator {}", owner,
-            e);
+      } finally {
+        clearProcessingDepartures();
       }
+    };
+
+    try {
+      dm.getWaitingThreadPool().execute(recoverTx);
+    } catch (RejectedExecutionException e) {
+      // this shouldn't happen unless we're shutting down or someone has set a size constraint
+      // on the waiting-pool using a system property
+      if (!dm.getCancelCriterion().isCancelInProgress()) {
+        logger.warn("Unable to schedule background cleanup of transactions for departed member {}."
+            + "  Performing in-line cleanup of the transactions.");
+        recoverTx.run();
+      }
+    }
+  }
+
+  private void clearProcessingDepartures() {
+    synchronized (stateLock) {
+      processingDepartures = false;
+      stateLock.notifyAll();
     }
   }
 
