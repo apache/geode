@@ -35,7 +35,6 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
   private String group1Jar;
   private String group2Jar;
 
-
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
 
