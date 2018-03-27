@@ -119,6 +119,10 @@ public class CacheRule extends DistributedExternalResource {
     cache = (InternalCache) new CacheFactory(config).create();
   }
 
+  public void createCache(final CacheFactory cacheFactory) {
+    cache = (InternalCache) cacheFactory.create();
+  }
+
   public void createCache(final Properties config) {
     cache = (InternalCache) new CacheFactory(config).create();
   }
@@ -156,7 +160,7 @@ public class CacheRule extends DistributedExternalResource {
   }
 
   /**
-   * Builds an instance of SharedCountersRule
+   * Builds an instance of CacheRule.
    */
   public static class Builder {
 
