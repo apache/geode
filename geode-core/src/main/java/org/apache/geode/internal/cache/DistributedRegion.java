@@ -2200,7 +2200,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       event = findOnServer(keyInfo, op, generateCallbacks, clientEvent);
       if (event == null) {
         event = createEventForLoad(keyInfo, generateCallbacks, requestingClient, op);
-        lastModified = findUsingSearchLoad(txState, localValue, clientEvent, keyInfo, event);
+        lastModified = findUsingSearchLoad(txState, localValue, clientEvent, keyInfo, event, preferCD);
       }
       // Update region with new value.
       if (event.hasNewValue() && !isMemoryThresholdReachedForLoad()) {
@@ -2320,7 +2320,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   private long findUsingSearchLoad(TXStateInterface txState, Object localValue,
-      EntryEventImpl clientEvent, final KeyInfo keyInfo, EntryEventImpl event) {
+      EntryEventImpl clientEvent, final KeyInfo keyInfo, EntryEventImpl event, boolean preferCD) {
     long lastModified = 0L;
     // If this event is because of a register interest call, don't invoke the CacheLoader
     boolean getForRegisterInterest = clientEvent != null && clientEvent.getOperation() != null
@@ -2330,7 +2330,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       try {
         processor.initialize(this, keyInfo.getKey(), keyInfo.getCallbackArg());
         // processor fills in event
-        processor.doSearchAndLoad(event, txState, localValue);
+        processor.doSearchAndLoad(event, txState, localValue, preferCD);
         if (clientEvent != null && clientEvent.getVersionTag() == null) {
           clientEvent.setVersionTag(event.getVersionTag());
         }

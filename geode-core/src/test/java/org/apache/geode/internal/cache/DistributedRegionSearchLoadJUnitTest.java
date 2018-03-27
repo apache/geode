@@ -142,7 +142,7 @@ public class DistributedRegionSearchLoadJUnitTest {
         }
         return null;
       }
-    }).when(proc).doSearchAndLoad(any(EntryEventImpl.class), anyObject(), anyObject());
+    }).when(proc).doSearchAndLoad(any(EntryEventImpl.class), anyObject(), anyObject(), anyBoolean());
   }
 
   @Test

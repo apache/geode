@@ -164,17 +164,17 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
 
 
-  void doSearchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue)
+  void doSearchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue, boolean preferCD)
       throws CacheLoaderException, TimeoutException {
     this.requestInProgress = true;
     RegionAttributes attrs = region.getAttributes();
     Scope scope = attrs.getScope();
     CacheLoader loader = ((AbstractRegion) region).basicGetLoader();
     if (scope.isLocal()) {
-      Object obj = doLocalLoad(loader, false);
+      Object obj = doLocalLoad(loader, false, preferCD);
       event.setNewValue(obj);
     } else {
-      searchAndLoad(event, txState, localValue);
+      searchAndLoad(event, txState, localValue, preferCD);
     }
     this.requestInProgress = false;
     if (this.netSearch) {
@@ -432,8 +432,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    * netSearch amongst selected peers if netSearch returns a blob, deserialize the blob and return
    * that as the result netSearch failed, so all we can do at this point is do a load return result
    * from load
+   * @param preferCD 
    */
-  private void searchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue)
+  private void searchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue, boolean preferCD)
       throws CacheLoaderException, TimeoutException {
 
     RegionAttributes attrs = region.getAttributes();
@@ -448,7 +449,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           // If the tx view has it invalid or destroyed everywhere
           // then don't do a netsearch. We want to see the
           // transactional view.
-          load(event);
+          load(event, preferCD);
           return;
         }
       }
@@ -459,7 +460,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     // know it was distributed. (Otherwise it would be a LOCAL_INVALID token)
     {
       if (localValue == Token.INVALID || dataPolicy.withReplication()) {
-        load(event);
+        load(event, preferCD);
         return;
       }
     }
@@ -469,7 +470,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       // copy into local var to prevent race condition
       CacheLoader loader = ((AbstractRegion) region).basicGetLoader();
       if (loader != null) {
-        obj = doLocalLoad(loader, true);
+        obj = doLocalLoad(loader, true, preferCD);
         Assert.assertTrue(obj != Token.INVALID && obj != Token.LOCAL_INVALID);
         event.setNewValue(obj);
         this.isSerialized = false;
@@ -492,7 +493,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       return;
     }
 
-    load(event);
+    load(event, preferCD);
   }
 
   /** perform a net-search, setting this.result to the object found in the search */
@@ -592,7 +593,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     }
   }
 
-  private void load(EntryEventImpl event) throws CacheLoaderException, TimeoutException {
+  private void load(EntryEventImpl event, boolean preferCD) throws CacheLoaderException, TimeoutException {
     Object obj = null;
     RegionAttributes attrs = this.region.getAttributes();
     Scope scope = attrs.getScope();
@@ -600,7 +601,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     Assert.assertTrue(scope.isDistributed());
 
     if ((loader != null) && (!scope.isGlobal())) {
-      obj = doLocalLoad(loader, false);
+      obj = doLocalLoad(loader, false, preferCD);
       event.setNewValue(obj);
       Assert.assertTrue(obj != Token.INVALID && obj != Token.LOCAL_INVALID);
       return;
@@ -652,7 +653,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             }
           }
         } else {
-          obj = doLocalLoad(loader, false);
+          obj = doLocalLoad(loader, false, preferCD);
           Assert.assertTrue(obj != Token.INVALID && obj != Token.LOCAL_INVALID);
           event.setNewValue(obj);
         }
@@ -779,7 +780,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   }
 
 
-  private Object doLocalLoad(CacheLoader loader, boolean netSearchAllowed)
+  private Object doLocalLoad(CacheLoader loader, boolean netSearchAllowed, boolean preferCD)
       throws CacheLoaderException {
     Object obj = null;
     if (loader != null && !this.attemptedLocalLoad) {
@@ -790,7 +791,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       long statStart = stats.startLoad();
       try {
         obj = loader.load(loaderHelper);
-        obj = this.region.getCache().convertPdxInstanceIfNeeded(obj);
+        obj = this.region.getCache().convertPdxInstanceIfNeeded(obj, preferCD);
       } finally {
         stats.endLoad(statStart);
       }
