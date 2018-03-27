@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.xmlcache.Declarable2;
  * partitioning.
  *
  * <p>
- * Extracted from {@link PRCustomPartitioningDUnitTest}.
+ * Extracted from {@link PRCustomPartitioningDistributedTest}.
  */
 class MonthBasedPartitionResolver implements PartitionResolver, Declarable2 {
 
