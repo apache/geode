@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.InternalClusterConfigurationService
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -47,7 +48,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  *
  * @since GemFire 8.1
  */
-public class MockExtensionCommands implements CommandMarker {
+public class MockExtensionCommands extends GfshCommand {
 
   public static final String OPTION_VALUE = "value";
 
