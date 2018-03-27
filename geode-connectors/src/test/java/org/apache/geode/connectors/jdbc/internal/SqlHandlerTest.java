@@ -31,7 +31,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import junitparams.JUnitParamsRunner;
@@ -57,13 +59,7 @@ public class SqlHandlerTest {
   private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
   private static final String REGION_NAME = "testRegion";
   private static final String TABLE_NAME = "testTable";
-  private static final String COLUMN_NAME_1 = "columnName1";
-  private static final Object COLUMN_VALUE_1 = "columnValue1";
-  private static final Object COLUMN_VALUE_2 = "columnValue2";
-  private static final String COLUMN_NAME_2 = "columnName2";
   private static final String KEY_COLUMN = "keyColumn";
-  private static final String PDX_FIELD_NAME_1 = COLUMN_NAME_1.toLowerCase();
-  private static final String PDX_FIELD_NAME_2 = COLUMN_NAME_2.toLowerCase();
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -75,7 +71,7 @@ public class SqlHandlerTest {
   private TableMetaDataManager tableMetaDataManager;
   private TableMetaDataView tableMetaDataView;
   private Connection connection;
-  private Region region;
+  private Region<Object, Object> region;
   private InternalCache cache;
   private SqlHandler handler;
   private PreparedStatement statement;
@@ -83,6 +79,7 @@ public class SqlHandlerTest {
   private PdxInstanceImpl value;
   private Object key;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setup() throws Exception {
     manager = mock(DataSourceManager.class);
@@ -137,6 +134,7 @@ public class SqlHandlerTest {
     handler.read(region, null);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void readThrowsIfNoMapping() throws Exception {
     thrown.expect(JdbcConnectorException.class);
@@ -145,7 +143,8 @@ public class SqlHandlerTest {
 
   @Test
   public void readThrowsIfNoConnectionConfig() throws Exception {
-    Region region2 = mock(Region.class);
+    @SuppressWarnings("unchecked")
+    Region<Object, Object> region2 = mock(Region.class);
     when(region2.getName()).thenReturn("region2");
     RegionMapping regionMapping2 = mock(RegionMapping.class);
     when(regionMapping2.getConnectionConfigName()).thenReturn("bogus connection name");
@@ -193,6 +192,123 @@ public class SqlHandlerTest {
     handler.write(region, Operation.CREATE, createKey, value);
 
     verify(statement).setObject(1, fieldValue.toString());
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
+  @Test
+  public void writeWithDateField() throws Exception {
+    String fieldName = "fieldName";
+    Object fieldValue = new Date();
+    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setObject(1, fieldValue);
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
+  @Test
+  public void writeWithDateFieldWithDateTypeFromMetaData() throws Exception {
+    String fieldName = "fieldName";
+    Date fieldValue = new Date();
+    Object expectedValueWritten = new java.sql.Date(fieldValue.getTime());
+    int dataType = Types.DATE;
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
+    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setObject(1, expectedValueWritten);
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
+  @Test
+  public void writeWithDateFieldWithTimeTypeFromMetaData() throws Exception {
+    String fieldName = "fieldName";
+    Date fieldValue = new Date();
+    Object expectedValueWritten = new java.sql.Time(fieldValue.getTime());
+    int dataType = Types.TIME;
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
+    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setObject(1, expectedValueWritten);
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
+  @Test
+  public void writeWithDateFieldWithTimeWithTimezoneTypeFromMetaData() throws Exception {
+    String fieldName = "fieldName";
+    Date fieldValue = new Date();
+    Object expectedValueWritten = new java.sql.Time(fieldValue.getTime());
+    int dataType = Types.TIME_WITH_TIMEZONE;
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
+    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setObject(1, expectedValueWritten);
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
+  @Test
+  public void writeWithDateFieldWithTimestampTypeFromMetaData() throws Exception {
+    String fieldName = "fieldName";
+    Date fieldValue = new Date();
+    Object expectedValueWritten = new java.sql.Timestamp(fieldValue.getTime());
+    int dataType = Types.TIMESTAMP;
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
+    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setObject(1, expectedValueWritten);
+    verify(statement).setObject(2, createKey);
+    verify(statement).close();
+  }
+
+  @Test
+  public void writeWithDateFieldWithTimestampWithTimezoneTypeFromMetaData() throws Exception {
+    String fieldName = "fieldName";
+    Date fieldValue = new Date();
+    Object expectedValueWritten = new java.sql.Timestamp(fieldValue.getTime());
+    int dataType = Types.TIMESTAMP_WITH_TIMEZONE;
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
+    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(value.getField(fieldName)).thenReturn(fieldValue);
+
+    when(statement.executeUpdate()).thenReturn(1);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+
+    verify(statement).setObject(1, expectedValueWritten);
     verify(statement).setObject(2, createKey);
     verify(statement).close();
   }

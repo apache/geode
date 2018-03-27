@@ -197,7 +197,7 @@ public class JdbcDUnitTest implements Serializable {
       PdxInstance pdxEmployee1 =
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
-      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
           .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
               "JDBC mapping for region employees not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
@@ -215,7 +215,7 @@ public class JdbcDUnitTest implements Serializable {
       PdxInstance pdxEmployee1 =
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
-      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.put("key1", pdxEmployee1);
 
       JdbcAsyncWriter asyncWriter = (JdbcAsyncWriter) ClusterStartupRule.getCache()
@@ -238,7 +238,7 @@ public class JdbcDUnitTest implements Serializable {
       PdxInstance pdxEmployee1 =
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
-      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
           .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
               "JDBC mapping for region employees not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
@@ -255,10 +255,115 @@ public class JdbcDUnitTest implements Serializable {
       PdxInstance pdxEmployee1 =
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
-      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
           .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
               "JDBC connection with name TestConnection not found. Create the connection with the gfsh command 'create jdbc-connection'");
+    });
+  }
+
+  @Test
+  public void verifyDateToDate() throws Exception {
+    server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
+    server.invoke(() -> {
+      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      Statement statement = connection.createStatement();
+      statement.execute(
+          "Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, mydate date)");
+    });
+    createRegionUsingGfsh(true, false, true);
+    createJdbcConnection();
+    createMapping(REGION_NAME, CONNECTION_NAME);
+    final String key = "emp1";
+    final java.sql.Date sqlDate = java.sql.Date.valueOf("1982-09-11");
+    final Date jdkDate = new Date(sqlDate.getTime());
+    server.invoke(() -> {
+      PdxInstance pdxEmployee1 =
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
+              .writeString("id", "key1").writeDate("mydate", jdkDate).create();
+
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      region.put(key, pdxEmployee1);
+      region.invalidate(key);
+    });
+    ClientVM client = getClientVM();
+    createClientRegion(client);
+    client.invoke(() -> {
+      Region<String, ClassWithSupportedPdxFields> region =
+          ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
+      PdxInstance getResult = (PdxInstance) region.get(key);
+      assertThat(getResult.getField("mydate")).isInstanceOf(java.util.Date.class)
+          .isEqualTo(jdkDate);
+    });
+  }
+
+  @Test
+  public void verifyDateToTime() throws Exception {
+    server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
+    server.invoke(() -> {
+      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      Statement statement = connection.createStatement();
+      statement.execute(
+          "Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, mytime time)");
+    });
+    createRegionUsingGfsh(true, false, true);
+    createJdbcConnection();
+    createMapping(REGION_NAME, CONNECTION_NAME);
+    final String key = "emp1";
+    final java.sql.Time sqlTime = java.sql.Time.valueOf("23:59:59");
+    final Date jdkDate = new Date(sqlTime.getTime());
+    server.invoke(() -> {
+      PdxInstance pdxEmployee1 =
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
+              .writeString("id", "key1").writeDate("mytime", jdkDate).create();
+
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      region.put(key, pdxEmployee1);
+      region.invalidate(key);
+    });
+    ClientVM client = getClientVM();
+    createClientRegion(client);
+    client.invoke(() -> {
+      Region<String, ClassWithSupportedPdxFields> region =
+          ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
+      PdxInstance getResult = (PdxInstance) region.get(key);
+      assertThat(getResult.getField("mytime")).isInstanceOf(java.util.Date.class)
+          .isEqualTo(jdkDate);
+    });
+  }
+
+  @Test
+  public void verifyDateToTimestamp() throws Exception {
+    server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
+    server.invoke(() -> {
+      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      Statement statement = connection.createStatement();
+      statement.execute("Create Table " + TABLE_NAME
+          + " (id varchar(10) primary key not null, mytimestamp timestamp)");
+    });
+    createRegionUsingGfsh(true, false, true);
+    createJdbcConnection();
+    createMapping(REGION_NAME, CONNECTION_NAME);
+    final String key = "emp1";
+    final java.sql.Timestamp sqlTimestamp = java.sql.Timestamp.valueOf("1982-09-11 23:59:59.123");
+    final Date jdkDate = new Date(sqlTimestamp.getTime());
+    server.invoke(() -> {
+      PdxInstance pdxEmployee1 =
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
+              .writeString("id", "key1").writeDate("mytimestamp", jdkDate).create();
+
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      region.put(key, pdxEmployee1);
+      region.invalidate(key);
+    });
+    ClientVM client = getClientVM();
+    createClientRegion(client);
+    client.invoke(() -> {
+      Region<String, ClassWithSupportedPdxFields> region =
+          ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
+      PdxInstance getResult = (PdxInstance) region.get(key);
+      assertThat(getResult.getField("mytimestamp")).isInstanceOf(java.util.Date.class)
+          .isEqualTo(jdkDate);
     });
   }
 
@@ -304,7 +409,7 @@ public class JdbcDUnitTest implements Serializable {
     createMapping(REGION_NAME, CONNECTION_NAME);
     server.invoke(() -> {
       String key = "emp1";
-      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       Object value = region.get(key);
       assertThat(value).isNull();
       assertThat(region.size()).isEqualTo(0);
@@ -323,11 +428,12 @@ public class JdbcDUnitTest implements Serializable {
               .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
 
       String key = "id1";
-      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.put(key, pdxEmployee1);
       region.invalidate(key);
 
-      JdbcWriter writer = (JdbcWriter) region.getAttributes().getCacheWriter();
+      JdbcWriter<Object, Object> writer =
+          (JdbcWriter<Object, Object>) region.getAttributes().getCacheWriter();
       long writeCallsCompletedBeforeGet = writer.getTotalEvents();
 
       PdxInstance result = (PdxInstance) region.get(key);
@@ -350,7 +456,7 @@ public class JdbcDUnitTest implements Serializable {
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
       String key = "id1";
-      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       JdbcAsyncWriter asyncWriter = (JdbcAsyncWriter) ClusterStartupRule.getCache()
           .getAsyncEventQueue("JAW").getAsyncEventListener();
 
@@ -379,7 +485,7 @@ public class JdbcDUnitTest implements Serializable {
     server.invoke(() -> {
       String key = "id1";
       Employee value = new Employee("Emp1", 55);
-      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.put(key, value);
       region.invalidate(key);
 

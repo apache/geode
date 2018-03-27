@@ -29,6 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Date;
 
 import junitparams.JUnitParamsRunner;
@@ -66,6 +67,7 @@ public class SqlToPdxInstanceCreatorTest {
   private SqlToPdxInstanceCreator sqlToPdxInstanceCreator;
   private RegionMapping regionMapping;
   private ResultSet resultSet;
+  private TableMetaDataView tableMetaDataView;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -75,8 +77,10 @@ public class SqlToPdxInstanceCreatorTest {
     cache = mock(InternalCache.class);
     regionMapping = mock(RegionMapping.class);
     resultSet = mock(ResultSet.class);
+    tableMetaDataView = mock(TableMetaDataView.class);
+    when(tableMetaDataView.getKeyColumnName()).thenReturn(KEY_COLUMN);
     sqlToPdxInstanceCreator =
-        new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, KEY_COLUMN);
+        new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, tableMetaDataView);
   }
 
   @Test
@@ -116,8 +120,10 @@ public class SqlToPdxInstanceCreatorTest {
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_2), any()))
         .thenReturn(PDX_FIELD_NAME_2);
+    tableMetaDataView = mock(TableMetaDataView.class);
+    when(tableMetaDataView.getKeyColumnName()).thenReturn(COLUMN_NAME_1);
     sqlToPdxInstanceCreator =
-        new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, COLUMN_NAME_1);
+        new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, tableMetaDataView);
 
     sqlToPdxInstanceCreator.create();
 
@@ -191,6 +197,7 @@ public class SqlToPdxInstanceCreatorTest {
 
   @Test
   public void readOfCharFieldWithEmptyStringWritesCharZero() throws Exception {
+    char expectedValue = 0;
     FieldType fieldType = FieldType.CHAR;
     ResultSetMetaData metaData = mock(ResultSetMetaData.class);
     when(resultSet.getMetaData()).thenReturn(metaData);
@@ -204,7 +211,155 @@ public class SqlToPdxInstanceCreatorTest {
 
     sqlToPdxInstanceCreator.create();
 
-    char expectedValue = 0;
+    verifyPdxFactoryWrite(factory, fieldType, expectedValue);
+    verify(factory).create();
+  }
+
+  @Test
+  public void readOfDateFieldWithDateColumnWritesDate() throws Exception {
+    FieldType fieldType = FieldType.DATE;
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(resultSet.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(1);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(Types.DATE);
+    java.sql.Date sqlDate = java.sql.Date.valueOf("1979-09-11");
+    Date expectedValue = new Date(sqlDate.getTime());
+    when(resultSet.getDate(1)).thenReturn(sqlDate);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
+    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
+        .thenReturn(PDX_FIELD_NAME_1);
+
+    sqlToPdxInstanceCreator.create();
+
+    verifyPdxFactoryWrite(factory, fieldType, expectedValue);
+    verify(factory).create();
+  }
+
+  @Test
+  public void readOfDateFieldWithTimeColumnWritesDate() throws Exception {
+    FieldType fieldType = FieldType.DATE;
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(resultSet.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(1);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(Types.TIME);
+    java.sql.Time sqlTime = java.sql.Time.valueOf("22:33:44");
+    Date expectedValue = new Date(sqlTime.getTime());
+    when(resultSet.getTime(1)).thenReturn(sqlTime);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
+    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
+        .thenReturn(PDX_FIELD_NAME_1);
+
+    sqlToPdxInstanceCreator.create();
+
+    verifyPdxFactoryWrite(factory, fieldType, expectedValue);
+    verify(factory).create();
+  }
+
+  @Test
+  public void readOfDateFieldWithTimestampColumnWritesDate() throws Exception {
+    FieldType fieldType = FieldType.DATE;
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(resultSet.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(1);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(Types.TIMESTAMP);
+    java.sql.Timestamp sqlTimestamp = java.sql.Timestamp.valueOf("1979-09-11 22:33:44.567");
+    Date expectedValue = new Date(sqlTimestamp.getTime());
+    when(resultSet.getTimestamp(1)).thenReturn(sqlTimestamp);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
+    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
+        .thenReturn(PDX_FIELD_NAME_1);
+
+    sqlToPdxInstanceCreator.create();
+
+    verifyPdxFactoryWrite(factory, fieldType, expectedValue);
+    verify(factory).create();
+  }
+
+  @Test
+  public void readOfObjectFieldWithDateColumnWritesDate() throws Exception {
+    FieldType fieldType = FieldType.OBJECT;
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(resultSet.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(1);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+    java.sql.Date sqlDate = java.sql.Date.valueOf("1979-09-11");
+    Date expectedValue = new Date(sqlDate.getTime());
+    when(resultSet.getObject(1)).thenReturn(sqlDate);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
+    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
+        .thenReturn(PDX_FIELD_NAME_1);
+
+    sqlToPdxInstanceCreator.create();
+
+    verifyPdxFactoryWrite(factory, fieldType, expectedValue);
+    verify(factory).create();
+  }
+
+  @Test
+  public void readOfObjectFieldWithJavaUtilDateWritesDate() throws Exception {
+    FieldType fieldType = FieldType.OBJECT;
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(resultSet.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(1);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+    Date expectedValue = new Date();
+    when(resultSet.getObject(1)).thenReturn(expectedValue);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
+    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
+        .thenReturn(PDX_FIELD_NAME_1);
+
+    sqlToPdxInstanceCreator.create();
+
+    verifyPdxFactoryWrite(factory, fieldType, expectedValue);
+    verify(factory).create();
+  }
+
+  @Test
+  public void readOfObjectFieldWithTimeColumnWritesDate() throws Exception {
+    FieldType fieldType = FieldType.OBJECT;
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(resultSet.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(1);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+    java.sql.Time sqlTime = java.sql.Time.valueOf("22:33:44");
+    Date expectedValue = new Date(sqlTime.getTime());
+    when(resultSet.getObject(1)).thenReturn(sqlTime);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
+    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
+        .thenReturn(PDX_FIELD_NAME_1);
+
+    sqlToPdxInstanceCreator.create();
+
+    verifyPdxFactoryWrite(factory, fieldType, expectedValue);
+    verify(factory).create();
+  }
+
+  @Test
+  public void readOfObjectFieldWithTimestampColumnWritesDate() throws Exception {
+    FieldType fieldType = FieldType.OBJECT;
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(resultSet.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(1);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+    java.sql.Timestamp sqlTimestamp = java.sql.Timestamp.valueOf("1979-09-11 22:33:44.567");
+    Date expectedValue = new Date(sqlTimestamp.getTime());
+    when(resultSet.getObject(1)).thenReturn(sqlTimestamp);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
+    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
+        .thenReturn(PDX_FIELD_NAME_1);
+
+    sqlToPdxInstanceCreator.create();
+
     verifyPdxFactoryWrite(factory, fieldType, expectedValue);
     verify(factory).create();
   }
@@ -363,6 +518,7 @@ public class SqlToPdxInstanceCreatorTest {
 
   private static byte[][] arrayOfByteArray = new byte[][] {{1, 2}, {3, 4}};
 
+  @SuppressWarnings("unchecked")
   private <T> T getValueByFieldType(FieldType fieldType) {
     switch (fieldType) {
       case STRING:
