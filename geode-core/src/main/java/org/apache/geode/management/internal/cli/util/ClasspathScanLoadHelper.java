@@ -28,7 +28,7 @@ import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
  * @since GemFire 7.0
  */
 public class ClasspathScanLoadHelper {
-  public static Set<Class<?>> scanPackageForClassesImplementing(Class<?> implementedInterface,
+  public static Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
       String... packagesToScan) {
     Set<Class<?>> classesImplementing = new HashSet<>();
     new FastClasspathScanner(packagesToScan)
