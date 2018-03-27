@@ -14,24 +14,24 @@
  */
 package org.apache.geode.test.dunit.rules.tests;
 
+import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class DistributedTestRuleTest {
+public class DistributedTestRuleDistributedTest {
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Test
   public void shouldHaveFourOrMoreDUnitVMsByDefault() throws Exception {
-    assertThat(Host.getHost(0).getVMCount()).isGreaterThanOrEqualTo(4);
+    assertThat(getVMCount()).isGreaterThanOrEqualTo(4);
   }
 }
