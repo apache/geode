@@ -57,15 +57,15 @@ public abstract class DatabaseConnectionRule extends ExternalResource {
     return dockerRule.containers().container(serviceName).port(port);
   }
 
+  protected String getDbName() {
+    return dbName;
+  }
+
   public Connection getConnection() throws SQLException {
     String connectionUrl = getConnectionString();
     Awaitility.await().ignoreExceptions().atMost(10, TimeUnit.SECONDS)
         .until(matches(() -> DriverManager.getConnection(connectionUrl)));
     Connection connection = DriverManager.getConnection(connectionUrl);
-    if (dbName != null) {
-      connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS " + dbName);
-      connection.setCatalog(dbName);
-    }
     return connection;
   }
 
@@ -104,7 +104,7 @@ public abstract class DatabaseConnectionRule extends ExternalResource {
     }
 
     protected String getServiceName() {
-      return  serviceName;
+      return serviceName;
     }
 
     protected int getPort() {

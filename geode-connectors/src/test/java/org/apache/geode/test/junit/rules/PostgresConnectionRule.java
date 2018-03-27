@@ -14,34 +14,20 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import com.palantir.docker.compose.DockerComposeRule;
 
-public class MySqlConnectionRule extends DatabaseConnectionRule {
+public class PostgresConnectionRule extends DatabaseConnectionRule {
   private static final String CONNECTION_STRING =
-      "jdbc:mysql://$HOST:$EXTERNAL_PORT?user=root&useSSL=false";
+      "jdbc:postgresql://$HOST:$EXTERNAL_PORT/%s?user=postgres";
 
-  protected MySqlConnectionRule(DockerComposeRule dockerRule, String serviceName, int port,
+  protected PostgresConnectionRule(DockerComposeRule dockerRule, String serviceName, int port,
       String dbName) {
     super(dockerRule, serviceName, port, dbName);
   }
 
   @Override
-  public Connection getConnection() throws SQLException {
-    Connection connection = super.getConnection();
-    String dbName = getDbName();
-    if (dbName != null) {
-      connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS " + dbName);
-      connection.setCatalog(dbName);
-    }
-    return connection;
-  }
-
-  @Override
   protected String getConnectionString() {
-    return getDockerPort().inFormat(CONNECTION_STRING);
+    return getDockerPort().inFormat(String.format(CONNECTION_STRING, getDbName()));
   }
 
   public static class Builder extends DatabaseConnectionRule.Builder {
@@ -51,8 +37,9 @@ public class MySqlConnectionRule extends DatabaseConnectionRule {
     }
 
     @Override
-    public MySqlConnectionRule build() {
-      return new MySqlConnectionRule(createDockerRule(), getServiceName(), getPort(), getDbName());
+    public PostgresConnectionRule build() {
+      return new PostgresConnectionRule(createDockerRule(), getServiceName(), getPort(),
+          getDbName());
     }
   }
 }
