@@ -12,13 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit.rules;
+package org.apache.geode.connectors.jdbc.internal;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.junit.rules.TestRule;
+import org.junit.ClassRule;
+import org.junit.experimental.categories.Category;
 
-public interface DatabaseConnectionRule extends TestRule {
-  Connection getConnection() throws SQLException;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
+import org.apache.geode.test.junit.rules.MySqlConnectionRule;
+
+@Category(IntegrationTest.class)
+public class MySqlTableMetaDataManagerIntegrationTest extends TableMetaDataManagerIntegrationTest {
+
+  @ClassRule
+  public static DatabaseConnectionRule dbRule =
+      new MySqlConnectionRule.Builder().file("src/test/resources/docker/mysql.yml")
+          .serviceName("db").port(3306).database(DB_NAME).build();
+
+  @Override
+  public Connection getConnection() throws SQLException {
+    return dbRule.getConnection();
+  }
 }
