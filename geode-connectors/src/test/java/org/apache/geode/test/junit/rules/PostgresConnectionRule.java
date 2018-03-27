@@ -16,7 +16,7 @@ package org.apache.geode.test.junit.rules;
 
 import com.palantir.docker.compose.DockerComposeRule;
 
-public class PostgresConnectionRule extends DatabaseConnectionRule {
+public class PostgresConnectionRule extends SqlDatabaseConnectionRule {
   private static final String CONNECTION_STRING =
       "jdbc:postgresql://$HOST:$EXTERNAL_PORT/%s?user=postgres";
 
@@ -30,7 +30,7 @@ public class PostgresConnectionRule extends DatabaseConnectionRule {
     return getDockerPort().inFormat(String.format(CONNECTION_STRING, getDbName()));
   }
 
-  public static class Builder extends DatabaseConnectionRule.Builder {
+  public static class Builder extends SqlDatabaseConnectionRule.Builder {
 
     public Builder() {
       super();

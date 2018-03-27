@@ -19,7 +19,7 @@ import java.sql.SQLException;
 
 import com.palantir.docker.compose.DockerComposeRule;
 
-public class MySqlConnectionRule extends DatabaseConnectionRule {
+public class MySqlConnectionRule extends SqlDatabaseConnectionRule {
   private static final String CONNECTION_STRING =
       "jdbc:mysql://$HOST:$EXTERNAL_PORT?user=root&useSSL=false";
 
@@ -44,7 +44,7 @@ public class MySqlConnectionRule extends DatabaseConnectionRule {
     return getDockerPort().inFormat(CONNECTION_STRING);
   }
 
-  public static class Builder extends DatabaseConnectionRule.Builder {
+  public static class Builder extends SqlDatabaseConnectionRule.Builder {
 
     public Builder() {
       super();

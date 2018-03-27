@@ -15,10 +15,24 @@
 package org.apache.geode.test.junit.rules;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import org.junit.rules.TestRule;
+import org.junit.rules.ExternalResource;
 
-public interface DatabaseConnectionRule extends TestRule {
-  Connection getConnection() throws SQLException;
+public class InMemoryDerbyConnectionRule extends ExternalResource
+    implements DatabaseConnectionRule {
+  private static final String CONNECTION_URL = "jdbc:derby:memory:%s;create=true";
+
+  private final String dbName;
+
+  public InMemoryDerbyConnectionRule(String dbName) {
+    this.dbName = dbName;
+  }
+
+  @Override
+  public Connection getConnection() throws SQLException {
+    String url = String.format(CONNECTION_URL, dbName);
+    return DriverManager.getConnection(url);
+  }
 }
