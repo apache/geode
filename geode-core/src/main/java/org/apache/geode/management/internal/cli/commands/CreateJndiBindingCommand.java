@@ -194,7 +194,11 @@ public class CreateJndiBindingCommand implements GfshCommand {
 
     Configuration config = getSharedConfiguration().getConfiguration("cluster");
 
-    Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
+    String xmlContent = config.getCacheXmlContent();
+    if (xmlContent == null || xmlContent.isEmpty()) {
+      xmlContent = getSharedConfiguration().generateDefaultXml();
+    }
+    Document document = XmlUtils.createDocumentFromXml(xmlContent);
     NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
     if (jndiBindings == null || jndiBindings.getLength() == 0) {
@@ -214,7 +218,11 @@ public class CreateJndiBindingCommand implements GfshCommand {
     // cluster group config should always be present
     Configuration config = getSharedConfiguration().getConfiguration("cluster");
 
-    Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
+    String xmlContent = config.getCacheXmlContent();
+    if (xmlContent == null || xmlContent.isEmpty()) {
+      xmlContent = getSharedConfiguration().generateDefaultXml();
+    }
+    Document document = XmlUtils.createDocumentFromXml(xmlContent);
     Node cacheNode = document.getElementsByTagName("cache").item(0);
 
     NodeList jndiBindingsNode = document.getElementsByTagName("jndi-bindings");

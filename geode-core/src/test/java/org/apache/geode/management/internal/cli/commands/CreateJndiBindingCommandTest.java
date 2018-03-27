@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -166,6 +167,7 @@ public class CreateJndiBindingCommandTest {
     Region configRegion = mock(Region.class);
 
     doReturn(configRegion).when(clusterConfigService).getConfigurationRegion();
+    doCallRealMethod().when(clusterConfigService).generateDefaultXml();
     doReturn(null).when(configRegion).put(any(), any());
     doReturn(clusterConfig).when(clusterConfigService).getConfiguration("cluster");
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
@@ -188,6 +190,7 @@ public class CreateJndiBindingCommandTest {
     ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
 
     doReturn(clusterConfig).when(clusterConfigService).getConfiguration("cluster");
+    doCallRealMethod().when(clusterConfigService).generateDefaultXml();
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     doReturn(clusterConfigService).when(command).getSharedConfiguration();
 
@@ -203,6 +206,7 @@ public class CreateJndiBindingCommandTest {
     Region configRegion = mock(Region.class);
 
     doReturn(configRegion).when(clusterConfigService).getConfigurationRegion();
+    doCallRealMethod().when(clusterConfigService).generateDefaultXml();
     doReturn(null).when(configRegion).put(any(), any());
     doReturn(clusterConfig).when(clusterConfigService).getConfiguration("cluster");
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
@@ -225,6 +229,7 @@ public class CreateJndiBindingCommandTest {
     Region configRegion = mock(Region.class);
 
     doReturn(configRegion).when(clusterConfigService).getConfigurationRegion();
+    doCallRealMethod().when(clusterConfigService).generateDefaultXml();
     doReturn(null).when(configRegion).put(any(), any());
     doReturn(clusterConfig).when(clusterConfigService).getConfiguration("cluster");
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
