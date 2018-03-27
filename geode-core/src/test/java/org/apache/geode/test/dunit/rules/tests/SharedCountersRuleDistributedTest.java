@@ -16,6 +16,8 @@ package org.apache.geode.test.dunit.rules.tests;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.test.dunit.VM.getAllVMs;
+import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -32,7 +34,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.dunit.rules.SharedCountersRule;
@@ -40,7 +41,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class SharedCountersRuleTest implements Serializable {
+public class SharedCountersRuleDistributedTest implements Serializable {
 
   private static final int TWO_MINUTES_MILLIS = 2 * 60 * 1000;
   private static final String ID1 = "ID1";
@@ -104,23 +105,23 @@ public class SharedCountersRuleTest implements Serializable {
   @Test
   public void inc_fromDUnitVMs_getTotal_returnsFour() throws Exception {
     sharedCountersRule.initialize(ID1);
-    for (VM vm : Host.getHost(0).getAllVMs()) {
+    for (VM vm : getAllVMs()) {
       vm.invoke(() -> {
         sharedCountersRule.increment(ID1);
       });
     }
-    assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(Host.getHost(0).getVMCount());
+    assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(getVMCount());
   }
 
   @Test
   public void inc_fromEveryVM_getTotal_returnsFive() throws Exception {
     sharedCountersRule.initialize(ID1).increment(ID1);
-    for (VM vm : Host.getHost(0).getAllVMs()) {
+    for (VM vm : getAllVMs()) {
       vm.invoke(() -> {
         sharedCountersRule.increment(ID1);
       });
     }
-    assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(Host.getHost(0).getVMCount() + 1);
+    assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(getVMCount() + 1);
   }
 
   @Test
@@ -131,19 +132,19 @@ public class SharedCountersRuleTest implements Serializable {
 
     // inc ID1 in numThreads in every VM (4 DUnit VMs + Controller VM)
     submitIncrementTasks(numThreads, ID1);
-    for (VM vm : Host.getHost(0).getAllVMs()) {
+    for (VM vm : getAllVMs()) {
       vm.invoke(() -> submitIncrementTasks(numThreads, ID1));
     }
 
     // await CompletableFuture in every VM
     Stopwatch stopwatch = Stopwatch.createStarted();
     combined.get(calculateTimeoutMillis(stopwatch), MILLISECONDS);
-    for (VM vm : Host.getHost(0).getAllVMs()) {
+    for (VM vm : getAllVMs()) {
       long timeoutMillis = calculateTimeoutMillis(stopwatch);
       vm.invoke(() -> combined.get(timeoutMillis, MILLISECONDS));
     }
 
-    int dunitVMCount = Host.getHost(0).getVMCount();
+    int dunitVMCount = getVMCount();
     int controllerPlusDUnitVMCount = dunitVMCount + 1;
     int expectedIncrements = controllerPlusDUnitVMCount * numThreads;
 
@@ -158,7 +159,7 @@ public class SharedCountersRuleTest implements Serializable {
     executor = Executors.newFixedThreadPool(numThreads);
     futures = new ArrayList<>();
 
-    for (VM vm : Host.getHost(0).getAllVMs()) {
+    for (VM vm : getAllVMs()) {
       vm.invoke(() -> {
         executor = Executors.newFixedThreadPool(numThreads);
         futures = new ArrayList<>();
