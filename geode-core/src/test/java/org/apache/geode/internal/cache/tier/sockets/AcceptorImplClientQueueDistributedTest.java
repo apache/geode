@@ -14,7 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.junit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.VM.getAllVMs;
+import static org.apache.geode.test.dunit.VM.getHostName;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,14 +47,10 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.distributed.DistributedLockBlackboard;
-import org.apache.geode.distributed.DistributedLockBlackboardImpl;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -61,17 +60,23 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
-public class AcceptorImplClientQueueDUnitTest implements Serializable {
-  private final Host host = Host.getHost(0);
+@SuppressWarnings("serial")
+public class AcceptorImplClientQueueDistributedTest implements Serializable {
+
   private static final int NUMBER_OF_ENTRIES = 200;
+
+  private String hostName;
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Rule
-  public CacheRule cacheRule =
-      CacheRule.builder().createCacheIn(host.getVM(0)).createCacheIn(host.getVM(1))
-          .addSystemProperty("BridgeServer.HANDSHAKE_POOL_SIZE", "1").build();
+  public CacheRule cacheRule = CacheRule.builder().createCacheIn(getVM(0)).createCacheIn(getVM(1))
+      .addSystemProperty("BridgeServer.HANDSHAKE_POOL_SIZE", "1").build();
+
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
   @Rule
   public SerializableTestName name = new SerializableTestName();
@@ -79,27 +84,24 @@ public class AcceptorImplClientQueueDUnitTest implements Serializable {
   @Rule
   public SerializableTemporaryFolder tempDir = new SerializableTemporaryFolder();
 
-  @Rule
-  public DistributedRestoreSystemProperties restoreSystemProperties =
-      new DistributedRestoreSystemProperties();
-
   @Before
-  public void setup() throws Exception {}
+  public void setUp() throws Exception {
+    hostName = getHostName();
+  }
 
   @After
   public void tearDown() throws RemoteException {
-    host.getAllVMs().forEach((vm) -> vm.invoke(() -> {
+    getAllVMs().forEach((vm) -> vm.invoke(() -> {
       InitialImageOperation.slowImageProcessing = 0;
-      System.getProperties().remove("BridgeServer.HANDSHAKE_POOL_SIZE");
     }));
   }
 
   @Test
   public void clientSubscriptionQueueInitializationShouldNotBlockNewConnections() throws Exception {
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
+    VM vm0 = getVM(0);
+    VM vm1 = getVM(1);
+    VM vm2 = getVM(2);
+    VM vm3 = getVM(3);
 
     // Start one server
     int vm0_port = vm0.invoke("Start server with subscription turned on",
@@ -112,7 +114,7 @@ public class AcceptorImplClientQueueDUnitTest implements Serializable {
       clientCacheFactory.setPoolSubscriptionEnabled(true);
       clientCacheFactory.setPoolSubscriptionRedundancy(1);
       clientCacheFactory.setPoolReadTimeout(200);
-      clientCacheFactory.addPoolServer(host.getHostName(), vm0_port);
+      clientCacheFactory.addPoolServer(hostName, vm0_port);
       ClientCache cache = clientCacheFactory.set("durable-client-id", "1")
           .set("durable-client-timeout", "300").set("mcast-port", "0").create();
       ClientRegionFactory<Object, Object> clientRegionFactory =
@@ -127,7 +129,7 @@ public class AcceptorImplClientQueueDUnitTest implements Serializable {
     // Add some entries Which will end up the in the queue
     vm3.invoke("Start Client2 to add entries to region", () -> {
       ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
-      clientCacheFactory.addPoolServer(host.getHostName(), vm0_port);
+      clientCacheFactory.addPoolServer(hostName, vm0_port);
       ClientCache cache = clientCacheFactory.set("mcast-port", "0").create();
       ClientRegionFactory<Object, Object> clientRegionFactory =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -151,7 +153,7 @@ public class AcceptorImplClientQueueDUnitTest implements Serializable {
     });
 
     // Make copying the queue slow
-    vm0.invoke("Turn on slow image processsing", () -> {
+    vm0.invoke("Turn on slow image processing", () -> {
       InitialImageOperation.slowImageProcessing = 500;
     });
 
@@ -165,7 +167,7 @@ public class AcceptorImplClientQueueDUnitTest implements Serializable {
           clientCacheFactory.setPoolSubscriptionRedundancy(1);
           clientCacheFactory.setPoolMinConnections(1);
           clientCacheFactory.setPoolMaxConnections(1);
-          clientCacheFactory.addPoolServer(host.getHostName(), vm1_port);
+          clientCacheFactory.addPoolServer(hostName, vm1_port);
           ClientCacheFactory cacheFactory = clientCacheFactory.set("durable-client-id", "1")
               .set("durable-client-timeout", "300").set("mcast-port", "0");
           ClientCache cache = cacheFactory.create();
@@ -194,6 +196,7 @@ public class AcceptorImplClientQueueDUnitTest implements Serializable {
           return eventCount.get() == NUMBER_OF_ENTRIES;
         });
 
+    // TODO: replace sleep with Awaitility
     Thread.sleep(500);
 
     // Start a second client, which should not be blocked by the queue copying
@@ -203,15 +206,14 @@ public class AcceptorImplClientQueueDUnitTest implements Serializable {
       clientCacheFactory.setPoolMinConnections(1);
       clientCacheFactory.setPoolMaxConnections(1);
       clientCacheFactory.setPoolSocketConnectTimeout(5000);
-      clientCacheFactory.addPoolServer(host.getHostName(), vm1_port);
+      clientCacheFactory.addPoolServer(hostName, vm1_port);
       ClientCache cache = clientCacheFactory.set("mcast-port", "0").create();
-      ClientRegionFactory<Object, Object> clientRegionFactory =
+      ClientRegionFactory<Integer, Integer> clientRegionFactory =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-      Region region = clientRegionFactory.create("subscriptionRegion");
+      Region<Integer, Integer> region = clientRegionFactory.create("subscriptionRegion");
 
-      int returnValue = 0;
       for (int i = 0; i < 100; i++) {
-        returnValue = (int) region.get(i);
+        assertThat(region.get(i)).isGreaterThanOrEqualTo(0);
       }
       cache.close();
     });
@@ -220,11 +222,11 @@ public class AcceptorImplClientQueueDUnitTest implements Serializable {
     turnOffSlowImageProcessing(vm0);
     turnOffSlowImageProcessing(vm1);
 
-    assertTrue(completedClient1.get());
+    assertThat(completedClient1.get()).isTrue();
   }
 
   private void turnOffSlowImageProcessing(VM vm0) {
-    vm0.invoke("Turn off slow image processsing", () -> {
+    vm0.invoke("Turn off slow image processing", () -> {
       InitialImageOperation.slowImageProcessing = 0;
     });
   }
@@ -232,7 +234,7 @@ public class AcceptorImplClientQueueDUnitTest implements Serializable {
   private int createSubscriptionServer(InternalCache cache) throws IOException {
     initializeDiskStore(cache);
     initializeReplicateRegion(cache);
-    return initializeCacheServerWithSubscription(host, cache);
+    return initializeCacheServerWithSubscription(cache);
   }
 
   private void initializeDiskStore(InternalCache cache) throws IOException {
@@ -248,15 +250,14 @@ public class AcceptorImplClientQueueDUnitTest implements Serializable {
         .create("subscriptionRegion");
   }
 
-  private int initializeCacheServerWithSubscription(Host host, InternalCache cache)
-      throws IOException {
+  private int initializeCacheServerWithSubscription(InternalCache cache) throws IOException {
     CacheServer cacheServer1 = cache.addCacheServer(false);
     ClientSubscriptionConfig clientSubscriptionConfig = cacheServer1.getClientSubscriptionConfig();
     clientSubscriptionConfig.setEvictionPolicy("entry");
     clientSubscriptionConfig.setCapacity(5);
     clientSubscriptionConfig.setDiskStoreName("clientQueueDS");
     cacheServer1.setPort(0);
-    cacheServer1.setHostnameForClients(host.getHostName());
+    cacheServer1.setHostnameForClients(hostName);
     cacheServer1.start();
     return cacheServer1.getPort();
   }
