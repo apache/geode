@@ -18,9 +18,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -76,10 +76,10 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
 
   @Before
   public void setUp() throws Exception {
-    server = getHost(0).getVM(0);
-    client = getHost(0).getVM(1);
+    server = getVM(0);
+    client = getVM(1);
 
-    hostName = getServerHostName(server.getHost());
+    hostName = getServerHostName();
 
     serverPort1 = server.invoke(() -> createServerCache());
     client.invoke(() -> createClientCacheWithTwoRegions(hostName, serverPort1));
