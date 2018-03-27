@@ -432,7 +432,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    * netSearch amongst selected peers if netSearch returns a blob, deserialize the blob and return
    * that as the result netSearch failed, so all we can do at this point is do a load return result
    * from load
-   * 
+   *
    * @param preferCD
    */
   private void searchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue,
