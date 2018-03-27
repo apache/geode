@@ -25,6 +25,10 @@ subprojects {
         exclude '**/generated-src/**'
       }
 
+      // As the method name suggests, bump this number if any of the below "custom" rules change.
+      // Spotless will not run on unchanged files unless this number changes.
+      bumpThisNumberIfACustomStepChanges(0)
+
       custom 'Remove commented-out import statements', {
         it.replaceAll(/\n\/\/ import .*?;.*/, '')
       }
