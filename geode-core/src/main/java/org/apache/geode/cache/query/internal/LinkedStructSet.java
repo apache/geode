@@ -32,6 +32,7 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -61,8 +62,13 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
 
   @Override
   public boolean equals(Object other) {
-    return other instanceof SortedStructSet
-        && this.structType.equals(((SortedStructSet) other).structType) && super.equals(other);
+    if (!(other instanceof SortedStructSet)) {
+      return false;
+    }
+    if (!this.structType.equals(((SortedStructSet) other).structType)) {
+      return false;
+    }
+    return super.equals(other);
   }
 
   /** Add a Struct */
@@ -88,7 +94,10 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
       return false;
     }
     Struct s = (Struct) obj;
-    return this.structType.equals(StructTypeImpl.typeFromStruct(s)) && contains(s);
+    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
+      return false;
+    }
+    return contains(s);
   }
 
   /** Remove the specified Struct */
@@ -98,7 +107,11 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
       return false;
     }
     Struct s = (Struct) o;
-    return this.structType.equals(StructTypeImpl.typeFromStruct(s)) && remove(s);
+    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
+      return false;
+    }
+    return remove(s);
+    // return removeFieldValues(s.getFieldValues());
   }
 
   @Override
@@ -175,10 +188,12 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
     this.modifiable = in.readBoolean();
     int size = in.readInt();
     this.structType = DataSerializer.readObject(in);
-    for (int j = size; j > 0; j--) {
-      Object[] fieldValues = DataSerializer.readObject(in);
-      this.add(new StructImpl(this.structType, fieldValues));
-    }
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      for (int j = size; j > 0; j--) {
+        Object[] fieldValues = DataSerializer.readObject(in);
+        this.add(new StructImpl(this.structType, fieldValues));
+      }
+    });
   }
 
   @Override

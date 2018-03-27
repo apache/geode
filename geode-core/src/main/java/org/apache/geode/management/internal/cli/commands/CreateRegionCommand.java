@@ -41,6 +41,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -69,7 +70,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateRegionCommand extends GfshCommand {
+public class CreateRegionCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
       interceptor = "org.apache.geode.management.internal.cli.commands.CreateRegionCommand$Interceptor")
@@ -441,7 +442,8 @@ public class CreateRegionCommand extends GfshCommand {
     if (xmlEntity != null) {
       verifyDistributedRegionMbean(cache, regionPath);
       persistClusterConfiguration(result,
-          () -> getConfigurationService().addXmlEntity(xmlEntity, groups));
+          () -> ((InternalClusterConfigurationService) getConfigurationService())
+              .addXmlEntity(xmlEntity, groups));
     }
     return result;
   }

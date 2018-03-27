@@ -39,7 +39,7 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 
-public class ExecuteFunctionCommand extends GfshCommand {
+public class ExecuteFunctionCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION},
       interceptor = "org.apache.geode.management.internal.cli.commands.ExecuteFunctionCommand$ExecuteFunctionCommandInterceptor")

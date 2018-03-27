@@ -158,6 +158,7 @@ import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
@@ -853,7 +854,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 5.0
    */
   @Override
-  protected InternalDistributedMember getMyId() {
+  public InternalDistributedMember getMyId() {
     return this.cache.getInternalDistributedSystem().getDistributedMember();
   }
 
@@ -4532,7 +4533,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
                 .toLocalizedString(new Object[] {snapshotVersion, SNAPSHOT_VERSION}));
       }
       for (;;) {
-        Object key = DataSerializer.readObject(in);
+        Object key = InternalDataSerializer.readUserObject(in);
         if (key == null) {
           break;
         }
@@ -4540,7 +4541,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         Object value;
 
         if (aByte == SNAPSHOT_VALUE_OBJ) {
-          value = DataSerializer.readObject(in);
+          value = InternalDataSerializer.readUserObject(in);
         } else if (aByte == SNAPSHOT_VALUE_INVALID || aByte == SNAPSHOT_VALUE_LOCAL_INVALID) {
           // Even though it was a distributed invalidate when the snapshot was created I think it is
           // correct to turn it into a local invalidate when we load the snapshot since we don't do

@@ -225,4 +225,17 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   boolean isInitialized();
 
   void cleanupForClient(CacheClientNotifier ccn, ClientProxyMembershipID client);
+
+  InternalDistributedMember getMyId();
+
+  /**
+   * The default Region implementation will generate EvenTID in the EntryEvent object. This method
+   * is overridden in special Region objects like HARegion or
+   * SingleWriteSingleReadRegionQueue.SingleReadWriteMetaRegion to return false as the event
+   * propagation from those regions do not need EventID objects. This method is made abstract to
+   * directly use it in clear operations. (clear and localclear)
+   *
+   * @return boolean indicating whether to generate eventID or not
+   */
+  boolean generateEventID();
 }

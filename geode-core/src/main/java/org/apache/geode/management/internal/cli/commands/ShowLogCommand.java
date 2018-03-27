@@ -20,7 +20,6 @@ import javax.management.ObjectName;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
@@ -35,7 +34,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShowLogCommand extends GfshCommand {
+public class ShowLogCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.SHOW_LOG, help = CliStrings.SHOW_LOG_HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,

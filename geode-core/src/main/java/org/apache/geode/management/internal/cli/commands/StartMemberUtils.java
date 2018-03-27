@@ -52,6 +52,7 @@ public class StartMemberUtils {
   static final int CMS_INITIAL_OCCUPANCY_FRACTION = 60;
   private static final ThreePhraseGenerator nameGenerator = new ThreePhraseGenerator();
 
+  static final String EXTENSIONS_PATHNAME = IOUtils.appendToPath(GEODE_HOME, "extensions");
   static final String CORE_DEPENDENCIES_JAR_PATHNAME =
       IOUtils.appendToPath(GEODE_HOME, "lib", "geode-dependencies.jar");
   static final String GEODE_JAR_PATHNAME =
@@ -139,7 +140,7 @@ public class StartMemberUtils {
     }
   }
 
-  static void addCurrentLocators(GfshCommand gfshCommand, final List<String> commandLine,
+  static void addCurrentLocators(InternalGfshCommand gfshCommand, final List<String> commandLine,
       final Properties gemfireProperties) throws MalformedObjectNameException {
     if (StringUtils.isBlank(gemfireProperties.getProperty(LOCATORS))) {
       String currentLocators = getCurrentLocators(gfshCommand);
@@ -150,7 +151,7 @@ public class StartMemberUtils {
     }
   }
 
-  private static String getCurrentLocators(GfshCommand gfshCommand)
+  private static String getCurrentLocators(InternalGfshCommand gfshCommand)
       throws MalformedObjectNameException {
     String delimitedLocators = "";
     try {

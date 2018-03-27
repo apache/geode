@@ -404,8 +404,8 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    setKey(DataSerializer.readObject(in));
-    this.cbArg = DataSerializer.readObject(in);
+    setKey(InternalDataSerializer.readUserObject(in));
+    this.cbArg = InternalDataSerializer.readUserObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
       this.bridgeContext = DataSerializer.readObject(in);
@@ -422,7 +422,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       in.readByte();
       setOldValBytes(DataSerializer.readByteArray(in));
     }
-    this.expectedOldValue = DataSerializer.readObject(in);
+    this.expectedOldValue = InternalDataSerializer.readUserObject(in);
     // to prevent bug 51024 always call readObject for versionTag
     // since toData always calls writeObject for versionTag.
     this.versionTag = DataSerializer.readObject(in);

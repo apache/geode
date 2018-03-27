@@ -46,7 +46,7 @@ public class TableMetaDataManagerIntegrationTest {
     connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
     statement.execute("Create Table " + REGION_TABLE_NAME
-        + " (id varchar(10) primary key not null, name varchar(10), age int)");
+        + " (\"id\" varchar(10) primary key not null, \"name\" varchar(10), \"age\" int)");
     manager = new TableMetaDataManager();
   }
 
@@ -73,7 +73,7 @@ public class TableMetaDataManagerIntegrationTest {
 
     String keyColumnName = metaData.getKeyColumnName();
 
-    assertThat(keyColumnName).isEqualToIgnoringCase("id");
+    assertThat(keyColumnName).isEqualTo("id");
   }
 
   @Test

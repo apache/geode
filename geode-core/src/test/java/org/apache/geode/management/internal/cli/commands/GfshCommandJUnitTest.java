@@ -37,29 +37,15 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class GfshCommandJUnitTest {
 
-  private GfshCommand command;
+  private InternalGfshCommand command;
   private Gfsh gfsh;
   private InternalClusterConfigurationService clusterConfigurationService;
 
   @Before
   public void before() throws Exception {
-    command = spy(GfshCommand.class);
+    command = spy(InternalGfshCommand.class);
     gfsh = mock(Gfsh.class);
     clusterConfigurationService = mock(InternalClusterConfigurationService.class);
-  }
-
-  @Test
-  public void isConnectedAndReady() throws Exception {
-    when(command.getGfsh()).thenReturn(null);
-    assertThat(command.isConnectedAndReady()).isFalse();
-
-    when(command.getGfsh()).thenReturn(gfsh);
-    when(gfsh.isConnectedAndReady()).thenReturn(false);
-    assertThat(command.isConnectedAndReady()).isFalse();
-
-    when(command.getGfsh()).thenReturn(gfsh);
-    when(gfsh.isConnectedAndReady()).thenReturn(true);
-    assertThat(command.isConnectedAndReady()).isTrue();
   }
 
   @Test

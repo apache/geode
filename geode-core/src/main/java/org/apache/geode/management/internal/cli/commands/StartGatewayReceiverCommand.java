@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class StartGatewayReceiverCommand extends GfshCommand {
+public class StartGatewayReceiverCommand extends InternalGfshCommand {
 
   @CliCommand(value = CliStrings.START_GATEWAYRECEIVER,
       help = CliStrings.START_GATEWAYRECEIVER__HELP)

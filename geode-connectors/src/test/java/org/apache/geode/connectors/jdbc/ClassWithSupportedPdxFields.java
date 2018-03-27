@@ -23,8 +23,8 @@ import org.apache.geode.internal.PdxSerializerObject;
 
 public class ClassWithSupportedPdxFields implements PdxSerializerObject, Serializable {
   private boolean aboolean;
-  private byte abyte;
-  private short ashort;
+  private byte aByte;
+  private short ASHORT;
   private int anint;
   private long along;
   private float afloat;
@@ -37,12 +37,12 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject, Seriali
 
   public ClassWithSupportedPdxFields() {}
 
-  public ClassWithSupportedPdxFields(boolean aboolean, byte abyte, short ashort, int anint,
+  public ClassWithSupportedPdxFields(boolean aboolean, byte aByte, short ASHORT, int anint,
       long along, float afloat, double adouble, String astring, Date adate, Object anobject,
       byte[] abytearray, char achar) {
     this.aboolean = aboolean;
-    this.abyte = abyte;
-    this.ashort = ashort;
+    this.aByte = aByte;
+    this.ASHORT = ASHORT;
     this.anint = anint;
     this.along = along;
     this.afloat = afloat;
@@ -124,8 +124,8 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject, Seriali
 
   @Override
   public String toString() {
-    return "ClassWithSupportedPdxFields{" + "aboolean=" + isAboolean() + ", abyte=" + getAbyte()
-        + ", achar=" + getAchar() + ", ashort=" + getAshort() + ", anint=" + getAnint() + ", along="
+    return "ClassWithSupportedPdxFields{" + "aboolean=" + isAboolean() + ", aByte=" + getAbyte()
+        + ", achar=" + getAchar() + ", ASHORT=" + getAshort() + ", anint=" + getAnint() + ", along="
         + getAlong() + ", afloat=" + getAfloat() + ", adouble=" + getAdouble() + ", astring='"
         + getAstring() + '\'' + ", adate=" + getAdate() + ", anobject=" + getAnobject()
         + ", abytearray=" + Arrays.toString(getAbytearray()) + '}';
@@ -136,7 +136,7 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject, Seriali
   }
 
   public byte getAbyte() {
-    return abyte;
+    return aByte;
   }
 
   public char getAchar() {
@@ -144,7 +144,7 @@ public class ClassWithSupportedPdxFields implements PdxSerializerObject, Seriali
   }
 
   public short getAshort() {
-    return ashort;
+    return ASHORT;
   }
 
   public int getAnint() {

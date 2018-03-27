@@ -529,11 +529,13 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
    */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     boolean isBagSetView = in.readBoolean();
-    if (isBagSetView) {
-      this.base = (Set) InternalDataSerializer.readSet(in);
-    } else {
-      this.base = (Collection) DataSerializer.readObject(in);
-    }
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      if (isBagSetView) {
+        this.base = (Set) InternalDataSerializer.readSet(in);
+      } else {
+        this.base = (Collection) DataSerializer.readObject(in);
+      }
+    });
     this.collectionType = (CollectionType) DataSerializer.readObject(in);
     this.modifiable = in.readBoolean();
   }

@@ -44,6 +44,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -58,6 +59,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
  *
@@ -153,11 +155,13 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.keys = DataSerializer.readByte(in);
-    if (this.keys == KEY_LIST) {
-      this.bucketKeys = DataSerializer.readHashMap(in);
-    } else if (this.keys == ALL_KEYS) {
-      this.bucketIds = DataSerializer.readHashSet(in);
-    }
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      if (this.keys == KEY_LIST) {
+        this.bucketKeys = DataSerializer.readHashMap(in);
+      } else if (this.keys == ALL_KEYS) {
+        this.bucketIds = DataSerializer.readHashSet(in);
+      }
+    });
     this.regex = DataSerializer.readString(in);
     this.allowTombstones = DataSerializer.readPrimitiveBoolean(in);
   }

@@ -29,13 +29,13 @@ import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.configuration.utils.ClusterConfigurationStatusRetriever;
 
-public class StatusLocatorCommand extends GfshCommand {
+public class StatusLocatorCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.STATUS_LOCATOR, help = CliStrings.STATUS_LOCATOR__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})

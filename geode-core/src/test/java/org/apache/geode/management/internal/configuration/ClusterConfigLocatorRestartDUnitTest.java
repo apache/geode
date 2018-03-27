@@ -29,6 +29,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -62,8 +63,10 @@ public class ClusterConfigLocatorRestartDUnitTest {
     rule.startServerVM(3, locator0.getPort());
 
     gfsh.connectAndVerify(locator0);
-    gfsh.executeAndAssertThat("list members").statusIsSuccess().tableHasColumnOnlyWithValues("Name",
-        "locator-0", "server-1", "server-2", "server-3");
+
+    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+        .until(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
+            .tableHasColumnOnlyWithValues("Name", "locator-0", "server-1", "server-2", "server-3"));
   }
 
   @Test
@@ -86,8 +89,11 @@ public class ClusterConfigLocatorRestartDUnitTest {
     MemberVM server2 = rule.startServerVM(2, props, locator0.getPort(), locator1.getPort());
     MemberVM server3 = rule.startServerVM(3, props, locator0.getPort(), locator1.getPort());
 
-    // Go away and don't come back
+    // Shut down hard
     locator0.invokeAsync(() -> System.exit(1));
+
+    // Recover the VM so that subsequent rule cleanup works
+    locator0.getVM().bounce();
 
     server3.invokeAsync(() -> MembershipManagerHelper
         .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance()));
@@ -97,11 +103,10 @@ public class ClusterConfigLocatorRestartDUnitTest {
     rule.startServerVM(4, locator1.getPort(), locator0.getPort());
 
     gfsh.connectAndVerify(locator1);
-    gfsh.executeAndAssertThat("list members").statusIsSuccess().tableHasColumnOnlyWithValues("Name",
-        "locator-1", "server-2", "server-3", "server-4");
 
-    // Recover the VM so that subsequent rule cleanup works
-    Host.getHost(0).getVM(0).bounce();
+    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+        .until(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
+            .tableHasColumnOnlyWithValues("Name", "locator-1", "server-2", "server-3", "server-4"));
   }
 
   private void waitForLocatorToReconnect(MemberVM locator) {

@@ -40,7 +40,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class SetsJUnitTest {
-
   private static Jedis jedis;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
@@ -51,7 +50,6 @@ public class SetsJUnitTest {
   public static void setUp() throws IOException {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
-    // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
@@ -160,7 +158,6 @@ public class SetsJUnitTest {
     Set<String> destResult = jedis.smembers(destination);
 
     assertEquals(result, destResult);
-
   }
 
   @Test
@@ -196,7 +193,6 @@ public class SetsJUnitTest {
     Set<String> destResult = jedis.smembers(destination);
 
     assertEquals(result, destResult);
-
   }
 
   @Test
@@ -232,16 +228,18 @@ public class SetsJUnitTest {
     Set<String> destResult = jedis.smembers(destination);
 
     assertEquals(result, destResult);
-
   }
 
   private String randString() {
     int length = rand.nextInt(8) + 5;
     StringBuilder rString = new StringBuilder();
-    for (int i = 0; i < length; i++)
-      rString.append((char) (rand.nextInt(57) + 65));
+    for (int i = 0; i < length; i++) {
+      // Use random upper- and lower-case letters only. Using punctuation characters,
+      // namely the underscore, can lead to spurious test failures due to invalid region
+      // names, e.g., two leading underscores.
+      rString.append((char) (65 + rand.nextInt(26) + (rand.nextBoolean() ? 26 : 0)));
+    }
     return rString.toString();
-    // return Long.toHexString(Double.doubleToLongBits(Math.random()));
   }
 
   @After

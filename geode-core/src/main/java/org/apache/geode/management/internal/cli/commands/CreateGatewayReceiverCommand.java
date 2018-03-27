@@ -23,6 +23,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -38,7 +39,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateGatewayReceiverCommand extends GfshCommand {
+public class CreateGatewayReceiverCommand extends InternalGfshCommand {
 
   @CliCommand(value = CliStrings.CREATE_GATEWAYRECEIVER,
       help = CliStrings.CREATE_GATEWAYRECEIVER__HELP)
@@ -102,7 +103,8 @@ public class CreateGatewayReceiverCommand extends GfshCommand {
     }
 
     // update cluster config
-    getConfigurationService().addXmlEntity(xmlEntity, onGroups);
+    ((InternalClusterConfigurationService) getConfigurationService()).addXmlEntity(xmlEntity,
+        onGroups);
     return result;
   }
 

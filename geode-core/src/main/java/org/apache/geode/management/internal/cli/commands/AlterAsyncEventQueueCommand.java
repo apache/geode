@@ -51,7 +51,7 @@ import org.apache.geode.security.ResourcePermission;
  * this command currently only updates the cluster configuration. Requires server restart to pick up
  * the changes.
  */
-public class AlterAsyncEventQueueCommand extends GfshCommand {
+public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
 
   static final String COMMAND_NAME = "alter async-event-queue";
   static final String ID = "id";
@@ -85,7 +85,8 @@ public class AlterAsyncEventQueueCommand extends GfshCommand {
 
     // need not check if any running servers has this async-event-queue. A server with this queue id
     // may be shutdown, but we still need to update Cluster Configuration.
-    InternalClusterConfigurationService service = getConfigurationService();
+    InternalClusterConfigurationService service =
+        (InternalClusterConfigurationService) getConfigurationService();
 
     if (service == null) {
       return ResultBuilder.createUserErrorResult("Cluster Configuration Service is not available. "

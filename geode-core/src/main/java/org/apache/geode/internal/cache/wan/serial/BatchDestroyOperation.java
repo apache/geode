@@ -30,6 +30,7 @@ import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ConflationKey;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -182,7 +183,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.eventId = (EventID) DataSerializer.readObject(in);
-      this.key = DataSerializer.readObject(in);
+      this.key = InternalDataSerializer.readUserObject(in);
       Boolean hasTailKey = DataSerializer.readBoolean(in);
       if (hasTailKey.booleanValue()) {
         this.tailKey = DataSerializer.readLong(in);

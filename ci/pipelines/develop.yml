@@ -422,7 +422,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 1h
+      timeout: 2h
       config:
         inputs:
           - name: geode

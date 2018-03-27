@@ -55,7 +55,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DeployCommand extends GfshCommand {
+public class DeployCommand extends InternalGfshCommand {
   private final DeployFunction deployFunction = new DeployFunction();
 
   /**
@@ -136,7 +136,8 @@ public class DeployCommand extends GfshCommand {
     }
 
     Result result = ResultBuilder.buildResult(tabularData);
-    InternalClusterConfigurationService sc = getConfigurationService();
+    InternalClusterConfigurationService sc =
+        (InternalClusterConfigurationService) getConfigurationService();
     if (sc == null) {
       result.setCommandPersisted(false);
     } else {

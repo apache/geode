@@ -31,6 +31,7 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -49,6 +50,7 @@ public class PartitionRegionConfigTest {
 
   @Before
   public void setUp() {
+    TypeRegistry.init();
     prId = 0;
     path = null;
     partitionAttributes = new PartitionAttributesFactory().create();

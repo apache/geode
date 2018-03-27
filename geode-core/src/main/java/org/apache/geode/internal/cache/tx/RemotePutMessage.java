@@ -448,12 +448,12 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    setKey(DataSerializer.readObject(in));
+    setKey(InternalDataSerializer.readUserObject(in));
 
     final int extraFlags = in.readUnsignedByte();
     this.deserializationPolicy =
         (byte) (extraFlags & DistributedCacheOperation.DESERIALIZATION_POLICY_MASK);
-    this.cbArg = DataSerializer.readObject(in);
+    this.cbArg = InternalDataSerializer.readUserObject(in);
     this.lastModified = in.readLong();
     this.op = Operation.fromOrdinal(in.readByte());
     if ((extraFlags & HAS_BRIDGE_CONTEXT) != 0) {
@@ -466,7 +466,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     InternalDataSerializer.invokeFromData(this.eventId, in);
 
     if ((flags & HAS_EXPECTED_OLD_VAL) != 0) {
-      this.expectedOldValue = DataSerializer.readObject(in);
+      this.expectedOldValue = InternalDataSerializer.readUserObject(in);
     }
 
     if (this.hasOldValue) {
@@ -838,7 +838,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       byte flags = (byte) (in.readByte() & 0xff);
       this.result = (flags & FLAG_RESULT) != 0;
       this.op = Operation.fromOrdinal(in.readByte());
-      this.oldValue = DataSerializer.readObject(in);
+      this.oldValue = InternalDataSerializer.readUserObject(in);
       if ((flags & FLAG_HASVERSION) != 0) {
         boolean persistentTag = (flags & FLAG_PERSISTENT) != 0;
         this.versionTag = VersionTag.create(persistentTag, in);

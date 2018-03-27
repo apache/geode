@@ -30,12 +30,12 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
-public class StartPulseCommand extends GfshCommand {
+public class StartPulseCommand extends InternalGfshCommand {
 
   @CliCommand(value = CliStrings.START_PULSE, help = CliStrings.START_PULSE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,

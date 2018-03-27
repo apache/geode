@@ -36,12 +36,12 @@ import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
-public class StartVsdCommand extends GfshCommand {
+public class StartVsdCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.START_VSD, help = CliStrings.START_VSD__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_M_AND_M, CliStrings.TOPIC_GEODE_STATISTICS})

@@ -27,3 +27,5 @@ out/
 *.orig
 geode-pulse/screenshots/
 /jpf.properties
+
+.git-together
