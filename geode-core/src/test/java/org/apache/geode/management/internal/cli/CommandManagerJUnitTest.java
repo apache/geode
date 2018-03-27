@@ -20,7 +20,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
+import com.examples.UserGfshCommand;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,6 +34,7 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.Result;
@@ -127,6 +130,16 @@ public class CommandManagerJUnitTest {
         commandManager.getHelper().getCommands().contains("mock plugin command"));
     assertTrue("Should not find unlisted plugin.",
         !commandManager.getHelper().getCommands().contains("mock plugin command unlisted"));
+  }
+
+  @Test
+  public void testCommandManagerLoadsUserCommand() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(ConfigurationProperties.USER_COMMAND_PACKAGES, "com.examples");
+    CommandManager commandManager = new CommandManager(props, null);
+
+    assertThat(
+        commandManager.getCommandMarkers().stream().anyMatch(c -> c instanceof UserGfshCommand));
   }
 
   @Test

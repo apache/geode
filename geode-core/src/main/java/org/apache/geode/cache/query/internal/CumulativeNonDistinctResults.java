@@ -39,6 +39,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.HeapDataOutputStream.LongUpdater;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 /**
@@ -298,7 +299,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
         Object[] fields = DataSerializer.readObjectArray(in);
         this.data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
       } else {
-        E element = DataSerializer.readObject(in);
+        E element = InternalDataSerializer.readUserObject(in);
         this.data.add(element);
       }
       --numLeft;

@@ -194,12 +194,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.eventID = (EventID) DataSerializer.readObject(in);
-    Object key = DataSerializer.readObject(in);
-    Object value = DataSerializer.readObject(in);
+    Object key = InternalDataSerializer.readUserObject(in);
+    Object value = InternalDataSerializer.readUserObject(in);
     this.keyInfo = new KeyInfo(key, value, null);
     this.op = Operation.fromOrdinal(in.readByte());
     this.eventFlags = in.readShort();
-    this.keyInfo.setCallbackArg(DataSerializer.readObject(in));
+    this.keyInfo.setCallbackArg(InternalDataSerializer.readUserObject(in));
     this.txId = (TXId) DataSerializer.readObject(in);
 
     if (in.readBoolean()) { // isDelta
@@ -214,7 +214,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       } else {
         this.newValueBytes = null;
         this.cachedSerializedNewValue = null;
-        this.newValue = DataSerializer.readObject(in);
+        this.newValue = InternalDataSerializer.readUserObject(in);
       }
     }
 
@@ -225,7 +225,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       this.oldValue = null; // set later in basicGetOldValue
     } else {
       this.oldValueBytes = null;
-      this.oldValue = DataSerializer.readObject(in);
+      this.oldValue = InternalDataSerializer.readUserObject(in);
     }
     this.distributedMember = DSFIDFactory.readInternalDistributedMember(in);
     this.context = ClientProxyMembershipID.readCanonicalized(in);

@@ -103,11 +103,12 @@ public class JdbcDUnitTest implements Serializable {
     server.invoke(() -> {
       Connection connection = DriverManager.getConnection(CONNECTION_URL);
       Statement statement = connection.createStatement();
-      statement.execute("Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, "
-          + "aboolean smallint, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
-          + "along bigint, " + "afloat float, " + "adouble double, " + "astring varchar(10), "
-          + "adate timestamp, " + "anobject varchar(20), " + "abytearray blob(100), "
-          + "achar char(1))");
+      statement
+          .execute("Create Table \"" + TABLE_NAME + "\" (\"id\" varchar(10) primary key not null, "
+              + "aboolean smallint, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
+              + "\"along\" bigint, " + "\"aFloat\" float, " + "\"ADOUBLE\" double, "
+              + "astring varchar(10), " + "adate timestamp, " + "anobject varchar(20), "
+              + "abytearray blob(100), " + "achar char(1))");
     });
   }
 
@@ -115,7 +116,8 @@ public class JdbcDUnitTest implements Serializable {
     server.invoke(() -> {
       Connection connection = DriverManager.getConnection(CONNECTION_URL);
 
-      String insertQuery = "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      String insertQuery =
+          "Insert into \"" + TABLE_NAME + "\" values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
       System.out.println("### Query is :" + insertQuery);
       PreparedStatement statement = connection.prepareStatement(insertQuery);
       statement.setObject(1, key);
@@ -140,7 +142,8 @@ public class JdbcDUnitTest implements Serializable {
     server.invoke(() -> {
       Connection connection = DriverManager.getConnection(CONNECTION_URL);
 
-      String insertQuery = "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      String insertQuery =
+          "Insert into \"" + TABLE_NAME + "\" values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
       System.out.println("### Query is :" + insertQuery);
       PreparedStatement statement = connection.prepareStatement(insertQuery);
       statement.setObject(1, key);
@@ -168,19 +171,19 @@ public class JdbcDUnitTest implements Serializable {
     });
   }
 
-  private void closeDB() throws Exception {
-    try {
-      Connection connection = DriverManager.getConnection(CONNECTION_URL);
-      Statement statement = connection.createStatement();
-      if (statement == null) {
-        statement = connection.createStatement();
-      }
-      statement.execute("Drop table " + TABLE_NAME);
-      statement.close();
+  private void closeDB() throws SQLException {
+    try (Connection connection = DriverManager.getConnection(CONNECTION_URL)) {
+      try (Statement statement = connection.createStatement()) {
+        try {
+          statement.execute("Drop table " + TABLE_NAME);
+        } catch (SQLException ignore) {
+        }
 
-      connection.close();
-    } catch (SQLException ex) {
-      System.out.println("SQL Exception is thrown while closing the database.");
+        try {
+          statement.execute("Drop table \"" + TABLE_NAME + "\"");
+        } catch (SQLException ignore) {
+        }
+      }
     }
   }
 
@@ -367,6 +370,7 @@ public class JdbcDUnitTest implements Serializable {
     });
   }
 
+  @Test
   public void getReadsFromDBWithPdxClassName() throws Exception {
     createTable();
     createRegionUsingGfsh(true, false, true);

@@ -59,15 +59,17 @@ public class SqlHandler {
     RegionMapping regionMapping = getMappingForRegion(region.getName());
     ConnectionConfiguration connectionConfig =
         getConnectionConfig(regionMapping.getConnectionConfigName());
-    String tableName = regionMapping.getRegionToTableName();
     PdxInstance result;
     try (Connection connection = getConnection(connectionConfig)) {
+      TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
+          regionMapping.getRegionToTableName());
+      String realTableName = tableMetaData.getTableName();
       List<ColumnValue> columnList =
-          getColumnToValueList(connection, regionMapping, key, null, Operation.GET);
+          getColumnToValueList(tableMetaData, regionMapping, key, null, Operation.GET);
       try (PreparedStatement statement =
-          getPreparedStatement(connection, columnList, tableName, Operation.GET)) {
+          getPreparedStatement(connection, columnList, realTableName, Operation.GET)) {
         try (ResultSet resultSet = executeReadQuery(statement, columnList)) {
-          String keyColumnName = getKeyColumnName(connection, tableName);
+          String keyColumnName = tableMetaData.getKeyColumnName();
           InternalCache cache = (InternalCache) region.getRegionService();
           SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
               new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, keyColumnName);
@@ -83,7 +85,6 @@ public class SqlHandler {
     setValuesInStatement(statement, columnList);
     return statement.executeQuery();
   }
-
 
   private RegionMapping getMappingForRegion(String regionName) {
     RegionMapping regionMapping = this.configService.getMappingForRegion(regionName);
@@ -102,10 +103,6 @@ public class SqlHandler {
           + " not found. Create the connection with the gfsh command 'create jdbc-connection'");
     }
     return connectionConfig;
-  }
-
-  private String getKeyColumnName(Connection connection, String tableName) {
-    return this.tableMetaDataManager.getTableMetaDataView(connection, tableName).getKeyColumnName();
   }
 
   private void setValuesInStatement(PreparedStatement statement, List<ColumnValue> columnList)
@@ -134,14 +131,15 @@ public class SqlHandler {
     ConnectionConfiguration connectionConfig =
         getConnectionConfig(regionMapping.getConnectionConfigName());
 
-    String tableName = regionMapping.getRegionToTableName();
-
     try (Connection connection = getConnection(connectionConfig)) {
+      TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
+          regionMapping.getRegionToTableName());
+      String realTableName = tableMetaData.getTableName();
       List<ColumnValue> columnList =
-          getColumnToValueList(connection, regionMapping, key, value, operation);
+          getColumnToValueList(tableMetaData, regionMapping, key, value, operation);
       int updateCount = 0;
       try (PreparedStatement statement =
-          getPreparedStatement(connection, columnList, tableName, operation)) {
+          getPreparedStatement(connection, columnList, realTableName, operation)) {
         updateCount = executeWriteStatement(statement, columnList);
       } catch (SQLException e) {
         if (operation.isDestroy()) {
@@ -157,7 +155,7 @@ public class SqlHandler {
       if (updateCount <= 0) {
         Operation upsertOp = getOppositeOperation(operation);
         try (PreparedStatement upsertStatement =
-            getPreparedStatement(connection, columnList, tableName, upsertOp)) {
+            getPreparedStatement(connection, columnList, realTableName, upsertOp)) {
           updateCount = executeWriteStatement(upsertStatement, columnList);
         }
       }
@@ -197,11 +195,8 @@ public class SqlHandler {
     }
   }
 
-  <K> List<ColumnValue> getColumnToValueList(Connection connection, RegionMapping regionMapping,
-      K key, PdxInstance value, Operation operation) {
-    String tableName = regionMapping.getRegionToTableName();
-    TableMetaDataView tableMetaData =
-        this.tableMetaDataManager.getTableMetaDataView(connection, tableName);
+  <K> List<ColumnValue> getColumnToValueList(TableMetaDataView tableMetaData,
+      RegionMapping regionMapping, K key, PdxInstance value, Operation operation) {
     String keyColumnName = tableMetaData.getKeyColumnName();
     ColumnValue keyColumnValue =
         new ColumnValue(true, keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
@@ -210,17 +205,17 @@ public class SqlHandler {
       return Collections.singletonList(keyColumnValue);
     }
 
-    List<ColumnValue> result =
-        createColumnValueList(tableMetaData, regionMapping, value, keyColumnName);
+    List<ColumnValue> result = createColumnValueList(tableMetaData, regionMapping, value);
     result.add(keyColumnValue);
     return result;
   }
 
   private List<ColumnValue> createColumnValueList(TableMetaDataView tableMetaData,
-      RegionMapping regionMapping, PdxInstance value, String keyColumnName) {
+      RegionMapping regionMapping, PdxInstance value) {
+    final String keyColumnName = tableMetaData.getKeyColumnName();
     List<ColumnValue> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
-      String columnName = regionMapping.getColumnNameForField(fieldName);
+      String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);
       if (columnName.equalsIgnoreCase(keyColumnName)) {
         continue;
       }

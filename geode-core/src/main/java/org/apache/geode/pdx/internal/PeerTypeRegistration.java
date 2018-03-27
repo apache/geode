@@ -102,8 +102,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   private Map<EnumInfo, EnumId> enumToId =
       Collections.synchronizedMap(new HashMap<EnumInfo, EnumId>());
 
-  private final Map<String, Set<PdxType>> classToType =
-      new CopyOnWriteHashMap<String, Set<PdxType>>();
+  private final Map<String, CopyOnWriteHashSet<PdxType>> classToType = new CopyOnWriteHashMap<>();
 
   private volatile boolean typeRegistryInUse = false;
 
@@ -753,9 +752,10 @@ public class PeerTypeRegistration implements TypeRegistration {
   private void updateClassToTypeMap(PdxType type) {
     if (type != null) {
       synchronized (this.classToType) {
-        if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME))
-          return;// no need to include here
-        Set<PdxType> pdxTypeSet = this.classToType.get(type.getClassName());
+        if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
+          return; // no need to include here
+        }
+        CopyOnWriteHashSet<PdxType> pdxTypeSet = this.classToType.get(type.getClassName());
         if (pdxTypeSet == null) {
           pdxTypeSet = new CopyOnWriteHashSet<PdxType>();
         }
@@ -767,21 +767,29 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public PdxType getPdxTypeForField(String fieldName, String className) {
-    Set<PdxType> pdxTypes = classToType.get(className);
-    if (pdxTypes != null) {
-      for (PdxType pdxType : pdxTypes) {
-        if (pdxType.getPdxField(fieldName) != null) {
-          return pdxType;
-        }
+    Set<PdxType> pdxTypes = getPdxTypesForClassName(className);
+    for (PdxType pdxType : pdxTypes) {
+      if (pdxType.getPdxField(fieldName) != null) {
+        return pdxType;
       }
     }
     return null;
   }
 
+  @Override
+  public Set<PdxType> getPdxTypesForClassName(String className) {
+    CopyOnWriteHashSet<PdxType> pdxTypeSet = classToType.get(className);
+    if (pdxTypeSet == null) {
+      return Collections.emptySet();
+    } else {
+      return pdxTypeSet.getSnapshot();
+    }
+  }
+
   /**
    * For testing purpose
    */
-  public Map<String, Set<PdxType>> getClassToType() {
+  public Map<String, CopyOnWriteHashSet<PdxType>> getClassToType() {
     return classToType;
   }
 

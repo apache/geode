@@ -22,18 +22,18 @@ class SqlStatementFactory {
     assert columnList.size() == 1;
     ColumnValue keyCV = columnList.get(0);
     assert keyCV.isKey();
-    return "SELECT * FROM " + tableName + " WHERE " + keyCV.getColumnName() + " = ?";
+    return "SELECT * FROM \"" + tableName + "\" WHERE \"" + keyCV.getColumnName() + "\" = ?";
   }
 
   String createDestroySqlString(String tableName, List<ColumnValue> columnList) {
     assert columnList.size() == 1;
     ColumnValue keyCV = columnList.get(0);
     assert keyCV.isKey();
-    return "DELETE FROM " + tableName + " WHERE " + keyCV.getColumnName() + " = ?";
+    return "DELETE FROM \"" + tableName + "\" WHERE \"" + keyCV.getColumnName() + "\" = ?";
   }
 
   String createUpdateSqlString(String tableName, List<ColumnValue> columnList) {
-    StringBuilder query = new StringBuilder("UPDATE " + tableName + " SET ");
+    StringBuilder query = new StringBuilder("UPDATE \"" + tableName + "\" SET ");
     int idx = 0;
     for (ColumnValue column : columnList) {
       if (!column.isKey()) {
@@ -41,14 +41,14 @@ class SqlStatementFactory {
         if (idx > 1) {
           query.append(", ");
         }
-        query.append(column.getColumnName());
+        query.append('"').append(column.getColumnName()).append('"');
         query.append(" = ?");
       }
     }
     for (ColumnValue column : columnList) {
       if (column.isKey()) {
         query.append(" WHERE ");
-        query.append(column.getColumnName());
+        query.append('"').append(column.getColumnName()).append('"');
         query.append(" = ?");
         // currently only support simple primary key with one column
         break;
@@ -58,13 +58,13 @@ class SqlStatementFactory {
   }
 
   String createInsertSqlString(String tableName, List<ColumnValue> columnList) {
-    StringBuilder columnNames = new StringBuilder("INSERT INTO " + tableName + " (");
+    StringBuilder columnNames = new StringBuilder("INSERT INTO \"" + tableName + "\" (");
     StringBuilder columnValues = new StringBuilder(" VALUES (");
     int columnCount = columnList.size();
     int idx = 0;
     for (ColumnValue column : columnList) {
       idx++;
-      columnNames.append(column.getColumnName());
+      columnNames.append('"').append(column.getColumnName()).append('"');
       columnValues.append('?');
       if (idx != columnCount) {
         columnNames.append(", ");

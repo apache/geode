@@ -121,18 +121,6 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     return dis;
   }
 
-  public static boolean getPdxReadSerialized() {
-    return pdxGetObjectInProgress.get() == null;
-  }
-
-  public static void setPdxReadSerialized(boolean readSerialized) {
-    if (!readSerialized) {
-      pdxGetObjectInProgress.set(true);
-    } else {
-      pdxGetObjectInProgress.remove();
-    }
-  }
-
   @Override
   public Object getField(String fieldName) {
     return getUnmodifiableReader(fieldName).readField(fieldName);
@@ -234,15 +222,16 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       }
       return this;
     }
-    boolean wouldReadSerialized = PdxInstanceImpl.getPdxReadSerialized();
+
+    boolean wouldReadSerialized = TypeRegistry.getPdxReadSerialized();
     if (!wouldReadSerialized) {
       return getUnmodifiableReader().basicGetObject();
     } else {
-      PdxInstanceImpl.setPdxReadSerialized(false);
+      TypeRegistry.setPdxReadSerialized(false);
       try {
         return getUnmodifiableReader().basicGetObject();
       } finally {
-        PdxInstanceImpl.setPdxReadSerialized(true);
+        TypeRegistry.setPdxReadSerialized(true);
       }
     }
   }

@@ -41,6 +41,10 @@ public abstract class VMProvider {
     getVM().invoke(runnable);
   }
 
+  public void invoke(final String runnableName, final SerializableRunnableIF runnable) {
+    getVM().invoke(runnableName, runnable);
+  }
+
   public <T> T invoke(final SerializableCallableIF<T> callable) {
     return getVM().invoke(callable);
   }

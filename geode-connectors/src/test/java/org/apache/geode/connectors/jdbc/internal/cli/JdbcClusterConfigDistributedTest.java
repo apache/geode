@@ -20,6 +20,7 @@ import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.Serializable;
 import java.util.Properties;
@@ -34,6 +35,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
+import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
@@ -139,8 +141,10 @@ public class JdbcClusterConfigDistributedTest implements Serializable {
     assertThat(regionMapping.getTableName()).isEqualTo(tableName);
     assertThat(regionMapping.getPdxClassName()).isEqualTo(pdxClass);
     assertThat(regionMapping.isPrimaryKeyInValue()).isEqualTo(keyInValue);
-    assertThat(regionMapping.getColumnNameForField("field1")).isEqualTo("column1");
-    assertThat(regionMapping.getColumnNameForField("field2")).isEqualTo("column2");
+    assertThat(regionMapping.getColumnNameForField("field1", mock(TableMetaDataView.class)))
+        .isEqualTo("column1");
+    assertThat(regionMapping.getColumnNameForField("field2", mock(TableMetaDataView.class)))
+        .isEqualTo("column2");
   }
 
 }

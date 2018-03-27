@@ -24,6 +24,7 @@ import java.util.ArrayList;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 
 /**
  * Adds one more object type which indicates that the key is not present at the server.
@@ -130,7 +131,7 @@ public class ObjectPartList651 extends ObjectPartList {
     if (numObjects > 0) {
       for (int index = 0; index < numObjects; ++index) {
         if (keysPresent) {
-          Object key = DataSerializer.readObject(in);
+          Object key = InternalDataSerializer.readUserObject(in);
           this.keys.add(key);
         }
         byte objectType = in.readByte();
@@ -142,7 +143,7 @@ public class ObjectPartList651 extends ObjectPartList {
           // ignore the exception string meant for native clients
           DataSerializer.readString(in);
         } else {
-          value = DataSerializer.readObject(in);
+          value = InternalDataSerializer.readUserObject(in);
         }
         this.objects.add(value);
       }

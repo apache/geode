@@ -128,7 +128,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     final HashSet<Object> set = new HashSet<Object>(size);
     Object key;
     for (int i = 0; i < size; i++) {
-      key = DataSerializer.readObject(in);
+      key = InternalDataSerializer.readUserObject(in);
       set.add(key);
     }
 

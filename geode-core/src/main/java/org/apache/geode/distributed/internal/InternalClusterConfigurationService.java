@@ -753,7 +753,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
 
         AttributesFactory<String, Configuration> regionAttrsFactory = new AttributesFactory<>();
         regionAttrsFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-        regionAttrsFactory.setCacheListener(new ConfigurationChangeListener(this));
+        regionAttrsFactory.setCacheListener(new ConfigurationChangeListener(this, cache));
         regionAttrsFactory.setDiskStoreName(CLUSTER_CONFIG_DISK_STORE_NAME);
         regionAttrsFactory.setScope(Scope.DISTRIBUTED_ACK);
         InternalRegionArguments internalArgs = new InternalRegionArguments();
