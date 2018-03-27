@@ -75,7 +75,7 @@ GEODE_JARS=$GEODE_HOME/lib/gfsh-dependencies.jar
 if [ "x$CLASSPATH" != "x" ]; then
   GEODE_JARS=$GEODE_JARS:$CLASSPATH
 fi
-CLASSPATH=$GEODE_JARS
+CLASSPATH=$GEODE_JARS:$GEODE_HOME/extensions/*
 
 #
 # Copy default .gfshrc to the home directory. Uncomment if needed.

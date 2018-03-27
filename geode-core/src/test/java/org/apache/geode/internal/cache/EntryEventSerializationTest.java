@@ -39,6 +39,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.SerializationException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -54,6 +55,8 @@ public class EntryEventSerializationTest {
 
   @Before
   public void setUp() {
+    TypeRegistry.init();
+
     System.setProperty(GEODE_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true");
 
     region = mock(InternalRegion.class);

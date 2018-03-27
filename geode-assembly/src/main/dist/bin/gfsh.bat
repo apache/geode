@@ -40,9 +40,9 @@ set GEODE_HOME=%gf%
 set GFSH_JARS=%GEODE_HOME%\lib\gfsh-dependencies.jar
 REM if a system level classpath is set, append it to the classes gfsh will need
 if defined CLASSPATH (
-    set DEPENDENCIES=%GFSH_JARS%;%CLASSPATH%
+    set DEPENDENCIES=%GFSH_JARS%;%CLASSPATH%;%GEODE_HOME%\extensions\*
 ) else (
-    set DEPENDENCIES=%GFSH_JARS%
+    set DEPENDENCIES=%GFSH_JARS%;%GEODE_HOME%\extensions\*
 )
 
 if not defined GF_JAVA (

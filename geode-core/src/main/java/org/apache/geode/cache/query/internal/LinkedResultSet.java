@@ -35,8 +35,10 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public class LinkedResultSet extends java.util.LinkedHashSet
     implements Ordered, SelectResults, DataSerializableFixedID {
@@ -103,9 +105,11 @@ public class LinkedResultSet extends java.util.LinkedHashSet
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     this.elementType = (ObjectType) DataSerializer.readObject(in);
-    for (int j = size; j > 0; j--) {
-      this.add(DataSerializer.readObject(in));
-    }
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      for (int j = size; j > 0; j--) {
+        this.add(DataSerializer.readObject(in));
+      }
+    });
   }
 
   public void toData(DataOutput out) throws IOException {

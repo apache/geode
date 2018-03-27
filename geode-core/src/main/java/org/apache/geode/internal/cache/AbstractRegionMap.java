@@ -826,7 +826,7 @@ public abstract class AbstractRegionMap
       CachedDeserializable newValueCd = (CachedDeserializable) newValue;
       try {
         actualVal = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
-            sender.getVersionObject(), null);
+            sender.getVersionObject(), null, true);
         newValue = new VMCachedDeserializable(actualVal, newValueCd.getSizeInBytes());
       } catch (IOException | ClassNotFoundException e) {
         throw new RuntimeException("Unable to deserialize HA event for region " + owner);

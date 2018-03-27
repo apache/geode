@@ -330,10 +330,10 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
      */
     public PutAllEntryData(DataInput in, EventID baseEventID, int idx, Version version,
         ByteArrayDataInput bytesIn) throws IOException, ClassNotFoundException {
-      this.key = DataSerializer.readObject(in);
+      this.key = InternalDataSerializer.readUserObject(in);
       byte flgs = in.readByte();
       if ((flgs & IS_OBJECT) != 0) {
-        this.value = DataSerializer.readObject(in);
+        this.value = InternalDataSerializer.readUserObject(in);
       } else {
         byte[] bb = DataSerializer.readByteArray(in);
         if ((flgs & IS_CACHED_DESER) != 0) {

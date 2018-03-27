@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.shell.core.CommandMarker;
-
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
@@ -34,12 +32,8 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  * GfshCommandJUnitTest
  */
 @SuppressWarnings("unused")
-public abstract class InternalGfshCommand extends GfshCommand implements CommandMarker {
+public abstract class InternalGfshCommand extends GfshCommand {
   public static final String EXPERIMENTAL = "(Experimental) ";
-
-  public boolean isConnectedAndReady() {
-    return getGfsh() != null && getGfsh().isConnectedAndReady();
-  }
 
   public void persistClusterConfiguration(Result result, Runnable runnable) {
     if (result == null) {
