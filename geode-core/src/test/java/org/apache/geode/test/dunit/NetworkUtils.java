@@ -14,20 +14,24 @@
  */
 package org.apache.geode.test.dunit;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+
+import java.io.UncheckedIOException;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
- * <code>NetworkUtils</code> provides static utility methods to perform network DNS lookups or
+ * {@code NetworkUtils} provides static utility methods to perform network DNS lookups or
  * similar actions.
  *
- * These methods can be used directly: <code>NetworkUtils.getIPLiteral()</code>, however, they are
+ * These methods can be used directly: {@code NetworkUtils.getIPLiteral()}, however, they are
  * intended to be referenced through static import:
  *
  * <pre>
- * import static org.apache.geode.test.dunit.NetworkUtils.*;
+ * import static org.apache.geode.test.dunit.NetworkUtils.getIPLiteral;
  *    ...
  *    String hostName = getIPLiteral();
  * </pre>
@@ -36,10 +40,12 @@ import org.apache.geode.internal.net.SocketCreator;
  */
 public class NetworkUtils {
 
-  protected NetworkUtils() {}
+  protected NetworkUtils() {
+    // nothing
+  }
 
   /**
-   * Get the IP literal name for the current host. Use this instead of "localhost" to avoid IPv6
+   * Returns the IP literal name for the current host. Use this instead of "localhost" to avoid IPv6
    * name resolution bugs in the JDK/machine config. This method honors java.net.preferIPvAddresses
    *
    * @return an IP literal which honors java.net.preferIPvAddresses
@@ -53,14 +59,39 @@ public class NetworkUtils {
   }
 
   /**
-   * Get the host name to use for a server cache in client/server dunit testing.
+   * Returns the host name to use for a server cache in client/server DUnit testing.
    *
-   * @param host the dunit Host to get a machine host name for
    * @return the host name
    */
+  public static String getServerHostName() {
+    String serverBindAddress = System.getProperty(GEMFIRE_PREFIX + SERVER_BIND_ADDRESS);
+    return serverBindAddress != null ? serverBindAddress : getCanonicalHostName();
+  }
+
+  /**
+   * Returns the host name to use for a server cache in client/server DUnit testing.
+   *
+   * @param host the DUnit Host to get a machine host name for
+   * @return the host name
+   * @deprecated Please use {@link #getServerHostName()} instead.
+   */
+  @Deprecated
   public static String getServerHostName(final Host host) {
-    String serverBindAddress =
-        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address");
+    String serverBindAddress = System.getProperty(GEMFIRE_PREFIX + SERVER_BIND_ADDRESS);
     return serverBindAddress != null ? serverBindAddress : host.getHostName();
+  }
+
+  /**
+   * Returns {@code InetAddress.getLocalHost().getCanonicalHostName()}.
+   *
+   * @return the canonical host name
+   * @throws UncheckedIOException if underlying call threw {@code UnknownHostException}.
+   */
+  private static String getCanonicalHostName() {
+    try {
+      return InetAddress.getLocalHost().getCanonicalHostName();
+    } catch (UnknownHostException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 }
