@@ -52,7 +52,7 @@ public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnec
         || securityService.isClientSecurityRequired()) {
       return new LegacySecurityProtobufConnectionStateProcessor();
     } else {
-      executionContext.setAuthorizor(new NoSecurityAuthorizer());
+      executionContext.setAuthorizer(new NoSecurityAuthorizer());
       // Noop authenticator...no security
       return new NoSecurityProtobufConnectionStateProcessor();
     }

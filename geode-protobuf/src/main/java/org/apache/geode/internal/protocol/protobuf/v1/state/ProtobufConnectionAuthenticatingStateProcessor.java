@@ -57,7 +57,7 @@ public class ProtobufConnectionAuthenticatingStateProcessor
       MessageExecutionContext messageExecutionContext, Properties properties)
       throws AuthenticationFailedException {
     Subject subject = securityService.login(properties);
-    messageExecutionContext.setAuthorizor(new ShiroAuthorizer(securityService, subject));
+    messageExecutionContext.setAuthorizer(new ShiroAuthorizer(securityService, subject));
     return new ProtobufConnectionAuthorizingStateProcessor();
   }
 }

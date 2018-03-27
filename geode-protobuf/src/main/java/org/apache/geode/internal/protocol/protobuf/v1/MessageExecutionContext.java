@@ -55,5 +55,5 @@ public abstract class MessageExecutionContext {
     this.protobufConnectionStateProcessor = protobufConnectionStateProcessor;
   }
 
-  public abstract void setAuthorizor(Authorizer authorizer);
+  public abstract void setAuthorizer(Authorizer authorizer);
 }

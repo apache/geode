@@ -43,75 +43,96 @@ public class LegacySecurityService implements SecurityService {
     this.hasPeerAuthenticator = StringUtils.isNotBlank(peerAuthenticator);
   }
 
+  @Override
   public boolean isClientSecurityRequired() {
     return this.hasClientAuthenticator;
   }
 
+  @Override
   public boolean isIntegratedSecurity() {
     return false;
   }
 
+  @Override
   public boolean isPeerSecurityRequired() {
     return this.hasPeerAuthenticator;
   }
 
+  @Override
   public ThreadState bindSubject(Subject subject) {
     return null;
   }
 
+  @Override
   public Subject getSubject() {
     return null;
   }
 
+  @Override
   public Subject login(Properties credentials) {
     return null;
   }
 
+  @Override
   public void logout() {}
 
+  @Override
   public Callable associateWith(Callable callable) {
     return callable;
   }
 
+  @Override
   public void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation) {}
 
+  @Override
   public void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, ResourcePermission.Target target) {}
 
+  @Override
   public void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, String target) {}
 
+  @Override
   public void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, String target, String key) {}
 
+  @Override
   public void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, ResourcePermission.Target target, String key) {}
 
+  @Override
   public void authorize(ResourcePermission context) {}
 
+  @Override
   public void authorize(ResourcePermission context, Subject currentUser) {}
 
+  @Override
   public void close() {}
 
+  @Override
   public boolean needPostProcess() {
     return false;
   }
 
+  @Override
   public Object postProcess(String regionPath, Object key, Object value,
       boolean valueIsSerialized) {
     return value;
   }
 
+  @Override
   public Object postProcess(Object principal, String regionPath, Object key, Object value,
       boolean valueIsSerialized) {
     return value;
   }
 
+  @Override
   public SecurityManager getSecurityManager() {
     return null;
   }
 
+  @Override
   public PostProcessor getPostProcessor() {
     return null;
   }

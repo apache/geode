@@ -49,7 +49,7 @@ public class ServerMessageExecutionContext extends MessageExecutionContext {
   }
 
   @Override
-  public void setAuthorizor(Authorizer authorizer) {
+  public void setAuthorizer(Authorizer authorizer) {
     this.authorizingCache = new AuthorizingCacheImpl(cache, authorizer);
   }
 }

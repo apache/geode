@@ -229,11 +229,24 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     Subject currentUser = getSubject();
-    authorize(context, currentUser);
+    try {
+      currentUser.checkPermission(context);
+    } catch (ShiroException e) {
+      String msg = currentUser.getPrincipal() + " not authorized for " + context;
+      logger.info("NotAuthorizedException: {}", msg);
+      throw new NotAuthorizedException(msg, e);
+    }
   }
 
   @Override
   public void authorize(ResourcePermission context, Subject currentUser) {
+    if (context == null) {
+      return;
+    }
+    if (context.getResource() == Resource.NULL && context.getOperation() == Operation.NULL) {
+      return;
+    }
+
     try {
       currentUser.checkPermission(context);
     } catch (ShiroException e) {

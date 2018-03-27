@@ -51,7 +51,7 @@ public interface SecurityService {
 
   void authorize(ResourcePermission context);
 
-  void authorize(ResourcePermission context, Subject currentUser);;
+  void authorize(ResourcePermission context, Subject currentUser);
 
   void close();
 

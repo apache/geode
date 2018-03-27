@@ -87,8 +87,6 @@ public class AuthorizingFunctionServiceImpl implements AuthorizingFunctionServic
     return executeFunction(execution, functionID, function, arguments);
   }
 
-
-
   @Override
   public List<Object> executeFunctionOnGroups(String functionID, Object arguments,
       List<String> groupNameList) {

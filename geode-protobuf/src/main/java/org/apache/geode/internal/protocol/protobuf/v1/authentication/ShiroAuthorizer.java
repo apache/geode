@@ -15,7 +15,6 @@
 package org.apache.geode.internal.protocol.protobuf.v1.authentication;
 
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission;

@@ -53,7 +53,7 @@ public class LocatorMessageExecutionContext extends MessageExecutionContext {
   }
 
   @Override
-  public void setAuthorizor(Authorizer authorizer) {
+  public void setAuthorizer(Authorizer authorizer) {
     this.authorizingLocator = new AuthorizingLocatorImpl(locator, authorizer);
   }
 }
