@@ -16,7 +16,7 @@ package org.apache.geode.cache;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -56,7 +56,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
-public class RegionExpirationDUnitTest implements Serializable {
+public class RegionExpirationDistributedTest implements Serializable {
 
   private static final int TTL_SECONDS = 10;
   private static final String KEY = "key";
@@ -81,8 +81,8 @@ public class RegionExpirationDUnitTest implements Serializable {
   public void setUp() {
     regionName = getClass().getSimpleName() + "_" + testName.getMethodName();
 
-    withExpirationVM0 = getHost(0).getVM(0);
-    withoutExpirationVM1 = getHost(0).getVM(1);
+    withExpirationVM0 = getVM(0);
+    withoutExpirationVM1 = getVM(1);
   }
 
   @Test
@@ -151,7 +151,7 @@ public class RegionExpirationDUnitTest implements Serializable {
     Verification(final Consumer<CacheListener<String, String>> strategy,
         final ExpirationAction evictionAction) {
       this.strategy = strategy;
-      this.expirationAction = evictionAction;
+      expirationAction = evictionAction;
     }
 
     void verify(final CacheListener<String, String> spyCacheListener) {
