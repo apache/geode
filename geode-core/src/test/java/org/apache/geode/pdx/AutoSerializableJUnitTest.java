@@ -27,7 +27,6 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jmock.auto.Auto;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +35,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.Version;
@@ -44,6 +42,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -143,7 +142,7 @@ public class AutoSerializableJUnitTest {
     }
 
     // disable pdx instances to make sure we can deserialize without calling PdxInstance.getObject
-    PdxInstanceImpl.setPdxReadSerialized(false);
+    TypeRegistry.setPdxReadSerialized(false);
     try {
       DomainObjectPdxAuto result = (DomainObjectPdxAuto) DataSerializer
           .readObject(new DataInputStream(new ByteArrayInputStream(out.toByteArray())));
@@ -153,7 +152,7 @@ public class AutoSerializableJUnitTest {
       assertEquals(DomainObjectPdxAuto.Day.FRIDAY, result.get("anEnum"));
       assertEquals(4, ((List) result.get("string_list")).size());
     } finally {
-      PdxInstanceImpl.setPdxReadSerialized(true);
+      TypeRegistry.setPdxReadSerialized(true);
     }
   }
 

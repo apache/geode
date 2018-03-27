@@ -49,20 +49,6 @@ public class GfshCommandJUnitTest {
   }
 
   @Test
-  public void isConnectedAndReady() throws Exception {
-    when(command.getGfsh()).thenReturn(null);
-    assertThat(command.isConnectedAndReady()).isFalse();
-
-    when(command.getGfsh()).thenReturn(gfsh);
-    when(gfsh.isConnectedAndReady()).thenReturn(false);
-    assertThat(command.isConnectedAndReady()).isFalse();
-
-    when(command.getGfsh()).thenReturn(gfsh);
-    when(gfsh.isConnectedAndReady()).thenReturn(true);
-    assertThat(command.isConnectedAndReady()).isTrue();
-  }
-
-  @Test
   public void persistClusterConfiguration() throws Exception {
     when(command.getConfigurationService()).thenReturn(null);
     Result result = ResultBuilder.createInfoResult("info");

@@ -831,6 +831,11 @@ public class FilterProfile implements DataSerializableFixedID {
    */
   void processRegisterCq(String serverCqName, ServerCQ ServerCQ, boolean addToCqMap,
       GemFireCacheImpl cache) {
+    if (cache == null) {
+      logger.info("Error while initializing the CQs with FilterProfile for CQ " + serverCqName
+          + ", Error : Cache has been closed.");
+      return;
+    }
     ServerCQ cq = (ServerCQ) ServerCQ;
     try {
       CqService cqService = cache.getCqService();

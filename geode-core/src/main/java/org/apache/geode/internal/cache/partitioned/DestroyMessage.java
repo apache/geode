@@ -329,14 +329,14 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    setKey(DataSerializer.readObject(in));
+    setKey(InternalDataSerializer.readUserObject(in));
     this.cbArg = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
     this.notificationOnly = in.readBoolean();
     this.bridgeContext = ClientProxyMembershipID.readCanonicalized(in);
     this.originalSender = (InternalDistributedMember) DataSerializer.readObject(in);
     this.eventId = (EventID) DataSerializer.readObject(in);
-    this.expectedOldValue = DataSerializer.readObject(in);
+    this.expectedOldValue = InternalDataSerializer.readUserObject(in);
 
     final boolean hasFilterInfo = ((flags & HAS_FILTER_INFO) != 0);
     if (hasFilterInfo) {

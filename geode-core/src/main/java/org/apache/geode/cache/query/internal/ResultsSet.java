@@ -124,9 +124,11 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     ObjectTypeImpl clt = new ObjectTypeImpl();
     InternalDataSerializer.invokeFromData(clt, in);
     setElementType(clt);
-    for (int k = size; k > 0; k--) {
-      this.add(DataSerializer.readObject(in));
-    }
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      for (int k = size; k > 0; k--) {
+        this.add(DataSerializer.readObject(in));
+      }
+    });
   }
 
   public void toData(DataOutput out) throws IOException {

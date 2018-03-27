@@ -28,6 +28,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.logging.LogService;
 
 public class FunctionStreamingReplyMessage extends ReplyMessage {
@@ -87,7 +88,7 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
     this.lastMsg = in.readBoolean();
     this.processorId = in.readInt();
     try {
-      this.result = DataSerializer.readObject(in);
+      this.result = InternalDataSerializer.readUserObject(in);
     } catch (Exception e) { // bug fix 40670
       // Seems odd to throw a NonSerializableEx when it has already been
       // serialized and we are failing because we can't deserialize.

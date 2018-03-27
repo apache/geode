@@ -18,12 +18,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.USER_COMMAND_
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.springframework.shell.converters.EnumConverter;
 import org.springframework.shell.converters.SimpleFileConverter;
@@ -95,22 +95,15 @@ public class CommandManager {
   private void loadUserCommands() {
     final Set<String> userCommandPackages = new HashSet<String>();
 
+    List<String> userCommandSources = new ArrayList<>();
     // Find by packages specified by the system property
     if (System.getProperty(USER_CMD_PACKAGES_PROPERTY) != null) {
-      StringTokenizer tokenizer =
-          new StringTokenizer(System.getProperty(USER_CMD_PACKAGES_PROPERTY), ",");
-      while (tokenizer.hasMoreTokens()) {
-        userCommandPackages.add(tokenizer.nextToken());
-      }
+      userCommandSources.add(System.getProperty(USER_CMD_PACKAGES_PROPERTY));
     }
 
     // Find by packages specified by the environment variable
     if (System.getenv().containsKey(USER_CMD_PACKAGES_ENV_VARIABLE)) {
-      StringTokenizer tokenizer =
-          new StringTokenizer(System.getenv().get(USER_CMD_PACKAGES_ENV_VARIABLE), ",");
-      while (tokenizer.hasMoreTokens()) {
-        userCommandPackages.add(tokenizer.nextToken());
-      }
+      userCommandSources.add(System.getenv().get(USER_CMD_PACKAGES_ENV_VARIABLE));
     }
 
     // Find by packages specified in the distribution config
@@ -118,18 +111,19 @@ public class CommandManager {
       String cacheUserCmdPackages =
           this.cacheProperties.getProperty(ConfigurationProperties.USER_COMMAND_PACKAGES);
       if (cacheUserCmdPackages != null && !cacheUserCmdPackages.isEmpty()) {
-        StringTokenizer tokenizer = new StringTokenizer(cacheUserCmdPackages, ",");
-        while (tokenizer.hasMoreTokens()) {
-          userCommandPackages.add(tokenizer.nextToken());
-        }
+        userCommandSources.add(cacheUserCmdPackages);
       }
+    }
+
+    for (String source : userCommandSources) {
+      Arrays.stream(source.split(",")).forEach(userCommandPackages::add);
     }
 
     // Load commands found in all of the packages
     for (String userCommandPackage : userCommandPackages) {
       try {
-        Set<Class<?>> foundClasses = ClasspathScanLoadHelper
-            .scanPackageForClassesImplementing(userCommandPackage, CommandMarker.class);
+        Set<Class<?>> foundClasses = ClasspathScanLoadHelper.scanPackagesForClassesImplementing(
+            CommandMarker.class, userCommandPackage, GfshCommand.class.getPackage().getName());
         for (Class<?> klass : foundClasses) {
           try {
             add((CommandMarker) klass.newInstance());
@@ -181,8 +175,8 @@ public class CommandManager {
     Set<Class<?>> foundClasses;
     // Converters
     try {
-      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
-          "org.apache.geode.management.internal.cli.converters", Converter.class);
+      foundClasses = ClasspathScanLoadHelper.scanPackagesForClassesImplementing(Converter.class,
+          "org.apache.geode.management.internal.cli.converters");
       for (Class<?> klass : foundClasses) {
         try {
           Converter<?> object = (Converter<?>) klass.newInstance();
@@ -196,8 +190,8 @@ public class CommandManager {
       raiseExceptionIfEmpty(foundClasses, "Converters");
 
       // Spring shell's converters
-      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
-          "org.springframework.shell.converters", Converter.class);
+      foundClasses = ClasspathScanLoadHelper.scanPackagesForClassesImplementing(Converter.class,
+          "org.springframework.shell.converters");
       for (Class<?> klass : foundClasses) {
         if (!SHL_CONVERTERS_TOSKIP.contains(klass)) {
           try {
@@ -220,8 +214,9 @@ public class CommandManager {
     Set<Class<?>> foundClasses;
     try {
       // geode's commands
-      foundClasses = ClasspathScanLoadHelper.scanPackageForClassesImplementing(
-          InternalGfshCommand.class.getPackage().getName(), CommandMarker.class);
+      foundClasses = ClasspathScanLoadHelper.scanPackagesForClassesImplementing(CommandMarker.class,
+          GfshCommand.class.getPackage().getName(),
+          InternalGfshCommand.class.getPackage().getName());
 
       for (Class<?> klass : foundClasses) {
         try {
