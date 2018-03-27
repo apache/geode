@@ -239,6 +239,7 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
+import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.redis.GeodeRedisServer;
@@ -5313,8 +5314,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public Object convertPdxInstanceIfNeeded(Object obj, boolean preferCD) {
     Object result = obj;
-    if (!this.getPdxReadSerialized() && obj instanceof PdxInstance) {
-      result = ((PdxInstance) obj).getObject();
+    if (obj instanceof InternalPdxInstance) {
+      InternalPdxInstance pdxInstance = (InternalPdxInstance) obj;
+      if (preferCD) {
+        try {
+          result = new PreferBytesCachedDeserializable(pdxInstance.toBytes());
+        } catch (IOException ignore) {
+          // Could not convert pdx to bytes here; it will be tried again later
+          // and an exception will be thrown there.
+        }
+      } else if (!this.getPdxReadSerialized()) {
+        result = ((PdxInstance) obj).getObject();
+      }
     }
     return result;
   }

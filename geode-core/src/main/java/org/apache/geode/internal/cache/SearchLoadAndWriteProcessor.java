@@ -164,8 +164,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
 
 
-  void doSearchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue, boolean preferCD)
-      throws CacheLoaderException, TimeoutException {
+  void doSearchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue,
+      boolean preferCD) throws CacheLoaderException, TimeoutException {
     this.requestInProgress = true;
     RegionAttributes attrs = region.getAttributes();
     Scope scope = attrs.getScope();
@@ -432,10 +432,11 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    * netSearch amongst selected peers if netSearch returns a blob, deserialize the blob and return
    * that as the result netSearch failed, so all we can do at this point is do a load return result
    * from load
-   * @param preferCD 
+   * 
+   * @param preferCD
    */
-  private void searchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue, boolean preferCD)
-      throws CacheLoaderException, TimeoutException {
+  private void searchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue,
+      boolean preferCD) throws CacheLoaderException, TimeoutException {
 
     RegionAttributes attrs = region.getAttributes();
     Scope scope = attrs.getScope();
@@ -593,7 +594,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     }
   }
 
-  private void load(EntryEventImpl event, boolean preferCD) throws CacheLoaderException, TimeoutException {
+  private void load(EntryEventImpl event, boolean preferCD)
+      throws CacheLoaderException, TimeoutException {
     Object obj = null;
     RegionAttributes attrs = this.region.getAttributes();
     Scope scope = attrs.getScope();

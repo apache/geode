@@ -2200,7 +2200,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       event = findOnServer(keyInfo, op, generateCallbacks, clientEvent);
       if (event == null) {
         event = createEventForLoad(keyInfo, generateCallbacks, requestingClient, op);
-        lastModified = findUsingSearchLoad(txState, localValue, clientEvent, keyInfo, event, preferCD);
+        lastModified =
+            findUsingSearchLoad(txState, localValue, clientEvent, keyInfo, event, preferCD);
       }
       // Update region with new value.
       if (event.hasNewValue() && !isMemoryThresholdReachedForLoad()) {
