@@ -85,6 +85,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
 
   private transient volatile int cachedHashCode = UNUSED_HASH_CODE;
 
+  private static final ThreadLocal<Boolean> pdxGetObjectInProgress = new ThreadLocal<Boolean>();
+
   public PdxInstanceImpl(PdxType pdxType, DataInput in, int len) {
     super(pdxType, createDis(in, len));
   }
