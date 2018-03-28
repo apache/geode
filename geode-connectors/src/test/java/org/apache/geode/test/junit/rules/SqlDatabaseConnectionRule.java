@@ -79,7 +79,7 @@ public abstract class SqlDatabaseConnectionRule extends ExternalResource
     private int port;
     private String dbName;
 
-    public abstract DatabaseConnectionRule build();
+    public abstract SqlDatabaseConnectionRule build();
 
     public Builder file(String filePath) {
       this.filePath = filePath;
