@@ -35,6 +35,7 @@ import java.util.function.Consumer;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -323,6 +324,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   @Test
+  @Ignore("GEODE-4922: MySQL is truncating the milliseconds from the timestamp")
   public void verifyDateToTimestamp() throws Exception {
     server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
     server.invoke(() -> {
@@ -509,6 +511,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   @Test
+  @Ignore("GEODE-4833: Postgres does not support UTF-8 null character as contents of a string")
   public void clientPutsAndGetsWithNullFieldsWithPdxClassName() throws Exception {
     createTableForAllSupportedFields();
     ClientVM client = getClientVM();
