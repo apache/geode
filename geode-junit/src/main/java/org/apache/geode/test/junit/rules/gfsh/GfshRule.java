@@ -62,17 +62,19 @@ public class GfshRule extends ExternalResource {
   protected void after() {
     gfshExecutions.stream().collect(Collectors.toList()).forEach(this::stopMembersQuietly);
 
-    gfshExecutions.stream().map(GfshExecution::getProcess).map(Process::destroyForcibly)
-        .forEach((Process process) -> {
-          try {
-            // Process.destroyForcibly() may not terminate immediately
-            process.waitFor(1, TimeUnit.MINUTES);
-          } catch (InterruptedException ignore) {
-            // We ignore this exception so that we still attempt the rest of the cleanup.
-          }
-        });
-
-    temporaryFolder.delete();
+    try {
+      gfshExecutions.stream().map(GfshExecution::getProcess).map(Process::destroyForcibly)
+          .forEach((Process process) -> {
+            try {
+              // Process.destroyForcibly() may not terminate immediately
+              process.waitFor(1, TimeUnit.MINUTES);
+            } catch (InterruptedException ie) {
+              throw new RuntimeException(process.toString() + " failed to shutdown", ie);
+            }
+          });
+    } finally {
+      temporaryFolder.delete();
+    }
   }
 
   public TemporaryFolder getTemporaryFolder() {
