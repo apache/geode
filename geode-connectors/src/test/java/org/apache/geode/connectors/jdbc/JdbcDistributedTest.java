@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -50,6 +51,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -57,14 +59,12 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * End-to-end dunits for jdbc connector
  */
 @Category(DistributedTest.class)
-public class JdbcDUnitTest implements Serializable {
+public abstract class JdbcDistributedTest implements Serializable {
 
-  private static final String DB_NAME = "DerbyDB";
+  static final String DB_NAME = "test";
   private static final String TABLE_NAME = "employees";
   private static final String REGION_NAME = "employees";
-  private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
   private static final String CONNECTION_NAME = "TestConnection";
-
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -81,70 +81,59 @@ public class JdbcDUnitTest implements Serializable {
 
   private MemberVM server;
   private MemberVM locator;
+  private String connectionUrl;
 
   @Before
   public void setup() throws Exception {
     locator = startupRule.startLocatorVM(0);
     gfsh.connectAndVerify(locator);
+    connectionUrl = getConnectionUrl();
   }
+
+  public abstract Connection getConnection() throws SQLException;
+
+  public abstract String getConnectionUrl() throws IOException, InterruptedException;
 
   private void createTable() throws SQLException {
     server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
-    server.invoke(() -> {
-      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      Connection connection = getConnection();
       Statement statement = connection.createStatement();
       statement.execute("Create Table " + TABLE_NAME
           + " (id varchar(10) primary key not null, name varchar(10), age int)");
-    });
   }
 
   private void createTableForAllSupportedFields() throws SQLException {
     server = startupRule.startServerVM(1,
         x -> x.withConnectionToLocator(locator.getPort()).withPDXReadSerialized());
-    server.invoke(() -> {
-      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      Connection connection = getConnection();
       Statement statement = connection.createStatement();
-      statement
-          .execute("Create Table \"" + TABLE_NAME + "\" (\"id\" varchar(10) primary key not null, "
-              + "aboolean smallint, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
-              + "\"along\" bigint, " + "\"aFloat\" float, " + "\"ADOUBLE\" double, "
-              + "astring varchar(10), " + "adate timestamp, " + "anobject varchar(20), "
-              + "abytearray blob(100), " + "achar char(1))");
-    });
+      createSupportedFieldsTable(statement, TABLE_NAME);
   }
 
-  private void insertNullDataForAllSupportedFieldsTable(String key) {
-    server.invoke(() -> {
-      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+  protected abstract void createSupportedFieldsTable(Statement statement, String tableName)
+      throws SQLException;
+
+  private void insertNullDataForAllSupportedFieldsTable(String key) throws SQLException {
+      Connection connection = DriverManager.getConnection(connectionUrl);
 
       String insertQuery =
-          "Insert into \"" + TABLE_NAME + "\" values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+          "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
       System.out.println("### Query is :" + insertQuery);
       PreparedStatement statement = connection.prepareStatement(insertQuery);
-      statement.setObject(1, key);
-      statement.setNull(2, Types.SMALLINT);
-      statement.setNull(3, Types.SMALLINT);
-      statement.setNull(4, Types.SMALLINT);
-      statement.setNull(5, Types.INTEGER);
-      statement.setNull(6, Types.BIGINT);
-      statement.setNull(7, Types.FLOAT);
-      statement.setNull(8, Types.DOUBLE);
-      statement.setNull(9, Types.VARCHAR);
-      statement.setNull(10, Types.TIMESTAMP);
-      statement.setNull(11, Types.VARCHAR);
-      statement.setNull(12, Types.BLOB);
-      statement.setNull(13, Types.CHAR);
+    createNullStatement(key, statement);
 
       statement.execute();
-    });
   }
 
-  private void insertDataForAllSupportedFieldsTable(String key, ClassWithSupportedPdxFields data) {
-    server.invoke(() -> {
-      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+  protected abstract void createNullStatement(String key, PreparedStatement statement)
+      throws SQLException;
+
+  private void insertDataForAllSupportedFieldsTable(String key, ClassWithSupportedPdxFields data)
+      throws SQLException {
+      Connection connection = DriverManager.getConnection(connectionUrl);
 
       String insertQuery =
-          "Insert into \"" + TABLE_NAME + "\" values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+          "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
       System.out.println("### Query is :" + insertQuery);
       PreparedStatement statement = connection.prepareStatement(insertQuery);
       statement.setObject(1, key);
@@ -156,24 +145,24 @@ public class JdbcDUnitTest implements Serializable {
       statement.setObject(7, data.getAfloat());
       statement.setObject(8, data.getAdouble());
       statement.setObject(9, data.getAstring());
-      statement.setObject(10, data.getAdate());
+      statement.setObject(10, new java.sql.Timestamp(data.getAdate().getTime()));
       statement.setObject(11, data.getAnobject());
       statement.setObject(12, data.getAbytearray());
       statement.setObject(13, new Character(data.getAchar()).toString());
 
       statement.execute();
-    });
   }
 
   @After
   public void tearDown() throws Exception {
-    server.invoke(() -> {
+    closeDB();
+    /*server.invoke(() -> {
       closeDB();
-    });
+    });*/
   }
 
   private void closeDB() throws SQLException {
-    try (Connection connection = DriverManager.getConnection(CONNECTION_URL)) {
+    try (Connection connection = DriverManager.getConnection(connectionUrl)) {
       try (Statement statement = connection.createStatement()) {
         try {
           statement.execute("Drop table " + TABLE_NAME);
@@ -181,7 +170,7 @@ public class JdbcDUnitTest implements Serializable {
         }
 
         try {
-          statement.execute("Drop table \"" + TABLE_NAME + "\"");
+          statement.execute("Drop table " + TABLE_NAME + "");
         } catch (SQLException ignore) {
         }
       }
@@ -267,7 +256,7 @@ public class JdbcDUnitTest implements Serializable {
   public void verifyDateToDate() throws Exception {
     server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
     server.invoke(() -> {
-      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      Connection connection = DriverManager.getConnection(connectionUrl);
       Statement statement = connection.createStatement();
       statement.execute(
           "Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, mydate date)");
@@ -302,7 +291,7 @@ public class JdbcDUnitTest implements Serializable {
   public void verifyDateToTime() throws Exception {
     server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
     server.invoke(() -> {
-      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      Connection connection = DriverManager.getConnection(connectionUrl);
       Statement statement = connection.createStatement();
       statement.execute(
           "Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, mytime time)");
@@ -337,7 +326,7 @@ public class JdbcDUnitTest implements Serializable {
   public void verifyDateToTimestamp() throws Exception {
     server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
     server.invoke(() -> {
-      Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      Connection connection = DriverManager.getConnection(connectionUrl);
       Statement statement = connection.createStatement();
       statement.execute("Create Table " + TABLE_NAME
           + " (id varchar(10) primary key not null, mytimestamp timestamp)");
@@ -614,7 +603,7 @@ public class JdbcDUnitTest implements Serializable {
 
   private void createJdbcConnection() {
     final String commandStr =
-        "create jdbc-connection --name=" + CONNECTION_NAME + " --url=" + CONNECTION_URL;
+        "create jdbc-connection --name=" + CONNECTION_NAME + " --url=" + connectionUrl;
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 
@@ -661,7 +650,7 @@ public class JdbcDUnitTest implements Serializable {
 
   private void assertTableHasEmployeeData(int size, PdxInstance employee, String key)
       throws SQLException {
-    Connection connection = DriverManager.getConnection(CONNECTION_URL);
+    Connection connection = DriverManager.getConnection(connectionUrl);
     Statement statement = connection.createStatement();
     Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
       assertThat(getRowCount(statement, TABLE_NAME)).isEqualTo(size);
