@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
@@ -48,11 +49,11 @@ import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class JdbcLoaderIntegrationTest {
+public abstract class JdbcLoaderIntegrationTest {
 
-  private static final String DB_NAME = "DerbyDB";
+  static final String DB_NAME = "test";
+
   private static final String REGION_TABLE_NAME = "employees";
-  private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
 
   private InternalCache cache;
   private Connection connection;
@@ -69,7 +70,7 @@ public class JdbcLoaderIntegrationTest {
         .setPdxSerializer(
             new ReflectionBasedAutoSerializer(ClassWithSupportedPdxFields.class.getName()))
         .create();
-    connection = DriverManager.getConnection(CONNECTION_URL);
+    connection = getConnection();
     statement = connection.createStatement();
   }
 
@@ -78,6 +79,10 @@ public class JdbcLoaderIntegrationTest {
     cache.close();
     closeDB();
   }
+
+  public abstract Connection getConnection() throws SQLException;
+
+  public abstract String getConnectionUrl();
 
   private void createEmployeeTable() throws Exception {
     statement.execute("Create Table " + REGION_TABLE_NAME
@@ -182,7 +187,7 @@ public class JdbcLoaderIntegrationTest {
       throws ConnectionConfigExistsException, RegionMappingExistsException {
     return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
         TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName,
-            primaryKeyInValue));
+            primaryKeyInValue, getConnectionUrl()));
   }
 
   private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,

@@ -21,4 +21,6 @@ import org.junit.rules.TestRule;
 
 public interface DatabaseConnectionRule extends TestRule {
   Connection getConnection() throws SQLException;
+
+  String getConnectionUrl();
 }
