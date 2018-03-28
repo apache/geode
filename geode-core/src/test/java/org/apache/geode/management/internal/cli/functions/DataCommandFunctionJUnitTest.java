@@ -28,13 +28,14 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * TODO: Add additional tests for all methods in DataCommandFunction.
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class DataCommandFunctionJUnitTest {
 
   private static Cache cache;
