@@ -46,10 +46,9 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
   @Override
   protected void createClassWithSupportedPdxFieldsTable(Statement statement, String tableName)
       throws SQLException {
-    statement.execute("CREATE TABLE " + tableName
-        + " (id varchar(10) primary key not null, " + "aboolean boolean, " + "abyte smallint, "
-        + "ashort smallint, " + "anint int, " + "along bigint, " + "afloat float, "
-        + "adouble float, " + "astring varchar(10), " + "adate timestamp, "
-        + "anobject varchar(20), " + "abytearray bytea, " + "achar char(1))");
+    statement.execute("CREATE TABLE " + tableName + " (id varchar(10) primary key not null, "
+        + "aboolean boolean, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
+        + "along bigint, " + "afloat float, " + "adouble float, " + "astring varchar(10), "
+        + "adate timestamp, " + "anobject varchar(20), " + "abytearray bytea, " + "achar char(1))");
   }
 }

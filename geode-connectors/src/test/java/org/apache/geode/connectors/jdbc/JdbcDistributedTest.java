@@ -97,33 +97,32 @@ public abstract class JdbcDistributedTest implements Serializable {
 
   private void createTable() throws SQLException {
     server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
-      Connection connection = getConnection();
-      Statement statement = connection.createStatement();
-      statement.execute("Create Table " + TABLE_NAME
-          + " (id varchar(10) primary key not null, name varchar(10), age int)");
+    Connection connection = getConnection();
+    Statement statement = connection.createStatement();
+    statement.execute("Create Table " + TABLE_NAME
+        + " (id varchar(10) primary key not null, name varchar(10), age int)");
   }
 
   private void createTableForAllSupportedFields() throws SQLException {
     server = startupRule.startServerVM(1,
         x -> x.withConnectionToLocator(locator.getPort()).withPDXReadSerialized());
-      Connection connection = getConnection();
-      Statement statement = connection.createStatement();
-      createSupportedFieldsTable(statement, TABLE_NAME);
+    Connection connection = getConnection();
+    Statement statement = connection.createStatement();
+    createSupportedFieldsTable(statement, TABLE_NAME);
   }
 
   protected abstract void createSupportedFieldsTable(Statement statement, String tableName)
       throws SQLException;
 
   private void insertNullDataForAllSupportedFieldsTable(String key) throws SQLException {
-      Connection connection = DriverManager.getConnection(connectionUrl);
+    Connection connection = DriverManager.getConnection(connectionUrl);
 
-      String insertQuery =
-          "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
-      System.out.println("### Query is :" + insertQuery);
-      PreparedStatement statement = connection.prepareStatement(insertQuery);
+    String insertQuery = "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    System.out.println("### Query is :" + insertQuery);
+    PreparedStatement statement = connection.prepareStatement(insertQuery);
     createNullStatement(key, statement);
 
-      statement.execute();
+    statement.execute();
   }
 
   protected abstract void createNullStatement(String key, PreparedStatement statement)
@@ -131,35 +130,36 @@ public abstract class JdbcDistributedTest implements Serializable {
 
   private void insertDataForAllSupportedFieldsTable(String key, ClassWithSupportedPdxFields data)
       throws SQLException {
-      Connection connection = DriverManager.getConnection(connectionUrl);
+    Connection connection = DriverManager.getConnection(connectionUrl);
 
-      String insertQuery =
-          "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
-      System.out.println("### Query is :" + insertQuery);
-      PreparedStatement statement = connection.prepareStatement(insertQuery);
-      statement.setObject(1, key);
-      statement.setObject(2, data.isAboolean());
-      statement.setObject(3, data.getAbyte());
-      statement.setObject(4, data.getAshort());
-      statement.setObject(5, data.getAnint());
-      statement.setObject(6, data.getAlong());
-      statement.setObject(7, data.getAfloat());
-      statement.setObject(8, data.getAdouble());
-      statement.setObject(9, data.getAstring());
-      statement.setObject(10, new java.sql.Timestamp(data.getAdate().getTime()));
-      statement.setObject(11, data.getAnobject());
-      statement.setObject(12, data.getAbytearray());
-      statement.setObject(13, new Character(data.getAchar()).toString());
+    String insertQuery = "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    System.out.println("### Query is :" + insertQuery);
+    PreparedStatement statement = connection.prepareStatement(insertQuery);
+    statement.setObject(1, key);
+    statement.setObject(2, data.isAboolean());
+    statement.setObject(3, data.getAbyte());
+    statement.setObject(4, data.getAshort());
+    statement.setObject(5, data.getAnint());
+    statement.setObject(6, data.getAlong());
+    statement.setObject(7, data.getAfloat());
+    statement.setObject(8, data.getAdouble());
+    statement.setObject(9, data.getAstring());
+    statement.setObject(10, new java.sql.Timestamp(data.getAdate().getTime()));
+    statement.setObject(11, data.getAnobject());
+    statement.setObject(12, data.getAbytearray());
+    statement.setObject(13, new Character(data.getAchar()).toString());
 
-      statement.execute();
+    statement.execute();
   }
 
   @After
   public void tearDown() throws Exception {
     closeDB();
-    /*server.invoke(() -> {
-      closeDB();
-    });*/
+    /*
+     * server.invoke(() -> {
+     * closeDB();
+     * });
+     */
   }
 
   private void closeDB() throws SQLException {
