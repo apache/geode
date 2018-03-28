@@ -23,6 +23,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.Date;
 
 import org.junit.After;
@@ -84,17 +85,12 @@ public abstract class JdbcLoaderIntegrationTest {
 
   public abstract String getConnectionUrl();
 
+  protected abstract void createClassWithSupportedPdxFieldsTable(Statement statement, String tableName)
+      throws SQLException;
+
   private void createEmployeeTable() throws Exception {
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
-  }
-
-  private void createClassWithSupportedPdxFieldsTable() throws Exception {
-    statement.execute("Create Table " + REGION_TABLE_NAME
-        + " (id varchar(10) primary key not null, " + "aboolean smallint, " + "abyte smallint, "
-        + "ashort smallint, " + "anint int, " + "along bigint, " + "afloat float, "
-        + "adouble float, " + "astring varchar(10), " + "adate timestamp, "
-        + "anobject varchar(20), " + "abytearray blob(100), " + "achar char(1))");
   }
 
   private void closeDB() throws Exception {
@@ -153,7 +149,7 @@ public abstract class JdbcLoaderIntegrationTest {
 
   @Test
   public void verifyGetWithSupportedFieldsWithPdxClassName() throws Exception {
-    createClassWithSupportedPdxFieldsTable();
+    createClassWithSupportedPdxFieldsTable(statement, REGION_TABLE_NAME);
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
         createClassWithSupportedPdxFieldsForInsert();
     insertIntoClassWithSupportedPdxFieldsTable("1", classWithSupportedPdxFields);
@@ -203,7 +199,7 @@ public abstract class JdbcLoaderIntegrationTest {
   private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert() {
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
         new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2, 3, 4, 5.5f, 6.0, "BigEmp",
-            new Date(100000), "BigEmpObject", new byte[] {1, 2}, 'c');
+            new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
 
     return classWithSupportedPdxFields;
   }
