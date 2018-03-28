@@ -46,9 +46,10 @@ public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
   @Override
   protected void createClassWithSupportedPdxFieldsTable(Statement statement, String tableName)
       throws SQLException {
-    statement.execute("CREATE TABLE " + tableName
-        + " (id varchar(10) primary key not null, " + "aboolean smallint, " + "abyte smallint, "
-        + "ashort smallint, " + "anint int, " + "along bigint, " + "afloat float, "
-        + "adouble float, " + "astring varchar(10), " + "adate datetime, "
-        + "anobject varchar(20), " + "abytearray blob(100), " + "achar char(1))");
-  }}
+    statement.execute("CREATE TABLE " + tableName + " (id varchar(10) primary key not null, "
+        + "aboolean smallint, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
+        + "along bigint, " + "afloat float, " + "adouble float, " + "astring varchar(10), "
+        + "adate datetime, " + "anobject varchar(20), " + "abytearray blob(100), "
+        + "achar char(1))");
+  }
+}

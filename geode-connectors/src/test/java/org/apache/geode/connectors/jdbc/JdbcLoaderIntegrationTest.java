@@ -85,8 +85,8 @@ public abstract class JdbcLoaderIntegrationTest {
 
   public abstract String getConnectionUrl();
 
-  protected abstract void createClassWithSupportedPdxFieldsTable(Statement statement, String tableName)
-      throws SQLException;
+  protected abstract void createClassWithSupportedPdxFieldsTable(Statement statement,
+      String tableName) throws SQLException;
 
   private void createEmployeeTable() throws Exception {
     statement.execute("Create Table " + REGION_TABLE_NAME
