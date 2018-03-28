@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -507,7 +508,7 @@ public class JdbcDUnitTest implements Serializable {
     client.invoke(() -> {
       String key = "id1";
       ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2,
-          3, 4, 5.5f, 6.0, "BigEmp", new Date(100000), "BigEmpObject", new byte[] {1, 2}, 'c');
+          3, 4, 5.5f, 6.0, "BigEmp", new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
       Region<String, ClassWithSupportedPdxFields> region =
           ClusterStartupRule.getClientCache().getRegion(REGION_NAME);
       region.put(key, value);
@@ -550,7 +551,7 @@ public class JdbcDUnitTest implements Serializable {
     createMapping(REGION_NAME, CONNECTION_NAME, ClassWithSupportedPdxFields.class.getName(), false);
     String key = "id1";
     ClassWithSupportedPdxFields value = new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2,
-        3, 4, 5.5f, 6.0, "BigEmp", new Date(100000), "BigEmpObject", new byte[] {1, 2}, 'c');
+        3, 4, 5.5f, 6.0, "BigEmp", new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
 
     server.invoke(() -> {
       insertDataForAllSupportedFieldsTable(key, value);

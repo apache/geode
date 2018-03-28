@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
@@ -40,5 +41,15 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
   @Override
   public String getConnectionUrl() {
     return dbRule.getConnectionUrl();
+  }
+
+  @Override
+  protected void createClassWithSupportedPdxFieldsTable(Statement statement, String tableName)
+      throws SQLException {
+    statement.execute("CREATE TABLE " + tableName
+        + " (id varchar(10) primary key not null, " + "aboolean boolean, " + "abyte smallint, "
+        + "ashort smallint, " + "anint int, " + "along bigint, " + "afloat float, "
+        + "adouble float, " + "astring varchar(10), " + "adate timestamp, "
+        + "anobject varchar(20), " + "abytearray bytea, " + "achar char(1))");
   }
 }
