@@ -75,11 +75,11 @@ fromData,126
 toData,125
 
 org/apache/geode/cache/query/internal/LinkedResultSet,2
-fromData,30
+fromData,40
 toData,46
 
 org/apache/geode/cache/query/internal/LinkedStructSet,2
-fromData,40
+fromData,68
 toData,66
 
 org/apache/geode/cache/query/internal/NWayMergeResults,2
@@ -99,19 +99,19 @@ fromData,106
 toData,116
 
 org/apache/geode/cache/query/internal/ResultsCollectionWrapper,2
-fromData,40
+fromData,55
 toData,60
 
 org/apache/geode/cache/query/internal/ResultsSet,2
-fromData,37
+fromData,49
 toData,70
 
 org/apache/geode/cache/query/internal/SortedResultSet,2
-fromData,30
+fromData,40
 toData,46
 
 org/apache/geode/cache/query/internal/SortedStructSet,2
-fromData,40
+fromData,57
 toData,64
 
 org/apache/geode/cache/query/internal/StructBag,2
@@ -119,11 +119,11 @@ fromData,16
 toData,16
 
 org/apache/geode/cache/query/internal/StructImpl,2
-fromData,74
+fromData,72
 toData,17
 
 org/apache/geode/cache/query/internal/StructSet,2
-fromData,48
+fromData,58
 toData,46
 
 org/apache/geode/cache/query/internal/Undefined,2
@@ -1177,9 +1177,85 @@ org/apache/geode/internal/cache/ReleaseClearLockMessage,2
 fromData,24
 toData,24
 
-org/apache/geode/internal/cache/RemoveCacheServerProfileMessage,2
+org/apache/geode/internal/cache/tx/RemoteContainsKeyValueMessage,2
+fromData,33
+toData,14
+
+org/apache/geode/internal/cache/tx/RemoteContainsKeyValueMessage$RemoteContainsKeyValueReplyMessage,2
 fromData,16
 toData,16
+
+org/apache/geode/internal/cache/tx/RemoteDestroyMessage,2
+fromData,131
+toData,135
+
+org/apache/geode/internal/cache/tx/RemoteDestroyMessage$DestroyReplyMessage,2
+fromData,52
+toData,57
+
+org/apache/geode/internal/cache/tx/RemoteFetchEntryMessage,2
+fromData,14
+toData,14
+
+org/apache/geode/internal/cache/tx/RemoteFetchEntryMessage$FetchEntryReplyMessage,2
+fromData,30
+toData,38
+
+org/apache/geode/internal/cache/tx/RemoteFetchVersionMessage,2
+fromData,14
+toData,14
+
+org/apache/geode/internal/cache/tx/RemoteFetchVersionMessage$FetchVersionReplyMessage,2
+fromData,17
+toData,14
+
+org/apache/geode/internal/cache/tx/RemoteGetMessage,2
+fromData,33
+toData,30
+
+org/apache/geode/internal/cache/tx/RemoteGetMessage$GetReplyMessage,2
+fromData,48
+toData,32
+
+org/apache/geode/internal/cache/tx/RemoteInvalidateMessage$InvalidateReplyMessage,2
+fromData,52
+toData,57
+
+org/apache/geode/internal/cache/tx/RemoteOperationMessage,2
+fromData,43
+toData,103
+
+org/apache/geode/internal/cache/tx/RemotePutAllMessage,2
+fromData,223
+toData,173
+
+org/apache/geode/internal/cache/tx/RemotePutAllMessage$PutAllReplyMessage,2
+fromData,17
+toData,14
+
+org/apache/geode/internal/cache/tx/RemotePutMessage,2
+fromData,223
+toData,252
+
+org/apache/geode/internal/cache/tx/RemotePutMessage$PutReplyMessage,2
+fromData,81
+toData,94
+
+org/apache/geode/internal/cache/tx/RemoteClearMessage,2
+fromData,13
+toData,18
+
+org/apache/geode/internal/cache/tx/RemoteClearMessage$RemoteClearReplyMessage,2
+fromData,6
+toData,6
+
+org/apache/geode/internal/cache/tx/RemoteRemoveAllMessage,2
+fromData,203
+toData,173
+
+org/apache/geode/internal/cache/tx/RemoteRemoveAllMessage$RemoveAllReplyMessage,2
+fromData,17
+toData,14
 
 org/apache/geode/internal/cache/RoleEventImpl,2
 fromData,63
@@ -1262,7 +1338,7 @@ fromData,173
 toData,77
 
 org/apache/geode/internal/cache/TXCommitMessage$RegionCommit$FarSideEntryOp,2
-fromData,167
+fromData,171
 toData,187
 
 org/apache/geode/internal/cache/TXEntryState$DistTxThinEntryState,2
@@ -1504,7 +1580,7 @@ fromData,35
 toData,24
 
 org/apache/geode/internal/cache/partitioned/FetchBulkEntriesMessage,2
-fromData,43
+fromData,67
 toData,67
 
 org/apache/geode/internal/cache/partitioned/FetchBulkEntriesMessage$FetchBulkEntriesReplyMessage,2
@@ -1668,7 +1744,7 @@ fromData,48
 toData,54
 
 org/apache/geode/internal/cache/partitioned/QueryMessage,2
-fromData,65
+fromData,63
 toData,63
 
 org/apache/geode/internal/cache/partitioned/RegionAdvisor$BucketProfileAndId,2
@@ -1678,6 +1754,22 @@ toData,29
 org/apache/geode/internal/cache/partitioned/RegionAdvisor$PartitionProfile,2
 fromData,53
 toData,34
+
+org/apache/geode/internal/cache/tx/RemoteFetchKeysMessage,2
+fromData,6
+toData,6
+
+org/apache/geode/internal/cache/tx/RemoteFetchKeysMessage$RemoteFetchKeysReplyMessage,2
+fromData,54
+toData,54
+
+org/apache/geode/internal/cache/tx/RemoteSizeMessage,2
+fromData,18
+toData,18
+
+org/apache/geode/internal/cache/tx/RemoteSizeMessage$SizeReplyMessage,2
+fromData,16
+toData,16
 
 org/apache/geode/internal/cache/partitioned/RemoveAllPRMessage,2
 fromData,190
@@ -1862,102 +1954,6 @@ org/apache/geode/internal/cache/tx/DistTxEntryEvent,2
 fromData,100
 toData,121
 
-org/apache/geode/internal/cache/tx/RemoteClearMessage,2
-fromData,13
-toData,18
-
-org/apache/geode/internal/cache/tx/RemoteClearMessage$RemoteClearReplyMessage,2
-fromData,6
-toData,6
-
-org/apache/geode/internal/cache/tx/RemoteContainsKeyValueMessage,2
-fromData,33
-toData,14
-
-org/apache/geode/internal/cache/tx/RemoteContainsKeyValueMessage$RemoteContainsKeyValueReplyMessage,2
-fromData,16
-toData,16
-
-org/apache/geode/internal/cache/tx/RemoteDestroyMessage,2
-fromData,131
-toData,135
-
-org/apache/geode/internal/cache/tx/RemoteDestroyMessage$DestroyReplyMessage,2
-fromData,52
-toData,57
-
-org/apache/geode/internal/cache/tx/RemoteFetchEntryMessage,2
-fromData,14
-toData,14
-
-org/apache/geode/internal/cache/tx/RemoteFetchEntryMessage$FetchEntryReplyMessage,2
-fromData,30
-toData,38
-
-org/apache/geode/internal/cache/tx/RemoteFetchKeysMessage,2
-fromData,6
-toData,6
-
-org/apache/geode/internal/cache/tx/RemoteFetchKeysMessage$RemoteFetchKeysReplyMessage,2
-fromData,54
-toData,54
-
-org/apache/geode/internal/cache/tx/RemoteFetchVersionMessage,2
-fromData,14
-toData,14
-
-org/apache/geode/internal/cache/tx/RemoteFetchVersionMessage$FetchVersionReplyMessage,2
-fromData,17
-toData,14
-
-org/apache/geode/internal/cache/tx/RemoteGetMessage,2
-fromData,33
-toData,30
-
-org/apache/geode/internal/cache/tx/RemoteGetMessage$GetReplyMessage,2
-fromData,48
-toData,32
-
-org/apache/geode/internal/cache/tx/RemoteInvalidateMessage$InvalidateReplyMessage,2
-fromData,52
-toData,57
-
-org/apache/geode/internal/cache/tx/RemoteOperationMessage,2
-fromData,43
-toData,103
-
-org/apache/geode/internal/cache/tx/RemotePutAllMessage,2
-fromData,223
-toData,173
-
-org/apache/geode/internal/cache/tx/RemotePutAllMessage$PutAllReplyMessage,2
-fromData,17
-toData,14
-
-org/apache/geode/internal/cache/tx/RemotePutMessage,2
-fromData,223
-toData,252
-
-org/apache/geode/internal/cache/tx/RemotePutMessage$PutReplyMessage,2
-fromData,81
-toData,94
-
-org/apache/geode/internal/cache/tx/RemoteRemoveAllMessage,2
-fromData,203
-toData,173
-
-org/apache/geode/internal/cache/tx/RemoteRemoveAllMessage$RemoveAllReplyMessage,2
-fromData,17
-toData,14
-
-org/apache/geode/internal/cache/tx/RemoteSizeMessage,2
-fromData,18
-toData,18
-
-org/apache/geode/internal/cache/tx/RemoteSizeMessage$SizeReplyMessage,2
-fromData,16
-toData,16
-
 org/apache/geode/internal/cache/versions/RVVException,2
 fromData,1
 toData,14
@@ -2004,6 +2000,14 @@ org/apache/geode/internal/cache/wan/GatewaySenderQueueEntrySynchronizationOperat
 fromData,32
 toData,35
 
+org/apache/geode/internal/cache/wan/parallel/ParallelQueueBatchRemovalMessage,2
+fromData,17
+toData,14
+
+org/apache/geode/internal/cache/wan/parallel/ParallelQueueBatchRemovalMessage$BatchRemovalReplyMessage,2
+fromData,6
+toData,6
+
 org/apache/geode/internal/cache/wan/parallel/ParallelQueueRemovalMessage,2
 fromData,14
 toData,14
@@ -2023,6 +2027,10 @@ toData,29
 org/apache/geode/internal/modules/util/RegionConfiguration,2
 fromData,77
 toData,74
+
+org/apache/geode/internal/security/ObjectWithAuthz,2
+fromData,17
+toData,17
 
 org/apache/geode/internal/util/VersionedArrayList,2
 fromData,85
@@ -2061,8 +2069,8 @@ fromData,41
 toData,41
 
 org/apache/geode/management/internal/cli/functions/CliFunctionResult,4
-fromData,57
-fromDataPre_GFE_8_0_0_0,30
+fromData,61
+fromDataPre_GFE_8_0_0_0,34
 toData,49
 toDataPre_GFE_8_0_0_0,25
 
@@ -2127,4 +2135,9 @@ toData,9
 org/apache/geode/redis/internal/DoubleWrapper,2
 fromData,9
 toData,9
+
+org/apache/geode/internal/cache/RemoveCacheServerProfileMessage,2
+fromData,16
+toData,16
+
 

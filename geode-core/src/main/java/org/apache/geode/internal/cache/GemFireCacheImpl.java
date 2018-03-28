@@ -240,6 +240,7 @@ import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.redis.GeodeRedisServer;
 
@@ -5065,7 +5066,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     return (getPdxReadSerialized() || pdxReadSerializedOverriden)
-        && TypeRegistry.getPdxReadSerialized();
+        && PdxInstanceImpl.getPdxReadSerialized();
   }
 
   @Override
@@ -5157,7 +5158,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void setReadSerializedForCurrentThread(boolean value) {
-    TypeRegistry.setPdxReadSerialized(value);
+    PdxInstanceImpl.setPdxReadSerialized(value);
     this.setPdxReadSerializedOverride(value);
   }
 

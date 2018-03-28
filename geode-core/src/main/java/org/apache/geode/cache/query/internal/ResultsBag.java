@@ -25,7 +25,6 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.ObjectIntHashMap.Entry;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachePerfStats;
 
@@ -146,7 +145,7 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
     int numLeft = this.size - this.numNulls;
 
     while (numLeft > 0) {
-      Object key = InternalDataSerializer.readUserObject(in);
+      Object key = DataSerializer.readObject(in);
       int occurence = in.readInt();
       this.map.put(key, occurence);
       numLeft -= occurence;

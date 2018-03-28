@@ -514,7 +514,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     super.fromData(in);
 
     final int extraFlags = in.readUnsignedByte();
-    setKey(InternalDataSerializer.readUserObject(in));
+    setKey(DataSerializer.readObject(in));
     this.cbArg = DataSerializer.readObject(in);
     this.lastModified = in.readLong();
     this.op = Operation.fromOrdinal(in.readByte());
@@ -528,7 +528,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     InternalDataSerializer.invokeFromData(this.eventId, in);
 
     if ((flags & HAS_EXPECTED_OLD_VAL) != 0) {
-      this.expectedOldValue = InternalDataSerializer.readUserObject(in);
+      this.expectedOldValue = DataSerializer.readObject(in);
     }
     /*
      * this.hasOldValue = in.readBoolean(); if (this.hasOldValue){
@@ -989,7 +989,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       super.fromData(in);
       this.result = in.readBoolean();
       this.op = Operation.fromOrdinal(in.readByte());
-      this.oldValue = InternalDataSerializer.readUserObject(in);
+      this.oldValue = DataSerializer.readObject(in);
       this.versionTag = (VersionTag) DataSerializer.readObject(in);
     }
 

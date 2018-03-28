@@ -35,7 +35,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
@@ -158,7 +157,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.key = InternalDataSerializer.readUserObject(in);
+    this.key = DataSerializer.readObject(in);
     this.valueCheck = in.readBoolean();
     this.bucketId = Integer.valueOf(in.readInt());
   }

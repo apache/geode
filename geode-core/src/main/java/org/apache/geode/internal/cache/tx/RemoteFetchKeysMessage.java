@@ -44,7 +44,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -53,7 +52,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.ObjectIntProcedure;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
@@ -391,19 +389,17 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
         ByteArrayInputStream byteStream = new ByteArrayInputStream(msg.chunk);
         DataInputStream in = new DataInputStream(byteStream);
-        InternalDataSerializer.doWithPdxReadSerialized(() -> {
-          while (in.available() > 0) {
-            Object key = DataSerializer.readObject(in);
-            if (key != null) {
-              synchronized (returnValue) {
-                returnValue.add(key);
-              }
-            } else {
-              // null should signal the end of the set of keys
-              Assert.assertTrue(in.available() == 0);
+        while (in.available() > 0) {
+          Object key = DataSerializer.readObject(in);
+          if (key != null) {
+            synchronized (returnValue) {
+              returnValue.add(key);
             }
+          } else {
+            // null should signal the end of the set of keys
+            Assert.assertTrue(in.available() == 0);
           }
-        });
+        }
 
         synchronized (this.endLock) {
           chunksProcessed = chunksProcessed + 1;

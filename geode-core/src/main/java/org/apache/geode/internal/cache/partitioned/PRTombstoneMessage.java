@@ -31,7 +31,6 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.SerializationVersions;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -134,7 +133,7 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
     int numKeys = in.readInt();
     this.keys = new HashSet<Object>(numKeys);
     for (int i = 0; i < numKeys; i++) {
-      this.keys.add(InternalDataSerializer.readUserObject(in));
+      this.keys.add(DataSerializer.readObject(in));
     }
     this.eventID = (EventID) DataSerializer.readObject(in);
   }
