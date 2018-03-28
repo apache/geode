@@ -85,8 +85,6 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
 
   private transient volatile int cachedHashCode = UNUSED_HASH_CODE;
 
-  private static final ThreadLocal<Boolean> pdxGetObjectInProgress = new ThreadLocal<Boolean>();
-
   public PdxInstanceImpl(PdxType pdxType, DataInput in, int len) {
     super(pdxType, createDis(in, len));
   }
@@ -119,18 +117,6 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       dis = new PdxInputStream(bytes);
     }
     return dis;
-  }
-
-  public static boolean getPdxReadSerialized() {
-    return pdxGetObjectInProgress.get() == null;
-  }
-
-  public static void setPdxReadSerialized(boolean readSerialized) {
-    if (!readSerialized) {
-      pdxGetObjectInProgress.set(true);
-    } else {
-      pdxGetObjectInProgress.remove();
-    }
   }
 
   @Override
@@ -234,15 +220,16 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       }
       return this;
     }
-    boolean wouldReadSerialized = PdxInstanceImpl.getPdxReadSerialized();
+
+    boolean wouldReadSerialized = TypeRegistry.getPdxReadSerialized();
     if (!wouldReadSerialized) {
       return getUnmodifiableReader().basicGetObject();
     } else {
-      PdxInstanceImpl.setPdxReadSerialized(false);
+      TypeRegistry.setPdxReadSerialized(false);
       try {
         return getUnmodifiableReader().basicGetObject();
       } finally {
-        PdxInstanceImpl.setPdxReadSerialized(true);
+        TypeRegistry.setPdxReadSerialized(true);
       }
     }
   }

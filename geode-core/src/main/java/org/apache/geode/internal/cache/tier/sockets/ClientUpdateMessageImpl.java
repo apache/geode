@@ -1269,7 +1269,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     // if (this._hasCqs) {
     // this._clientCqs = DataSerializer.readHashMap(in);
     // }
-    this._callbackArgument = DataSerializer.readObject(in);
+    this._callbackArgument = InternalDataSerializer.readUserObject(in);
 
     CacheClientNotifier ccn = CacheClientNotifier.getInstance();
 

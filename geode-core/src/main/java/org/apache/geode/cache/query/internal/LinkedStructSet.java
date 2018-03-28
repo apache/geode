@@ -34,8 +34,10 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public class LinkedStructSet extends LinkedHashSet<Struct>
     implements SelectResults<Struct>, Ordered, DataSerializableFixedID {
@@ -316,10 +318,12 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
     this.modifiable = in.readBoolean();
     int size = in.readInt();
     this.structType = (StructTypeImpl) DataSerializer.readObject(in);
-    for (int j = size; j > 0; j--) {
-      Object[] fieldValues = DataSerializer.readObject(in);
-      this.add(new StructImpl(this.structType, fieldValues));
-    }
+    InternalDataSerializer.doWithPdxReadSerialized(() -> {
+      for (int j = size; j > 0; j--) {
+        Object[] fieldValues = DataSerializer.readObject(in);
+        this.add(new StructImpl(this.structType, fieldValues));
+      }
+    });
   }
 
   public int getDSFID() {

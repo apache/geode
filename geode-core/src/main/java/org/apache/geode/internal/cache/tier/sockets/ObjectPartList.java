@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
@@ -224,7 +225,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     if (numObjects > 0) {
       for (int index = 0; index < numObjects; ++index) {
         if (this.hasKeys) {
-          Object key = DataSerializer.readObject(in);
+          Object key = InternalDataSerializer.readUserObject(in);
           this.keys.add(key);
         }
         boolean isException = in.readBoolean();
@@ -235,7 +236,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
           // ignore the exception string meant for native clients
           DataSerializer.readString(in);
         } else {
-          value = DataSerializer.readObject(in);
+          value = InternalDataSerializer.readUserObject(in);
         }
         this.objects.add(value);
       }
