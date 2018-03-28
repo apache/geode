@@ -64,14 +64,14 @@ public abstract class SqlDatabaseConnectionRule extends ExternalResource
 
   @Override
   public Connection getConnection() throws SQLException {
-    String connectionUrl = getConnectionString();
+    String connectionUrl = getConnectionUrl();
     Awaitility.await().ignoreExceptions().atMost(10, TimeUnit.SECONDS)
         .until(matches(() -> DriverManager.getConnection(connectionUrl)));
     Connection connection = DriverManager.getConnection(connectionUrl);
     return connection;
   }
 
-  protected abstract String getConnectionString();
+  public abstract String getConnectionUrl();
 
   public abstract static class Builder {
     private String filePath;

@@ -26,7 +26,7 @@ public class PostgresConnectionRule extends SqlDatabaseConnectionRule {
   }
 
   @Override
-  protected String getConnectionString() {
+  public String getConnectionUrl() {
     return getDockerPort().inFormat(String.format(CONNECTION_STRING, getDbName()));
   }
 

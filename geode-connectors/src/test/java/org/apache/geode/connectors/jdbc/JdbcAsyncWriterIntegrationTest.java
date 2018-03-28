@@ -44,11 +44,10 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class JdbcAsyncWriterIntegrationTest {
+public abstract class JdbcAsyncWriterIntegrationTest {
 
-  private static final String DB_NAME = "DerbyDB";
+  static final String DB_NAME = "test";
   private static final String REGION_TABLE_NAME = "employees";
-  private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
 
   private InternalCache cache;
   private Region<String, PdxInstance> employees;
@@ -65,7 +64,8 @@ public class JdbcAsyncWriterIntegrationTest {
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCAsyncWriter(REGION_TABLE_NAME);
-    connection = DriverManager.getConnection(CONNECTION_URL);
+    // connection = DriverManager.getConnection(CONNECTION_URL);
+    connection = getConnection();
     statement = connection.createStatement();
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
@@ -94,6 +94,10 @@ public class JdbcAsyncWriterIntegrationTest {
       connection.close();
     }
   }
+
+  public abstract Connection getConnection() throws SQLException;
+
+  public abstract String getConnectionUrl();
 
   @Test
   public void validateJDBCAsyncWriterTotalEvents() {
@@ -241,7 +245,7 @@ public class JdbcAsyncWriterIntegrationTest {
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
     return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
-        TestConfigService.getTestConfigService());
+        TestConfigService.getTestConfigService(getConnectionUrl()));
   }
 
 }

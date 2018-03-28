@@ -12,32 +12,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal;
+package org.apache.geode.connectors.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
-import org.apache.geode.test.junit.rules.InMemoryDerbyConnectionRule;
+import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 
 @Category(IntegrationTest.class)
-public class DerbyTableMetaDataManagerIntegrationTest extends TableMetaDataManagerIntegrationTest {
+public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
 
-  @Rule
-  public DatabaseConnectionRule dbRule = new InMemoryDerbyConnectionRule(DB_NAME);
+  @ClassRule
+  public static DatabaseConnectionRule dbRule =
+      new PostgresConnectionRule.Builder().file("src/test/resources/docker/postgres.yml")
+          .serviceName("db").port(5432).database(DB_NAME).build();
 
   @Override
-  protected Connection getConnection() throws SQLException {
+  public Connection getConnection() throws SQLException {
     return dbRule.getConnection();
   }
 
   @Override
-  protected void createTable() throws SQLException {
-    statement.execute("Create Table " + REGION_TABLE_NAME
-        + " (\"id\" varchar(10) primary key not null, \"name\" varchar(10), \"age\" int)");
+  public String getConnectionUrl() {
+    return dbRule.getConnectionUrl();
   }
 }

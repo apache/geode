@@ -12,31 +12,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit.rules;
+package org.apache.geode.connectors.jdbc;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import org.junit.rules.ExternalResource;
+import org.junit.ClassRule;
+import org.junit.experimental.categories.Category;
 
-public class InMemoryDerbyConnectionRule extends ExternalResource
-    implements DatabaseConnectionRule {
-  private static final String CONNECTION_URL = "jdbc:derby:memory:%s;create=true";
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
+import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 
-  private final String dbName;
+@Category(IntegrationTest.class)
+public class PostgresJdbcAsyncWriterIntegrationTest extends JdbcAsyncWriterIntegrationTest {
 
-  public InMemoryDerbyConnectionRule(String dbName) {
-    this.dbName = dbName;
-  }
+  @ClassRule
+  public static DatabaseConnectionRule dbRule =
+      new PostgresConnectionRule.Builder().file("src/test/resources/docker/postgres.yml")
+          .serviceName("db").port(5432).database(DB_NAME).build();
 
   @Override
   public Connection getConnection() throws SQLException {
-    return DriverManager.getConnection(getConnectionUrl());
+    return dbRule.getConnection();
   }
 
   @Override
   public String getConnectionUrl() {
-    return String.format(CONNECTION_URL, dbName);
+    return dbRule.getConnectionUrl();
   }
 }

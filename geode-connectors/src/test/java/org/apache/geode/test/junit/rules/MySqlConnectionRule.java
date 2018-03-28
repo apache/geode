@@ -14,14 +14,22 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static org.awaitility.Awaitility.matches;
+
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 
 import com.palantir.docker.compose.DockerComposeRule;
+import org.awaitility.Awaitility;
 
 public class MySqlConnectionRule extends SqlDatabaseConnectionRule {
-  private static final String CONNECTION_STRING =
+  private static final String CREATE_DB_CONNECTION_STRING =
       "jdbc:mysql://$HOST:$EXTERNAL_PORT?user=root&useSSL=false";
+
+  private static final String CONNECTION_STRING =
+      "jdbc:mysql://$HOST:$EXTERNAL_PORT/%s?user=root&useSSL=false";
 
   protected MySqlConnectionRule(DockerComposeRule dockerRule, String serviceName, int port,
       String dbName) {
@@ -30,18 +38,24 @@ public class MySqlConnectionRule extends SqlDatabaseConnectionRule {
 
   @Override
   public Connection getConnection() throws SQLException {
-    Connection connection = super.getConnection();
+    Awaitility.await().ignoreExceptions().atMost(10, TimeUnit.SECONDS)
+        .until(matches(() -> DriverManager.getConnection(getCreateDbConnectionUrl())));
     String dbName = getDbName();
     if (dbName != null) {
+      Connection connection = DriverManager.getConnection(getCreateDbConnectionUrl());
       connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS " + dbName);
-      connection.setCatalog(dbName);
     }
-    return connection;
+    return DriverManager.getConnection(getConnectionUrl());
   }
 
   @Override
-  protected String getConnectionString() {
-    return getDockerPort().inFormat(CONNECTION_STRING);
+  public String getConnectionUrl() {
+    return getDockerPort().inFormat(String.format(CONNECTION_STRING, getDbName()));
+  }
+
+
+  public String getCreateDbConnectionUrl() {
+    return getDockerPort().inFormat(CREATE_DB_CONNECTION_STRING);
   }
 
   public static class Builder extends SqlDatabaseConnectionRule.Builder {
