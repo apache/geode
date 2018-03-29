@@ -40,6 +40,7 @@ import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 public class GfshRule extends ExternalResource {
 
   private static final String DOUBLE_QUOTE = "\"";
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
   private List<GfshExecution> gfshExecutions;
@@ -62,6 +63,7 @@ public class GfshRule extends ExternalResource {
   protected void after() {
     gfshExecutions.stream().collect(Collectors.toList()).forEach(this::stopMembersQuietly);
 
+    final List<String> shutdownExceptions = new ArrayList<>();
     try {
       gfshExecutions.stream().map(GfshExecution::getProcess).map(Process::destroyForcibly)
           .forEach((Process process) -> {
@@ -69,9 +71,14 @@ public class GfshRule extends ExternalResource {
               // Process.destroyForcibly() may not terminate immediately
               process.waitFor(1, TimeUnit.MINUTES);
             } catch (InterruptedException ie) {
-              throw new RuntimeException(process.toString() + " failed to shutdown", ie);
+              shutdownExceptions
+                  .add(process.toString() + " failed to shutdown: " + ie.getMessage());
             }
           });
+      if (!shutdownExceptions.isEmpty()) {
+        throw new RuntimeException("gfshExecutions processes failed to shutdown" + LINE_SEPARATOR
+            + String.join(LINE_SEPARATOR, shutdownExceptions));
+      }
     } finally {
       temporaryFolder.delete();
     }
