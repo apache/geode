@@ -14,7 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,6 +35,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -83,16 +89,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- *
- */
 @Category(DistributedTest.class)
+@Ignore("GEODE-4970: CI failure: PartitionedRegionQueryDUnitTest.tesRangeIndexWithPdxObjects may hang")
 public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
-
-  public PartitionedRegionQueryDUnitTest() {
-    super();
-    // TODO Auto-generated constructor stub
-  }
 
   private static final AtomicReference<RebalanceResults> rebalanceResults =
       new AtomicReference<RebalanceResults>();
