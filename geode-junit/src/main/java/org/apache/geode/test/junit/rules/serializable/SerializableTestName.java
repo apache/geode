@@ -25,7 +25,7 @@ import org.junit.rules.TestName;
 import org.junit.runner.Description;
 
 /**
- * Serializable subclass of {@link org.junit.rules.TestName TestName}. All instance variables of
+ * Serializable subclass of {@link TestName TestName}. All instance variables of
  * {@code TestName} are serialized by reflection.
  */
 public class SerializableTestName extends TestName implements SerializableTestRule {
