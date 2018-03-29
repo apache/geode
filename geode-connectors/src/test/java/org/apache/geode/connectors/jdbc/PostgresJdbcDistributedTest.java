@@ -56,7 +56,7 @@ public class PostgresJdbcDistributedTest extends JdbcDistributedTest {
 
   @Override
   public String getConnectionUrl() {
-    return dbRule.getConnectionUrl();
+    return dbRule == null ? null : dbRule.getConnectionUrl();
   }
 
   @Override
