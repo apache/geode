@@ -42,10 +42,11 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class SizeExportLogsFunctionTest {
 
 

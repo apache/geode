@@ -84,11 +84,6 @@ public class JdbcLoaderIntegrationTest {
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
   }
 
-  private void createEmployeeTableWithQuotes() throws Exception {
-    statement.execute("Create Table \"" + REGION_TABLE_NAME
-        + "\" (\"id\" varchar(10) primary key not null, \"name\" varchar(10), \"age\" int, \"Age\" int)");
-  }
-
   private void createClassWithSupportedPdxFieldsTable() throws Exception {
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, " + "aboolean smallint, " + "abyte smallint, "
@@ -223,7 +218,7 @@ public class JdbcLoaderIntegrationTest {
     ps.setObject(i++, classWithSupportedPdxFields.getAfloat());
     ps.setObject(i++, classWithSupportedPdxFields.getAdouble());
     ps.setObject(i++, classWithSupportedPdxFields.getAstring());
-    ps.setObject(i++, classWithSupportedPdxFields.getAdate());
+    ps.setObject(i++, new java.sql.Timestamp(classWithSupportedPdxFields.getAdate().getTime()));
     ps.setObject(i++, classWithSupportedPdxFields.getAnobject());
     ps.setObject(i++, classWithSupportedPdxFields.getAbytearray());
     ps.setObject(i++, new Character(classWithSupportedPdxFields.getAchar()).toString());

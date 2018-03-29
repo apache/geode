@@ -32,8 +32,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.Region;
@@ -61,6 +63,9 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   private static final String NO_VALUE_PRESENT_FOR_THIS_KEY = "no value present for this key";
   private Region regionStub;
 
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+
   @Before
   public void setUp() throws Exception {
     regionStub = mock(Region.class);
@@ -80,9 +85,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     Exception exception = new DecodingException("error finding codec for type");
     ProtobufSerializationService serializationServiceStub =
         mock(ProtobufSerializationService.class);
-    when(serializationServiceStub.decode(any())).thenReturn(TEST_KEY1).thenThrow(exception);
-    when(serializationServiceStub.encode(any()))
-        .thenReturn(BasicTypes.EncodedValue.newBuilder().setStringResult("some value").build());
+    when(serializationServiceStub.decodeList(any())).thenThrow(exception);
 
     BasicTypes.EncodedValue encodedKey1 =
         BasicTypes.EncodedValue.newBuilder().setStringResult(TEST_KEY1).build();
@@ -96,19 +99,9 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     RegionAPI.GetAllRequest getRequest =
         ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, keys);
 
-    Result response = operationHandler.process(serializationServiceStub, getRequest,
+    expectedException.expect(DecodingException.class);
+    operationHandler.process(serializationServiceStub, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertTrue("response was " + response, response instanceof Success);
-
-    RegionAPI.GetAllResponse message = (RegionAPI.GetAllResponse) response.getMessage();
-    assertEquals(1, message.getFailuresCount());
-
-    BasicTypes.KeyedError error = message.getFailures(0);
-    assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST, error.getError().getErrorCode());
-    assertTrue(error.getError().getMessage().contains("encoding not supported"));
-
-    assertEquals(1, message.getEntriesCount());
   }
 
 

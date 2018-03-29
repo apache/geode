@@ -46,11 +46,11 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
   @Before
   public void setUp() throws Exception {
     Region<String, String> region1Stub = mock(Region.class);
-    when(region1Stub.getName()).thenReturn(TEST_REGION1);
+    when(region1Stub.getFullPath()).thenReturn(TEST_REGION1);
     Region<String, String> region2Stub = mock(Region.class);
-    when(region2Stub.getName()).thenReturn(TEST_REGION2);
+    when(region2Stub.getFullPath()).thenReturn(TEST_REGION2);
     Region<String, String> region3Stub = mock(Region.class);
-    when(region3Stub.getName()).thenReturn(TEST_REGION3);
+    when(region3Stub.getFullPath()).thenReturn(TEST_REGION3);
 
     when(cacheStub.rootRegions()).thenReturn(Collections
         .unmodifiableSet(new HashSet<>(Arrays.asList(region1Stub, region2Stub, region3Stub))));

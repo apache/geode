@@ -30,12 +30,13 @@ import org.apache.geode.management.internal.cli.dto.Key1;
 import org.apache.geode.management.internal.cli.dto.ObjectWithCharAttr;
 import org.apache.geode.management.internal.cli.dto.Value;
 import org.apache.geode.management.internal.cli.dto.Value2;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class PutCommandIntegrationTest {
 
   private static ServerStarterRule server =
