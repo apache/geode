@@ -20,16 +20,17 @@ import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorMessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.state.NoSecurityProtobufConnectionStateProcessor;
 
 public class TestExecutionContext {
   public static MessageExecutionContext getNoAuthCacheExecutionContext(InternalCache cache) {
     return new ServerMessageExecutionContext(cache, new NoOpStatistics(),
-        new NoSecurityProtobufConnectionStateProcessor());
+        new NoSecurityProtobufConnectionStateProcessor(), new NoSecurityAuthorizer());
   }
 
   public static MessageExecutionContext getLocatorExecutionContext(InternalLocator locator) {
     return new LocatorMessageExecutionContext(locator, new NoOpStatistics(),
-        new NoSecurityProtobufConnectionStateProcessor());
+        new NoSecurityProtobufConnectionStateProcessor(), new NoSecurityAuthorizer());
   }
 }

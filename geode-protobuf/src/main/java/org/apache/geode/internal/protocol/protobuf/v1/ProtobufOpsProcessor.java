@@ -25,6 +25,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.De
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
+import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
@@ -90,6 +91,8 @@ public class ProtobufOpsProcessor {
       logger.error(exception);
       return Failure.of(BasicTypes.ErrorCode.UNSUPPORTED_OPERATION,
           "Unsupported operation:" + exception.getMessage());
+    } catch (NotAuthorizedException e) {
+      return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED, "Not authorized: " + e);
     } finally {
       context.getStatistics().endOperation(startTime);
     }

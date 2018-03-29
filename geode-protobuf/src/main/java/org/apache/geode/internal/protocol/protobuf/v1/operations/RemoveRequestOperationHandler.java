@@ -42,27 +42,15 @@ public class RemoveRequestOperationHandler
       throws InvalidExecutionContextException, DecodingException {
 
     String regionName = request.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received remove request for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
-    }
 
     Object decodedKey = serializationService.decode(request.getKey());
     if (decodedKey == null) {
       return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
           "NULL is not a valid key for removal.");
     }
-    region.remove(decodedKey);
+
+    messageExecutionContext.getAuthorizingCache().remove(regionName, decodedKey);
 
     return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
-  }
-
-  public static ResourcePermission determineRequiredPermission(RegionAPI.RemoveRequest request,
-      ProtobufSerializationService serializer) throws DecodingException {
-    return new ResourcePermission(ResourcePermission.Resource.DATA,
-        ResourcePermission.Operation.WRITE, request.getRegionName(),
-        serializer.decode(request.getKey()).toString());
   }
 }

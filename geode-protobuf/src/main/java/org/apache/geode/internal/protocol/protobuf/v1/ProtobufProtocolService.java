@@ -23,6 +23,7 @@ import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.NotLoggedInAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionHandshakeStateProcessor;
 import org.apache.geode.internal.security.SecurityService;
 
@@ -44,8 +45,8 @@ public class ProtobufProtocolService implements ClientProtocolService {
 
     ProtobufConnectionHandshakeStateProcessor connectionStateProcessor =
         new ProtobufConnectionHandshakeStateProcessor(securityService);
-    return new ProtobufCachePipeline(protobufStreamProcessor,
-        new ServerMessageExecutionContext(cache, statistics, connectionStateProcessor));
+    return new ProtobufCachePipeline(protobufStreamProcessor, new ServerMessageExecutionContext(
+        cache, statistics, connectionStateProcessor, new NotLoggedInAuthorizer()));
   }
 
   /**
@@ -64,8 +65,8 @@ public class ProtobufProtocolService implements ClientProtocolService {
       SecurityService securityService) {
     ProtobufConnectionHandshakeStateProcessor connectionStateProcessor =
         new ProtobufConnectionHandshakeStateProcessor(securityService);
-    return new ProtobufCachePipeline(protobufStreamProcessor,
-        new LocatorMessageExecutionContext(locator, statistics, connectionStateProcessor));
+    return new ProtobufCachePipeline(protobufStreamProcessor, new LocatorMessageExecutionContext(
+        locator, statistics, connectionStateProcessor, new NotLoggedInAuthorizer()));
   }
 
   @Override

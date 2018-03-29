@@ -286,7 +286,7 @@ public class CacheOperationsJUnitTest {
         response.getMessageTypeCase());
     RegionAPI.GetRegionNamesResponse getRegionsResponse = response.getGetRegionNamesResponse();
     assertEquals(1, getRegionsResponse.getRegionsCount());
-    assertEquals(TEST_REGION, getRegionsResponse.getRegions(0));
+    assertEquals("/" + TEST_REGION, getRegionsResponse.getRegions(0));
   }
 
   private void validatePutAllResponse(Socket socket,

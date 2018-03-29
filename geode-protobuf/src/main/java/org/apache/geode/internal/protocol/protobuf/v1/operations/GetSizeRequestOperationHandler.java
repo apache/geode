@@ -40,13 +40,8 @@ public class GetSizeRequestOperationHandler
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
 
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received GetRegion request for non-existing region {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "No region exists for name: " + regionName);
-    }
+    int size = messageExecutionContext.getAuthorizingCache().getSize(regionName);
 
-    return Success.of(RegionAPI.GetSizeResponse.newBuilder().setSize(region.size()).build());
+    return Success.of(RegionAPI.GetSizeResponse.newBuilder().setSize(size).build());
   }
 }
