@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -166,9 +167,15 @@ public class TXLockServiceImpl extends TXLockService {
   public void updateParticipants(TXLockId txLockId, final Set updatedParticipants) {
     synchronized (this.txLockIdList) {
       if (!this.txLockIdList.contains(txLockId)) {
-        throw new IllegalArgumentException(
+        IllegalArgumentException e = new IllegalArgumentException(
             LocalizedStrings.TXLockServiceImpl_INVALID_TXLOCKID_NOT_FOUND_0
                 .toLocalizedString(txLockId));
+        system.getDistributionManager().getCancelCriterion().checkCancelInProgress(e);
+        Cache cache = system.getCache();
+        if (cache != null) {
+          cache.getCancelCriterion().checkCancelInProgress(e);
+        }
+        throw e;
       }
     }
     if (updatedParticipants == null) {
