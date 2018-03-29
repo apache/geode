@@ -153,12 +153,11 @@ class ProtobufChannel {
 
   private void authenticate(String username, String password, OutputStream outputStream,
       InputStream inputStream) throws IOException {
-    final ConnectionAPI.AuthenticationRequest.Builder builder =
-        ConnectionAPI.AuthenticationRequest.newBuilder();
+    final ConnectionAPI.HandshakeRequest.Builder builder =
+        ConnectionAPI.HandshakeRequest.newBuilder();
     builder.putCredentials("security-username", username);
     builder.putCredentials("security-password", password);
-    final Message authenticationRequest =
-        Message.newBuilder().setAuthenticationRequest(builder).build();
+    final Message authenticationRequest = Message.newBuilder().setHandshakeRequest(builder).build();
     authenticationRequest.writeDelimitedTo(outputStream);
 
     final Message authenticationResponseMessage = Message.parseDelimitedFrom(inputStream);
@@ -168,8 +167,8 @@ class ProtobufChannel {
           + errorResponse.getError().getErrorCode() + "; error message="
           + errorResponse.getError().getMessage());
     }
-    final ConnectionAPI.AuthenticationResponse authenticationResponse =
-        authenticationResponseMessage.getAuthenticationResponse();
+    final ConnectionAPI.HandshakeResponse authenticationResponse =
+        authenticationResponseMessage.getHandshakeResponse();
     if (!Objects.isNull(authenticationResponse) && !authenticationResponse.getAuthenticated()) {
       throw new IOException("Failed authentication for " + username);
     }

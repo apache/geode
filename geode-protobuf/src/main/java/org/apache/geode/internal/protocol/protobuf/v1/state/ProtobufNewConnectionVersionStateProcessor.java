@@ -29,10 +29,10 @@ import org.apache.geode.internal.protocol.protobuf.v1.operations.ProtocolVersion
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 
-public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnectionStateProcessor {
+public class ProtobufNewConnectionVersionStateProcessor implements ProtobufConnectionStateProcessor {
   private final SecurityService securityService;
 
-  public ProtobufConnectionHandshakeStateProcessor(SecurityService securityService) {
+  public ProtobufNewConnectionVersionStateProcessor(SecurityService securityService) {
     this.securityService = securityService;
   }
 

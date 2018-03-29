@@ -23,7 +23,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.ShiroAuthorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.operations.security.AuthenticationRequestOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.security.HandshakeRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -40,8 +40,7 @@ public class ProtobufConnectionAuthenticatingStateProcessor
   public void validateOperation(Object message, ProtobufSerializationService serializer,
       MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
       throws ConnectionStateException {
-    if (!(operationContext
-        .getOperationHandler() instanceof AuthenticationRequestOperationHandler)) {
+    if (!(operationContext.getOperationHandler() instanceof HandshakeRequestOperationHandler)) {
       throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
           "User has not yet authenticated");
     }

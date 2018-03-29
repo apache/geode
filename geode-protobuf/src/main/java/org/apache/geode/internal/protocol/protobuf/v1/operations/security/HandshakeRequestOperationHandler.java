@@ -33,15 +33,14 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTe
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.security.AuthenticationFailedException;
 
-public class AuthenticationRequestOperationHandler implements
-    ProtobufOperationHandler<ConnectionAPI.AuthenticationRequest, ConnectionAPI.AuthenticationResponse> {
+public class HandshakeRequestOperationHandler implements
+    ProtobufOperationHandler<ConnectionAPI.HandshakeRequest, ConnectionAPI.HandshakeResponse> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<ConnectionAPI.AuthenticationResponse> process(
-      ProtobufSerializationService serializationService,
-      ConnectionAPI.AuthenticationRequest request, MessageExecutionContext messageExecutionContext)
-      throws ConnectionStateException {
+  public Result<ConnectionAPI.HandshakeResponse> process(
+      ProtobufSerializationService serializationService, ConnectionAPI.HandshakeRequest request,
+      MessageExecutionContext messageExecutionContext) throws ConnectionStateException {
     ProtobufConnectionAuthenticatingStateProcessor stateProcessor;
 
     // If authentication not allowed by this state this will throw a ConnectionStateException
@@ -55,14 +54,14 @@ public class AuthenticationRequestOperationHandler implements
           stateProcessor.authenticate(messageExecutionContext, properties);
       messageExecutionContext.setConnectionStateProcessor(nextState);
       return Success
-          .of(ConnectionAPI.AuthenticationResponse.newBuilder().setAuthenticated(true).build());
+          .of(ConnectionAPI.HandshakeResponse.newBuilder().setAuthenticated(true).build());
     } catch (AuthenticationFailedException e) {
       messageExecutionContext.getStatistics().incAuthenticationFailures();
       logger.debug("Authentication failed", e);
       messageExecutionContext
           .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
       return Success
-          .of(ConnectionAPI.AuthenticationResponse.newBuilder().setAuthenticated(false).build());
+          .of(ConnectionAPI.HandshakeResponse.newBuilder().setAuthenticated(false).build());
     }
   }
 }

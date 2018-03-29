@@ -24,7 +24,7 @@ import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.NotLoggedInAuthorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionHandshakeStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufNewConnectionVersionStateProcessor;
 import org.apache.geode.internal.security.SecurityService;
 
 public class ProtobufProtocolService implements ClientProtocolService {
@@ -43,8 +43,8 @@ public class ProtobufProtocolService implements ClientProtocolService {
       SecurityService securityService) {
     assert (statistics != null);
 
-    ProtobufConnectionHandshakeStateProcessor connectionStateProcessor =
-        new ProtobufConnectionHandshakeStateProcessor(securityService);
+    ProtobufNewConnectionVersionStateProcessor connectionStateProcessor =
+        new ProtobufNewConnectionVersionStateProcessor(securityService);
     return new ProtobufCachePipeline(protobufStreamProcessor, new ServerMessageExecutionContext(
         cache, statistics, connectionStateProcessor, new NotLoggedInAuthorizer()));
   }
@@ -63,8 +63,8 @@ public class ProtobufProtocolService implements ClientProtocolService {
   @Override
   public ClientProtocolProcessor createProcessorForLocator(InternalLocator locator,
       SecurityService securityService) {
-    ProtobufConnectionHandshakeStateProcessor connectionStateProcessor =
-        new ProtobufConnectionHandshakeStateProcessor(securityService);
+    ProtobufNewConnectionVersionStateProcessor connectionStateProcessor =
+        new ProtobufNewConnectionVersionStateProcessor(securityService);
     return new ProtobufCachePipeline(protobufStreamProcessor, new LocatorMessageExecutionContext(
         locator, statistics, connectionStateProcessor, new NotLoggedInAuthorizer()));
   }
