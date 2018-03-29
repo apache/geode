@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -23,15 +24,16 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.MySqlConnectionRule;
-import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 
 @Category(IntegrationTest.class)
 public class MySqlJdbcAsyncWriterIntegrationTest extends JdbcAsyncWriterIntegrationTest {
 
+  private static final URL COMPOSE_RESOURCE_PATH =
+      MySqlJdbcAsyncWriterIntegrationTest.class.getResource("docker/mysql.yml");
+
   @ClassRule
-  public static DatabaseConnectionRule dbRule =
-      new MySqlConnectionRule.Builder().file("src/test/resources/docker/mysql.yml")
-          .serviceName("db").port(3306).database(DB_NAME).build();
+  public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()
+      .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(3306).database(DB_NAME).build();
 
   @Override
   public Connection getConnection() throws SQLException {
