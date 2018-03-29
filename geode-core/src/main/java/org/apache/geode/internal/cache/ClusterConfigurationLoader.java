@@ -39,6 +39,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.RemoteInputStreamClient;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -137,23 +139,16 @@ public class ClusterConfigurationLoader {
             Collections.singleton(locator));
 
     List<RemoteInputStream> result = rc.getResult();
-    RemoteInputStream jarStream = result.get(0);
 
     Path tempDir = FileUploader.createSecuredTempDirectory("deploy-");
     Path tempJar = Paths.get(tempDir.toString(), jarName);
     FileOutputStream fos = new FileOutputStream(tempJar.toString());
 
-    int packetId = 0;
-    while (true) {
-      byte[] data = jarStream.readPacket(packetId);
-      if (data == null) {
-        break;
-      }
-      fos.write(data);
-      packetId++;
-    }
+    InputStream jarStream = RemoteInputStreamClient.wrap(result.get(0));
+    IOUtils.copyLarge(jarStream, fos);
+
     fos.close();
-    jarStream.close(true);
+    jarStream.close();
 
     return tempJar.toFile();
   }
