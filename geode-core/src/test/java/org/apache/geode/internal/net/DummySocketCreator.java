@@ -35,12 +35,8 @@ public class DummySocketCreator extends SocketCreator {
   }
 
   @Override
-  public void configureServerSSLSocket(Socket socket, int timeout) throws IOException {
+  public void startHandshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
     this.socketSoTimeouts.add(timeout);
     throw new SSLException("This is a test SSLException");
-  }
-
-  public List<Integer> getSocketSoTimeouts() {
-    return socketSoTimeouts;
   }
 }

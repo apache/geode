@@ -598,9 +598,8 @@ public class TCPConduit implements Runnable {
               LocalizedStrings.TCPConduit_UNABLE_TO_SHUT_DOWN_LISTENER_WITHIN_0_MS_UNABLE_TO_INTERRUPT_SOCKET_ACCEPT_DUE_TO_JDK_BUG_GIVING_UP,
               Integer.valueOf(LISTENER_CLOSE_TIMEOUT)));
         }
-      } catch (IOException e) {
-      } catch (InterruptedException e) {
-        // Ignore, we're trying to stop already.
+      } catch (IOException | InterruptedException e) {
+        // we're already trying to shutdown, ignore
       } finally {
         this.hsPool.shutdownNow();
       }
@@ -689,7 +688,7 @@ public class TCPConduit implements Runnable {
                 ex);
             break;
           }
-          socketCreator.configureServerSSLSocket(othersock, idleConnectionTimeout);
+          socketCreator.startHandshakeIfSocketIsSSL(othersock, idleConnectionTimeout);
         }
         if (stopped) {
           try {

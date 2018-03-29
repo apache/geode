@@ -971,8 +971,9 @@ public class SocketCreator {
    *
    * @param timeout the socket's timeout will be set to this (in milliseconds).
    */
-  public void configureServerSSLSocket(Socket socket, int timeout) throws IOException {
+  public void startHandshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
     socket.setSoTimeout(timeout);
+
     if (socket instanceof SSLSocket) {
       SSLSocket sslSocket = (SSLSocket) socket;
       try {

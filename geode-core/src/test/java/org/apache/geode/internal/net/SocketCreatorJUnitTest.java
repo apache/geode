@@ -17,7 +17,6 @@ package org.apache.geode.internal.net;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.net.Socket;
 
@@ -50,7 +49,7 @@ public class SocketCreatorJUnitTest {
     final Socket socket = mock(Socket.class);
 
     final int timeout = 1938236;
-    socketCreator.configureServerSSLSocket(socket, timeout);
+    socketCreator.startHandshakeIfSocketIsSSL(socket, timeout);
 
     verify(socket).setSoTimeout(timeout);
   }

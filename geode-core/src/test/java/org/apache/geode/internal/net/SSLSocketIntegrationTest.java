@@ -254,8 +254,8 @@ public class SSLSocketIntegrationTest {
     Thread serverThread = new Thread(new MyThreadGroup(this.testName.getMethodName()), () -> {
       try {
         Socket socket = serverSocket.accept();
-        SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER).configureServerSSLSocket(socket,
-            15000);
+        SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER)
+            .startHandshakeIfSocketIsSSL(socket, 15000);
         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
         messageFromClient.set((String) ois.readObject());
       } catch (IOException | ClassNotFoundException e) {
