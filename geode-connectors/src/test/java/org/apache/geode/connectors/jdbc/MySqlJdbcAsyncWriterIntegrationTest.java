@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 public class MySqlJdbcAsyncWriterIntegrationTest extends JdbcAsyncWriterIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlJdbcAsyncWriterIntegrationTest.class.getResource("docker/mysql.yml");
+      MySqlJdbcAsyncWriterIntegrationTest.class.getResource("mysql.yml");
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()
