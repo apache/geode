@@ -155,11 +155,6 @@ public abstract class JdbcDistributedTest implements Serializable {
   @After
   public void tearDown() throws Exception {
     closeDB();
-    /*
-     * server.invoke(() -> {
-     * closeDB();
-     * });
-     */
   }
 
   private void closeDB() throws SQLException {
