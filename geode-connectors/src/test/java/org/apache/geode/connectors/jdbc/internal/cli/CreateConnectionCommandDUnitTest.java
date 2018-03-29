@@ -103,7 +103,7 @@ public class CreateConnectionCommandDUnitTest {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
           .getCacheXmlContent();
-      assertThat(xml).doesNotContain("jdbc:connector-service");
+      assertThat(xml).isNull();
     });
   }
 }
