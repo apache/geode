@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -33,13 +34,15 @@ import org.apache.geode.test.junit.rules.SqlDatabaseConnectionRule;
 @Category(DistributedTest.class)
 public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
 
+  private static final URL COMPOSE_RESOURCE_PATH =
+      MySqlJdbcAsyncWriterIntegrationTest.class.getResource("docker/mysql.yml");
+
   @ClassRule
-  public static transient SqlDatabaseConnectionRule dbRule = createConnectionRule();// = new
-                                                                                    // MySqlConnectionRule.Builder().file("src/test/resources/docker/mysql.yml").serviceName("db").port(3306).database(DB_NAME).build();
+  public static transient SqlDatabaseConnectionRule dbRule = createConnectionRule();
 
   private static SqlDatabaseConnectionRule createConnectionRule() {
     try {
-      return new MySqlConnectionRule.Builder().file("src/test/resources/docker/mysql.yml")
+      return new MySqlConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath())
           .serviceName("db").port(3306).database(DB_NAME).build();
     } catch (IllegalStateException e) {
       return null;
