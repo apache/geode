@@ -51,14 +51,14 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
  * <p>
  * Each JVM will have its own default DiskDirs directory in which that JVM will create the default
  * disk store (if one is created). Each DiskDir name is defined as:
- * 
+ *
  * <pre>
  * "VM" + VM.getCurrentVMNum() + "-" + testClass + "_" + testName.getMethodName() + "-diskDirs"
  * </pre>
- * 
+ *
  * Using DistributedDiskDirRule will produce unique DiskDirs for each DUnit VM including the main
  * controller VM (-1) but not the locator VM (-2):
- * 
+ *
  * <pre>
  * /var/folders/28/m__9dv1906n60kmz7t71wm680000gn/T/junit1766147044000254810
  *     VM-1-PRAccessorWithOverflowRegressionTest_testPROverflow-diskDirs
@@ -70,7 +70,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
  *
  * <p>
  * Example of test using DistributedDiskDirRule:
- * 
+ *
  * <pre>
  * {@literal @}Category(DistributedTest.class)
  * public class PRAccessorWithOverflowRegressionTest extends CacheTestCase {
@@ -84,7 +84,6 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
 
   private static volatile DistributedDiskDirRuleData data;
 
-  private final boolean initializeHelperRules;
   private final SerializableTemporaryFolder temporaryFolder;
   private final SerializableTestName testName;
   private final RemoteInvoker invoker;
@@ -113,7 +112,7 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
   }
 
   protected DistributedDiskDirRule(Builder builder, RemoteInvoker invoker) {
-    initializeHelperRules = builder.initializeHelperRules;
+    super(builder.initializeHelperRules, null, null);
     temporaryFolder = builder.temporaryFolder;
     testName = builder.testName;
     this.invoker = invoker;

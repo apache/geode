@@ -36,7 +36,8 @@ public class DiskDirRule extends DescribedExternalResource {
   protected static final String AFTER = "after";
   protected static final String STARTING = "starting";
 
-  private final boolean initializeHelperRules;
+  protected final boolean initializeHelperRules;
+
   private final TemporaryFolder temporaryFolder;
   private final TestName testName;
 
@@ -55,16 +56,18 @@ public class DiskDirRule extends DescribedExternalResource {
   }
 
   public DiskDirRule(Builder builder) {
-    initializeHelperRules = builder.initializeHelperRules;
-    temporaryFolder = builder.temporaryFolder;
-    testName = builder.testName;
+    this(builder.initializeHelperRules, builder.temporaryFolder, builder.testName);
   }
 
   protected DiskDirRule() {
-    // TODO: delete me
-    initializeHelperRules = false;
-    temporaryFolder = null;
-    testName = null;
+    this(false, null, null);
+  }
+
+  protected DiskDirRule(boolean initializeHelperRules, TemporaryFolder temporaryFolder,
+      TestName testName) {
+    this.initializeHelperRules = initializeHelperRules;
+    this.temporaryFolder = temporaryFolder;
+    this.testName = testName;
   }
 
   @Override

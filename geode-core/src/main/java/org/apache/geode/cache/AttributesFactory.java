@@ -1546,14 +1546,11 @@ public class AttributesFactory<K, V> {
     File[] diskDirs = DefaultDiskDirs.getDefaultDiskDirs();
     int[] diskSizes = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES;
     boolean indexMaintenanceSynchronous = true;
-    PartitionAttributes partitionAttributes = null; // new PartitionAttributes();
+    PartitionAttributes partitionAttributes = null;
     MembershipAttributes membershipAttributes = new MembershipAttributes();
     SubscriptionAttributes subscriptionAttributes = new SubscriptionAttributes();
     boolean multicastEnabled = false;
-
-    // TODO need to determine the constructor
     EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
-
     String poolName = null;
     String diskStoreName = null;
     boolean diskSynchronous = DEFAULT_DISK_SYNCHRONOUS;
