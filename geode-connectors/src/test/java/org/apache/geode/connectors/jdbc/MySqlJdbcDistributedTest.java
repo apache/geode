@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.rules.SqlDatabaseConnectionRule;
 public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlJdbcDistributedTest.class.getResource("docker/mysql.yml");
+      MySqlJdbcDistributedTest.class.getResource("mysql.yml");
 
   @ClassRule
   public static transient SqlDatabaseConnectionRule dbRule = createConnectionRule();

@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.rules.SqlDatabaseConnectionRule;
 public class PostgresJdbcDistributedTest extends JdbcDistributedTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      PostgresJdbcDistributedTest.class.getResource("docker/postgres.yml");
+      PostgresJdbcDistributedTest.class.getResource("postgres.yml");
 
   @ClassRule
   public static transient SqlDatabaseConnectionRule dbRule = createConnectionRule();

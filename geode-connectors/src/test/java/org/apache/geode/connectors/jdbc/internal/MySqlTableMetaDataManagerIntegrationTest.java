@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 public class MySqlTableMetaDataManagerIntegrationTest extends TableMetaDataManagerIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlTableMetaDataManagerIntegrationTest.class.getResource("../docker/mysql.yml");
+      MySqlTableMetaDataManagerIntegrationTest.class.getResource("mysql.yml");
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()

@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlJdbcLoaderIntegrationTest.class.getResource("docker/mysql.yml");
+      MySqlJdbcLoaderIntegrationTest.class.getResource("mysql.yml");
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()

@@ -30,7 +30,7 @@ public class PostgresTableMetaDataManagerIntegrationTest
     extends TableMetaDataManagerIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      PostgresTableMetaDataManagerIntegrationTest.class.getResource("../docker/postgres.yml");
+      PostgresTableMetaDataManagerIntegrationTest.class.getResource("postgres.yml");
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new PostgresConnectionRule.Builder()
