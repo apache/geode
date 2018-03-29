@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -28,10 +29,12 @@ import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 public class PostgresTableMetaDataManagerIntegrationTest
     extends TableMetaDataManagerIntegrationTest {
 
+  private static final URL COMPOSE_RESOURCE_PATH =
+      PostgresTableMetaDataManagerIntegrationTest.class.getResource("../docker/postgres.yml");
+
   @ClassRule
-  public static DatabaseConnectionRule dbRule =
-      new PostgresConnectionRule.Builder().file("src/test/resources/docker/postgres.yml")
-          .serviceName("db").port(5432).database(DB_NAME).build();
+  public static DatabaseConnectionRule dbRule = new PostgresConnectionRule.Builder()
+      .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(5432).database(DB_NAME).build();
 
   @Override
   public Connection getConnection() throws SQLException {

@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 public class PostgresJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlJdbcAsyncWriterIntegrationTest.class.getResource("docker/postgres.yml");
+      PostgresJdbcWriterIntegrationTest.class.getResource("docker/postgres.yml");
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new PostgresConnectionRule.Builder()
