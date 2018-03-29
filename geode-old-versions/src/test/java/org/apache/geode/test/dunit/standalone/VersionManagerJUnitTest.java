@@ -14,7 +14,6 @@
  */
 package org.apache.geode.test.dunit.standalone;
 
-import static org.apache.geode.internal.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Assert;
@@ -45,6 +44,6 @@ public class VersionManagerJUnitTest {
   @Test
   public void managerIsAbleToFindVersions() throws Exception {
     VersionManager instance = VersionManager.getInstance();
-    assertTrue(instance.getVersionsWithoutCurrent().size() > 0);
+    Assert.assertTrue(instance.getVersionsWithoutCurrent().size() > 0);
   }
 }
