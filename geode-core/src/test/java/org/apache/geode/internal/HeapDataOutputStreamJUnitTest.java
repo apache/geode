@@ -21,11 +21,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.UnitTestValueHolder;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -36,6 +38,12 @@ import org.apache.geode.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class HeapDataOutputStreamJUnitTest {
+
+  @Before
+  public void setup() {
+    // ensure no bleedthrough from other tests
+    TypeRegistry.init();
+  }
 
   @Test
   public void testWriteByteBuffer() {
