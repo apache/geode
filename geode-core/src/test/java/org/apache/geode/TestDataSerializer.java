@@ -21,7 +21,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.internal.cache.tier.sockets.DataSerializerPropogationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.DataSerializerPropagationDUnitTest;
 
 /**
  *
@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.tier.sockets.DataSerializerPropogationDUn
 public class TestDataSerializer extends DataSerializer {
 
   static {
-    DataSerializerPropogationDUnitTest.successfullyLoadedTestDataSerializer = true;
+    DataSerializerPropagationDUnitTest.successfullyLoadedTestDataSerializer = true;
   }
 
   private String name;
