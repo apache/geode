@@ -123,6 +123,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
+import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.size.SizeClassOnceObjectSizer;
 import org.apache.geode.management.internal.configuration.utils.XmlConstants;
@@ -1140,7 +1141,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         File[] diskDirs = ds.getDiskDirs();
         int[] diskSizes = ds.getDiskDirSizes();
         if (diskDirs != null && diskDirs.length > 0) {
-          if (generateDefaults() || !Arrays.equals(diskDirs, DiskStoreFactory.DEFAULT_DISK_DIRS)
+          if (generateDefaults() || !Arrays.equals(diskDirs, DefaultDiskDirs.getDefaultDiskDirs())
               || !Arrays.equals(diskSizes, DiskStoreFactory.DEFAULT_DISK_DIR_SIZES)) {
             handler.startElement("", DISK_DIRS, DISK_DIRS, EMPTY);
             for (int i = 0; i < diskDirs.length; i++) {
