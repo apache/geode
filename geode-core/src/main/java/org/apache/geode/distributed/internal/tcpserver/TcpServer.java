@@ -345,7 +345,6 @@ public class TcpServer {
       }
       handler.shutDown();
       synchronized (this) {
-        // this.shutDown = true;
         this.notifyAll();
       }
     }
@@ -360,9 +359,7 @@ public class TcpServer {
       long startTime = DistributionStats.getStatTime();
       DataInputStream input = null;
       try {
-
-        socket.setSoTimeout(READ_TIMEOUT);
-        getSocketCreator().configureServerSSLSocket(socket);
+        getSocketCreator().startHandshakeIfSocketIsSSL(socket, READ_TIMEOUT);
 
         try {
           input = new DataInputStream(socket.getInputStream());

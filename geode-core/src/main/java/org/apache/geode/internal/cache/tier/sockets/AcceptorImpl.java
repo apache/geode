@@ -1549,8 +1549,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   }
 
   private CommunicationMode getCommunicationModeForNonSelector(Socket socket) throws IOException {
-    socket.setSoTimeout(this.acceptTimeout);
-    this.socketCreator.configureServerSSLSocket(socket);
+    this.socketCreator.startHandshakeIfSocketIsSSL(socket, this.acceptTimeout);
     byte communicationModeByte = (byte) socket.getInputStream().read();
     if (communicationModeByte == -1) {
       throw new EOFException();
