@@ -21,24 +21,21 @@ import org.apache.shiro.subject.Subject;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.ShiroAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.security.HandshakeRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationFailedException;
 
-public class ProtobufConnectionAuthenticatingStateProcessor
-    implements ProtobufConnectionStateProcessor {
+public class RequireAuthentication implements ConnectionState {
   private final SecurityService securityService;
 
-  public ProtobufConnectionAuthenticatingStateProcessor(SecurityService securityService) {
+  public RequireAuthentication(SecurityService securityService) {
     this.securityService = securityService;
   }
 
   @Override
-  public void validateOperation(Object message, ProtobufSerializationService serializer,
-      MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
+  public void validateOperation(ProtobufOperationContext operationContext)
       throws ConnectionStateException {
     if (!(operationContext.getOperationHandler() instanceof HandshakeRequestOperationHandler)) {
       throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
@@ -47,16 +44,14 @@ public class ProtobufConnectionAuthenticatingStateProcessor
   }
 
   @Override
-  public ProtobufConnectionAuthenticatingStateProcessor allowAuthentication()
-      throws ConnectionStateException {
+  public RequireAuthentication requireAuthentication() throws ConnectionStateException {
     return this;
   }
 
-  public ProtobufConnectionStateProcessor authenticate(
-      MessageExecutionContext messageExecutionContext, Properties properties)
-      throws AuthenticationFailedException {
+  public ConnectionState authenticate(MessageExecutionContext messageExecutionContext,
+      Properties properties) throws AuthenticationFailedException {
     Subject subject = securityService.login(properties);
     messageExecutionContext.setAuthorizer(new ShiroAuthorizer(securityService, subject));
-    return new ProtobufConnectionAuthorizingStateProcessor();
+    return new AcceptMessages();
   }
 }

@@ -20,21 +20,20 @@ import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
 
 @Experimental
 public abstract class MessageExecutionContext {
   protected final ClientStatistics statistics;
-  protected ProtobufConnectionStateProcessor protobufConnectionStateProcessor;
+  protected ConnectionState connectionState;
 
-  public MessageExecutionContext(ClientStatistics statistics,
-      ProtobufConnectionStateProcessor protobufConnectionStateProcessor) {
+  public MessageExecutionContext(ClientStatistics statistics, ConnectionState connectionState) {
     this.statistics = statistics;
-    this.protobufConnectionStateProcessor = protobufConnectionStateProcessor;
+    this.connectionState = connectionState;
   }
 
-  public ProtobufConnectionStateProcessor getConnectionStateProcessor() {
-    return protobufConnectionStateProcessor;
+  public ConnectionState getConnectionStateProcessor() {
+    return connectionState;
   }
 
   public abstract AuthorizingCache getAuthorizingCache() throws InvalidExecutionContextException;
@@ -50,9 +49,8 @@ public abstract class MessageExecutionContext {
     return statistics;
   }
 
-  public void setConnectionStateProcessor(
-      ProtobufConnectionStateProcessor protobufConnectionStateProcessor) {
-    this.protobufConnectionStateProcessor = protobufConnectionStateProcessor;
+  public void setConnectionStateProcessor(ConnectionState connectionState) {
+    this.connectionState = connectionState;
   }
 
   public abstract void setAuthorizer(Authorizer authorizer);

@@ -21,7 +21,6 @@ import java.io.OutputStream;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
@@ -31,14 +30,13 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
  * protocol operations as opposed to requiring an explicit state machine to drive the state
  * transitions from outside the protocol.
  */
-public interface ProtobufConnectionStateProcessor {
+public interface ConnectionState {
   /**
    * @throws ConnectionStateException if incapable of handling the given operationContext when the
    *         connection is in the state contained in the provided messageContext. Otherwise, does
    *         nothing.
    */
-  void validateOperation(Object message, ProtobufSerializationService serializer,
-      MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
+  void validateOperation(ProtobufOperationContext operationContext)
       throws ConnectionStateException, DecodingException;
 
   /**
@@ -48,8 +46,7 @@ public interface ProtobufConnectionStateProcessor {
    *         which can move to a new state
    * @throws ConnectionStateException if unable to handle handshakes in this state.
    */
-  default ProtobufConnectionAuthenticatingStateProcessor allowAuthentication()
-      throws ConnectionStateException {
+  default RequireAuthentication requireAuthentication() throws ConnectionStateException {
     throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_REQUIRED,
         "Authentication is required before processing further requests");
   }

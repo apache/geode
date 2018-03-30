@@ -20,16 +20,17 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
-public class NoSecurityProtobufConnectionStateProcessor
-    implements ProtobufConnectionStateProcessor {
+public class InvalidSecurity implements ConnectionState {
   @Override
-  public void validateOperation(Object message, ProtobufSerializationService serializer,
-      MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
-      throws ConnectionStateException {}
-
-  public ProtobufConnectionAuthenticatingStateProcessor allowAuthentication()
+  public void validateOperation(ProtobufOperationContext operationContext)
       throws ConnectionStateException {
-    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_NOT_SUPPORTED,
-        "This machine is not set to require user authentication.");
+    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
+        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
+  }
+
+  @Override
+  public RequireAuthentication requireAuthentication() throws ConnectionStateException {
+    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
+        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
 }

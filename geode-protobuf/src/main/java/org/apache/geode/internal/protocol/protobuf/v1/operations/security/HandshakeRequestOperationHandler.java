@@ -16,10 +16,8 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations.security;
 
 import java.util.Properties;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
@@ -27,9 +25,9 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionAuthenticatingStateProcessor;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
+import org.apache.geode.internal.protocol.protobuf.v1.state.RequireAuthentication;
+import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.security.AuthenticationFailedException;
 
@@ -41,27 +39,29 @@ public class HandshakeRequestOperationHandler implements
   public Result<ConnectionAPI.HandshakeResponse> process(
       ProtobufSerializationService serializationService, ConnectionAPI.HandshakeRequest request,
       MessageExecutionContext messageExecutionContext) throws ConnectionStateException {
-    ProtobufConnectionAuthenticatingStateProcessor stateProcessor;
+    RequireAuthentication stateProcessor;
 
-    // If authentication not allowed by this state this will throw a ConnectionStateException
-    stateProcessor = messageExecutionContext.getConnectionStateProcessor().allowAuthentication();
+    stateProcessor = messageExecutionContext.getConnectionStateProcessor().requireAuthentication();
 
-    Properties properties = new Properties();
-    properties.putAll(request.getCredentialsMap());
+    boolean authenticated = false;
 
-    try {
-      ProtobufConnectionStateProcessor nextState =
-          stateProcessor.authenticate(messageExecutionContext, properties);
-      messageExecutionContext.setConnectionStateProcessor(nextState);
-      return Success
-          .of(ConnectionAPI.HandshakeResponse.newBuilder().setAuthenticated(true).build());
-    } catch (AuthenticationFailedException e) {
-      messageExecutionContext.getStatistics().incAuthenticationFailures();
-      logger.debug("Authentication failed", e);
-      messageExecutionContext
-          .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
-      return Success
-          .of(ConnectionAPI.HandshakeResponse.newBuilder().setAuthenticated(false).build());
+    if (stateProcessor != null) {
+      Properties properties = new Properties();
+      properties.putAll(request.getCredentialsMap());
+
+      try {
+        ConnectionState nextState =
+            stateProcessor.authenticate(messageExecutionContext, properties);
+        messageExecutionContext.setConnectionStateProcessor(nextState);
+        authenticated = true;
+      } catch (AuthenticationFailedException e) {
+        messageExecutionContext.getStatistics().incAuthenticationFailures();
+        logger.debug("Authentication failed", e);
+        messageExecutionContext.setConnectionStateProcessor(new TerminateConnection());
+      }
     }
+
+    return Success
+        .of(ConnectionAPI.HandshakeResponse.newBuilder().setAuthenticated(authenticated).build());
   }
 }

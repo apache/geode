@@ -14,24 +14,20 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.state;
 
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
-public class ProtobufConnectionTerminatingStateProcessor
-    implements ProtobufConnectionStateProcessor {
-  @Override
-  public void validateOperation(Object message, ProtobufSerializationService serializer,
-      MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
-      throws ConnectionStateException {
-    throw new ConnectionStateException(BasicTypes.ErrorCode.SERVER_ERROR,
-        "This connection has been marked as terminating.");
-  }
+public class AcceptMessages implements ConnectionState {
+
+  public AcceptMessages() {}
 
   @Override
-  public boolean socketProcessingIsFinished() {
-    return true;
+  public void validateOperation(ProtobufOperationContext operationContext)
+      throws ConnectionStateException, DecodingException {}
+
+  @Override
+  public RequireAuthentication requireAuthentication() throws ConnectionStateException {
+    return null;
   }
 }

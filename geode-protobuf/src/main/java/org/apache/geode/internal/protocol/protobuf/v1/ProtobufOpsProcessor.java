@@ -23,7 +23,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -52,8 +52,7 @@ public class ProtobufOpsProcessor {
     Result result;
 
     try {
-      messageExecutionContext.getConnectionStateProcessor().validateOperation(request,
-          serializationService, messageExecutionContext, operationContext);
+      messageExecutionContext.getConnectionStateProcessor().validateOperation(operationContext);
       result = processOperation(request, messageExecutionContext, requestType, operationContext);
     } catch (VirtualMachineError error) {
       SystemFailure.initiateFailure(error);
@@ -64,8 +63,7 @@ public class ProtobufOpsProcessor {
       result = Failure.of(t);
 
       if (t instanceof ConnectionStateException) {
-        messageExecutionContext
-            .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
+        messageExecutionContext.setConnectionStateProcessor(new TerminateConnection());
       }
     }
 

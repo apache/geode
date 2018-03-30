@@ -17,15 +17,14 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocatorImpl;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
+import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 
 @Experimental
 public class LocatorMessageExecutionContext extends MessageExecutionContext {
@@ -33,16 +32,15 @@ public class LocatorMessageExecutionContext extends MessageExecutionContext {
   private AuthorizingLocator authorizingLocator;
 
   public LocatorMessageExecutionContext(Locator locator, ClientStatistics statistics,
-      ProtobufConnectionStateProcessor initialProtobufConnectionStateProcessor,
-      Authorizer authorizer) {
-    super(statistics, initialProtobufConnectionStateProcessor);
+      ConnectionState initialConnectionState, Authorizer authorizer) {
+    super(statistics, initialConnectionState);
     this.locator = locator;
     this.authorizingLocator = new AuthorizingLocatorImpl(locator, authorizer);
   }
 
   @Override
   public AuthorizingCache getAuthorizingCache() throws InvalidExecutionContextException {
-    setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
+    setConnectionStateProcessor(new TerminateConnection());
     throw new InvalidExecutionContextException(
         "Operations on the locator should not to try to operate on a server");
   }

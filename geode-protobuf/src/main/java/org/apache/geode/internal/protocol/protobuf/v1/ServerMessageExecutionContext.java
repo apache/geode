@@ -23,7 +23,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCacheImpl;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
 
 @Experimental
 public class ServerMessageExecutionContext extends MessageExecutionContext {
@@ -31,7 +31,7 @@ public class ServerMessageExecutionContext extends MessageExecutionContext {
   private AuthorizingCache authorizingCache;
 
   public ServerMessageExecutionContext(InternalCache cache, ClientStatistics statistics,
-      ProtobufConnectionStateProcessor initialConnectionStateProcessor, Authorizer authorizer) {
+      ConnectionState initialConnectionStateProcessor, Authorizer authorizer) {
     super(statistics, initialConnectionStateProcessor);
     this.cache = cache;
     this.authorizingCache = new AuthorizingCacheImpl(cache, authorizer);
