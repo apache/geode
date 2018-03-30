@@ -14,13 +14,13 @@
  */
 package org.apache.geode.test.dunit.examples;
 
+import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -32,6 +32,6 @@ public class DistributedTestRuleExampleTest {
 
   @Test
   public void shouldHaveFourDUnitVMsByDefault() throws Exception {
-    assertThat(Host.getHost(0).getVMCount()).isEqualTo(4);
+    assertThat(getVMCount()).isEqualTo(4);
   }
 }

@@ -23,7 +23,6 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
@@ -40,9 +39,12 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
   private static final Logger logger = LogService.getLogger();
 
   private final InternalClusterConfigurationService sharedConfig;
+  private final InternalCache cache;
 
-  public ConfigurationChangeListener(InternalClusterConfigurationService sharedConfig) {
+  public ConfigurationChangeListener(InternalClusterConfigurationService sharedConfig,
+      InternalCache cache) {
     this.sharedConfig = sharedConfig;
+    this.cache = cache;
   }
 
   // Don't process the event locally. The action of adding or removing a jar should already have
@@ -101,7 +103,6 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
   }
 
   private DistributedMember getDistributedMember(String memberName) {
-    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
     Set<DistributedMember> locators = new HashSet<>(
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
 

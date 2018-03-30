@@ -67,7 +67,13 @@ public class ProtobufServerConnection extends ServerConnection {
       InputStream inputStream = socket.getInputStream();
       OutputStream outputStream = socket.getOutputStream();
 
-      protocolProcessor.processMessage(inputStream, outputStream);
+      InternalCache cache = getCache();
+      cache.setReadSerializedForCurrentThread(true);
+      try {
+        protocolProcessor.processMessage(inputStream, outputStream);
+      } finally {
+        cache.setReadSerializedForCurrentThread(false);
+      }
 
       if (protocolProcessor.socketProcessingIsFinished()) {
         this.setFlagProcessMessagesAsFalse();

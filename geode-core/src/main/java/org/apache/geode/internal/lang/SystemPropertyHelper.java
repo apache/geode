@@ -59,6 +59,8 @@ public class SystemPropertyHelper {
 
   public static final String EARLY_ENTRY_EVENT_SERIALIZATION = "earlyEntryEventSerialization";
 
+  public static final String DEFAULT_DISK_DIRS_PROPERTY = "defaultDiskDirs";
+
   /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It
    * will check and prefer "geode." setting first, then try to check "gemfire." setting.
@@ -71,6 +73,13 @@ public class SystemPropertyHelper {
     return property != null ? Optional.of(Boolean.parseBoolean(property)) : Optional.empty();
   }
 
+  /**
+   * This method will try to look up "geode." and "gemfire." versions of the system property. It
+   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
+   *
+   * @param name system property name set in Geode
+   * @return an Optional containing the Integer value of the system property
+   */
   public static Optional<Integer> getProductIntegerProperty(String name) {
     Integer propertyValue = Integer.getInteger(GEODE_PREFIX + name);
     if (propertyValue == null) {
@@ -82,6 +91,18 @@ public class SystemPropertyHelper {
     } else {
       return Optional.empty();
     }
+  }
+
+  /**
+   * This method will try to look up "geode." and "gemfire." versions of the system property. It
+   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
+   *
+   * @param name system property name set in Geode
+   * @return an Optional containing the String value of the system property
+   */
+  public static Optional<String> getProductStringProperty(String name) {
+    String property = getProperty(name);
+    return property != null ? Optional.of(property) : Optional.empty();
   }
 
   private static String getProperty(String name) {

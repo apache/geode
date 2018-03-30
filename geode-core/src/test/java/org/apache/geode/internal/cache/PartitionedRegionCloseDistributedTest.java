@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -34,7 +35,6 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
@@ -64,11 +64,11 @@ public class PartitionedRegionCloseDistributedTest implements Serializable {
   public void setUp() throws Exception {
     regionName = getClass().getSimpleName();
 
-    accessor = Host.getHost(0).getVM(0);
+    accessor = getVM(0);
     datastores = new VM[3];
-    datastores[0] = Host.getHost(0).getVM(1);
-    datastores[1] = Host.getHost(0).getVM(2);
-    datastores[2] = Host.getHost(0).getVM(3);
+    datastores[0] = getVM(1);
+    datastores[1] = getVM(2);
+    datastores[2] = getVM(3);
   }
 
   @Test

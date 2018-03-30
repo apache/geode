@@ -12,26 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.rules.tests;
+package org.apache.geode.internal.protocol.protobuf.v1.authentication;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.apache.geode.security.ResourcePermission;
 
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+public class NoSecurityAuthorizer implements Authorizer {
+  @Override
+  public void authorize(ResourcePermission.Resource data, ResourcePermission.Operation read,
+      String regionName, Object key) {
 
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
+  }
 
-@Category(DistributedTest.class)
-public class DistributedTestRuleTest {
+  @Override
+  public void authorize(ResourcePermission resourcePermission) {
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
-
-  @Test
-  public void shouldHaveFourOrMoreDUnitVMsByDefault() throws Exception {
-    assertThat(Host.getHost(0).getVMCount()).isGreaterThanOrEqualTo(4);
   }
 }

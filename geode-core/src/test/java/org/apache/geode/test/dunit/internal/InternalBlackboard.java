@@ -67,7 +67,7 @@ public interface InternalBlackboard extends Remote, Serializable {
   /**
    * retrieve an object from a mailbox slot
    */
-  Object getMailbox(String boxName) throws RemoteException;
+  <T> T getMailbox(String boxName) throws RemoteException;
 
   /**
    * ping the blackboard to make sure it's there

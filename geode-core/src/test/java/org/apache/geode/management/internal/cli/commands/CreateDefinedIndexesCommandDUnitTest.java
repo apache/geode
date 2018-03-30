@@ -32,11 +32,12 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, GfshTest.class})
 public class CreateDefinedIndexesCommandDUnitTest {
   private MemberVM locator, server1, server2, server3;
 
@@ -205,10 +206,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       assertThat(sharedConfig.getConfiguration("group1").getCacheXmlContent()).contains(index2Name,
           index1Name);
-      assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent())
-          .doesNotContain(index2Name);
-      assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent())
-          .doesNotContain(index1Name);
+      assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent()).isNullOrEmpty();
     });
   }
 }

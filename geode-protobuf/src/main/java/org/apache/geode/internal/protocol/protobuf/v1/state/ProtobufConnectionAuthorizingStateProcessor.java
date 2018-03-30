@@ -30,45 +30,18 @@ import org.apache.geode.security.NotAuthorizedException;
 
 public class ProtobufConnectionAuthorizingStateProcessor
     implements ProtobufConnectionStateProcessor {
-  private final SecurityService securityService;
-  private final Subject subject;
 
-  public ProtobufConnectionAuthorizingStateProcessor(SecurityService securityService,
-      Subject subject) {
-    this.securityService = securityService;
-    this.subject = subject;
-  }
+  public ProtobufConnectionAuthorizingStateProcessor() {}
 
   @Override
   public void validateOperation(Object message, ProtobufSerializationService serializer,
       MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
-      throws ConnectionStateException, DecodingException {
-    ThreadState threadState = securityService.bindSubject(subject);
-    try {
-      securityService.authorize(operationContext.getAccessPermissionRequired(
-          operationContext.getFromRequest().apply(message), serializer));
-    } catch (NotAuthorizedException e) {
-      messageContext.getStatistics().incAuthorizationViolations();
-      throw new OperationNotAuthorizedException(
-          "The user is not authorized to complete this operation: "
-              + ((ClientProtocol.Message) message).getMessageTypeCase());
-    } finally {
-      threadState.restore();
-    }
-  }
+      throws ConnectionStateException, DecodingException {}
 
   @Override
   public ProtobufConnectionAuthenticatingStateProcessor allowAuthentication()
       throws ConnectionStateException {
     throw new ConnectionStateException(BasicTypes.ErrorCode.ALREADY_AUTHENTICATED,
         "The user has already been authenticated for this connection. Re-authentication is not supported at this time.");
-  }
-
-  public ThreadState prepareThreadForAuthorization() {
-    return securityService.bindSubject(subject);
-  }
-
-  public void restoreThreadState(ThreadState state) {
-    state.restore();
   }
 }

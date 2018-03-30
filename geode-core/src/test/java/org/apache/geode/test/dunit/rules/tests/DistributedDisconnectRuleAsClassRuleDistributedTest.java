@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.rules.tests;
 
+import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.rules.DistributedDisconnectRule.disconnect;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +38,7 @@ import org.apache.geode.test.junit.rules.RuleList;
 import org.apache.geode.test.junit.runners.TestRunner;
 
 @Category(DistributedTest.class)
-public class DistributedDisconnectRuleAsClassRuleTest {
+public class DistributedDisconnectRuleAsClassRuleDistributedTest {
 
   @After
   public void tearDown() throws Exception {
@@ -105,7 +106,7 @@ public class DistributedDisconnectRuleAsClassRuleTest {
       assertThat(cache.isClosed()).isFalse();
       assertThat(cache.getInternalDistributedSystem().isConnected()).isTrue();
 
-      for (VM vm : Host.getHost(0).getAllVMs()) {
+      for (VM vm : getAllVMs()) {
         vm.invoke(() -> {
           cache = (InternalCache) new CacheFactory().create();
           assertThat(cache.isClosed()).isFalse();
@@ -119,7 +120,7 @@ public class DistributedDisconnectRuleAsClassRuleTest {
       assertThat(cache.isClosed()).isFalse();
       assertThat(cache.getInternalDistributedSystem().isConnected()).isTrue();
 
-      for (VM vm : Host.getHost(0).getAllVMs()) {
+      for (VM vm : getAllVMs()) {
         vm.invoke(() -> {
           assertThat(cache.isClosed()).isFalse();
           assertThat(cache.getInternalDistributedSystem().isConnected()).isTrue();
@@ -146,7 +147,7 @@ public class DistributedDisconnectRuleAsClassRuleTest {
       assertThat(cache.isClosed()).isFalse();
       assertThat(cache.getInternalDistributedSystem().isConnected()).isTrue();
 
-      for (VM vm : Host.getHost(0).getAllVMs()) {
+      for (VM vm : getAllVMs()) {
         vm.invoke(() -> {
           cache = (InternalCache) new CacheFactory().create();
           assertThat(cache.isClosed()).isFalse();
@@ -160,7 +161,7 @@ public class DistributedDisconnectRuleAsClassRuleTest {
       assertThat(cache.isClosed()).isFalse();
       assertThat(cache.getInternalDistributedSystem().isConnected()).isTrue();
 
-      for (VM vm : Host.getHost(0).getAllVMs()) {
+      for (VM vm : getAllVMs()) {
         vm.invoke(() -> {
           assertThat(cache.isClosed()).isFalse();
           assertThat(cache.getInternalDistributedSystem().isConnected()).isTrue();

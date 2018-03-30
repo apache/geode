@@ -38,31 +38,18 @@ import org.apache.geode.security.ResourcePermission;
 @Experimental
 public class KeySetOperationHandler
     implements ProtobufOperationHandler<RegionAPI.KeySetRequest, RegionAPI.KeySetResponse> {
-  private static final Logger logger = LogService.getLogger();
 
   @Override
   public Result<RegionAPI.KeySetResponse> process(ProtobufSerializationService serializationService,
       RegionAPI.KeySetRequest request, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, EncodingException, DecodingException {
     String regionName = request.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received request for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
-    }
 
-    Set keySet = region.keySet();
+    Set<Object> keySet = messageExecutionContext.getAuthorizingCache().keySet(regionName);
+
     RegionAPI.KeySetResponse.Builder builder = RegionAPI.KeySetResponse.newBuilder();
-    keySet.stream().map(serializationService::encode)
-        .forEach(value -> builder.addKeys((BasicTypes.EncodedValue) value));
+    keySet.stream().map(serializationService::encode).forEach(builder::addKeys);
 
     return Success.of(builder.build());
-  }
-
-  public static ResourcePermission determineRequiredPermission(RegionAPI.KeySetRequest request,
-      ProtobufSerializationService serializer) throws DecodingException {
-    return new ResourcePermission(ResourcePermission.Resource.DATA,
-        ResourcePermission.Operation.READ, request.getRegionName());
   }
 }

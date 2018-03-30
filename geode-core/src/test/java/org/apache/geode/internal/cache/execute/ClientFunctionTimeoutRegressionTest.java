@@ -19,8 +19,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getLocatorPort;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -95,8 +95,8 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
 
   @Before
   public void before() throws Exception {
-    server = getHost(0).getVM(0);
-    client = getHost(0).getVM(1);
+    server = getVM(0);
+    client = getVM(1);
   }
 
   @After

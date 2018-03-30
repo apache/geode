@@ -73,14 +73,6 @@ public class Configuration implements DataSerializable {
     this.propertiesFileName = configName + ".properties";
     this.gemfireProperties = new Properties();
     this.jarNames = new HashSet<String>();
-    this.cacheXmlContent = generateInitialXmlContent();
-  }
-
-  private String generateInitialXmlContent() {
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    CacheXmlGenerator.generateDefault(pw);
-    return sw.toString();
   }
 
   public String getCacheXmlContent() {

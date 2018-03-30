@@ -34,6 +34,7 @@ import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
+import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -1541,18 +1542,15 @@ public class AttributesFactory<K, V> {
     boolean publisher = false;
     boolean enableAsyncConflation = false;
     boolean enableSubscriptionConflation = false;
-    @SuppressWarnings("deprecation")
     DiskWriteAttributes diskWriteAttributes = DiskWriteAttributesImpl.getDefaultSyncInstance();
-    File[] diskDirs = DiskStoreFactory.DEFAULT_DISK_DIRS;
-    int[] diskSizes = new int[] {DiskStoreFactory.DEFAULT_DISK_DIR_SIZE}; // 10* 1024 MB }
+    File[] diskDirs = DefaultDiskDirs.getDefaultDiskDirs();
+    int[] diskSizes = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES;
     boolean indexMaintenanceSynchronous = true;
-    PartitionAttributes partitionAttributes = null; // new PartitionAttributes();
+    PartitionAttributes partitionAttributes = null;
     MembershipAttributes membershipAttributes = new MembershipAttributes();
     SubscriptionAttributes subscriptionAttributes = new SubscriptionAttributes();
     boolean multicastEnabled = false;
-    EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl(); // TODO need to
-                                                                              // determine the
-                                                                              // constructor
+    EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
     String poolName = null;
     String diskStoreName = null;
     boolean diskSynchronous = DEFAULT_DISK_SYNCHRONOUS;

@@ -14,6 +14,9 @@
  */
 package org.apache.geode.test.dunit.rules.tests;
 
+import static org.apache.geode.test.dunit.VM.getAllVMs;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -29,7 +32,6 @@ import org.junit.rules.ErrorCollector;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
@@ -38,7 +40,7 @@ import org.apache.geode.test.junit.runners.TestRunner;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class SharedErrorCollectorTest {
+public class SharedErrorCollectorDistributedTest {
 
   static final String MESSAGE = "Failure message";
 
@@ -90,7 +92,7 @@ public class SharedErrorCollectorTest {
 
     assertThat(result.wasSuccessful()).isFalse();
     List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(Host.getHost(0).getVMCount());
+    assertThat(failures).hasSize(getVMCount());
     int i = 0;
     for (Failure failure : failures) {
       assertThat(failure.getException()).isInstanceOf(AssertionError.class)
@@ -104,7 +106,7 @@ public class SharedErrorCollectorTest {
 
     assertThat(result.wasSuccessful()).isFalse();
     List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(Host.getHost(0).getVMCount() + 1);
+    assertThat(failures).hasSize(getVMCount() + 1);
     boolean first = true;
     int i = 0;
     for (Failure failure : failures) {
@@ -147,7 +149,7 @@ public class SharedErrorCollectorTest {
 
     assertThat(result.wasSuccessful()).isFalse();
     List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(Host.getHost(0).getVMCount());
+    assertThat(failures).hasSize(getVMCount());
     int i = 0;
     for (Failure failure : failures) {
       assertThat(failure.getException()).isInstanceOf(NullPointerException.class)
@@ -161,7 +163,7 @@ public class SharedErrorCollectorTest {
 
     assertThat(result.wasSuccessful()).isFalse();
     List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(Host.getHost(0).getVMCount() + 1);
+    assertThat(failures).hasSize(getVMCount() + 1);
     boolean first = true;
     int i = 0;
     for (Failure failure : failures) {
@@ -225,7 +227,7 @@ public class SharedErrorCollectorTest {
 
     @Test
     public void assertionFailsInDUnitVM() throws Exception {
-      Host.getHost(0).getVM(0).invoke(() -> errorCollector.checkThat(MESSAGE, false, is(true)));
+      getVM(0).invoke(() -> errorCollector.checkThat(MESSAGE, false, is(true)));
     }
   }
 
@@ -239,7 +241,7 @@ public class SharedErrorCollectorTest {
 
     @Test
     public void assertionFailsInEveryDUnitVM() throws Exception {
-      for (VM vm : Host.getHost(0).getAllVMs()) {
+      for (VM vm : getAllVMs()) {
         vm.invoke(
             () -> errorCollector.checkThat(MESSAGE + " in VM-" + vm.getId(), false, is(true)));
       }
@@ -257,7 +259,7 @@ public class SharedErrorCollectorTest {
     @Test
     public void assertionFailsInEveryDUnitVM() throws Exception {
       errorCollector.checkThat(MESSAGE + " in VM-CONTROLLER", false, is(true));
-      for (VM vm : Host.getHost(0).getAllVMs()) {
+      for (VM vm : getAllVMs()) {
         vm.invoke(
             () -> errorCollector.checkThat(MESSAGE + " in VM-" + vm.getId(), false, is(true)));
       }
@@ -274,7 +276,7 @@ public class SharedErrorCollectorTest {
 
     @Test
     public void assertionFailsInDUnitVM() throws Exception {
-      Host.getHost(0).getVM(0).invoke(() -> checkThat());
+      getVM(0).invoke(() -> checkThat());
     }
 
     private void checkThat() {
@@ -292,8 +294,7 @@ public class SharedErrorCollectorTest {
 
     @Test
     public void exceptionInDUnitVM() throws Exception {
-      Host.getHost(0).getVM(0)
-          .invoke(() -> errorCollector.addError(new NullPointerException(MESSAGE)));
+      getVM(0).invoke(() -> errorCollector.addError(new NullPointerException(MESSAGE)));
     }
   }
 
@@ -307,7 +308,7 @@ public class SharedErrorCollectorTest {
 
     @Test
     public void exceptionInEveryDUnitVM() throws Exception {
-      for (VM vm : Host.getHost(0).getAllVMs()) {
+      for (VM vm : getAllVMs()) {
         vm.invoke(() -> errorCollector
             .addError(new NullPointerException(MESSAGE + " in VM-" + vm.getId())));
       }
@@ -325,7 +326,7 @@ public class SharedErrorCollectorTest {
     @Test
     public void exceptionInEveryDUnitVM() throws Exception {
       errorCollector.addError(new NullPointerException(MESSAGE + " in VM-CONTROLLER"));
-      for (VM vm : Host.getHost(0).getAllVMs()) {
+      for (VM vm : getAllVMs()) {
         vm.invoke(() -> errorCollector
             .addError(new NullPointerException(MESSAGE + " in VM-" + vm.getId())));
       }
@@ -342,7 +343,7 @@ public class SharedErrorCollectorTest {
 
     @Test
     public void exceptionInDUnitVM() throws Exception {
-      Host.getHost(0).getVM(0).invoke(() -> addError());
+      getVM(0).invoke(() -> addError());
     }
 
     private void addError() {

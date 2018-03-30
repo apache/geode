@@ -15,6 +15,7 @@
  */
 package org.apache.geode.tools.pulse.tests.ui;
 
+import static org.apache.geode.tools.pulse.internal.data.PulseConstants.TWO_PLACE_DECIMAL_FORMAT;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.CLUSTER_CLIENTS_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.CLUSTER_FUNCTIONS_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.CLUSTER_GCPAUSES_ID;
@@ -320,8 +321,7 @@ public abstract class PulseBase {
     searchByIdAndClick("M1&M1");
     String LoadAvg = getWebDriver().findElement(By.id(MEMBER_VIEW_LOADAVG_ID)).getText();
     String memberLoadAvg = JMXProperties.getInstance().getProperty("member.M1.loadAverage");
-    assertEquals(new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN)
-        .format(Double.valueOf(memberLoadAvg)), LoadAvg);
+    assertEquals(TWO_PLACE_DECIMAL_FORMAT.format(Double.valueOf(memberLoadAvg)), LoadAvg);
   }
 
   @Ignore("WIP") // May be useful in near future
@@ -743,8 +743,7 @@ public abstract class PulseBase {
               By.xpath("//div[@id='_tooltip']/div/div/div[2]/div[" + (j + 2) + "]/div[2]/div"))
           .getText();
       String loadAvgM1 = JMXProperties.getInstance().getProperty("member.M" + (i) + ".loadAverage");
-      assertEquals(new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN)
-          .format(Double.valueOf(loadAvgM1)), LoadAvgM1);
+      assertEquals(TWO_PLACE_DECIMAL_FORMAT.format(Double.valueOf(loadAvgM1)), LoadAvgM1);
 
       String ThreadsM1 = getWebDriver()
           .findElement(

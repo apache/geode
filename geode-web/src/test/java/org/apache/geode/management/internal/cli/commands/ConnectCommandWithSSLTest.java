@@ -183,8 +183,8 @@ public class ConnectCommandWithSSLTest {
     assertThat(gfsh.isConnected()).isFalse();
     // should fail at connecting to locator stage
     assertThat(gfsh.getGfshOutput()).doesNotContain("Connecting to Manager at");
-    assertThat(gfsh.getGfshOutput())
-        .contains("trying to connect a non-SSL-enabled client to an SSL-enabled locator");
+    assertThat(gfsh.getGfshOutput()).containsPattern(
+        "trying to connect a non-SSL-enabled client to an SSL-enabled locator|Broken pipe \\(Write failed\\)");
 
     gfsh.connect(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     assertThat(gfsh.isConnected()).isFalse();

@@ -18,8 +18,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.geode.InternalGemFireException;
@@ -69,10 +71,9 @@ public class SqlHandler {
       try (PreparedStatement statement =
           getPreparedStatement(connection, columnList, realTableName, Operation.GET)) {
         try (ResultSet resultSet = executeReadQuery(statement, columnList)) {
-          String keyColumnName = tableMetaData.getKeyColumnName();
           InternalCache cache = (InternalCache) region.getRegionService();
           SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
-              new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, keyColumnName);
+              new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, tableMetaData);
           result = sqlToPdxInstanceCreator.create();
         }
       }
@@ -113,6 +114,24 @@ public class SqlHandler {
       Object value = columnValue.getValue();
       if (value instanceof Character) {
         value = ((Character) value).toString();
+      } else if (value instanceof Date) {
+        Date jdkDate = (Date) value;
+        switch (columnValue.getDataType()) {
+          case Types.DATE:
+            value = new java.sql.Date(jdkDate.getTime());
+            break;
+          case Types.TIME:
+          case Types.TIME_WITH_TIMEZONE:
+            value = new java.sql.Time(jdkDate.getTime());
+            break;
+          case Types.TIMESTAMP:
+          case Types.TIMESTAMP_WITH_TIMEZONE:
+            value = new java.sql.Timestamp(jdkDate.getTime());
+            break;
+          default:
+            // no conversion needed
+            break;
+        }
       }
       if (value == null) {
         statement.setNull(index, columnValue.getDataType());

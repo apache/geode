@@ -83,13 +83,16 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 
 /**
  * Dunit class for testing gemfire data commands : get, put, remove, select, rebalance
  */
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1182 GEODE-1249 GEODE-1404 GEODE-1430
-                                                    // GEODE-1487 GEODE-1496 GEODE-1561 GEODE-1822
-                                                    // GEODE-2006 GEODE-3530
+@Category({DistributedTest.class, FlakyTest.class, GfshTest.class}) // GEODE-1182 GEODE-1249
+                                                                    // GEODE-1404 GEODE-1430
+                                                                    // GEODE-1487 GEODE-1496
+                                                                    // GEODE-1561 GEODE-1822
+                                                                    // GEODE-2006 GEODE-3530
 @SuppressWarnings("serial")
 public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 

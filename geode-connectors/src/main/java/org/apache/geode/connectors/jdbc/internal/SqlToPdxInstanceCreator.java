@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.internal.cache.InternalCache;
@@ -31,14 +32,14 @@ class SqlToPdxInstanceCreator {
   private final InternalCache cache;
   private final RegionMapping regionMapping;
   private final ResultSet resultSet;
-  private final String keyColumnName;
+  private final TableMetaDataView tableMetaData;
 
   public SqlToPdxInstanceCreator(InternalCache cache, RegionMapping regionMapping,
-      ResultSet resultSet, String keyColumnName) {
+      ResultSet resultSet, TableMetaDataView tableMetaData) {
     this.cache = cache;
     this.regionMapping = regionMapping;
     this.resultSet = resultSet;
-    this.keyColumnName = keyColumnName;
+    this.tableMetaData = tableMetaData;
   }
 
   public PdxInstance create() throws SQLException {
@@ -50,11 +51,12 @@ class SqlToPdxInstanceCreator {
       TypeRegistry typeRegistry = cache.getPdxRegistry();
       for (int i = 1; i <= ColumnsNumber; i++) {
         String columnName = metaData.getColumnName(i);
-        if (regionMapping.isPrimaryKeyInValue() || !keyColumnName.equalsIgnoreCase(columnName)) {
+        if (regionMapping.isPrimaryKeyInValue()
+            || !tableMetaData.getKeyColumnName().equalsIgnoreCase(columnName)) {
           String fieldName = regionMapping.getFieldNameForColumn(columnName, typeRegistry);
           FieldType fieldType =
               getFieldType(typeRegistry, regionMapping.getPdxClassName(), fieldName);
-          writeField(factory, resultSet, i, fieldName, fieldType);
+          writeField(factory, resultSet, i, fieldName, fieldType, columnName);
         }
       }
       if (resultSet.next()) {
@@ -82,7 +84,7 @@ class SqlToPdxInstanceCreator {
    * @throws SQLException if the column value get fails
    */
   private void writeField(PdxInstanceFactory factory, ResultSet resultSet, int columnIndex,
-      String fieldName, FieldType fieldType) throws SQLException {
+      String fieldName, FieldType fieldType, String columnName) throws SQLException {
     switch (fieldType) {
       case STRING:
         factory.writeString(fieldName, resultSet.getString(columnIndex));
@@ -116,14 +118,28 @@ class SqlToPdxInstanceCreator {
       case BOOLEAN:
         factory.writeBoolean(fieldName, resultSet.getBoolean(columnIndex));
         break;
-      case DATE:
-        java.sql.Timestamp sqlDate = resultSet.getTimestamp(columnIndex);
+      case DATE: {
+        int columnType = this.tableMetaData.getColumnDataType(columnName);
+        java.util.Date sqlDate;
+        switch (columnType) {
+          case Types.DATE:
+            sqlDate = resultSet.getDate(columnIndex);
+            break;
+          case Types.TIME:
+          case Types.TIME_WITH_TIMEZONE:
+            sqlDate = resultSet.getTime(columnIndex);
+            break;
+          default:
+            sqlDate = resultSet.getTimestamp(columnIndex);
+            break;
+        }
         java.util.Date pdxDate = null;
         if (sqlDate != null) {
           pdxDate = new java.util.Date(sqlDate.getTime());
         }
         factory.writeDate(fieldName, pdxDate);
         break;
+      }
       case BYTE_ARRAY:
         factory.writeByteArray(fieldName, resultSet.getBytes(columnIndex));
         break;
@@ -168,7 +184,20 @@ class SqlToPdxInstanceCreator {
             convertJdbcObjectToJavaType(byte[][].class, resultSet.getObject(columnIndex)));
         break;
       case OBJECT:
-        factory.writeObject(fieldName, resultSet.getObject(columnIndex));
+        Object v = resultSet.getObject(columnIndex);
+        if (v instanceof java.util.Date) {
+          if (v instanceof java.sql.Date) {
+            java.sql.Date sqlDate = (java.sql.Date) v;
+            v = new java.util.Date(sqlDate.getTime());
+          } else if (v instanceof java.sql.Time) {
+            java.sql.Time sqlTime = (java.sql.Time) v;
+            v = new java.util.Date(sqlTime.getTime());
+          } else if (v instanceof java.sql.Timestamp) {
+            java.sql.Timestamp sqlTimestamp = (java.sql.Timestamp) v;
+            v = new java.util.Date(sqlTimestamp.getTime());
+          }
+        }
+        factory.writeObject(fieldName, v);
         break;
     }
   }
