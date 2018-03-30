@@ -70,7 +70,6 @@ public interface LogMarker {
    * <code>DataSerializer</code>).
    */
   Marker DUMP_SERIALIZED = MarkerManager.getMarker("DUMP_SERIALIZED").addParents(SERIALIZER); // DataSerializer.DUMP_SERIALIZED
-  Marker TRACE_SERIALIZABLE = MarkerManager.getMarker("TRACE_SERIALIZABLE").addParents(SERIALIZER); // DataSerializer.TRACE_SERIALIZABLE
   Marker DEBUG_DSFID = MarkerManager.getMarker("DEBUG_DSFID").addParents(SERIALIZER); // DataSerializer.DEBUG_DSFID
 
   Marker STATISTICS = MarkerManager.getMarker("STATISTICS").addParents(GEODE_VERBOSE);
