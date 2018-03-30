@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 /**
@@ -45,10 +47,17 @@ public class GfshRule extends ExternalResource {
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
   private List<GfshExecution> gfshExecutions;
   private Path gfsh;
+  private String version;
+
+  public GfshRule() {}
+
+  public GfshRule(String version) {
+    this.version = version;
+  }
 
   @Override
   protected void before() throws IOException {
-    gfsh = new RequiresGeodeHome().getGeodeHome().toPath().resolve("bin/gfsh");
+    gfsh = findGfsh();
     assertThat(gfsh).exists();
 
     gfshExecutions = new ArrayList<>();
@@ -82,6 +91,17 @@ public class GfshRule extends ExternalResource {
     } finally {
       temporaryFolder.delete();
     }
+  }
+
+  private Path findGfsh() {
+    Path geodeHome;
+    if (version == null) {
+      geodeHome = new RequiresGeodeHome().getGeodeHome().toPath();
+    } else {
+      geodeHome = Paths.get(VersionManager.getInstance().getInstall(version));
+    }
+
+    return geodeHome.resolve("bin/gfsh");
   }
 
   public TemporaryFolder getTemporaryFolder() {
