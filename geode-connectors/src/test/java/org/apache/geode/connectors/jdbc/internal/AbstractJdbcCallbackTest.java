@@ -94,5 +94,4 @@ public class AbstractJdbcCallbackTest {
     boolean ignoreEvent = jdbcCallback.eventCanBeIgnored(Operation.CREATE);
     assertThat(ignoreEvent).isFalse();
   }
-
 }
