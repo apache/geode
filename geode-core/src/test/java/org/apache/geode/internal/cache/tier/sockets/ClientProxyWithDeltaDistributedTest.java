@@ -18,9 +18,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.apache.geode.test.dunit.VM.getHostName;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -83,9 +84,9 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    server = getHost(0).getVM(0);
-    client1 = getHost(0).getVM(1);
-    client2 = getHost(0).getVM(3);
+    server = getVM(0);
+    client1 = getVM(1);
+    client2 = getVM(3);
 
     hostName = getServerHostName(server.getHost());
 

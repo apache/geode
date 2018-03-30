@@ -470,6 +470,12 @@ public class DLockGrantor {
    * @throws LockGrantorDestroyedException if grantor is destroyed
    */
   void handleLockBatch(DLockRequestMessage request) throws InterruptedException {
+    DLockLessorDepartureHandler handler = this.dlock.getDLockLessorDepartureHandler();
+    // make sure the tx locks of departed members have been cleared so we don't have
+    // conflicts with non-existent members. This is done in a waiting-pool thread launched
+    // when the member-departure is announced.
+    handler.waitForInProcessDepartures();
+
     synchronized (this.batchLocks) { // assures serial processing
       waitWhileInitializing();
       if (request.checkForTimeout()) {
@@ -733,6 +739,13 @@ public class DLockGrantor {
       }
     }
     try {
+      // make sure we don't grant a dlock held by a departed member until that member's
+      // transactions are resolved
+      DLockLessorDepartureHandler dLockLessorDepartureHandler =
+          this.dlock.getDLockLessorDepartureHandler();
+      if (dLockLessorDepartureHandler != null) {
+        dLockLessorDepartureHandler.waitForInProcessDepartures();
+      }
       checkDestroyed();
       if (acquireLockPermission(request)) {
         handlePermittedLockRequest(request);

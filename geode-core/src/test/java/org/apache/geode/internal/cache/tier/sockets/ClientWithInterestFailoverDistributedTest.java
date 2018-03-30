@@ -18,9 +18,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -79,10 +79,10 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    client = getHost(0).getVM(0);
+    client = getVM(0);
 
-    server = getHost(0).getVM(1);
-    server2 = getHost(0).getVM(2);
+    server = getVM(1);
+    server2 = getVM(2);
 
     primaryServerPort = givenTwoCacheServers();
   }
@@ -194,8 +194,8 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
     serverPort1 = server.invoke(() -> createServerCache());
     serverPort2 = server2.invoke(() -> createServerCache());
 
-    return client.invoke(() -> createClientCacheWithTwoRegions(getServerHostName(server.getHost()),
-        serverPort1, getServerHostName(server2.getHost()), serverPort2));
+    return client.invoke(() -> createClientCacheWithTwoRegions(getServerHostName(), serverPort1,
+        getServerHostName(), serverPort2));
   }
 
   private VM getPrimaryServerVM() {

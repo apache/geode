@@ -17,6 +17,8 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
+import static org.apache.geode.test.dunit.VM.getHostName;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
@@ -40,7 +42,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
@@ -49,6 +50,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class JdbcClusterConfigDistributedTest implements Serializable {
 
   private transient InternalCache cache;
@@ -86,7 +88,7 @@ public class JdbcClusterConfigDistributedTest implements Serializable {
     keyInValue = true;
     fieldMappings = new String[] {"field1:column1", "field2:column2"};
 
-    locator = Host.getHost(0).getVM(0);
+    locator = getVM(0);
     String locatorFolder = "vm-" + locator.getId() + "-" + testName.getMethodName();
 
     int port = locator.invoke(() -> {
@@ -97,7 +99,7 @@ public class JdbcClusterConfigDistributedTest implements Serializable {
       await().atMost(2, MINUTES).until(() -> assertTrue(locator.isSharedConfigurationRunning()));
       return Locator.getLocator().getPort();
     });
-    locators = Host.getHost(0).getHostName() + "[" + port + "]";
+    locators = getHostName() + "[" + port + "]";
 
     cache = (InternalCache) new CacheFactory().set(LOCATORS, locators).create();
 

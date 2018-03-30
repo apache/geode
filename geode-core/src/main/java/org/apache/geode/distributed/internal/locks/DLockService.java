@@ -1506,7 +1506,11 @@ public class DLockService extends DistributedLockService {
             Assert.assertTrue(isDestroyed(),
                 "Grantor reports service " + this + " is destroyed: " + name);
           } else if (processor.repliedNotGrantor() || processor.hadNoResponse()) {
-            notLockGrantorId(theLockGrantorId, 0, TimeUnit.MILLISECONDS);
+            long waitForGrantorTime = waitLimit - token.getCurrentTime();
+            if (waitForGrantorTime <= 0) {
+              waitForGrantorTime = 100;
+            }
+            notLockGrantorId(theLockGrantorId, waitForGrantorTime, TimeUnit.MILLISECONDS);
             // keepTrying is still true... loop back around
           } else if (processor.repliedNotHolder()) {
             // fix part of bug 32765 - reentrant/expiration problem

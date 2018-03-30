@@ -14,9 +14,10 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 
 /**
@@ -40,6 +41,7 @@ import org.apache.geode.test.dunit.standalone.DUnitLauncher;
  * }
  * </pre>
  */
+@SuppressWarnings("unused")
 public class DistributedTestRule extends DistributedExternalResource {
 
   private final int vmCount;
@@ -49,26 +51,28 @@ public class DistributedTestRule extends DistributedExternalResource {
   }
 
   public DistributedTestRule() {
-    // use 4 DUnit VMs by default
-    this.vmCount = 4;
+    this(new Builder());
+  }
+
+  public DistributedTestRule(final int vmCount) {
+    this(new Builder().withVMCount(vmCount));
   }
 
   DistributedTestRule(final Builder builder) {
-    // use 4 DUnit VMs by default
-    this.vmCount = builder.vmCount;
+    vmCount = builder.vmCount;
   }
 
   @Override
   protected void before() throws Throwable {
     DUnitLauncher.launchIfNeeded();
     for (int i = 0; i < vmCount; i++) {
-      assertThat(Host.getHost(0).getVM(i)).isNotNull();
+      assertThat(getVM(i)).isNotNull();
     }
   }
 
   public static class Builder {
 
-    private int vmCount = 4;
+    private int vmCount = DEFAULT_VM_COUNT;
 
     public Builder withVMCount(final int vmCount) {
       if (vmCount < 0) {

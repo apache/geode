@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.ExpirationAction.DESTROY;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -55,14 +55,14 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
   private static final String KEY = "KEY";
   private static final String VALUE = "VALUE";
 
-  private final VM member1 = getHost(0).getVM(0);
-  private final VM member2 = getHost(0).getVM(1);
-  private final VM member3 = getHost(0).getVM(2);
+  private final VM member1 = getVM(0);
+  private final VM member2 = getVM(1);
+  private final VM member3 = getVM(2);
   private final String regionName = getClass().getSimpleName();
 
   @Rule
   public CacheRule cacheRule = CacheRule.builder().createCacheIn(member1).createCacheIn(member2)
-      .createCacheIn(member3).createCacheIn(getHost(0).getVM(3)).build();
+      .createCacheIn(member3).createCacheIn(getVM(3)).build();
 
   @Before
   public void setUp() throws Exception {
@@ -124,7 +124,7 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
 
   @Test
   public void readsInNormalMemberShouldPreventExpiration() throws Exception {
-    VM member4 = getHost(0).getVM(3);
+    VM member4 = getVM(3);
     member4.invoke(() -> {
       KEEP_READING.set(true);
       ExpiryTask.suspendExpiration();

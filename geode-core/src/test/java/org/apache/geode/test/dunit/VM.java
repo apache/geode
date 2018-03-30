@@ -14,11 +14,14 @@
  */
 package org.apache.geode.test.dunit;
 
+import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import hydra.MethExecutorResult;
@@ -31,10 +34,14 @@ import org.apache.geode.test.dunit.standalone.StandAloneDUnitEnv;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 
 /**
- * This class represents a Java Virtual Machine that runs on a host.
+ * This class represents a Java Virtual Machine that runs in a DistributedTest.
  */
-@SuppressWarnings("serial")
+@SuppressWarnings("serial,unused")
 public class VM implements Serializable {
+
+  public static final int CONTROLLER_VM = -1;
+
+  public static final int DEFAULT_VM_COUNT = NUM_VMS;
 
   /** The host on which this VM runs */
   private final Host host;
@@ -60,26 +67,54 @@ public class VM implements Serializable {
   }
 
   /**
-   * restart an unavailable VM
+   * Returns true if executed from the main JUnit VM.
    */
-  public synchronized void makeAvailable() {
-    if (!available) {
-      available = true;
-      bounce();
-    }
+  public static boolean isControllerVM() {
+    return getCurrentVMNum() == CONTROLLER_VM;
   }
 
   /**
-   * Returns the total number of {@code VM}s on all {@code Host}s (note that DUnit currently only
-   * supports one {@code Host}).
+   * Returns true if executed from a DUnit VM. Returns false if executed from the main JUnit VM.
+   */
+  public static boolean isVM() {
+    return getCurrentVMNum() != CONTROLLER_VM;
+  }
+
+  /**
+   * Returns a VM that runs in this DistributedTest.
+   *
+   * @param whichVM A zero-based identifier of the VM
+   */
+  public static VM getVM(int whichVM) {
+    return Host.getHost(0).getVM(whichVM);
+  }
+
+  /**
+   * Returns a collection of all DistributedTest VMs.
+   */
+  public static List<VM> getAllVMs() {
+    return Host.getHost(0).getAllVMs();
+  }
+
+  /**
+   * Returns the number of VMs that run in this DistributedTest.
    */
   public static int getVMCount() {
-    int count = 0;
-    for (int h = 0; h < Host.getHostCount(); h++) {
-      Host host = Host.getHost(h);
-      count += host.getVMCount();
-    }
-    return count;
+    return Host.getHost(0).getVMCount();
+  }
+
+  /**
+   * Returns the DistributedTest Locator VM.
+   */
+  public static VM getLocator() {
+    return Host.getLocator();
+  }
+
+  /**
+   * Returns the machine name hosting this DistributedTest.
+   */
+  public static String getHostName() {
+    return Host.getHost(0).getHostName();
   }
 
   /**
@@ -403,6 +438,16 @@ public class VM implements Serializable {
   }
 
   /**
+   * Restart an unavailable VM
+   */
+  public synchronized void makeAvailable() {
+    if (!available) {
+      available = true;
+      bounce();
+    }
+  }
+
+  /**
    * Synchronously bounces (mean kills and restarts) this {@code VM}. Concurrent bounce attempts are
    * synchronized but attempts to invoke methods on a bouncing {@code VM} will cause test failure.
    * Tests using bounce should be placed at the end of the DUnit test suite, since an exception here
@@ -442,14 +487,14 @@ public class VM implements Serializable {
     }
   }
 
+  public File getWorkingDirectory() {
+    return DUnitEnv.get().getWorkingDirectory(getVersion(), getId());
+  }
+
   @Override
   public String toString() {
     return "VM " + getId() + " running on " + getHost()
         + (VersionManager.isCurrentVersion(version) ? "" : (" with version " + version));
-  }
-
-  public File getWorkingDirectory() {
-    return DUnitEnv.get().getWorkingDirectory(getVersion(), getId());
   }
 
   private MethExecutorResult execute(final Class<?> targetClass, final String methodName,

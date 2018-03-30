@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -44,7 +44,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class PRCustomPartitioningDUnitTest implements Serializable {
+public class PRCustomPartitioningDistributedTest implements Serializable {
 
   private static final int TOTAL_NUM_BUCKETS = 7;
 
@@ -68,10 +68,10 @@ public class PRCustomPartitioningDUnitTest implements Serializable {
 
   @Before
   public void setUp() {
-    datastoreVM0 = getHost(0).getVM(0);
-    datastoreVM1 = getHost(0).getVM(1);
-    datastoreVM2 = getHost(0).getVM(2);
-    accessorVM3 = getHost(0).getVM(3);
+    datastoreVM0 = getVM(0);
+    datastoreVM1 = getVM(1);
+    datastoreVM2 = getVM(2);
+    accessorVM3 = getVM(3);
 
     regionName = "PR1";
 

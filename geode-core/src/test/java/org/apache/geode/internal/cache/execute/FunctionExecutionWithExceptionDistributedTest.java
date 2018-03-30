@@ -20,7 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_SEND_EXCEPTION;
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_THROW_EXCEPTION;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -54,7 +54,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category({DistributedTest.class, FunctionServiceTest.class})
 @SuppressWarnings("serial")
-public class FunctionExecution_ExceptionDUnitTest implements Serializable {
+public class FunctionExecutionWithExceptionDistributedTest implements Serializable {
 
   private String regionName;
   private VM datastoreVM0;
@@ -80,9 +80,9 @@ public class FunctionExecution_ExceptionDUnitTest implements Serializable {
   public void setUp() throws Exception {
     regionName = getClass().getSimpleName() + "_" + testName.getMethodName();
 
-    datastoreVM0 = getHost(0).getVM(0);
-    datastoreVM1 = getHost(0).getVM(1);
-    datastoreVM2 = getHost(0).getVM(2);
+    datastoreVM0 = getVM(0);
+    datastoreVM1 = getVM(1);
+    datastoreVM2 = getVM(2);
 
     stringKey = "execKey";
     stringKeys = new HashSet<>();

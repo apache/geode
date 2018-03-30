@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializable;
 
 /**
- * Extracted from {@link PRCustomPartitioningDUnitTest}.
+ * Extracted from {@link PRCustomPartitioningDistributedTest}.
  */
 @SuppressWarnings("serial")
 class SerializableMonth implements DataSerializable {

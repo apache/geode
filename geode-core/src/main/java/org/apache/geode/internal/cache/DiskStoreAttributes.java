@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 
 /**
  * Creates an attribute object for DiskStore.
@@ -61,7 +62,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
     this.timeInterval = DiskStoreFactory.DEFAULT_TIME_INTERVAL;
     this.writeBufferSize = DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE;
     this.queueSize = DiskStoreFactory.DEFAULT_QUEUE_SIZE;
-    this.diskDirs = DiskStoreFactory.DEFAULT_DISK_DIRS;
+    this.diskDirs = DefaultDiskDirs.getDefaultDiskDirs();
     this.diskDirSizes = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES;
     this.diskUsageWarningPct = DiskStoreFactory.DEFAULT_DISK_USAGE_WARNING_PERCENTAGE;
     this.diskUsageCriticalPct = DiskStoreFactory.DEFAULT_DISK_USAGE_CRITICAL_PERCENTAGE;

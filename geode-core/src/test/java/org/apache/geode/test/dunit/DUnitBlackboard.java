@@ -118,7 +118,7 @@ public class DUnitBlackboard {
   /**
    * retrieve an object from a mailbox slot
    */
-  public Object getMailbox(String boxName) {
+  public <T> T getMailbox(String boxName) {
     try {
       return blackboard.getMailbox(boxName);
     } catch (RemoteException e) {

@@ -17,8 +17,8 @@ package org.apache.geode.cache;
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -54,8 +54,8 @@ public class PRCreationTotalNumBucketsDistributedTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    vm0 = getHost(0).getVM(0);
-    vm1 = getHost(0).getVM(1);
+    vm0 = getVM(0);
+    vm1 = getVM(1);
 
     totalNumBuckets = 7;
   }
