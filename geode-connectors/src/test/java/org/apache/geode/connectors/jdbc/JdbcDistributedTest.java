@@ -25,8 +25,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
-import java.time.Instant;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +50,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -319,15 +316,10 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   @Test
-  @Ignore("GEODE-4922: MySQL is truncating the milliseconds from the timestamp")
   public void verifyDateToTimestamp() throws Exception {
     server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
-    server.invoke(() -> {
-      Connection connection = DriverManager.getConnection(connectionUrl);
-      Statement statement = connection.createStatement();
-      statement.execute("Create Table " + TABLE_NAME
-          + " (id varchar(10) primary key not null, mytimestamp timestamp)");
-    });
+    createTableWithTimeStamp(server, connectionUrl, TABLE_NAME);
+
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
     createMapping(REGION_NAME, CONNECTION_NAME);
@@ -351,6 +343,15 @@ public abstract class JdbcDistributedTest implements Serializable {
       PdxInstance getResult = (PdxInstance) region.get(key);
       assertThat(getResult.getField("mytimestamp")).isInstanceOf(java.util.Date.class)
           .isEqualTo(jdkDate);
+    });
+  }
+
+  protected void createTableWithTimeStamp(MemberVM vm, String connectionUrl, String tableName) {
+    vm.invoke(() -> {
+      Connection connection = DriverManager.getConnection(connectionUrl);
+      Statement statement = connection.createStatement();
+      statement.execute("Create Table " + tableName
+          + " (id varchar(10) primary key not null, mytimestamp timestamp)");
     });
   }
 

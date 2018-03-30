@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc;
 
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -24,6 +25,7 @@ import java.sql.Types;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 import org.apache.geode.test.junit.rules.SqlDatabaseConnectionRule;
@@ -84,5 +86,15 @@ public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
     statement.setNull(11, Types.VARCHAR);
     statement.setNull(12, Types.BLOB);
     statement.setNull(13, Types.CHAR);
+  }
+
+  @Override
+  protected void createTableWithTimeStamp(MemberVM vm, String connectionUrl, String tableName) {
+    vm.invoke(() -> {
+      Connection connection = DriverManager.getConnection(connectionUrl);
+      Statement statement = connection.createStatement();
+      statement.execute("CREATE TABLE " + tableName
+          + " (id varchar(10) primary key not null, mytimestamp timestamp(3))");
+    });
   }
 }
