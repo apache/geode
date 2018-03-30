@@ -26,6 +26,7 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -36,12 +37,13 @@ import org.apache.geode.security.ResourcePermission;
 public class DescribeJndiBindingCommand extends GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
-  private static final String DESCRIBE_JNDI_BINDING = "describe jndi-binding";
+  static final String DESCRIBE_JNDI_BINDING = "describe jndi-binding";
   private static final String DESCRIBE_JNDIBINDING__HELP =
-      "Describe the given active jndi binding. An active binding is one that is bound to the server's jndi context.";
+      "Describe the configuration of the given jndi binding.";
   private static final Function LIST_BINDING_FUNCTION = new ListJndiBindingFunction();
 
   @CliCommand(value = DESCRIBE_JNDI_BINDING, help = DESCRIBE_JNDIBINDING__HELP)
+  @CliMetaData
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public Result describeJndiBinding(@CliOption(key = "name", mandatory = true,
@@ -53,6 +55,12 @@ public class DescribeJndiBindingCommand extends GfshCommand {
     if (ccService != null) {
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       List<JndiBindingsType.JndiBinding> jndiBindings = cacheConfig.getJndiBindings();
+
+      if (jndiBindings.size() == 0) {
+        return ResultBuilder
+            .createUserErrorResult(String.format("JNDI binding : %s not found", bindingName));
+      }
+
       for (JndiBindingsType.JndiBinding binding : jndiBindings) {
         if (binding.getJndiName().equals(bindingName)
             || binding.getJndiName().equals("java:" + bindingName)) {
