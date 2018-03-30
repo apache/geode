@@ -18,13 +18,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
@@ -37,7 +35,6 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public class LinkedStructSet extends LinkedHashSet<Struct>
     implements SelectResults<Struct>, Ordered, DataSerializableFixedID {
@@ -52,7 +49,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
   private boolean modifiable = true;
 
   /** Creates a new instance of StructSet */
-  public LinkedStructSet() {};
+  public LinkedStructSet() {}
 
   /** Creates a new instance of StructSet */
   public LinkedStructSet(StructTypeImpl structType) {
@@ -65,13 +62,8 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
 
   @Override
   public boolean equals(Object other) {
-    if (!(other instanceof SortedStructSet)) {
-      return false;
-    }
-    if (!this.structType.equals(((SortedStructSet) other).structType)) {
-      return false;
-    }
-    return super.equals(other);
+    return other instanceof SortedStructSet
+        && this.structType.equals(((SortedStructSet) other).structType) && super.equals(other);
   }
 
   /** Add a Struct */
@@ -87,16 +79,8 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
           LocalizedStrings.SortedStructSet_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE
               .toLocalizedString());
     }
-    // return addFieldValues(s.getFieldValues());
     return super.add(s);
   }
-
-  /**
-   * For internal use. Just add the Object[] values for a struct with same type
-   *
-   * public boolean addFieldValues(Object[] fieldValues) { //return super.add(fieldValues);
-   * StructImpl s = new StructImpl(this.structType, fieldValues); return super.add(s); }
-   */
 
   /** Does this set contain specified struct? */
   @Override
@@ -105,19 +89,8 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
       return false;
     }
     Struct s = (Struct) obj;
-    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
-      return false;
-    }
-    return contains(s);
-    // return containsFieldValues(s.getFieldValues());
+    return this.structType.equals(StructTypeImpl.typeFromStruct(s)) && contains(s);
   }
-
-  /**
-   * Does this set contain a Struct of the correct type with the specified values?
-   *
-   * public boolean containsFieldValues(Object[] fieldValues) { return super.contains(fieldValues);
-   * }
-   */
 
   /** Remove the specified Struct */
   @Override
@@ -126,107 +99,10 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
       return false;
     }
     Struct s = (Struct) o;
-    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
-      return false;
-    }
-    return remove(s);
-    // return removeFieldValues(s.getFieldValues());
-  }
-
-  /**
-   * Remove the field values from a struct of the correct type public boolean
-   * removeFieldValues(Object[] fieldValues) { return super.remove(fieldValues); }
-   */
-
-  // downcast StructSets to call more efficient methods
-  @Override
-  public boolean addAll(Collection c) {
-    // if (c instanceof StructSet) {
-    // return addAll((StructSet)c);
-    // }
-    return super.addAll(c);
+    return this.structType.equals(StructTypeImpl.typeFromStruct(s)) && remove(s);
   }
 
   @Override
-  public boolean removeAll(Collection c) {
-    // if (c instanceof StructSet) {
-    // return removeAll((StructSet)c);
-    // }
-    return super.removeAll(c);
-  }
-
-  @Override
-  public boolean retainAll(Collection c) {
-    // if (c instanceof StructSet) {
-    // return retainAll((StructSet)c);
-    // }
-    return super.retainAll(c);
-  }
-
-  // public boolean addAll(StructSet ss) {
-  // boolean modified = false;
-  // if (!this.structType.equals(ss.structType)) { throw new
-  // IllegalArgumentException(LocalizedStrings.SortedStructSet_TYPES_DONT_MATCH.toLocalizedString());
-  // }
-  // for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
-  // Struct vals = (Struct) itr.next();
-  // if (super.add(vals)) {
-  // modified = true;
-  // }
-  // }
-  // return modified;
-  // }
-
-  // public boolean removeAll(StructSet ss) {
-  // boolean modified = false;
-  // if (!this.structType.equals(ss.structType)) { return false; // nothing
-  // // modified
-  // }
-  // for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
-  // Struct vals = (Struct) itr.next();
-  // if (super.remove(vals)) {
-  // modified = true;
-  // }
-  // }
-  // return modified;
-  // }
-  //
-  // public boolean retainAll(StructSet ss) {
-  // if (!this.structType.equals(ss.structType)) {
-  // if (isEmpty()) {
-  // return false; // nothing modified
-  // }
-  // else {
-  // clear();
-  // return true; // nothing retained in receiver collection
-  // }
-  // }
-  // boolean changed = false;
-  // int size = size();
-  // Iterator it;
-  // it = fieldValuesIterator();
-  // while (size-- > 0) {
-  // Struct val = (Struct) it.next();
-  // //if (!ss.containsFieldValues(vals)) {
-  // if (!ss.contains(val)) {
-  // it.remove();
-  // changed = true;
-  // }
-  // }
-  // return changed;
-  // }
-
-  /** Returns an Iterator over the Structs in this set */
-  @Override
-  public Iterator iterator() {
-    return new StructIterator(fieldValuesIterator());
-  }
-
-  /** Returns an iterator over the fieldValues Object[] instances */
-  public Iterator fieldValuesIterator() {
-    return super.iterator();
-  }
-
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(Ordered.class, this.structType);
   }
@@ -235,6 +111,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
   // behavior if the new struct type is not compatible with the data.
   // For now just trust that the application knows what it is doing if it
   // is overriding the element type in a set of structs
+  @Override
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
@@ -243,10 +120,12 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
     this.structType = (StructTypeImpl) elementType;
   }
 
+  @Override
   public List asList() {
     return new ArrayList(this);
   }
 
+  @Override
   public Set asSet() {
     return this;
   }
@@ -256,10 +135,12 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
    *
    * @return Value of property modifiable.
    */
+  @Override
   public boolean isModifiable() {
     return this.modifiable;
   }
 
+  @Override
   public int occurrences(Struct element) {
     return contains(element) ? 1 : 0;
   }
@@ -275,7 +156,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
 
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("[");
     Iterator i = iterator();
     boolean hasNext = i.hasNext();
@@ -290,34 +171,11 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
     return buf.toString();
   }
 
-  /**
-   * Iterator wrapper to construct Structs on demand.
-   */
-  private static class StructIterator implements Iterator {
-
-    private final Iterator itr;
-
-    StructIterator(Iterator itr) {
-      this.itr = itr;
-    }
-
-    public boolean hasNext() {
-      return this.itr.hasNext();
-    }
-
-    public Object next() {
-      return this.itr.next();
-    }
-
-    public void remove() {
-      this.itr.remove();
-    }
-  }
-
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.modifiable = in.readBoolean();
     int size = in.readInt();
-    this.structType = (StructTypeImpl) DataSerializer.readObject(in);
+    this.structType = DataSerializer.readObject(in);
     InternalDataSerializer.doWithPdxReadSerialized(() -> {
       for (int j = size; j > 0; j--) {
         Object[] fieldValues = DataSerializer.readObject(in);
@@ -326,18 +184,18 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
     });
   }
 
+  @Override
   public int getDSFID() {
-
     return LINKED_STRUCTSET;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     // how do we serialize the comparator?
     out.writeBoolean(this.modifiable);
     out.writeInt(this.size());
     DataSerializer.writeObject(this.structType, out);
-    for (Iterator<Struct> i = this.iterator(); i.hasNext();) {
-      Struct struct = i.next();
+    for (Struct struct : this) {
       DataSerializer.writeObject(struct.getFieldValues(), out);
     }
   }
