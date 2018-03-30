@@ -186,6 +186,7 @@ import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSende
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
+import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -7526,7 +7527,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   private boolean useDefaultDiskStore() {
     assert getDiskStoreName() == null;
-    if (!Arrays.equals(getDiskDirs(), DiskStoreFactory.DEFAULT_DISK_DIRS)) {
+    if (!Arrays.equals(getDiskDirs(), DefaultDiskDirs.getDefaultDiskDirs())) {
       return false;
     }
     if (!Arrays.equals(getDiskDirSizes(), DiskStoreFactory.DEFAULT_DISK_DIR_SIZES)) {

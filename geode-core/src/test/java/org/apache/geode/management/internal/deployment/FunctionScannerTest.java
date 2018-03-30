@@ -30,9 +30,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.JarBuilder;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class FunctionScannerTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

@@ -61,39 +61,14 @@ public class OqlQueryRequestOperationHandler
       DecodingException {
     String queryString = request.getQuery();
     List<EncodedValue> encodedParameters = request.getBindParameterList();
-
-    InternalQueryService queryService = messageExecutionContext.getCache().getQueryService();
-
-    Query query = queryService.newQuery(queryString);
     Object[] bindParameters = decodeBindParameters(serializationService, encodedParameters);
 
-    if (messageExecutionContext
-        .getConnectionStateProcessor() instanceof ProtobufConnectionAuthorizingStateProcessor) {
-      final SecurityService securityService =
-          messageExecutionContext.getCache().getSecurityService();
-      ThreadState threadState =
-          ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
-              .getConnectionStateProcessor()).prepareThreadForAuthorization();
-      try {
-        for (String regionName : ((DefaultQuery) query).getRegionsInQuery(bindParameters)) {
-          securityService.authorize(ResourcePermission.Resource.DATA,
-              ResourcePermission.Operation.READ, regionName);
-        }
-      } catch (NotAuthorizedException ex) {
-        messageExecutionContext.getStatistics().incAuthorizationViolations();
-        throw new OperationNotAuthorizedException(
-            "The user is not authorized to complete this operation");
-      } finally {
-        ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
-            .getConnectionStateProcessor()).restoreThreadState(threadState);
-      }
-    }
-
     try {
-      Object results = query.execute(bindParameters);
+      Object results =
+          messageExecutionContext.getAuthorizingCache().query(queryString, bindParameters);
       return Success.of(encodeResults(serializationService, results));
     } catch (QueryException e) {
-      logger.info("Query failed: " + query, e);
+      logger.info("Query failed: " + queryString, e);
       return Failure.of(e);
     }
 

@@ -23,12 +23,13 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class ListDiskStoreCommandIntegrationTest {
   private static final String REGION_NAME = "test-region";
   private static final String MEMBER_NAME = "testServer";

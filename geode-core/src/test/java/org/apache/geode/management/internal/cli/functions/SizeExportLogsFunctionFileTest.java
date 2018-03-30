@@ -37,9 +37,10 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction.Args;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class SizeExportLogsFunctionFileTest {
 
   private File dir;

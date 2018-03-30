@@ -19,7 +19,7 @@ import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.EARLY_ENTRY_EVENT_SERIALIZATION;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
@@ -47,6 +47,7 @@ import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class BrokenSerializationConsistencyRegressionTest implements Serializable {
 
   private static final String REGION_NAME = "replicateRegion";
@@ -69,7 +70,7 @@ public class BrokenSerializationConsistencyRegressionTest implements Serializabl
 
   @Before
   public void setUpAll() {
-    vm0 = getHost(0).getVM(0);
+    vm0 = getVM(0);
 
     System.setProperty(GEODE_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true");
     createReplicateRegions();

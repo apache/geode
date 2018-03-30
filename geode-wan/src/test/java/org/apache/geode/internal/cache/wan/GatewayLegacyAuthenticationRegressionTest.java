@@ -24,7 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.waitAtMost;
@@ -71,7 +71,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  * <p>
  * GEODE-3117: "Gateway authentication throws NullPointerException"
  */
-@Category({DistributedTest.class, SecurityTest.class, WanTest.class, WanTest.class})
+@Category({DistributedTest.class, SecurityTest.class, WanTest.class})
 public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
 
   private static final String REGION_NAME = "TheRegion";
@@ -109,10 +109,10 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
   public void before() {
     AUTHENTICATE_COUNT.set(0);
 
-    londonLocatorVM = getHost(0).getVM(0);
-    newYorkLocatorVM = getHost(0).getVM(1);
-    londonServerVM = getHost(0).getVM(2);
-    newYorkServerVM = getHost(0).getVM(3);
+    londonLocatorVM = getVM(0);
+    newYorkLocatorVM = getVM(1);
+    londonServerVM = getVM(2);
+    newYorkServerVM = getVM(3);
 
     londonName = "ln";
     newYorkName = "ny";

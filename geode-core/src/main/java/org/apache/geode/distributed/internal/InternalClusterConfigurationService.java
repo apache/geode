@@ -239,10 +239,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
         }
         String xmlContent = configuration.getCacheXmlContent();
         if (xmlContent == null || xmlContent.isEmpty()) {
-          StringWriter sw = new StringWriter();
-          PrintWriter pw = new PrintWriter(sw);
-          CacheXmlGenerator.generateDefault(pw);
-          xmlContent = sw.toString();
+          xmlContent = generateInitialXmlContent();
         }
         try {
           final Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
@@ -866,13 +863,24 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     return unmarshaller;
   }
 
+  private String generateInitialXmlContent() {
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    CacheXmlGenerator.generateDefault(pw);
+    return sw.toString();
+  }
+
   @Override
   public CacheConfig getCacheConfig(String group,
       Class<? extends CacheElement>... additionalBindClass) {
     if (group == null) {
       group = CLUSTER_CONFIG;
     }
-    return unMarshall(getConfiguration(group).getCacheXmlContent(), additionalBindClass);
+    String xmlContent = getConfiguration(group).getCacheXmlContent();
+    if (xmlContent == null || xmlContent.isEmpty()) {
+      xmlContent = generateInitialXmlContent();
+    }
+    return unMarshall(xmlContent, additionalBindClass);
   }
 
   @Override

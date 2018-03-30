@@ -36,10 +36,11 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class DataCommandFunctionWithPDXJUnitTest {
   private static final String PARTITIONED_REGION = "part_region";
 

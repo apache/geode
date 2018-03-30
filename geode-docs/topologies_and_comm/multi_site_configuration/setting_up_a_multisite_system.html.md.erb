@@ -64,7 +64,7 @@ To configure a gateway sender that uses gfsh to create the cache.xml configurati
 See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD056499AA57AF3CFDBF8ABE3) for more information about individual configuration properties.
 
 1.  For each <%=vars.product_name%> system, choose the members that will host a gateway sender configuration and distribute region events to remote sites:
-    -   You must deploy a parallel gateway sender configuration on each <%=vars.product_name%> member that hosts a region that uses the sender.
+    -   You must deploy a parallel gateway sender configuration on each <%=vars.product_name%> member that hosts a region that uses the sender. Regions using the same parallel gateway sender ID must be colocated.
     -   You may choose to deploy a serial gateway sender configuration on one or more <%=vars.product_name%> members in order to provide high availability. However, only one instance of a given serial gateway sender configuration distributes region events at any given time.
 
 2.  Configure each gateway sender on a <%=vars.product_name%> member using gfsh, `cache.xml` or Java API:
@@ -204,6 +204,9 @@ Replicated regions cannot use a parallel gateway sender. Use a serial gateway se
 
 **Note:**
 In addition to configuring regions with gateway senders to distribute events, you must configure the same regions in the target clusters to apply the distributed events. The region name in the receiving cluster must exactly match the region name in the sending cluster.
+
+**Note:**
+Regions using the same parallel gateway sender ID must be colocated.
 
 ## <a id="setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637B" class="no-quick-link"></a>Configure Gateway Receivers
 

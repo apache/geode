@@ -25,20 +25,18 @@ import java.io.File;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -46,13 +44,9 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * <p>
  * TRAC #42055: a pr accessor configured for OverflowToDisk fails during creation because of disk
- *
- * <p>
- * TRAC #42055 also mentions delta so we should add test(s) for delta as well. <br>
- * TODO: Test that the bucket size does not go negative when we fault out and in a delta object.
  */
 @Category(DistributedTest.class)
-public class BucketRegionSizeWithOverflowRegressionTest extends CacheTestCase {
+public class PRAccessorWithOverflowRegressionTest extends CacheTestCase {
 
   private static final int ENTRIES_COUNT = 1;
 
@@ -64,10 +58,10 @@ public class BucketRegionSizeWithOverflowRegressionTest extends CacheTestCase {
   private VM accessor;
 
   @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  public SerializableTestName testName = new SerializableTestName();
 
   @Rule
-  public SerializableTestName testName = new SerializableTestName();
+  public DistributedDiskDirRule diskDirsRule = new DistributedDiskDirRule();
 
   @Before
   public void setUp() throws Exception {
@@ -75,8 +69,9 @@ public class BucketRegionSizeWithOverflowRegressionTest extends CacheTestCase {
     accessor = getHost(0).getVM(1);
 
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
-    datastoreDiskDir = temporaryFolder.newFolder(uniqueName + "_datastore_disk");
-    accessorDiskDir = temporaryFolder.newFolder(uniqueName + "_accessor_disk");
+
+    datastoreDiskDir = diskDirsRule.getDiskDirFor(datastore);
+    accessorDiskDir = diskDirsRule.getDiskDirFor(accessor);
 
     datastore.invoke(() -> createDataStore());
     accessor.invoke(() -> createAccessor());
@@ -87,7 +82,6 @@ public class BucketRegionSizeWithOverflowRegressionTest extends CacheTestCase {
     disconnectAllFromDS();
   }
 
-  @Ignore("GEODE-4929")
   @Test
   public void testPROverflow() throws Exception {
     accessor.invoke(() -> {
@@ -104,7 +98,6 @@ public class BucketRegionSizeWithOverflowRegressionTest extends CacheTestCase {
     datastore.invoke(() -> {
       PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(uniqueName);
       assertThat(getCache().getRegion(uniqueName).size()).isEqualTo(2);
-      assertThat(getCache().getRegion(uniqueName).size()).isGreaterThanOrEqualTo(0);
       assertThat(partitionedRegion.getDataStore().getAllLocalBucketIds()).hasSize(2);
     });
 
@@ -117,12 +110,8 @@ public class BucketRegionSizeWithOverflowRegressionTest extends CacheTestCase {
   }
 
   private void createDataStore() {
-    DiskStoreFactory dsf = getCache().createDiskStoreFactory();
-    dsf.setDiskDirs(new File[] {datastoreDiskDir});
-
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(DataPolicy.PARTITION);
-    af.setDiskStoreName(dsf.create(uniqueName).getName());
     af.setEvictionAttributes(createLRUEntryAttributes(ENTRIES_COUNT, OVERFLOW_TO_DISK));
     af.setPartitionAttributes(new PartitionAttributesFactory().create());
 
@@ -130,15 +119,11 @@ public class BucketRegionSizeWithOverflowRegressionTest extends CacheTestCase {
   }
 
   private void createAccessor() {
-    DiskStoreFactory dsf = getCache().createDiskStoreFactory();
-    dsf.setDiskDirs(new File[] {accessorDiskDir});
-
     PartitionAttributesFactory<Integer, TestDelta> paf = new PartitionAttributesFactory<>();
     paf.setLocalMaxMemory(0);
 
     AttributesFactory<Integer, TestDelta> af = new AttributesFactory<>();
     af.setDataPolicy(DataPolicy.PARTITION);
-    af.setDiskStoreName(dsf.create(uniqueName).getName());
     af.setEvictionAttributes(createLRUEntryAttributes(ENTRIES_COUNT, OVERFLOW_TO_DISK));
     af.setPartitionAttributes(paf.create());
 

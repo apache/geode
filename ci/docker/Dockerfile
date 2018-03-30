@@ -27,7 +27,7 @@ RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s
 # Install docker and gcloud
 RUN apt-get update
 RUN apt-get purge lxc-docker
-RUN apt-get install -y docker-engine google-cloud-sdk && apt-get clean
+RUN apt-get install -y docker-engine docker-compose google-cloud-sdk && apt-get clean
 
 # For a CI tool, disable updates to gcloud since they'll be thrown away at end of run
 RUN gcloud config set core/disable_usage_reporting true && \

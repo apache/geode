@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.dunit.tests;
 
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
@@ -21,7 +23,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -34,16 +35,16 @@ public class GetPidAndIdDistributedTest {
 
   @Test
   public void getId_returnsVMSequentialId() throws Exception {
-    for (int i = 0; i < Host.getHost(0).getVMCount(); i++) {
-      VM vm = Host.getHost(0).getVM(i);
+    for (int i = 0; i < getVMCount(); i++) {
+      VM vm = getVM(i);
       assertThat(vm.getId()).isEqualTo(i);
     }
   }
 
   @Test
   public void getPid_returnsVMProcessId() throws Exception {
-    for (int i = 0; i < Host.getHost(0).getVMCount(); i++) {
-      VM vm = Host.getHost(0).getVM(i);
+    for (int i = 0; i < getVMCount(); i++) {
+      VM vm = getVM(i);
       int remotePid = vm.invoke(() -> ProcessUtils.identifyPid());
       assertThat(vm.getPid()).isEqualTo(remotePid);
     }

@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import com.google.protobuf.ByteString;
 import com.google.protobuf.NullValue;
 
@@ -131,6 +134,10 @@ public class ProtobufSerializationService implements SerializationService<BasicT
         throw new DecodingException(
             "Unknown Protobuf encoding type: " + encodedValue.getValueCase());
     }
+  }
+
+  public Collection<Object> decodeList(Collection<BasicTypes.EncodedValue> encodedValues) {
+    return encodedValues.stream().map(this::decode).collect(Collectors.toList());
   }
 
   /**

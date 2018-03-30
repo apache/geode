@@ -17,6 +17,10 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 import org.apache.logging.log4j.Level;
 
 public class PulseConstants {
@@ -51,9 +55,15 @@ public class PulseConstants {
   // Date pattern to be used in log messages
   public static final String PULSE_QUERY_HISTORY_DATE_PATTERN = "EEE, MMM dd yyyy, HH:mm:ss z";
 
-  // Decimal format pattern "###.##" and "0.0000"
-  public static final String DECIMAL_FORMAT_PATTERN = "###.##";
-  public static final String DECIMAL_FORMAT_PATTERN_2 = "0.0000";
+  // Use US locale so that number formatting remains consistent in the UI
+  public static DecimalFormat TWO_PLACE_DECIMAL_FORMAT =
+      (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
+  public static DecimalFormat FOUR_PLACE_DECIMAL_FORMAT =
+      (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
+  static {
+    TWO_PLACE_DECIMAL_FORMAT.applyPattern("###.##");
+    FOUR_PLACE_DECIMAL_FORMAT.applyPattern("0.0000");
+  }
 
   // DEFAULT VALUES
   public static final String GEMFIRE_DEFAULT_HOST = "localhost";

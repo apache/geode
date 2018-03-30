@@ -140,13 +140,20 @@ public class TXFarSideCMTracker {
   public void waitForAllToProcess() throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException(); // wisest to do this before the synchronize below
-    // Assume that a thread interrupt is only sent in the
+    // Assume that a thread interrupt is only set in the
     // case of a shutdown, in that case we don't need to wait
-    // around any longer, propigating the interrupt is reasonable behavior
+    // around any longer, propagating the interrupt is reasonable behavior
+    boolean messageWritten = false;
     synchronized (this.txInProgress) {
       while (!this.txInProgress.isEmpty()) {
+        logger.info("Lock grantor recovery is waiting for transactions to complete: {}",
+            txInProgress);
+        messageWritten = true;
         this.txInProgress.wait();
       }
+    }
+    if (messageWritten) {
+      logger.info("Wait for transactions completed");
     }
   }
 

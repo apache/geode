@@ -126,8 +126,11 @@ public class ProtobufServerConnectionTest {
     when(socketMock.getRemoteSocketAddress()).thenReturn(inetSocketAddressStub);
     when(socketMock.getInetAddress()).thenReturn(inetAddressStub);
 
-    return new ProtobufServerConnection(socketMock, mock(InternalCache.class),
-        mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
+    InternalCache cache = mock(InternalCache.class);
+    CachedRegionHelper cachedRegionHelper = mock(CachedRegionHelper.class);
+    when(cachedRegionHelper.getCache()).thenReturn(cache);
+    return new ProtobufServerConnection(socketMock, cache, cachedRegionHelper,
+        mock(CacheServerStats.class), 0, 0, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
         clientProtocolProcessorMock, mock(SecurityService.class));
   }

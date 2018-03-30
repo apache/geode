@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -30,14 +30,14 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class RegionListenerDUnitTest implements Serializable {
+@SuppressWarnings("serial")
+public class RegionListenerDistributedTest implements Serializable {
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
@@ -47,9 +47,8 @@ public class RegionListenerDUnitTest implements Serializable {
 
   @Test
   public void testCleanupFailedInitializationInvoked() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm0 = getVM(0);
+    VM vm1 = getVM(1);
 
     // Add RegionListener in both members
     vm0.invoke(() -> installRegionListener());
@@ -68,11 +67,11 @@ public class RegionListenerDUnitTest implements Serializable {
   }
 
   private void installRegionListener() {
-    this.cacheRule.getCache().addRegionListener(new TestRegionListener());
+    cacheRule.getCache().addRegionListener(new TestRegionListener());
   }
 
   private void createRegion(String regionName, boolean addAsyncEventQueueId) {
-    RegionFactory rf = this.cacheRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactory rf = cacheRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
     if (addAsyncEventQueueId) {
       rf.addAsyncEventQueueId("aeqId");
     }
@@ -80,13 +79,13 @@ public class RegionListenerDUnitTest implements Serializable {
   }
 
   private void createRegion(String regionName, Class exception) {
-    RegionFactory rf = this.cacheRule.getCache().createRegionFactory(RegionShortcut.REPLICATE)
+    RegionFactory rf = cacheRule.getCache().createRegionFactory(RegionShortcut.REPLICATE)
         .addAsyncEventQueueId("aeqId");
     assertThatThrownBy(() -> rf.create(regionName)).isInstanceOf(exception);
   }
 
   private void verifyRegionListenerCleanupFailedInitializationInvoked() {
-    Set<RegionListener> listeners = this.cacheRule.getCache().getRegionListeners();
+    Set<RegionListener> listeners = cacheRule.getCache().getRegionListeners();
     assertThat(listeners.size()).isEqualTo(1);
     RegionListener listener = listeners.iterator().next();
     assertThat(listener).isInstanceOf(TestRegionListener.class);
@@ -104,7 +103,7 @@ public class RegionListenerDUnitTest implements Serializable {
     }
 
     public boolean getCleanupFailedInitializationInvoked() {
-      return this.cleanupFailedInitializationInvoked.get();
+      return cleanupFailedInitializationInvoked.get();
     }
   }
 }

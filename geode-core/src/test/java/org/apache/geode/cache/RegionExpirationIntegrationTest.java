@@ -41,7 +41,7 @@ import org.mockito.InOrder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Extracted from {@link RegionExpirationDUnitTest}.
+ * Extracted from {@link RegionExpirationDistributedTest}.
  */
 @Category(IntegrationTest.class)
 public class RegionExpirationIntegrationTest {

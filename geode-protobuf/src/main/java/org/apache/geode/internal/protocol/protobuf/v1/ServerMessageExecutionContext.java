@@ -16,42 +16,40 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCacheImpl;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
 
 @Experimental
 public class ServerMessageExecutionContext extends MessageExecutionContext {
   private final InternalCache cache;
+  private AuthorizingCache authorizingCache;
 
   public ServerMessageExecutionContext(InternalCache cache, ClientStatistics statistics,
-      ProtobufConnectionStateProcessor initialConnectionStateProcessor) {
+      ProtobufConnectionStateProcessor initialConnectionStateProcessor, Authorizer authorizer) {
     super(statistics, initialConnectionStateProcessor);
     this.cache = cache;
+    this.authorizingCache = new AuthorizingCacheImpl(cache, authorizer);
   }
 
-  /**
-   * Returns the cache associated with this execution
-   * <p>
-   *
-   * @throws InvalidExecutionContextException if there is no cache available
-   */
   @Override
-  public InternalCache getCache() throws InvalidExecutionContextException {
-    return cache;
+  public AuthorizingCache getAuthorizingCache() {
+    return this.authorizingCache;
   }
 
-  /**
-   * Returns the locator associated with this execution
-   * <p>
-   *
-   * @throws InvalidExecutionContextException if there is no locator available
-   */
   @Override
-  public Locator getLocator() throws InvalidExecutionContextException {
+  public AuthorizingLocator getAuthorizingLocator() throws InvalidExecutionContextException {
     throw new InvalidExecutionContextException(
         "Operations on the server should not to try to operate on a locator");
+  }
+
+  @Override
+  public void setAuthorizer(Authorizer authorizer) {
+    this.authorizingCache = new AuthorizingCacheImpl(cache, authorizer);
   }
 }
