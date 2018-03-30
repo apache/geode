@@ -62,13 +62,8 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
 
   @Override
   public boolean equals(Object other) {
-    if (!(other instanceof SortedStructSet)) {
-      return false;
-    }
-    if (!this.structType.equals(((SortedStructSet) other).structType)) {
-      return false;
-    }
-    return super.equals(other);
+    return other instanceof SortedStructSet
+        && this.structType.equals(((SortedStructSet) other).structType) && super.equals(other);
   }
 
   /** Add a Struct */
@@ -94,10 +89,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
       return false;
     }
     Struct s = (Struct) obj;
-    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
-      return false;
-    }
-    return contains(s);
+    return this.structType.equals(StructTypeImpl.typeFromStruct(s)) && contains(s);
   }
 
   /** Remove the specified Struct */
@@ -107,11 +99,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
       return false;
     }
     Struct s = (Struct) o;
-    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
-      return false;
-    }
-    return remove(s);
-    // return removeFieldValues(s.getFieldValues());
+    return this.structType.equals(StructTypeImpl.typeFromStruct(s)) && remove(s);
   }
 
   @Override
