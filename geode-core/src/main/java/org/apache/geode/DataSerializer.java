@@ -186,9 +186,6 @@ public abstract class DataSerializer {
   /** The originator of this <code>DataSerializer</code> */
   private ClientProxyMembershipID context;
 
-  protected static final boolean TRACE_SERIALIZABLE =
-      Boolean.getBoolean("DataSerializer.TRACE_SERIALIZABLE");
-
   /* Used to prevent standard Java serialization when sending data to a non-Java client */
   protected static final ThreadLocal<Boolean> disallowJavaSerializationForThread =
       new ThreadLocal<Boolean>();
