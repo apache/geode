@@ -112,4 +112,9 @@ public class JdbcConnectorServiceTest {
         .isInstanceOf(ConnectionConfigExistsException.class).hasMessageContaining(TEST_CONFIG_NAME);
   }
 
+  @Test
+  public void hasDataSourceManagerOnCreation() {
+    assertThat(service.getDataSourceManager()).isNotNull();
+  }
+
 }

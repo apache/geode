@@ -26,14 +26,15 @@ class DataSourceManager {
     this.jdbcDataSourceFactory = jdbcDataSourceFactory;
   }
 
-  JdbcDataSource getDataSource(ConnectionConfiguration config) {
+  JdbcDataSource getOrCreateDataSource(ConnectionConfiguration config) {
     return dataSourceMap.computeIfAbsent(config.getName(), k -> {
       return this.jdbcDataSourceFactory.create(config);
     });
   }
 
-  void close() {
+  synchronized void close() {
     dataSourceMap.values().forEach(this::close);
+    dataSourceMap.clear();
   }
 
   private void close(JdbcDataSource dataSource) {

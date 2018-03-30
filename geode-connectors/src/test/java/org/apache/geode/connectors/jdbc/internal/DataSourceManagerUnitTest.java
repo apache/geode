@@ -53,15 +53,15 @@ public class DataSourceManagerUnitTest {
 
   @Test
   public void retrievesANewDataSource() throws Exception {
-    JdbcDataSource returnedDataSource = manager.getDataSource(connectionConfig);
+    JdbcDataSource returnedDataSource = manager.getOrCreateDataSource(connectionConfig);
 
     assertThat(returnedDataSource).isNotNull().isSameAs(dataSource);
   }
 
   @Test
   public void retrievesSameDataSourceForSameConnectionConfig() throws Exception {
-    JdbcDataSource returnedDataSource = manager.getDataSource(connectionConfig);
-    JdbcDataSource secondReturnedDataSource = manager.getDataSource(connectionConfig);
+    JdbcDataSource returnedDataSource = manager.getOrCreateDataSource(connectionConfig);
+    JdbcDataSource secondReturnedDataSource = manager.getOrCreateDataSource(connectionConfig);
 
     assertThat(returnedDataSource).isNotNull().isSameAs(dataSource);
     assertThat(secondReturnedDataSource).isNotNull().isSameAs(dataSource);
@@ -77,8 +77,8 @@ public class DataSourceManagerUnitTest {
   @Test
   public void retrievesDifferentDataSourceForEachConfig() throws Exception {
     registerTwoDataSourceFactory();
-    JdbcDataSource returnedDataSource = manager.getDataSource(connectionConfig);
-    JdbcDataSource secondReturnedDataSource = manager.getDataSource(connectionConfig2);
+    JdbcDataSource returnedDataSource = manager.getOrCreateDataSource(connectionConfig);
+    JdbcDataSource secondReturnedDataSource = manager.getOrCreateDataSource(connectionConfig2);
 
     assertThat(returnedDataSource).isNotNull().isSameAs(dataSource);
     assertThat(secondReturnedDataSource).isNotNull().isSameAs(dataSource2);
@@ -88,8 +88,8 @@ public class DataSourceManagerUnitTest {
   @Test
   public void closesAllDataSources() throws Exception {
     registerTwoDataSourceFactory();
-    manager.getDataSource(connectionConfig);
-    manager.getDataSource(connectionConfig2);
+    manager.getOrCreateDataSource(connectionConfig);
+    manager.getOrCreateDataSource(connectionConfig2);
     manager.close();
 
     verify(dataSource).close();
