@@ -95,6 +95,12 @@ public class TypeRegistry {
     }
   }
 
+  /**
+   * When this returns true pdx-read-serialized should be respected, which is the
+   * default. Setting this to false disables pdx-read-serialized while deserializing
+   * objects. This takes precendence over setPdxReadSerializedOverride, which affects
+   * the cache's setting of that attribute.
+   */
   public static boolean getPdxReadSerialized() {
     return disablePdxReadSerialized.get() == null;
   }
