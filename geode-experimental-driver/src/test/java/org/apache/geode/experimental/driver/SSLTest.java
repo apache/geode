@@ -132,7 +132,7 @@ public class SSLTest {
     driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(CLIENT_KEY_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
-    assertEquals(Collections.singleton("region"), regionsOnServer);
+    assertEquals(Collections.singleton("/region"), regionsOnServer);
     assertTrue(driver.isConnected());
   }
 
@@ -161,7 +161,7 @@ public class SSLTest {
     driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(CLIENT_TRUST_STORE).create();
     Set<String> regionsOnServer = driver.getRegionNames();
-    assertEquals(Collections.singleton("region"), regionsOnServer);
+    assertEquals(Collections.singleton("/region"), regionsOnServer);
     assertTrue(driver.isConnected());
   }
 
