@@ -137,10 +137,4 @@ public class DescribeJndiBindingCommandDUnitTest {
         .tableHasRowWithValues("Property", "Value", "login-timeout-seconds", "7")
         .tableHasRowWithValues("Property", "Value", "prop1", "value1");
   }
-
-  @Test
-  public void describeJndiBindingDoesNotExist() {
-    gfsh.executeAndAssertThat("describe jndi-binding --name=unknown").statusIsError()
-        .containsOutput("JNDI binding : unknown not found");
-  }
 }
