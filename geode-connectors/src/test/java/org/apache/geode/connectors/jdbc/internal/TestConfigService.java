@@ -26,10 +26,8 @@ import org.apache.geode.internal.cache.extension.ExtensionPoint;
  * Generates fake JdbcConnectorService with Connections and RegionMappings for tests.
  */
 public class TestConfigService {
-  // private static final String DB_NAME = "DerbyDB";
   private static final String REGION_TABLE_NAME = "employees";
   private static final String REGION_NAME = "employees";
-  // private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
   private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
 
   public static JdbcConnectorServiceImpl getTestConfigService(String connectionUrl)

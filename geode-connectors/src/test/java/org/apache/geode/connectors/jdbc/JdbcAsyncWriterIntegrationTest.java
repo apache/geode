@@ -18,7 +18,6 @@ import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -64,7 +63,6 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCAsyncWriter(REGION_TABLE_NAME);
-    // connection = DriverManager.getConnection(CONNECTION_URL);
     connection = getConnection();
     statement = connection.createStatement();
     statement.execute("Create Table " + REGION_TABLE_NAME
