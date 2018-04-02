@@ -14,6 +14,7 @@
  */
 package org.apache.geode.experimental.driver;
 
+import java.io.IOException;
 import java.util.Objects;
 
 import com.google.protobuf.ByteString;
@@ -30,14 +31,33 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
  */
 @Experimental
 class ValueEncoder {
+
+  private final ValueSerializer valueSerializer;
+
+  public ValueEncoder(ValueSerializer valueSerializer) {
+    this.valueSerializer = valueSerializer;
+  }
+
   /**
    * Encodes a Java object into a Protobuf encoded value.
    *
    * @param unencodedValue Java object to encode.
    * @return Encoded value of the Java object.
    */
-  static BasicTypes.EncodedValue encodeValue(Object unencodedValue) {
+  BasicTypes.EncodedValue encodeValue(Object unencodedValue) {
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
+
+    ByteString customBytes;
+    try {
+      customBytes = valueSerializer.serialize(unencodedValue);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+
+    if (customBytes != null) {
+      return builder.setCustomObjectResult(customBytes).build();
+    }
+
     if (Objects.isNull(unencodedValue)) {
       builder.setNullResult(NullValue.NULL_VALUE);
     } else if (Integer.class.equals(unencodedValue.getClass())) {
@@ -74,7 +94,7 @@ class ValueEncoder {
    * @param encodedValue Encoded value to decode.
    * @return Decoded Java object.
    */
-  static Object decodeValue(BasicTypes.EncodedValue encodedValue) {
+  Object decodeValue(BasicTypes.EncodedValue encodedValue) {
     switch (encodedValue.getValueCase()) {
       case BINARYRESULT:
         return encodedValue.getBinaryResult().toByteArray();
@@ -98,6 +118,12 @@ class ValueEncoder {
         return JSONWrapper.wrapJSON(encodedValue.getJsonObjectResult());
       case NULLRESULT:
         return null;
+      case CUSTOMOBJECTRESULT:
+        try {
+          return valueSerializer.deserialize(encodedValue.getCustomObjectResult());
+        } catch (IOException | ClassNotFoundException e) {
+          throw new IllegalStateException(e);
+        }
       default:
         throw new IllegalStateException(
             "Can't decode a value of type " + encodedValue.getValueCase() + ": " + encodedValue);
@@ -111,7 +137,7 @@ class ValueEncoder {
    * @param unencodedValue Java object value to encode.
    * @return Encoded entry of the Java object key and value.
    */
-  static BasicTypes.Entry encodeEntry(Object unencodedKey, Object unencodedValue) {
+  BasicTypes.Entry encodeEntry(Object unencodedKey, Object unencodedValue) {
     if (unencodedValue == null) {
       return BasicTypes.Entry.newBuilder().setKey(encodeValue(unencodedKey)).build();
     }
