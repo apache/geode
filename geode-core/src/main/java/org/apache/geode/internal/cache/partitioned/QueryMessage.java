@@ -30,6 +30,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
+import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
@@ -48,6 +49,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PRQueryProcessor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
@@ -244,6 +246,8 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
         String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
             .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
         throw new QueryExecutionLowMemoryException(reason);
+      } else if (query.isCanceled()) {
+        throw query.getQueryCanceledException();
       }
       super.operateOnPartitionedRegion(dm, pr, startTime);
     } finally {
