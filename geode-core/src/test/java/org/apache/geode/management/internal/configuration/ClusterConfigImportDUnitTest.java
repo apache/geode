@@ -50,6 +50,9 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   private MemberVM locatorVM;
 
   @Rule
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
+
+  @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
@@ -87,8 +90,6 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     serverProps.setProperty("groups", "group2");
     MemberVM server2 = lsRule.startServerVM(2, serverProps, locatorVM.getPort());
 
-    // even though we have a region recreated, we can still import since there is no data
-    // in the region
     CommandResult result = gfshConnector
         .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
     assertThat(result.getContent().toString())
@@ -97,6 +98,35 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
         .contains("Successfully applied the imported cluster configuration on server-2");
     new ClusterConfig(CLUSTER).verify(server1);
     new ClusterConfig(CLUSTER, GROUP2).verify(server2);
+
+    gfshConnector.executeAndAssertThat("list members").statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Name", "locator-0", "server-1", "server-2");
+  }
+
+  @Test
+  public void importFailWithExistingDiskStore() {
+    lsRule.startServerVM(1, locatorVM.getPort());
+    gfshConnector.executeAndAssertThat("create disk-store --name=diskStore1 --dir=testStore")
+        .statusIsSuccess();
+    locatorVM.waitTillDiskstoreIsReady("diskStore1", 1);
+    gfshConnector
+        .executeAndAssertThat(
+            "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
+        .statusIsError()
+        .containsOutput("Running servers have existing cluster configuration applied already.");
+  }
+
+  @Test
+  public void importFailWithExistingRegion() {
+    lsRule.startServerVM(1, "group1", locatorVM.getPort());
+    gfshConnector
+        .executeAndAssertThat("create region --name=regionA --type=REPLICATE --group=group1")
+        .statusIsSuccess();
+    gfshConnector
+        .executeAndAssertThat(
+            "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
+        .statusIsError()
+        .containsOutput("Running servers have existing cluster configuration applied already.");
   }
 
   @Test
