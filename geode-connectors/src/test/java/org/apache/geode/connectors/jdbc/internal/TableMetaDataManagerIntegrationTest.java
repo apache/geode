@@ -33,10 +33,10 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public abstract class TableMetaDataManagerIntegrationTest {
 
-  protected static final String REGION_TABLE_NAME = "employees";
+  private static final String REGION_TABLE_NAME = "employees";
   protected static final String DB_NAME = "test";
 
-  protected TableMetaDataManager manager;
+  private TableMetaDataManager manager;
   protected Connection connection;
   protected Statement statement;
 
