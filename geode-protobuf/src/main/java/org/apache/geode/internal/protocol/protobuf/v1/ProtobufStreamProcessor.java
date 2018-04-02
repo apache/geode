@@ -41,8 +41,7 @@ public class ProtobufStreamProcessor {
 
   public ProtobufStreamProcessor() {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufSerializationService(),
-        new ProtobufOperationContextRegistry());
+    protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufOperationContextRegistry());
   }
 
   public void receiveMessage(InputStream inputStream, OutputStream outputStream,

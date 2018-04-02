@@ -25,6 +25,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizing
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocatorImpl;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
 import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
+import org.apache.geode.protocol.serialization.ValueSerializer;
 
 @Experimental
 public class LocatorMessageExecutionContext extends MessageExecutionContext {
@@ -53,5 +54,10 @@ public class LocatorMessageExecutionContext extends MessageExecutionContext {
   @Override
   public void setAuthorizer(Authorizer authorizer) {
     this.authorizingLocator = new AuthorizingLocatorImpl(locator, authorizer);
+  }
+
+  @Override
+  public void setValueSerializer(ValueSerializer valueSerializer) {
+    // Do nothing, locator messages don't need a value serializer
   }
 }

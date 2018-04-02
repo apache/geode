@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -26,13 +27,22 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.Serializatio
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.exception.UnknownProtobufEncodingType;
+import org.apache.geode.internal.protocol.serialization.NoOpCustomValueSerializer;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.protocol.serialization.ValueSerializer;
 
 @Experimental
 public class ProtobufSerializationService implements SerializationService<BasicTypes.EncodedValue> {
   private final JsonPdxConverter jsonPdxConverter = new JsonPdxConverter();
+  private final ValueSerializer serializer;
 
-  public ProtobufSerializationService() {}
+  public ProtobufSerializationService() {
+    this(new NoOpCustomValueSerializer());
+  }
+
+  public ProtobufSerializationService(ValueSerializer valueSerializer) {
+    this.serializer = valueSerializer;
+  }
 
   /**
    * @param value the value to be encoded
@@ -41,12 +51,18 @@ public class ProtobufSerializationService implements SerializationService<BasicT
    */
   @Override
   public BasicTypes.EncodedValue encode(Object value) throws EncodingException {
+    BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
+
     if (value == null) {
-      return BasicTypes.EncodedValue.newBuilder().setNullResult(NullValue.NULL_VALUE).build();
+      return builder.setNullResult(NullValue.NULL_VALUE).build();
     }
 
-    BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
     try {
+      ByteString encoded = serializer.serialize(value);
+      if (encoded != null) {
+        return builder.setCustomObjectResult(encoded).build();
+      }
+
       ProtobufEncodingTypes protobufEncodingTypes = ProtobufEncodingTypes.valueOf(value.getClass());
       switch (protobufEncodingTypes) {
         case INT: {
@@ -95,6 +111,8 @@ public class ProtobufSerializationService implements SerializationService<BasicT
       }
     } catch (UnknownProtobufEncodingType unknownProtobufEncodingType) {
       throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
+    } catch (IOException e) {
+      throw new EncodingException("Error encoding type " + value.getClass().getName(), e);
     }
 
     return builder.build();
@@ -107,32 +125,39 @@ public class ProtobufSerializationService implements SerializationService<BasicT
    */
   @Override
   public Object decode(BasicTypes.EncodedValue encodedValue) throws DecodingException {
-    switch (encodedValue.getValueCase()) {
-      case BINARYRESULT:
-        return encodedValue.getBinaryResult().toByteArray();
-      case BOOLEANRESULT:
-        return encodedValue.getBooleanResult();
-      case BYTERESULT:
-        return (byte) encodedValue.getByteResult();
-      case DOUBLERESULT:
-        return encodedValue.getDoubleResult();
-      case FLOATRESULT:
-        return encodedValue.getFloatResult();
-      case INTRESULT:
-        return encodedValue.getIntResult();
-      case LONGRESULT:
-        return encodedValue.getLongResult();
-      case SHORTRESULT:
-        return (short) encodedValue.getShortResult();
-      case STRINGRESULT:
-        return encodedValue.getStringResult();
-      case JSONOBJECTRESULT:
-        return jsonPdxConverter.decode(encodedValue.getJsonObjectResult());
-      case NULLRESULT:
-        return null;
-      default:
-        throw new DecodingException(
-            "Unknown Protobuf encoding type: " + encodedValue.getValueCase());
+
+    try {
+      switch (encodedValue.getValueCase()) {
+        case BINARYRESULT:
+          return encodedValue.getBinaryResult().toByteArray();
+        case BOOLEANRESULT:
+          return encodedValue.getBooleanResult();
+        case BYTERESULT:
+          return (byte) encodedValue.getByteResult();
+        case DOUBLERESULT:
+          return encodedValue.getDoubleResult();
+        case FLOATRESULT:
+          return encodedValue.getFloatResult();
+        case INTRESULT:
+          return encodedValue.getIntResult();
+        case LONGRESULT:
+          return encodedValue.getLongResult();
+        case SHORTRESULT:
+          return (short) encodedValue.getShortResult();
+        case STRINGRESULT:
+          return encodedValue.getStringResult();
+        case JSONOBJECTRESULT:
+          return jsonPdxConverter.decode(encodedValue.getJsonObjectResult());
+        case NULLRESULT:
+          return null;
+        case CUSTOMOBJECTRESULT:
+          return serializer.deserialize(encodedValue.getCustomObjectResult());
+        default:
+          throw new DecodingException(
+              "Unknown Protobuf encoding type: " + encodedValue.getValueCase());
+      }
+    } catch (IOException | ClassNotFoundException e) {
+      throw new DecodingException("Error decoding value", e);
     }
   }
 

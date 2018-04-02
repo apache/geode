@@ -24,6 +24,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizing
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCacheImpl;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
+import org.apache.geode.protocol.serialization.ValueSerializer;
 
 @Experimental
 public class ServerMessageExecutionContext extends MessageExecutionContext {
@@ -51,5 +52,11 @@ public class ServerMessageExecutionContext extends MessageExecutionContext {
   @Override
   public void setAuthorizer(Authorizer authorizer) {
     this.authorizingCache = new AuthorizingCacheImpl(cache, authorizer);
+  }
+
+  @Override
+  public void setValueSerializer(ValueSerializer valueSerializer) {
+    valueSerializer.init(cache);
+    this.serializationService = new ProtobufSerializationService(valueSerializer);
   }
 }

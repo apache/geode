@@ -34,12 +34,9 @@ import org.apache.geode.security.NotAuthorizedException;
 @Experimental
 public class ProtobufOpsProcessor {
   private final ProtobufOperationContextRegistry protobufOperationContextRegistry;
-  private final ProtobufSerializationService serializationService;
   private static final Logger logger = LogService.getLogger(ProtobufOpsProcessor.class);
 
-  public ProtobufOpsProcessor(ProtobufSerializationService serializationService,
-      ProtobufOperationContextRegistry protobufOperationContextRegistry) {
-    this.serializationService = serializationService;
+  public ProtobufOpsProcessor(ProtobufOperationContextRegistry protobufOperationContextRegistry) {
     this.protobufOperationContextRegistry = protobufOperationContextRegistry;
   }
 
@@ -77,7 +74,7 @@ public class ProtobufOpsProcessor {
 
     long startTime = context.getStatistics().startOperation();
     try {
-      return operationContext.getOperationHandler().process(serializationService,
+      return operationContext.getOperationHandler().process(context.getSerializationService(),
           operationContext.getFromRequest().apply(request), context);
     } catch (InvalidExecutionContextException exception) {
       logger.error("Invalid execution context found for operation {}", requestType);

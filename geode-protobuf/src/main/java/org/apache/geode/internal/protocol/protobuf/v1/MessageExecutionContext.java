@@ -21,11 +21,15 @@ import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
+import org.apache.geode.internal.protocol.serialization.NoOpCustomValueSerializer;
+import org.apache.geode.protocol.serialization.ValueSerializer;
 
 @Experimental
 public abstract class MessageExecutionContext {
   protected final ClientStatistics statistics;
   protected ConnectionState connectionState;
+  public ProtobufSerializationService serializationService =
+      new ProtobufSerializationService(new NoOpCustomValueSerializer());
 
   public MessageExecutionContext(ClientStatistics statistics, ConnectionState connectionState) {
     this.statistics = statistics;
@@ -34,6 +38,10 @@ public abstract class MessageExecutionContext {
 
   public ConnectionState getConnectionStateProcessor() {
     return connectionState;
+  }
+
+  public ProtobufSerializationService getSerializationService() {
+    return serializationService;
   }
 
   public abstract AuthorizingCache getAuthorizingCache() throws InvalidExecutionContextException;
@@ -54,4 +62,6 @@ public abstract class MessageExecutionContext {
   }
 
   public abstract void setAuthorizer(Authorizer authorizer);
+
+  public abstract void setValueSerializer(ValueSerializer valueSerializer);
 }

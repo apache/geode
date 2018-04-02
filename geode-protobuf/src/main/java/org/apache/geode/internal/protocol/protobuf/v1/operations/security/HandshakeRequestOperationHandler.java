@@ -14,12 +14,15 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations.security;
 
+import java.util.Iterator;
 import java.util.Properties;
+import java.util.ServiceLoader;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -29,6 +32,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
 import org.apache.geode.internal.protocol.protobuf.v1.state.RequireAuthentication;
 import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
+import org.apache.geode.protocol.serialization.ValueSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
 
 public class HandshakeRequestOperationHandler implements
@@ -61,7 +65,26 @@ public class HandshakeRequestOperationHandler implements
       }
     }
 
+    String valueFormat = request.getValueFormat();
+    if (valueFormat != null && !valueFormat.isEmpty()) {
+      ValueSerializer newSerializer = loadSerializer(valueFormat);
+      messageExecutionContext.setValueSerializer(newSerializer);
+    }
+
     return Success
         .of(ConnectionAPI.HandshakeResponse.newBuilder().setAuthenticated(authenticated).build());
+  }
+
+  private ValueSerializer loadSerializer(String valueFormat) throws ConnectionStateException {
+    ServiceLoader<ValueSerializer> serviceLoader = ServiceLoader.load(ValueSerializer.class);
+    for (Iterator<ValueSerializer> iterator = serviceLoader.iterator(); iterator.hasNext();) {
+      ValueSerializer serializer = iterator.next();
+      if (serializer.getID().equals(valueFormat)) {
+        return serializer;
+      }
+    }
+
+    throw new ConnectionStateException(BasicTypes.ErrorCode.INVALID_REQUEST,
+        "Unable to find a ValueSerializer for format " + valueFormat);
   }
 }
