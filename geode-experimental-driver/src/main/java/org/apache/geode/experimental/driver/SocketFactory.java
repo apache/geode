@@ -132,7 +132,7 @@ public class SocketFactory {
       socket.connect(sockaddr, Math.max(timeout, 0));
       if (socket instanceof SSLSocket) {
         SSLSocket sslSocket = (SSLSocket) socket;
-        sslSocket.setUseClientMode(true); // Should this depend on clientSide?
+        sslSocket.setUseClientMode(true);
         sslSocket.setEnableSessionCreation(true);
         if (timeout > 0) {
           sslSocket.setSoTimeout(timeout);
