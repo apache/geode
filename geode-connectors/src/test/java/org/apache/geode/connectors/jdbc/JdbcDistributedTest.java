@@ -161,11 +161,6 @@ public abstract class JdbcDistributedTest implements Serializable {
           statement.execute("Drop table " + TABLE_NAME);
         } catch (SQLException ignore) {
         }
-
-        try {
-          statement.execute("Drop table " + TABLE_NAME + "");
-        } catch (SQLException ignore) {
-        }
       }
     }
   }
