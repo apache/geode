@@ -276,7 +276,7 @@ public class SqlToPdxInstanceCreatorTest {
     byte[] expectedValue = new byte[] {1, 2, 3};
     Blob blob = mock(Blob.class);
     when(blob.length()).thenReturn((long) expectedValue.length);
-    when(blob.getBytes(0, expectedValue.length)).thenReturn(expectedValue);
+    when(blob.getBytes(1, expectedValue.length)).thenReturn(expectedValue);
     when(resultSet.getBlob(1)).thenReturn(blob);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
@@ -343,7 +343,7 @@ public class SqlToPdxInstanceCreatorTest {
     byte[] expectedValue = new byte[] {1, 2, 3};
     Blob blob = mock(Blob.class);
     when(blob.length()).thenReturn((long) expectedValue.length);
-    when(blob.getBytes(0, expectedValue.length)).thenReturn(expectedValue);
+    when(blob.getBytes(1, expectedValue.length)).thenReturn(expectedValue);
     when(resultSet.getBlob(1)).thenReturn(blob);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);

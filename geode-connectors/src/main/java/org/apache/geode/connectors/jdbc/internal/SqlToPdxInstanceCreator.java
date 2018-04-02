@@ -138,8 +138,10 @@ class SqlToPdxInstanceCreator {
         break;
       }
       case BYTE_ARRAY:
-        byte[] byteData = getBlobData(columnName, columnIndex);
-        if (byteData == null) {
+        byte[] byteData;
+        if (isBlobColumn(columnName)) {
+          byteData = getBlobData(columnIndex);
+        } else {
           byteData = resultSet.getBytes(columnIndex);
         }
         factory.writeByteArray(fieldName, byteData);
@@ -185,8 +187,10 @@ class SqlToPdxInstanceCreator {
             convertJdbcObjectToJavaType(byte[][].class, resultSet.getObject(columnIndex)));
         break;
       case OBJECT: {
-        Object v = getBlobData(columnName, columnIndex);
-        if (v == null) {
+        Object v;
+        if (isBlobColumn(columnName)) {
+          v = getBlobData(columnIndex);
+        } else {
           v = resultSet.getObject(columnIndex);
           if (v instanceof java.util.Date) {
             if (v instanceof java.sql.Date) {
@@ -207,17 +211,17 @@ class SqlToPdxInstanceCreator {
     }
   }
 
+  private boolean isBlobColumn(String columnName) throws SQLException {
+    return this.tableMetaData.getColumnDataType(columnName) == Types.BLOB;
+  }
+
   /**
    * If the given column contains a Blob returns its data as a byte array;
    * otherwise return null.
    *
    * @throws JdbcConnectorException if blob is too big to fit in a byte array
    */
-  private byte[] getBlobData(String columnName, int columnIndex) throws SQLException {
-    int columnType = this.tableMetaData.getColumnDataType(columnName);
-    if (columnType != Types.BLOB) {
-      return null;
-    }
+  private byte[] getBlobData(int columnIndex) throws SQLException {
     Blob blob = resultSet.getBlob(columnIndex);
     if (blob == null) {
       return null;
