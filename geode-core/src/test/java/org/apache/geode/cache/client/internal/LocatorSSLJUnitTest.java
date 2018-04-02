@@ -25,10 +25,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.util.test.TestUtil;
@@ -39,6 +41,11 @@ public class LocatorSSLJUnitTest {
       TestUtil.getResourcePath(LocatorSSLJUnitTest.class, "cacheserver.keystore");
   private final String SERVER_TRUST_STORE =
       TestUtil.getResourcePath(LocatorSSLJUnitTest.class, "cacheserver.truststore");
+
+  @After
+  public void tearDownTest() {
+    SSLConfigurationFactory.close();
+  }
 
   @Test
   public void canStopLocatorWithSSL() throws IOException {
