@@ -228,7 +228,7 @@ class SqlToPdxInstanceCreator {
         throw new JdbcConnectorException(
             "Blob of length " + blobLength + " is too big to be converted to a byte array.");
       }
-      return blob.getBytes(0, (int) blobLength);
+      return blob.getBytes(1, (int) blobLength);
     } finally {
       blob.free();
     }
