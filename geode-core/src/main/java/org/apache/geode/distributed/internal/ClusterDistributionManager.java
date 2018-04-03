@@ -619,10 +619,10 @@ public class ClusterDistributionManager implements DistributionManager {
         Object[] logArgs = new Object[] {distributionManager.getDistributionManagerId(), transport,
             Integer.valueOf(distributionManager.getOtherDistributionManagerIds().size()),
             distributionManager.getOtherDistributionManagerIds(),
-            (logger.isInfoEnabled(LogMarker.DM) ? " (VERBOSE, took " + delta + " ms)" : ""),
+            (logger.isInfoEnabled(LogMarker.DM_MARKER) ? " (VERBOSE, took " + delta + " ms)" : ""),
             ((distributionManager.getDMType() == ADMIN_ONLY_DM_TYPE) ? " (admin only)"
                 : (distributionManager.getDMType() == LOCATOR_DM_TYPE) ? " (locator)" : "")};
-        logger.info(LogMarker.DM,
+        logger.info(LogMarker.DM_MARKER,
             LocalizedMessage.create(
                 LocalizedStrings.DistributionManager_DISTRIBUTIONMANAGER_0_STARTED_ON_1_THERE_WERE_2_OTHER_DMS_3_4_5,
                 logArgs));
@@ -681,13 +681,15 @@ public class ClusterDistributionManager implements DistributionManager {
     try {
 
       if (MULTI_SERIAL_EXECUTORS) {
-        if (logger.isInfoEnabled(LogMarker.DM)) {
-          logger.info(LogMarker.DM, "Serial Queue info :" + " THROTTLE_PERCENT: " + THROTTLE_PERCENT
-              + " SERIAL_QUEUE_BYTE_LIMIT :" + SERIAL_QUEUE_BYTE_LIMIT + " SERIAL_QUEUE_THROTTLE :"
-              + SERIAL_QUEUE_THROTTLE + " TOTAL_SERIAL_QUEUE_BYTE_LIMIT :"
-              + TOTAL_SERIAL_QUEUE_BYTE_LIMIT + " TOTAL_SERIAL_QUEUE_THROTTLE :"
-              + TOTAL_SERIAL_QUEUE_THROTTLE + " SERIAL_QUEUE_SIZE_LIMIT :" + SERIAL_QUEUE_SIZE_LIMIT
-              + " SERIAL_QUEUE_SIZE_THROTTLE :" + SERIAL_QUEUE_SIZE_THROTTLE);
+        if (logger.isInfoEnabled(LogMarker.DM_MARKER)) {
+          logger.info(LogMarker.DM_MARKER,
+              "Serial Queue info :" + " THROTTLE_PERCENT: " + THROTTLE_PERCENT
+                  + " SERIAL_QUEUE_BYTE_LIMIT :" + SERIAL_QUEUE_BYTE_LIMIT
+                  + " SERIAL_QUEUE_THROTTLE :" + SERIAL_QUEUE_THROTTLE
+                  + " TOTAL_SERIAL_QUEUE_BYTE_LIMIT :" + TOTAL_SERIAL_QUEUE_BYTE_LIMIT
+                  + " TOTAL_SERIAL_QUEUE_THROTTLE :" + TOTAL_SERIAL_QUEUE_THROTTLE
+                  + " SERIAL_QUEUE_SIZE_LIMIT :" + SERIAL_QUEUE_SIZE_LIMIT
+                  + " SERIAL_QUEUE_SIZE_THROTTLE :" + SERIAL_QUEUE_SIZE_THROTTLE);
         }
         // when TCP/IP is disabled we can't throttle the serial queue or we run the risk of
         // distributed deadlock when we block the UDP reader thread
@@ -1034,8 +1036,9 @@ public class ClusterDistributionManager implements DistributionManager {
       sb.append(" ms)");
 
       logger.info(LocalizedMessage.create(
-          LocalizedStrings.DistributionManager_STARTING_DISTRIBUTIONMANAGER_0_1, new Object[] {
-              this.localAddress, (logger.isInfoEnabled(LogMarker.DM) ? sb.toString() : "")}));
+          LocalizedStrings.DistributionManager_STARTING_DISTRIBUTIONMANAGER_0_1,
+          new Object[] {this.localAddress,
+              (logger.isInfoEnabled(LogMarker.DM_MARKER) ? sb.toString() : "")}));
 
       this.description = "Distribution manager on " + this.localAddress + " started at "
           + (new Date(System.currentTimeMillis())).toString();
@@ -3956,8 +3959,8 @@ public class ClusterDistributionManager implements DistributionManager {
 
         // If not used mark this as unused.
         if (!isUsed) {
-          if (logger.isInfoEnabled(LogMarker.DM))
-            logger.info(LogMarker.DM,
+          if (logger.isInfoEnabled(LogMarker.DM_MARKER))
+            logger.info(LogMarker.DM_MARKER,
                 LocalizedMessage.create(
                     LocalizedStrings.DistributionManager_MARKING_THE_SERIALQUEUEDEXECUTOR_WITH_ID__0__USED_BY_THE_MEMBER__1__TO_BE_UNUSED,
                     new Object[] {queueId, member}));

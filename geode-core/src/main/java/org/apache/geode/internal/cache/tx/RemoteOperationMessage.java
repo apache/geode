@@ -241,8 +241,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
           thr = new RemoteOperationException("cache is closing");
         }
       }
-      if (logger.isTraceEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
-        logger.trace(LogMarker.DM, "Exception caught while processing message", t);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message", t);
       }
     } finally {
       if (sendReply) {

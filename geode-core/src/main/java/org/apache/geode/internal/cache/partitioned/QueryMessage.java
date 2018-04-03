@@ -153,8 +153,8 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "QueryMessage operateOnPartitionedRegion: {} buckets {}",
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "QueryMessage operateOnPartitionedRegion: {} buckets {}",
           pr.getFullPath(), this.buckets);
     }
 

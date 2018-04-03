@@ -2560,8 +2560,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     getEventTracker().stop();
-    if (logger.isTraceEnabled(LogMarker.RVV) && getVersionVector() != null) {
-      logger.trace(LogMarker.RVV, "version vector for {} is {}", getName(),
+    if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE) && getVersionVector() != null) {
+      logger.trace(LogMarker.RVV_VERBOSE, "version vector for {} is {}", getName(),
           getVersionVector().fullToString());
     }
     cancelTTLExpiryTask();
@@ -3240,17 +3240,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       incTombstoneCount(1);
     }
 
-    if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-      logger.trace(LogMarker.TOMBSTONE_COUNT,
+    if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE)) {
+      logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
           "{} tombstone for {} version={} count is {} entryMap size is {}",
           reschedule ? "rescheduling" : "scheduling", entry.getKey(),
           entry.getVersionStamp().asVersionTag(), this.tombstoneCount.get(),
           this.entries.size()/* , new Exception("stack trace") */);
-      // this can be useful for debugging tombstone count problems if there aren't a lot of
-      // concurrent threads
-      // if (TombstoneService.DEBUG_TOMBSTONE_COUNT && this.entries instanceof AbstractRegionMap) {
-      // ((AbstractRegionMap)this.entries).verifyTombstoneCount(tombstoneCount);
-      // }
     }
     getGemFireCache().getTombstoneService().scheduleTombstone(this, entry, destroyedVersion);
   }
@@ -3267,12 +3262,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   private void unscheduleTombstone(RegionEntry entry, boolean validate) {
     incTombstoneCount(-1);
-    if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-      logger.trace(LogMarker.TOMBSTONE,
+    if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+      logger.trace(LogMarker.TOMBSTONE_VERBOSE,
           "unscheduling tombstone for {} count is {} entryMap size is {}", entry.getKey(),
           this.tombstoneCount.get(), this.entries.size()/* , new Exception("stack trace") */);
     }
-    if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT) && validate) {
+    if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE) && validate) {
       if (this.entries instanceof AbstractRegionMap) {
         ((AbstractRegionMap) this.entries).verifyTombstoneCount(this.tombstoneCount);
       }
@@ -4945,9 +4940,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     if (hasSeenEvent(event)) {
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "LR.basicInvalidate: this cache has already seen this event {}",
-            event);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
+            "LR.basicInvalidate: this cache has already seen this event {}", event);
       }
       if (this.getConcurrencyChecksEnabled() && event.getVersionTag() != null
           && !event.getVersionTag().isRecorded()) {
@@ -5568,9 +5563,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   void basicUpdateEntryVersion(EntryEventImpl event) throws EntryNotFoundException {
     if (hasSeenEvent(event)) {
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "LR.basicDestroy: this cache has already seen this event {}",
-            event);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
+            "LR.basicDestroy: this cache has already seen this event {}", event);
       }
       if (this.getConcurrencyChecksEnabled() && event.getVersionTag() != null
           && !event.getVersionTag().isRecorded()) {
@@ -6416,9 +6411,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     if (hasSeenEvent(event)) {
       assert getJTAEnlistedTX() == null;
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "LR.basicDestroy: this cache has already seen this event {}",
-            event);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
+            "LR.basicDestroy: this cache has already seen this event {}", event);
       }
       if (this.getConcurrencyChecksEnabled() && event.getVersionTag() != null
           && !event.getVersionTag().isRecorded()) {
@@ -9004,7 +8999,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   void clearRegionLocally(RegionEventImpl regionEvent, boolean cacheWrite,
       RegionVersionVector vector) {
-    final boolean isRvvDebugEnabled = logger.isTraceEnabled(LogMarker.RVV);
+    final boolean isRvvDebugEnabled = logger.isTraceEnabled(LogMarker.RVV_VERBOSE);
 
     RegionVersionVector rvv = vector;
     if (this.serverRegionProxy != null) {
@@ -9013,13 +9008,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     if (rvv != null && this.getDataPolicy().withStorage()) {
       if (isRvvDebugEnabled) {
-        logger.trace(LogMarker.RVV, "waiting for my version vector to dominate{}mine={}{} other={}",
-            getLineSeparator(), getLineSeparator(), this.versionVector.fullToString(), rvv);
+        logger.trace(LogMarker.RVV_VERBOSE,
+            "waiting for my version vector to dominate{}mine={}{} other={}", getLineSeparator(),
+            getLineSeparator(), this.versionVector.fullToString(), rvv);
       }
       boolean result = this.versionVector.waitToDominate(rvv, this);
       if (!result) {
         if (isRvvDebugEnabled) {
-          logger.trace(LogMarker.RVV, "incrementing clearTimeouts for {} rvv={}", getName(),
+          logger.trace(LogMarker.RVV_VERBOSE, "incrementing clearTimeouts for {} rvv={}", getName(),
               this.versionVector.fullToString());
         }
         getCachePerfStats().incClearTimeouts();
@@ -9047,7 +9043,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     RegionVersionVector myVector = getVersionVector();
     if (myVector != null) {
       if (isRvvDebugEnabled) {
-        logger.trace(LogMarker.RVV, "processing version information for {}", regionEvent);
+        logger.trace(LogMarker.RVV_VERBOSE, "processing version information for {}", regionEvent);
       }
       if (!regionEvent.isOriginRemote() && !regionEvent.getOperation().isLocal()) {
         // generate a new version for the operation
@@ -9055,14 +9051,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         tag.setVersionTimeStamp(cacheTimeMillis());
         tag.setRegionVersion(myVector.getNextVersionWhileLocked());
         if (isRvvDebugEnabled) {
-          logger.trace(LogMarker.RVV, "generated version tag for clear: {}", tag);
+          logger.trace(LogMarker.RVV_VERBOSE, "generated version tag for clear: {}", tag);
         }
         regionEvent.setVersionTag(tag);
       } else {
         VersionTag tag = regionEvent.getVersionTag();
         if (tag != null) {
           if (isRvvDebugEnabled) {
-            logger.trace(LogMarker.RVV, "recording version tag for clear: {}", tag);
+            logger.trace(LogMarker.RVV_VERBOSE, "recording version tag for clear: {}", tag);
           }
           // clear() events always have the ID in the tag
           myVector.recordVersion(tag.getMemberID(), tag);
@@ -9097,7 +9093,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (this.getDataPolicy().withPersistence()) {
         // null means not to change dr.rvvTrust
         if (isRvvDebugEnabled) {
-          logger.trace(LogMarker.RVV, "Clear: Saved current rvv: {}",
+          logger.trace(LogMarker.RVV_VERBOSE, "Clear: Saved current rvv: {}",
               this.diskRegion.getRegionVersionVector());
         }
         this.diskRegion.writeRVV(this, null);

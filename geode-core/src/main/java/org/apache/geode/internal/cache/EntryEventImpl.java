@@ -651,9 +651,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     Assert.assertTrue(this.eventID == null, "Double setting event id");
     EventID newID = new EventID(sys);
     if (this.eventID != null) {
-      if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-        logger.trace(LogMarker.BRIDGE_SERVER, "Replacing event ID with {} in event {}", newID,
-            this);
+      if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+        logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "Replacing event ID with {} in event {}",
+            newID, this);
       }
     }
     this.eventID = newID;

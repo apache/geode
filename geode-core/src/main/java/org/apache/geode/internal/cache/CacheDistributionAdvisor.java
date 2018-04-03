@@ -370,7 +370,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       boolean persistent) {
     initializationGate();
 
-    if (logger.isTraceEnabled(LogMarker.DA)) {
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
       dumpProfiles("AdviseInitialImage");
     }
 

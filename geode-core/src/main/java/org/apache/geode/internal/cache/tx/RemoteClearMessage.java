@@ -81,8 +81,8 @@ public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
   @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws CacheException, RemoteOperationException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "RemoteClearMessage operateOnRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "RemoteClearMessage operateOnRegion: {}", r.getFullPath());
     }
 
     r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
@@ -146,8 +146,8 @@ public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
       final long startTime = getTimestamp();
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "RemoteClearReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "RemoteClearReplyMessage processor not found");
         }
         return;
       }

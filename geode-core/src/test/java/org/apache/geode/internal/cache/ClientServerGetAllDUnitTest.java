@@ -14,8 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,7 +80,6 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int mcastPort = 0; /* loner is ok for this test */ // AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
@@ -309,7 +312,6 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int mcastPort = 0; /* loner is ok for this test */ // AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 

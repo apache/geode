@@ -14,7 +14,13 @@
  */
 package org.apache.geode.distributed;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -1545,104 +1551,81 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
     });
 
     // create dls in other vms
-    // getLogWriter().info("[testSuspendLockingBehaves] Create DLS in vmOne");
     vmOne.invoke(createDLS);
-    // getLogWriter().info("[testSuspendLockingBehaves] Create DLS in vmTwo");
     vmTwo.invoke(createDLS);
-    // getLogWriter().info("[testSuspendLockingBehaves] Create DLS in vmThree");
     vmThree.invoke(createDLS);
 
     // get a lock
     LogWriterUtils.getLogWriter().info("[testSuspendLockingBehaves] line up vms for lock");
-    // getLogWriter().info("[testSuspendLockingBehaves] vmOne lock");
     vmOne.invoke(lockKey);
-    // getLogWriter().info("[testSuspendLockingBehaves] start vmTwoLocking");
     AsyncInvocation vmTwoLocking = vmTwo.invokeAsync(lockKey);
     Wait.pause(2000); // make sure vmTwo is first in line
-    // getLogWriter().info("[testSuspendLockingBehaves] start vmThreeLocking");
     AsyncInvocation vmThreeLocking = vmThree.invokeAsync(lockKey);
     Wait.pause(2000);
 
     // make sure vmTwo and vmThree are still waiting for lock on key1
-    // getLogWriter().info("[testSuspendLockingBehaves] assert vmTwoLocking still alive");
     Wait.pause(100);
     assertTrue(vmTwoLocking.isAlive());
-    // getLogWriter().info("[testSuspendLockingBehaves] assert vmThreeLocking still alive");
     Wait.pause(100);
     assertTrue(vmThreeLocking.isAlive());
 
     // let vmTwo get key
     LogWriterUtils.getLogWriter().info("[testSuspendLockingBehaves] unlock so vmTwo can get key");
-    // getLogWriter().info("[testSuspendLockingBehaves] vmOne unlock");
     vmOne.invoke(unlockKey);
     ThreadUtils.join(vmTwoLocking, 10 * 1000);
 
     // start suspending in vmOne and vmTwo
     LogWriterUtils.getLogWriter().info("[testSuspendLockingBehaves] start suspending requests");
-    // getLogWriter().info("[testSuspendLockingBehaves] start vmOneSuspending");
     AsyncInvocation vmOneSuspending = vmOne.invokeAsync(suspendLocking);
     Wait.pause(2000); // make sure vmOne is first in line
-    // getLogWriter().info("[testSuspendLockingBehaves] start vmTwoSuspending");
     AsyncInvocation vmTwoSuspending = vmTwo.invokeAsync(suspendLocking);
     Wait.pause(2000);
 
     // let vmThree finish locking key
     LogWriterUtils.getLogWriter().info("[testSuspendLockingBehaves] unlock so vmThree can get key");
-    // getLogWriter().info("[testSuspendLockingBehaves] vmTwo unlock");
     vmTwo.invoke(unlockKey);
     ThreadUtils.join(vmThreeLocking, 10 * 1000);
 
     // have vmOne get back in line for locking key
     LogWriterUtils.getLogWriter().info("[testSuspendLockingBehaves] start another lock request");
-    // getLogWriter().info("[testSuspendLockingBehaves] start vmOneLockingAgain");
     AsyncInvocation vmOneLockingAgain = vmOne.invokeAsync(lockKey);
     Wait.pause(2000);
 
     // let vmOne suspend locking
     LogWriterUtils.getLogWriter().info("[testSuspendLockingBehaves] let vmOne suspend locking");
-    // getLogWriter().info("[testSuspendLockingBehaves] assert vmOneSuspending still alive");
     Wait.pause(100);
     assertTrue(vmOneSuspending.isAlive());
-    // getLogWriter().info("[testSuspendLockingBehaves] vmThree unlock");
     vmThree.invoke(unlockKey);
     ThreadUtils.join(vmOneSuspending, 10 * 1000);
 
     // start suspending in vmThree
     LogWriterUtils.getLogWriter()
         .info("[testSuspendLockingBehaves] line up vmThree for suspending");
-    // getLogWriter().info("[testSuspendLockingBehaves] start vmThreeSuspending");
     AsyncInvocation vmThreeSuspending = vmThree.invokeAsync(suspendLocking);
     Wait.pause(2000);
 
     // let vmTwo suspend locking
     LogWriterUtils.getLogWriter().info("[testSuspendLockingBehaves] let vmTwo suspend locking");
-    // getLogWriter().info("[testSuspendLockingBehaves] assert vmTwoSuspending still alive");
     Wait.pause(100);
     assertTrue(vmTwoSuspending.isAlive());
-    // getLogWriter().info("[testSuspendLockingBehaves] vmOne resumes locking");
     vmOne.invoke(resumeLocking);
     ThreadUtils.join(vmTwoSuspending, 10 * 1000);
 
     // let vmOne get that lock
     LogWriterUtils.getLogWriter().info("[testSuspendLockingBehaves] let vmOne get that lock");
-    // getLogWriter().info("[testSuspendLockingBehaves] assert vmOneLockingAgain still alive");
     Wait.pause(100);
     assertTrue(vmOneLockingAgain.isAlive());
-    // getLogWriter().info("[testSuspendLockingBehaves] vmTwo resumes locking");
     vmTwo.invoke(resumeLocking);
     ThreadUtils.join(vmOneLockingAgain, 10 * 1000);
 
     // let vmThree suspend locking
     LogWriterUtils.getLogWriter().info("[testSuspendLockingBehaves] let vmThree suspend locking");
-    // getLogWriter().info("[testSuspendLockingBehaves] assert vmThreeSuspending still alive");
     Wait.pause(100);
     assertTrue(vmThreeSuspending.isAlive());
-    // getLogWriter().info("[testSuspendLockingBehaves] vmOne unlocks again");
     vmOne.invoke(unlockKey);
     ThreadUtils.join(vmThreeSuspending, 10 * 1000);
 
     // done
-    // getLogWriter().info("[testSuspendLockingBehaves] vmThree resumes locking");
     vmThree.invoke(resumeLocking);
   }
 

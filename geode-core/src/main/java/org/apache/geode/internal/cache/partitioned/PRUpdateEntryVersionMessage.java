@@ -149,8 +149,8 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
 
         pr.getDataView().updateEntryVersion(event);
 
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.debug("{}: updateEntryVersionLocally in bucket: {}, key: {}", getClass().getName(),
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace("{}: updateEntryVersionLocally in bucket: {}, key: {}", getClass().getName(),
               bucket, key);
         }
       } catch (EntryNotFoundException eee) {
