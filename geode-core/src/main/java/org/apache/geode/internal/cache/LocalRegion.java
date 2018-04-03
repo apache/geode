@@ -2782,7 +2782,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         CachePerfStats stats = getCachePerfStats();
         long statStart = stats.startLoad();
         try {
-          value = callCacheLoader(loader, key, aCallbackArgument);
+          value = callCacheLoader(loader, key, aCallbackArgument, preferCD);
         } finally {
           stats.endLoad(statStart);
         }
@@ -2870,11 +2870,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   protected Object callCacheLoader(CacheLoader loader, final Object key,
-      final Object aCallbackArgument) {
+      final Object aCallbackArgument, boolean preferCD) {
     LoaderHelper loaderHelper = this.loaderHelperFactory.createLoaderHelper(key, aCallbackArgument,
         false /* netSearchAllowed */, true /* netloadAllowed */, null /* searcher */);
     Object result = loader.load(loaderHelper);
-    result = this.getCache().convertPdxInstanceIfNeeded(result);
+    result = this.getCache().convertPdxInstanceIfNeeded(result, preferCD);
     return result;
   }
 
