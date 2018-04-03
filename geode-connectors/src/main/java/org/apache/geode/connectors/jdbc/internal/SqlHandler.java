@@ -65,11 +65,10 @@ public class SqlHandler {
     try (Connection connection = getConnection(connectionConfig)) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
           regionMapping.getRegionToTableName());
-      String realTableName = tableMetaData.getTableName();
       List<ColumnValue> columnList =
           getColumnToValueList(tableMetaData, regionMapping, key, null, Operation.GET);
       try (PreparedStatement statement =
-          getPreparedStatement(connection, columnList, realTableName, Operation.GET)) {
+          getPreparedStatement(connection, tableMetaData, columnList, Operation.GET)) {
         try (ResultSet resultSet = executeReadQuery(statement, columnList)) {
           InternalCache cache = (InternalCache) region.getRegionService();
           SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
@@ -153,12 +152,11 @@ public class SqlHandler {
     try (Connection connection = getConnection(connectionConfig)) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
           regionMapping.getRegionToTableName());
-      String realTableName = tableMetaData.getTableName();
       List<ColumnValue> columnList =
           getColumnToValueList(tableMetaData, regionMapping, key, value, operation);
       int updateCount = 0;
       try (PreparedStatement statement =
-          getPreparedStatement(connection, columnList, realTableName, operation)) {
+          getPreparedStatement(connection, tableMetaData, columnList, operation)) {
         updateCount = executeWriteStatement(statement, columnList);
       } catch (SQLException e) {
         if (operation.isDestroy()) {
@@ -174,7 +172,7 @@ public class SqlHandler {
       if (updateCount <= 0) {
         Operation upsertOp = getOppositeOperation(operation);
         try (PreparedStatement upsertStatement =
-            getPreparedStatement(connection, columnList, realTableName, upsertOp)) {
+            getPreparedStatement(connection, tableMetaData, columnList, upsertOp)) {
           updateCount = executeWriteStatement(upsertStatement, columnList);
         }
       }
@@ -194,13 +192,17 @@ public class SqlHandler {
   }
 
   private PreparedStatement getPreparedStatement(Connection connection,
-      List<ColumnValue> columnList, String tableName, Operation operation) throws SQLException {
-    String sqlStr = getSqlString(tableName, columnList, operation);
+      TableMetaDataView tableMetaData, List<ColumnValue> columnList, Operation operation)
+      throws SQLException {
+    String sqlStr = getSqlString(tableMetaData, columnList, operation);
     return connection.prepareStatement(sqlStr);
   }
 
-  private String getSqlString(String tableName, List<ColumnValue> columnList, Operation operation) {
-    SqlStatementFactory statementFactory = new SqlStatementFactory();
+  private String getSqlString(TableMetaDataView tableMetaData, List<ColumnValue> columnList,
+      Operation operation) {
+    SqlStatementFactory statementFactory =
+        new SqlStatementFactory(tableMetaData.getIdentifierQuoteString());
+    String tableName = tableMetaData.getTableName();
     if (operation.isCreate()) {
       return statementFactory.createInsertSqlString(tableName, columnList);
     } else if (operation.isUpdate()) {

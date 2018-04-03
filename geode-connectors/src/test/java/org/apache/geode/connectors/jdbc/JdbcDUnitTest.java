@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -102,22 +103,26 @@ public class JdbcDUnitTest implements Serializable {
         x -> x.withConnectionToLocator(locator.getPort()).withPDXReadSerialized());
     server.invoke(() -> {
       Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      DatabaseMetaData metaData = connection.getMetaData();
+      String quote = metaData.getIdentifierQuoteString();
       Statement statement = connection.createStatement();
-      statement
-          .execute("Create Table \"" + TABLE_NAME + "\" (\"id\" varchar(10) primary key not null, "
-              + "aboolean smallint, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
-              + "\"along\" bigint, " + "\"aFloat\" float, " + "\"ADOUBLE\" double, "
-              + "astring varchar(10), " + "adate timestamp, " + "anobject varchar(20), "
-              + "abytearray blob(100), " + "achar char(1))");
+      statement.execute("Create Table " + quote + TABLE_NAME + quote + " (" + quote + "id" + quote
+          + " varchar(10) primary key not null, " + "aboolean smallint, " + "abyte smallint, "
+          + "ashort smallint, " + "anint int, " + quote + "along" + quote + " bigint, " + quote
+          + "aFloat" + quote + " float, " + quote + "ADOUBLE" + quote + " double, "
+          + "astring varchar(10), " + "adate timestamp, " + "anobject varchar(20), "
+          + "abytearray blob(100), " + "achar char(1))");
     });
   }
 
   private void insertNullDataForAllSupportedFieldsTable(String key) {
     server.invoke(() -> {
       Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      DatabaseMetaData metaData = connection.getMetaData();
+      String quote = metaData.getIdentifierQuoteString();
 
       String insertQuery =
-          "Insert into \"" + TABLE_NAME + "\" values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+          "Insert into " + quote + TABLE_NAME + quote + " values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
       System.out.println("### Query is :" + insertQuery);
       PreparedStatement statement = connection.prepareStatement(insertQuery);
       statement.setObject(1, key);
@@ -141,9 +146,11 @@ public class JdbcDUnitTest implements Serializable {
   private void insertDataForAllSupportedFieldsTable(String key, ClassWithSupportedPdxFields data) {
     server.invoke(() -> {
       Connection connection = DriverManager.getConnection(CONNECTION_URL);
+      DatabaseMetaData metaData = connection.getMetaData();
+      String quote = metaData.getIdentifierQuoteString();
 
       String insertQuery =
-          "Insert into \"" + TABLE_NAME + "\" values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+          "Insert into " + quote + TABLE_NAME + quote + " values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
       System.out.println("### Query is :" + insertQuery);
       PreparedStatement statement = connection.prepareStatement(insertQuery);
       statement.setObject(1, key);
@@ -173,6 +180,8 @@ public class JdbcDUnitTest implements Serializable {
 
   private void closeDB() throws SQLException {
     try (Connection connection = DriverManager.getConnection(CONNECTION_URL)) {
+      DatabaseMetaData metaData = connection.getMetaData();
+      String quote = metaData.getIdentifierQuoteString();
       try (Statement statement = connection.createStatement()) {
         try {
           statement.execute("Drop table " + TABLE_NAME);
@@ -180,7 +189,7 @@ public class JdbcDUnitTest implements Serializable {
         }
 
         try {
-          statement.execute("Drop table \"" + TABLE_NAME + "\"");
+          statement.execute("Drop table " + quote + TABLE_NAME + quote);
         } catch (SQLException ignore) {
         }
       }

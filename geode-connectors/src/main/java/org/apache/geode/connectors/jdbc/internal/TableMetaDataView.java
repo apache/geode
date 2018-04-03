@@ -26,4 +26,6 @@ public interface TableMetaDataView {
   public int getColumnDataType(String columnName);
 
   public Set<String> getColumnNames();
+
+  public String getIdentifierQuoteString();
 }

@@ -19,6 +19,7 @@ package org.apache.geode.connectors.jdbc.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.Types;
@@ -45,8 +46,11 @@ public class TableMetaDataManagerIntegrationTest {
   public void setup() throws Exception {
     connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
-    statement.execute("Create Table " + REGION_TABLE_NAME
-        + " (\"id\" varchar(10) primary key not null, \"name\" varchar(10), \"age\" int)");
+    DatabaseMetaData metaData = connection.getMetaData();
+    String quote = metaData.getIdentifierQuoteString();
+    statement.execute("Create Table " + REGION_TABLE_NAME + " (" + quote + "id" + quote
+        + " varchar(10) primary key not null, " + quote + "name" + quote + " varchar(10), " + quote
+        + "age" + quote + " int)");
     manager = new TableMetaDataManager();
   }
 

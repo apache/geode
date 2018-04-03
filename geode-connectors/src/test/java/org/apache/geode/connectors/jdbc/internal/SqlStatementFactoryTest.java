@@ -32,7 +32,7 @@ public class SqlStatementFactoryTest {
   private static final String KEY_COLUMN_NAME = "column1";
 
   private List<ColumnValue> columnValues = new ArrayList<>();
-  private SqlStatementFactory factory = new SqlStatementFactory();
+  private SqlStatementFactory factory = new SqlStatementFactory("\"");
 
   @Before
   public void setup() {

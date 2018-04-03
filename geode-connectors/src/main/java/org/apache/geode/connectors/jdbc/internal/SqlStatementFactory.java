@@ -17,23 +17,30 @@ package org.apache.geode.connectors.jdbc.internal;
 import java.util.List;
 
 class SqlStatementFactory {
+  private final String quote;
+
+  public SqlStatementFactory(String identifierQuoteString) {
+    this.quote = identifierQuoteString;
+  }
 
   String createSelectQueryString(String tableName, List<ColumnValue> columnList) {
     assert columnList.size() == 1;
     ColumnValue keyCV = columnList.get(0);
     assert keyCV.isKey();
-    return "SELECT * FROM \"" + tableName + "\" WHERE \"" + keyCV.getColumnName() + "\" = ?";
+    return "SELECT * FROM " + quote + tableName + quote + " WHERE " + quote + keyCV.getColumnName()
+        + quote + " = ?";
   }
 
   String createDestroySqlString(String tableName, List<ColumnValue> columnList) {
     assert columnList.size() == 1;
     ColumnValue keyCV = columnList.get(0);
     assert keyCV.isKey();
-    return "DELETE FROM \"" + tableName + "\" WHERE \"" + keyCV.getColumnName() + "\" = ?";
+    return "DELETE FROM " + quote + tableName + quote + " WHERE " + quote + keyCV.getColumnName()
+        + quote + " = ?";
   }
 
   String createUpdateSqlString(String tableName, List<ColumnValue> columnList) {
-    StringBuilder query = new StringBuilder("UPDATE \"" + tableName + "\" SET ");
+    StringBuilder query = new StringBuilder("UPDATE " + quote + tableName + quote + " SET ");
     int idx = 0;
     for (ColumnValue column : columnList) {
       if (!column.isKey()) {
@@ -41,14 +48,14 @@ class SqlStatementFactory {
         if (idx > 1) {
           query.append(", ");
         }
-        query.append('"').append(column.getColumnName()).append('"');
+        query.append(quote).append(column.getColumnName()).append(quote);
         query.append(" = ?");
       }
     }
     for (ColumnValue column : columnList) {
       if (column.isKey()) {
         query.append(" WHERE ");
-        query.append('"').append(column.getColumnName()).append('"');
+        query.append(quote).append(column.getColumnName()).append(quote);
         query.append(" = ?");
         // currently only support simple primary key with one column
         break;
