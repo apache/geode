@@ -32,7 +32,6 @@ import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorService
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;

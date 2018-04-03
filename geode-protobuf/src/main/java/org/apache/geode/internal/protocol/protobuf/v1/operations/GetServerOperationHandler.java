@@ -23,9 +23,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
-import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;

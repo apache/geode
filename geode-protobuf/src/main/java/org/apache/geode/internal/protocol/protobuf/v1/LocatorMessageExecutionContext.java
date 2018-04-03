@@ -17,7 +17,6 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;

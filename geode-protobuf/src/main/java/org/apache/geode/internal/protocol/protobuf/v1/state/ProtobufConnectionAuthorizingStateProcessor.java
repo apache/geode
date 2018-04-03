@@ -14,19 +14,13 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.state;
 
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.NotAuthorizedException;
 
 public class ProtobufConnectionAuthorizingStateProcessor
     implements ProtobufConnectionStateProcessor {

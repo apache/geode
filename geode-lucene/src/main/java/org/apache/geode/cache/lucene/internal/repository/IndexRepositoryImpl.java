@@ -36,7 +36,6 @@ import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.LockNotHeldException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.logging.LogService;
 
 /**
