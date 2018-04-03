@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.domain;
 
 import java.util.Properties;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 
 public class MyCacheWriter extends CacheWriterAdapter {
@@ -27,7 +28,7 @@ public class MyCacheWriter extends CacheWriterAdapter {
   }
 
   @Override
-  public void init(Properties properties) {
+  public void initialize(Cache cache, Properties properties) {
     this.properties = properties;
   }
 }
