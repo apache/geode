@@ -458,6 +458,8 @@ public class PluckStacks {
       return true; // View Message Processor
     if (size > 6 && thread.get(size - 6).contains("getTask"))
       return true; // View Message Processor
+    if (size > 7 && thread.get(size - 7).contains("getTask"))
+      return true; // View Message Processor
     return false;
   }
 
