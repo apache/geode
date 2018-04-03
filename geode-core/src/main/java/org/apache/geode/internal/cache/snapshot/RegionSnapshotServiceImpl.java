@@ -53,7 +53,6 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;

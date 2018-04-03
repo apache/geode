@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;

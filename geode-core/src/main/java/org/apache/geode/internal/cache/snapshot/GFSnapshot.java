@@ -33,7 +33,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.snapshot.SnapshotIterator;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 import org.apache.geode.internal.i18n.LocalizedStrings;

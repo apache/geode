@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 
 import java.io.*;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ExternalizableDSFID;
 import org.apache.geode.internal.InternalDataSerializer;

@@ -53,7 +53,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
  * This message is used as the request for a get operation done in a transaction that is hosted on a

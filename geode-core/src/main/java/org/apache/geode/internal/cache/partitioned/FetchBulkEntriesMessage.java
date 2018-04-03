@@ -59,7 +59,6 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
  *

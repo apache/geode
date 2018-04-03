@@ -24,10 +24,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.statistics.AbstractStatisticsFactory;
-import org.apache.geode.internal.statistics.DummyStatisticsImpl;
-import org.apache.geode.internal.statistics.SimpleStatSampler;
-import org.apache.geode.internal.statistics.StatisticsManager;
 
 /**
  * A standalone implementation of {@link StatisticsFactory}. It can be used in contexts that do not

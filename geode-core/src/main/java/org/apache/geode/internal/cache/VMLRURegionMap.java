@@ -22,8 +22,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.RegionMap.Attributes;
@@ -45,7 +43,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
-import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 
 /**
  * Internal implementation of {@link RegionMap} for regions stored in normal VM memory that maintain

@@ -21,7 +21,6 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Cache Server statistic definitions

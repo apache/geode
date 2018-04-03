@@ -41,7 +41,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.internal.locator.SerializationHelper;
 import org.apache.geode.cache.partition.PartitionListener;

@@ -21,12 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UTFDataFormatException;
 
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataStream;
-
 /**
  * A reusable {@link DataInput} implementation that wraps a given byte array. It also implements
- * {@link VersionedDataStream} for a stream coming from a different product version.
+ * {@link org.apache.geode.internal.VersionedDataStream} for a stream coming from a different
+ * product version.
  *
  * @since GemFire 7.1
  */

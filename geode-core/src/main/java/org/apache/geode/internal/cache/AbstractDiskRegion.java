@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache;
 
 import java.io.PrintStream;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,7 +45,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
-import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
 /**
  * Code shared by both DiskRegion and RecoveredDiskRegion.

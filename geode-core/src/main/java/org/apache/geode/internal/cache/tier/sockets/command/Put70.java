@@ -20,7 +20,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 
 import org.apache.geode.cache.client.internal.PutOp;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;

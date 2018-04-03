@@ -25,7 +25,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.ReplyException;
