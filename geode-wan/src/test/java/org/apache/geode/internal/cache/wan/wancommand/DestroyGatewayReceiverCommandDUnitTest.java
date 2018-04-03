@@ -116,6 +116,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     CommandStringBuilder csb =
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .doesNotContainOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5");
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4,
         server5);
@@ -145,6 +146,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
@@ -176,6 +178,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000,
@@ -245,6 +248,38 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.GROUP, "Grp1");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .doesNotContainOutput("change is not persisted")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4");
+
+    VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4);
+  }
+
+  @Test
+  public void destroyGatewayReceiverOnListOfGroups_destroysReceiversOnMembersOfAllGroups() {
+    Integer locator1Port = locatorSite1.getPort();
+    server3 = startServerWithGroups(3, "Grp1", locator1Port);
+    server4 = startServerWithGroups(4, "Grp2", locator1Port);
+    server5 = startServerWithGroups(5, "Grp3", locator1Port);
+
+    gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp1"))
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"");
+    gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-4\"");
+
+    VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
+        "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server3,
+        server4);
+    VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server5);
+
+    CommandStringBuilder csb =
+        new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
+            .addOption(CliStrings.GROUP, "Grp1,Grp2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .doesNotContainOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4");
 
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4);

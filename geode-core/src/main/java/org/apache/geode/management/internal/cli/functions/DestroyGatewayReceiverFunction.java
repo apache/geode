@@ -23,10 +23,8 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class DestroyGatewayReceiverFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
@@ -56,12 +54,11 @@ public class DestroyGatewayReceiverFunction implements InternalFunction {
     }
     for (GatewayReceiver receiver : cache.getGatewayReceivers()) {
       try {
-        XmlEntity xmlEntity = XmlEntity.builder().withType(CacheXml.GATEWAY_RECEIVER).build();
         if (receiver.isRunning()) {
           receiver.stop();
         }
         receiver.destroy();
-        resultSender.sendResult(new CliFunctionResult(memberNameOrId, xmlEntity,
+        resultSender.sendResult(new CliFunctionResult(memberNameOrId, true,
             String.format("GatewayReceiver destroyed on \"%s\"", memberNameOrId)));
       } catch (Exception e) {
         logger.error(e.getMessage(), e);
