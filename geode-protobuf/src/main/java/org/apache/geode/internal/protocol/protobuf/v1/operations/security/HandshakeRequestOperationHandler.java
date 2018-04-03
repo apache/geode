@@ -28,7 +28,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
+import org.apache.geode.internal.protocol.protobuf.v1.state.AcceptMessages;
 import org.apache.geode.internal.protocol.protobuf.v1.state.RequireAuthentication;
 import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
@@ -43,25 +43,22 @@ public class HandshakeRequestOperationHandler implements
   public Result<ConnectionAPI.HandshakeResponse> process(
       ProtobufSerializationService serializationService, ConnectionAPI.HandshakeRequest request,
       MessageExecutionContext messageExecutionContext) throws ConnectionStateException {
-    RequireAuthentication stateProcessor;
-
-    stateProcessor = messageExecutionContext.getConnectionStateProcessor().requireAuthentication();
 
     boolean authenticated = false;
 
-    if (stateProcessor != null) {
+    if (request.getCredentialsCount() > 0
+        || messageExecutionContext.getConnectionState() instanceof RequireAuthentication) {
       Properties properties = new Properties();
       properties.putAll(request.getCredentialsMap());
 
       try {
-        ConnectionState nextState =
-            stateProcessor.authenticate(messageExecutionContext, properties);
-        messageExecutionContext.setConnectionStateProcessor(nextState);
+        messageExecutionContext.authenticate(properties);
+        messageExecutionContext.setState(new AcceptMessages());
         authenticated = true;
       } catch (AuthenticationFailedException e) {
         messageExecutionContext.getStatistics().incAuthenticationFailures();
         logger.debug("Authentication failed", e);
-        messageExecutionContext.setConnectionStateProcessor(new TerminateConnection());
+        messageExecutionContext.setState(new TerminateConnection());
       }
     }
 

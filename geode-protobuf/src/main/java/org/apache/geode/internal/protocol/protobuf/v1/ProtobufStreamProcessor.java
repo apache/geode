@@ -57,8 +57,8 @@ public class ProtobufStreamProcessor {
   private void processOneMessage(InputStream inputStream, OutputStream outputStream,
       MessageExecutionContext executionContext)
       throws InvalidProtocolMessageException, IOException {
-    if (executionContext.getConnectionStateProcessor().handleMessageIndependently(inputStream,
-        outputStream, executionContext)) {
+    if (executionContext.getConnectionState().handleMessageIndependently(inputStream, outputStream,
+        executionContext)) {
       return;
     }
 

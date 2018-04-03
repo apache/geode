@@ -49,7 +49,7 @@ public class ProtobufOpsProcessor {
     Result result;
 
     try {
-      messageExecutionContext.getConnectionStateProcessor().validateOperation(operationContext);
+      messageExecutionContext.getConnectionState().validateOperation(operationContext);
       result = processOperation(request, messageExecutionContext, requestType, operationContext);
     } catch (VirtualMachineError error) {
       SystemFailure.initiateFailure(error);
@@ -60,7 +60,7 @@ public class ProtobufOpsProcessor {
       result = Failure.of(t);
 
       if (t instanceof ConnectionStateException) {
-        messageExecutionContext.setConnectionStateProcessor(new TerminateConnection());
+        messageExecutionContext.setState(new TerminateConnection());
       }
     }
 

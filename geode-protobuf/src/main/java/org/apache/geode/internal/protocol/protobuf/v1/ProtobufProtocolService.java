@@ -43,9 +43,8 @@ public class ProtobufProtocolService implements ClientProtocolService {
       SecurityService securityService) {
     assert (statistics != null);
 
-    RequireVersion connectionStateProcessor = new RequireVersion(securityService);
-    return new ProtobufCachePipeline(protobufStreamProcessor, new ServerMessageExecutionContext(
-        cache, statistics, connectionStateProcessor, new NotLoggedInAuthorizer()));
+    return new ProtobufCachePipeline(protobufStreamProcessor,
+        new ServerMessageExecutionContext(cache, statistics, securityService));
   }
 
   /**
@@ -62,9 +61,8 @@ public class ProtobufProtocolService implements ClientProtocolService {
   @Override
   public ClientProtocolProcessor createProcessorForLocator(InternalLocator locator,
       SecurityService securityService) {
-    RequireVersion connectionStateProcessor = new RequireVersion(securityService);
-    return new ProtobufCachePipeline(protobufStreamProcessor, new LocatorMessageExecutionContext(
-        locator, statistics, connectionStateProcessor, new NotLoggedInAuthorizer()));
+    return new ProtobufCachePipeline(protobufStreamProcessor,
+        new LocatorMessageExecutionContext(locator, statistics, securityService));
   }
 
   @Override

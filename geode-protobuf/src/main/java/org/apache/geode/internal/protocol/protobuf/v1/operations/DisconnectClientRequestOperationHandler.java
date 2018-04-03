@@ -35,7 +35,7 @@ public class DisconnectClientRequestOperationHandler implements
       ConnectionAPI.DisconnectClientRequest request,
       MessageExecutionContext messageExecutionContext) {
     logger.info("Client disconnecting due to {}", request.getReason());
-    messageExecutionContext.setConnectionStateProcessor(new TerminateConnection());
+    messageExecutionContext.setState(new TerminateConnection());
 
     return Success.of(ConnectionAPI.DisconnectClientResponse.newBuilder().build());
   }

@@ -15,6 +15,10 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import java.util.Properties;
+
+import org.apache.shiro.subject.Subject;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
@@ -23,7 +27,11 @@ import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCacheImpl;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.NotLoggedInAuthorizer;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.ShiroAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.protocol.serialization.ValueSerializer;
 
 @Experimental
@@ -32,9 +40,11 @@ public class ServerMessageExecutionContext extends MessageExecutionContext {
   private AuthorizingCache authorizingCache;
 
   public ServerMessageExecutionContext(InternalCache cache, ClientStatistics statistics,
-      ConnectionState initialConnectionStateProcessor, Authorizer authorizer) {
-    super(statistics, initialConnectionStateProcessor);
+      SecurityService securityService) {
+    super(statistics, securityService);
     this.cache = cache;
+    Authorizer authorizer = securityService.isIntegratedSecurity() ? new NotLoggedInAuthorizer()
+        : new NoSecurityAuthorizer();
     this.authorizingCache = new AuthorizingCacheImpl(cache, authorizer);
   }
 
@@ -50,8 +60,10 @@ public class ServerMessageExecutionContext extends MessageExecutionContext {
   }
 
   @Override
-  public void setAuthorizer(Authorizer authorizer) {
-    this.authorizingCache = new AuthorizingCacheImpl(cache, authorizer);
+  public void authenticate(Properties properties) {
+    Subject subject = securityService.login(properties);
+    this.authorizingCache =
+        new AuthorizingCacheImpl(cache, new ShiroAuthorizer(securityService, subject));
   }
 
   @Override

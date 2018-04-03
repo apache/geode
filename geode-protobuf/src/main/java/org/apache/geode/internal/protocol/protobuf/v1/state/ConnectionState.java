@@ -40,18 +40,6 @@ public interface ConnectionState {
       throws ConnectionStateException, DecodingException;
 
   /**
-   * This indicates whether this specific state processor is able to handle authentication requests.
-   *
-   * @return specialized ProtobufConnectionAuthenticatingStateProcessor interface implementation
-   *         which can move to a new state
-   * @throws ConnectionStateException if unable to handle handshakes in this state.
-   */
-  default RequireAuthentication requireAuthentication() throws ConnectionStateException {
-    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_REQUIRED,
-        "Authentication is required before processing further requests");
-  }
-
-  /**
    * Allow the state processor to take over the entire processing of a given message.
    *
    * @return - True if the message has been handled by the state processor, false to continue normal

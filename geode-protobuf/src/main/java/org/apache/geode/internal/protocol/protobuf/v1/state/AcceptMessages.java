@@ -26,8 +26,4 @@ public class AcceptMessages implements ConnectionState {
   public void validateOperation(ProtobufOperationContext operationContext)
       throws ConnectionStateException, DecodingException {}
 
-  @Override
-  public RequireAuthentication requireAuthentication() throws ConnectionStateException {
-    return null;
-  }
 }

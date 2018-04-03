@@ -21,18 +21,14 @@ import org.apache.shiro.subject.Subject;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.ShiroAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.security.HandshakeRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationFailedException;
 
 public class RequireAuthentication implements ConnectionState {
-  private final SecurityService securityService;
 
-  public RequireAuthentication(SecurityService securityService) {
-    this.securityService = securityService;
-  }
+  public RequireAuthentication() {}
 
   @Override
   public void validateOperation(ProtobufOperationContext operationContext)
@@ -43,15 +39,4 @@ public class RequireAuthentication implements ConnectionState {
     }
   }
 
-  @Override
-  public RequireAuthentication requireAuthentication() throws ConnectionStateException {
-    return this;
-  }
-
-  public ConnectionState authenticate(MessageExecutionContext messageExecutionContext,
-      Properties properties) throws AuthenticationFailedException {
-    Subject subject = securityService.login(properties);
-    messageExecutionContext.setAuthorizer(new ShiroAuthorizer(securityService, subject));
-    return new AcceptMessages();
-  }
 }

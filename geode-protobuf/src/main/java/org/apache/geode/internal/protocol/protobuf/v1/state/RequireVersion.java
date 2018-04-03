@@ -28,7 +28,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOpsProcessor;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ProtocolVersionHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
@@ -50,7 +49,7 @@ public class RequireVersion implements ConnectionState {
 
   private ConnectionState nextConnectionState(MessageExecutionContext executionContext) {
     if (securityService.isIntegratedSecurity()) {
-      return new RequireAuthentication(securityService);
+      return new RequireAuthentication();
     } else if (securityService.isPeerSecurityRequired()
         || securityService.isClientSecurityRequired()) {
       logger.error("The protobuf protocol requires using a "
@@ -58,8 +57,6 @@ public class RequireVersion implements ConnectionState {
           + ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR);
       return new InvalidSecurity();
     } else {
-      executionContext.setAuthorizer(new NoSecurityAuthorizer());
-      // Noop authenticator...no security
       return new AcceptMessages();
     }
   }
@@ -74,7 +71,7 @@ public class RequireVersion implements ConnectionState {
 
     if (ProtocolVersionHandler.handleVersionMessage(messageStream, outputStream,
         executionContext.getStatistics())) {
-      executionContext.setConnectionStateProcessor(nextConnectionState(executionContext));
+      executionContext.setState(nextConnectionState(executionContext));
     }
     return true;
   }

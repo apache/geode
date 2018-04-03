@@ -15,9 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1.state;
 
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
 public class InvalidSecurity implements ConnectionState {
@@ -28,9 +26,4 @@ public class InvalidSecurity implements ConnectionState {
         "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
 
-  @Override
-  public RequireAuthentication requireAuthentication() throws ConnectionStateException {
-    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
-        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
-  }
 }

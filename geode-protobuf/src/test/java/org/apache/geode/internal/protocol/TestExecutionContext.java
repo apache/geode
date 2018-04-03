@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.protocol;
 
+import static org.mockito.Mockito.mock;
+
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
@@ -22,15 +24,16 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.state.AcceptMessages;
+import org.apache.geode.internal.security.SecurityService;
 
 public class TestExecutionContext {
   public static MessageExecutionContext getNoAuthCacheExecutionContext(InternalCache cache) {
-    return new ServerMessageExecutionContext(cache, new NoOpStatistics(), new AcceptMessages(),
-        new NoSecurityAuthorizer());
+    return new ServerMessageExecutionContext(cache, new NoOpStatistics(),
+        mock(SecurityService.class));
   }
 
   public static MessageExecutionContext getLocatorExecutionContext(InternalLocator locator) {
-    return new LocatorMessageExecutionContext(locator, new NoOpStatistics(), new AcceptMessages(),
-        new NoSecurityAuthorizer());
+    return new LocatorMessageExecutionContext(locator, new NoOpStatistics(),
+        mock(SecurityService.class));
   }
 }
