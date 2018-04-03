@@ -155,13 +155,24 @@ public final class GMSEncrypt {
     return dhPublicKey.getEncoded();
   }
 
+  private byte[] lookupKeyByMember(InternalDistributedMember member) {
+    byte[] pk = memberToPublicKey.get(new InternalDistributedMemberWrapper(member));
+    if (pk == null) {
+      pk = getPublicKeyIfIAmLocator(member);
+    }
+    if (pk == null) {
+      pk = (byte[]) view.getPublicKey(member);
+    }
+    return pk;
+  }
+
   protected byte[] getPublicKey(InternalDistributedMember member) {
     try {
       InternalDistributedMember localMbr = services.getMessenger().getMemberID();
       if (localMbr != null && localMbr.equals(member)) {
         return this.dhPublicKey.getEncoded();// local one
       }
-      return memberToPublicKey.get(member);
+      return lookupKeyByMember(member);
     } catch (Exception e) {
       throw new RuntimeException("Not found public key for member " + member, e);
     }
@@ -179,15 +190,8 @@ public final class GMSEncrypt {
   private GMSEncryptionCipherPool getPeerEncryptor(InternalDistributedMember member)
       throws Exception {
     return peerEncryptors.computeIfAbsent(member, (mbr) -> {
-      byte[] pk = memberToPublicKey.get(new InternalDistributedMemberWrapper(mbr));
-      if (pk == null) {
-        pk = getPublicKeyIfIAmLocator(mbr);
-        if (pk == null) {
-          pk = (byte[]) view.getPublicKey(mbr);
-        }
-      }
       try {
-        return new GMSEncryptionCipherPool(this, generateSecret(pk));
+        return new GMSEncryptionCipherPool(this, generateSecret(lookupKeyByMember(member)));
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }
