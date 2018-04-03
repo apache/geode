@@ -123,6 +123,17 @@ subprojects {
     }
   }
   
+  task externalServiceTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.ExternalServiceTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
+
+    forkEvery 1
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+  }
   task distributedTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
