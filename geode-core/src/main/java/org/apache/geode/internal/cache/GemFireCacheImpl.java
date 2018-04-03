@@ -5324,7 +5324,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           // and an exception will be thrown there.
         }
       } else if (!this.getPdxReadSerialized()) {
-        result = ((PdxInstance) obj).getObject();
+        result = pdxInstance.getObject();
       }
     }
     return result;
