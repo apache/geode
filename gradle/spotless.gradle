@@ -25,6 +25,7 @@ subprojects {
         exclude '**/generated-src/**'
       }
 
+      removeUnusedImports()
       custom 'Remove commented-out import statements', {
         it.replaceAll(/\n\/\/ import .*?;.*/, '')
       }
