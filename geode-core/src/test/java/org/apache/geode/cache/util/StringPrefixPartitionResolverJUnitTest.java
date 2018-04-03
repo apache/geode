@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EntryOperation;
-import org.apache.geode.cache.util.StringPrefixPartitionResolver;
 import org.apache.geode.internal.cache.EntryOperationImpl;
 import org.apache.geode.test.junit.categories.UnitTest;
 

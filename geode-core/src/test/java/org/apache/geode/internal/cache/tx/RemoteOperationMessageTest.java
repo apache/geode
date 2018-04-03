@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
-import org.apache.geode.internal.cache.tx.RemoteOperationMessage;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 

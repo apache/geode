@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.apache.geode.cache.CacheTransactionManager;

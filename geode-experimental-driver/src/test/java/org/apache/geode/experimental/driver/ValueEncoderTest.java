@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

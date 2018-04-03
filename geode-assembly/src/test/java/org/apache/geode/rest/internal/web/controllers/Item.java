@@ -14,7 +14,6 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import java.io.Serializable;
 
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.pdx.PdxReader;

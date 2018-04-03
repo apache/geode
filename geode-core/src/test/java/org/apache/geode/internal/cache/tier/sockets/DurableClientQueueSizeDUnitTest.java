@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.cache.query.functional.QueryREUpdateInProgressJUnitTest.regionName;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.util.JSR166TestCase.m2;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;

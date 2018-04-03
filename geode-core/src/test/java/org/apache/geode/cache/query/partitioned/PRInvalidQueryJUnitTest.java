@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.experimental.categories.Category;

@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.junit.Assume;
-import org.junit.Ignore;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
