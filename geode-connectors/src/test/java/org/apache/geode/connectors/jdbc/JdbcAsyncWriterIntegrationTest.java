@@ -40,9 +40,9 @@ import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.ExternalServiceTest;
 
-@Category(IntegrationTest.class)
+@Category(ExternalServiceTest.class)
 public abstract class JdbcAsyncWriterIntegrationTest {
 
   static final String DB_NAME = "test";
