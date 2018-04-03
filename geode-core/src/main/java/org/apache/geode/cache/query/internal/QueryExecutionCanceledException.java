@@ -16,7 +16,6 @@
 package org.apache.geode.cache.query.internal;
 
 import org.apache.geode.cache.CacheRuntimeException;
-import org.apache.geode.cache.control.ResourceManager;
 
 /**
  * Internal exception thrown when a query has been canceled and

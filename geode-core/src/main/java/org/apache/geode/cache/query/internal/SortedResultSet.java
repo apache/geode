@@ -26,7 +26,6 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
  * Implementation of SelectResults that extends TreeSet This is the sorted version of ResultSet used

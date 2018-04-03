@@ -16,7 +16,6 @@ package org.apache.geode.management.internal;
 
 
 import javax.management.Notification;
-import javax.management.ObjectName;
 
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.EntryEvent;

@@ -28,7 +28,6 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
   private String memberIdOrName;

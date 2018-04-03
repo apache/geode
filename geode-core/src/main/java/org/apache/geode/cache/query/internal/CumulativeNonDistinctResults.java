@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;

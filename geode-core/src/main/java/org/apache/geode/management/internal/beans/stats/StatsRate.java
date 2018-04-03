@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.beans.stats;
 
-import org.apache.geode.management.internal.beans.MetricsCalculator;
 
 /**
  *
