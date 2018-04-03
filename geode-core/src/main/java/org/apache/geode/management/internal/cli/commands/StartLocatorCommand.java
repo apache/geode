@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MalformedObjectNameException;
 import javax.net.ssl.SSLException;
 
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -54,10 +56,16 @@ import org.apache.geode.management.internal.cli.util.CauseFinder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 import org.apache.geode.management.internal.cli.util.HostUtils;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.ClusterConfigurationStatusRetriever;
 import org.apache.geode.security.AuthenticationFailedException;
 
 public class StartLocatorCommand extends InternalGfshCommand {
+  private static final String NO_CLUSTER_CONFIG_DIR_SPECIFICIED_ERROR =
+      "The option load-cluster-configuration-from-dir=true is specified but the option -cluster-config-dir needs to be set with a directory to the cluster config.";
+  private static final String NO_CLUSTER_CONFIG_FOUND =
+      "No cluster configuration is found or missing config for certain groups in {0}";
+
   @CliCommand(value = CliStrings.START_LOCATOR, help = CliStrings.START_LOCATOR__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
@@ -113,7 +121,7 @@ public class StartLocatorCommand extends InternalGfshCommand {
           help = CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION__HELP) final boolean enableSharedConfiguration,
       @CliOption(key = CliStrings.START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM,
           unspecifiedDefaultValue = "false",
-          help = CliStrings.START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM__HELP) final boolean loadSharedConfigurationFromDirectory,
+          help = CliStrings.START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM__HELP) boolean loadSharedConfigurationFromDirectory,
       @CliOption(key = CliStrings.START_LOCATOR__CLUSTER__CONFIG__DIR, unspecifiedDefaultValue = "",
           help = CliStrings.START_LOCATOR__CLUSTER__CONFIG__DIR__HELP) final String clusterConfigDir,
       @CliOption(key = CliStrings.START_LOCATOR__HTTP_SERVICE_PORT,
@@ -127,6 +135,21 @@ public class StartLocatorCommand extends InternalGfshCommand {
     if (StringUtils.isBlank(memberName)) {
       // when the user doesn't give us a name, we make one up!
       memberName = StartMemberUtils.getNameGenerator().generate('-');
+    }
+
+    // if cluster-config-dir is set make then load-cluster-configuration-from-dir optional
+    if (clusterConfigDir != null && !clusterConfigDir.isEmpty()) {
+      loadSharedConfigurationFromDirectory = true;
+    }
+
+    if (loadSharedConfigurationFromDirectory
+        && (clusterConfigDir == null || clusterConfigDir.isEmpty())) {
+      return ResultBuilder.createUserErrorResult(NO_CLUSTER_CONFIG_DIR_SPECIFICIED_ERROR);
+    }
+
+    if (!isConfigurationExists(clusterConfigDir)) {
+      return ResultBuilder
+          .createUserErrorResult(CliStrings.format(NO_CLUSTER_CONFIG_FOUND, clusterConfigDir));
     }
 
     workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
@@ -497,5 +520,17 @@ public class StartLocatorCommand extends InternalGfshCommand {
     } else {
       return ArrayUtils.EMPTY_STRING_ARRAY;
     }
+  }
+
+  protected boolean isConfigurationExists(String clusterConfigDir) {
+    File[] groupNames =
+        new File(clusterConfigDir).listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
+
+    if (groupNames.length == 0) {
+      return false;
+    }
+
+    // look for <group>/<group>.xml
+    return Arrays.stream(groupNames).allMatch(g -> new File(g, g + ".xml").exists());
   }
 }
