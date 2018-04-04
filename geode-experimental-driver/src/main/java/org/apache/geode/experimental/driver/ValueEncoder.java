@@ -49,8 +49,7 @@ class ValueEncoder {
 
     if (valueSerializer.supportsPrimitives()) {
       ByteString customBytes = customSerialize(unencodedValue);
-      if (customBytes != null)
-        return builder.setCustomObjectResult(customBytes).build();
+      return builder.setCustomObjectResult(customBytes).build();
     }
 
     if (Objects.isNull(unencodedValue)) {
