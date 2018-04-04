@@ -37,10 +37,9 @@ import org.apache.geode.pdx.PdxInstance;
  *
  * If clients elect to use this ValueSerializer, all values that are sent as an EncodedValue
  * can be sent as EncodedValue.customObjectResult. The server will use the
- * {@link #deserialize(ByteString)} method
- * to deserialize them. When the server is sending values to the client, it will first try to
- * use {@link #serialize(Object)} to serialize the value and send the response to the client as a
- * EncodedValue.customObjectResult.
+ * {@link #deserialize(ByteString)} method to deserialize them. When the server is sending values
+ * to the client, it will use {@link #serialize(Object)} to serialize the value and send the
+ * response to the client as a EncodedValue.customObjectResult.
  *
  * Implementations should be *threadsafe*. No guarantees are made about whether the server will
  * create one or more instances of this serializer or how they will be shared amongst server
@@ -52,31 +51,14 @@ import org.apache.geode.pdx.PdxInstance;
 public interface ValueSerializer {
 
   /**
-   * Initialize this serializer. This method is called when a new connection is established that
-   * requests this format.
+   * Serialize an object into bytes that can be sent to a client.
    *
-   * @param cache
-   */
-  void init(Cache cache);
-
-  /**
-   * Unique identifier for this serializer. Client's must set the valueFormat field of the
-   * HandshakeRequest
-   * to this value in order to use this format.
-   */
-  String getID();
-
-  /**
-   * Serialize an object into bytes that can be sent to a client. This method will be called for
-   * all objects, including primitives like int, String, etc. Implementations can return null
-   * use the default serialization mechanism for a particular object.
+   * @return the bytes to send to the client
    *
-   * @return the bytes to send to the client, or null if the default
-   *         serialization mechanism should be used for this object
-   *
-   * @param object Object to serialize, which may be null. If the object to be sent
-   *        is serialized in PDX form, this object may be a {@link PdxInstance}, even if
-   *        {@link Cache#getPdxReadSerialized()} is false
+   * @param object Object to serialize, which may be null if {@link #supportsPrimitives() is true}.
+   *        If the
+   *        object to be sent is serialized in PDX form, this object may be a {@link PdxInstance},
+   *        even if {@link Cache#getPdxReadSerialized()} is false
    */
   public ByteString serialize(Object object) throws IOException;
 
@@ -89,4 +71,28 @@ public interface ValueSerializer {
    * @return the deserialized version of the object
    */
   public Object deserialize(ByteString bytes) throws IOException, ClassNotFoundException;
+
+  /**
+   * Initialize this serializer. This method is called when a new connection is established that
+   * requests this format.
+   *
+   * @param cache
+   */
+  void init(Cache cache);
+
+  /**
+   * Unique identifier for this serializer. Client's must set the valueFormat field of the
+   * HandshakeRequest to this value in order to use this format.
+   */
+  String getID();
+
+  /**
+   * True if this serializer wants to serialize all values, including primitives like
+   * numbers and strings that can be sent as one of the options in EncodedValue.
+   *
+   * @return
+   */
+  default boolean supportsPrimitives() {
+    return false;
+  }
 }

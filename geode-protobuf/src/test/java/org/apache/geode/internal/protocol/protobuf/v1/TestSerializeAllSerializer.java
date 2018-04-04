@@ -12,30 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.experimental.driver;
+package org.apache.geode.internal.protocol.protobuf.v1;
 
 import java.io.IOException;
 
 import com.google.protobuf.ByteString;
+import org.junit.Test;
 
-public class NoOpSerializer implements ValueSerializer {
-  @Override
-  public ByteString serialize(Object object) throws IOException {
-    return null;
-  }
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.protocol.serialization.ValueSerializer;
 
-  @Override
-  public Object deserialize(ByteString data) throws IOException, ClassNotFoundException {
-    throw new IllegalStateException("No ValueSerializer is set to handle a custom value");
-  }
-
+/**
+ * A value format for tests that uses DataSerializable as the serialization format
+ */
+public class TestSerializeAllSerializer extends TestValueSerializer {
   @Override
   public String getID() {
-    return "";
+    return "TEST_SERIALIZE_ALL";
   }
 
   @Override
   public boolean supportsPrimitives() {
-    return false;
+    return true;
   }
 }

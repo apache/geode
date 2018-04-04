@@ -46,4 +46,12 @@ public interface ValueSerializer {
    * registered on the server.
    */
   String getID();
+
+  /**
+   * True if this serializer wants to serialize all values, including primitives like
+   * numbers and strings that can be sent as one of the options in EncodedValue.
+   *
+   * @return
+   */
+  boolean supportsPrimitives();
 }

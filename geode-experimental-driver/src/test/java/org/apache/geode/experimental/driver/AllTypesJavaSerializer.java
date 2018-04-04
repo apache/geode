@@ -24,38 +24,17 @@ import com.google.protobuf.ByteString;
 
 import org.apache.geode.cache.Cache;
 
-public class JavaSerializer
-    implements ValueSerializer, org.apache.geode.protocol.serialization.ValueSerializer {
-  public JavaSerializer() {}
-
-  @Override
-  public ByteString serialize(Object object) throws IOException {
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayOutputStream);
-    objectStream.writeObject(object);
-    objectStream.flush();
-
-    return ByteString.copyFrom(byteArrayOutputStream.toByteArray());
-  }
-
-  @Override
-  public Object deserialize(ByteString bytes) throws IOException, ClassNotFoundException {
-    return new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray())).readObject();
-  }
-
-  @Override
-  public void init(Cache cache) {
-
-  }
+public class AllTypesJavaSerializer extends JavaSerializer {
+  public AllTypesJavaSerializer() {}
 
   @Override
   public String getID() {
-    return "JAVA";
+    return "JAVA_ALL_TYPES";
   }
 
   @Override
   public boolean supportsPrimitives() {
-    return false;
+    return true;
   }
 
 }

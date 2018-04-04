@@ -32,7 +32,6 @@ public class NoOpCustomValueSerializer implements ValueSerializer {
 
   @Override
   public ByteString serialize(Object object) {
-    // Do nothing
     return null;
   }
 

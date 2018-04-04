@@ -1,1 +1,2 @@
 org.apache.geode.experimental.driver.JavaSerializer
+org.apache.geode.experimental.driver.AllTypesJavaSerializer

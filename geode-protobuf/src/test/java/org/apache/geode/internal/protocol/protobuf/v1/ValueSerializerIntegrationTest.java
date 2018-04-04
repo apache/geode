@@ -107,31 +107,79 @@ public class ValueSerializerIntegrationTest {
         response.getErrorResponse().getError().getErrorCode());
   }
 
+
   @Test
-  public void canSendOperationsWithCustomValueFormat() throws IOException, ClassNotFoundException {
+  public void canGetCustomValueWithSerializerWithoutPrimitiveSupport()
+      throws IOException, ClassNotFoundException {
+    testGetWithValueSerializer(new TestValueSerializer().getID());
+  }
+
+
+  @Test
+  public void canGetCustomValueWithSerializerWithPrimitiveSupport()
+      throws IOException, ClassNotFoundException {
+    testGetWithValueSerializer(new TestSerializeAllSerializer().getID());
+  }
+
+  public void testGetWithValueSerializer(String valueFormat)
+      throws IOException, ClassNotFoundException {
+    sendHandshake(valueFormat);
+
+    DataSerializableObject value = new DataSerializableObject("field");
+    region.put("key", value);
+
+    ClientProtocol.Message response = get("key");
+
+    assertEquals(value, new TestValueSerializer()
+        .deserialize(response.getGetResponse().getResult().getCustomObjectResult()));
+  }
+
+  @Test
+  public void canSerializePrimitivesWithCustomSerializer()
+      throws IOException, ClassNotFoundException {
+    sendHandshake(new TestSerializeAllSerializer().getID());
+
+    region.put("key", "value");
+
+    ClientProtocol.Message response = get("key");
+
+    assertEquals("value", new TestValueSerializer()
+        .deserialize(response.getGetResponse().getResult().getCustomObjectResult()));
+  }
+
+  @Test
+  public void serializerWithoutPrimitiveSupportIsNotInvokedForPrimitives()
+      throws IOException, ClassNotFoundException {
+    sendHandshake(new TestValueSerializer().getID());
+    region.put("key", "value");
+
+    ClientProtocol.Message response = get("key");
+
+    assertEquals("value", response.getGetResponse().getResult().getStringResult());
+  }
+
+
+  private ClientProtocol.Message get(String key) throws IOException {
+    ClientProtocol.Message response;
+    ClientProtocol.Message.newBuilder()
+        .setGetRequest(RegionAPI.GetRequest.newBuilder().setRegionName(TEST_REGION)
+            .setKey(BasicTypes.EncodedValue.newBuilder().setStringResult(key)).build())
+        .build().writeDelimitedTo(socket.getOutputStream());
+
+    response = ClientProtocol.Message.parseDelimitedFrom(socket.getInputStream());
+    return response;
+  }
+
+  private void sendHandshake(String valueFormat) throws IOException {
     ClientProtocol.Message.newBuilder()
         .setHandshakeRequest(
-            ConnectionAPI.HandshakeRequest.newBuilder().setValueFormat("TEST_FORMAT"))
+            ConnectionAPI.HandshakeRequest.newBuilder().setValueFormat(valueFormat))
         .build().writeDelimitedTo(socket.getOutputStream());
 
     ClientProtocol.Message response =
         ClientProtocol.Message.parseDelimitedFrom(socket.getInputStream());
 
     assertTrue("Got response: " + response.getHandshakeResponse(), response.hasHandshakeResponse());
-
-    DataSerializableObject value = new DataSerializableObject("field");
-    region.put("key", value);
-
-
-    ClientProtocol.Message.newBuilder()
-        .setGetRequest(RegionAPI.GetRequest.newBuilder().setRegionName(TEST_REGION)
-            .setKey(BasicTypes.EncodedValue.newBuilder().setStringResult("key")).build())
-        .build().writeDelimitedTo(socket.getOutputStream());
-
-    response = ClientProtocol.Message.parseDelimitedFrom(socket.getInputStream());
-
-    assertEquals(value, new TestValueSerializer()
-        .deserialize(response.getGetResponse().getResult().getCustomObjectResult()));
   }
 
   public static class DataSerializableObject implements DataSerializable {

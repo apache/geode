@@ -16,6 +16,8 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
@@ -52,15 +54,14 @@ public class ProtobufSerializationService implements SerializationService<BasicT
   @Override
   public BasicTypes.EncodedValue encode(Object value) throws EncodingException {
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
-
-    if (value == null) {
-      return builder.setNullResult(NullValue.NULL_VALUE).build();
-    }
-
     try {
-      ByteString encoded = serializer.serialize(value);
-      if (encoded != null) {
+      if (serializer.supportsPrimitives()) {
+        ByteString encoded = serializer.serialize(value);
         return builder.setCustomObjectResult(encoded).build();
+      }
+
+      if (value == null) {
+        return builder.setNullResult(NullValue.NULL_VALUE).build();
       }
 
       ProtobufEncodingTypes protobufEncodingTypes = ProtobufEncodingTypes.valueOf(value.getClass());
@@ -101,21 +102,29 @@ public class ProtobufSerializationService implements SerializationService<BasicT
           builder.setStringResult((String) value);
           break;
         }
-        case PDX_OBJECT: {
-          builder.setJsonObjectResult(jsonPdxConverter.encode((PdxInstance) value));
+        default: {
+          ByteString customResult = customSerialize(value);
+          if (customResult != null) {
+            builder.setCustomObjectResult(customResult);
+          } else if (value instanceof PdxInstance) {
+            builder.setJsonObjectResult(jsonPdxConverter.encode((PdxInstance) value));
+          } else {
+            throw new EncodingException("No handler for object type " + value.getClass());
+          }
           break;
         }
-        default:
-          throw new EncodingException("No handler for protobuf type "
-              + ProtobufEncodingTypes.valueOf(value.getClass()).toString());
       }
-    } catch (UnknownProtobufEncodingType unknownProtobufEncodingType) {
-      throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
+    } catch (UnknownProtobufEncodingType e) {
+      throw new EncodingException("No protobuf encoding for type " + value.getClass().getName(), e);
     } catch (IOException e) {
       throw new EncodingException("Error encoding type " + value.getClass().getName(), e);
     }
 
     return builder.build();
+  }
+
+  private ByteString customSerialize(Object value) throws IOException {
+    return serializer instanceof NoOpCustomValueSerializer ? null : serializer.serialize(value);
   }
 
   /**
@@ -173,6 +182,9 @@ public class ProtobufSerializationService implements SerializationService<BasicT
    */
   private enum ProtobufEncodingTypes {
 
+    // If any classes are added to this list that are not final, the logic
+    // in valueOf must change. It currently works only if the user's class
+    // is exactly the same as the class listed here.
     STRING(String.class),
     INT(Integer.class),
     LONG(Long.class),
@@ -182,11 +194,17 @@ public class ProtobufSerializationService implements SerializationService<BasicT
     DOUBLE(Double.class),
     FLOAT(Float.class),
     BINARY(byte[].class),
-
-    // This will probably have to change once the protocol supports multiple object encodings.
-    PDX_OBJECT(PdxInstance.class);
+    OTHER(Object.class);
 
     private Class clazz;
+
+    private static Map<Class, ProtobufEncodingTypes> classToType = new HashMap<>();
+
+    static {
+      for (ProtobufEncodingTypes type : values()) {
+        classToType.put(type.clazz, type);
+      }
+    }
 
     ProtobufEncodingTypes(Class clazz) {
       this.clazz = clazz;
@@ -194,13 +212,12 @@ public class ProtobufSerializationService implements SerializationService<BasicT
 
     public static ProtobufEncodingTypes valueOf(Class unencodedValueClass)
         throws UnknownProtobufEncodingType {
-      for (ProtobufEncodingTypes protobufEncodingTypes : values()) {
-        if (protobufEncodingTypes.clazz.isAssignableFrom(unencodedValueClass)) {
-          return protobufEncodingTypes;
-        }
+      ProtobufEncodingTypes type = classToType.get(unencodedValueClass);
+      if (type != null) {
+        return type;
+      } else {
+        return OTHER;
       }
-      throw new UnknownProtobufEncodingType(
-          "There is no primitive protobuf type mapping for class:" + unencodedValueClass);
     }
   }
 }

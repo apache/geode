@@ -47,15 +47,10 @@ class ValueEncoder {
   BasicTypes.EncodedValue encodeValue(Object unencodedValue) {
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
 
-    ByteString customBytes;
-    try {
-      customBytes = valueSerializer.serialize(unencodedValue);
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
-
-    if (customBytes != null) {
-      return builder.setCustomObjectResult(customBytes).build();
+    if (valueSerializer.supportsPrimitives()) {
+      ByteString customBytes = customSerialize(unencodedValue);
+      if (customBytes != null)
+        return builder.setCustomObjectResult(customBytes).build();
     }
 
     if (Objects.isNull(unencodedValue)) {
@@ -81,11 +76,25 @@ class ValueEncoder {
     } else if (JSONWrapper.class.isAssignableFrom(unencodedValue.getClass())) {
       builder.setJsonObjectResult(((JSONWrapper) unencodedValue).getJSON());
     } else {
-      throw new IllegalStateException("We don't know how to handle an object of type "
-          + unencodedValue.getClass() + ": " + unencodedValue);
+      ByteString customBytes = customSerialize(unencodedValue);
+      if (customBytes != null) {
+        builder.setCustomObjectResult(customBytes);
+      } else {
+        throw new IllegalStateException("We don't know how to handle an object of type "
+            + unencodedValue.getClass() + ": " + unencodedValue);
+      }
     }
 
     return builder.build();
+  }
+
+  private ByteString customSerialize(Object unencodedValue) {
+    try {
+      ByteString customBytes = valueSerializer.serialize(unencodedValue);
+      return customBytes;
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   /**
