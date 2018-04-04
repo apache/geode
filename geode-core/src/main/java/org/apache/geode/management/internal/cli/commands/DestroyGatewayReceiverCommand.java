@@ -73,12 +73,10 @@ public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
     InternalClusterConfigurationService service =
         (InternalClusterConfigurationService) getConfigurationService();
     if (onMember == null && result.getStatus().equals(Result.Status.OK) && service != null) {
-      List<String> groups = Arrays.asList(Optional.ofNullable(onGroups).orElse(new String[0]));
-      if (groups.isEmpty()) {
-        groups = Arrays.asList("cluster");
+      if (onGroups == null) {
+        onGroups = new String[] {"cluster"};
       }
-
-      groups.forEach(group -> service.updateCacheConfig(group, cc -> {
+      Arrays.stream(onGroups).forEach(group -> service.updateCacheConfig(group, cc -> {
         CacheConfig.GatewayReceiver receiver = cc.getGatewayReceiver();
         if (receiver == null) {
           throw new EntityNotFoundException(

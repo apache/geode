@@ -93,6 +93,27 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     }
   }
 
+  private void exportConfig(String zipName) {
+    String cwd = gfsh.getWorkingDir().getAbsolutePath();
+    gfsh.executeAndAssertThat("sh rm " + cwd + "/" + zipName);
+    gfsh.executeAndAssertThat(
+        "export cluster-configuration --zip-file-name=" + cwd + "/" + zipName);
+  }
+
+  private void verifyConfigDoesNotHaveGatewayReceiver(String zipName, String groupName) {
+    String cwd = gfsh.getWorkingDir().getAbsolutePath();
+    gfsh.executeAndAssertThat(
+        "sh unzip -p " + cwd + "/" + zipName + " " + groupName + "/" + groupName + ".xml ")
+        .doesNotContainOutput("<gateway-receiver");
+  }
+
+  private void verifyConfigHasGatewayReceiver(String zipName, String groupName) {
+    String cwd = gfsh.getWorkingDir().getAbsolutePath();
+    gfsh.executeAndAssertThat(
+        "sh unzip -p " + cwd + "/" + zipName + " " + groupName + "/" + groupName + ".xml ")
+        .containsOutput("<gateway-receiver");
+  }
+
   @Test
   public void destroyStartedGatewayReceiverOnAllMembers() {
     Integer locator1Port = locatorSite1.getPort();
@@ -135,6 +156,8 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
+    exportConfig("clusterConfig.zip");
+    verifyConfigHasGatewayReceiver("clusterConfig.zip", "cluster");
 
     VMProvider
         .invokeInEveryMember(
@@ -148,6 +171,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+    exportConfig("clusterConfig.zip");
+    verifyConfigHasGatewayReceiver("clusterConfig.zip", "cluster");
+
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
         "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server4,
@@ -230,7 +256,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
   public void destroyGatewayReceiverOnGroup_destroysReceiversOnAllGroupMembers() {
     Integer locator1Port = locatorSite1.getPort();
     server3 = startServerWithGroups(3, "Grp1", locator1Port);
-    server4 = startServerWithGroups(4, "Grp1,Grp2", locator1Port);
+    server4 = startServerWithGroups(4, "Grp1", locator1Port);
     server5 = startServerWithGroups(5, "Grp2", locator1Port);
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp1"))
@@ -238,6 +264,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         .tableHasColumnWithValuesContaining("Status",
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"");
+    exportConfig("clusterConfig.zip");
+    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp1");
+    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
 
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
         "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server3,
@@ -250,6 +279,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4");
+    exportConfig("clusterConfig.zip");
+    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "Grp1");
+    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
 
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4);
   }
@@ -269,6 +301,10 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
         .tableHasColumnWithValuesContaining("Status",
             "GatewayReceiver created on member \"server-4\"");
+    exportConfig("clusterConfig.zip");
+    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp1");
+    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp2");
+    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
 
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
         "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server3,
@@ -281,7 +317,52 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4");
+    exportConfig("clusterConfig.zip");
+    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "Grp1");
+    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "Grp2");
+    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
 
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4);
+  }
+
+  @Test
+  public void destroyGatewayReceiverOnListOfGroups_destroysReceiversListedGroups() {
+    Integer locator1Port = locatorSite1.getPort();
+    server3 = startServerWithGroups(3, "Grp1", locator1Port);
+    server4 = startServerWithGroups(4, "Grp2", locator1Port);
+    server5 = startServerWithGroups(5, "Grp3", locator1Port);
+
+    gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp1"))
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"");
+    gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-4\"");
+    exportConfig("clusterConfig.zip");
+    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp1");
+    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp2");
+    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
+
+    VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
+        "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server3,
+        server4);
+    VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server5);
+
+    CommandStringBuilder csb =
+        new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
+            .addOption(CliStrings.GROUP, "Grp1");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .doesNotContainOutput("change is not persisted")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
+    exportConfig("clusterConfig.zip");
+    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "Grp1");
+    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp2");
+    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
+
+    VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
+        "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server4);
+    VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
   }
 }
