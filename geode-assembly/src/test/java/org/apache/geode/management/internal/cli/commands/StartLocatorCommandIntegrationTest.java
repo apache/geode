@@ -127,11 +127,11 @@ public class StartLocatorCommandIntegrationTest {
   @Test
   public void startLocatorShouldFailIfAnyGroupXmlIsMissing() throws Exception {
     File config = temporaryFolder.getRoot();
-    File cluster = temporaryFolder.newFolder("cluster");
-    File sg1 = temporaryFolder.newFolder("sg1");
-    File sg2 = temporaryFolder.newFolder("sg2");
-    File clusterXML = temporaryFolder.newFile("cluster/cluster.xml");
-    File sg1Xml = temporaryFolder.newFile("sg1/sg1.xml");
+    File cluster = temporaryFolder.newFolder("cluster_config", "cluster");
+    File sg1 = temporaryFolder.newFolder("cluster_config", "sg1");
+    File sg2 = temporaryFolder.newFolder("cluster_config", "sg2");
+    File clusterXML = temporaryFolder.newFile("cluster_config/cluster/cluster.xml");
+    File sg1Xml = temporaryFolder.newFile("cluster_config/sg1/sg1.xml");
 
 
     temporaryFolder.create();

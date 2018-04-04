@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.distributed.internal.InternalClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.net.InetAddress;
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MalformedObjectNameException;
 import javax.net.ssl.SSLException;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -523,10 +526,11 @@ public class StartLocatorCommand extends InternalGfshCommand {
   }
 
   protected boolean isConfigurationExists(String clusterConfigDir) {
-    File[] groupNames =
-        new File(clusterConfigDir).listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
+    String configDir = FilenameUtils.concat(clusterConfigDir, CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
 
-    if (groupNames.length == 0) {
+    File[] groupNames = new File(configDir).listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
+
+    if (groupNames == null || groupNames.length == 0) {
       return false;
     }
 
