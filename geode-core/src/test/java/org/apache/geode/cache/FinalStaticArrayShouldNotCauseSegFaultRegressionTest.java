@@ -26,8 +26,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Test case for Trac <a href="https://svn.gemstone.com/trac/gemfire/ticket/52289">#52289</a>.
- *
  * Asserts fixes for bug JDK-8076152 in JDK 1.8.0u20 to 1.8.0.u45.
  * http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8076152
  *
@@ -38,45 +36,48 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * This test and its corrections can be removed after the release of JDK 1.8.0u60 if we choose to
  * not support 1.8.0u20 - 1.8.0u45 inclusive.
  *
+ * <p>
+ * TRAC #52289: HotSpot SIGSEGV in C2 CompilerThread1 (LoadNode::Value(PhaseTransform*) const+0x202)
+ * with JDK 1.8.0_45
+ *
  * @since GemFire 8.2
  */
 @Category(UnitTest.class)
-public class FinalStaticArrayShouldNotCauseSegFaultTest {
+public class FinalStaticArrayShouldNotCauseSegFaultRegressionTest {
 
   @Test
-  public void test() throws IOException, ClassNotFoundException {
-    // Iterate enough to cause JIT to compile
-    // javax.print.attribute.EnumSyntax::readResolve
+  public void finalStaticArrayShouldNotCauseSegFault() throws Exception {
+    // Iterate enough to cause JIT to compile javax.print.attribute.EnumSyntax::readResolve
     for (int i = 0; i < 100_000; i++) {
-      // Must execute two or more subclasses with static final arrays of
-      // different types.
+      // Must execute two or more subclasses with static final arrays of different types.
       doEvictionAlgorithm();
       doEvictionAction();
     }
   }
 
-  protected void doEvictionAlgorithm() throws IOException, ClassNotFoundException {
-    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    final ObjectOutputStream oos = new ObjectOutputStream(baos);
-    oos.writeObject(EvictionAlgorithm.NONE);
-    oos.close();
+  private void doEvictionAlgorithm() throws IOException, ClassNotFoundException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-    final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    final ObjectInputStream ois = new ObjectInputStream(bais);
-    ois.readObject();
-    ois.close();
+    try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(EvictionAlgorithm.NONE);
+    }
+
+    try (ObjectInputStream ois =
+        new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+      ois.readObject();
+    }
   }
 
-  protected void doEvictionAction() throws IOException, ClassNotFoundException {
-    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    final ObjectOutputStream oos = new ObjectOutputStream(baos);
-    oos.writeObject(EvictionAction.NONE);
-    oos.close();
+  private void doEvictionAction() throws IOException, ClassNotFoundException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-    final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    final ObjectInputStream ois = new ObjectInputStream(bais);
-    ois.readObject();
-    ois.close();
+    try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(EvictionAction.NONE);
+    }
+
+    try (ObjectInputStream ois =
+        new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+      ois.readObject();
+    }
   }
-
 }
