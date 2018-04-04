@@ -30,6 +30,15 @@ public abstract class VMProvider {
 
   public abstract VM getVM();
 
+  public void stopVMIfNotLocator(boolean cleanWorkingDir) {
+    getVM().invoke(() -> {
+      if (!org.apache.geode.distributed.Locator.hasLocator()) {
+        ClusterStartupRule.stopElementInsideVM();
+        MemberStarterRule.disconnectDSIfAny();
+      }
+    });
+  }
+
   public void stopVM(boolean cleanWorkingDir) {
     getVM().invoke(() -> {
       ClusterStartupRule.stopElementInsideVM();
