@@ -28,9 +28,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 
-@Category(IntegrationTest.class)
+@Category(AcceptanceTest.class)
 public abstract class TableMetaDataManagerIntegrationTest {
 
   private static final String REGION_TABLE_NAME = "employees";
