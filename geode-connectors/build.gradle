@@ -26,9 +26,6 @@ dependencies {
     compile project(':geode-common')
     compile group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version'
 
-
-    testCompile project(':geode-junit')
-
     //Connectors test framework.
     testRuntime 'org.apache.derby:derby:' + project.'derby.version'
     testCompile group: 'mysql', name: 'mysql-connector-java', version: '5.1.46'
@@ -36,8 +33,8 @@ dependencies {
     testCompile 'com.palantir.docker.compose:docker-compose-rule-junit4:0.31.1'
     testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
     testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
-    testCompile files(project(':geode-core').sourceSets.test.output)
-    testCompile files(project(':geode-old-versions').sourceSets.main.output)
+    testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
+    testCompile project(path: ':geode-test', configuration: 'runtime')
 }
 
 integrationTest.forkEvery 0

@@ -69,10 +69,10 @@ dependencies {
   archives project(':geode-cq')
   archives project(':geode-rebalancer')
 
-  testCompile project(':geode-junit')
   testCompile project(':geode-pulse')
-  testCompile files(project(':geode-core').sourceSets.test.output)
-  testCompile files(project(':geode-pulse').sourceSets.test.output)
+  testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
+  testCompile project(path: ':geode-test', configuration: 'runtime')
+  testCompile project(path: ':geode-pulse', configuration: 'testClassesOutput')
   testCompile ('org.springframework:spring-web:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
@@ -108,8 +108,6 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
   }
-
-  testCompile files(project(':geode-old-versions').sourceSets.main.output)
 }
 
 sourceSets {
@@ -133,7 +131,7 @@ task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
   main 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
   classpath project(':geode-core').sourceSets.main.runtimeClasspath
   workingDir buildDir
-  
+
   doFirst {
     buildDir.mkdirs()
   }
@@ -231,7 +229,7 @@ task depsJar (type: Jar, dependsOn: ':geode-core:classes') {
   description 'Assembles the jar archive that defines the gemfire classpath.'
   archiveName 'geode-dependencies.jar'
   doFirst {
-    manifest { 
+    manifest {
       attributes("Class-Path": cp())
     }
   }
@@ -244,7 +242,7 @@ task gfshDepsJar (type: Jar, dependsOn: ':geode-core:classes') {
   archiveName 'gfsh-dependencies.jar'
   doFirst {
     manifest {
-      attributes("Class-Path": cp() + 
+      attributes("Class-Path": cp() +
         ' ' + project(':geode-core').webJar.archiveName +
         ' ' + configurations.gfshDependencies.collect{ it.getName() }.flatten().join(' ')
       )
@@ -340,7 +338,7 @@ distributions {
     contents {
       duplicatesStrategy 'exclude'
       exclude '*.asc'
-      
+
       exclude '*.asc'
       exclude '*-sources.jar'
       exclude '*-javadoc.jar'
@@ -351,10 +349,10 @@ distributions {
         from defaultCacheConfig
         from defaultDistributionConfig
         from (project(':geode-core').sourceSets.main.resources.files.find {
-          it.name == 'log4j2.xml' 
+          it.name == 'log4j2.xml'
         })
       }
-      
+
       into ('lib') {
         from project(":geode-common").configurations.runtime
         from project(":geode-common").configurations.archives.allArtifacts.files
@@ -373,10 +371,10 @@ distributions {
 
         from project(":geode-lucene").configurations.runtime
         from project(":geode-lucene").configurations.archives.allArtifacts.files
-       
+
         from project(":geode-connectors").configurations.runtime
         from project(":geode-connectors").configurations.archives.allArtifacts.files
- 
+
         from project(":geode-old-client-support").configurations.runtime
         from project(":geode-old-client-support").configurations.archives.allArtifacts.files
 
@@ -459,11 +457,11 @@ build.dependsOn installDist
 
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
 distributedTest.dependsOn ':extensions/session-testing-war:war'
-distributedTest.dependsOn ':geode-old-versions:build'
+distributedTest.dependsOn ':geode-test:build'
 
 /**Print the names of all jar files in a fileTree */
 def printJars(tree) {
-  tree.matching {include("**/*.jar")}.visit{ file -> 
+  tree.matching {include("**/*.jar")}.visit{ file ->
     if(!file.isDirectory()) {
       println file.name
     }
