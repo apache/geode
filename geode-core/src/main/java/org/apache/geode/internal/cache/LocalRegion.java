@@ -1683,7 +1683,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           if (!extractDelta && ClientHealthMonitor.getInstance() != null) {
             extractDelta = ClientHealthMonitor.getInstance().hasDeltaClients();
           }
-        } else if (ClientSideHandshakeImpl.isDeltaEnabledOnServer()) {
+        } else if (getSystem().isDeltaEnabledOnServer()) {
           // This is a client region
           extractDelta = true;
         }
