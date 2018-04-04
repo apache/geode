@@ -24,8 +24,8 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.HeaderByte;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.Conflatable;
@@ -331,7 +331,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
               CqNameToOp value;
               {
                 byte typeByte = in.readByte();
-                if (typeByte == DSCODE.HASH_MAP) {
+                if (typeByte == HeaderByte.HASH_MAP.toByte()) {
                   int cqNamesSize = InternalDataSerializer.readArrayLength(in);
                   if (cqNamesSize == -1) {
                     throw new IllegalStateException(
@@ -350,7 +350,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
                       value.add(cqNamesKey, cqNamesValue);
                     }
                   }
-                } else if (typeByte == DSCODE.NULL) {
+                } else if (typeByte == HeaderByte.NULL.toByte()) {
                   throw new IllegalStateException(
                       "The value of a ConcurrentHashMap is not allowed to be null.");
                 } else {

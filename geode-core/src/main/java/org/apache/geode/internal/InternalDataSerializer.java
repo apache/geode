@@ -130,7 +130,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *
  * @since GemFire 3.5
  */
-public abstract class InternalDataSerializer extends DataSerializer implements DSCODE {
+public abstract class InternalDataSerializer extends DataSerializer {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -383,7 +383,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         InetAddress address = (InetAddress) o;
-        out.writeByte(INET_ADDRESS);
+        out.writeByte(HeaderByte.INET_ADDRESS.toByte());
         writeInetAddress(address, out);
         return true;
       }
@@ -392,7 +392,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         InetAddress address = (InetAddress) o;
-        out.writeByte(INET_ADDRESS);
+        out.writeByte(HeaderByte.INET_ADDRESS.toByte());
         writeInetAddress(address, out);
         return true;
       }
@@ -401,7 +401,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         InetAddress address = (InetAddress) o;
-        out.writeByte(INET_ADDRESS);
+        out.writeByte(HeaderByte.INET_ADDRESS.toByte());
         writeInetAddress(address, out);
         return true;
       }
@@ -413,7 +413,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         if (c.isPrimitive()) {
           writePrimitiveClass(c, out);
         } else {
-          out.writeByte(CLASS);
+          out.writeByte(HeaderByte.CLASS.toByte());
           writeClass(c, out);
         }
         return true;
@@ -423,7 +423,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Boolean value = (Boolean) o;
-        out.writeByte(BOOLEAN);
+        out.writeByte(HeaderByte.BOOLEAN.toByte());
         writeBoolean(value, out);
         return true;
       }
@@ -432,7 +432,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Character value = (Character) o;
-        out.writeByte(CHARACTER);
+        out.writeByte(HeaderByte.CHARACTER.toByte());
         writeCharacter(value, out);
         return true;
       }
@@ -441,7 +441,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Byte value = (Byte) o;
-        out.writeByte(BYTE);
+        out.writeByte(HeaderByte.BYTE.toByte());
         writeByte(value, out);
         return true;
       }
@@ -450,7 +450,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Short value = (Short) o;
-        out.writeByte(SHORT);
+        out.writeByte(HeaderByte.SHORT.toByte());
         writeShort(value, out);
         return true;
       }
@@ -459,7 +459,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Integer value = (Integer) o;
-        out.writeByte(INTEGER);
+        out.writeByte(HeaderByte.INTEGER.toByte());
         writeInteger(value, out);
         return true;
       }
@@ -468,7 +468,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Long value = (Long) o;
-        out.writeByte(LONG);
+        out.writeByte(HeaderByte.LONG.toByte());
         writeLong(value, out);
         return true;
       }
@@ -477,7 +477,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Float value = (Float) o;
-        out.writeByte(FLOAT);
+        out.writeByte(HeaderByte.FLOAT.toByte());
         writeFloat(value, out);
         return true;
       }
@@ -486,7 +486,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Double value = (Double) o;
-        out.writeByte(DOUBLE);
+        out.writeByte(HeaderByte.DOUBLE.toByte());
         writeDouble(value, out);
         return true;
       }
@@ -495,7 +495,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         new WellKnownPdxDS() {
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
-            out.writeByte(BOOLEAN_ARRAY);
+            out.writeByte(HeaderByte.BOOLEAN_ARRAY.toByte());
             writeBooleanArray((boolean[]) o, out);
             return true;
           }
@@ -505,7 +505,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             byte[] array = (byte[]) o;
-            out.writeByte(BYTE_ARRAY);
+            out.writeByte(HeaderByte.BYTE_ARRAY.toByte());
             writeByteArray(array, out);
             return true;
           }
@@ -514,7 +514,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         new WellKnownPdxDS() {
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
-            out.writeByte(CHAR_ARRAY);
+            out.writeByte(HeaderByte.CHAR_ARRAY.toByte());
             writeCharArray((char[]) o, out);
             return true;
           }
@@ -524,7 +524,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             double[] array = (double[]) o;
-            out.writeByte(DOUBLE_ARRAY);
+            out.writeByte(HeaderByte.DOUBLE_ARRAY.toByte());
             writeDoubleArray(array, out);
             return true;
           }
@@ -534,7 +534,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             float[] array = (float[]) o;
-            out.writeByte(FLOAT_ARRAY);
+            out.writeByte(HeaderByte.FLOAT_ARRAY.toByte());
             writeFloatArray(array, out);
             return true;
           }
@@ -544,7 +544,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             int[] array = (int[]) o;
-            out.writeByte(INT_ARRAY);
+            out.writeByte(HeaderByte.INT_ARRAY.toByte());
             writeIntArray(array, out);
             return true;
           }
@@ -554,7 +554,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             long[] array = (long[]) o;
-            out.writeByte(LONG_ARRAY);
+            out.writeByte(HeaderByte.LONG_ARRAY.toByte());
             writeLongArray(array, out);
             return true;
           }
@@ -564,7 +564,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             short[] array = (short[]) o;
-            out.writeByte(SHORT_ARRAY);
+            out.writeByte(HeaderByte.SHORT_ARRAY.toByte());
             writeShortArray(array, out);
             return true;
           }
@@ -574,7 +574,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             String[] array = (String[]) o;
-            out.writeByte(STRING_ARRAY);
+            out.writeByte(HeaderByte.STRING_ARRAY.toByte());
             writeStringArray(array, out);
             return true;
           }
@@ -582,7 +582,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put(TimeUnit.NANOSECONDS.getClass().getName(), new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TIME_UNIT);
+        out.writeByte(HeaderByte.TIME_UNIT.toByte());
         out.writeByte(TIME_UNIT_NANOSECONDS);
         return true;
       }
@@ -590,7 +590,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put(TimeUnit.MICROSECONDS.getClass().getName(), new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TIME_UNIT);
+        out.writeByte(HeaderByte.TIME_UNIT.toByte());
         out.writeByte(TIME_UNIT_MICROSECONDS);
         return true;
       }
@@ -598,7 +598,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put(TimeUnit.MILLISECONDS.getClass().getName(), new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TIME_UNIT);
+        out.writeByte(HeaderByte.TIME_UNIT.toByte());
         out.writeByte(TIME_UNIT_MILLISECONDS);
         return true;
       }
@@ -606,7 +606,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put(TimeUnit.SECONDS.getClass().getName(), new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TIME_UNIT);
+        out.writeByte(HeaderByte.TIME_UNIT.toByte());
         out.writeByte(TIME_UNIT_SECONDS);
         return true;
       }
@@ -615,7 +615,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Date date = (Date) o;
-        out.writeByte(DATE);
+        out.writeByte(HeaderByte.DATE.toByte());
         writeDate(date, out);
         return true;
       }
@@ -624,7 +624,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         File file = (File) o;
-        out.writeByte(FILE);
+        out.writeByte(HeaderByte.FILE.toByte());
         writeFile(file, out);
         return true;
       }
@@ -633,7 +633,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         ArrayList list = (ArrayList) o;
-        out.writeByte(ARRAY_LIST);
+        out.writeByte(HeaderByte.ARRAY_LIST.toByte());
         writeArrayList(list, out);
         return true;
       }
@@ -642,7 +642,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         LinkedList list = (LinkedList) o;
-        out.writeByte(LINKED_LIST);
+        out.writeByte(HeaderByte.LINKED_LIST.toByte());
         writeLinkedList(list, out);
         return true;
       }
@@ -650,7 +650,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.Vector", new WellKnownPdxDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(VECTOR);
+        out.writeByte(HeaderByte.VECTOR.toByte());
         writeVector((Vector) o, out);
         return true;
       }
@@ -658,7 +658,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.Stack", new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(STACK);
+        out.writeByte(HeaderByte.STACK.toByte());
         writeStack((Stack) o, out);
         return true;
       }
@@ -667,7 +667,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         HashSet list = (HashSet) o;
-        out.writeByte(HASH_SET);
+        out.writeByte(HeaderByte.HASH_SET.toByte());
         writeHashSet(list, out);
         return true;
       }
@@ -675,7 +675,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.LinkedHashSet", new WellKnownPdxDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(LINKED_HASH_SET);
+        out.writeByte(HeaderByte.LINKED_HASH_SET.toByte());
         writeLinkedHashSet((LinkedHashSet) o, out);
         return true;
       }
@@ -684,7 +684,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         HashMap list = (HashMap) o;
-        out.writeByte(HASH_MAP);
+        out.writeByte(HeaderByte.HASH_MAP.toByte());
         writeHashMap(list, out);
         return true;
       }
@@ -692,7 +692,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.IdentityHashMap", new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(IDENTITY_HASH_MAP);
+        out.writeByte(HeaderByte.IDENTITY_HASH_MAP.toByte());
         writeIdentityHashMap((IdentityHashMap) o, out);
         return true;
       }
@@ -700,7 +700,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.Hashtable", new WellKnownPdxDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(HASH_TABLE);
+        out.writeByte(HeaderByte.HASH_TABLE.toByte());
         writeHashtable((Hashtable) o, out);
         return true;
       }
@@ -709,7 +709,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Properties props = (Properties) o;
-        out.writeByte(PROPERTIES);
+        out.writeByte(HeaderByte.PROPERTIES.toByte());
         writeProperties(props, out);
         return true;
       }
@@ -717,7 +717,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.TreeMap", new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TREE_MAP);
+        out.writeByte(HeaderByte.TREE_MAP.toByte());
         writeTreeMap((TreeMap) o, out);
         return true;
       }
@@ -725,7 +725,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.TreeSet", new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TREE_SET);
+        out.writeByte(HeaderByte.TREE_SET.toByte());
         writeTreeSet((TreeSet) o, out);
         return true;
       }
@@ -734,7 +734,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       classesToSerializers.put("java.math.BigInteger", new WellKnownDS() {
         @Override
         public boolean toData(Object o, DataOutput out) throws IOException {
-          out.writeByte(BIG_INTEGER);
+          out.writeByte(HeaderByte.BIG_INTEGER.toByte());
           writeBigInteger((BigInteger) o, out);
           return true;
         }
@@ -742,7 +742,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       classesToSerializers.put("java.math.BigDecimal", new WellKnownDS() {
         @Override
         public boolean toData(Object o, DataOutput out) throws IOException {
-          out.writeByte(BIG_DECIMAL);
+          out.writeByte(HeaderByte.BIG_DECIMAL.toByte());
           writeBigDecimal((BigDecimal) o, out);
           return true;
         }
@@ -750,7 +750,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       classesToSerializers.put("java.util.UUID", new WellKnownDS() {
         @Override
         public boolean toData(Object o, DataOutput out) throws IOException {
-          out.writeByte(UUID);
+          out.writeByte(HeaderByte.UUID.toByte());
           writeUUID((UUID) o, out);
           return true;
         }
@@ -758,7 +758,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       classesToSerializers.put("java.sql.Timestamp", new WellKnownDS() {
         @Override
         public boolean toData(Object o, DataOutput out) throws IOException {
-          out.writeByte(TIMESTAMP);
+          out.writeByte(HeaderByte.TIMESTAMP.toByte());
           writeTimestamp((Timestamp) o, out);
           return true;
         }
@@ -1494,13 +1494,13 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
               .toLocalizedString());
     }
     if (dsfid <= Byte.MAX_VALUE && dsfid >= Byte.MIN_VALUE) {
-      out.writeByte(DS_FIXED_ID_BYTE);
+      out.writeByte(HeaderByte.DS_FIXED_ID_BYTE.toByte());
       out.writeByte(dsfid);
     } else if (dsfid <= Short.MAX_VALUE && dsfid >= Short.MIN_VALUE) {
-      out.writeByte(DS_FIXED_ID_SHORT);
+      out.writeByte(HeaderByte.DS_FIXED_ID_SHORT.toByte());
       out.writeShort(dsfid);
     } else {
-      out.writeByte(DS_FIXED_ID_INT);
+      out.writeByte(HeaderByte.DS_FIXED_ID_INT.toByte());
       out.writeInt(dsfid);
     }
   }
@@ -1524,7 +1524,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       }
     }
     if (dsfid == DataSerializableFixedID.NO_FIXED_ID) {
-      out.writeByte(DS_NO_FIXED_ID);
+      out.writeByte(HeaderByte.DS_NO_FIXED_ID.toByte());
       DataSerializer.writeClass(o.getClass(), out);
     } else {
       writeDSFIDHeader(dsfid, out);
@@ -1581,13 +1581,13 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         checkPdxCompatible(o, ensurePdxCompatibility);
         // id will be 0 if it is a WellKnowDS
         if (id <= Byte.MAX_VALUE && id >= Byte.MIN_VALUE) {
-          out.writeByte(USER_CLASS);
+          out.writeByte(HeaderByte.USER_CLASS.toByte());
           out.writeByte((byte) id);
         } else if (id <= Short.MAX_VALUE && id >= Short.MIN_VALUE) {
-          out.writeByte(USER_CLASS_2);
+          out.writeByte(HeaderByte.USER_CLASS_2.toByte());
           out.writeShort(id);
         } else {
-          out.writeByte(USER_CLASS_4);
+          out.writeByte(HeaderByte.USER_CLASS_4.toByte());
           out.writeInt(id);
         }
       } else {
@@ -1641,12 +1641,12 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       // Do byte[][] and Object[] here to fix bug 44060
     } else if (o instanceof byte[][]) {
       byte[][] byteArrays = (byte[][]) o;
-      out.writeByte(ARRAY_OF_BYTE_ARRAYS);
+      out.writeByte(HeaderByte.ARRAY_OF_BYTE_ARRAYS.toByte());
       writeArrayOfByteArrays(byteArrays, out);
       return true;
     } else if (o instanceof Object[]) {
       Object[] array = (Object[]) o;
-      out.writeByte(OBJECT_ARRAY);
+      out.writeByte(HeaderByte.OBJECT_ARRAY.toByte());
       writeObjectArray(array, out, ensurePdxCompatibility);
       return true;
     } else if (is662SerializationEnabled()
@@ -1953,25 +1953,25 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    */
   public static void writePrimitiveClass(Class c, DataOutput out) throws IOException {
     if (c == Boolean.TYPE) {
-      out.writeByte(BOOLEAN_TYPE);
+      out.writeByte(HeaderByte.BOOLEAN_TYPE.toByte());
     } else if (c == Character.TYPE) {
-      out.writeByte(CHARACTER_TYPE);
+      out.writeByte(HeaderByte.CHARACTER_TYPE.toByte());
     } else if (c == Byte.TYPE) {
-      out.writeByte(BYTE_TYPE);
+      out.writeByte(HeaderByte.BYTE_TYPE.toByte());
     } else if (c == Short.TYPE) {
-      out.writeByte(SHORT_TYPE);
+      out.writeByte(HeaderByte.SHORT_TYPE.toByte());
     } else if (c == Integer.TYPE) {
-      out.writeByte(INTEGER_TYPE);
+      out.writeByte(HeaderByte.INTEGER_TYPE.toByte());
     } else if (c == Long.TYPE) {
-      out.writeByte(LONG_TYPE);
+      out.writeByte(HeaderByte.LONG_TYPE.toByte());
     } else if (c == Float.TYPE) {
-      out.writeByte(FLOAT_TYPE);
+      out.writeByte(HeaderByte.FLOAT_TYPE.toByte());
     } else if (c == Double.TYPE) {
-      out.writeByte(DOUBLE_TYPE);
+      out.writeByte(HeaderByte.DOUBLE_TYPE.toByte());
     } else if (c == Void.TYPE) {
-      out.writeByte(VOID_TYPE);
+      out.writeByte(HeaderByte.VOID_TYPE.toByte());
     } else if (c == null) {
-      out.writeByte(NULL);
+      out.writeByte(HeaderByte.NULL.toByte());
     } else {
       throw new InternalGemFireError(
           LocalizedStrings.InternalDataSerializer_UNKNOWN_PRIMITIVE_TYPE_0
@@ -1980,31 +1980,38 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
 
   public static Class decodePrimitiveClass(byte typeCode) {
-    switch (typeCode) {
-      case BOOLEAN_TYPE:
-        return Boolean.TYPE;
-      case CHARACTER_TYPE:
-        return Character.TYPE;
-      case BYTE_TYPE:
-        return Byte.TYPE;
-      case SHORT_TYPE:
-        return Short.TYPE;
-      case INTEGER_TYPE:
-        return Integer.TYPE;
-      case LONG_TYPE:
-        return Long.TYPE;
-      case FLOAT_TYPE:
-        return Float.TYPE;
-      case DOUBLE_TYPE:
-        return Double.TYPE;
-      case VOID_TYPE:
-        return Void.TYPE;
-      case NULL:
-        return null;
-      default:
-        throw new InternalGemFireError(LocalizedStrings.InternalDataSerializer_UNEXPECTED_TYPECODE_0
-            .toLocalizedString(typeCode));
+    if (typeCode == HeaderByte.BOOLEAN_TYPE.toByte()) {
+      return Boolean.TYPE;
     }
+    if (typeCode == HeaderByte.CHARACTER_TYPE.toByte()) {
+      return Character.TYPE;
+    }
+    if (typeCode == HeaderByte.BYTE_TYPE.toByte()) {
+      return Byte.TYPE;
+    }
+    if (typeCode == HeaderByte.SHORT_TYPE.toByte()) {
+      return Short.TYPE;
+    }
+    if (typeCode == HeaderByte.INTEGER_TYPE.toByte()) {
+      return Integer.TYPE;
+    }
+    if (typeCode == HeaderByte.LONG_TYPE.toByte()) {
+      return Long.TYPE;
+    }
+    if (typeCode == HeaderByte.FLOAT_TYPE.toByte()) {
+      return Float.TYPE;
+    }
+    if (typeCode == HeaderByte.DOUBLE_TYPE.toByte()) {
+      return Double.TYPE;
+    }
+    if (typeCode == HeaderByte.VOID_TYPE.toByte()) {
+      return Void.TYPE;
+    }
+    if (typeCode == HeaderByte.NULL.toByte()) {
+      return null;
+    }
+    throw new InternalGemFireError(
+        LocalizedStrings.InternalDataSerializer_UNEXPECTED_TYPECODE_0.toLocalizedString(typeCode));
   }
 
   private static final byte TIME_UNIT_NANOSECONDS = -1;
@@ -2130,13 +2137,13 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   public static void writeUserDataSerializableHeader(int classId, DataOutput out)
       throws IOException {
     if (classId <= Byte.MAX_VALUE && classId >= Byte.MIN_VALUE) {
-      out.writeByte(USER_DATA_SERIALIZABLE);
+      out.writeByte(HeaderByte.USER_DATA_SERIALIZABLE.toByte());
       out.writeByte(classId);
     } else if (classId <= Short.MAX_VALUE && classId >= Short.MIN_VALUE) {
-      out.writeByte(USER_DATA_SERIALIZABLE_2);
+      out.writeByte(HeaderByte.USER_DATA_SERIALIZABLE_2.toByte());
       out.writeShort(classId);
     } else {
-      out.writeByte(USER_DATA_SERIALIZABLE_4);
+      out.writeByte(HeaderByte.USER_DATA_SERIALIZABLE_4.toByte());
       out.writeInt(classId);
     }
   }
@@ -2172,7 +2179,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @param serializedForm the serialized byte array
    */
   public static boolean isSerializedNull(byte[] serializedForm) {
-    return serializedForm.length == 1 && serializedForm[0] == NULL;
+    return serializedForm.length == 1 && serializedForm[0] == HeaderByte.NULL.toByte();
   }
 
   public static void basicWriteObject(Object o, DataOutput out, boolean ensurePdxCompatibility)
@@ -2186,7 +2193,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
     // Handle special objects first
     if (o == null) {
-      out.writeByte(NULL);
+      out.writeByte(HeaderByte.NULL.toByte());
 
     } else if (o instanceof DataSerializableFixedID) {
       checkPdxCompatible(o, ensurePdxCompatibility);
@@ -2215,7 +2222,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       if (classId != 0) {
         writeUserDataSerializableHeader(classId, out);
       } else {
-        out.writeByte(DATA_SERIALIZABLE);
+        out.writeByte(HeaderByte.DATA_SERIALIZABLE.toByte());
         DataSerializer.writeClass(c, out);
       }
       DataSerializable ds = (DataSerializable) o;
@@ -2271,7 +2278,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
 
   public static void writePdxEnumId(int eId, DataOutput out) throws IOException {
-    out.writeByte(PDX_ENUM);
+    out.writeByte(HeaderByte.PDX_ENUM.toByte());
     out.writeByte(eId >> 24);
     writeArrayLength(eId & 0xFFFFFF, out);
   }
@@ -2299,7 +2306,9 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   private static void writeGemFireEnum(Enum<?> e, DataOutput out) throws IOException {
     boolean isGemFireObject = isGemfireObject(e);
-    DataSerializer.writePrimitiveByte(isGemFireObject ? GEMFIRE_ENUM : PDX_INLINE_ENUM, out);
+    DataSerializer.writePrimitiveByte(
+        isGemFireObject ? HeaderByte.GEMFIRE_ENUM.toByte() : HeaderByte.PDX_INLINE_ENUM.toByte(),
+        out);
     DataSerializer.writeString(e.getDeclaringClass().getName(), out);
     DataSerializer.writeString(e.name(), out);
     if (!isGemFireObject) {
@@ -2339,7 +2348,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @param out the data output to serialize to
    */
   public static void writeSerializableObject(Object o, DataOutput out) throws IOException {
-    out.writeByte(SERIALIZABLE);
+    out.writeByte(HeaderByte.SERIALIZABLE.toByte());
     if (out instanceof ObjectOutputStream) {
       ((ObjectOutputStream) out).writeObject(o);
     } else {
@@ -2702,13 +2711,13 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "readDSFID: header={}", header);
     }
-    if (header == DS_FIXED_ID_BYTE) {
+    if (header == HeaderByte.DS_FIXED_ID_BYTE.toByte()) {
       return DSFIDFactory.create(in.readByte(), in);
-    } else if (header == DS_FIXED_ID_SHORT) {
+    } else if (header == HeaderByte.DS_FIXED_ID_SHORT.toByte()) {
       return DSFIDFactory.create(in.readShort(), in);
-    } else if (header == DS_NO_FIXED_ID) {
+    } else if (header == HeaderByte.DS_NO_FIXED_ID.toByte()) {
       return readDataSerializableFixedID(in);
-    } else if (header == DS_FIXED_ID_INT) {
+    } else if (header == HeaderByte.DS_FIXED_ID_INT.toByte()) {
       return DSFIDFactory.create(in.readInt(), in);
     } else {
       throw new IllegalStateException("unexpected byte: " + header + " while reading dsfid");
@@ -2718,14 +2727,14 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   public static int readDSFIDHeader(final DataInput in) throws IOException {
     checkIn(in);
     byte header = in.readByte();
-    if (header == DS_FIXED_ID_BYTE) {
+    if (header == HeaderByte.DS_FIXED_ID_BYTE.toByte()) {
       return in.readByte();
-    } else if (header == DS_FIXED_ID_SHORT) {
+    } else if (header == HeaderByte.DS_FIXED_ID_SHORT.toByte()) {
       return in.readShort();
-    } else if (header == DS_NO_FIXED_ID) {
+    } else if (header == HeaderByte.DS_NO_FIXED_ID.toByte()) {
       // is that correct??
       return Integer.MAX_VALUE;
-    } else if (header == DS_FIXED_ID_INT) {
+    } else if (header == HeaderByte.DS_FIXED_ID_INT.toByte()) {
       return in.readInt();
     } else {
       throw new IllegalStateException("unexpected byte: " + header + " while reading dsfid");
@@ -2741,7 +2750,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @since GemFire 5.7
    */
   public static String readString(DataInput in, byte header) throws IOException {
-    if (header == DSCODE.STRING_BYTES) {
+    if (header == HeaderByte.STRING_BYTES.toByte()) {
       int len = in.readUnsignedShort();
       if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
         logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading STRING_BYTES of len={}", len);
@@ -2749,17 +2758,17 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       byte[] buf = new byte[len];
       in.readFully(buf, 0, len);
       return new String(buf, 0); // intentionally using deprecated constructor
-    } else if (header == DSCODE.STRING) {
+    } else if (header == HeaderByte.STRING.toByte()) {
       if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
         logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading utf STRING");
       }
       return in.readUTF();
-    } else if (header == DSCODE.NULL_STRING) {
+    } else if (header == HeaderByte.NULL_STRING.toByte()) {
       if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
         logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading NULL_STRING");
       }
       return null;
-    } else if (header == DSCODE.HUGE_STRING_BYTES) {
+    } else if (header == HeaderByte.HUGE_STRING_BYTES.toByte()) {
       int len = in.readInt();
       if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
         logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading HUGE_STRING_BYTES of len={}", len);
@@ -2767,7 +2776,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       byte[] buf = new byte[len];
       in.readFully(buf, 0, len);
       return new String(buf, 0); // intentionally using deprecated constructor
-    } else if (header == DSCODE.HUGE_STRING) {
+    } else if (header == HeaderByte.HUGE_STRING.toByte()) {
       int len = in.readInt();
       if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
         logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading HUGE_STRING of len={}", len);
@@ -2860,198 +2869,257 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "basicReadObject: header={}", header);
     }
-    switch (header) {
-      case DS_FIXED_ID_BYTE:
-        return DSFIDFactory.create(in.readByte(), in);
-      case DS_FIXED_ID_SHORT:
-        return DSFIDFactory.create(in.readShort(), in);
-      case DS_FIXED_ID_INT:
-        return DSFIDFactory.create(in.readInt(), in);
-      case DS_NO_FIXED_ID:
-        return readDataSerializableFixedID(in);
-      case NULL:
-        return null;
-      case NULL_STRING:
-      case STRING:
-      case HUGE_STRING:
-      case STRING_BYTES:
-      case HUGE_STRING_BYTES:
-        return readString(in, header);
-      case CLASS:
-        return readClass(in);
-      case DATE:
-        return readDate(in);
-      case FILE:
-        return readFile(in);
-      case INET_ADDRESS:
-        return readInetAddress(in);
-      case BOOLEAN:
-        return readBoolean(in);
-      case CHARACTER:
-        return readCharacter(in);
-      case BYTE:
-        return readByte(in);
-      case SHORT:
-        return readShort(in);
-      case INTEGER:
-        return readInteger(in);
-      case LONG:
-        return readLong(in);
-      case FLOAT:
-        return readFloat(in);
-      case DOUBLE:
-        return readDouble(in);
-      case BYTE_ARRAY:
-        return readByteArray(in);
-      case ARRAY_OF_BYTE_ARRAYS:
-        return readArrayOfByteArrays(in);
-      case SHORT_ARRAY:
-        return readShortArray(in);
-      case STRING_ARRAY:
-        return readStringArray(in);
-      case INT_ARRAY:
-        return readIntArray(in);
-      case LONG_ARRAY:
-        return readLongArray(in);
-      case FLOAT_ARRAY:
-        return readFloatArray(in);
-      case DOUBLE_ARRAY:
-        return readDoubleArray(in);
-      case BOOLEAN_ARRAY:
-        return readBooleanArray(in);
-      case CHAR_ARRAY:
-        return readCharArray(in);
-      case OBJECT_ARRAY:
-        return readObjectArray(in);
-      case ARRAY_LIST:
-        return readArrayList(in);
-      case LINKED_LIST:
-        return readLinkedList(in);
-      case HASH_SET:
-        return readHashSet(in);
-      case LINKED_HASH_SET:
-        return readLinkedHashSet(in);
-      case HASH_MAP:
-        return readHashMap(in);
-      case IDENTITY_HASH_MAP:
-        return readIdentityHashMap(in);
-      case HASH_TABLE:
-        return readHashtable(in);
-      case CONCURRENT_HASH_MAP:
-        return readConcurrentHashMap(in);
-      case PROPERTIES:
-        return readProperties(in);
-      case TIME_UNIT:
-        return readTimeUnit(in);
-      case USER_CLASS:
-        return readUserClass(in, in.readByte());
-      case USER_CLASS_2:
-        return readUserClass(in, in.readShort());
-      case USER_CLASS_4:
-        return readUserClass(in, in.readInt());
-      case VECTOR:
-        return readVector(in);
-      case STACK:
-        return readStack(in);
-      case TREE_MAP:
-        return readTreeMap(in);
-      case TREE_SET:
-        return readTreeSet(in);
-      case BOOLEAN_TYPE:
-        return Boolean.TYPE;
-      case CHARACTER_TYPE:
-        return Character.TYPE;
-      case BYTE_TYPE:
-        return Byte.TYPE;
-      case SHORT_TYPE:
-        return Short.TYPE;
-      case INTEGER_TYPE:
-        return Integer.TYPE;
-      case LONG_TYPE:
-        return Long.TYPE;
-      case FLOAT_TYPE:
-        return Float.TYPE;
-      case DOUBLE_TYPE:
-        return Double.TYPE;
-      case VOID_TYPE:
-        return Void.TYPE;
-
-      case USER_DATA_SERIALIZABLE:
-        return readUserDataSerializable(in, in.readByte());
-      case USER_DATA_SERIALIZABLE_2:
-        return readUserDataSerializable(in, in.readShort());
-      case USER_DATA_SERIALIZABLE_4:
-        return readUserDataSerializable(in, in.readInt());
-
-      case DATA_SERIALIZABLE:
-        return readDataSerializable(in);
-
-      case SERIALIZABLE: {
-        final boolean isDebugEnabled_SERIALIZER =
-            logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE);
-        Object serializableResult;
-        if (in instanceof DSObjectInputStream) {
-          serializableResult = ((DSObjectInputStream) in).readObject();
-        } else {
-          InputStream stream;
-          if (in instanceof InputStream) {
-            stream = (InputStream) in;
-          } else {
-            stream = new InputStream() {
-              @Override
-              public int read() throws IOException {
-                try {
-                  return in.readUnsignedByte(); // fix for bug 47249
-                } catch (EOFException ignored) {
-                  return -1;
-                }
-              }
-
-            };
-          }
-
-          ObjectInput ois = new DSObjectInputStream(stream);
-          serializationFilter.setFilterOn((ObjectInputStream) ois);
-          if (stream instanceof VersionedDataStream) {
-            Version v = ((VersionedDataStream) stream).getVersion();
-            if (v != null && v != Version.CURRENT) {
-              ois = new VersionedObjectInput(ois, v);
-            }
-          }
-
-          serializableResult = ois.readObject();
-
-          if (isDebugEnabled_SERIALIZER) {
-            logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Serializable object: {}",
-                serializableResult);
-          }
-        }
-        if (isDebugEnabled_SERIALIZER) {
-          logger.trace(LogMarker.SERIALIZER_VERBOSE, "deserialized instanceof {}",
-              serializableResult.getClass());
-        }
-        return serializableResult;
-      }
-      case PDX:
-        return readPdxSerializable(in);
-      case PDX_ENUM:
-        return readPdxEnum(in);
-      case GEMFIRE_ENUM:
-        return readGemFireEnum(in);
-      case PDX_INLINE_ENUM:
-        return readPdxInlineEnum(in);
-      case BIG_INTEGER:
-        return readBigInteger(in);
-      case BIG_DECIMAL:
-        return readBigDecimal(in);
-      case UUID:
-        return readUUID(in);
-      case TIMESTAMP:
-        return readTimestamp(in);
-      default:
-        String s = "Unknown header byte: " + header;
-        throw new IOException(s);
+    if (header == HeaderByte.DS_FIXED_ID_BYTE.toByte()) {
+      return DSFIDFactory.create(in.readByte(), in);
     }
+    if (header == HeaderByte.DS_FIXED_ID_SHORT.toByte()) {
+      return DSFIDFactory.create(in.readShort(), in);
+    }
+    if (header == HeaderByte.DS_FIXED_ID_INT.toByte()) {
+      return DSFIDFactory.create(in.readInt(), in);
+    }
+    if (header == HeaderByte.DS_NO_FIXED_ID.toByte()) {
+      return readDataSerializableFixedID(in);
+    }
+    if (header == HeaderByte.NULL.toByte()) {
+      return null;
+    }
+    if (header == HeaderByte.NULL_STRING.toByte() || header == HeaderByte.STRING.toByte()
+        || header == HeaderByte.HUGE_STRING.toByte() || header == HeaderByte.STRING_BYTES.toByte()
+        || header == HeaderByte.HUGE_STRING_BYTES.toByte()) {
+      return readString(in, header);
+    }
+    if (header == HeaderByte.CLASS.toByte()) {
+      return readClass(in);
+    }
+    if (header == HeaderByte.DATE.toByte()) {
+      return readDate(in);
+    }
+    if (header == HeaderByte.FILE.toByte()) {
+      return readFile(in);
+    }
+    if (header == HeaderByte.INET_ADDRESS.toByte()) {
+      return readInetAddress(in);
+    }
+    if (header == HeaderByte.BOOLEAN.toByte()) {
+      return readBoolean(in);
+    }
+    if (header == HeaderByte.CHARACTER.toByte()) {
+      return readCharacter(in);
+    }
+    if (header == HeaderByte.BYTE.toByte()) {
+      return readByte(in);
+    }
+    if (header == HeaderByte.SHORT.toByte()) {
+      return readShort(in);
+    }
+    if (header == HeaderByte.INTEGER.toByte()) {
+      return readInteger(in);
+    }
+    if (header == HeaderByte.LONG.toByte()) {
+      return readLong(in);
+    }
+    if (header == HeaderByte.FLOAT.toByte()) {
+      return readFloat(in);
+    }
+    if (header == HeaderByte.DOUBLE.toByte()) {
+      return readDouble(in);
+    }
+    if (header == HeaderByte.BYTE_ARRAY.toByte()) {
+      return readByteArray(in);
+    }
+    if (header == HeaderByte.ARRAY_OF_BYTE_ARRAYS.toByte()) {
+      return readArrayOfByteArrays(in);
+    }
+    if (header == HeaderByte.SHORT_ARRAY.toByte()) {
+      return readShortArray(in);
+    }
+    if (header == HeaderByte.STRING_ARRAY.toByte()) {
+      return readStringArray(in);
+    }
+    if (header == HeaderByte.INT_ARRAY.toByte()) {
+      return readIntArray(in);
+    }
+    if (header == HeaderByte.LONG_ARRAY.toByte()) {
+      return readLongArray(in);
+    }
+    if (header == HeaderByte.FLOAT_ARRAY.toByte()) {
+      return readFloatArray(in);
+    }
+    if (header == HeaderByte.DOUBLE_ARRAY.toByte()) {
+      return readDoubleArray(in);
+    }
+    if (header == HeaderByte.BOOLEAN_ARRAY.toByte()) {
+      return readBooleanArray(in);
+    }
+    if (header == HeaderByte.CHAR_ARRAY.toByte()) {
+      return readCharArray(in);
+    }
+    if (header == HeaderByte.OBJECT_ARRAY.toByte()) {
+      return readObjectArray(in);
+    }
+    if (header == HeaderByte.ARRAY_LIST.toByte()) {
+      return readArrayList(in);
+    }
+    if (header == HeaderByte.LINKED_LIST.toByte()) {
+      return readLinkedList(in);
+    }
+    if (header == HeaderByte.HASH_SET.toByte()) {
+      return readHashSet(in);
+    }
+    if (header == HeaderByte.LINKED_HASH_SET.toByte()) {
+      return readLinkedHashSet(in);
+    }
+    if (header == HeaderByte.HASH_MAP.toByte()) {
+      return readHashMap(in);
+    }
+    if (header == HeaderByte.IDENTITY_HASH_MAP.toByte()) {
+      return readIdentityHashMap(in);
+    }
+    if (header == HeaderByte.HASH_TABLE.toByte()) {
+      return readHashtable(in);
+    }
+    if (header == HeaderByte.CONCURRENT_HASH_MAP.toByte()) {
+      return readConcurrentHashMap(in);
+    }
+    if (header == HeaderByte.PROPERTIES.toByte()) {
+      return readProperties(in);
+    }
+    if (header == HeaderByte.TIME_UNIT.toByte()) {
+      return readTimeUnit(in);
+    }
+    if (header == HeaderByte.USER_CLASS.toByte()) {
+      return readUserClass(in, in.readByte());
+    }
+    if (header == HeaderByte.USER_CLASS_2.toByte()) {
+      return readUserClass(in, in.readShort());
+    }
+    if (header == HeaderByte.USER_CLASS_4.toByte()) {
+      return readUserClass(in, in.readInt());
+    }
+    if (header == HeaderByte.VECTOR.toByte()) {
+      return readVector(in);
+    }
+    if (header == HeaderByte.STACK.toByte()) {
+      return readStack(in);
+    }
+    if (header == HeaderByte.TREE_MAP.toByte()) {
+      return readTreeMap(in);
+    }
+    if (header == HeaderByte.TREE_SET.toByte()) {
+      return readTreeSet(in);
+    }
+    if (header == HeaderByte.BOOLEAN_TYPE.toByte()) {
+      return Boolean.TYPE;
+    }
+    if (header == HeaderByte.CHARACTER_TYPE.toByte()) {
+      return Character.TYPE;
+    }
+    if (header == HeaderByte.BYTE_TYPE.toByte()) {
+      return Byte.TYPE;
+    }
+    if (header == HeaderByte.SHORT_TYPE.toByte()) {
+      return Short.TYPE;
+    }
+    if (header == HeaderByte.INTEGER_TYPE.toByte()) {
+      return Integer.TYPE;
+    }
+    if (header == HeaderByte.LONG_TYPE.toByte()) {
+      return Long.TYPE;
+    }
+    if (header == HeaderByte.FLOAT_TYPE.toByte()) {
+      return Float.TYPE;
+    }
+    if (header == HeaderByte.DOUBLE_TYPE.toByte()) {
+      return Double.TYPE;
+    }
+    if (header == HeaderByte.VOID_TYPE.toByte()) {
+      return Void.TYPE;
+    }
+    if (header == HeaderByte.USER_DATA_SERIALIZABLE.toByte()) {
+      return readUserDataSerializable(in, in.readByte());
+    }
+    if (header == HeaderByte.USER_DATA_SERIALIZABLE_2.toByte()) {
+      return readUserDataSerializable(in, in.readShort());
+    }
+    if (header == HeaderByte.USER_DATA_SERIALIZABLE_4.toByte()) {
+      return readUserDataSerializable(in, in.readInt());
+    }
+    if (header == HeaderByte.DATA_SERIALIZABLE.toByte()) {
+      return readDataSerializable(in);
+    }
+    if (header == HeaderByte.SERIALIZABLE.toByte()) {
+      final boolean isDebugEnabled_SERIALIZER = logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE);
+      Object serializableResult;
+      if (in instanceof DSObjectInputStream) {
+        serializableResult = ((DSObjectInputStream) in).readObject();
+      } else {
+        InputStream stream;
+        if (in instanceof InputStream) {
+          stream = (InputStream) in;
+        } else {
+          stream = new InputStream() {
+            @Override
+            public int read() throws IOException {
+              try {
+                return in.readUnsignedByte(); // fix for bug 47249
+              } catch (EOFException ignored) {
+                return -1;
+              }
+            }
+
+          };
+        }
+
+        ObjectInput ois = new DSObjectInputStream(stream);
+        serializationFilter.setFilterOn((ObjectInputStream) ois);
+        if (stream instanceof VersionedDataStream) {
+          Version v = ((VersionedDataStream) stream).getVersion();
+          if (v != null && v != Version.CURRENT) {
+            ois = new VersionedObjectInput(ois, v);
+          }
+        }
+
+        serializableResult = ois.readObject();
+
+        if (isDebugEnabled_SERIALIZER) {
+          logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Serializable object: {}",
+              serializableResult);
+        }
+      }
+      if (isDebugEnabled_SERIALIZER) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "deserialized instanceof {}",
+            serializableResult.getClass());
+      }
+      return serializableResult;
+    }
+    if (header == HeaderByte.PDX.toByte()) {
+      return readPdxSerializable(in);
+    }
+    if (header == HeaderByte.PDX_ENUM.toByte()) {
+      return readPdxEnum(in);
+    }
+    if (header == HeaderByte.GEMFIRE_ENUM.toByte()) {
+      return readGemFireEnum(in);
+    }
+    if (header == HeaderByte.PDX_INLINE_ENUM.toByte()) {
+      return readPdxInlineEnum(in);
+    }
+    if (header == HeaderByte.BIG_INTEGER.toByte()) {
+      return readBigInteger(in);
+    }
+    if (header == HeaderByte.BIG_DECIMAL.toByte()) {
+      return readBigDecimal(in);
+    }
+    if (header == HeaderByte.UUID.toByte()) {
+      return readUUID(in);
+    }
+    if (header == HeaderByte.TIMESTAMP.toByte()) {
+      return readTimestamp(in);
+    }
+
+    String s = "Unknown header byte: " + header;
+    throw new IOException(s);
   }
 
   private static Object readUserDataSerializable(final DataInput in, int classId)
@@ -3239,7 +3307,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   public static PdxInstance readPdxInstance(final byte[] dataBytes, InternalCache internalCache) {
     try {
       byte type = dataBytes[0];
-      if (type == PDX) {
+      if (type == HeaderByte.PDX.toByte()) {
         PdxInputStream in = new PdxInputStream(dataBytes);
         in.readByte(); // throw away the type byte
         int len = in.readInt();
@@ -3250,7 +3318,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         }
 
         return new PdxInstanceImpl(pdxType, in, len);
-      } else if (type == DSCODE.PDX_ENUM) {
+      } else if (type == HeaderByte.PDX_ENUM.toByte()) {
         PdxInputStream in = new PdxInputStream(dataBytes);
         in.readByte(); // throw away the type byte
         int dsId = in.readByte();
@@ -3262,7 +3330,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           throw new IllegalStateException("Unknown pdx enum id=" + enumId);
         }
         return ei.getPdxInstance(enumId);
-      } else if (type == DSCODE.PDX_INLINE_ENUM) {
+      } else if (type == HeaderByte.PDX_INLINE_ENUM.toByte()) {
         PdxInputStream in = new PdxInputStream(dataBytes);
         in.readByte(); // throw away the type byte
         String className = DataSerializer.readString(in);

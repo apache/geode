@@ -21,7 +21,7 @@ import java.util.Date;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.HeaderByte;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -533,7 +533,7 @@ public class PdxWriterImpl implements PdxWriter {
       this.lu.update(bits);
     } // !alreadyGenerated
 
-    return getCurrentOffset() + 1; // +1 for DSCODE.PDX
+    return getCurrentOffset() + 1; // +1 for HeaderByte.PDX.toByte()
   }
 
   /**
@@ -839,7 +839,7 @@ public class PdxWriterImpl implements PdxWriter {
   private HeapDataOutputStream.LongUpdater lu;
 
   private void writeHeader() {
-    this.os.write(DSCODE.PDX);
+    this.os.write(HeaderByte.PDX.toByte());
     this.lu = this.os.reserveLong(); // dummy length and type id
   }
 
@@ -932,7 +932,7 @@ public class PdxWriterImpl implements PdxWriter {
     if (valueBytes == null || valueBytes.length < 1) {
       return false;
     }
-    return valueBytes[0] == DSCODE.PDX;
+    return valueBytes[0] == HeaderByte.PDX.toByte();
   }
 
   public int position() {

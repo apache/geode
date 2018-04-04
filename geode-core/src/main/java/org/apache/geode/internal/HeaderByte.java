@@ -14,25 +14,20 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.DataSerializer;
-
 /**
- * An interface that contains a bunch of static final values used for the implementation of
- * {@link DataSerializer}. It is basically an Enum and could be changed to one once we drop 1.4. The
- * allowed range of these codes is -128..127 inclusive (i.e. byte).
+ * An enumeration that contains a bunch of pre-defined values for use with data serialization.
+ * The allowed range of these values is -128..127 inclusive (i.e., one byte).
  *
- * @since GemFire 5.7
- * @deprecated Use {@link HeaderByte} instead.
+ * @since GemFire 9.5
  */
-@Deprecated
-public interface DSCODE {
+public enum HeaderByte {
   /**
    * This byte value, -128, has never been used in any GemFire release so far. It might get used in
    * the future to introduce DataSerializer versioning.
    */
-  byte RESERVED_FOR_FUTURE_USE = HeaderByte.RESERVED_FOR_FUTURE_USE.toByte();
+  RESERVED_FOR_FUTURE_USE(-128),
 
-  byte ILLEGAL = HeaderByte.ILLEGAL.toByte();
+  ILLEGAL(-127),
 
   // -126..0 unused
 
@@ -42,28 +37,28 @@ public interface DSCODE {
    *
    * @since GemFire 5.7
    */
-  byte DS_FIXED_ID_BYTE = HeaderByte.DS_FIXED_ID_BYTE.toByte();
+  DS_FIXED_ID_BYTE(1),
   /**
    * A header byte meaning that the next element in the stream is a {@link DataSerializableFixedID}
    * whose id is a single signed short.
    *
    * @since GemFire 5.7
    */
-  byte DS_FIXED_ID_SHORT = HeaderByte.DS_FIXED_ID_SHORT.toByte();
+  DS_FIXED_ID_SHORT(2),
   /**
    * A header byte meaning that the next element in the stream is a {@link DataSerializableFixedID}
    * whose id is a single signed int.
    *
    * @since GemFire 5.7
    */
-  byte DS_FIXED_ID_INT = HeaderByte.DS_FIXED_ID_INT.toByte();
+  DS_FIXED_ID_INT(3),
   /**
    * A header byte meaning that the next element in the stream is a {@link DataSerializableFixedID}
    * whose id is <code>NO_FIXED_ID</code>.
    *
    * @since GemFire 5.7
    */
-  byte DS_NO_FIXED_ID = HeaderByte.DS_NO_FIXED_ID.toByte();
+  DS_NO_FIXED_ID(4),
 
   /**
    * A header byte meaning that the object was serialized by a user's <code>DataSerializer</code>
@@ -71,7 +66,7 @@ public interface DSCODE {
    *
    * @since GemFire 5.7
    */
-  byte USER_CLASS_2 = HeaderByte.USER_CLASS_2.toByte();
+  USER_CLASS_2(5),
 
   /**
    * A header byte meaning that the object was serialized by a user's <code>DataSerializer</code>
@@ -79,7 +74,7 @@ public interface DSCODE {
    *
    * @since GemFire 5.7
    */
-  byte USER_CLASS_4 = HeaderByte.USER_CLASS_4.toByte();
+  USER_CLASS_4(6),
 
   // TypeIds 7 and 8 reserved for use by C# Serializable and XmlSerializable.
 
@@ -88,14 +83,14 @@ public interface DSCODE {
   /**
    * A header byte meaning that the next element in the stream is a <code>LinkedList</code>.
    */
-  byte LINKED_LIST = HeaderByte.LINKED_LIST.toByte();
+  LINKED_LIST(10),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Properties</code>.
    *
    * @since GemFire 5.7
    */
-  byte PROPERTIES = HeaderByte.PROPERTIES.toByte();
+  PROPERTIES(11),
 
   // 12..16 unused
 
@@ -103,24 +98,16 @@ public interface DSCODE {
    * Codes for the primitive classes, which cannot be recreated with
    * <code>Class.forName(String,boolean,ClassLoader)</code> like other classes
    */
-  byte BOOLEAN_TYPE = HeaderByte.BOOLEAN_TYPE.toByte();
-  byte CHARACTER_TYPE = HeaderByte.CHARACTER_TYPE.toByte();
-  byte BYTE_TYPE = HeaderByte.BYTE_TYPE.toByte();
-  byte SHORT_TYPE = HeaderByte.SHORT_TYPE.toByte();
-  byte INTEGER_TYPE = HeaderByte.INTEGER_TYPE.toByte();
-  byte LONG_TYPE = HeaderByte.LONG_TYPE.toByte();
-  byte FLOAT_TYPE = HeaderByte.FLOAT_TYPE.toByte();
-  byte DOUBLE_TYPE = HeaderByte.DOUBLE_TYPE.toByte();
-  byte VOID_TYPE = HeaderByte.VOID_TYPE.toByte();
+  BOOLEAN_TYPE(17), CHARACTER_TYPE(18), BYTE_TYPE(19), SHORT_TYPE(20), INTEGER_TYPE(21), LONG_TYPE(22), FLOAT_TYPE(23), DOUBLE_TYPE(24), VOID_TYPE(25),
 
   /**
    * @since GemFire 5.7
    */
-  byte BOOLEAN_ARRAY = HeaderByte.BOOLEAN_ARRAY.toByte();
+  BOOLEAN_ARRAY(26),
   /**
    * @since GemFire 5.7
    */
-  byte CHAR_ARRAY = HeaderByte.CHAR_ARRAY.toByte();
+  CHAR_ARRAY(27),
 
   // 28..36 unused
 
@@ -130,7 +117,7 @@ public interface DSCODE {
    *
    * @since GemFire 5.7
    */
-  byte USER_DATA_SERIALIZABLE_4 = HeaderByte.USER_DATA_SERIALIZABLE_4.toByte();
+  USER_DATA_SERIALIZABLE_4(37),
 
   /**
    * A header byte meaning that a DataSerializable that was registered with the Instantiator was
@@ -138,213 +125,213 @@ public interface DSCODE {
    *
    * @since GemFire 5.7
    */
-  byte USER_DATA_SERIALIZABLE_2 = HeaderByte.USER_DATA_SERIALIZABLE_2.toByte();
+  USER_DATA_SERIALIZABLE_2(38),
 
   /**
    * A header byte meaning that a DataSerializable that was registered with the Instantiator was
    * data serialized using a single byte for its ID.
    */
-  byte USER_DATA_SERIALIZABLE = HeaderByte.USER_DATA_SERIALIZABLE.toByte();
+  USER_DATA_SERIALIZABLE(39),
 
   /**
    * A header byte meaning that the object was serialized by a user's <code>DataSerializer</code>.
    */
-  byte USER_CLASS = HeaderByte.USER_CLASS.toByte();
+  USER_CLASS(40),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>null</code>
    */
-  byte NULL = HeaderByte.NULL.toByte();
+  NULL(41),
 
   /**
    * A header byte meaning that the next element in the stream is a String
    */
-  byte STRING = HeaderByte.STRING.toByte();
+  STRING(42),
 
   /**
    * A header byte meaning that the next element in the stream is a (non-primitive) Class
    */
-  byte CLASS = HeaderByte.CLASS.toByte();
+  CLASS(43),
 
   /**
    * A header byte meaning that the next element in the stream is a serialized object
    */
-  byte SERIALIZABLE = HeaderByte.SERIALIZABLE.toByte();
+  SERIALIZABLE(44),
 
   /**
    * A header byte meaning that the next element in the stream is a DataSerializable object
    */
-  byte DATA_SERIALIZABLE = HeaderByte.DATA_SERIALIZABLE.toByte();
+  DATA_SERIALIZABLE(45),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>byte</code> array.
    */
-  byte BYTE_ARRAY = HeaderByte.BYTE_ARRAY.toByte();
+  BYTE_ARRAY(46),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>short</code> array.
    */
-  byte SHORT_ARRAY = HeaderByte.SHORT_ARRAY.toByte();
+  SHORT_ARRAY(47),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>int</code> array.
    */
-  byte INT_ARRAY = HeaderByte.INT_ARRAY.toByte();
+  INT_ARRAY(48),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>long</code> array.
    */
-  byte LONG_ARRAY = HeaderByte.LONG_ARRAY.toByte();
+  LONG_ARRAY(49),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>float</code> array.
    */
-  byte FLOAT_ARRAY = HeaderByte.FLOAT_ARRAY.toByte();
+  FLOAT_ARRAY(50),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>double</code> array.
    */
-  byte DOUBLE_ARRAY = HeaderByte.DOUBLE_ARRAY.toByte();
+  DOUBLE_ARRAY(51),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Object</code> array.
    */
-  byte OBJECT_ARRAY = HeaderByte.OBJECT_ARRAY.toByte();
+  OBJECT_ARRAY(52),
 
   /**
    * A header boolean meaning that the next element in the stream is a <code>Boolean</code>.
    */
-  byte BOOLEAN = HeaderByte.BOOLEAN.toByte();
+  BOOLEAN(53),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Character</code>.
    */
-  byte CHARACTER = HeaderByte.CHARACTER.toByte();
+  CHARACTER(54),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Byte</code>.
    */
-  byte BYTE = HeaderByte.BYTE.toByte();
+  BYTE(55),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Short</code>.
    */
-  byte SHORT = HeaderByte.SHORT.toByte();
+  SHORT(56),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Integer</code>.
    */
-  byte INTEGER = HeaderByte.INTEGER.toByte();
+  INTEGER(57),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Long</code>.
    */
-  byte LONG = HeaderByte.LONG.toByte();
+  LONG(58),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Float</code>.
    */
-  byte FLOAT = HeaderByte.FLOAT.toByte();
+  FLOAT(59),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Double</code>.
    */
-  byte DOUBLE = HeaderByte.DOUBLE.toByte();
+  DOUBLE(60),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Date</code>.
    */
-  byte DATE = HeaderByte.DATE.toByte();
+  DATE(61),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>InetAddress</code>.
    */
-  byte INET_ADDRESS = HeaderByte.INET_ADDRESS.toByte();
+  INET_ADDRESS(62),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>File</code>.
    */
-  byte FILE = HeaderByte.FILE.toByte();
+  FILE(63),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>String</code> array.
    */
-  byte STRING_ARRAY = HeaderByte.STRING_ARRAY.toByte();
+  STRING_ARRAY(64),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>ArrayList</code>.
    */
-  byte ARRAY_LIST = HeaderByte.ARRAY_LIST.toByte();
+  ARRAY_LIST(65),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>HashSet</code>.
    */
-  byte HASH_SET = HeaderByte.HASH_SET.toByte();
+  HASH_SET(66),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>HashMap</code>.
    */
-  byte HASH_MAP = HeaderByte.HASH_MAP.toByte();
+  HASH_MAP(67),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>TimeUnit</code>.
    */
-  byte TIME_UNIT = HeaderByte.TIME_UNIT.toByte();
+  TIME_UNIT(68),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>null</code>
    * <code>String</code>.
    */
-  byte NULL_STRING = HeaderByte.NULL_STRING.toByte();
+  NULL_STRING(69),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Hashtable</code>.
    *
    * @since GemFire 5.7
    */
-  byte HASH_TABLE = HeaderByte.HASH_TABLE.toByte();
+  HASH_TABLE(70),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Vector</code>.
    *
    * @since GemFire 5.7
    */
-  byte VECTOR = HeaderByte.VECTOR.toByte();
+  VECTOR(71),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>IdentityHashMap</code>.
    *
    * @since GemFire 5.7
    */
-  byte IDENTITY_HASH_MAP = HeaderByte.IDENTITY_HASH_MAP.toByte();
+  IDENTITY_HASH_MAP(72),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>LinkedHashSet</code>.
    *
    * @since GemFire 5.7
    */
-  byte LINKED_HASH_SET = HeaderByte.LINKED_HASH_SET.toByte();
+  LINKED_HASH_SET(73),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>Stack</code>.
    *
    * @since GemFire 5.7
    */
-  byte STACK = HeaderByte.STACK.toByte();
+  STACK(74),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>TreeMap</code>.
    *
    * @since GemFire 5.7
    */
-  byte TREE_MAP = HeaderByte.TREE_MAP.toByte();
+  TREE_MAP(75),
 
   /**
    * A header byte meaning that the next element in the stream is a <code>TreeSet</code>.
    *
    * @since GemFire 5.7
    */
-  byte TREE_SET = HeaderByte.TREE_SET.toByte();
+  TREE_SET(76),
 
   // 75..86 unused
 
@@ -352,7 +339,7 @@ public interface DSCODE {
    * A header byte meaning that the next element in the stream is a buffer of 1-byte characters to
    * turn into a String whose length is <= 0xFFFF
    */
-  byte STRING_BYTES = HeaderByte.STRING_BYTES.toByte();
+  STRING_BYTES(87),
 
   /**
    * A header byte meaning that the next element in the stream is a buffer of 1-byte characters to
@@ -360,7 +347,7 @@ public interface DSCODE {
    *
    * @since GemFire 5.7
    */
-  byte HUGE_STRING_BYTES = HeaderByte.HUGE_STRING_BYTES.toByte();
+  HUGE_STRING_BYTES(88),
 
   /**
    * A header byte meaning that the next element in the stream is a buffer of 2-byte characters to
@@ -368,14 +355,14 @@ public interface DSCODE {
    *
    * @since GemFire 5.7
    */
-  byte HUGE_STRING = HeaderByte.HUGE_STRING.toByte();
+  HUGE_STRING(89),
 
   // 90 unused
 
   /**
    * A header byte meaning that the next element in the stream is a <code>byte[][]</code>.
    */
-  byte ARRAY_OF_BYTE_ARRAYS = HeaderByte.ARRAY_OF_BYTE_ARRAYS.toByte();
+  ARRAY_OF_BYTE_ARRAYS(91),
 
   // 92 unused
 
@@ -384,7 +371,7 @@ public interface DSCODE {
    *
    * @since GemFire 6.6
    */
-  byte PDX = HeaderByte.PDX.toByte();
+  PDX(93),
 
   /**
    * A header byte meaning that the next element in the stream is an enum whose type is defined in
@@ -392,20 +379,20 @@ public interface DSCODE {
    *
    * @since GemFire 6.6.2
    */
-  byte PDX_ENUM = HeaderByte.PDX_ENUM.toByte();
+  PDX_ENUM(94),
 
   /**
    * java.math.BigInteger
    *
    * @since GemFire 6.6.2
    */
-  byte BIG_INTEGER = HeaderByte.BIG_INTEGER.toByte();
+  BIG_INTEGER(95),
   /**
    * java.math.BigDecimal
    *
    * @since GemFire 6.6.2
    */
-  byte BIG_DECIMAL = HeaderByte.BIG_DECIMAL.toByte();
+  BIG_DECIMAL(96),
 
   /**
    * This code can only be used by PDX. It can't be used for normal DataSerializer writeObject
@@ -414,43 +401,53 @@ public interface DSCODE {
    *
    * @since GemFire 6.6
    */
-  byte CONCURRENT_HASH_MAP = HeaderByte.CONCURRENT_HASH_MAP.toByte();
+  CONCURRENT_HASH_MAP(97),
 
   /**
    * java.util.UUID
    *
    * @since GemFire 6.6.2
    */
-  byte UUID = HeaderByte.UUID.toByte();
+  UUID(98),
   /**
    * java.sql.Timestamp
    *
    * @since GemFire 6.6.2
    */
-  byte TIMESTAMP = HeaderByte.TIMESTAMP.toByte();
+  TIMESTAMP(99),
 
   /**
    * Used for enums that need to always be deserialized into their enum domain class.
    *
    * @since GemFire 6.6.2
    */
-  byte GEMFIRE_ENUM = HeaderByte.GEMFIRE_ENUM.toByte();
+  GEMFIRE_ENUM(100),
   /**
    * Used for enums that need to be encoded inline because the pdx registry may not be available.
    * During deserialization this type of enum may be deserialized as a PdxInstance.
    *
    * @since GemFire 6.6.2
    */
-  byte PDX_INLINE_ENUM = HeaderByte.PDX_INLINE_ENUM.toByte();
+  PDX_INLINE_ENUM(101),
 
   /**
    * Used for wildcard searches in soplogs with composite keys.
    *
    * @since GemFire 8.0
    */
-  byte WILDCARD = HeaderByte.WILDCARD.toByte();
+  WILDCARD(102);
 
   // 103..127 unused
 
   // DO NOT USE CODES > 127. They are not "byte".
+
+  private byte value;
+
+  HeaderByte(int value) {
+    this.value = (byte) value;
+  }
+
+  public byte toByte() {
+    return value;
+  }
 }

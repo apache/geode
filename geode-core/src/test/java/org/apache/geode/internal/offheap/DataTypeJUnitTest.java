@@ -57,10 +57,10 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.distributed.internal.ReplyMessage;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.DataSerializableJUnitTest.DataSerializableImpl;
+import org.apache.geode.internal.HeaderByte;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.admin.remote.ShutdownAllResponse;
@@ -112,7 +112,7 @@ public class DataTypeJUnitTest {
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    DataSerializer.writeByte(DSCODE.DS_FIXED_ID_INT, out);
+    DataSerializer.writeByte(HeaderByte.DS_FIXED_ID_INT.toByte(), out);
     DataSerializer.writeInteger(someDSFIDInt, out);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
@@ -124,7 +124,7 @@ public class DataTypeJUnitTest {
   public void testDataSerializableFixedIDClass() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    DataSerializer.writeByte(DSCODE.DS_NO_FIXED_ID, out);
+    DataSerializer.writeByte(HeaderByte.DS_NO_FIXED_ID.toByte(), out);
     DataSerializer.writeClass(Integer.class, out);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
@@ -586,7 +586,7 @@ public class DataTypeJUnitTest {
   public void testBooleanType() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.BOOLEAN_TYPE);
+    out.writeByte(HeaderByte.BOOLEAN_TYPE.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.lang.Boolean.class", type);
@@ -596,7 +596,7 @@ public class DataTypeJUnitTest {
   public void testCharacterType() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.CHARACTER_TYPE);
+    out.writeByte(HeaderByte.CHARACTER_TYPE.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.lang.Character.class", type);
@@ -606,7 +606,7 @@ public class DataTypeJUnitTest {
   public void testByteType() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.BYTE_TYPE);
+    out.writeByte(HeaderByte.BYTE_TYPE.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.lang.Byte.class", type);
@@ -616,7 +616,7 @@ public class DataTypeJUnitTest {
   public void testShortType() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.SHORT_TYPE);
+    out.writeByte(HeaderByte.SHORT_TYPE.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.lang.Short.class", type);
@@ -626,7 +626,7 @@ public class DataTypeJUnitTest {
   public void testIntegerType() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.INTEGER_TYPE);
+    out.writeByte(HeaderByte.INTEGER_TYPE.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.lang.Integer.class", type);
@@ -636,7 +636,7 @@ public class DataTypeJUnitTest {
   public void testLongType() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.LONG_TYPE);
+    out.writeByte(HeaderByte.LONG_TYPE.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.lang.Long.class", type);
@@ -646,7 +646,7 @@ public class DataTypeJUnitTest {
   public void testFloatType() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.FLOAT_TYPE);
+    out.writeByte(HeaderByte.FLOAT_TYPE.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.lang.Float.class", type);
@@ -656,7 +656,7 @@ public class DataTypeJUnitTest {
   public void testDoubleType() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.DOUBLE_TYPE);
+    out.writeByte(HeaderByte.DOUBLE_TYPE.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.lang.Double.class", type);
@@ -666,7 +666,7 @@ public class DataTypeJUnitTest {
   public void testVoidType() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.VOID_TYPE);
+    out.writeByte(HeaderByte.VOID_TYPE.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.lang.Void.class", type);
@@ -679,7 +679,7 @@ public class DataTypeJUnitTest {
     byte someUserClassId = 1;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.USER_CLASS);
+    out.writeByte(HeaderByte.USER_CLASS.toByte());
     out.writeByte(someUserClassId);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
@@ -691,7 +691,7 @@ public class DataTypeJUnitTest {
     short someUserClass2Id = 1;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.USER_CLASS_2);
+    out.writeByte(HeaderByte.USER_CLASS_2.toByte());
     out.writeShort(someUserClass2Id);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
@@ -703,7 +703,7 @@ public class DataTypeJUnitTest {
     int someUserClass4Id = 1;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.USER_CLASS_4);
+    out.writeByte(HeaderByte.USER_CLASS_4.toByte());
     out.writeInt(someUserClass4Id);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
@@ -724,7 +724,7 @@ public class DataTypeJUnitTest {
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.USER_DATA_SERIALIZABLE);
+    out.writeByte(HeaderByte.USER_DATA_SERIALIZABLE.toByte());
     out.writeByte(someClassId);
 
     byte[] bytes = baos.toByteArray();
@@ -748,7 +748,7 @@ public class DataTypeJUnitTest {
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.USER_DATA_SERIALIZABLE_2);
+    out.writeByte(HeaderByte.USER_DATA_SERIALIZABLE_2.toByte());
     out.writeShort(someClassId);
 
     byte[] bytes = baos.toByteArray();
@@ -772,7 +772,7 @@ public class DataTypeJUnitTest {
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.USER_DATA_SERIALIZABLE_4);
+    out.writeByte(HeaderByte.USER_DATA_SERIALIZABLE_4.toByte());
     out.writeInt(someClassId);
 
     byte[] bytes = baos.toByteArray();
@@ -813,7 +813,7 @@ public class DataTypeJUnitTest {
     int somePdxTypeInt = 1;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.PDX);
+    out.writeByte(HeaderByte.PDX.toByte());
     out.writeInt(somePdxTypeInt);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
@@ -840,7 +840,7 @@ public class DataTypeJUnitTest {
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.GEMFIRE_ENUM);
+    out.writeByte(HeaderByte.GEMFIRE_ENUM.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
 
@@ -885,7 +885,7 @@ public class DataTypeJUnitTest {
   public void testSQLTimestamp() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.TIMESTAMP);
+    out.writeByte(HeaderByte.TIMESTAMP.toByte());
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals("java.sql.Timestamp", type);

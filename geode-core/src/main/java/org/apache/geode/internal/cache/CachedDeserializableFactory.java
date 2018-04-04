@@ -20,7 +20,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.HeaderByte;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.NullDataOutputStream;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -59,7 +59,7 @@ public class CachedDeserializableFactory {
   private static boolean isPdxEncoded(byte[] v) {
     // assert v != null;
     if (v.length > 0) {
-      return v[0] == DSCODE.PDX;
+      return v[0] == HeaderByte.PDX.toByte();
     }
     return false;
   }

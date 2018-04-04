@@ -33,7 +33,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.HeaderByte;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -150,7 +150,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
   @Test
   public void encodeDataAsAddressShouldReturnZeroIfValueIsLargerThanEightBytesAndNotLong() {
     byte[] someValue = new byte[8];
-    someValue[0] = DSCODE.CLASS;
+    someValue[0] = HeaderByte.CLASS.toByte();
 
     boolean isSerialized = true;
     boolean isCompressed = false;

@@ -51,7 +51,7 @@ import org.apache.geode.admin.RegionNotFoundException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.HeaderByte;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
@@ -220,7 +220,7 @@ public abstract class DataSerializer {
       // if readObject/writeObject is called:
       // the first CLASS byte indicates it's a Class, the second
       // one indicates it's a non-primitive Class
-      out.writeByte(DSCODE.CLASS);
+      out.writeByte(HeaderByte.CLASS.toByte());
       String cname = c.getName();
       cname = InternalDataSerializer.processOutgoingClassName(cname, out);
       writeString(cname, out);
@@ -260,7 +260,7 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     byte typeCode = in.readByte();
-    if (typeCode == DSCODE.CLASS) {
+    if (typeCode == HeaderByte.CLASS.toByte()) {
       String className = readString(in);
       Class<?> c = InternalDataSerializer.getCachedClass(className); // fix for bug 41206
       return c;
@@ -505,7 +505,7 @@ public abstract class DataSerializer {
       if (isTraceSerialzerVerbose) {
         logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing NULL_STRING");
       }
-      out.writeByte(DSCODE.NULL_STRING);
+      out.writeByte(HeaderByte.NULL_STRING.toByte());
 
     } else {
       // writeUTF is expensive - it creates a char[] to fetch
@@ -538,14 +538,14 @@ public abstract class DataSerializer {
           if (isTraceSerialzerVerbose) {
             logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing utf HUGE_STRING of len={}", len);
           }
-          out.writeByte(DSCODE.HUGE_STRING);
+          out.writeByte(HeaderByte.HUGE_STRING.toByte());
           out.writeInt(len);
           out.writeChars(value);
         } else {
           if (isTraceSerialzerVerbose) {
             logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing utf STRING of len={}", len);
           }
-          out.writeByte(DSCODE.STRING);
+          out.writeByte(HeaderByte.STRING.toByte());
           out.writeUTF(value);
         }
       } else {
@@ -553,14 +553,14 @@ public abstract class DataSerializer {
           if (isTraceSerialzerVerbose) {
             logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing HUGE_STRING_BYTES of len={}", len);
           }
-          out.writeByte(DSCODE.HUGE_STRING_BYTES);
+          out.writeByte(HeaderByte.HUGE_STRING_BYTES.toByte());
           out.writeInt(len);
           out.writeBytes(value);
         } else {
           if (isTraceSerialzerVerbose) {
             logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing STRING_BYTES of len={}", len);
           }
-          out.writeByte(DSCODE.STRING_BYTES);
+          out.writeByte(HeaderByte.STRING_BYTES.toByte());
           out.writeShort(len);
           out.writeBytes(value);
         }
@@ -1833,14 +1833,14 @@ public abstract class DataSerializer {
       Class<?> c = null;
       byte typeCode = in.readByte();
       String typeString = null;
-      if (typeCode == DSCODE.CLASS) {
+      if (typeCode == HeaderByte.CLASS.toByte()) {
         typeString = readString(in);
       }
 
       InternalCache cache = GemFireCacheImpl.getInstance();
       boolean lookForPdxInstance = false;
       ClassNotFoundException cnfEx = null;
-      if (typeCode == DSCODE.CLASS && cache != null
+      if (typeCode == HeaderByte.CLASS.toByte() && cache != null
           && cache.getPdxReadSerializedByAnyGemFireServices()) {
         try {
           c = InternalDataSerializer.getCachedClass(typeString);
@@ -1850,7 +1850,7 @@ public abstract class DataSerializer {
           cnfEx = ignore;
         }
       } else {
-        if (typeCode == DSCODE.CLASS) {
+        if (typeCode == HeaderByte.CLASS.toByte()) {
           c = InternalDataSerializer.getCachedClass(typeString);
         } else {
           c = InternalDataSerializer.decodePrimitiveClass(typeCode);

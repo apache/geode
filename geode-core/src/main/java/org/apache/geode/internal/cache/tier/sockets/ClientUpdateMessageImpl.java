@@ -34,7 +34,7 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.HeaderByte;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.Version;
@@ -1475,7 +1475,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     @Override
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
-      out.writeByte(DSCODE.HASH_MAP);
+      out.writeByte(HeaderByte.HASH_MAP.toByte());
       int size = size();
       InternalDataSerializer.writeArrayLength(size, out);
       if (size > 0) {
@@ -1547,7 +1547,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     @Override
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
-      out.writeByte(DSCODE.HASH_MAP);
+      out.writeByte(HeaderByte.HASH_MAP.toByte());
       DataSerializer.writeHashMap(this, out);
     }
 

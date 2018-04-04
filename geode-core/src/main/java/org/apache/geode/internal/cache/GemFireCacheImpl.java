@@ -174,7 +174,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.HeaderByte;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.backup.BackupService;
@@ -5364,7 +5364,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public void registerPdxMetaData(Object instance) {
     try {
       byte[] blob = BlobHelper.serializeToBlob(instance);
-      if (blob.length == 0 || blob[0] != DSCODE.PDX) {
+      if (blob.length == 0 || blob[0] != HeaderByte.PDX.toByte()) {
         throw new SerializationException("The instance is not PDX serializable");
       }
     } catch (IOException e) {
