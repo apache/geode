@@ -248,22 +248,22 @@ public class FetchEntryMessage extends PartitionMessage {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "FetchEntryReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "FetchEntryReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "FetchEntryReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.debug("{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
@@ -337,8 +337,9 @@ public class FetchEntryMessage extends PartitionMessage {
         if (msg instanceof FetchEntryReplyMessage) {
           FetchEntryReplyMessage reply = (FetchEntryReplyMessage) msg;
           this.returnValue = reply.getValue();
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "FetchEntryResponse return value is {}", this.returnValue);
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "FetchEntryResponse return value is {}",
+                this.returnValue);
           }
         }
       } finally {
@@ -358,9 +359,7 @@ public class FetchEntryMessage extends PartitionMessage {
         final String msg = "FetchEntryResponse got remote ForceReattemptException; rethrowing";
         logger.debug(msg, e);
         throw e;
-      } catch (EntryNotFoundException e) {
-        throw e;
-      } catch (TransactionException e) {
+      } catch (EntryNotFoundException | TransactionException e) {
         throw e;
       } catch (CacheException ce) {
         logger.debug("FetchEntryResponse got remote CacheException; forcing reattempt.", ce);

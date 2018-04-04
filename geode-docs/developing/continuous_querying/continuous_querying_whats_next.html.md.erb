@@ -23,7 +23,7 @@ This topic discusses CQ management options, CQ states, and retrieving initial re
 
 ## Using CQs from a RegionService Instance
 
-If you are running durable client queues (CQs) from the `RegionService` instance, stop and start the offline event storage for the client as a whole. The server manages one queue for the entire client process, so you need to request the stop and start of durable CQ event messaging for the cache as a whole, through the `ClientCache` instance. If you closed the `RegionService` instances, event processing would stop, but the server would continue to send events, and those events would be lost.
+If you are running durable client queues from the `RegionService` instance, stop and start the offline event storage for the client as a whole. The server manages one queue for the entire client process, so you need to request the stop and start of durable CQ event messaging for the cache as a whole, through the `ClientCache` instance. If you closed the `RegionService` instances, event processing would stop, but the server would continue to send events, and those events would be lost.
 
 Stop with:
 

@@ -17,8 +17,10 @@ package org.apache.geode.experimental.driver;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
 import java.util.Objects;
 import java.util.Set;
 
@@ -32,42 +34,33 @@ import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 
 class ProtobufChannel {
-
-  private final Set<InetSocketAddress> locators;
   /**
    * Socket to a GemFire server that has Protobuf enabled.
    */
   final Socket socket;
 
-  public ProtobufChannel(final Set<InetSocketAddress> locators, String username, String password)
-      throws IOException {
-    this.locators = locators;
-    this.socket = connectToAServer(username, password);
-  }
-
-  Message sendRequest(final Message request, MessageTypeCase expectedResult) throws IOException {
-    final OutputStream outputStream = socket.getOutputStream();
-    request.writeDelimitedTo(outputStream);
-    Message response = readResponse();
-
-    if (!response.getMessageTypeCase().equals(expectedResult)) {
-      throw new RuntimeException(
-          "Got invalid response for request " + request + ", response " + response);
-    }
-    return response;
+  public ProtobufChannel(final Set<InetSocketAddress> locators, String username, String password,
+      String keyStorePath, String trustStorePath, String protocols, String ciphers)
+      throws GeneralSecurityException, IOException {
+    socket = connectToAServer(locators, username, password, keyStorePath, trustStorePath, protocols,
+        ciphers);
   }
 
   public void close() throws IOException {
-    this.socket.close();
+    socket.close();
   }
 
   public boolean isClosed() {
-    return this.socket.isClosed();
+    return socket.isClosed();
   }
 
-  private Socket connectToAServer(String username, String password) throws IOException {
-    InetSocketAddress server = findAServer(username, password);
-    Socket socket = new Socket(server.getAddress(), server.getPort());
+  private Socket connectToAServer(final Set<InetSocketAddress> locators, String username,
+      String password, String keyStorePath, String trustStorePath, String protocols, String ciphers)
+      throws GeneralSecurityException, IOException {
+    InetSocketAddress server =
+        findAServer(locators, username, password, keyStorePath, trustStorePath, protocols, ciphers);
+    Socket socket = createSocket(server.getAddress(), server.getPort(), keyStorePath,
+        trustStorePath, protocols, ciphers);
     socket.setTcpNoDelay(true);
     socket.setSendBufferSize(65535);
     socket.setReceiveBufferSize(65535);
@@ -96,13 +89,16 @@ class ProtobufChannel {
    *
    * @return The server chosen by the Locator service for this client
    */
-  private InetSocketAddress findAServer(String username, String password) throws IOException {
+  private InetSocketAddress findAServer(final Set<InetSocketAddress> locators, String username,
+      String password, String keyStorePath, String trustStorePath, String protocols, String ciphers)
+      throws GeneralSecurityException, IOException {
     IOException lastException = null;
 
     for (InetSocketAddress locator : locators) {
       Socket locatorSocket = null;
       try {
-        locatorSocket = new Socket(locator.getAddress(), locator.getPort());
+        locatorSocket = createSocket(locator.getAddress(), locator.getPort(), keyStorePath,
+            trustStorePath, protocols, ciphers);
 
         final OutputStream outputStream = locatorSocket.getOutputStream();
         final InputStream inputStream = locatorSocket.getInputStream();
@@ -179,6 +175,18 @@ class ProtobufChannel {
     }
   }
 
+  Message sendRequest(final Message request, MessageTypeCase expectedResult) throws IOException {
+    final OutputStream outputStream = socket.getOutputStream();
+    request.writeDelimitedTo(outputStream);
+    Message response = readResponse();
+
+    if (!response.getMessageTypeCase().equals(expectedResult)) {
+      throw new RuntimeException(
+          "Got invalid response for request " + request + ", response " + response);
+    }
+    return response;
+  }
+
   private Message readResponse() throws IOException {
     final InputStream inputStream = socket.getInputStream();
     Message response = ClientProtocol.Message.parseDelimitedFrom(inputStream);
@@ -192,4 +200,11 @@ class ProtobufChannel {
     return response;
   }
 
+  private Socket createSocket(InetAddress host, int port, String keyStorePath,
+      String trustStorePath, String protocols, String ciphers)
+      throws GeneralSecurityException, IOException {
+    return new SocketFactory().setHost(host).setPort(port).setTimeout(5000)
+        .setKeyStorePath(keyStorePath).setTrustStorePath(trustStorePath).setProtocols(protocols)
+        .setCiphers(ciphers).connect();
+  }
 }

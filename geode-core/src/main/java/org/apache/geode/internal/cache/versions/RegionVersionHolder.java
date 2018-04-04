@@ -198,13 +198,13 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       }
       if (e.previousVersion < missingVersion && missingVersion < e.nextVersion) {
         String fine = null;
-        if (logger.isTraceEnabled(LogMarker.RVV)) {
+        if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
           fine = e.toString();
         }
         e.add(missingVersion);
         if (e.isFilled()) {
           if (fine != null) {
-            logger.trace(LogMarker.RVV, "Filled exception {}", fine);
+            logger.trace(LogMarker.RVV_VERBOSE, "Filled exception {}", fine);
           }
           it.remove();
         } else if (e.shouldChangeForm()) {
@@ -227,8 +227,8 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     int length = BIT_SET_WIDTH;
     int bitCountToFlush = length * 3 / 4;
 
-    if (logger.isTraceEnabled(LogMarker.RVV)) {
-      logger.trace(LogMarker.RVV, "flushing RVV bitset bitSetVersion={}; bits={}",
+    if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
+      logger.trace(LogMarker.RVV_VERBOSE, "flushing RVV bitset bitSetVersion={}; bits={}",
           this.bitSetVersion, this.bitSet);
     }
     // see if we can shift part of the bits so that exceptions in the recent bits can
@@ -241,9 +241,9 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       // the exceptions list includes a "next version" that indicates a received version.
       addBitSetExceptions(bitCountToFlush, this.bitSetVersion + bitCountToFlush);
     }
-    if (logger.isTraceEnabled(LogMarker.RVV)) {
-      logger.trace(LogMarker.RVV, "After flushing bitSetVersion={}; bits={}", this.bitSetVersion,
-          this.bitSet);
+    if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
+      logger.trace(LogMarker.RVV_VERBOSE, "After flushing bitSetVersion={}; bits={}",
+          this.bitSetVersion, this.bitSet);
     }
   }
 
@@ -266,11 +266,11 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
    * @param numBits the desired number of bits to flush from the bitset
    */
   private void addBitSetExceptions(int numBits, long newVersion) {
-    final boolean isDebugEnabled_RVV = logger.isTraceEnabled(LogMarker.RVV);
+    final boolean isDebugEnabled_RVV = logger.isTraceEnabled(LogMarker.RVV_VERBOSE);
     int lastSetIndex = -1;
 
     if (isDebugEnabled_RVV) {
-      logger.trace(LogMarker.RVV, "addBitSetExceptions({},{})", numBits, newVersion);
+      logger.trace(LogMarker.RVV_VERBOSE, "addBitSetExceptions({},{})", numBits, newVersion);
     }
 
     for (int idx = 0; idx < numBits;) {
@@ -288,7 +288,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
         nextReceivedVersion = (long) (nextReceivedIndex) + this.bitSetVersion;
         idx = nextReceivedIndex + 1;
         if (isDebugEnabled_RVV) {
-          logger.trace(LogMarker.RVV,
+          logger.trace(LogMarker.RVV_VERBOSE,
               "found gap in bitSet: missing bit at index={}; next set index={}", nextMissingIndex,
               nextReceivedIndex);
         }
@@ -296,8 +296,8 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
         // We can't flush any more bits from the bit set because there
         // are no more received versions
         if (isDebugEnabled_RVV) {
-          logger.trace(LogMarker.RVV, "terminating flush at bit {} because of missing entries",
-              lastSetIndex);
+          logger.trace(LogMarker.RVV_VERBOSE,
+              "terminating flush at bit {} because of missing entries", lastSetIndex);
         }
         this.bitSetVersion += lastSetIndex;
         this.bitSet.clear();
@@ -310,7 +310,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       if (nextReceivedVersion > nextMissingVersion) {
         addException(nextMissingVersion - 1, nextReceivedVersion);
         if (isDebugEnabled_RVV) {
-          logger.trace(LogMarker.RVV, "Added rvv exception e<rv{} - rv{}>",
+          logger.trace(LogMarker.RVV_VERBOSE, "Added rvv exception e<rv{} - rv{}>",
               (nextMissingVersion - 1), nextReceivedVersion);
         }
       }
@@ -370,8 +370,9 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   }
 
   private void logRecordVersion(long version) {
-    if (logger.isTraceEnabled(LogMarker.RVV)) {
-      logger.trace(LogMarker.RVV, "Added rvv exception e<rv{} - rv{}>", this.version, version);
+    if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
+      logger.trace(LogMarker.RVV_VERBOSE, "Added rvv exception e<rv{} - rv{}>", this.version,
+          version);
     }
   }
 

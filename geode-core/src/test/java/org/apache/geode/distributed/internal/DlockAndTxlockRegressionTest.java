@@ -60,6 +60,7 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
   public Properties getDistributedSystemProperties() {
     Properties properties = super.getDistributedSystemProperties();
     properties.setProperty(ConfigurationProperties.DISABLE_AUTO_RECONNECT, "true");
+    properties.setProperty(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "false");
     properties.setProperty(ConfigurationProperties.MEMBER_TIMEOUT, "1000");
     properties.setProperty(ConfigurationProperties.NAME,
         "vm" + Integer.getInteger(DUnitLauncher.VM_NUM_PARAM));
@@ -81,7 +82,7 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
   @Test
   public void testDLockProtectsAgainstTransactionConflict() throws Exception {
     IgnoredException.addIgnoredException(
-        "DistributedSystemDisconnectedException|ForcedDisconnectException|Possible loss of quorum");
+        "DistributedSystemDisconnectedException|ForcedDisconnectException|Possible loss of quorum|InterruptedException");
     // create four nodes to perform dlock & transactions and then
     // kill & restart each one using a forced disconnect.
     Host host = Host.getHost(0);
@@ -106,41 +107,39 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
     getBlackboard().setMailbox(TRANSACTION_COUNT, 0);
 
     try {
-      long endTime = System.currentTimeMillis() + 180_000;
-      while (System.currentTimeMillis() < endTime) {
-        for (int i = 0; i < servers.length; i++) {
-          checkAsyncInvocations(asyncInvocations);
+      for (int i = 0; i < servers.length; i++) {
+        checkAsyncInvocations(asyncInvocations);
 
-          // clobber the current lock grantor
-          VM vm = servers[i];
-          System.out.println("TEST: killing vm " + i);
-          vm.invoke("force disconnect", () -> forceDisconnect());
-          asyncInvocations[i].join();
-          System.out.println("TEST: recreating vm " + i);
-          vm.invoke("create cache", () -> createCacheAndRegion());
-          asyncInvocations[i] = vm.invokeAsync(() -> performOps());
+        // clobber the current lock grantor
+        VM vm = servers[i];
+        System.out.println("TEST: killing vm " + i);
+        vm.invoke("force disconnect", () -> forceDisconnect());
+        asyncInvocations[i].join();
+        System.out.println("TEST: recreating vm " + i);
+        vm.invoke("create cache", () -> createCacheAndRegion());
+        asyncInvocations[i] = vm.invokeAsync(() -> performOps());
 
-          // move the grantor into the next VM to be clobbered
-          int nextServer = (i + 1) % (servers.length - 1);
-          logger.info("TEST: moving the lock grantor to vm " + nextServer);
-          servers[nextServer].invoke("become lock grantor", () -> becomeLockGrantor());
+        // move the grantor into the next VM to be clobbered
+        int nextServer = (i + 1) % (servers.length - 1);
+        System.out.println("TEST: moving the lock grantor to vm " + nextServer);
+        servers[nextServer].invoke("become lock grantor", () -> becomeLockGrantor());
 
-          int txCount = getBlackboard().getMailbox(TRANSACTION_COUNT);
-          int newTxCount = txCount + 10;
-          try {
-            Awaitility.await("check for new transactions").atMost(30, TimeUnit.SECONDS)
-                .until(() -> {
-                  checkAsyncInvocations(asyncInvocations);
-                  int newCount = getBlackboard().getMailbox(TRANSACTION_COUNT);
-                  return newCount >= newTxCount;
-                });
-          } catch (ConditionTimeoutException e) {
-            for (VM server : servers) {
-              server.invoke(() -> OSProcess.printStacks(0));
-            }
-            throw e;
+        int txCount = getBlackboard().getMailbox(TRANSACTION_COUNT);
+        int newTxCount = txCount + 5;
+        try {
+          Awaitility.await("check for new transactions").atMost(30, TimeUnit.SECONDS).until(() -> {
+            checkAsyncInvocations(asyncInvocations);
+            int newCount = getBlackboard().getMailbox(TRANSACTION_COUNT);
+            return newCount >= newTxCount;
+          });
+        } catch (ConditionTimeoutException e) {
+          for (VM server : servers) {
+            server.invoke(() -> OSProcess.printStacks(0));
           }
+          throw e;
         }
+        System.out.println("TEST: after rolling server " + i + " the transaction count is "
+            + getBlackboard().getMailbox(TRANSACTION_COUNT));
       }
 
     } finally {
@@ -173,7 +172,8 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
   }
 
   public void forceDisconnect() {
-    if (basicGetCache() != null) {
+    Cache existingCache = basicGetCache();
+    if (existingCache != null && !existingCache.isClosed()) {
       DistributedTestUtils.crashDistributedSystem(getCache().getDistributedSystem());
     }
   }

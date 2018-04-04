@@ -4497,7 +4497,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
     public void afterInvalidate(EntryEvent event) {
       sc.num_invalidate_event++;
       LogWriterUtils.getLogWriter().info("local invalidate is triggered for " + event.getKey()
-          + ":num_invalidte_event=" + sc.num_invalidate_event);
+          + ":num_invalidate_event=" + sc.num_invalidate_event);
     }
 
     @Override
@@ -4507,7 +4507,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
         assertEquals("removeAllCallback", event.getCallbackArgument());
       }
       LogWriterUtils.getLogWriter().info("local destroy is triggered for " + event.getKey()
-          + ":num_invalidte_event=" + sc.num_destroy_event);
+          + ":num_destroy_event=" + sc.num_destroy_event);
     }
   }
 

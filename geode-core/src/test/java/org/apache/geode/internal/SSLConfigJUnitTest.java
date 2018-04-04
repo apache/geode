@@ -21,11 +21,13 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -106,6 +108,11 @@ public class SSLConfigJUnitTest {
     GATEWAY_PROPS_SUBSET_MAP.put(GATEWAY_SSL_TRUSTSTORE,
         "/export/gemfire-configs/gateway.truststore");
 
+  }
+
+  @After
+  public void tearDownTest() {
+    SSLConfigurationFactory.close();
   }
 
   @Test

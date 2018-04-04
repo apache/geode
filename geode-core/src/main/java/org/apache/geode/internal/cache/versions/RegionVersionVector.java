@@ -712,8 +712,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     }
 
     // Update the version holder
-    if (logger.isTraceEnabled(LogMarker.RVV)) {
-      logger.trace(LogMarker.RVV, "Recording rv{} for {}", version, mbr);
+    if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
+      logger.trace(LogMarker.RVV_VERBOSE, "Recording rv{} for {}", version, mbr);
     }
     holder.recordVersion(version);
   }
@@ -743,8 +743,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
         // case we want to end up with the last RVV from the latest oplog
         if (latestOplog || localVersion.get() == 0) {
           localExceptions = recovered;
-          if (logger.isTraceEnabled(LogMarker.RVV)) {
-            logger.trace(LogMarker.RVV, "initRecoveredVersion setting local version to {}",
+          if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
+            logger.trace(LogMarker.RVV_VERBOSE, "initRecoveredVersion setting local version to {}",
                 recovered.version);
           }
           localVersion.set(recovered.version);

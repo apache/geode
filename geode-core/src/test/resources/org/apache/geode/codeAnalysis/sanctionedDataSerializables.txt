@@ -951,7 +951,7 @@ fromData,14
 toData,14
 
 org/apache/geode/internal/cache/DistributedPutAllOperation$EntryVersionsList,2
-fromData,268
+fromData,272
 toData,289
 
 org/apache/geode/internal/cache/DistributedPutAllOperation$PutAllEntryData,1

@@ -380,8 +380,8 @@ public class TombstoneService {
 
     @Override
     protected void expireTombstone(Tombstone tombstone) {
-      if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-        logger.trace(LogMarker.TOMBSTONE, "removing expired tombstone {}", tombstone);
+      if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+        logger.trace(LogMarker.TOMBSTONE_VERBOSE, "removing expired tombstone {}", tombstone);
       }
       updateMemoryEstimate(-tombstone.getSize());
       tombstone.region.getRegionMap().removeTombstone(tombstone.entry, tombstone, false, true);
@@ -679,8 +679,9 @@ public class TombstoneService {
 
     @Override
     protected void expireTombstone(Tombstone tombstone) {
-      if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-        logger.trace(LogMarker.TOMBSTONE, "adding expired tombstone {} to batch", tombstone);
+      if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+        logger.trace(LogMarker.TOMBSTONE_VERBOSE, "adding expired tombstone {} to batch",
+            tombstone);
       }
       synchronized (expiredTombstonesLock) {
         expiredTombstones.add(tombstone);
@@ -880,8 +881,8 @@ public class TombstoneService {
     }
 
     public void run() {
-      if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-        logger.trace(LogMarker.TOMBSTONE,
+      if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+        logger.trace(LogMarker.TOMBSTONE_VERBOSE,
             "Destroyed entries sweeper starting with sleep interval of {} milliseconds",
             EXPIRY_TIME);
       }
@@ -919,8 +920,8 @@ public class TombstoneService {
       }
       beforeSleepChecks();
       sleepTime = Math.min(sleepTime, MAX_SLEEP_TIME);
-      if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-        logger.trace(LogMarker.TOMBSTONE, "sleeping for {}", sleepTime);
+      if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+        logger.trace(LogMarker.TOMBSTONE_VERBOSE, "sleeping for {}", sleepTime);
       }
       synchronized (this) {
         if (isStopped) {
@@ -951,8 +952,8 @@ public class TombstoneService {
       boolean removedObsoleteTombstone = removeIf(tombstone -> {
         if (tombstone.region.getRegionMap().isTombstoneNotNeeded(tombstone.entry,
             tombstone.getEntryVersion())) {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-            logger.trace(LogMarker.TOMBSTONE, "removing obsolete tombstone: {}", tombstone);
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+            logger.trace(LogMarker.TOMBSTONE_VERBOSE, "removing obsolete tombstone: {}", tombstone);
           }
           return true;
         }
@@ -978,14 +979,14 @@ public class TombstoneService {
       Tombstone oldest = tombstones.peek();
       try {
         if (oldest == null) {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-            logger.trace(LogMarker.TOMBSTONE, "queue is empty - will sleep");
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+            logger.trace(LogMarker.TOMBSTONE_VERBOSE, "queue is empty - will sleep");
           }
           handleNoUnexpiredTombstones();
           sleepTime = EXPIRY_TIME;
         } else {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-            logger.trace(LogMarker.TOMBSTONE, "oldest unexpired tombstone is {}", oldest);
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+            logger.trace(LogMarker.TOMBSTONE_VERBOSE, "oldest unexpired tombstone is {}", oldest);
           }
           long msTillHeadTombstoneExpires = oldest.getVersionTimeStamp() + EXPIRY_TIME - now;
           if (hasExpired(msTillHeadTombstoneExpires)) {

@@ -183,12 +183,6 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
   }
 
-  /**
-   * elderSyncWait
-   *
-   * @param newElder
-   * @param dls
-   */
   private static void elderSyncWait(InternalDistributedSystem sys,
       InternalDistributedMember newElder, DLockService dls) {
     GrantorRequestContext grc = sys.getGrantorRequestContext();
@@ -197,7 +191,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
         LocalizedStrings.GrantorRequestProcessor_GRANTORREQUESTPROCESSOR_ELDERSYNCWAIT_THE_CURRENT_ELDER_0_IS_WAITING_FOR_THE_NEW_ELDER_1,
         new Object[] {grc.currentElder, newElder});
     while (grc.waitingToChangeElder) {
-      logger.info(LogMarker.DLS, message);
+      logger.info(LogMarker.DLS_MARKER, message);
       boolean interrupted = Thread.interrupted();
       try {
         grc.elderLockCondition.await(sys.getConfig().getMemberTimeout());
@@ -377,8 +371,8 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
             boolean sent = GrantorRequestMessage.send(grantorVersion, dlsSerialNumber, serviceName,
                 grc.currentElder, dm, processor, oldTurk, opCode);
             if (!sent) {
-              if (logger.isTraceEnabled(LogMarker.DLS)) {
-                logger.trace(LogMarker.DLS, "Unable to communicate with elder {}",
+              if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+                logger.trace(LogMarker.DLS_VERBOSE, "Unable to communicate with elder {}",
                     grc.currentElder);
               }
             }
@@ -466,29 +460,11 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     private InternalDistributedMember oldTurk;
 
     /**
-     *
-     * @param serviceName
-     * @param elder
-     * @param dm
-     * @param proc
-     * @param oldTurk
-     * @param opCode
      * @return true if the message was sent
      */
     protected static boolean send(long grantorVersion, int dlsSerialNumber, String serviceName,
         InternalDistributedMember elder, DistributionManager dm, ReplyProcessor21 proc,
         InternalDistributedMember oldTurk, byte opCode) {
-      // bug36361: the following assertion doesn't work, since the client that sent us
-      // the request might have a different notion of the elder (no view synchrony on the
-      // current notion of the elder).
-      // InternalDistributedMember moi = dm.getDistributionManagerId();
-      // Assert.assertTrue(!(
-      // // Sending a message to ourself is REALLY WEIRD, so
-      // // we make that the first test...
-      // moi.equals(dm.getElderId())
-      // && !moi.equals(elder)
-      // && dm.getDistributionManagerIds().contains(elder)
-      // ));
 
       GrantorRequestMessage msg = new GrantorRequestMessage();
       msg.grantorVersion = grantorVersion;
@@ -498,8 +474,8 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       msg.opCode = opCode;
       msg.processorId = proc.getProcessorId();
       msg.setRecipient(elder);
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "GrantorRequestMessage sending {} to {}", msg, elder);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "GrantorRequestMessage sending {} to {}", msg, elder);
       }
       Set failures = dm.putOutgoing(msg);
       return failures == null || failures.size() == 0;
@@ -520,23 +496,8 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     @Override
     protected void process(ClusterDistributionManager dm) {
-      // executeBasicProcess(dm); // TODO change to this after things are stable
       basicProcess(dm);
     }
-
-    // private void executeBasicProcess(final DM dm) {
-    // final GrantorRequestMessage msg = this;
-    // try {
-    // dm.getWaitingThreadPool().execute(new Runnable() {
-    // public void run() {
-    // basicProcess(dm);
-    // }
-    // });
-    // }
-    // catch (RejectedExecutionException e) { {
-    // logger.debug("Rejected processing of <{}>", this, e);
-    // }
-    // }
 
     protected void basicProcess(final DistributionManager dm) {
       // we should be in the elder

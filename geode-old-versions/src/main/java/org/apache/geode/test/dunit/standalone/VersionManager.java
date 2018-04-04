@@ -26,15 +26,13 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiConsumer;
 
-import org.apache.geode.test.dunit.Host;
-
 /**
  * VersionManager loads the class-paths for all of the releases of Geode configured for
  * backward-compatibility testing in the geode-core build.gradle file.
  * <p>
  * Tests may use these versions in launching VMs to run older clients or servers.
  *
- * @see Host#getVM(String, int)
+ * see Host.getVM(String, int)
  */
 public class VersionManager {
   public static final String CURRENT_VERSION = "000";

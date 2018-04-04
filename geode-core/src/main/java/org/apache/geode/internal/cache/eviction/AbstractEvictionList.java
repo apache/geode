@@ -102,8 +102,8 @@ abstract class AbstractEvictionList implements EvictionList {
       return;
     }
 
-    if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-      logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage
+    if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+      logger.trace(LogMarker.LRU_CLOCK_VERBOSE, LocalizedMessage
           .create(LocalizedStrings.NewLRUClockHand_ADDING_ANODE_TO_LRU_LIST, evictionNode));
     }
 
@@ -117,8 +117,8 @@ abstract class AbstractEvictionList implements EvictionList {
 
   @Override
   public synchronized void destroyEntry(EvictionNode evictionNode) {
-    if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-      logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage
+    if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+      logger.trace(LogMarker.LRU_CLOCK_VERBOSE, LocalizedMessage
           .create(LocalizedStrings.NewLRUClockHand_UNLINKENTRY_CALLED, evictionNode));
     }
 
@@ -173,8 +173,8 @@ abstract class AbstractEvictionList implements EvictionList {
 
   protected boolean isEvictable(EvictionNode evictionNode) {
     if (evictionNode.isEvicted()) {
-      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-        logger.trace(LogMarker.LRU_CLOCK,
+      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+        logger.trace(LogMarker.LRU_CLOCK_VERBOSE,
             LocalizedMessage.create(LocalizedStrings.NewLRUClockHand_DISCARDING_EVICTED_ENTRY));
       }
       return false;
@@ -184,8 +184,8 @@ abstract class AbstractEvictionList implements EvictionList {
     // eviction should not cause commit conflicts
     synchronized (evictionNode) {
       if (evictionNode.isInUseByTransaction()) {
-        if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-          logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage.create(
+        if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+          logger.trace(LogMarker.LRU_CLOCK_VERBOSE, LocalizedMessage.create(
               LocalizedStrings.NewLRUClockHand_REMOVING_TRANSACTIONAL_ENTRY_FROM_CONSIDERATION));
         }
         return false;

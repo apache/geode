@@ -47,6 +47,26 @@ public class DriverFactory {
   private String password = null;
 
   /**
+   * Path to SSL key store; SSL is <em>not</em> used if <code>null</code>.
+   */
+  private String keyStorePath;
+
+  /**
+   * Path to SSL trust store; SSL is <em>not</em> used if <code>null</code>.
+   */
+  private String trustStorePath;
+
+  /**
+   * Space-separated list of the SSL protocols to enable.
+   */
+  private String protocols;
+
+  /**
+   * Space-separated list of the SSL cipher suites to enable.
+   */
+  private String ciphers;
+
+  /**
    * Adds a locator at <code>host</code> and <code>port</code> to the set of locators to use.
    *
    * @param host Internet address or host name.
@@ -56,16 +76,6 @@ public class DriverFactory {
   public DriverFactory addLocator(String host, int port) {
     this.locators.add(new InetSocketAddress(host, port));
     return this;
-  }
-
-  /**
-   * Creates a driver configured to use all the locators about which this driver factory knows.
-   *
-   * @return New driver.
-   * @throws Exception
-   */
-  public Driver create() throws Exception {
-    return new ProtobufDriver(locators, username, password);
   }
 
   /**
@@ -88,5 +98,60 @@ public class DriverFactory {
   public DriverFactory setPassword(String password) {
     this.password = password;
     return this;
+  }
+
+  /**
+   * Specifies the key store to use with SSL.
+   *
+   * @param keyStorePath Path to the SSL key store.
+   * @return This driver factory.
+   */
+  public DriverFactory setKeyStorePath(String keyStorePath) {
+    this.keyStorePath = keyStorePath;
+    return this;
+  }
+
+  /**
+   * Specifies the trust store to use with SSL.
+   *
+   * @param trustStorePath Path to the SSL trust store.
+   * @return This driver factory.
+   */
+  public DriverFactory setTrustStorePath(String trustStorePath) {
+    this.trustStorePath = trustStorePath;
+    return this;
+  }
+
+  /**
+   * Specifies the protocols to enable.
+   *
+   * @param protocols Space-separated list of the SSL protocols to enable.
+   * @return This driver factory.
+   */
+  public DriverFactory setProtocols(String protocols) {
+    this.protocols = protocols;
+    return this;
+  }
+
+  /**
+   * Specifies the cipher suites to enable.
+   *
+   * @param ciphers Space-separated list of the SSL cipher suites to enable.
+   * @return This driver factory.
+   */
+  public DriverFactory setCiphers(String ciphers) {
+    this.ciphers = ciphers;
+    return this;
+  }
+
+  /**
+   * Creates a driver configured to use all the locators about which this driver factory knows.
+   *
+   * @return New driver.
+   * @throws Exception
+   */
+  public Driver create() throws Exception {
+    return new ProtobufDriver(locators, username, password, keyStorePath, trustStorePath, protocols,
+        ciphers);
   }
 }

@@ -664,7 +664,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
 
         long delta = System.currentTimeMillis() - start;
 
-        logger.info(LogMarker.DISTRIBUTION, LocalizedMessage
+        logger.info(LogMarker.DISTRIBUTION_MARKER, LocalizedMessage
             .create(LocalizedStrings.GroupMembershipService_JOINED_TOOK__0__MS, delta));
 
         NetView initialView = services.getJoinLeave().getView();
@@ -1083,7 +1083,6 @@ public class GMSMembershipManager implements MembershipManager, Manager {
 
     // If this member is shunned or new, grab the latestViewWriteLock: update the appropriate data
     // structure.
-    // synchronized (latestViewLock) {
     if (isShunnedOrNew(m)) {
       latestViewWriteLock.lock();
       try {
@@ -1111,8 +1110,8 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     if (shunned) { // bug #41538 - shun notification must be outside synchronization to avoid
       // hanging
       warnShun(m);
-      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_VIEWS)) {
-        logger.trace(LogMarker.DISTRIBUTION_VIEWS,
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_VIEWS_VERBOSE)) {
+        logger.trace(LogMarker.DISTRIBUTION_VIEWS_VERBOSE,
             "Membership: Ignoring message from shunned member <{}>:{}", m, msg);
       }
       throw new MemberShunnedException(m);

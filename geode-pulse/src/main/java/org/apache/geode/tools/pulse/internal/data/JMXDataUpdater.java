@@ -20,7 +20,6 @@ package org.apache.geode.tools.pulse.internal.data;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -300,34 +299,48 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         cluster.removeClusterRegion(it.next());
       }
 
-      // Cluster Members
+      List<ObjectName> serviceMBeans = new ArrayList<>();
+      List<ObjectName> nonServiceMBeans = new ArrayList<>();
+
       Set<ObjectName> memberMBeans = this.mbs.queryNames(this.MBEAN_OBJECT_NAME_MEMBER, null);
-      for (ObjectName memMBean : memberMBeans) {
-        String service = memMBean.getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE);
+      for (ObjectName mBean : memberMBeans) {
+        String service = mBean.getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE);
         if (service == null) {
-          // Cluster Member
-          updateClusterMember(memMBean);
+          nonServiceMBeans.add(mBean);
         } else {
-          switch (service) {
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_REGION:
-              updateMemberRegion(memMBean);
-              break;
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_CACHESERVER:
-              updateMemberClient(memMBean);
-              break;
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYRECEIVER:
-              updateGatewayReceiver(memMBean);
-              break;
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYSENDER:
-              updateGatewaySender(memMBean);
-              break;
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_ASYNCEVENTQUEUE:
-              updateAsyncEventQueue(memMBean);
-              break;
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_LOCATOR:
-              updateClusterMember(memMBean);
-              break;
-          }
+          serviceMBeans.add(mBean);
+        }
+      }
+
+      // Make sure that we process 'pure' members first. This ensures that various structures in
+      // Cluster are set up correctly since they are keyed on the 'host' attribute which does not
+      // necessarily appear in other MBeans. This avoids the possibility of having a 'null' host
+      // icon appear in the Pulse UI.
+      for (ObjectName mBean : nonServiceMBeans) {
+        updateClusterMember(mBean);
+      }
+
+      for (ObjectName serviceMBean : serviceMBeans) {
+        String service = serviceMBean.getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE);
+        switch (service) {
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_REGION:
+            updateMemberRegion(serviceMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_CACHESERVER:
+            updateMemberClient(serviceMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYRECEIVER:
+            updateGatewayReceiver(serviceMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYSENDER:
+            updateGatewaySender(serviceMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_ASYNCEVENTQUEUE:
+            updateAsyncEventQueue(serviceMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_LOCATOR:
+            updateClusterMember(serviceMBean);
+            break;
         }
       }
 

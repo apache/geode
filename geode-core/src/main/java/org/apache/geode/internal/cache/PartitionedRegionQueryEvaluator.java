@@ -1,4 +1,5 @@
 /*
+ * /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
@@ -230,16 +231,23 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     }
 
     synchronized (results) {
-      if (!QueryMonitor.isLowMemory()) {
+      if (!QueryMonitor.isLowMemory() && !this.query.isCanceled()) {
         results.add(objects);
       } else {
         if (logger.isDebugEnabled()) {
           logger.debug("query canceled while gathering results, aborting");
         }
-        String reason =
-            LocalizedStrings.QueryMonitor_LOW_MEMORY_WHILE_GATHERING_RESULTS_FROM_PARTITION_REGION
-                .toLocalizedString();
-        query.setCanceled(true, new QueryExecutionLowMemoryException(reason));
+        if (QueryMonitor.isLowMemory()) {
+          String reason =
+              LocalizedStrings.QueryMonitor_LOW_MEMORY_WHILE_GATHERING_RESULTS_FROM_PARTITION_REGION
+                  .toLocalizedString();
+          query.setCanceled(true, new QueryExecutionLowMemoryException(reason));
+        } else {
+          if (logger.isDebugEnabled()) {
+            logger.debug("query cancelled while gathering results, aborting due to exception "
+                + query.getQueryCanceledException());
+          }
+        }
         return false;
       }
 
@@ -659,7 +667,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
     for (Map.Entry<InternalDistributedMember, Collection<Collection>> e : this.resultsPerMember
         .entrySet()) {
-      checkLowMemory();
+      checkIfQueryShouldBeCancelled();
       // If its a local query, the results should contain domain objects.
       // in case of client/server query the objects from PdxInstances were
       // retrieved on the client side.
@@ -692,7 +700,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         }
       } else {
         for (Collection res : e.getValue()) {
-          checkLowMemory();
+          checkIfQueryShouldBeCancelled();
           // final TaintableArrayList res = (TaintableArrayList) e.getValue();
           if (res != null) {
             if (isDebugEnabled) {
@@ -705,7 +713,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
             boolean[] objectChangedMarker = new boolean[1];
 
             for (Object obj : res) {
-              checkLowMemory();
+              checkIfQueryShouldBeCancelled();
               int occurence = 0;
               obj = PDXUtils.convertPDX(obj, isStruct, getDomainObjectForPdx, getDeserializedObject,
                   localResults, objectChangedMarker, true);
@@ -750,7 +758,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return this.cumulativeResults;
   }
 
-  private void checkLowMemory() {
+  private void checkIfQueryShouldBeCancelled() {
     if (QueryMonitor.isLowMemory()) {
       String reason =
           LocalizedStrings.QueryMonitor_LOW_MEMORY_WHILE_GATHERING_RESULTS_FROM_PARTITION_REGION
@@ -759,6 +767,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook(5);
       }
+      throw query.getQueryCanceledException();
+    } else if (query.isCanceled()) {
       throw query.getQueryCanceledException();
     }
   }

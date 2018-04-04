@@ -563,8 +563,8 @@ public class TCPConduit implements Runnable {
       stopped = true;
       shutdownCause = cause;
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "Shutting down conduit");
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Shutting down conduit");
       }
       try {
         // set timeout endpoint here since interrupt() has been known
@@ -598,9 +598,8 @@ public class TCPConduit implements Runnable {
               LocalizedStrings.TCPConduit_UNABLE_TO_SHUT_DOWN_LISTENER_WITHIN_0_MS_UNABLE_TO_INTERRUPT_SOCKET_ACCEPT_DUE_TO_JDK_BUG_GIVING_UP,
               Integer.valueOf(LISTENER_CLOSE_TIMEOUT)));
         }
-      } catch (IOException e) {
-      } catch (InterruptedException e) {
-        // Ignore, we're trying to stop already.
+      } catch (IOException | InterruptedException e) {
+        // we're already trying to shutdown, ignore
       } finally {
         this.hsPool.shutdownNow();
       }
@@ -653,8 +652,8 @@ public class TCPConduit implements Runnable {
    */
   public void run() {
     ConnectionTable.threadWantsSharedResources();
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "Starting P2P Listener on  {}", id);
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "Starting P2P Listener on  {}", id);
     }
     for (;;) {
       SystemFailure.checkFailure();
@@ -689,7 +688,7 @@ public class TCPConduit implements Runnable {
                 ex);
             break;
           }
-          socketCreator.configureServerSSLSocket(othersock);
+          socketCreator.startHandshakeIfSocketIsSSL(othersock, idleConnectionTimeout);
         }
         if (stopped) {
           try {
@@ -705,11 +704,19 @@ public class TCPConduit implements Runnable {
 
       } catch (ClosedByInterruptException cbie) {
         // safe to ignore
-      } catch (ClosedChannelException e) {
-        break; // we're dead
-      } catch (CancelException e) {
+      } catch (ClosedChannelException | CancelException e) {
         break;
-      } catch (Exception e) {
+      } catch (IOException e) {
+        this.getStats().incFailedAccept();
+
+        try {
+          if (othersock != null) {
+            othersock.close();
+          }
+        } catch (IOException ignore) {
+
+        }
+
         if (!stopped) {
           if (e instanceof SocketException && "Socket closed".equalsIgnoreCase(e.getMessage())) {
             // safe to ignore; see bug 31156
@@ -737,17 +744,17 @@ public class TCPConduit implements Runnable {
                 }
               }
             }
+          } else if ("Too many open files".equals(e.getMessage())) {
+            getConTable().fileDescriptorsExhausted();
           } else {
-            this.getStats().incFailedAccept();
-            if (e instanceof IOException && "Too many open files".equals(e.getMessage())) {
-              getConTable().fileDescriptorsExhausted();
-            } else {
-              logger.warn(e.getMessage(), e);
-            }
+            logger.warn(e.getMessage(), e);
           }
+
         }
-        // connections.cleanupLowWater();
+      } catch (Exception e) {
+        logger.warn(e.getMessage(), e);
       }
+
       if (!stopped && socket.isClosed()) {
         // NOTE: do not check for distributed system closing here. Messaging
         // may need to occur during the closing of the DS or cache
@@ -761,8 +768,8 @@ public class TCPConduit implements Runnable {
       }
     } // for
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.debug("Stopped P2P Listener on  {}", id);
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace("Stopped P2P Listener on  {}", id);
     }
   }
 

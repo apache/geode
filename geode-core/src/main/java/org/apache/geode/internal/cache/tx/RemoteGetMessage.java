@@ -89,8 +89,8 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   @Override
   protected boolean operateOnRegion(final ClusterDistributionManager dm, LocalRegion r,
       long startTime) throws RemoteOperationException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "RemoteGetMessage operateOnRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "RemoteGetMessage operateOnRegion: {}", r.getFullPath());
     }
 
     if (this.getTXUniqId() != TXManagerImpl.NOTX) {
@@ -107,8 +107,8 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
           false /* for replicate regions */);
       valueBytes = val instanceof RawValue ? (RawValue) val : new RawValue(val);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "GetMessage sending serialized value {} back via GetReplyMessage using processorId: {}",
             valueBytes, getProcessorId());
       }
@@ -261,25 +261,25 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
      */
     @Override
     public void process(final DistributionManager dm, ReplyProcessor21 processor) {
-      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
+      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM_VERBOSE);
 
       final long startTime = getTimestamp();
       if (isDebugEnabled) {
-        logger.trace(LogMarker.DM,
+        logger.trace(LogMarker.DM_VERBOSE,
             "GetReplyMessage process invoking reply processor with processorId:{}",
             this.processorId);
       }
 
       if (processor == null) {
         if (isDebugEnabled) {
-          logger.trace(LogMarker.DM, "GetReplyMessage processor not found");
+          logger.trace(LogMarker.DM_VERBOSE, "GetReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
       if (isDebugEnabled) {
-        logger.trace(LogMarker.DM, "{} Processed {}", processor, this);
+        logger.trace(LogMarker.DM_VERBOSE, "{} Processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }

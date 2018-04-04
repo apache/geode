@@ -206,8 +206,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       }
       if (this.processorId == 0) {
         logger.debug("{} exception while processing message: {}", this, t.getMessage(), t);
-      } else if (logger.isTraceEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
-        logger.trace(LogMarker.DM, "Exception caught while processing message", t);
+      } else if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message", t);
       }
     } finally {
       cleanupTransaction(tx);
@@ -246,8 +246,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     }
 
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "FunctionMessage operateOnRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "FunctionMessage operateOnRegion: {}", r.getFullPath());
     }
     try {
       r.executeOnRegion(this, this.functionObject, this.args, this.processorId, this.filter,

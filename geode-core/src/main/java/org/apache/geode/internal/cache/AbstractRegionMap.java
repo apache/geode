@@ -2212,8 +2212,9 @@ public abstract class AbstractRegionMap
       // "fix" for bug 32440
       Assert.assertTrue(false, "The owner for RegionMap " + this + " is null for event " + event);
     }
-    if (logger.isTraceEnabled(LogMarker.LRU_TOMBSTONE_COUNT) && !(owner instanceof HARegion)) {
-      logger.trace(LogMarker.LRU_TOMBSTONE_COUNT,
+    if (logger.isTraceEnabled(LogMarker.LRU_TOMBSTONE_COUNT_VERBOSE)
+        && !(owner instanceof HARegion)) {
+      logger.trace(LogMarker.LRU_TOMBSTONE_COUNT_VERBOSE,
           "ARM.basicPut called for {} expectedOldValue={} requireOldValue={} ifNew={} ifOld={} initialized={} overwriteDestroyed={}",
           event, expectedOldValue, requireOldValue, ifNew, ifOld, owner.isInitialized(),
           overwriteDestroyed);
@@ -3320,23 +3321,23 @@ public abstract class AbstractRegionMap
       synchronized (re) {
         int entryVersion = re.getVersionStamp().getEntryVersion();
         if (!re.isTombstone() || entryVersion > destroyedVersion) {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-            logger.trace(LogMarker.TOMBSTONE_COUNT,
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE)) {
+            logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                 "tombstone for {} was resurrected with v{}; destroyed version was v{}; count is {}; entryMap size is {}",
                 re.getKey(), re.getVersionStamp().getEntryVersion(), destroyedVersion,
                 this._getOwner().getTombstoneCount(), size());
           }
         } else {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE)) {
             if (entryVersion == destroyedVersion) {
               // logging this can put tremendous pressure on the log writer in tests
               // that "wait for silence"
-              logger.trace(LogMarker.TOMBSTONE_COUNT,
+              logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                   "removing tombstone for {} with v{} rv{}; count is {}", re.getKey(),
                   destroyedVersion, version.getRegionVersion(),
                   (this._getOwner().getTombstoneCount() - 1));
             } else {
-              logger.trace(LogMarker.TOMBSTONE_COUNT,
+              logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                   "removing entry (v{}) that is older than an expiring tombstone (v{} rv{}) for {}",
                   entryVersion, destroyedVersion, version.getRegionVersion(), re.getKey());
             }

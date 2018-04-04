@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -33,6 +34,7 @@ class SqlToPdxInstanceCreator {
   private final RegionMapping regionMapping;
   private final ResultSet resultSet;
   private final TableMetaDataView tableMetaData;
+  private final PdxInstanceFactory factory;
 
   public SqlToPdxInstanceCreator(InternalCache cache, RegionMapping regionMapping,
       ResultSet resultSet, TableMetaDataView tableMetaData) {
@@ -40,51 +42,46 @@ class SqlToPdxInstanceCreator {
     this.regionMapping = regionMapping;
     this.resultSet = resultSet;
     this.tableMetaData = tableMetaData;
+    this.factory = createPdxInstanceFactory();
   }
 
   public PdxInstance create() throws SQLException {
-    PdxInstanceFactory factory = getPdxInstanceFactory(cache, regionMapping);
-    PdxInstance pdxInstance = null;
-    if (resultSet.next()) {
-      ResultSetMetaData metaData = resultSet.getMetaData();
-      int ColumnsNumber = metaData.getColumnCount();
-      TypeRegistry typeRegistry = cache.getPdxRegistry();
-      for (int i = 1; i <= ColumnsNumber; i++) {
-        String columnName = metaData.getColumnName(i);
-        if (regionMapping.isPrimaryKeyInValue()
-            || !tableMetaData.getKeyColumnName().equalsIgnoreCase(columnName)) {
-          String fieldName = regionMapping.getFieldNameForColumn(columnName, typeRegistry);
-          FieldType fieldType =
-              getFieldType(typeRegistry, regionMapping.getPdxClassName(), fieldName);
-          writeField(factory, resultSet, i, fieldName, fieldType, columnName);
-        }
-      }
-      if (resultSet.next()) {
-        throw new JdbcConnectorException(
-            "Multiple rows returned for query: " + resultSet.getStatement().toString());
-      }
-      pdxInstance = factory.create();
+    if (!resultSet.next()) {
+      return null;
     }
-    return pdxInstance;
+    TypeRegistry typeRegistry = cache.getPdxRegistry();
+    ResultSetMetaData metaData = resultSet.getMetaData();
+    final int columnCount = metaData.getColumnCount();
+    for (int i = 1; i <= columnCount; i++) {
+      String columnName = metaData.getColumnName(i);
+      if (regionMapping.isPrimaryKeyInValue()
+          || !tableMetaData.getKeyColumnName().equalsIgnoreCase(columnName)) {
+        String fieldName = regionMapping.getFieldNameForColumn(columnName, typeRegistry);
+        FieldType fieldType = getFieldType(typeRegistry, fieldName);
+        writeField(columnName, i, fieldName, fieldType);
+      }
+    }
+    if (resultSet.next()) {
+      throw new JdbcConnectorException(
+          "Multiple rows returned for query: " + resultSet.getStatement());
+    }
+    return factory.create();
   }
 
-  private PdxInstanceFactory getPdxInstanceFactory(InternalCache cache,
-      RegionMapping regionMapping) {
+  private PdxInstanceFactory createPdxInstanceFactory() {
     String valueClassName = regionMapping.getPdxClassName();
-    PdxInstanceFactory factory;
     if (valueClassName != null) {
-      factory = cache.createPdxInstanceFactory(valueClassName);
+      return cache.createPdxInstanceFactory(valueClassName);
     } else {
-      factory = cache.createPdxInstanceFactory("no class", false);
+      return cache.createPdxInstanceFactory("no class", false);
     }
-    return factory;
   }
 
   /**
    * @throws SQLException if the column value get fails
    */
-  private void writeField(PdxInstanceFactory factory, ResultSet resultSet, int columnIndex,
-      String fieldName, FieldType fieldType, String columnName) throws SQLException {
+  private void writeField(String columnName, int columnIndex, String fieldName, FieldType fieldType)
+      throws SQLException {
     switch (fieldType) {
       case STRING:
         factory.writeString(fieldName, resultSet.getString(columnIndex));
@@ -141,7 +138,13 @@ class SqlToPdxInstanceCreator {
         break;
       }
       case BYTE_ARRAY:
-        factory.writeByteArray(fieldName, resultSet.getBytes(columnIndex));
+        byte[] byteData;
+        if (isBlobColumn(columnName)) {
+          byteData = getBlobData(columnIndex);
+        } else {
+          byteData = resultSet.getBytes(columnIndex);
+        }
+        factory.writeByteArray(fieldName, byteData);
         break;
       case BOOLEAN_ARRAY:
         factory.writeBooleanArray(fieldName,
@@ -183,22 +186,55 @@ class SqlToPdxInstanceCreator {
         factory.writeArrayOfByteArrays(fieldName,
             convertJdbcObjectToJavaType(byte[][].class, resultSet.getObject(columnIndex)));
         break;
-      case OBJECT:
-        Object v = resultSet.getObject(columnIndex);
-        if (v instanceof java.util.Date) {
-          if (v instanceof java.sql.Date) {
-            java.sql.Date sqlDate = (java.sql.Date) v;
-            v = new java.util.Date(sqlDate.getTime());
-          } else if (v instanceof java.sql.Time) {
-            java.sql.Time sqlTime = (java.sql.Time) v;
-            v = new java.util.Date(sqlTime.getTime());
-          } else if (v instanceof java.sql.Timestamp) {
-            java.sql.Timestamp sqlTimestamp = (java.sql.Timestamp) v;
-            v = new java.util.Date(sqlTimestamp.getTime());
+      case OBJECT: {
+        Object v;
+        if (isBlobColumn(columnName)) {
+          v = getBlobData(columnIndex);
+        } else {
+          v = resultSet.getObject(columnIndex);
+          if (v instanceof java.util.Date) {
+            if (v instanceof java.sql.Date) {
+              java.sql.Date sqlDate = (java.sql.Date) v;
+              v = new java.util.Date(sqlDate.getTime());
+            } else if (v instanceof java.sql.Time) {
+              java.sql.Time sqlTime = (java.sql.Time) v;
+              v = new java.util.Date(sqlTime.getTime());
+            } else if (v instanceof java.sql.Timestamp) {
+              java.sql.Timestamp sqlTimestamp = (java.sql.Timestamp) v;
+              v = new java.util.Date(sqlTimestamp.getTime());
+            }
           }
         }
         factory.writeObject(fieldName, v);
         break;
+      }
+    }
+  }
+
+  private boolean isBlobColumn(String columnName) throws SQLException {
+    return this.tableMetaData.getColumnDataType(columnName) == Types.BLOB;
+  }
+
+  /**
+   * If the given column contains a Blob returns its data as a byte array;
+   * otherwise return null.
+   *
+   * @throws JdbcConnectorException if blob is too big to fit in a byte array
+   */
+  private byte[] getBlobData(int columnIndex) throws SQLException {
+    Blob blob = resultSet.getBlob(columnIndex);
+    if (blob == null) {
+      return null;
+    }
+    try {
+      long blobLength = blob.length();
+      if (blobLength > Integer.MAX_VALUE) {
+        throw new JdbcConnectorException(
+            "Blob of length " + blobLength + " is too big to be converted to a byte array.");
+      }
+      return blob.getBytes(1, (int) blobLength);
+    } finally {
+      blob.free();
     }
   }
 
@@ -212,11 +248,11 @@ class SqlToPdxInstanceCreator {
     }
   }
 
-  private FieldType getFieldType(TypeRegistry typeRegistry, String pdxClassName, String fieldName) {
+  private FieldType getFieldType(TypeRegistry typeRegistry, String fieldName) {
+    String pdxClassName = regionMapping.getPdxClassName();
     if (pdxClassName == null) {
       return FieldType.OBJECT;
     }
-
     PdxType pdxType = typeRegistry.getPdxTypeForField(fieldName, pdxClassName);
     if (pdxType != null) {
       PdxField pdxField = pdxType.getPdxField(fieldName);
@@ -224,10 +260,7 @@ class SqlToPdxInstanceCreator {
         return pdxField.getFieldType();
       }
     }
-
     throw new JdbcConnectorException("Could not find PdxType for field " + fieldName
         + ". Add class " + pdxClassName + " with " + fieldName + " to pdx registry.");
-
   }
-
 }

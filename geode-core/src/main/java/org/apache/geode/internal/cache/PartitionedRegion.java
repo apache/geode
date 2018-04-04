@@ -7667,8 +7667,8 @@ public class PartitionedRegion extends LocalRegion
         if (!ev.getInvokePRCallbacks()) {
           if (this.getSubscriptionAttributes()
               .getInterestPolicy() == InterestPolicy.CACHE_CONTENT) {
-            if (logger.isTraceEnabled()) {
-              logger.trace(LogMarker.DM_BRIDGE_SERVER,
+            if (logger.isTraceEnabled(LogMarker.DM_BRIDGE_SERVER_VERBOSE)) {
+              logger.trace(LogMarker.DM_BRIDGE_SERVER_VERBOSE,
                   "not dispatching PR event in this member as there is no interest in it");
             }
             return;

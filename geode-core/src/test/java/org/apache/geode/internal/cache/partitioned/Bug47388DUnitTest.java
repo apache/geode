@@ -12,12 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 
 import java.util.Properties;
 
@@ -82,7 +80,6 @@ public class Bug47388DUnitTest extends JUnit4DistributedTestCase {
     vm2 = host.getVM(2); // durable client with subscription
     vm3 = host.getVM(3); // durable client without subscription
 
-    // int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     int port0 = (Integer) vm0.invoke(() -> Bug47388DUnitTest.createCacheServerWithPRDatastore());
     int port1 = (Integer) vm1.invoke(() -> Bug47388DUnitTest.createCacheServerWithPRDatastore());
 

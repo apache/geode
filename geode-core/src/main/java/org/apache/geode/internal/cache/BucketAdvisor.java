@@ -41,7 +41,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.internal.locator.SerializationHelper;
 import org.apache.geode.cache.partition.PartitionListener;
@@ -528,16 +527,17 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     // Only hosting buckets will be initializing, the isInitializing boolean is to
     // allow for early entry into the advisor for GII purposes
     if (!bp.isHosting && !bp.isInitializing) {
-      if (logger.isTraceEnabled(LogMarker.DA)) {
-        logger.trace(LogMarker.DA, "BucketAdvisor#putProfile early out");
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+        logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE, "BucketAdvisor#putProfile early out");
       }
       return false; // Do not allow introduction of proxy profiles, they don't provide anything
                     // useful
       // isHosting = false, isInitializing = false
     }
-    if (logger.isTraceEnabled(LogMarker.DA)) {
-      logger.trace(LogMarker.DA, "BucketAdvisor#putProfile profile=<{}> force={}; profile = {}",
-          profile, forceProfile, bp);
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+          "BucketAdvisor#putProfile profile=<{}> force={}; profile = {}", profile, forceProfile,
+          bp);
     }
     // isHosting = false, isInitializing = true
     // isHosting = true, isInitializing = false
@@ -552,8 +552,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       applied = super.putProfile(profile, forceProfile);
       // skip following block if isPrimary to avoid race where we process late
       // arriving OTHER_PRIMARY profile after we've already become primary
-      if (applied && !isPrimary()) { // TODO is it safe to change the bucket state if the profile
-                                     // was not applied? -- mthomas 2/13/08
+      if (applied && !isPrimary()) {
         if (bp.isPrimary) {
           setPrimaryMember(bp.getDistributedMember());
         } else {

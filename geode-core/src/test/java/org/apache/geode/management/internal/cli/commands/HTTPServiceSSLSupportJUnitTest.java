@@ -27,6 +27,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -51,6 +52,7 @@ public class HTTPServiceSSLSupportJUnitTest {
     System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore");
     System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword");
     System.clearProperty("gemfireSecurityPropertyFile");
+    SocketCreatorFactory.close();
   }
 
   private static File findTrustedJKS() {

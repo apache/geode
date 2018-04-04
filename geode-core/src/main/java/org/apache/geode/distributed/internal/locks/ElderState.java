@@ -54,47 +54,39 @@ public class ElderState {
     try {
       this.dm.getStats().incElders(1);
       ElderInitProcessor.init(this.dm, this.nameToInfo);
-    } catch (NullPointerException e) {
+    } catch (NullPointerException | InternalGemFireError e) {
       try {
         checkForProblem(dm);
       } finally {
-        if (true)
-          throw e; // conditional prevents eclipse warning
-      }
-    } catch (InternalGemFireError e) {
-      try {
-        checkForProblem(dm);
-      } finally {
-        if (true)
-          throw e; // conditional prevents eclipse warning
+        throw e;
       }
     } finally {
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
         StringBuffer sb = new StringBuffer("ElderState initialized with:");
         for (Iterator grantors = this.nameToInfo.keySet().iterator(); grantors.hasNext();) {
           Object key = grantors.next();
           // key=dlock svc name, value=GrantorInfo object
           sb.append("\n\t" + key + ": " + this.nameToInfo.get(key));
         }
-        logger.trace(LogMarker.DLS, sb.toString());
+        logger.trace(LogMarker.DLS_VERBOSE, sb.toString());
       }
     }
   }
 
   private void checkForProblem(DistributionManager checkDM) {
     if (checkDM.getSystem() == null) {
-      logger.warn(LogMarker.DLS, LocalizedMessage
+      logger.warn(LogMarker.DLS_MARKER, LocalizedMessage
           .create(LocalizedStrings.ElderState_ELDERSTATE_PROBLEM_SYSTEM_0, checkDM.getSystem()));
       return;
     }
     if (checkDM.getSystem().getDistributionManager() == null) {
-      logger.warn(LogMarker.DLS,
+      logger.warn(LogMarker.DLS_MARKER,
           LocalizedMessage.create(
               LocalizedStrings.ElderState_ELDERSTATE_PROBLEM_SYSTEM_DISTRIBUTIONMANAGER_0,
               checkDM.getSystem().getDistributionManager()));
     }
     if (checkDM != checkDM.getSystem().getDistributionManager()) {
-      logger.warn(LogMarker.DLS,
+      logger.warn(LogMarker.DLS_MARKER,
           LocalizedMessage.create(
               LocalizedStrings.ElderState_ELDERSTATE_PROBLEM_DM_0_BUT_SYSTEM_DISTRIBUTIONMANAGER_1,
               new Object[] {checkDM, checkDM.getSystem().getDistributionManager()}));
@@ -123,8 +115,8 @@ public class ElderState {
             && this.dm.getDistributionManagerIds().contains(currentGrantor)) {
           return gi;
         } else {
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS, "Elder setting grantor for {} to {} because {} ",
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE, "Elder setting grantor for {} to {} because {} ",
                 serviceName, requestor, (currentGrantor != null ? "current grantor crashed"
                     : "of unclean grantor shutdown"));
           }
@@ -135,8 +127,8 @@ public class ElderState {
           return new GrantorInfo(requestor, myVersion, dlsSerialNumberRequestor, true);
         }
       } else {
-        if (logger.isTraceEnabled(LogMarker.DLS)) {
-          logger.trace(LogMarker.DLS,
+        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+          logger.trace(LogMarker.DLS_VERBOSE,
               "Elder setting grantor for {} to {} because of clean grantor shutdown", serviceName,
               requestor);
         }
@@ -209,8 +201,8 @@ public class ElderState {
 
               // problem: specified oldTurk is not previousGrantor...
               if (oldTurk != null && !oldTurk.equals(previousGrantor)) {
-                if (logger.isTraceEnabled(LogMarker.DLS)) {
-                  logger.trace(LogMarker.DLS,
+                if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+                  logger.trace(LogMarker.DLS_VERBOSE,
                       "Elder did not become grantor for {} to {} because oldT was {} and the current grantor is {}",
                       serviceName, newGrantor, oldTurk, previousGrantor);
                 }
@@ -219,8 +211,8 @@ public class ElderState {
               // no oldTurk or oldTurk matches previousGrantor... transfer might occur
               else {
                 // install new grantor
-                if (logger.isTraceEnabled(LogMarker.DLS)) {
-                  logger.trace(LogMarker.DLS, "Elder forced to set grantor for {} to {}",
+                if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+                  logger.trace(LogMarker.DLS_VERBOSE, "Elder forced to set grantor for {} to {}",
                       serviceName, newGrantor);
                 }
                 long myVersion = gi.getVersionId() + 1;
@@ -245,8 +237,8 @@ public class ElderState {
 
             // problem: oldTurk was specified but there is no previousGrantor...
             if (oldTurk != null) {
-              if (logger.isTraceEnabled(LogMarker.DLS)) {
-                logger.trace(LogMarker.DLS,
+              if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+                logger.trace(LogMarker.DLS_VERBOSE,
                     "Elder did not become grantor for {} to {} because oldT was {} and the current grantor {} had crashed",
                     serviceName, newGrantor, oldTurk, previousGrantor);
               }
@@ -254,8 +246,8 @@ public class ElderState {
 
             // no oldTurk was specified...
             else {
-              if (logger.isTraceEnabled(LogMarker.DLS)) {
-                logger.trace(LogMarker.DLS,
+              if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+                logger.trace(LogMarker.DLS_VERBOSE,
                     "Elder forced to set grantor for {} to {} and noticed previous grantor had crashed",
                     serviceName, newGrantor);
               }
@@ -272,8 +264,8 @@ public class ElderState {
         else {
           // problem: no oldTurk was specified
           if (oldTurk != null) {
-            if (logger.isTraceEnabled(LogMarker.DLS)) {
-              logger.trace(LogMarker.DLS,
+            if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+              logger.trace(LogMarker.DLS_VERBOSE,
                   "Elder did not become grantor for {} to {} because oldT was {} and elder had no current grantor",
                   serviceName, newGrantor, oldTurk);
             }
@@ -281,8 +273,8 @@ public class ElderState {
 
           // no oldTurk was specified
           else {
-            if (logger.isTraceEnabled(LogMarker.DLS)) {
-              logger.trace(LogMarker.DLS,
+            if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+              logger.trace(LogMarker.DLS_VERBOSE,
                   "Elder forced to set grantor for {} to {} because of clean grantor shutdown",
                   serviceName, newGrantor);
             }
@@ -340,14 +332,14 @@ public class ElderState {
         InternalDistributedMember currentGrantor = gi.getId();
         if (!oldGrantor.equals(currentGrantor)) { // fix for 32603
           this.nameToInfo.put(serviceName, gi);
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS,
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE,
                 "Elder not making {} grantor shutdown for {} by {} because the current grantor is {}",
                 (locksHeld ? "unclean" : "clean"), serviceName, oldGrantor, currentGrantor);
           }
         } else {
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS, "Elder making {} grantor shutdown for {} by {}",
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE, "Elder making {} grantor shutdown for {} by {}",
                 (locksHeld ? "unclean" : "clean"), serviceName, oldGrantor);
           }
         }

@@ -97,8 +97,8 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
   @Override
   protected boolean operateOnPartitionedRegion(final ClusterDistributionManager dm,
       PartitionedRegion r, long startTime) throws ForceReattemptException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.debug("PRTombstoneMessage operateOnRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace("PRTombstoneMessage operateOnRegion: {}", r.getFullPath());
     }
     FilterProfile fp = r.getFilterProfile();
     if (this.keys != null && this.keys.size() > 0) { // sanity check

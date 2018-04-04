@@ -24,10 +24,12 @@ import java.io.File;
 import java.util.Properties;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -35,6 +37,9 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
 
   private MemberVM locator;
+
+  @Rule
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Before
   public void before() throws Exception {

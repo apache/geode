@@ -46,4 +46,5 @@ public interface JdbcConnectorService extends Extension<Cache>, CacheService {
 
   Set<RegionMapping> getRegionMappings();
 
+  DataSourceManager getDataSourceManager();
 }

@@ -114,7 +114,7 @@ public class SqlHandlerTest {
     when(connectorService.getMappingForRegion(REGION_NAME)).thenReturn(regionMapping);
 
 
-    when(manager.getDataSource(any())).thenReturn(this.dataSource);
+    when(manager.getOrCreateDataSource(any())).thenReturn(this.dataSource);
     when(dataSource.getConnection()).thenReturn(this.connection);
 
     statement = mock(PreparedStatement.class);

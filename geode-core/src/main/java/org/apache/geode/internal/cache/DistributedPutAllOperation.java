@@ -679,9 +679,9 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
         }
       }
 
-      if (logger.isTraceEnabled(LogMarker.GII_VERSIONED_ENTRY)) {
-        logger.trace(LogMarker.GII_VERSIONED_ENTRY, "serializing {} with flags 0x{}", this,
-            Integer.toHexString(flags));
+      if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE)) {
+        logger.trace(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE, "serializing {} with flags 0x{}",
+            this, Integer.toHexString(flags));
       }
 
       out.writeByte(flags);
@@ -723,15 +723,16 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       boolean hasTags = (flags & 0x04) == 0x04;
       boolean persistent = (flags & 0x20) == 0x20;
 
-      if (logger.isTraceEnabled(LogMarker.GII_VERSIONED_ENTRY)) {
-        logger.debug("deserializing a InitialImageVersionedObjectList with flags 0x{}",
+      if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE)) {
+        logger.trace(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE,
+            "deserializing a InitialImageVersionedObjectList with flags 0x{}",
             Integer.toHexString(flags));
       }
 
       if (hasTags) {
         int size = (int) InternalDataSerializer.readUnsignedVL(in);
-        if (logger.isTraceEnabled(LogMarker.GII_VERSIONED_ENTRY)) {
-          logger.trace(LogMarker.GII_VERSIONED_ENTRY, "reading {} version tags", size);
+        if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE)) {
+          logger.trace(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE, "reading {} version tags", size);
         }
         List<VersionSource> ids = new ArrayList<VersionSource>(size);
         for (int i = 0; i < size; i++) {

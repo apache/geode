@@ -50,7 +50,7 @@ public class SqlHandler {
   }
 
   Connection getConnection(ConnectionConfiguration config) throws SQLException {
-    return manager.getDataSource(config).getConnection();
+    return manager.getOrCreateDataSource(config).getConnection();
   }
 
   public <K, V> PdxInstance read(Region<K, V> region, K key) throws SQLException {

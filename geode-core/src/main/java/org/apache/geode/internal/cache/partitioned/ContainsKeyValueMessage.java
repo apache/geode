@@ -206,15 +206,15 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
       final long startTime = getTimestamp();
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "ContainsKeyValueReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "ContainsKeyValueReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} Processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} Processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
@@ -272,8 +272,8 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
           ContainsKeyValueReplyMessage reply = (ContainsKeyValueReplyMessage) msg;
           this.returnValue = reply.doesItContainKeyValue();
           this.returnValueReceived = true;
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "ContainsKeyValueResponse return value is {}",
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "ContainsKeyValueResponse return value is {}",
                 this.returnValue);
           }
         }

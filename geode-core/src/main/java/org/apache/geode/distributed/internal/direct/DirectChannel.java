@@ -545,8 +545,8 @@ public class DirectChannel {
       if (!mgr.memberExists(destination) || mgr.shutdownInProgress()
           || mgr.isShunned(destination)) {
         // This should only happen if the member is no longer in the view.
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "Not a member: {}", destination);
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "Not a member: {}", destination);
         }
         if (ce == null)
           ce = new ConnectExceptions();
