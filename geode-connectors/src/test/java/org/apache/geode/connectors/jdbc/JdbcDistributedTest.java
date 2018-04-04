@@ -53,7 +53,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * End-to-end dunits for jdbc connector
+ * End-to-end dunits for JDBC connector
  */
 @Category(AcceptanceTest.class)
 public abstract class JdbcDistributedTest implements Serializable {
