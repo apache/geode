@@ -24,14 +24,14 @@ import java.sql.Types;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 import org.apache.geode.test.junit.rules.SqlDatabaseConnectionRule;
 
 /**
  * End-to-end dunits for jdbc connector
  */
-@Category(DistributedTest.class)
+@Category(AcceptanceTest.class)
 public class PostgresJdbcDistributedTest extends JdbcDistributedTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =

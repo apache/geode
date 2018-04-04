@@ -21,11 +21,11 @@ import java.sql.SQLException;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 
-@Category(IntegrationTest.class)
+@Category(AcceptanceTest.class)
 public class MySqlJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
