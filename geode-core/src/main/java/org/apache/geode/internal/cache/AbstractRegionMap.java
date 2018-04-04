@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,17 +53,12 @@ import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
-import org.apache.geode.internal.cache.ha.HAContainerWrapper;
-import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.map.CacheModificationLock;
 import org.apache.geode.internal.cache.map.FocusedRegionMap;
 import org.apache.geode.internal.cache.map.RegionMapDestroy;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.region.entry.RegionEntryFactoryBuilder;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
-import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
@@ -86,7 +80,6 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
-import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
@@ -822,73 +815,9 @@ public abstract class AbstractRegionMap
     }
 
     if (owner instanceof HARegion && newValue instanceof CachedDeserializable) {
-      Object actualVal = null;
-      CachedDeserializable newValueCd = (CachedDeserializable) newValue;
-      try {
-        actualVal = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
-            sender.getVersionObject(), null);
-        newValue = new VMCachedDeserializable(actualVal, newValueCd.getSizeInBytes());
-      } catch (IOException | ClassNotFoundException e) {
-        throw new RuntimeException("Unable to deserialize HA event for region " + owner);
-      }
-      if (actualVal instanceof HAEventWrapper) {
-        HAEventWrapper haEventWrapper = (HAEventWrapper) actualVal;
-        // Key was removed at sender side so not putting it into the HARegion
-        if (haEventWrapper.getClientUpdateMessage() == null) {
-          return false;
-        }
-        // Getting the instance from singleton CCN..This assumes only one bridge
-        // server in the VM
-        HAContainerWrapper haContainer =
-            (HAContainerWrapper) CacheClientNotifier.getInstance().getHaContainer();
-        if (haContainer == null) {
-          return false;
-        }
-        HAEventWrapper original = null;
-        // synchronized (haContainer) {
-        do {
-          ClientUpdateMessageImpl oldMsg = (ClientUpdateMessageImpl) haContainer
-              .putIfAbsent(haEventWrapper, haEventWrapper.getClientUpdateMessage());
-          if (oldMsg != null) {
-            original = (HAEventWrapper) haContainer.getKey(haEventWrapper);
-            if (original == null) {
-              continue;
-            }
-            synchronized (original) {
-              if ((HAEventWrapper) haContainer.getKey(original) != null) {
-                original.incAndGetReferenceCount();
-                HARegionQueue.addClientCQsAndInterestList(oldMsg, haEventWrapper, haContainer,
-                    owner.getName());
-                haEventWrapper.setClientUpdateMessage(null);
-                newValue = new VMCachedDeserializable(original, newValueCd.getSizeInBytes());
-              } else {
-                original = null;
-              }
-            }
-          } else { // putIfAbsent successful
-            synchronized (haEventWrapper) {
-              haEventWrapper.incAndGetReferenceCount();
-              haEventWrapper.setHAContainer(haContainer);
-              haEventWrapper.setClientUpdateMessage(null);
-              haEventWrapper.setIsRefFromHAContainer(true);
-            }
-            break;
-          }
-          // try until we either get a reference to HAEventWrapper from
-          // HAContainer or successfully put one into it.
-        } while (original == null);
-        /*
-         * entry = (Map.Entry)haContainer.getEntry(haEventWrapper); if (entry != null) { original =
-         * (HAEventWrapper)entry.getKey(); original.incAndGetReferenceCount(); } else {
-         * haEventWrapper.incAndGetReferenceCount(); haEventWrapper.setHAContainer(haContainer);
-         * haContainer.put(haEventWrapper, haEventWrapper .getClientUpdateMessage());
-         * haEventWrapper.setClientUpdateMessage(null);
-         * haEventWrapper.setIsRefFromHAContainer(true); } } if (entry != null) {
-         * HARegionQueue.addClientCQsAndInterestList(entry, haEventWrapper, haContainer,
-         * owner.getName()); haEventWrapper.setClientUpdateMessage(null); newValue =
-         * CachedDeserializableFactory.create(original,
-         * ((CachedDeserializable)newValue).getSizeInBytes()); }
-         */
+      newValue = ((HARegion) owner).updateHAEventWrapper(sender, (CachedDeserializable) newValue);
+      if (newValue == null) {
+        return false;
       }
     }
 
