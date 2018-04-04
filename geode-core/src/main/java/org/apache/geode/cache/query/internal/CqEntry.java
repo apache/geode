@@ -92,7 +92,7 @@ public class CqEntry implements DataSerializableFixedID {
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.key = InternalDataSerializer.readUserObject(in);
-    this.value = DataSerializer.readObject(in);
+    this.value = InternalDataSerializer.readUserObject(in);
   }
 
 
