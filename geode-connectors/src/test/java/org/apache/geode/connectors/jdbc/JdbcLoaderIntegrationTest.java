@@ -45,9 +45,9 @@ import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
-import org.apache.geode.test.junit.categories.ExternalServiceTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(ExternalServiceTest.class)
+@Category(IntegrationTest.class)
 public abstract class JdbcLoaderIntegrationTest {
 
   static final String DB_NAME = "test";

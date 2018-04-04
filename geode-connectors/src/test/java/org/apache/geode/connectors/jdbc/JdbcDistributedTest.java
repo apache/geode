@@ -49,14 +49,14 @@ import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.ExternalServiceTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * End-to-end dunits for jdbc connector
  */
-@Category(ExternalServiceTest.class)
+@Category(DistributedTest.class)
 public abstract class JdbcDistributedTest implements Serializable {
 
   static final String DB_NAME = "test";

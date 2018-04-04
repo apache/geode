@@ -26,14 +26,14 @@ import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.ExternalServiceTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 import org.apache.geode.test.junit.rules.SqlDatabaseConnectionRule;
 
 /**
  * End-to-end dunits for jdbc connector
  */
-@Category(ExternalServiceTest.class)
+@Category(DistributedTest.class)
 public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
