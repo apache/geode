@@ -22,11 +22,11 @@ import java.sql.Statement;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.ExternalServiceTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 
-@Category(ExternalServiceTest.class)
+@Category(IntegrationTest.class)
 public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
