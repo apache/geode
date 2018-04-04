@@ -186,6 +186,10 @@ public abstract class DataSerializer {
   /** The originator of this <code>DataSerializer</code> */
   private ClientProxyMembershipID context;
 
+  /**
+   * @deprecated Use Boolean.getBoolean("DataSerializer.TRACE_SERIALIZABLE") instead.
+   */
+  @Deprecated
   protected static final boolean TRACE_SERIALIZABLE =
       Boolean.getBoolean("DataSerializer.TRACE_SERIALIZABLE");
 
