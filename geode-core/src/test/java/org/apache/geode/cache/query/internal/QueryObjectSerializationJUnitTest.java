@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,14 +32,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.pdx.PdxSerializableDUnitTest;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -135,29 +130,6 @@ public class QueryObjectSerializationJUnitTest implements Serializable {
     // SortedStructSet
     // SortedStructSet sssWithoutData = new SortedStructSet();
     // checkRoundTrip(sssWithoutData);
-  }
-
-  /**
-   * Ensure that a CqEntry respects pdx-read-serialized=true
-   */
-  @Test
-  public void testPdxReadSerializedWithCQEntry() throws IOException, ClassNotFoundException {
-    Cache cache = new CacheFactory().set(ConfigurationProperties.LOCATORS, "")
-        .set(ConfigurationProperties.MCAST_PORT, "0").setPdxReadSerialized(true).create();
-
-    try {
-      Object key = "APdxSerializableObject";
-      Object value = new PdxSerializableDUnitTest.TestPdxObject();
-      CqEntry entry = new CqEntry(key, value);
-      DataOutputStream out = getDataOutput();
-      DataSerializer.writeObject(entry, out);
-      out.flush();
-      DataInput in = getDataInput();
-      CqEntry newEntry = DataSerializer.readObject(in);
-      assertEquals(PdxInstanceImpl.class, newEntry.getValue().getClass());
-    } finally {
-      cache.close();
-    }
   }
 
   private static class SimpleObjectType implements ObjectType {
