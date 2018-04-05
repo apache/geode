@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan.wancommand;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyReceiverCreationWithAttributes;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -93,25 +94,23 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     }
   }
 
-  private void exportConfig(String zipName) {
-    String cwd = gfsh.getWorkingDir().getAbsolutePath();
-    gfsh.executeAndAssertThat("sh rm " + cwd + "/" + zipName);
-    gfsh.executeAndAssertThat(
-        "export cluster-configuration --zip-file-name=" + cwd + "/" + zipName);
+  private void verifyConfigHasGatewayReceiver(String groupName) {
+    locatorSite1.invoke(() -> {
+      String sharedConfigXml = ClusterStartupRule.getLocator().getSharedConfiguration()
+          .getConfiguration(groupName).getCacheXmlContent();
+      assertThat(sharedConfigXml).contains("<gateway-receiver");
+    });
   }
 
-  private void verifyConfigDoesNotHaveGatewayReceiver(String zipName, String groupName) {
-    String cwd = gfsh.getWorkingDir().getAbsolutePath();
-    gfsh.executeAndAssertThat(
-        "sh unzip -p " + cwd + "/" + zipName + " " + groupName + "/" + groupName + ".xml ")
-        .doesNotContainOutput("<gateway-receiver");
-  }
-
-  private void verifyConfigHasGatewayReceiver(String zipName, String groupName) {
-    String cwd = gfsh.getWorkingDir().getAbsolutePath();
-    gfsh.executeAndAssertThat(
-        "sh unzip -p " + cwd + "/" + zipName + " " + groupName + "/" + groupName + ".xml ")
-        .containsOutput("<gateway-receiver");
+  private void verifyConfigDoesNotHaveGatewayReceiver(String groupName) {
+    locatorSite1.invoke(() -> {
+      String sharedConfigXml = ClusterStartupRule.getLocator().getSharedConfiguration()
+          .getConfiguration(groupName).getCacheXmlContent();
+      // Null or emnpty XML doesn't have gateway-receiver element, so it's OK
+      if (StringUtils.isNotEmpty(sharedConfigXml)) {
+        assertThat(sharedConfigXml).doesNotContain("<gateway-receiver");
+      }
+    });
   }
 
   @Test
@@ -156,8 +155,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
-    exportConfig("clusterConfig.zip");
-    verifyConfigHasGatewayReceiver("clusterConfig.zip", "cluster");
+    verifyConfigHasGatewayReceiver("cluster");
 
     VMProvider
         .invokeInEveryMember(
@@ -171,8 +169,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
-    exportConfig("clusterConfig.zip");
-    verifyConfigHasGatewayReceiver("clusterConfig.zip", "cluster");
+    verifyConfigHasGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
@@ -264,9 +261,8 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         .tableHasColumnWithValuesContaining("Status",
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"");
-    exportConfig("clusterConfig.zip");
-    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp1");
-    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
+    verifyConfigHasGatewayReceiver("Grp1");
+    verifyConfigDoesNotHaveGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
         "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server3,
@@ -279,9 +275,8 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4");
-    exportConfig("clusterConfig.zip");
-    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "Grp1");
-    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
+    verifyConfigDoesNotHaveGatewayReceiver("Grp1");
+    verifyConfigDoesNotHaveGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4);
   }
@@ -301,10 +296,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
         .tableHasColumnWithValuesContaining("Status",
             "GatewayReceiver created on member \"server-4\"");
-    exportConfig("clusterConfig.zip");
-    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp1");
-    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp2");
-    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
+    verifyConfigHasGatewayReceiver("Grp1");
+    verifyConfigHasGatewayReceiver("Grp2");
+    verifyConfigDoesNotHaveGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
         "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server3,
@@ -317,10 +311,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4");
-    exportConfig("clusterConfig.zip");
-    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "Grp1");
-    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "Grp2");
-    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
+    verifyConfigDoesNotHaveGatewayReceiver("Grp1");
+    verifyConfigDoesNotHaveGatewayReceiver("Grp2");
+    verifyConfigDoesNotHaveGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4);
   }
@@ -340,10 +333,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
         .tableHasColumnWithValuesContaining("Status",
             "GatewayReceiver created on member \"server-4\"");
-    exportConfig("clusterConfig.zip");
-    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp1");
-    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp2");
-    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
+    verifyConfigHasGatewayReceiver("Grp1");
+    verifyConfigHasGatewayReceiver("Grp2");
+    verifyConfigDoesNotHaveGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
         "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server3,
@@ -356,10 +348,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3");
-    exportConfig("clusterConfig.zip");
-    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "Grp1");
-    verifyConfigHasGatewayReceiver("clusterConfig.zip", "Grp2");
-    verifyConfigDoesNotHaveGatewayReceiver("clusterConfig.zip", "cluster");
+    verifyConfigDoesNotHaveGatewayReceiver("Grp1");
+    verifyConfigHasGatewayReceiver("Grp2");
+    verifyConfigDoesNotHaveGatewayReceiver("cluster");
 
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
         "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server4);
