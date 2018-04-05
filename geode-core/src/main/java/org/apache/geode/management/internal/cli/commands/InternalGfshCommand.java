@@ -33,7 +33,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  */
 @SuppressWarnings("unused")
 public abstract class InternalGfshCommand extends GfshCommand {
-  public static final String EXPERIMENTAL = "(Experimental) ";
 
   public void persistClusterConfiguration(Result result, Runnable runnable) {
     if (result == null) {

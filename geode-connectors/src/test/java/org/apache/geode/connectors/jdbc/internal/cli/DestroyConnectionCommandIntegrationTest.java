@@ -23,9 +23,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -35,7 +34,7 @@ public class DestroyConnectionCommandIntegrationTest {
 
   private String connectionName;
   private InternalCache cache;
-  private ConnectionConfiguration connectionConfig;
+  private ConnectorService.Connection connectionConfig;
 
   private DestroyConnectionCommand command;
 
@@ -44,8 +43,8 @@ public class DestroyConnectionCommandIntegrationTest {
     connectionName = "connectionName";
 
     String[] params = new String[] {"param1:value1", "param2:value2"};
-    connectionConfig = new ConnectionConfigBuilder().withName(connectionName).withUrl("url")
-        .withUser("user").withPassword("password").withParameters(params).build();
+    connectionConfig =
+        new ConnectorService.Connection(connectionName, "url", "user", "password", params);
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();

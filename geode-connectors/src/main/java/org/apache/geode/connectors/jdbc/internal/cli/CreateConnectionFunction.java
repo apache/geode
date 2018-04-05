@@ -17,14 +17,14 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 @Experimental
 public class CreateConnectionFunction
-    extends JdbcCliFunction<ConnectionConfiguration, CliFunctionResult> {
+    extends JdbcCliFunction<ConnectorService.Connection, CliFunctionResult> {
 
   CreateConnectionFunction() {
     super();
@@ -32,8 +32,8 @@ public class CreateConnectionFunction
 
   @Override
   CliFunctionResult getFunctionResult(JdbcConnectorService service,
-      FunctionContext<ConnectionConfiguration> context) throws Exception {
-    ConnectionConfiguration connectionConfig = context.getArguments();
+      FunctionContext<ConnectorService.Connection> context) throws Exception {
+    ConnectorService.Connection connectionConfig = context.getArguments();
     createConnectionConfig(service, connectionConfig);
     String member = getMember(context);
     XmlEntity xmlEntity = createXmlEntity(context);
@@ -44,7 +44,7 @@ public class CreateConnectionFunction
    * Creates the named connection configuration
    */
   void createConnectionConfig(JdbcConnectorService service,
-      ConnectionConfiguration connectionConfig) throws ConnectionConfigExistsException {
+      ConnectorService.Connection connectionConfig) throws ConnectionConfigExistsException {
     service.createConnectionConfig(connectionConfig);
   }
 

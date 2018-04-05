@@ -518,6 +518,7 @@ org/apache/geode/management/internal/cli/exceptions/EntityNotFoundException,fals
 org/apache/geode/management/internal/cli/functions/AlterRuntimeConfigFunction,true,1
 org/apache/geode/management/internal/cli/functions/AsyncEventQueueFunctionArgs,true,-6524494645663740872,asyncEventQueueId:java/lang/String,batchSize:int,batchTimeInterval:int,diskStoreName:java/lang/String,diskSynchronous:boolean,dispatcherThreads:int,enableBatchConflation:boolean,forwardExpirationDestroy:boolean,gatewayEventFilters:java/lang/String[],gatewaySubstitutionFilter:java/lang/String,isParallel:boolean,listenerClassName:java/lang/String,listenerProperties:java/util/Properties,maxQueueMemory:int,orderPolicy:java/lang/String,persistent:boolean
 org/apache/geode/management/internal/cli/functions/ChangeLogLevelFunction,true,1
+org/apache/geode/management/internal/cli/functions/CliFunctionExecutionResult,false,memberName:java/lang/String,message:java/lang/String,resultObject:java/lang/Object,successful:boolean
 org/apache/geode/management/internal/cli/functions/CloseDurableClientFunction,true,1
 org/apache/geode/management/internal/cli/functions/CloseDurableCqFunction,true,1
 org/apache/geode/management/internal/cli/functions/ContinuousQueryFunction,true,1

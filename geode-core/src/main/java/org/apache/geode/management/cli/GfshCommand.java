@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.cli.functions.CliFunctionExecutionResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -40,6 +41,7 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public abstract class GfshCommand implements CommandMarker {
+  public static final String EXPERIMENTAL = "(Experimental) ";
   private InternalCache cache;
 
   public boolean isConnectedAndReady() {
@@ -175,5 +177,11 @@ public abstract class GfshCommand implements CommandMarker {
       Set<DistributedMember> targetMembers) {
     ResultCollector rc = executeFunction(function, args, targetMembers);
     return CliFunctionResult.cleanResults((List<?>) rc.getResult());
+  }
+
+  public List<CliFunctionExecutionResult> executeAndGetFunctionExecutionResult(Function function,
+      Object args, Set<DistributedMember> targetMembers) {
+    ResultCollector rc = executeFunction(function, args, targetMembers);
+    return CliFunctionExecutionResult.cleanResults((List<?>) rc.getResult());
   }
 }

@@ -19,10 +19,7 @@ import java.util.Stack;
 import org.xml.sax.Attributes;
 
 import org.apache.geode.cache.CacheXmlException;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 
 public enum ElementType {
@@ -51,13 +48,13 @@ public enum ElementType {
         throw new CacheXmlException(
             "jdbc <connection> elements must occur within <connector-service> elements");
       }
-      ConnectionConfigBuilder connectionConfigBuilder = new ConnectionConfigBuilder()
-          .withName(attributes.getValue(JdbcConnectorServiceXmlParser.NAME))
-          .withUrl(attributes.getValue(JdbcConnectorServiceXmlParser.URL))
-          .withUser(attributes.getValue(JdbcConnectorServiceXmlParser.USER))
-          .withPassword(attributes.getValue(JdbcConnectorServiceXmlParser.PASSWORD))
-          .withParameters(parseParameters(attributes));
-      stack.push(connectionConfigBuilder);
+      ConnectorService.Connection connection = new ConnectorService.Connection();
+      connection.setName(attributes.getValue(JdbcConnectorServiceXmlParser.NAME));
+      connection.setUrl(attributes.getValue(JdbcConnectorServiceXmlParser.URL));
+      connection.setUser(attributes.getValue(JdbcConnectorServiceXmlParser.USER));
+      connection.setPassword(attributes.getValue(JdbcConnectorServiceXmlParser.PASSWORD));
+      connection.setParameters(parseParameters(attributes));
+      stack.push(connection);
     }
 
     private String[] parseParameters(Attributes attributes) {
@@ -71,7 +68,7 @@ public enum ElementType {
 
     @Override
     void endElement(Stack<Object> stack) {
-      ConnectionConfiguration config = ((ConnectionConfigBuilder) stack.pop()).build();
+      ConnectorService.Connection config = (ConnectorService.Connection) stack.pop();
       JdbcServiceConfiguration connectorService = (JdbcServiceConfiguration) stack.peek();
       connectorService.addConnectionConfig(config);
     }
@@ -83,20 +80,20 @@ public enum ElementType {
         throw new CacheXmlException(
             "jdbc <region-mapping> elements must occur within <connector-service> elements");
       }
-      RegionMappingBuilder mapping = new RegionMappingBuilder()
-          .withRegionName(attributes.getValue(JdbcConnectorServiceXmlParser.REGION))
-          .withConnectionConfigName(
-              attributes.getValue(JdbcConnectorServiceXmlParser.CONNECTION_NAME))
-          .withTableName(attributes.getValue(JdbcConnectorServiceXmlParser.TABLE))
-          .withPdxClassName(attributes.getValue(JdbcConnectorServiceXmlParser.PDX_CLASS))
-          .withPrimaryKeyInValue(
-              attributes.getValue(JdbcConnectorServiceXmlParser.PRIMARY_KEY_IN_VALUE));
+      ConnectorService.RegionMapping mapping = new ConnectorService.RegionMapping();
+      mapping.setRegionName(attributes.getValue(JdbcConnectorServiceXmlParser.REGION));
+      mapping.setConnectionConfigName(
+          attributes.getValue(JdbcConnectorServiceXmlParser.CONNECTION_NAME));
+      mapping.setTableName(attributes.getValue(JdbcConnectorServiceXmlParser.TABLE));
+      mapping.setPdxClassName(attributes.getValue(JdbcConnectorServiceXmlParser.PDX_CLASS));
+      mapping.setPrimaryKeyInValue(
+          Boolean.valueOf(attributes.getValue(JdbcConnectorServiceXmlParser.PRIMARY_KEY_IN_VALUE)));
       stack.push(mapping);
     }
 
     @Override
     void endElement(Stack<Object> stack) {
-      RegionMapping mapping = ((RegionMappingBuilder) stack.pop()).build();
+      ConnectorService.RegionMapping mapping = (ConnectorService.RegionMapping) stack.pop();
       JdbcServiceConfiguration connectorService = (JdbcServiceConfiguration) stack.peek();
       connectorService.addRegionMapping(mapping);
     }
@@ -104,14 +101,15 @@ public enum ElementType {
   FIELD_MAPPING("field-mapping") {
     @Override
     void startElement(Stack<Object> stack, Attributes attributes) {
-      if (!(stack.peek() instanceof RegionMappingBuilder)) {
+      if (!(stack.peek() instanceof ConnectorService.RegionMapping)) {
         throw new CacheXmlException(
             "jdbc <field-mapping> elements must occur within <region-mapping> elements");
       }
-      RegionMappingBuilder mapping = (RegionMappingBuilder) stack.peek();
-      String fieldName = attributes.getValue(JdbcConnectorServiceXmlParser.FIELD_NAME);
-      String columnName = attributes.getValue(JdbcConnectorServiceXmlParser.COLUMN_NAME);
-      mapping.withFieldToColumnMapping(fieldName, columnName);
+      ConnectorService.RegionMapping mapping = (ConnectorService.RegionMapping) stack.peek();
+      mapping.getFieldMapping()
+          .add(new ConnectorService.RegionMapping.FieldMapping(
+              attributes.getValue(JdbcConnectorServiceXmlParser.FIELD_NAME),
+              attributes.getValue(JdbcConnectorServiceXmlParser.COLUMN_NAME)));
     }
 
     @Override
