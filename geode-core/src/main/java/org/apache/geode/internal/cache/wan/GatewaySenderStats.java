@@ -84,6 +84,8 @@ public class GatewaySenderStats {
 
   protected static final String EVENTS_FILTERED = "eventsFiltered";
   protected static final String NOT_QUEUED_EVENTS = "notQueuedEvent";
+  protected static final String NOT_QUEUED_EVENTS_AT_YET_RUNNING_PRIMARY_SENDER =
+      "notQueuedEventAtYetRunningPrimarySender";
 
   protected static final String LOAD_BALANCES_COMPLETED = "loadBalancesCompleted";
   protected static final String LOAD_BALANCES_IN_PROGRESS = "loadBalancesInProgress";
@@ -135,6 +137,8 @@ public class GatewaySenderStats {
   protected static int eventsFilteredId;
   /** Id of not queued events */
   protected static int notQueuedEventsId;
+  /** Id of not queued events due to the primary sender is yet running */
+  protected static int notQueuedEventsAtYetRunningPrimarySenderId;
   /** Id of events conflated in batch */
   protected static int eventsConflatedFromBatchesId;
   /** Id of load balances completed */
@@ -213,6 +217,8 @@ public class GatewaySenderStats {
             f.createIntGauge(CONFLATION_INDEXES_MAP_SIZE,
                 "Current number of entries in the conflation indexes map.", "events"),
             f.createIntCounter(NOT_QUEUED_EVENTS, "Number of events not added to queue.", "events"),
+            f.createIntCounter(NOT_QUEUED_EVENTS_AT_YET_RUNNING_PRIMARY_SENDER,
+                "Number of events not added to primary queue due to sender yet runing.", "events"),
             f.createIntCounter(EVENTS_FILTERED,
                 "Number of events filtered through GatewayEventFilter.", "events"),
             f.createIntCounter(LOAD_BALANCES_COMPLETED, "Number of load balances completed",
@@ -249,6 +255,8 @@ public class GatewaySenderStats {
     unprocessedTokenMapSizeId = type.nameToId(UNPROCESSED_TOKEN_MAP_SIZE);
     conflationIndexesMapSizeId = type.nameToId(CONFLATION_INDEXES_MAP_SIZE);
     notQueuedEventsId = type.nameToId(NOT_QUEUED_EVENTS);
+    notQueuedEventsAtYetRunningPrimarySenderId =
+        type.nameToId(NOT_QUEUED_EVENTS_AT_YET_RUNNING_PRIMARY_SENDER);
     eventsFilteredId = type.nameToId(EVENTS_FILTERED);
     eventsConflatedFromBatchesId = type.nameToId(EVENTS_CONFLATED_FROM_BATCHES);
     loadBalancesCompletedId = type.nameToId(LOAD_BALANCES_COMPLETED);
@@ -597,6 +605,14 @@ public class GatewaySenderStats {
 
   public int getEventsNotQueued() {
     return this.stats.getInt(notQueuedEventsId);
+  }
+
+  public void incEventsNotQueuedAtYetRunningPrimarySender() {
+    this.stats.incInt(notQueuedEventsAtYetRunningPrimarySenderId, 1);
+  }
+
+  public int getEventsNotQueuedAtYetRunningPrimarySender() {
+    return this.stats.getInt(notQueuedEventsAtYetRunningPrimarySenderId);
   }
 
   public void incEventsFiltered() {
