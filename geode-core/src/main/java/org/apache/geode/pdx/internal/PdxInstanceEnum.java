@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
@@ -126,7 +126,7 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
   }
 
   public void sendTo(DataOutput out) throws IOException {
-    out.writeByte(HeaderByte.PDX_INLINE_ENUM.toByte());
+    out.writeByte(DSCODE.PDX_INLINE_ENUM.toByte());
     DataSerializer.writeString(this.className, out);
     DataSerializer.writeString(this.enumName, out);
     InternalDataSerializer.writeArrayLength(this.enumOrdinal, out);

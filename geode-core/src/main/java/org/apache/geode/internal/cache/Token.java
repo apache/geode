@@ -21,8 +21,8 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.HeaderByte;
 import org.apache.geode.internal.Version;
 
 /**
@@ -141,7 +141,7 @@ public abstract class Token {
 
     public boolean isSerializedValue(byte[] value) {
       ByteBuffer buf = ByteBuffer.wrap(value);
-      return buf.capacity() == 3 && buf.get() == HeaderByte.DS_FIXED_ID_SHORT.toByte()
+      return buf.capacity() == 3 && buf.get() == DSCODE.DS_FIXED_ID_SHORT.toByte()
           && buf.getShort() == getDSFID();
     }
 

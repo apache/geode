@@ -33,7 +33,7 @@ import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -324,7 +324,7 @@ public class MemoryBlockNodeJUnitTest {
   public void getDataValueWithIllegalDataTypeCatchesIOException() {
     Object obj = getValue();
     storedObject = createValueAsSerializedStoredObject(obj);
-    storedObject.writeDataByte(0, HeaderByte.ILLEGAL.toByte());
+    storedObject.writeDataByte(0, DSCODE.ILLEGAL.toByte());
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));

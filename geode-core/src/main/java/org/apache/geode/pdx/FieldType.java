@@ -17,7 +17,7 @@ package org.apache.geode.pdx;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.pdx.internal.DataSize;
 
@@ -40,8 +40,8 @@ public enum FieldType {
   FLOAT(true, DataSize.FLOAT_SIZE, "float", new byte[] {0, 0, 0, 0}, 0),
   DOUBLE(true, DataSize.DOUBLE_SIZE, "double", new byte[] {0, 0, 0, 0, 0, 0, 0, 0}, 0),
   DATE(true, DataSize.DATE_SIZE, "Date", new byte[] {-1, -1, -1, -1, -1, -1, -1, -1}, null),
-  STRING(false, -1, "String", new byte[] {HeaderByte.NULL_STRING.toByte()}, null),
-  OBJECT(false, -1, "Object", new byte[] {HeaderByte.NULL.toByte()}, null),
+  STRING(false, -1, "String", new byte[] {DSCODE.NULL_STRING.toByte()}, null),
+  OBJECT(false, -1, "Object", new byte[] {DSCODE.NULL.toByte()}, null),
   BOOLEAN_ARRAY(false, -1, "boolean[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
   CHAR_ARRAY(false, -1, "char[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
   BYTE_ARRAY(false, -1, "byte[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),

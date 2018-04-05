@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
@@ -290,7 +290,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
         if (this.isSerialized()) {
           hdos.write(bb);
         } else {
-          hdos.writeByte(HeaderByte.BYTE_ARRAY.toByte());
+          hdos.writeByte(DSCODE.BYTE_ARRAY.toByte());
           InternalDataSerializer.writeArrayLength(bb.remaining(), hdos);
           hdos.write(bb);
         }

@@ -21,8 +21,8 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.HeaderByte;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 
@@ -43,196 +43,196 @@ public class DataType {
       return "IOException: " + e.getMessage();
     }
     try {
-      if (header == HeaderByte.DS_FIXED_ID_BYTE.toByte()) {
+      if (header == DSCODE.DS_FIXED_ID_BYTE.toByte()) {
         return "org.apache.geode.internal.DataSerializableFixedID:"
             + DSFIDFactory.create(in.readByte(), in).getClass().getName();
       }
-      if (header == HeaderByte.DS_FIXED_ID_SHORT.toByte()) {
+      if (header == DSCODE.DS_FIXED_ID_SHORT.toByte()) {
         return "org.apache.geode.internal.DataSerializableFixedID:"
             + DSFIDFactory.create(in.readShort(), in).getClass().getName();
       }
-      if (header == HeaderByte.DS_FIXED_ID_INT.toByte()) {
+      if (header == DSCODE.DS_FIXED_ID_INT.toByte()) {
         return "org.apache.geode.internal.DataSerializableFixedID:"
             + DSFIDFactory.create(in.readInt(), in).getClass().getName();
       }
-      if (header == HeaderByte.DS_NO_FIXED_ID.toByte()) {
+      if (header == DSCODE.DS_NO_FIXED_ID.toByte()) {
         return "org.apache.geode.internal.DataSerializableFixedID:"
             + DataSerializer.readClass(in).getName();
       }
-      if (header == HeaderByte.NULL.toByte()) {
+      if (header == DSCODE.NULL.toByte()) {
         return "null";
       }
-      if (header == HeaderByte.NULL_STRING.toByte() || header == HeaderByte.STRING.toByte()
-          || header == HeaderByte.HUGE_STRING.toByte() || header == HeaderByte.STRING_BYTES.toByte()
-          || header == HeaderByte.HUGE_STRING_BYTES.toByte()) {
+      if (header == DSCODE.NULL_STRING.toByte() || header == DSCODE.STRING.toByte()
+          || header == DSCODE.HUGE_STRING.toByte() || header == DSCODE.STRING_BYTES.toByte()
+          || header == DSCODE.HUGE_STRING_BYTES.toByte()) {
         return "java.lang.String";
       }
-      if (header == HeaderByte.CLASS.toByte()) {
+      if (header == DSCODE.CLASS.toByte()) {
         return "java.lang.Class";
       }
-      if (header == HeaderByte.DATE.toByte()) {
+      if (header == DSCODE.DATE.toByte()) {
         return "java.util.Date";
       }
-      if (header == HeaderByte.FILE.toByte()) {
+      if (header == DSCODE.FILE.toByte()) {
         return "java.io.File";
       }
-      if (header == HeaderByte.INET_ADDRESS.toByte()) {
+      if (header == DSCODE.INET_ADDRESS.toByte()) {
         return "java.net.InetAddress";
       }
-      if (header == HeaderByte.BOOLEAN.toByte()) {
+      if (header == DSCODE.BOOLEAN.toByte()) {
         return "java.lang.Boolean";
       }
-      if (header == HeaderByte.CHARACTER.toByte()) {
+      if (header == DSCODE.CHARACTER.toByte()) {
         return "java.lang.Character";
       }
-      if (header == HeaderByte.BYTE.toByte()) {
+      if (header == DSCODE.BYTE.toByte()) {
         return "java.lang.Byte";
       }
-      if (header == HeaderByte.SHORT.toByte()) {
+      if (header == DSCODE.SHORT.toByte()) {
         return "java.lang.Short";
       }
-      if (header == HeaderByte.INTEGER.toByte()) {
+      if (header == DSCODE.INTEGER.toByte()) {
         return "java.lang.Integer";
       }
-      if (header == HeaderByte.LONG.toByte()) {
+      if (header == DSCODE.LONG.toByte()) {
         return "java.lang.Long";
       }
-      if (header == HeaderByte.FLOAT.toByte()) {
+      if (header == DSCODE.FLOAT.toByte()) {
         return "java.lang.Float";
       }
-      if (header == HeaderByte.DOUBLE.toByte()) {
+      if (header == DSCODE.DOUBLE.toByte()) {
         return "java.lang.Double";
       }
-      if (header == HeaderByte.BYTE_ARRAY.toByte()) {
+      if (header == DSCODE.BYTE_ARRAY.toByte()) {
         return "byte[]";
       }
-      if (header == HeaderByte.ARRAY_OF_BYTE_ARRAYS.toByte()) {
+      if (header == DSCODE.ARRAY_OF_BYTE_ARRAYS.toByte()) {
         return "byte[][]";
       }
-      if (header == HeaderByte.SHORT_ARRAY.toByte()) {
+      if (header == DSCODE.SHORT_ARRAY.toByte()) {
         return "short[]";
       }
-      if (header == HeaderByte.STRING_ARRAY.toByte()) {
+      if (header == DSCODE.STRING_ARRAY.toByte()) {
         return "java.lang.String[]";
       }
-      if (header == HeaderByte.INT_ARRAY.toByte()) {
+      if (header == DSCODE.INT_ARRAY.toByte()) {
         return "int[]";
       }
-      if (header == HeaderByte.LONG_ARRAY.toByte()) {
+      if (header == DSCODE.LONG_ARRAY.toByte()) {
         return "long[]";
       }
-      if (header == HeaderByte.FLOAT_ARRAY.toByte()) {
+      if (header == DSCODE.FLOAT_ARRAY.toByte()) {
         return "float[]";
       }
-      if (header == HeaderByte.DOUBLE_ARRAY.toByte()) {
+      if (header == DSCODE.DOUBLE_ARRAY.toByte()) {
         return "double[]";
       }
-      if (header == HeaderByte.BOOLEAN_ARRAY.toByte()) {
+      if (header == DSCODE.BOOLEAN_ARRAY.toByte()) {
         return "boolean[]";
       }
-      if (header == HeaderByte.CHAR_ARRAY.toByte()) {
+      if (header == DSCODE.CHAR_ARRAY.toByte()) {
         return "char[]";
       }
-      if (header == HeaderByte.OBJECT_ARRAY.toByte()) {
+      if (header == DSCODE.OBJECT_ARRAY.toByte()) {
         return "java.lang.Object[]";
       }
-      if (header == HeaderByte.ARRAY_LIST.toByte()) {
+      if (header == DSCODE.ARRAY_LIST.toByte()) {
         return "java.util.ArrayList";
       }
-      if (header == HeaderByte.LINKED_LIST.toByte()) {
+      if (header == DSCODE.LINKED_LIST.toByte()) {
         return "java.util.LinkedList";
       }
-      if (header == HeaderByte.HASH_SET.toByte()) {
+      if (header == DSCODE.HASH_SET.toByte()) {
         return "java.util.HashSet";
       }
-      if (header == HeaderByte.LINKED_HASH_SET.toByte()) {
+      if (header == DSCODE.LINKED_HASH_SET.toByte()) {
         return "java.util.LinkedHashSet";
       }
-      if (header == HeaderByte.HASH_MAP.toByte()) {
+      if (header == DSCODE.HASH_MAP.toByte()) {
         return "java.util.HashMap";
       }
-      if (header == HeaderByte.IDENTITY_HASH_MAP.toByte()) {
+      if (header == DSCODE.IDENTITY_HASH_MAP.toByte()) {
         return "java.util.IdentityHashMap";
       }
-      if (header == HeaderByte.HASH_TABLE.toByte()) {
+      if (header == DSCODE.HASH_TABLE.toByte()) {
         return "java.util.Hashtable";
       }
       // ConcurrentHashMap is written as java.io.serializable
-      // if (header == HeaderByte.CONCURRENT_HASH_MAP.toByte()) {
+      // if (header == DSCODE.CONCURRENT_HASH_MAP.toByte()) {
       // return "java.util.concurrent.ConcurrentHashMap";
-      if (header == HeaderByte.PROPERTIES.toByte()) {
+      if (header == DSCODE.PROPERTIES.toByte()) {
         return "java.util.Properties";
       }
-      if (header == HeaderByte.TIME_UNIT.toByte()) {
+      if (header == DSCODE.TIME_UNIT.toByte()) {
         return "java.util.concurrent.TimeUnit";
       }
-      if (header == HeaderByte.USER_CLASS.toByte()) {
+      if (header == DSCODE.USER_CLASS.toByte()) {
         byte userClassDSId = in.readByte();
         return "DataSerializer: with Id:" + userClassDSId;
       }
-      if (header == HeaderByte.USER_CLASS_2.toByte()) {
+      if (header == DSCODE.USER_CLASS_2.toByte()) {
         short userClass2DSId = in.readShort();
         return "DataSerializer: with Id:" + userClass2DSId;
       }
-      if (header == HeaderByte.USER_CLASS_4.toByte()) {
+      if (header == DSCODE.USER_CLASS_4.toByte()) {
         int userClass4DSId = in.readInt();
         return "DataSerializer: with Id:" + userClass4DSId;
       }
-      if (header == HeaderByte.VECTOR.toByte()) {
+      if (header == DSCODE.VECTOR.toByte()) {
         return "java.util.Vector";
       }
-      if (header == HeaderByte.STACK.toByte()) {
+      if (header == DSCODE.STACK.toByte()) {
         return "java.util.Stack";
       }
-      if (header == HeaderByte.TREE_MAP.toByte()) {
+      if (header == DSCODE.TREE_MAP.toByte()) {
         return "java.util.TreeMap";
       }
-      if (header == HeaderByte.TREE_SET.toByte()) {
+      if (header == DSCODE.TREE_SET.toByte()) {
         return "java.util.TreeSet";
       }
-      if (header == HeaderByte.BOOLEAN_TYPE.toByte()) {
+      if (header == DSCODE.BOOLEAN_TYPE.toByte()) {
         return "java.lang.Boolean.class";
       }
-      if (header == HeaderByte.CHARACTER_TYPE.toByte()) {
+      if (header == DSCODE.CHARACTER_TYPE.toByte()) {
         return "java.lang.Character.class";
       }
-      if (header == HeaderByte.BYTE_TYPE.toByte()) {
+      if (header == DSCODE.BYTE_TYPE.toByte()) {
         return "java.lang.Byte.class";
       }
-      if (header == HeaderByte.SHORT_TYPE.toByte()) {
+      if (header == DSCODE.SHORT_TYPE.toByte()) {
         return "java.lang.Short.class";
       }
-      if (header == HeaderByte.INTEGER_TYPE.toByte()) {
+      if (header == DSCODE.INTEGER_TYPE.toByte()) {
         return "java.lang.Integer.class";
       }
-      if (header == HeaderByte.LONG_TYPE.toByte()) {
+      if (header == DSCODE.LONG_TYPE.toByte()) {
         return "java.lang.Long.class";
       }
-      if (header == HeaderByte.FLOAT_TYPE.toByte()) {
+      if (header == DSCODE.FLOAT_TYPE.toByte()) {
         return "java.lang.Float.class";
       }
-      if (header == HeaderByte.DOUBLE_TYPE.toByte()) {
+      if (header == DSCODE.DOUBLE_TYPE.toByte()) {
         return "java.lang.Double.class";
       }
-      if (header == HeaderByte.VOID_TYPE.toByte()) {
+      if (header == DSCODE.VOID_TYPE.toByte()) {
         return "java.lang.Void.class";
       }
-      if (header == HeaderByte.USER_DATA_SERIALIZABLE.toByte()) {
+      if (header == DSCODE.USER_DATA_SERIALIZABLE.toByte()) {
         Instantiator instantiator = InternalInstantiator.getInstantiator(in.readByte());
         return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
       }
-      if (header == HeaderByte.USER_DATA_SERIALIZABLE_2.toByte()) {
+      if (header == DSCODE.USER_DATA_SERIALIZABLE_2.toByte()) {
         Instantiator instantiator = InternalInstantiator.getInstantiator(in.readShort());
         return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
       }
-      if (header == HeaderByte.USER_DATA_SERIALIZABLE_4.toByte()) {
+      if (header == DSCODE.USER_DATA_SERIALIZABLE_4.toByte()) {
         Instantiator instantiator = InternalInstantiator.getInstantiator(in.readInt());
         return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
       }
-      if (header == HeaderByte.DATA_SERIALIZABLE.toByte()) {
+      if (header == DSCODE.DATA_SERIALIZABLE.toByte()) {
         return "org.apache.geode.DataSerializable:" + DataSerializer.readClass(in).getName();
       }
-      if (header == HeaderByte.SERIALIZABLE.toByte()) {
+      if (header == DSCODE.SERIALIZABLE.toByte()) {
         String name = null;
         try {
           Object obj = InternalDataSerializer.basicReadObject(getDataInput(bytes));
@@ -242,33 +242,33 @@ public class DataType {
         }
         return "java.io.Serializable:" + name;
       }
-      if (header == HeaderByte.PDX.toByte()) {
+      if (header == DSCODE.PDX.toByte()) {
         int typeId = in.readInt();
         return "pdxType:" + typeId;
       }
-      if (header == HeaderByte.PDX_ENUM.toByte()) {
+      if (header == DSCODE.PDX_ENUM.toByte()) {
         in.readByte(); // dsId is not needed
         int enumId = InternalDataSerializer.readArrayLength(in);
         return "pdxEnum:" + enumId;
       }
-      if (header == HeaderByte.GEMFIRE_ENUM.toByte()) {
+      if (header == DSCODE.GEMFIRE_ENUM.toByte()) {
         String name = DataSerializer.readString(in);
         return "java.lang.Enum:" + name;
       }
-      if (header == HeaderByte.PDX_INLINE_ENUM.toByte()) {
+      if (header == DSCODE.PDX_INLINE_ENUM.toByte()) {
         String name = DataSerializer.readString(in);
         return "java.lang.Enum:" + name;
       }
-      if (header == HeaderByte.BIG_INTEGER.toByte()) {
+      if (header == DSCODE.BIG_INTEGER.toByte()) {
         return "java.math.BigInteger";
       }
-      if (header == HeaderByte.BIG_DECIMAL.toByte()) {
+      if (header == DSCODE.BIG_DECIMAL.toByte()) {
         return "java.math.BigDecimal";
       }
-      if (header == HeaderByte.UUID.toByte()) {
+      if (header == DSCODE.UUID.toByte()) {
         return "java.util.UUID";
       }
-      if (header == HeaderByte.TIMESTAMP.toByte()) {
+      if (header == DSCODE.TIMESTAMP.toByte()) {
         return "java.sql.Timestamp";
       }
       return "Unknown header byte: " + header;

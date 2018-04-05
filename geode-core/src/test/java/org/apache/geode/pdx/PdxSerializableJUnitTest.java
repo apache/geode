@@ -54,7 +54,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.SystemAdmin;
@@ -293,13 +293,13 @@ public class PdxSerializableJUnitTest {
     DataSerializer.writeObject(object, out);
     int typeId = getPdxTypeIdForClass(SimpleClass.class);
     byte[] actual = out.toByteArray();
-    byte[] expected = new byte[] {HeaderByte.PDX.toByte(), // byte
+    byte[] expected = new byte[] {DSCODE.PDX.toByte(), // byte
         0, 0, 0, 4 + 1 + 1, // int - length of byte stream = 4(myInt) + 1(myByte) + 1 (myEnum)
         (byte) (typeId >> 24), (byte) (typeId >> 16), (byte) (typeId >> 8), (byte) typeId, // int -
                                                                                            // typeId
         0, 0, 0, 1, // int - myInt = 1
         5, // byte - myByte = 5
-        HeaderByte.NULL.toByte()};
+        DSCODE.NULL.toByte()};
 
     StringBuffer msg = new StringBuffer("Actual output: ");
     for (byte val : actual) {
@@ -364,7 +364,7 @@ public class PdxSerializableJUnitTest {
     int offset3 = offset1 + 8 + str1Bytes.length + str2Bytes.length;
     byte[] actual = out.toByteArray();
     int floatBytes = Float.floatToRawIntBits(myFloat);
-    Byte[] expected = new Byte[] {HeaderByte.PDX.toByte(), // byte
+    Byte[] expected = new Byte[] {DSCODE.PDX.toByte(), // byte
         (byte) (length >> 24), (byte) (length >> 16), (byte) (length >> 8), (byte) length, // int -
                                                                                            // length
                                                                                            // of
@@ -392,7 +392,7 @@ public class PdxSerializableJUnitTest {
                                                                                                    // for:
                                                                                                    // 1
                                                                                                    // for
-                                                                                                   // HeaderByte.PDX.toByte()
+                                                                                                   // DSCODE.PDX.toByte()
                                                                                                    // and
                                                                                                    // 4
                                                                                                    // for
@@ -591,7 +591,7 @@ public class PdxSerializableJUnitTest {
     int offset3 = offset1 + 8 + str1Bytes.length + str2Bytes.length;
     byte[] actual = out.toByteArray();
     int floatBytes = Float.floatToRawIntBits(myFloat);
-    Byte[] expected = new Byte[] {HeaderByte.PDX.toByte(), // byte
+    Byte[] expected = new Byte[] {DSCODE.PDX.toByte(), // byte
         (byte) (length >> 24), (byte) (length >> 16), (byte) (length >> 8), (byte) length, // int -
                                                                                            // length
                                                                                            // of
@@ -619,7 +619,7 @@ public class PdxSerializableJUnitTest {
                                                                                                    // for:
                                                                                                    // 1
                                                                                                    // for
-                                                                                                   // HeaderByte.PDX.toByte()
+                                                                                                   // DSCODE.PDX.toByte()
                                                                                                    // and
                                                                                                    // 4
                                                                                                    // for
@@ -803,7 +803,7 @@ public class PdxSerializableJUnitTest {
     int offset3 = offset1 + 8 + str1Bytes.length + mapBytes.length;
     byte[] actual = out.toByteArray();
     int floatBytes = Float.floatToRawIntBits(myFloat);
-    Byte[] expected = new Byte[] {HeaderByte.PDX.toByte(), // byte
+    Byte[] expected = new Byte[] {DSCODE.PDX.toByte(), // byte
         (byte) (length >> 24), (byte) (length >> 16), (byte) (length >> 8), (byte) length, // int -
                                                                                            // length
                                                                                            // of
@@ -901,7 +901,7 @@ public class PdxSerializableJUnitTest {
     int offset3 = offset1 + 8 + str1Bytes.length + dsBytes.length;
     byte[] actual = out.toByteArray();
     int floatBytes = Float.floatToRawIntBits(myFloat);
-    Byte[] expected = new Byte[] {HeaderByte.PDX.toByte(), // byte
+    Byte[] expected = new Byte[] {DSCODE.PDX.toByte(), // byte
         (byte) (length >> 24), (byte) (length >> 16), (byte) (length >> 8), (byte) length, // int -
                                                                                            // length
                                                                                            // of
@@ -925,7 +925,7 @@ public class PdxSerializableJUnitTest {
                                                                                                    // for:
                                                                                                    // 1
                                                                                                    // for
-                                                                                                   // HeaderByte.PDX.toByte()
+                                                                                                   // DSCODE.PDX.toByte()
                                                                                                    // and
                                                                                                    // 4
                                                                                                    // for
@@ -1012,7 +1012,7 @@ public class PdxSerializableJUnitTest {
 
     byte[] actual = out.toByteArray();
     int floatBytes = Float.floatToRawIntBits(myFloat);
-    Byte[] expected = new Byte[] {HeaderByte.DATA_SERIALIZABLE.toByte(), // byte
+    Byte[] expected = new Byte[] {DSCODE.DATA_SERIALIZABLE.toByte(), // byte
         (byte) (myLong >> 56), (byte) (myLong >> 48), (byte) (myLong >> 40), (byte) (myLong >> 32),
         (byte) (myLong >> 24), (byte) (myLong >> 16), (byte) (myLong >> 8), (byte) myLong, // long -
                                                                                            // myLong

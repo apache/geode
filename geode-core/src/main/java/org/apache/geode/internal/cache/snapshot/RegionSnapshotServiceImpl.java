@@ -47,7 +47,7 @@ import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CachedDeserializable;
@@ -261,7 +261,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
           // If the underlying object is a byte[], we can't wrap it in a
           // CachedDeserializable. Somewhere along the line the header bytes
           // get lost and we start seeing serialization problems.
-          if (data.length > 0 && data[0] == HeaderByte.BYTE_ARRAY.toByte()) {
+          if (data.length > 0 && data[0] == DSCODE.BYTE_ARRAY.toByte()) {
             // It would be faster to use System.arraycopy() directly but since
             // length field is variable it's probably safest and simplest to
             // keep the logic in the InternalDataSerializer.

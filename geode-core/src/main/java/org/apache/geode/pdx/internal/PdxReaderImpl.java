@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -896,10 +896,9 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
       }
       int offset = getPositionForField(ft) + buffer.arrayOffset();
       // Do not create PdxString if the field is NULL
-      if (bytes[offset] == HeaderByte.STRING.toByte()
-          || bytes[offset] == HeaderByte.STRING_BYTES.toByte()
-          || bytes[offset] == HeaderByte.HUGE_STRING.toByte()
-          || bytes[offset] == HeaderByte.HUGE_STRING_BYTES.toByte()) {
+      if (bytes[offset] == DSCODE.STRING.toByte() || bytes[offset] == DSCODE.STRING_BYTES.toByte()
+          || bytes[offset] == DSCODE.HUGE_STRING.toByte()
+          || bytes[offset] == DSCODE.HUGE_STRING_BYTES.toByte()) {
         return new PdxString(bytes, offset);
       }
     }
@@ -919,8 +918,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     }
     int offset = getPositionForField(ft) + buffer.arrayOffset();
     // Do not create PdxString if the field is NULL
-    if (bytes[offset] == HeaderByte.NULL.toByte()
-        || bytes[offset] == HeaderByte.NULL_STRING.toByte()) {
+    if (bytes[offset] == DSCODE.NULL.toByte() || bytes[offset] == DSCODE.NULL_STRING.toByte()) {
       return null;
     }
     return new PdxString(bytes, offset);

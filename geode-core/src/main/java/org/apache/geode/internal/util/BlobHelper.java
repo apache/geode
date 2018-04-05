@@ -20,7 +20,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ByteArrayDataInput;
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.offheap.StoredObject;
@@ -97,7 +97,7 @@ public class BlobHelper {
       throws IOException, ClassNotFoundException {
     Object result;
     final long start = startDeserialization();
-    if (blob.length > 0 && blob[0] == HeaderByte.PDX.toByte()) {
+    if (blob.length > 0 && blob[0] == DSCODE.PDX.toByte()) {
       // If the first byte of blob indicates a pdx then wrap
       // blob in a PdxInputStream instead.
       // This will prevent us from making a copy of the byte[]

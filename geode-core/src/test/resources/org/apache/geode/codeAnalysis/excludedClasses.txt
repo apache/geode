@@ -12,8 +12,8 @@ org/apache/geode/distributed/internal/membership/gms/mgr/GMSMembershipManager$Bo
 org/apache/geode/distributed/internal/tcpserver/LocatorCancelException
 org/apache/geode/internal/AbstractConfig$SortedProperties
 org/apache/geode/internal/AvailablePort$Keeper
+org/apache/geode/internal/DSCODE
 org/apache/geode/internal/ExitCode
-org/apache/geode/internal/HeaderByte
 org/apache/geode/internal/JarDeployer
 org/apache/geode/internal/ObjIdConcurrentMap
 org/apache/geode/internal/ObjIdConcurrentMap$Segment

@@ -25,11 +25,11 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class HeaderByteTest {
+public class DSCODETest {
   @Test
   public void testNoDuplicateByteValues() throws Exception {
     Set<Integer> previouslySeen = new HashSet<>();
-    for (HeaderByte value : HeaderByte.values()) {
+    for (DSCODE value : DSCODE.values()) {
       final int integerValue = (int) value.toByte();
       assertFalse("Each byte value should only occur with a single header byte enumerate",
           previouslySeen.contains(integerValue));

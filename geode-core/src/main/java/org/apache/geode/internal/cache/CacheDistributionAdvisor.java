@@ -42,7 +42,7 @@ import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
@@ -845,7 +845,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
     private void writeSet(Set<?> set, DataOutput out) throws IOException {
       // to fix bug 47205 always serialize the Set as a HashSet.
-      out.writeByte(HeaderByte.HASH_SET.toByte());
+      out.writeByte(DSCODE.HASH_SET.toByte());
       InternalDataSerializer.writeSet(set, out);
     }
 

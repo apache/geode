@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -147,7 +147,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       PdxWriterImpl writer = convertToTypeWithNoDeletedFields(ur);
       writer.sendTo(out);
     } else {
-      out.write(HeaderByte.PDX.toByte());
+      out.write(DSCODE.PDX.toByte());
       out.writeInt(ur.basicSize());
       out.writeInt(ur.getPdxType().getTypeId());
       ur.basicSendTo(out);
@@ -163,7 +163,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     } else {
       byte[] result = new byte[PdxWriterImpl.HEADER_SIZE + ur.basicSize()];
       ByteBuffer bb = ByteBuffer.wrap(result);
-      bb.put(HeaderByte.PDX.toByte());
+      bb.put(DSCODE.PDX.toByte());
       bb.putInt(ur.basicSize());
       bb.putInt(ur.getPdxType().getTypeId());
       ur.basicSendTo(bb);

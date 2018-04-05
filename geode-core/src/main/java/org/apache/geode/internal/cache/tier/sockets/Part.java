@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.HeaderByte;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.offheap.AddressableMemoryManager;
@@ -85,7 +85,7 @@ public class Part {
     }
     if (isObject() && this.part instanceof byte[]) {
       byte[] b = (byte[]) this.part;
-      if (b.length == 1 && b[0] == HeaderByte.NULL.toByte()) {
+      if (b.length == 1 && b[0] == DSCODE.NULL.toByte()) {
         return true;
       }
     }
