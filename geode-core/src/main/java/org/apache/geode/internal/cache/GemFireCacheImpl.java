@@ -859,7 +859,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             SecurityServiceFactory.create(this.system.getConfig().getSecurityProps(), cacheConfig);
         this.system.setSecurityService(this.securityService);
       } else {
-        this.securityService = null;
+        // create a no-op security service for client
+        this.securityService = SecurityServiceFactory.create();
       }
 
       if (!this.isClient && PoolManager.getAll().isEmpty()) {
@@ -2123,9 +2124,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   public void close(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS) {
-    if (securityService != null) {
-      securityService.close();
-    }
+    securityService.close();
 
     if (isClosed()) {
       return;
