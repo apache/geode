@@ -2123,7 +2123,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   public void close(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS) {
-    this.securityService.close();
+    if (securityService != null) {
+      securityService.close();
+    }
 
     if (isClosed()) {
       return;
