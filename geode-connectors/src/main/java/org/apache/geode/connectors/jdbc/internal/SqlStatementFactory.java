@@ -27,20 +27,20 @@ class SqlStatementFactory {
     assert columnList.size() == 1;
     ColumnValue keyCV = columnList.get(0);
     assert keyCV.isKey();
-    return "SELECT * FROM " + quote + tableName + quote + " WHERE " + quote + keyCV.getColumnName()
-        + quote + " = ?";
+    return "SELECT * FROM " + quoteIdentifier(tableName) + " WHERE "
+        + quoteIdentifier(keyCV.getColumnName()) + " = ?";
   }
 
   String createDestroySqlString(String tableName, List<ColumnValue> columnList) {
     assert columnList.size() == 1;
     ColumnValue keyCV = columnList.get(0);
     assert keyCV.isKey();
-    return "DELETE FROM " + quote + tableName + quote + " WHERE " + quote + keyCV.getColumnName()
-        + quote + " = ?";
+    return "DELETE FROM " + quoteIdentifier(tableName) + " WHERE "
+        + quoteIdentifier(keyCV.getColumnName()) + " = ?";
   }
 
   String createUpdateSqlString(String tableName, List<ColumnValue> columnList) {
-    StringBuilder query = new StringBuilder("UPDATE " + quote + tableName + quote + " SET ");
+    StringBuilder query = new StringBuilder("UPDATE " + quoteIdentifier(tableName) + " SET ");
     int idx = 0;
     for (ColumnValue column : columnList) {
       if (!column.isKey()) {
@@ -48,14 +48,14 @@ class SqlStatementFactory {
         if (idx > 1) {
           query.append(", ");
         }
-        query.append(quote).append(column.getColumnName()).append(quote);
+        query.append(quoteIdentifier(column.getColumnName()));
         query.append(" = ?");
       }
     }
     for (ColumnValue column : columnList) {
       if (column.isKey()) {
         query.append(" WHERE ");
-        query.append(quote).append(column.getColumnName()).append(quote);
+        query.append(quoteIdentifier(column.getColumnName()));
         query.append(" = ?");
         // currently only support simple primary key with one column
         break;
@@ -65,13 +65,14 @@ class SqlStatementFactory {
   }
 
   String createInsertSqlString(String tableName, List<ColumnValue> columnList) {
-    StringBuilder columnNames = new StringBuilder("INSERT INTO \"" + tableName + "\" (");
+    StringBuilder columnNames =
+        new StringBuilder("INSERT INTO " + quoteIdentifier(tableName) + " (");
     StringBuilder columnValues = new StringBuilder(" VALUES (");
     int columnCount = columnList.size();
     int idx = 0;
     for (ColumnValue column : columnList) {
       idx++;
-      columnNames.append('"').append(column.getColumnName()).append('"');
+      columnNames.append(quoteIdentifier(column.getColumnName()));
       columnValues.append('?');
       if (idx != columnCount) {
         columnNames.append(", ");
@@ -81,5 +82,9 @@ class SqlStatementFactory {
     columnNames.append(")");
     columnValues.append(")");
     return columnNames.append(columnValues).toString();
+  }
+
+  private String quoteIdentifier(String identifier) {
+    return quote + identifier + quote;
   }
 }
