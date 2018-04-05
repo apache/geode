@@ -413,7 +413,6 @@ import org.apache.geode.management.internal.configuration.messages.Configuration
 import org.apache.geode.pdx.internal.CheckTypeRegistryState;
 import org.apache.geode.pdx.internal.EnumId;
 import org.apache.geode.pdx.internal.EnumInfo;
-import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * Factory for instances of DataSerializableFixedID instances. Note that this class implements
@@ -945,73 +944,68 @@ public class DSFIDFactory implements DataSerializableFixedID {
    * data input.
    */
   public static Object create(int dsfid, DataInput in) throws IOException, ClassNotFoundException {
-    boolean readSerializedOverride = TypeRegistry.getPdxReadSerialized();
-    TypeRegistry.setPdxReadSerialized(false);
-    try {
-      switch (dsfid) {
-        case REGION:
-          return (DataSerializableFixedID) DataSerializer.readRegion(in);
-        case END_OF_STREAM_TOKEN:
-          return Token.END_OF_STREAM;
-        case DLOCK_REMOTE_TOKEN:
-          return DLockRemoteToken.createFromDataInput(in);
-        case TRANSACTION_ID:
-          return TXId.createFromData(in);
-        case INTEREST_RESULT_POLICY:
-          return readInterestResultPolicy(in);
-        case UNDEFINED:
-          return readUndefined(in);
-        case RESULTS_BAG:
-          return readResultsBag(in);
-        case TOKEN_INVALID:
-          return Token.INVALID;
-        case TOKEN_LOCAL_INVALID:
-          return Token.LOCAL_INVALID;
-        case TOKEN_DESTROYED:
-          return Token.DESTROYED;
-        case TOKEN_REMOVED:
-          return Token.REMOVED_PHASE1;
-        case TOKEN_REMOVED2:
-          return Token.REMOVED_PHASE2;
-        case TOKEN_TOMBSTONE:
-          return Token.TOMBSTONE;
-        case NULL_TOKEN:
-          return readNullToken(in);
-        case CONFIGURATION_RESPONSE:
-          return readConfigurationResponse(in);
-        case PR_DESTROY_ON_DATA_STORE_MESSAGE:
-          return readDestroyOnDataStore(in);
-        default:
-          final Constructor<?> cons;
-          if (dsfid >= Byte.MIN_VALUE && dsfid <= Byte.MAX_VALUE) {
-            cons = dsfidMap[dsfid + Byte.MAX_VALUE + 1];
-          } else {
-            cons = (Constructor<?>) dsfidMap2.get(dsfid);
-          }
-          if (cons != null) {
-            try {
-              Object ds = cons.newInstance((Object[]) null);
-              InternalDataSerializer.invokeFromData(ds, in);
-              return ds;
-            } catch (InstantiationException ie) {
-              throw new IOException(ie.getMessage(), ie);
-            } catch (IllegalAccessException iae) {
-              throw new IOException(iae.getMessage(), iae);
-            } catch (InvocationTargetException ite) {
-              Throwable targetEx = ite.getTargetException();
-              if (targetEx instanceof IOException) {
-                throw (IOException) targetEx;
-              } else if (targetEx instanceof ClassNotFoundException) {
-                throw (ClassNotFoundException) targetEx;
-              } else {
-                throw new IOException(ite.getMessage(), targetEx);
-              }
+    switch (dsfid) {
+      case REGION:
+        return (DataSerializableFixedID) DataSerializer.readRegion(in);
+      case END_OF_STREAM_TOKEN:
+        return Token.END_OF_STREAM;
+      case DLOCK_REMOTE_TOKEN:
+        return DLockRemoteToken.createFromDataInput(in);
+      case TRANSACTION_ID:
+        return TXId.createFromData(in);
+      case INTEREST_RESULT_POLICY:
+        return readInterestResultPolicy(in);
+      case UNDEFINED:
+        return readUndefined(in);
+      case RESULTS_BAG:
+        return readResultsBag(in);
+      case TOKEN_INVALID:
+        return Token.INVALID;
+      case TOKEN_LOCAL_INVALID:
+        return Token.LOCAL_INVALID;
+      case TOKEN_DESTROYED:
+        return Token.DESTROYED;
+      case TOKEN_REMOVED:
+        return Token.REMOVED_PHASE1;
+      case TOKEN_REMOVED2:
+        return Token.REMOVED_PHASE2;
+      case TOKEN_TOMBSTONE:
+        return Token.TOMBSTONE;
+      case NULL_TOKEN:
+        return readNullToken(in);
+      case CONFIGURATION_RESPONSE:
+        return readConfigurationResponse(in);
+      case PR_DESTROY_ON_DATA_STORE_MESSAGE:
+        return readDestroyOnDataStore(in);
+      default:
+        final Constructor<?> cons;
+        if (dsfid >= Byte.MIN_VALUE && dsfid <= Byte.MAX_VALUE) {
+          cons = dsfidMap[dsfid + Byte.MAX_VALUE + 1];
+        } else {
+          cons = (Constructor<?>) dsfidMap2.get(dsfid);
+        }
+        if (cons != null) {
+          try {
+            Object ds = cons.newInstance((Object[]) null);
+            InternalDataSerializer.invokeFromData(ds, in);
+            return ds;
+          } catch (InstantiationException ie) {
+            throw new IOException(ie.getMessage(), ie);
+          } catch (IllegalAccessException iae) {
+            throw new IOException(iae.getMessage(), iae);
+          } catch (InvocationTargetException ite) {
+            Throwable targetEx = ite.getTargetException();
+            if (targetEx instanceof IOException) {
+              throw (IOException) targetEx;
+            } else if (targetEx instanceof ClassNotFoundException) {
+              throw (ClassNotFoundException) targetEx;
+            } else {
+              throw new IOException(ite.getMessage(), targetEx);
             }
           }
-          throw new DSFIDNotFoundException("Unknown DataSerializableFixedID: " + dsfid, dsfid);
-      }
-    } finally {
-      TypeRegistry.setPdxReadSerialized(readSerializedOverride);
+        }
+        throw new DSFIDNotFoundException("Unknown DataSerializableFixedID: " + dsfid, dsfid);
+
     }
   }
 

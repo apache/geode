@@ -1360,7 +1360,7 @@ public abstract class DistributedCacheOperation {
       this.directAck = (bits & DIRECT_ACK_MASK) != 0;
       this.possibleDuplicate = (bits & POSSIBLE_DUPLICATE_MASK) != 0;
       if ((bits & CALLBACK_ARG_MASK) != 0) {
-        this.callbackArg = InternalDataSerializer.readUserObject(in);
+        this.callbackArg = DataSerializer.readObject(in);
       }
       this.hasDelta = (bits & DELTA_MASK) != 0;
       this.hasOldValue = (bits & OLD_VALUE_MASK) != 0;

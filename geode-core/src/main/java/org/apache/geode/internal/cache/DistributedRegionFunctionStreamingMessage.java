@@ -40,7 +40,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -333,7 +332,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       this.functionObject = (Function) object;
       this.isFnSerializationReqd = true;
     }
-    this.args = (Serializable) InternalDataSerializer.readUserObject(in);
+    this.args = (Serializable) DataSerializer.readObject(in);
     this.filter = (HashSet) DataSerializer.readHashSet(in);
     this.regionPath = DataSerializer.readString(in);
     this.isReExecute = (flags & IS_REEXECUTE) != 0;
