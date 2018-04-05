@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.THREAD_ID_EXPIRY_TIME_PROPERTY;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductIntegerProperty;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -30,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
@@ -67,7 +72,6 @@ import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -239,12 +243,6 @@ public class HARegionQueue implements RegionQueue {
   public static final long INIT_OF_SEQUENCEID = -1L;
 
   /**
-   * Constant used to set region entry expiry time using system property.
-   */
-  public static final String REGION_ENTRY_EXPIRY_TIME =
-      DistributionConfig.GEMFIRE_PREFIX + "MessageTimeToLive";
-
-  /**
    * The default frequency (in seconds) at which a message will be sent by the primary to all the
    * secondary nodes to remove the events which have already been dispatched from the queue.
    */
@@ -297,12 +295,6 @@ public class HARegionQueue implements RegionQueue {
    */
   static boolean testMarkerMessageRecieved = false;
   static boolean isUsedByTest = false;
-
-  static final int DEFAULT_THREAD_ID_EXPIRY_TIME = 300;
-  /**
-   * For testing purposes, allows resetting expiry time for ThreadIdentifiers. In seconds.
-   */
-  public static int threadIdExpiryTime = DEFAULT_THREAD_ID_EXPIRY_TIME;
 
   /**
    * Used by durable queues to maintain acked events by client
@@ -604,6 +596,7 @@ public class HARegionQueue implements RegionQueue {
    *
    * @param object object to put onto the queue
    */
+  @Override
   public boolean put(Object object) throws CacheException, InterruptedException {
     this.giiLock.readLock().lock(); // fix for bug #41681 - durable client misses event
     try {
@@ -1125,6 +1118,7 @@ public class HARegionQueue implements RegionQueue {
   /**
    * Returns the underlying region that backs this queue.
    */
+  @Override
   public HARegion getRegion() {
     return this.region;
   }
@@ -1190,6 +1184,7 @@ public class HARegionQueue implements RegionQueue {
    * @throws CacheException The exception can be thrown by BlockingQueue if it encounters
    *         InterruptedException while waiting for data
    */
+  @Override
   public Object take() throws CacheException, InterruptedException {
     Conflatable object = null;
     Long next = null;
@@ -1227,6 +1222,7 @@ public class HARegionQueue implements RegionQueue {
     return object;
   }
 
+  @Override
   public List take(int batchSize) throws CacheException, InterruptedException {
     List batch = new ArrayList(batchSize * 2);
     for (int i = 0; i < batchSize; i++) {
@@ -1260,6 +1256,7 @@ public class HARegionQueue implements RegionQueue {
    * Removes the events that were peeked by this thread. The events are destroyed from the queue and
    * conflation map and DispatchedAndCurrentEvents are updated accordingly.
    */
+  @Override
   public void remove() throws InterruptedException {
     List peekedIds = (List) HARegionQueue.peekedEventsContext.get();
 
@@ -1352,6 +1349,7 @@ public class HARegionQueue implements RegionQueue {
     // ARB: Implemented in DurableHARegionQueue.
   }
 
+  @Override
   public Object peek() throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
@@ -1393,6 +1391,7 @@ public class HARegionQueue implements RegionQueue {
     return object;
   }
 
+  @Override
   public List peek(int batchSize) throws InterruptedException {
     return peek(batchSize, -1);
   }
@@ -1436,6 +1435,7 @@ public class HARegionQueue implements RegionQueue {
    *
    * @return The list of events peeked
    */
+  @Override
   public List peek(int batchSize, int timeToWait) throws InterruptedException {
     long start = System.currentTimeMillis();
     long end = start + timeToWait;
@@ -1531,10 +1531,12 @@ public class HARegionQueue implements RegionQueue {
     return batch;
   }
 
+  @Override
   public void addCacheListener(CacheListener listener) {
     // nothing
   }
 
+  @Override
   public void removeCacheListener() {
     // nothing
   }
@@ -1738,6 +1740,7 @@ public class HARegionQueue implements RegionQueue {
    *
    * @return the size of the queue
    */
+  @Override
   public int size() {
     acquireReadLock();
     try {
@@ -1983,8 +1986,9 @@ public class HARegionQueue implements RegionQueue {
                 .toLocalizedString(new Object[] {BLOCKING_HA_QUEUE, NON_BLOCKING_HA_QUEUE}));
     }
     if (!isDurable) {
-      Integer expiryTime = Integer.getInteger(REGION_ENTRY_EXPIRY_TIME, hrqa.getExpiryTime());
-      hrqa.setExpiryTime(expiryTime);
+      Optional<Integer> expiryTime =
+          getProductIntegerProperty(HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY);
+      hrqa.setExpiryTime(expiryTime.orElseGet(hrqa::getExpiryTime));
       ExpirationAttributes ea =
           new ExpirationAttributes(hrqa.getExpiryTime(), ExpirationAction.LOCAL_INVALIDATE);
       hrq.region.getAttributesMutator().setEntryTimeToLive(ea);
@@ -3266,6 +3270,7 @@ public class HARegionQueue implements RegionQueue {
      *
      * @see org.apache.geode.internal.DataSerializableFixedID#fromData(java.io.DataInput)
      */
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       synchronized (this) {
         this.lastDispatchedSequenceId = in.readLong();
@@ -3278,6 +3283,7 @@ public class HARegionQueue implements RegionQueue {
      *
      * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
      */
+    @Override
     public int getDSFID() {
       return DISPATCHED_AND_CURRENT_EVENTS;
     }
@@ -3287,6 +3293,7 @@ public class HARegionQueue implements RegionQueue {
      *
      * @see org.apache.geode.internal.DataSerializableFixedID#toData(java.io.DataOutput)
      */
+    @Override
     public void toData(DataOutput out) throws IOException {
       synchronized (this) { // fix for bug #41621
         out.writeLong(this.lastDispatchedSequenceId);
@@ -3307,6 +3314,7 @@ public class HARegionQueue implements RegionQueue {
   }
 
   // TODO:Asif : Remove this method
+  @Override
   public void remove(int top) {
     throw new UnsupportedOperationException(
         LocalizedStrings.HARegionQueue_HAREGIONQUEUE_AND_ITS_DERIVED_CLASS_DO_NOT_SUPPORT_THIS_OPERATION
@@ -3543,6 +3551,7 @@ public class HARegionQueue implements RegionQueue {
         // Start a new thread which will update the clientMessagesRegion for
         // each of the HAEventWrapper instances present in the wrapperSet
         Thread regionCleanupTask = new Thread(new Runnable() {
+          @Override
           public void run() {
             try {
               Iterator iter = wrapperSet.iterator();
@@ -3779,16 +3788,24 @@ public class HARegionQueue implements RegionQueue {
 
   /** this is used to expire thread identifiers, even in primary queues */
   static class ThreadIdentifierCustomExpiry implements CustomExpiry {
-    private static final ExpirationAttributes DEFAULT_THREAD_ID_EXP_ATTS = new ExpirationAttributes(
-        HARegionQueue.DEFAULT_THREAD_ID_EXPIRY_TIME, ExpirationAction.LOCAL_INVALIDATE);
-    private static volatile ExpirationAttributes testExpAtts = null;
 
+    /**
+     * expiry time for ThreadIdentifiers. In seconds.
+     */
+    static final int DEFAULT_THREAD_ID_EXPIRY_TIME = 300;
+
+    private static final ExpirationAttributes DEFAULT_THREAD_ID_EXP_ATTS =
+        new ExpirationAttributes(DEFAULT_THREAD_ID_EXPIRY_TIME, ExpirationAction.LOCAL_INVALIDATE);
+
+    private static volatile ExpirationAttributes testExpAtts;
+
+    @Override
     public ExpirationAttributes getExpiry(Region.Entry entry) {
       // Use key to determine expiration.
       Object key = entry.getKey();
       if (key instanceof ThreadIdentifier) {
-        final int expTime = HARegionQueue.threadIdExpiryTime;
-        if (expTime != HARegionQueue.DEFAULT_THREAD_ID_EXPIRY_TIME) {
+        final int expTime = calculateThreadIdExpiryTime();
+        if (expTime != DEFAULT_THREAD_ID_EXPIRY_TIME) {
           // This should only happen in unit test code
           ExpirationAttributes result = testExpAtts;
           if (result == null || result.getTimeout() != expTime) {
@@ -3806,6 +3823,14 @@ public class HARegionQueue implements RegionQueue {
       }
     }
 
-    public void close() {}
+    @Override
+    public void close() {
+      // nothing
+    }
+
+    private static int calculateThreadIdExpiryTime() {
+      Optional<Integer> expiryTime = getProductIntegerProperty(THREAD_ID_EXPIRY_TIME_PROPERTY);
+      return expiryTime.orElse(DEFAULT_THREAD_ID_EXPIRY_TIME);
+    }
   }
 }
