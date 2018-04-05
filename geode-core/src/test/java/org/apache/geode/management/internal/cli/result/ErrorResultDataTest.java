@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -29,6 +30,8 @@ public class ErrorResultDataTest {
   public void emptyError() {
     ErrorResultData result = new ErrorResultData();
     assertThat(result.getGfJsonObject().getString("content")).isEqualTo("{}");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getType()).isEqualTo("error");
   }
 
   @Test
@@ -58,4 +61,15 @@ public class ErrorResultDataTest {
         .isEqualTo("[\"This is an error\",\"This is another error\"]");
   }
 
+  @Test
+  public void withHeaderAndFooter() {
+    ErrorResultData result = new ErrorResultData();
+
+    String headerFooter = "it was a dark and stormy night";
+    result.setHeader(headerFooter);
+    result.setFooter(headerFooter);
+
+    assertThat(result.getGfJsonObject().getString("header")).isEqualTo(headerFooter);
+    assertThat(result.getGfJsonObject().getString("footer")).isEqualTo(headerFooter);
+  }
 }
