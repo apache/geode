@@ -186,6 +186,9 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
           // jar deployment
           + ";com.sun.proxy.$Proxy*" + ";com.healthmarketscience.rmiio.RemoteInputStream"
+          + ";javax.rmi.ssl.SslRMIClientSocketFactory" + ";javax.net.ssl.SSLHandshakeException"
+          + ";javax.net.ssl.SSLException;sun.security.validator.ValidatorException"
+          + ";sun.security.provider.certpath.SunCertPathBuilderException"
 
           // geode-modules
           + ";org.apache.geode.modules.util.SessionCustomExpiry" + ";";
