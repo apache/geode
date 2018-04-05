@@ -268,6 +268,11 @@ public class StartLocatorCommand extends InternalGfshCommand {
 
     InfoResultData infoResultData = ResultBuilder.createInfoResultData();
 
+    // add a warning for deprecating --load-cluster-config-from-dir
+    infoResultData.addLine("Warning: Option --load-cluster-config-from-dir is deprecated, use '"
+        + CliStrings.IMPORT_SHARED_CONFIG
+        + "' command instead to import any existing configuration.\n");
+
     if (asyncStart) {
       infoResultData.addLine(
           String.format(CliStrings.ASYNC_PROCESS_LAUNCH_MESSAGE, CliStrings.LOCATOR_TERM_NAME));
