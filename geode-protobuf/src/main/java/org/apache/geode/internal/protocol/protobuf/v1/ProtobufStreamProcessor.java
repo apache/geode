@@ -41,8 +41,7 @@ public class ProtobufStreamProcessor {
 
   public ProtobufStreamProcessor() {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufSerializationService(),
-        new ProtobufOperationContextRegistry());
+    protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufOperationContextRegistry());
   }
 
   public void receiveMessage(InputStream inputStream, OutputStream outputStream,
@@ -58,8 +57,8 @@ public class ProtobufStreamProcessor {
   private void processOneMessage(InputStream inputStream, OutputStream outputStream,
       MessageExecutionContext executionContext)
       throws InvalidProtocolMessageException, IOException {
-    if (executionContext.getConnectionStateProcessor().handleMessageIndependently(inputStream,
-        outputStream, executionContext)) {
+    if (executionContext.getConnectionState().handleMessageIndependently(inputStream, outputStream,
+        executionContext)) {
       return;
     }
 

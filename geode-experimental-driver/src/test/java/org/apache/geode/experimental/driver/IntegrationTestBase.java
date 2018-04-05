@@ -80,7 +80,11 @@ public class IntegrationTestBase {
     org.apache.geode.cache.execute.FunctionService.registerFunction(new TestFunction());
 
     // Create a driver connected to the server
-    driver = new DriverFactory().addLocator("localhost", locatorPort).create();
+    driver = createDriver(locatorPort);
+  }
+
+  protected Driver createDriver(int locatorPort) throws Exception {
+    return new DriverFactory().addLocator("localhost", locatorPort).create();
   }
 
   @After

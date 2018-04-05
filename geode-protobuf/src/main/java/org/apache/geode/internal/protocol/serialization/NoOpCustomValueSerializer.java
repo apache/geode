@@ -12,19 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.experimental.driver;
+package org.apache.geode.internal.protocol.serialization;
 
-public class ProtobufFunctionService implements FunctionService {
-  private final ProtobufChannel channel;
-  private final ValueEncoder valueEncoder;
+import com.google.protobuf.ByteString;
 
-  public ProtobufFunctionService(ProtobufChannel channel, ValueEncoder valueEncoder) {
-    this.channel = channel;
-    this.valueEncoder = valueEncoder;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.protocol.serialization.ValueSerializer;
+
+public class NoOpCustomValueSerializer implements ValueSerializer {
+  @Override
+  public void init(Cache cache) {
+    // Do nothing
   }
 
   @Override
-  public <T> Function newFunction(String functionId) {
-    return new ProtobufFunction<T>(functionId, channel, valueEncoder);
+  public String getID() {
+    throw new IllegalStateException("The no op serializer is not loaded using the service loader");
+  }
+
+  @Override
+  public ByteString serialize(Object object) {
+    return null;
+  }
+
+  @Override
+  public Object deserialize(ByteString bytes) {
+    throw new IllegalStateException(
+        "Received a custom value, but did not set the valueFormat in the handshakeMessage");
   }
 }

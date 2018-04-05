@@ -197,14 +197,14 @@ public class AuthenticationIntegrationTest {
     setupCacheServerAndSocket();
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+        .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
             .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
             .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD))
         .build();
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    ConnectionAPI.AuthenticationResponse authenticationResponse =
-        parseSimpleAuthenticationResponseFromInput();
+    ConnectionAPI.HandshakeResponse authenticationResponse =
+        parseSimpleHandshakeResponseFromInput();
     assertTrue(authenticationResponse.getAuthenticated());
 
     ClientProtocol.Message getRegionsMessage = ClientProtocol.Message.newBuilder()
@@ -223,12 +223,12 @@ public class AuthenticationIntegrationTest {
     setupCacheServerAndSocket();
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()).build();
+        .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()).build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    ConnectionAPI.AuthenticationResponse authenticationResponse =
-        parseSimpleAuthenticationResponseFromInput();
+    ConnectionAPI.HandshakeResponse authenticationResponse =
+        parseSimpleHandshakeResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
     verifyConnectionClosed();
   }
@@ -239,15 +239,15 @@ public class AuthenticationIntegrationTest {
     setupCacheServerAndSocket();
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+        .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
             .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
             .putCredentials(ResourceConstants.PASSWORD, "wrong password"))
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    ConnectionAPI.AuthenticationResponse authenticationResponse =
-        parseSimpleAuthenticationResponseFromInput();
+    ConnectionAPI.HandshakeResponse authenticationResponse =
+        parseSimpleHandshakeResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
 
     Statistics[] stats = cache.getDistributedSystem()
@@ -273,7 +273,7 @@ public class AuthenticationIntegrationTest {
     setupCacheServerAndSocket();
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()).build();
+        .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()).build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
@@ -291,7 +291,7 @@ public class AuthenticationIntegrationTest {
     setupCacheServerAndSocket();
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()).build();
+        .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()).build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
@@ -330,12 +330,12 @@ public class AuthenticationIntegrationTest {
     cache = cacheFactory.create();
   }
 
-  private ConnectionAPI.AuthenticationResponse parseSimpleAuthenticationResponseFromInput()
+  private ConnectionAPI.HandshakeResponse parseSimpleHandshakeResponseFromInput()
       throws IOException {
     ClientProtocol.Message authenticationResponseMessage =
         ClientProtocol.Message.parseDelimitedFrom(inputStream);
-    assertEquals(ClientProtocol.Message.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
+    assertEquals(ClientProtocol.Message.HANDSHAKERESPONSE_FIELD_NUMBER,
         authenticationResponseMessage.getMessageTypeCase().getNumber());
-    return authenticationResponseMessage.getAuthenticationResponse();
+    return authenticationResponseMessage.getHandshakeResponse();
   }
 }

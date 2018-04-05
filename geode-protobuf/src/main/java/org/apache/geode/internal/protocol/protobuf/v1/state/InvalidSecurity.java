@@ -12,19 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.experimental.driver;
+package org.apache.geode.internal.protocol.protobuf.v1.state;
 
-public class ProtobufFunctionService implements FunctionService {
-  private final ProtobufChannel channel;
-  private final ValueEncoder valueEncoder;
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
-  public ProtobufFunctionService(ProtobufChannel channel, ValueEncoder valueEncoder) {
-    this.channel = channel;
-    this.valueEncoder = valueEncoder;
-  }
-
+public class InvalidSecurity implements ConnectionState {
   @Override
-  public <T> Function newFunction(String functionId) {
-    return new ProtobufFunction<T>(functionId, channel, valueEncoder);
+  public void validateOperation(ProtobufOperationContext operationContext)
+      throws ConnectionStateException {
+    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
+        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
+
 }

@@ -14,17 +14,28 @@
  */
 package org.apache.geode.experimental.driver;
 
-public class ProtobufFunctionService implements FunctionService {
-  private final ProtobufChannel channel;
-  private final ValueEncoder valueEncoder;
+import java.io.IOException;
 
-  public ProtobufFunctionService(ProtobufChannel channel, ValueEncoder valueEncoder) {
-    this.channel = channel;
-    this.valueEncoder = valueEncoder;
+import com.google.protobuf.ByteString;
+
+public class NoOpSerializer implements ValueSerializer {
+  @Override
+  public ByteString serialize(Object object) throws IOException {
+    return null;
   }
 
   @Override
-  public <T> Function newFunction(String functionId) {
-    return new ProtobufFunction<T>(functionId, channel, valueEncoder);
+  public Object deserialize(ByteString data) throws IOException, ClassNotFoundException {
+    throw new IllegalStateException("No ValueSerializer is set to handle a custom value");
+  }
+
+  @Override
+  public String getID() {
+    return "";
+  }
+
+  @Override
+  public boolean supportsPrimitives() {
+    return false;
   }
 }

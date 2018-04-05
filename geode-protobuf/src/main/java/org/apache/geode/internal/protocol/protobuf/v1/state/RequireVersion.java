@@ -19,42 +19,45 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOpsProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ProtocolVersionHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 
-public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnectionStateProcessor {
+public class RequireVersion implements ConnectionState {
+  private static final Logger logger = LogService.getLogger(ProtobufOpsProcessor.class);
   private final SecurityService securityService;
 
-  public ProtobufConnectionHandshakeStateProcessor(SecurityService securityService) {
+  public RequireVersion(SecurityService securityService) {
     this.securityService = securityService;
   }
 
   @Override
-  public void validateOperation(Object message, ProtobufSerializationService serializer,
-      MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
+  public void validateOperation(ProtobufOperationContext operationContext)
       throws ConnectionStateException {
     throw new ConnectionStateException(BasicTypes.ErrorCode.INVALID_REQUEST,
         "Connection processing should never be asked to validate an operation");
   }
 
-  private ProtobufConnectionStateProcessor nextConnectionState(
-      MessageExecutionContext executionContext) {
+  private ConnectionState nextConnectionState(MessageExecutionContext executionContext) {
     if (securityService.isIntegratedSecurity()) {
-      return new ProtobufConnectionAuthenticatingStateProcessor(securityService);
+      return new RequireAuthentication();
     } else if (securityService.isPeerSecurityRequired()
         || securityService.isClientSecurityRequired()) {
-      return new LegacySecurityProtobufConnectionStateProcessor();
+      logger.error("The protobuf protocol requires using a "
+          + ConfigurationProperties.SECURITY_MANAGER + ". It does not allow using a "
+          + ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR);
+      return new InvalidSecurity();
     } else {
-      executionContext.setAuthorizer(new NoSecurityAuthorizer());
-      // Noop authenticator...no security
-      return new NoSecurityProtobufConnectionStateProcessor();
+      return new AcceptMessages();
     }
   }
 
@@ -68,7 +71,7 @@ public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnec
 
     if (ProtocolVersionHandler.handleVersionMessage(messageStream, outputStream,
         executionContext.getStatistics())) {
-      executionContext.setConnectionStateProcessor(nextConnectionState(executionContext));
+      executionContext.setState(nextConnectionState(executionContext));
     }
     return true;
   }

@@ -12,19 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.experimental.driver;
+package org.apache.geode.internal.protocol.protobuf.v1;
 
-public class ProtobufFunctionService implements FunctionService {
-  private final ProtobufChannel channel;
-  private final ValueEncoder valueEncoder;
+import java.io.IOException;
 
-  public ProtobufFunctionService(ProtobufChannel channel, ValueEncoder valueEncoder) {
-    this.channel = channel;
-    this.valueEncoder = valueEncoder;
+import com.google.protobuf.ByteString;
+import org.junit.Test;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.protocol.serialization.ValueSerializer;
+
+/**
+ * A value format for tests that uses DataSerializable as the serialization format
+ */
+public class TestSerializeAllSerializer extends TestValueSerializer {
+  @Override
+  public String getID() {
+    return "TEST_SERIALIZE_ALL";
   }
 
   @Override
-  public <T> Function newFunction(String functionId) {
-    return new ProtobufFunction<T>(functionId, channel, valueEncoder);
+  public boolean supportsPrimitives() {
+    return true;
   }
 }

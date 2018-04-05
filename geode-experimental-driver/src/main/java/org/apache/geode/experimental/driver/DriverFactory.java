@@ -45,6 +45,7 @@ public class DriverFactory {
    * User proof as a string.
    */
   private String password = null;
+  private ValueSerializer serializer = new NoOpSerializer();
 
   /**
    * Path to SSL key store; SSL is <em>not</em> used if <code>null</code>.
@@ -152,6 +153,11 @@ public class DriverFactory {
    */
   public Driver create() throws Exception {
     return new ProtobufDriver(locators, username, password, keyStorePath, trustStorePath, protocols,
-        ciphers);
+        ciphers, serializer);
+  }
+
+  public DriverFactory setValueSerializer(ValueSerializer serializer) {
+    this.serializer = serializer;
+    return this;
   }
 }

@@ -52,10 +52,13 @@ message EncodedValue {
         float floatResult = 7;
         bytes binaryResult = 8;
         string stringResult = 9;
-
         string jsonObjectResult = 10;
-
         google.protobuf.NullValue nullResult = 11;
+        // Result serialized using a custom serialization format. This can only be used if
+        // A HandshakeRequest is sent with valueFormat set to a valid format.
+        //
+         // See HandshakeRequest.valueFormat.
+        bytes customObjectResult = 12;
     }
 }
 

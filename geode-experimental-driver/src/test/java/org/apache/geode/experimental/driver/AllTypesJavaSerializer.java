@@ -14,17 +14,27 @@
  */
 package org.apache.geode.experimental.driver;
 
-public class ProtobufFunctionService implements FunctionService {
-  private final ProtobufChannel channel;
-  private final ValueEncoder valueEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
-  public ProtobufFunctionService(ProtobufChannel channel, ValueEncoder valueEncoder) {
-    this.channel = channel;
-    this.valueEncoder = valueEncoder;
+import com.google.protobuf.ByteString;
+
+import org.apache.geode.cache.Cache;
+
+public class AllTypesJavaSerializer extends JavaSerializer {
+  public AllTypesJavaSerializer() {}
+
+  @Override
+  public String getID() {
+    return "JAVA_ALL_TYPES";
   }
 
   @Override
-  public <T> Function newFunction(String functionId) {
-    return new ProtobufFunction<T>(functionId, channel, valueEncoder);
+  public boolean supportsPrimitives() {
+    return true;
   }
+
 }
