@@ -330,12 +330,18 @@ public class GemFireCacheImplTest {
 
   @Test
   public void clientCacheWouldNotRequestClusterConfig() {
+    // we will need to set the value to true so that we can use a mock cache
+    boolean oldValue = InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
     InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = true;
+
     cache = mock(GemFireCacheImpl.class);
     when(distributedSystem.getCache()).thenReturn(cache);
     GemFireCacheImpl.createClient(distributedSystem, null, cacheConfig);
 
     verify(cache, times(0)).requestSharedConfiguration();
     verify(cache, times(0)).applyJarAndXmlFromClusterConfig();
+
+    // reset it back to the old value
+    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = oldValue;
   }
 }
