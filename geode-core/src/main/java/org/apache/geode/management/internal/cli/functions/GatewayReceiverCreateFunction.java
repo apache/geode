@@ -56,11 +56,28 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
     GatewayReceiverFunctionArgs gatewayReceiverCreateArgs =
         (GatewayReceiverFunctionArgs) context.getArguments();
 
+    // Exit early if a receiver already exists.
+    // Consider this a failure unless --if-not-exists was provided.
+    if (doesSomeGatewayReceiverAlreadyExists(cache)) {
+      CliFunctionResult result;
+      if (gatewayReceiverCreateArgs.getIfNotExists()) {
+        result = new CliFunctionResult(memberNameOrId, true,
+            "SKIP: A Gateway Receiver already exists on this member.");
+      } else {
+        Exception illegalState =
+            new IllegalStateException("A Gateway Receiver already exists on this member.");
+        result = new CliFunctionResult(memberNameOrId, illegalState, illegalState.getMessage());
+      }
+      resultSender.lastResult(result);
+      return;
+    }
+
+
     try {
       GatewayReceiver createdGatewayReceiver =
           createGatewayReceiver(cache, gatewayReceiverCreateArgs);
 
-      Map<String, String> attributes = new HashMap<String, String>();
+      Map<String, String> attributes = new HashMap<>();
       if (gatewayReceiverCreateArgs.getStartPort() != null) {
         attributes.put("start-port", gatewayReceiverCreateArgs.getStartPort().toString());
       }
@@ -75,7 +92,7 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
           CliStrings.format(
               CliStrings.CREATE_GATEWAYRECEIVER__MSG__GATEWAYRECEIVER_CREATED_ON_0_ONPORT_1,
-              new Object[] {memberNameOrId, createdGatewayReceiver.getPort()})));
+              memberNameOrId, createdGatewayReceiver.getPort())));
     } catch (IllegalStateException e) {
       // no need to log the stack trace
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, e, e.getMessage()));
@@ -86,14 +103,8 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
 
   }
 
-  /**
-   * GatewayReceiver creation happens here.
-   *
-   * @param cache
-   * @param gatewayReceiverCreateArgs
-   * @return GatewayReceiver
-   */
-  GatewayReceiver createGatewayReceiver(Cache cache,
+  /** GatewayReceiver creation happens here. */
+  private GatewayReceiver createGatewayReceiver(Cache cache,
       GatewayReceiverFunctionArgs gatewayReceiverCreateArgs)
       throws IllegalAccessException, InstantiationException, ClassNotFoundException {
 
@@ -152,6 +163,10 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
     }
 
     return ClassPathLoader.getLatest().forName(className).newInstance();
+  }
+
+  private boolean doesSomeGatewayReceiverAlreadyExists(Cache cache) {
+    return cache.getGatewayReceivers() != null && !cache.getGatewayReceivers().isEmpty();
   }
 
   @Override

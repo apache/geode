@@ -22,6 +22,7 @@ import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.get
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyGatewayReceiverProfile;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyGatewayReceiverServerLocations;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyReceiverCreationWithAttributes;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_GATEWAYRECEIVER;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
 import static org.apache.geode.test.junit.rules.VMProvider.invokeInEveryMember;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,12 +79,69 @@ public class CreateGatewayReceiverCommandDUnitTest {
     gfsh.connectAndVerify(locatorSite1);
   }
 
+  @Test
+  public void twoGatewayReceiversCannotCoexist() {
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    String command = CREATE_GATEWAYRECEIVER;
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"");
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
+        .tableHasColumnWithValuesContaining("Status",
+            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.");
+  }
+
+  @Test
+  public void commandFailsIfAnyReceiverFailsToCreateWithoutSkipOption() {
+    // Create a receiver on one server (but not all) so that the command to create receivers on all
+    // will fail on one (but not all). Such a failure should be reported as a failure to GFSH,
+    // unless --skip-if-exists is present.
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    String createOnS1 = CREATE_GATEWAYRECEIVER + " --member=" + server1.getName();
+    String createOnBoth = CREATE_GATEWAYRECEIVER;
+    gfsh.executeAndAssertThat(createOnS1).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"");
+    gfsh.executeAndAssertThat(createOnBoth).statusIsError()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
+        .tableHasColumnWithValuesContaining("Status",
+            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"");
+  }
+
+  @Test
+  public void commandSucceedsWhenReceiversAlreadyExistWhenSkipOptionIsPresent() {
+    // Create a receiver on one server (but not all) so that the command to create receivers on all
+    // will fail on one (but not all). Such a failure should be reported as a failure to GFSH,
+    // unless --skip-if-exists is present.
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = clusterStartupRule.startServerVM(1, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
+    String createOnS1 = CREATE_GATEWAYRECEIVER + " --member=" + server1.getName();
+    String createOnBoth = CREATE_GATEWAYRECEIVER + " --if-not-exists";
+    gfsh.executeAndAssertThat(createOnS1).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"" + SERVER_1 + "\"");
+    gfsh.executeAndAssertThat(createOnBoth).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
+        .tableHasColumnWithValuesContaining("Status",
+            "SKIP: A Gateway Receiver already exists on this member.",
+            "GatewayReceiver created on member \"" + SERVER_2 + "\"");
+  }
+
   /**
    * GatewayReceiver with given attributes. Error scenario where the user tries to create more than
    * one receiver per member.
    */
   @Test
-  public void testCreateGatewayReceiverErrorWhenGatewayReceiverAlreadyExists() throws Exception {
+  public void testCreateGatewayReceiverErrorWhenGatewayReceiverAlreadyExists() {
     Integer locator1Port = locatorSite1.getPort();
     server1 = clusterStartupRule.startServerVM(1, locator1Port);
     server2 = clusterStartupRule.startServerVM(2, locator1Port);
@@ -103,10 +161,10 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    invokeInEveryMember(() -> {
-      verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START, 10000, 11000,
-          "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
-    }, server1, server2, server3);
+    invokeInEveryMember(
+        () -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START, 10000,
+            11000, "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS),
+        server1, server2, server3);
 
     // This should fail as there's already a gateway receiver created on the member.
     gfsh.executeAndAssertThat(command).statusIsError()
@@ -156,7 +214,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
    * GatewayReceiver with given attributes
    */
   @Test
-  public void testCreateGatewayReceiver() throws Exception {
+  public void testCreateGatewayReceiver() {
     Integer locator1Port = locatorSite1.getPort();
     server1 = clusterStartupRule.startServerVM(1, locator1Port);
     server2 = clusterStartupRule.startServerVM(2, locator1Port);
@@ -176,10 +234,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    invokeInEveryMember(() -> {
-      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
-          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
-    }, server1, server2, server3);
+    invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost",
+        100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server1, server2,
+        server3);
   }
 
   /**
@@ -419,7 +476,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
    * GatewayReceiver with given attributes and a single GatewayTransportFilter.
    */
   @Test
-  public void testCreateGatewayReceiverWithGatewayTransportFilter() throws Exception {
+  public void testCreateGatewayReceiverWithGatewayTransportFilter() {
     Integer locator1Port = locatorSite1.getPort();
     server1 = clusterStartupRule.startServerVM(1, locator1Port);
     server2 = clusterStartupRule.startServerVM(2, locator1Port);
@@ -443,17 +500,17 @@ public class CreateGatewayReceiverCommandDUnitTest {
 
     List<String> transportFilters = new ArrayList<>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
-    invokeInEveryMember(() -> {
-      verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000, 512000,
-          transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
-    }, server1, server2, server3);
+    invokeInEveryMember(
+        () -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000, 512000,
+            transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS),
+        server1, server2, server3);
   }
 
   /**
    * GatewayReceiver with given attributes and multiple GatewayTransportFilters.
    */
   @Test
-  public void testCreateGatewayReceiverWithMultipleGatewayTransportFilters() throws Exception {
+  public void testCreateGatewayReceiverWithMultipleGatewayTransportFilters() {
     Integer locator1Port = locatorSite1.getPort();
     server1 = clusterStartupRule.startServerVM(1, locator1Port);
     server2 = clusterStartupRule.startServerVM(2, locator1Port);
@@ -478,18 +535,16 @@ public class CreateGatewayReceiverCommandDUnitTest {
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter2");
 
-    invokeInEveryMember(() -> {
-      verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START, 10000, 11000,
-          "localhost", 100000, 512000, transportFilters,
-          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
-    }, server1, server2, server3);
+    invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(
+        !GatewayReceiver.DEFAULT_MANUAL_START, 10000, 11000, "localhost", 100000, 512000,
+        transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server1, server2, server3);
   }
 
   /**
    * GatewayReceiver with given attributes on the given member.
    */
   @Test
-  public void testCreateGatewayReceiverOnSingleMember() throws Exception {
+  public void testCreateGatewayReceiverOnSingleMember() {
     Integer locator1Port = locatorSite1.getPort();
     server1 = clusterStartupRule.startServerVM(1, locator1Port);
     server2 = clusterStartupRule.startServerVM(2, locator1Port);
@@ -510,10 +565,8 @@ public class CreateGatewayReceiverCommandDUnitTest {
         .tableHasColumnWithValuesContaining("Status",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"");
 
-    invokeInEveryMember(() -> {
-      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
-          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
-    }, server1);
+    invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost",
+        100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server1);
 
     invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -525,7 +578,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
    * GatewayReceiver with given attributes on multiple members.
    */
   @Test
-  public void testCreateGatewayReceiverOnMultipleMembers() throws Exception {
+  public void testCreateGatewayReceiverOnMultipleMembers() {
     Integer locator1Port = locatorSite1.getPort();
     server1 = clusterStartupRule.startServerVM(1, locator1Port);
     server2 = clusterStartupRule.startServerVM(2, locator1Port);
@@ -548,10 +601,8 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"");
 
-    invokeInEveryMember(() -> {
-      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
-          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
-    }, server1, server2);
+    invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost",
+        100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server1, server2);
 
     invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -563,7 +614,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
    * GatewayReceiver with given attributes on the given group.
    */
   @Test
-  public void testCreateGatewayReceiverOnGroup() throws Exception {
+  public void testCreateGatewayReceiverOnGroup() {
     String groups = "receiverGroup1";
     Integer locator1Port = locatorSite1.getPort();
     server1 = startServerWithGroups(1, groups, locator1Port);
@@ -585,10 +636,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    invokeInEveryMember(() -> {
-      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
-          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
-    }, server1, server2, server3);
+    invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost",
+        100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server1, server2,
+        server3);
   }
 
   /**
@@ -596,7 +646,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
    * group.
    */
   @Test
-  public void testCreateGatewayReceiverOnGroupScenario2() throws Exception {
+  public void testCreateGatewayReceiverOnGroupScenario2() {
     String group1 = "receiverGroup1";
     String group2 = "receiverGroup2";
     Integer locator1Port = locatorSite1.getPort();
@@ -618,10 +668,8 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"");
 
-    invokeInEveryMember(() -> {
-      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
-          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
-    }, server1, server2);
+    invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost",
+        100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server1, server2);
 
     invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -633,7 +681,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
    * GatewayReceiver with given attributes on multiple groups.
    */
   @Test
-  public void testCreateGatewayReceiverOnMultipleGroups() throws Exception {
+  public void testCreateGatewayReceiverOnMultipleGroups() {
     Integer locator1Port = locatorSite1.getPort();
     server1 = startServerWithGroups(1, "receiverGroup1", locator1Port);
     server2 = startServerWithGroups(2, "receiverGroup1", locator1Port);
@@ -654,10 +702,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
 
-    invokeInEveryMember(() -> {
-      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
-          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
-    }, server1, server2, server3);
+    invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost",
+        100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server1, server2,
+        server3);
   }
 
   private String getHostName() throws Exception {
@@ -668,7 +715,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     return InetAddress.getLocalHost().getHostAddress();
   }
 
-  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
     return clusterStartupRule.startServerVM(index, props, locPort);
