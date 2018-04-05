@@ -20,13 +20,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -79,7 +83,7 @@ public class DescribeMappingCommandTest {
   public void successfulResult() {
     // mapping found in CC
     ConnectorService.RegionMapping mapping =
-        new ConnectorService.RegionMapping("region1", "class1", "table1", "name1", true);
+        new ConnectorService.RegionMapping("region", "class1", "table1", "name1", true);
     mapping.getFieldMapping()
         .add(new ConnectorService.RegionMapping.FieldMapping("field1", "value1"));
     mapping.getFieldMapping()
@@ -89,8 +93,44 @@ public class DescribeMappingCommandTest {
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
     when(ccService.findIdentifiable(any(), any())).thenReturn(mapping);
 
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
+        .containsOutput("connection", "name1").containsOutput("table", "table1")
+        .containsOutput("pdx-class-name", "class1")
+        .containsOutput("value-contains-primary-key", "true").containsOutput("field1", "value1")
+        .containsOutput("field2", "value2");
+  }
+
+  @Test
+  public void whenCCIsNotAvailableAndMemberIsNotSpecified() {
+    doReturn(null).when(command).getConfigurationService();
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("region", "region1").containsOutput("connection", "name1")
+        .containsOutput("Use --member option to describe mappings");
+  }
+
+  @Test
+  public void whenNonExistingMemberIsSpecified() {
+    doReturn(null).when(command).getMember(any());
+    gfsh.executeAndAssertThat(command, COMMAND + " --member=member1").statusIsError()
+        .containsOutput("No Members Found");
+  }
+
+  @Test
+  public void whenExistingMemberIsSpecified() {
+    doReturn(mock(DistributedMember.class)).when(command).getMember(any());
+
+    ConnectorService.RegionMapping mapping =
+        new ConnectorService.RegionMapping("region", "class1", "table1", "name1", true);
+    mapping.getFieldMapping()
+        .add(new ConnectorService.RegionMapping.FieldMapping("field1", "value1"));
+    mapping.getFieldMapping()
+        .add(new ConnectorService.RegionMapping.FieldMapping("field2", "value2"));
+
+    ResultCollector rc = mock(ResultCollector.class);
+    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
+    when(rc.getResult()).thenReturn(Collections.singletonList(mapping));
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --member=member1").statusIsSuccess()
+        .containsOutput("region", "region").containsOutput("connection", "name1")
         .containsOutput("table", "table1").containsOutput("pdx-class-name", "class1")
         .containsOutput("value-contains-primary-key", "true").containsOutput("field1", "value1")
         .containsOutput("field2", "value2");
