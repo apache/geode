@@ -54,6 +54,7 @@ XML schema for JDBC Connector Service in Geode.
                                 <xsd:attribute type="xsd:string" name="url" use="optional"/>
                                 <xsd:attribute type="xsd:string" name="user" use="optional"/>
                                 <xsd:attribute type="xsd:string" name="password" use="optional"/>
+                                <xsd:attribute type="xsd:string" name="parameters" use="optional"/>
                             </xsd:extension>
                         </xsd:simpleContent>
                     </xsd:complexType>
