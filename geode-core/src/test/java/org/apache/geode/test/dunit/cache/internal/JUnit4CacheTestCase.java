@@ -262,6 +262,10 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     }
   }
 
+  public final ClientCache getClientCache() {
+    return (ClientCache) cache;
+  }
+
   /**
    * Invokes {@link #getCache()} and casts the return to {@code GemFireCacheImpl}.
    *
