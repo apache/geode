@@ -135,7 +135,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.key = InternalDataSerializer.readUserObject(in);
+    this.key = DataSerializer.readObject(in);
   }
 
   @Override

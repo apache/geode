@@ -554,17 +554,17 @@ public abstract class StreamingOperation {
               lowMemoryDetected = true;
               break;
             }
-            Object theObject = DataSerializer.readObject(in);
+            Object o = DataSerializer.readObject(in);
             if (isQueryMessageProcessor && elementType != null && elementType.isStructType()) {
               boolean convertToStruct = isSenderAbove_8_1;
               if (convertToStruct && i == 0) {
-                convertToStruct = !(theObject instanceof PRQueryTraceInfo);
+                convertToStruct = !(o instanceof PRQueryTraceInfo);
               }
               if (convertToStruct) {
-                theObject = new StructImpl((StructTypeImpl) elementType, (Object[]) theObject);
+                o = new StructImpl((StructTypeImpl) elementType, (Object[]) o);
               }
             }
-            this.objectList.add(theObject);
+            this.objectList.add(o);
           }
           if (lowMemoryDetected) {
             isCanceled = true;

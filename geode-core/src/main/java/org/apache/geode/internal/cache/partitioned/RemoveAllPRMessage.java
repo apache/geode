@@ -216,7 +216,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
       this.bridgeContext = DataSerializer.readObject(in);
     }
     Version sourceVersion = InternalDataSerializer.getVersionForDataStream(in);
-    this.callbackArg = InternalDataSerializer.readUserObject(in);
+    this.callbackArg = DataSerializer.readObject(in);
     this.removeAllPRDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
     this.removeAllPRData = new RemoveAllEntryData[removeAllPRDataSize];
     if (this.removeAllPRDataSize > 0) {

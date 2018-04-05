@@ -221,7 +221,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
       this.bridgeContext = DataSerializer.readObject(in);
     }
-    this.callbackArg = InternalDataSerializer.readUserObject(in);
+    this.callbackArg = DataSerializer.readObject(in);
     this.putAllPRDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
     this.putAllPRData = new PutAllEntryData[putAllPRDataSize];
     if (this.putAllPRDataSize > 0) {

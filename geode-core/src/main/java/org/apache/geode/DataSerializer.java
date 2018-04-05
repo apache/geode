@@ -194,7 +194,7 @@ public abstract class DataSerializer {
       Boolean.getBoolean("DataSerializer.TRACE_SERIALIZABLE");
 
   /* Used to prevent standard Java serialization when sending data to a non-Java client */
-  protected static final ThreadLocal<Boolean> disallowJavaSerializationForThread =
+  protected static final ThreadLocal<Boolean> DISALLOW_JAVA_SERIALIZATION =
       new ThreadLocal<Boolean>();
 
   /**
@@ -2661,7 +2661,7 @@ public abstract class DataSerializer {
       return null;
     } else {
       Comparator<? super K> c =
-          InternalDataSerializer.<Comparator<? super K>>readDeserializedObject(in);
+          InternalDataSerializer.<Comparator<? super K>>readNonPdxInstanceObject(in);
       TreeMap<K, V> map = new TreeMap<K, V>(c);
       for (int i = 0; i < size; i++) {
         K key = DataSerializer.<K>readObject(in);
@@ -2801,7 +2801,7 @@ public abstract class DataSerializer {
       return null;
     } else {
       Comparator<? super E> c =
-          InternalDataSerializer.<Comparator<? super E>>readDeserializedObject(in);
+          InternalDataSerializer.<Comparator<? super E>>readNonPdxInstanceObject(in);
       TreeSet<E> set = new TreeSet<E>(c);
       for (int i = 0; i < size; i++) {
         E element = DataSerializer.<E>readObject(in);
@@ -2923,12 +2923,12 @@ public abstract class DataSerializer {
       return;
     }
 
-    disallowJavaSerializationForThread.set(Boolean.TRUE);
+    DISALLOW_JAVA_SERIALIZATION.set(Boolean.TRUE);
     try {
       writeObject(o, out);
     } finally {
-      disallowJavaSerializationForThread.set(Boolean.FALSE); // with JDK 1.5 this can be changed to
-      // remove()
+      DISALLOW_JAVA_SERIALIZATION.set(Boolean.FALSE); // with JDK 1.5 this can be changed to
+                                                      // remove()
     }
   }
 

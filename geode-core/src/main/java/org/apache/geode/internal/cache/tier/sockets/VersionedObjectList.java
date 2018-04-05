@@ -461,7 +461,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
         logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE, "reading {} keys", size);
       }
       for (int i = 0; i < size; i++) {
-        this.keys.add(InternalDataSerializer.readUserObject(in));
+        this.keys.add(DataSerializer.readObject(in));
       }
     }
     if (hasObjects) {
@@ -555,7 +555,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     } else if (this.serializeValues) {
       value = DataSerializer.readByteArray(in);
     } else {
-      value = InternalDataSerializer.readUserObject(in);
+      value = DataSerializer.readObject(in);
     }
     this.objects.add(value);
   }

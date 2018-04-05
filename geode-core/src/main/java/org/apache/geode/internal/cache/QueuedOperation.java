@@ -19,7 +19,6 @@ import java.io.*;
 import org.apache.geode.*;
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -141,9 +140,9 @@ public class QueuedOperation {
     byte[] value = null;
     Object valueObj = null;
     byte deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_NONE;
-    Object cbArg = InternalDataSerializer.readUserObject(in);
+    Object cbArg = DataSerializer.readObject(in);
     if (op.isEntry()) {
-      key = InternalDataSerializer.readUserObject(in);
+      key = DataSerializer.readObject(in);
       if (op.isUpdate() || op.isCreate()) {
         deserializationPolicy = in.readByte();
         value = DataSerializer.readByteArray(in);

@@ -14,26 +14,14 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.io.*;
+import java.util.*;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Struct;
-import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
-import org.apache.geode.cache.query.internal.types.StructTypeImpl;
-import org.apache.geode.cache.query.types.CollectionType;
-import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.*;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.types.*;
+import org.apache.geode.cache.query.types.*;
 import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -355,12 +343,10 @@ public class SortedStructSet extends TreeSet
     this.modifiable = in.readBoolean();
     int size = in.readInt();
     this.structType = (StructTypeImpl) DataSerializer.readObject(in);
-    InternalDataSerializer.doWithPdxReadSerialized(() -> {
-      for (int j = size; j > 0; j--) {
-        Object[] fieldValues = DataSerializer.readObject(in);
-        this.addFieldValues(fieldValues);
-      }
-    });
+    for (int j = size; j > 0; j--) {
+      Object[] fieldValues = DataSerializer.readObject(in);
+      this.addFieldValues(fieldValues);
+    }
   }
 
   public void toData(DataOutput out) throws IOException {

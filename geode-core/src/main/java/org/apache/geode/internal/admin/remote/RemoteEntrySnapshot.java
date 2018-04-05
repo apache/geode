@@ -20,7 +20,6 @@ import java.io.*;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.*;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.*;
 
 public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
@@ -124,8 +123,8 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readObject(in);
-    this.value = InternalDataSerializer.readUserObject(in);
+    this.value = DataSerializer.readObject(in);
     this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
-    this.userAttribute = InternalDataSerializer.readUserObject(in);
+    this.userAttribute = DataSerializer.readObject(in);
   }
 }
