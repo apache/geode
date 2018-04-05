@@ -246,7 +246,7 @@ jobs:
           CALL_STACK_TIMEOUT: 25200
         run:
           args:
-          - :geode-assembly:acceptanceTest
+          - :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
           - acceptancetestfiles
           path: geode-ci/ci/scripts/test-run.sh
       on_failure:

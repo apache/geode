@@ -19,7 +19,7 @@ package org.apache.geode.connectors.jdbc.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
@@ -28,25 +28,23 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 
-@Category(IntegrationTest.class)
-public class TableMetaDataManagerIntegrationTest {
+@Category(AcceptanceTest.class)
+public abstract class TableMetaDataManagerIntegrationTest {
 
-  private static final String DB_NAME = "DerbyDB";
   private static final String REGION_TABLE_NAME = "employees";
-  private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
+  protected static final String DB_NAME = "test";
 
   private TableMetaDataManager manager;
-  private Connection connection;
-  private Statement statement;
+  protected Connection connection;
+  protected Statement statement;
 
   @Before
   public void setup() throws Exception {
-    connection = DriverManager.getConnection(CONNECTION_URL);
+    connection = getConnection();
     statement = connection.createStatement();
-    statement.execute("Create Table " + REGION_TABLE_NAME
-        + " (\"id\" varchar(10) primary key not null, \"name\" varchar(10), \"age\" int)");
+    createTable();
     manager = new TableMetaDataManager();
   }
 
@@ -65,6 +63,14 @@ public class TableMetaDataManagerIntegrationTest {
     if (connection != null) {
       connection.close();
     }
+  }
+
+  protected abstract Connection getConnection() throws SQLException;
+
+  protected void createTable() throws SQLException {
+    statement.execute("CREATE TABLE " + REGION_TABLE_NAME
+        + " (id VARCHAR(10) primary key not null, name VARCHAR(10), age int)");
+
   }
 
   @Test

@@ -19,7 +19,6 @@ import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -43,14 +42,13 @@ import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 
-@Category(IntegrationTest.class)
-public class JdbcWriterIntegrationTest {
+@Category(AcceptanceTest.class)
+public abstract class JdbcWriterIntegrationTest {
 
-  private static final String DB_NAME = "DerbyDB";
+  static final String DB_NAME = "test";
   private static final String REGION_TABLE_NAME = "employees";
-  private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
 
   private InternalCache cache;
   private Region<String, PdxInstance> employees;
@@ -68,7 +66,7 @@ public class JdbcWriterIntegrationTest {
         .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME);
 
-    connection = DriverManager.getConnection(CONNECTION_URL);
+    connection = getConnection();
     statement = connection.createStatement();
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
@@ -85,6 +83,10 @@ public class JdbcWriterIntegrationTest {
     cache.close();
     closeDB();
   }
+
+  public abstract Connection getConnection() throws SQLException;
+
+  public abstract String getConnectionUrl();
 
   private void closeDB() throws Exception {
     if (statement == null) {
@@ -227,7 +229,7 @@ public class JdbcWriterIntegrationTest {
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
     return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
-        TestConfigService.getTestConfigService());
+        TestConfigService.getTestConfigService(getConnectionUrl()));
   }
 
   private void assertRecordMatchesEmployee(ResultSet resultSet, String key, Employee employee)

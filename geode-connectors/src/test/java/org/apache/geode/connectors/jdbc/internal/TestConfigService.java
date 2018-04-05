@@ -26,24 +26,22 @@ import org.apache.geode.internal.cache.extension.ExtensionPoint;
  * Generates fake JdbcConnectorService with Connections and RegionMappings for tests.
  */
 public class TestConfigService {
-  private static final String DB_NAME = "DerbyDB";
   private static final String REGION_TABLE_NAME = "employees";
   private static final String REGION_NAME = "employees";
-  private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
   private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
 
-  public static JdbcConnectorServiceImpl getTestConfigService()
+  public static JdbcConnectorServiceImpl getTestConfigService(String connectionUrl)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return getTestConfigService(createMockCache(), null, false);
+    return getTestConfigService(createMockCache(), null, false, connectionUrl);
   }
 
   public static JdbcConnectorServiceImpl getTestConfigService(InternalCache cache,
-      String pdxClassName, boolean primaryKeyInValue)
+      String pdxClassName, boolean primaryKeyInValue, String connectionUrl)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
 
     JdbcConnectorServiceImpl service = new JdbcConnectorServiceImpl();
     service.init(cache);
-    service.createConnectionConfig(createConnectionConfig());
+    service.createConnectionConfig(createConnectionConfig(connectionUrl));
     service.createRegionMapping(createRegionMapping(pdxClassName, primaryKeyInValue));
     return service;
   }
@@ -59,7 +57,7 @@ public class TestConfigService {
         primaryKeyInValue, Collections.emptyMap());
   }
 
-  private static ConnectionConfiguration createConnectionConfig() {
-    return new ConnectionConfiguration(CONNECTION_CONFIG_NAME, CONNECTION_URL, null, null, null);
+  private static ConnectionConfiguration createConnectionConfig(String connectionUrl) {
+    return new ConnectionConfiguration(CONNECTION_CONFIG_NAME, connectionUrl, null, null, null);
   }
 }
