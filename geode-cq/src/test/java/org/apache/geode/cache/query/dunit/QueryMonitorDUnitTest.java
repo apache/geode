@@ -220,12 +220,10 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
       Assert.fail("While starting CacheServer", ex);
     }
     Cache cache = getCache();
-    GemFireCacheImpl.getInstance().testMaxQueryExecutionTime = queryMonitorTime;
+    GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = queryMonitorTime;
     cache.getLogger().fine("#### RUNNING TEST : " + testName);
     DefaultQuery.testHook = new QueryTimeoutHook(queryMonitorTime);
     // ((GemFireCache)cache).testMaxQueryExecutionTime = queryMonitorTime;
-    System.out.println("MAX_QUERY_EXECUTION_TIME is set to: "
-        + ((GemFireCacheImpl) cache).testMaxQueryExecutionTime);
     return port;
   }
 
@@ -236,10 +234,8 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
         // Reset the test flag.
         Cache cache = getCache();
         DefaultQuery.testHook = null;
-        GemFireCacheImpl.getInstance().testMaxQueryExecutionTime = -1;
+        GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = -1;
         stopBridgeServer(getCache());
-        System.out.println("MAX_QUERY_EXECUTION_TIME is set to: "
-            + ((GemFireCacheImpl) cache).testMaxQueryExecutionTime);
       }
     };
     server.invoke(stopServer);
@@ -332,8 +328,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
   private void executeQueriesFromClient(int timeout) {
     try {
-      ClientCache anyInstance = ClientCacheFactory.getAnyInstance();
-      ((GemFireCacheImpl) anyInstance).testMaxQueryExecutionTime = timeout;
+      GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = timeout;
       Pool pool = PoolManager.find(poolName);
       QueryService queryService = pool.getQueryService();
       executeQueriesAgainstQueryService(queryService);
@@ -915,9 +910,6 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     // do destroys and invalidates.
     server.invoke(new CacheSerializableRunnable("Create values") {
       public void run2() throws CacheException {
-        Cache cache = getCache();
-        System.out.println("TEST CQ MAX_QUERY_EXECUTION_TIME is set to: "
-            + ((GemFireCacheImpl) cache).testMaxQueryExecutionTime);
 
         Region region1 = getRootRegion().getSubregion(cqDUnitTest.regions[0]);
         for (int i = 1; i <= 5; i++) {
@@ -940,10 +932,6 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     // do invalidates on fisrt five keys.
     server.invoke(new CacheSerializableRunnable("Create values") {
       public void run2() throws CacheException {
-        Cache cache = getCache();
-        System.out.println("TEST CQ MAX_QUERY_EXECUTION_TIME is set to: "
-            + ((GemFireCacheImpl) cache).testMaxQueryExecutionTime);
-
         Region region1 = getRootRegion().getSubregion(cqDUnitTest.regions[0]);
         for (int i = 1; i <= 5; i++) {
           region1.invalidate(CqQueryDUnitTest.KEY + i);

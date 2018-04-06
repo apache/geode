@@ -35,14 +35,14 @@ public interface CqEvent {
    * @see CqQuery
    * @return CqQuery object.
    */
-  public CqQuery getCq();
+  CqQuery getCq();
 
   /**
    * Get the operation on the base region that triggered this event.
    *
    * @return Operation operation on the base region (on which CQ is created).
    */
-  public Operation getBaseOperation();
+  Operation getBaseOperation();
 
   /**
    * Get the operation on the query results. Supported operations include update, create, destroy,
@@ -50,7 +50,7 @@ public interface CqEvent {
    *
    * @return Operation operation with respect to CQ.
    */
-  public Operation getQueryOperation();
+  Operation getQueryOperation();
 
   /**
    * Get the key relating to the event. In case of REGION_CLEAR and REGION_INVALIDATE operation, the
@@ -58,7 +58,7 @@ public interface CqEvent {
    *
    * @return Object key.
    */
-  public Object getKey();
+  Object getKey();
 
   /**
    * Get the new value of the modification. If there is no new value returns null, this will happen
@@ -67,7 +67,7 @@ public interface CqEvent {
    *
    * @return Object new/modified value.
    */
-  public Object getNewValue();
+  Object getNewValue();
 
   /**
    * If an error occurred, return the Throwable, otherwise return null. If an error occurred, then
@@ -76,7 +76,7 @@ public interface CqEvent {
    *
    * @return Throwable exception related to error.
    */
-  public Throwable getThrowable();
+  Throwable getThrowable();
 
   /**
    * Get the delta modification. If there is no delta, returns null. New value may still be
@@ -85,5 +85,5 @@ public interface CqEvent {
    * @return byte[] delta value.
    * @since GemFire 6.5
    */
-  public byte[] getDeltaValue();
+  byte[] getDeltaValue();
 }

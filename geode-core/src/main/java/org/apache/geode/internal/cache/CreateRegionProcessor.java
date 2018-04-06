@@ -28,15 +28,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -131,7 +130,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
             // region is incompatible with region in another cache
             throw (IllegalStateException) t;
           }
-          e.handleAsUnexpected();
+          e.handleCause();
           break;
         }
       } finally {
@@ -334,7 +333,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       int oldLevel = // Set thread local flag to allow entrance through initialization Latch
           LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
       LocalRegion lclRgn = null;
@@ -418,6 +417,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         replyMsg.eventState = this.eventState;
         replyMsg.destroyedId = destroyedId;
         replyMsg.setProcessorId(this.processorId);
+        replyMsg.setSender(dm.getId()); // for EventStateHelper.dataSerialize
         replyMsg.setRecipient(this.getSender());
         replyMsg.skippedCompatibilityChecks = this.skippedCompatibilityChecks;
 
@@ -838,7 +838,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         // The isHARegion flag is false here because
         // we currently only include the event state in the profile
         // for bucket regions.
-        EventStateHelper.dataSerialize(out, (Map) eventState, false);
+        EventStateHelper.dataSerialize(out, (Map) eventState, false, getSender());
       } else {
         out.writeBoolean(false);
       }

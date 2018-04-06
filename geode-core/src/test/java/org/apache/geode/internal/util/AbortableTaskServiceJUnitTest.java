@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -22,7 +23,6 @@ import java.lang.reflect.Proxy;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -30,11 +30,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.util.AbortableTaskService.AbortableTask;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @Category(UnitTest.class)
 public class AbortableTaskServiceJUnitTest {
@@ -42,14 +44,15 @@ public class AbortableTaskServiceJUnitTest {
   private static final long TIMEOUT_SECONDS = 10;
 
   private volatile CountDownLatch delay;
-  private ExecutorService futures;
   private AbortableTaskService tasks;
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Before
   public void setUp() {
     this.delay = new CountDownLatch(1);
     this.tasks = new AbortableTaskService(Executors.newSingleThreadExecutor());
-    this.futures = Executors.newSingleThreadExecutor();
   }
 
   @After
@@ -58,7 +61,6 @@ public class AbortableTaskServiceJUnitTest {
       this.delay.countDown();
     }
     this.tasks.abortAll();
-    assertTrue(this.futures.shutdownNow().isEmpty());
   }
 
   @Test
@@ -66,7 +68,7 @@ public class AbortableTaskServiceJUnitTest {
     DelayedTask dt = new DelayedTask();
     this.tasks.execute(dt);
 
-    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
+    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() {
         tasks.waitForCompletion();
@@ -87,7 +89,7 @@ public class AbortableTaskServiceJUnitTest {
     DelayedTask dt = new DelayedTask();
     this.tasks.execute(dt);
 
-    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
+    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() {
         tasks.waitForCompletion();
@@ -118,7 +120,7 @@ public class AbortableTaskServiceJUnitTest {
     this.tasks.execute(dt);
     this.tasks.execute(dt2);
 
-    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
+    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() {
         tasks.waitForCompletion();

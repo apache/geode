@@ -25,9 +25,9 @@ public interface ClientUpdater {
 
   void join(long wait) throws InterruptedException;
 
-  public void setFailedUpdater(ClientUpdater failedUpdater);
+  void setFailedUpdater(ClientUpdater failedUpdater);
 
-  public boolean isProcessing();
+  boolean isProcessing();
 
-  public boolean isPrimary();
+  boolean isPrimary();
 }

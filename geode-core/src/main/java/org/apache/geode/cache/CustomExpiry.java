@@ -35,5 +35,5 @@ public interface CustomExpiry<K, V> extends CacheCallback {
    * @param entry the entry to calculate the expiration for
    * @return the expiration to be used, null if the region's defaults should be used.
    */
-  public ExpirationAttributes getExpiry(Region.Entry<K, V> entry);
+  ExpirationAttributes getExpiry(Region.Entry<K, V> entry);
 }

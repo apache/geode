@@ -57,7 +57,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
    * Note that, in general, instances of this class should be obtained via
    * {@link CachedDeserializableFactory}.
    */
-  VMCachedDeserializable(byte[] serializedValue) {
+  public VMCachedDeserializable(byte[] serializedValue) {
     if (serializedValue == null)
       throw new NullPointerException(
           LocalizedStrings.VMCachedDeserializable_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
@@ -99,9 +99,9 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
           r = ((PartitionedRegion) r).getBucketRegion(re.getKey());
         }
         boolean callFinish = false;
-        AbstractLRURegionMap lruMap = null;
+        RegionMap regionMap = null;
         if (r != null) { // fix for bug 44795
-          lruMap = (AbstractLRURegionMap) ((LocalRegion) r).getRegionMap();
+          regionMap = ((InternalRegion) r).getRegionMap();
         }
         boolean threadAlreadySynced = Thread.holdsLock(le);
         boolean isCacheListenerInvoked = re.isCacheListenerInvocationInProgress();
@@ -117,13 +117,13 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
           }
           if (!(v instanceof PdxInstance)) {
             this.value = v;
-            if (lruMap != null) {
-              callFinish = lruMap.beginChangeValueForm(le, this, v);
+            if (regionMap != null) {
+              callFinish = regionMap.beginChangeValueForm(le, this, v);
             }
           }
         }
         if (callFinish && !isCacheListenerInvoked) {
-          lruMap.finishChangeValueForm();
+          regionMap.finishChangeValueForm();
         }
       } else {
         // we sync on this so we will only do one deserialize

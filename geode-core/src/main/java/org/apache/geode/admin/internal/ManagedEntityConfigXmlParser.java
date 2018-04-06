@@ -14,16 +14,25 @@
  */
 package org.apache.geode.admin.internal;
 
-import java.io.*;
-import java.util.*;
+import java.io.InputStream;
+import java.util.Stack;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.AdminXmlException;
+import org.apache.geode.admin.CacheServerConfig;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.DistributionLocatorConfig;
+import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -97,10 +106,6 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
   }
 
   ////////////////////// Instance Methods //////////////////////
-
-  // if (this.system.isMcastEnabled()) {
-  // generateMulticast();
-  // }
 
   public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
       throws SAXException {

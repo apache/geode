@@ -31,14 +31,14 @@ public interface IndexResultCollector {
    *
    * @return Name/identifier of this collector
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns the number of Lucene query results that are being stored in the IndexResultCollector
    *
    * @return number of results collected by this collector
    */
-  public int size();
+  int size();
 
   /**
    * Collects a corresponding pair of Apache Geode key and Lucene score assigned to the document

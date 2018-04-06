@@ -15,16 +15,15 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class GatewaySenderDestroyFunction implements Function, InternalEntity {
+public class GatewaySenderDestroyFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
   private static final String ID = GatewaySenderDestroyFunction.class.getName();
   public static GatewaySenderDestroyFunction INSTANCE = new GatewaySenderDestroyFunction();

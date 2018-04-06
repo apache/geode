@@ -70,7 +70,7 @@ public class ControlFileWatchdogIntegrationTest {
     // act: nothing
 
     // assert
-    assertThat(watchdog.isAlive()).isFalse();
+    await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isFalse());
   }
 
   @Test
@@ -83,7 +83,7 @@ public class ControlFileWatchdogIntegrationTest {
     watchdog.start();
 
     // assert
-    assertThat(watchdog.isAlive()).isTrue();
+    await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isTrue());
   }
 
   @Test
@@ -97,7 +97,7 @@ public class ControlFileWatchdogIntegrationTest {
     watchdog.stop();
 
     // assert
-    assertThat(watchdog.isAlive()).isFalse();
+    await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isFalse());
   }
 
   @Test
@@ -146,7 +146,7 @@ public class ControlFileWatchdogIntegrationTest {
 
     // assert
     verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
-    assertThat(file).doesNotExist();
+    await().atMost(10, MINUTES).until(() -> assertThat(file).doesNotExist());
   }
 
   @Test
@@ -163,7 +163,6 @@ public class ControlFileWatchdogIntegrationTest {
     // assert
     verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
     await().atMost(10, MINUTES).until(() -> assertThat(file).doesNotExist());
-    assertThat(file).doesNotExist();
   }
 
   @Test
@@ -208,7 +207,7 @@ public class ControlFileWatchdogIntegrationTest {
     // assert
     verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
     await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isFalse());
-    assertThat(file).doesNotExist();
+    await().atMost(10, MINUTES).until(() -> assertThat(file).doesNotExist());
   }
 
   @Test
@@ -224,8 +223,8 @@ public class ControlFileWatchdogIntegrationTest {
 
     // assert
     verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
-    assertThat(watchdog.isAlive()).isTrue();
-    assertThat(file).doesNotExist();
+    await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isTrue());
+    await().atMost(10, MINUTES).until(() -> assertThat(file).doesNotExist());
   }
 
   @Test

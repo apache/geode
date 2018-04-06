@@ -16,28 +16,28 @@ package org.apache.geode.admin;
 
 import static org.junit.Assert.*;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 
 public class AdminTestHelper {
   private AdminTestHelper() {}
 
   public static void checkEnableAdministrationOnly(boolean v, boolean expectException) {
-    boolean origIsDedicatedAdminVM = DistributionManager.isDedicatedAdminVM();
+    boolean origIsDedicatedAdminVM = ClusterDistributionManager.isDedicatedAdminVM();
     if (expectException) {
       try {
         AdminDistributedSystemFactory.setEnableAdministrationOnly(v);
         fail("expected IllegalStateException");
       } catch (IllegalStateException expected) {
-        assertEquals(origIsDedicatedAdminVM, DistributionManager.isDedicatedAdminVM());
+        assertEquals(origIsDedicatedAdminVM, ClusterDistributionManager.isDedicatedAdminVM());
       } finally {
-        DistributionManager.setIsDedicatedAdminVM(origIsDedicatedAdminVM);
+        ClusterDistributionManager.setIsDedicatedAdminVM(origIsDedicatedAdminVM);
       }
     } else {
       try {
         AdminDistributedSystemFactory.setEnableAdministrationOnly(v);
-        assertEquals(v, DistributionManager.isDedicatedAdminVM());
+        assertEquals(v, ClusterDistributionManager.isDedicatedAdminVM());
       } finally {
-        DistributionManager.setIsDedicatedAdminVM(origIsDedicatedAdminVM);
+        ClusterDistributionManager.setIsDedicatedAdminVM(origIsDedicatedAdminVM);
       }
     }
   }

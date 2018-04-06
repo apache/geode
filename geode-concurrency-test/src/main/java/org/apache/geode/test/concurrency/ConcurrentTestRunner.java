@@ -18,9 +18,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
-import gov.nasa.jpf.Config;
-import gov.nasa.jpf.JPF;
-import gov.nasa.jpf.JPFListener;
 import junit.framework.AssertionFailedError;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.simple.SimpleLoggerContextFactory;
@@ -34,7 +31,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
 import org.apache.geode.test.concurrency.annotation.ConcurrentTestConfig;
-import org.apache.geode.test.concurrency.jpf.JpfRunner;
+import org.apache.geode.test.concurrency.loop.LoopRunner;
 
 
 /**
@@ -71,8 +68,8 @@ import org.apache.geode.test.concurrency.jpf.JpfRunner;
  * }
  * </code>
  *
- * ConcurrentTestRunner currently executes tests using Java Pathfinder, which will run the test with
- * all thread interleavings.
+ * ConcurrentTestRunner currently executes tests using the {@link LoopRunner} which will run the
+ * test many times.
  */
 public class ConcurrentTestRunner extends ParentRunner<FrameworkMethod> {
   /**
@@ -84,7 +81,7 @@ public class ConcurrentTestRunner extends ParentRunner<FrameworkMethod> {
     super(testClass);
     ConcurrentTestConfig configuration = getTestClass().getAnnotation(ConcurrentTestConfig.class);
     if (configuration == null) {
-      runner = new JpfRunner();
+      runner = new LoopRunner();
       return;
     }
 

@@ -37,7 +37,8 @@ public class SubRegionResponse extends AdminResponse {
    * Returns a <code>SubRegionResponse</code> that will be returned to the specified recipient. The
    * message will contains a copy of the local manager's system config.
    */
-  public static SubRegionResponse create(DM dm, InternalDistributedMember recipient, Region r) {
+  public static SubRegionResponse create(DistributionManager dm,
+      InternalDistributedMember recipient, Region r) {
     SubRegionResponse m = new SubRegionResponse();
     m.setRecipient(recipient);
 

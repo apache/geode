@@ -23,7 +23,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
@@ -46,7 +46,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   PartitionedRegionFunctionStreamingMessage msg = null;
 
-  private final DM dm;
+  private final DistributionManager dm;
 
   private final PartitionedRegion pr;
 
@@ -82,8 +82,9 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
    * @param pr
    * @param time
    */
-  public PartitionedRegionFunctionResultSender(DM dm, PartitionedRegion pr, long time,
-      PartitionedRegionFunctionStreamingMessage msg, Function function, Set<Integer> bucketSet) {
+  public PartitionedRegionFunctionResultSender(DistributionManager dm, PartitionedRegion pr,
+      long time, PartitionedRegionFunctionStreamingMessage msg, Function function,
+      Set<Integer> bucketSet) {
     this.msg = msg;
     this.dm = dm;
     this.pr = pr;
@@ -102,9 +103,10 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
    * @param time
    * @param rc
    */
-  public PartitionedRegionFunctionResultSender(DM dm, PartitionedRegion partitionedRegion,
-      long time, ResultCollector rc, ServerToClientFunctionResultSender sender, boolean onlyLocal,
-      boolean onlyRemote, boolean forwardExceptions, Function function, Set<Integer> bucketSet) {
+  public PartitionedRegionFunctionResultSender(DistributionManager dm,
+      PartitionedRegion partitionedRegion, long time, ResultCollector rc,
+      ServerToClientFunctionResultSender sender, boolean onlyLocal, boolean onlyRemote,
+      boolean forwardExceptions, Function function, Set<Integer> bucketSet) {
     this.dm = dm;
     this.pr = partitionedRegion;
     this.time = time;

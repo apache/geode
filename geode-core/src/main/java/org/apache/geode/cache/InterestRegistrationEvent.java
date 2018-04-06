@@ -32,54 +32,54 @@ public interface InterestRegistrationEvent {
    *
    * @return the name of the region to which this interest event belongs
    */
-  public String getRegionName();
+  String getRegionName();
 
   /**
    * Returns the region to which this interest belongs.
    *
    * @return the region to which this interest belongs
    */
-  public Region<?, ?> getRegion();
+  Region<?, ?> getRegion();
 
   /**
    * Returns a <code>Set</code> of keys of interest.
    *
    * @return a <code>Set</code> of keys of interest
    */
-  public Set<?> getKeysOfInterest();
+  Set<?> getKeysOfInterest();
 
   /**
    * Returns this event's interest type.
    *
    * @return this event's interest type
    */
-  public int getInterestType();
+  int getInterestType();
 
   /**
    * Returns whether this event represents a register interest.
    *
    * @return whether this event represents a register interest
    */
-  public boolean isRegister();
+  boolean isRegister();
 
   /**
    * Returns whether this event's interest type is {@link InterestType#KEY}.
    *
    * @return whether this event's interest type is {@link InterestType#KEY}
    */
-  public boolean isKey();
+  boolean isKey();
 
   /**
    * Returns whether this event's interest type is {@link InterestType#REGULAR_EXPRESSION}.
    *
    * @return whether this event's interest type is {@link InterestType#REGULAR_EXPRESSION}
    */
-  public boolean isRegularExpression();
+  boolean isRegularExpression();
 
   /**
    * Returns the {@link ClientSession} that initiated this event
    *
    * @return the {@link ClientSession} that initiated this event
    */
-  public ClientSession getClientSession();
+  ClientSession getClientSession();
 }

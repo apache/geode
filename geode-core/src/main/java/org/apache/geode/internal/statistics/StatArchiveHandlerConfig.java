@@ -30,35 +30,35 @@ public interface StatArchiveHandlerConfig {
   /**
    * Gets the name of the archive file.
    */
-  public File getArchiveFileName();
+  File getArchiveFileName();
 
   /**
    * Gets the archive size limit in bytes.
    */
-  public long getArchiveFileSizeLimit();
+  long getArchiveFileSizeLimit();
 
   /**
    * Gets the archive disk space limit in bytes.
    */
-  public long getArchiveDiskSpaceLimit();
+  long getArchiveDiskSpaceLimit();
 
   /**
    * Returns a unique id for the sampler's system.
    */
-  public long getSystemId();
+  long getSystemId();
 
   /**
    * Returns the time this sampler's system was started.
    */
-  public long getSystemStartTime();
+  long getSystemStartTime();
 
   /**
    * Returns the path to this sampler's system directory; if it has one.
    */
-  public String getSystemDirectoryPath();
+  String getSystemDirectoryPath();
 
   /**
    * Returns a description of the product that the stats are on
    */
-  public String getProductDescription();
+  String getProductDescription();
 }

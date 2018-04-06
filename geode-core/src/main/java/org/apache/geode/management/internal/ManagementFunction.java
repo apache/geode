@@ -25,11 +25,10 @@ import javax.management.ReflectionException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -42,7 +41,7 @@ import org.apache.geode.internal.logging.LogService;
  * 1) All setter methods 2) All operations 3) addNotificationListener 4) removeNotificationListener
  * 5) getNotificationInfo
  */
-public class ManagementFunction extends FunctionAdapter implements InternalEntity {
+public class ManagementFunction implements InternalFunction {
 
   private static final Logger logger = LogService.getLogger();
 

@@ -26,7 +26,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -144,13 +144,26 @@ public class ProtobufUtilitiesJUnitTest {
     createAndVerifyEncodedValue("Some String text to test");
   }
 
+  @Test
+  public void doesANullValueSuccessfullyEncodeIntoEncodedValues() throws Exception {
+    createAndVerifyEncodedValue(null);
+  }
+
   private <T> void createAndVerifyEncodedValue(T testObj) throws EncodingException {
     BasicTypes.EncodedValue encodedValue = protobufSerializationService.encode(testObj);
     if (testObj instanceof byte[]) {
-      assertArrayEquals((byte[]) testObj,
-          (byte[]) protobufSerializationService.decode(encodedValue));
+      try {
+        assertArrayEquals((byte[]) testObj,
+            (byte[]) protobufSerializationService.decode(encodedValue));
+      } catch (org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException e) {
+        e.printStackTrace();
+      }
     } else {
-      assertEquals(testObj, protobufSerializationService.decode(encodedValue));
+      try {
+        assertEquals(testObj, protobufSerializationService.decode(encodedValue));
+      } catch (org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException e) {
+        e.printStackTrace();
+      }
     }
   }
 }

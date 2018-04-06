@@ -20,9 +20,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
-
-import javax.xml.crypto.Data;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.InternalGemFireError;
@@ -32,10 +32,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -46,6 +43,8 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 public class CreateRegionFunction implements Function, Declarable, DataSerializable {
 
@@ -64,17 +63,8 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
       "__regionConfigurationMetadata";
 
   public CreateRegionFunction() {
-    this(CacheFactory.getAnyInstance());
-  }
-
-  public CreateRegionFunction(Cache cache) {
-    this.cache = cache;
+    this.cache = CacheFactory.getAnyInstance();
     this.regionConfigurationsRegion = createRegionConfigurationMetadataRegion();
-  }
-
-  public CreateRegionFunction(ClientCache cache) {
-    this.cache = null;
-    this.regionConfigurationsRegion = null;
   }
 
   public void execute(FunctionContext context) {
@@ -94,6 +84,11 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
     }
     // Return status
     context.getResultSender().lastResult(status);
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.DATA_MANAGE);
   }
 
   private RegionStatus createOrRetrieveRegion(RegionConfiguration configuration) {

@@ -14,32 +14,28 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 
 class FinishBackupFactory {
 
-  BackupReplyProcessor createReplyProcessor(BackupResultCollector resultCollector, DM dm,
-      Set<InternalDistributedMember> recipients) {
+  BackupReplyProcessor createReplyProcessor(BackupResultCollector resultCollector,
+      DistributionManager dm, Set<InternalDistributedMember> recipients) {
     return new BackupReplyProcessor(resultCollector, dm, recipients);
   }
 
   FinishBackupRequest createRequest(InternalDistributedMember sender,
-      Set<InternalDistributedMember> recipients, int processorId, File targetDir, File baselineDir,
-      boolean abort) {
-    return new FinishBackupRequest(sender, recipients, processorId, targetDir, baselineDir, abort,
-        this);
+      Set<InternalDistributedMember> recipients, int processorId) {
+    return new FinishBackupRequest(sender, recipients, processorId, this);
   }
 
-  FinishBackup createFinishBackup(InternalCache cache, File targetDir, File baselineDir,
-      boolean abort) {
-    return new FinishBackup(cache, targetDir, baselineDir, abort);
+  FinishBackup createFinishBackup(InternalCache cache) {
+    return new FinishBackup(cache);
   }
 
   BackupResponse createBackupResponse(InternalDistributedMember sender,

@@ -34,12 +34,12 @@ public interface LuceneQueryFactory {
   /**
    * Default query result limit is 100
    */
-  public static final int DEFAULT_LIMIT = 100;
+  int DEFAULT_LIMIT = 100;
 
   /**
    * Default page size of result is 0, which means no pagination
    */
-  public static final int DEFAULT_PAGESIZE = 0;
+  int DEFAULT_PAGESIZE = 0;
 
   /**
    * Set page size for a query result. The default page size is 0 which means no pagination.
@@ -74,7 +74,7 @@ public interface LuceneQueryFactory {
    * @param <V> the value type in the query results
    * @return LuceneQuery object
    */
-  public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, String queryString,
+  <K, V> LuceneQuery<K, V> create(String indexName, String regionName, String queryString,
       String defaultField);
 
   /**
@@ -105,6 +105,6 @@ public interface LuceneQueryFactory {
    * @param <V> the value type in the query results
    * @return LuceneQuery object
    */
-  public <K, V> LuceneQuery<K, V> create(String indexName, String regionName,
+  <K, V> LuceneQuery<K, V> create(String indexName, String regionName,
       LuceneQueryProvider provider);
 }

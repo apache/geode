@@ -14,8 +14,10 @@
  */
 package org.apache.geode.cache.client;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.server.CacheServer;
 
 
@@ -60,7 +62,7 @@ public interface PoolFactory {
    * <p>
    * Current value: <code>59000</code>.
    */
-  public static final int DEFAULT_SOCKET_CONNECT_TIMEOUT = 59000;
+  int DEFAULT_SOCKET_CONNECT_TIMEOUT = 59000;
 
   /**
    * The default amount of time, in milliseconds, which we will wait for a free connection if max
@@ -68,7 +70,7 @@ public interface PoolFactory {
    * <p>
    * Current value: <code>10000</code>.
    */
-  public static final int DEFAULT_FREE_CONNECTION_TIMEOUT = 10000;
+  int DEFAULT_FREE_CONNECTION_TIMEOUT = 10000;
 
   /**
    * The default interval in which the pool will check to see if a connection to a given server
@@ -76,63 +78,63 @@ public interface PoolFactory {
    * <p>
    * Current value: <code>300,000</code> (which is 5 minutes).
    */
-  public static final int DEFAULT_LOAD_CONDITIONING_INTERVAL = 1000 * 60 * 5;
+  int DEFAULT_LOAD_CONDITIONING_INTERVAL = 1000 * 60 * 5;
 
   /**
    * Default size in bytes of the socket buffer on each connection established.
    * <p>
    * Current value: <code>32768</code>.
    */
-  public static final int DEFAULT_SOCKET_BUFFER_SIZE = 32768;
+  int DEFAULT_SOCKET_BUFFER_SIZE = 32768;
 
   /**
    * The default amount of time, in milliseconds, to wait for a response from a server
    * <p>
    * Current value: <code>10000</code>.
    */
-  public static final int DEFAULT_READ_TIMEOUT = 10000;
+  int DEFAULT_READ_TIMEOUT = 10000;
 
   /**
    * The default number of connections to initially create
    * <p>
    * Current value: <code>1</code>.
    */
-  public static final int DEFAULT_MIN_CONNECTIONS = 1;
+  int DEFAULT_MIN_CONNECTIONS = 1;
 
   /**
    * The default maximum number of connections to create
    * <p>
    * Current value: <code>-1</code>.
    */
-  public static final int DEFAULT_MAX_CONNECTIONS = -1;
+  int DEFAULT_MAX_CONNECTIONS = -1;
 
   /**
    * The default amount of time in milliseconds, to wait for a connection to become idle
    * <p>
    * Current value: <code>5000</code>.
    */
-  public static final long DEFAULT_IDLE_TIMEOUT = 5000;
+  long DEFAULT_IDLE_TIMEOUT = 5000;
 
   /**
    * The default number of times to retry an operation after a timeout or exception.
    * <p>
    * Current value: <code>-1</code>.
    */
-  public static final int DEFAULT_RETRY_ATTEMPTS = -1;
+  int DEFAULT_RETRY_ATTEMPTS = -1;
 
   /**
    * The default frequency, in milliseconds, to ping servers.
    * <p>
    * Current value: <code>10000</code>.
    */
-  public static final long DEFAULT_PING_INTERVAL = 10000;
+  long DEFAULT_PING_INTERVAL = 10000;
 
   /**
    * The default frequency, in milliseconds, that client statistics will be sent to the server.
    * <p>
    * Current value: <code>-1</code>.
    */
-  public static final int DEFAULT_STATISTIC_INTERVAL = -1;
+  int DEFAULT_STATISTIC_INTERVAL = -1;
 
   /**
    * The default value for whether connections should have affinity to the thread that last used
@@ -140,21 +142,21 @@ public interface PoolFactory {
    * <p>
    * Current value: <code>false</code>.
    */
-  public static final boolean DEFAULT_THREAD_LOCAL_CONNECTIONS = false;
+  boolean DEFAULT_THREAD_LOCAL_CONNECTIONS = false;
 
   /**
    * The default value for whether to establish a server to client subscription.
    * <p>
    * Current value: <code>false</code>.
    */
-  public static final boolean DEFAULT_SUBSCRIPTION_ENABLED = false;
+  boolean DEFAULT_SUBSCRIPTION_ENABLED = false;
 
   /**
    * The default redundancy for servers holding subscriptions established by this client
    * <p>
    * Current value: <code>0</code>.
    */
-  public static final int DEFAULT_SUBSCRIPTION_REDUNDANCY = 0;
+  int DEFAULT_SUBSCRIPTION_REDUNDANCY = 0;
 
   /**
    * The default amount of time, in milliseconds, that messages sent from a server to a client will
@@ -162,7 +164,7 @@ public interface PoolFactory {
    * <p>
    * Current value: <code>900000</code>.
    */
-  public static final int DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT = 900000;
+  int DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT = 900000;
 
   /**
    * The default amount of time, in milliseconds, to wait before sending an acknowledgement to the
@@ -170,14 +172,22 @@ public interface PoolFactory {
    * <p>
    * Current value: <code>100</code>.
    */
-  public static final int DEFAULT_SUBSCRIPTION_ACK_INTERVAL = 100;
+  int DEFAULT_SUBSCRIPTION_ACK_INTERVAL = 100;
+
+  /**
+   * The default number of server "ping" intervals that can elapse with no activity before a
+   * subscription connection is deemed dead and failover is initiated.
+   * <p>
+   * Current value: 0
+   */
+  public static final int DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER = 0;
 
   /**
    * The default server group.
    * <p>
    * Current value: <code>""</code>.
    */
-  public static final String DEFAULT_SERVER_GROUP = "";
+  String DEFAULT_SERVER_GROUP = "";
 
   /**
    * The default value for whether to have single hop optimisations enabled.
@@ -186,7 +196,7 @@ public interface PoolFactory {
    *
    * @since GemFire 6.5
    */
-  public static final boolean DEFAULT_PR_SINGLE_HOP_ENABLED = true;
+  boolean DEFAULT_PR_SINGLE_HOP_ENABLED = true;
   /**
    * The default value for whether to use multiuser mode.
    * <p>
@@ -194,7 +204,7 @@ public interface PoolFactory {
    *
    * @since GemFire 6.5
    */
-  public static final boolean DEFAULT_MULTIUSER_AUTHENTICATION = false;
+  boolean DEFAULT_MULTIUSER_AUTHENTICATION = false;
 
   /**
    * Sets the socket connect timeout for this pool. The number of milli seconds specified as socket
@@ -206,7 +216,7 @@ public interface PoolFactory {
    * @throws IllegalArgumentException if <code>socketConnectTimeout</code> is less than or equal to
    *         <code>-1</code>.
    */
-  public PoolFactory setSocketConnectTimeout(int socketConnectTimeout);
+  PoolFactory setSocketConnectTimeout(int socketConnectTimeout);
 
   /**
    * Sets the free connection timeout for this pool. If the pool has a max connections setting,
@@ -221,7 +231,7 @@ public interface PoolFactory {
    * @throws IllegalArgumentException if <code>connectionTimeout</code> is less than or equal to
    *         <code>0</code>.
    */
-  public PoolFactory setFreeConnectionTimeout(int connectionTimeout);
+  PoolFactory setFreeConnectionTimeout(int connectionTimeout);
 
   /**
    * Sets the load conditioning interval for this pool. This interval controls how frequently the
@@ -235,7 +245,7 @@ public interface PoolFactory {
    * @throws IllegalArgumentException if <code>connectionLifetime</code> is less than
    *         <code>-1</code>.
    */
-  public PoolFactory setLoadConditioningInterval(int loadConditioningInterval);
+  PoolFactory setLoadConditioningInterval(int loadConditioningInterval);
 
   /**
    * Sets the socket buffer size for each connection made in this pool. Large messages can be
@@ -248,7 +258,7 @@ public interface PoolFactory {
    * @throws IllegalArgumentException if <code>bufferSize</code> is less than or equal to
    *         <code>0</code>.
    */
-  public PoolFactory setSocketBufferSize(int bufferSize);
+  PoolFactory setSocketBufferSize(int bufferSize);
 
   /**
    * Sets the thread local connections policy for this pool. If <code>true</code> then any time a
@@ -264,7 +274,7 @@ public interface PoolFactory {
    * @param threadLocalConnections if <code>true</code> then enable thread local connections.
    * @return a reference to <code>this</code>
    */
-  public PoolFactory setThreadLocalConnections(boolean threadLocalConnections);
+  PoolFactory setThreadLocalConnections(boolean threadLocalConnections);
 
   /**
    * Sets the number of milliseconds to wait for a response from a server before timing out the
@@ -274,7 +284,7 @@ public interface PoolFactory {
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>timeout</code> is less than <code>0</code>.
    */
-  public PoolFactory setReadTimeout(int timeout);
+  PoolFactory setReadTimeout(int timeout);
 
   /**
    * Set the minimum number of connections to keep available at all times. When the pool is created,
@@ -285,7 +295,7 @@ public interface PoolFactory {
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>minConnections</code> is less than <code>0</code>.
    */
-  public PoolFactory setMinConnections(int minConnections);
+  PoolFactory setMinConnections(int minConnections);
 
   /**
    * Set the max number of client to server connections that the pool will create. If all of the
@@ -299,7 +309,7 @@ public interface PoolFactory {
    * @throws IllegalArgumentException if <code>maxConnections</code> is less than
    *         <code>minConnections</code>.
    */
-  public PoolFactory setMaxConnections(int maxConnections);
+  PoolFactory setMaxConnections(int maxConnections);
 
   /**
    * Set the amount of time a connection can be idle before expiring the connection. If the pool
@@ -311,7 +321,7 @@ public interface PoolFactory {
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>idleTimout</code> is less than <code>-1</code>.
    */
-  public PoolFactory setIdleTimeout(long idleTimeout);
+  PoolFactory setIdleTimeout(long idleTimeout);
 
   /**
    * Set the number of times to retry a request after timeout/exception.
@@ -321,7 +331,7 @@ public interface PoolFactory {
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>retryAttempts</code> is less than <code>-1</code>.
    */
-  public PoolFactory setRetryAttempts(int retryAttempts);
+  PoolFactory setRetryAttempts(int retryAttempts);
 
   /**
    * How often to ping servers to verify that they are still alive. Each server will be sent a ping
@@ -336,7 +346,7 @@ public interface PoolFactory {
    *         <code>0</code>.
    * @see CacheServer#setMaximumTimeBetweenPings(int)
    */
-  public PoolFactory setPingInterval(long pingInterval);
+  PoolFactory setPingInterval(long pingInterval);
 
   /**
    * How often to send client statistics to the server. Doing this allows <code>gfmon</code> to
@@ -350,7 +360,7 @@ public interface PoolFactory {
    * @throws IllegalArgumentException if <code>statisticInterval</code> is less than
    *         <code>-1</code>.
    */
-  public PoolFactory setStatisticInterval(int statisticInterval);
+  PoolFactory setStatisticInterval(int statisticInterval);
 
   /**
    * Configures the group that all servers this pool connects to must belong to.
@@ -359,7 +369,7 @@ public interface PoolFactory {
    *        <code>""</code> then all servers will be connected to.
    * @return a reference to <code>this</code>
    */
-  public PoolFactory setServerGroup(String group);
+  PoolFactory setServerGroup(String group);
 
   /**
    * Add a locator, given its host and port, to this factory. The locator must be a server locator
@@ -374,7 +384,7 @@ public interface PoolFactory {
    * @throws IllegalStateException if a server has already been {@link #addServer added} to this
    *         factory.
    */
-  public PoolFactory addLocator(String host, int port);
+  PoolFactory addLocator(String host, int port);
 
   /**
    * Add a server, given its host and port, to this factory. The server must be a cache server and
@@ -389,7 +399,7 @@ public interface PoolFactory {
    * @throws IllegalStateException if a locator has already been {@link #addLocator added} to this
    *         factory.
    */
-  public PoolFactory addServer(String host, int port);
+  PoolFactory addServer(String host, int port);
 
   /**
    * If set to <code>true</code> then the created pool will have server-to-client subscriptions
@@ -398,7 +408,7 @@ public interface PoolFactory {
    *
    * @return a reference to <code>this</code>
    */
-  public PoolFactory setSubscriptionEnabled(boolean enabled);
+  PoolFactory setSubscriptionEnabled(boolean enabled);
 
   /**
    * Sets the redundancy level for this pools server-to-client subscriptions. If <code>0</code> then
@@ -410,7 +420,7 @@ public interface PoolFactory {
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>redundancyLevel</code> is less than <code>-1</code>.
    */
-  public PoolFactory setSubscriptionRedundancy(int redundancy);
+  PoolFactory setSubscriptionRedundancy(int redundancy);
 
   /**
    * Sets the messageTrackingTimeout attribute which is the time-to-live period, in milliseconds,
@@ -423,7 +433,19 @@ public interface PoolFactory {
    * @throws IllegalArgumentException if <code>messageTrackingTimeout</code> is less than or equal
    *         to <code>0</code>.
    */
-  public PoolFactory setSubscriptionMessageTrackingTimeout(int messageTrackingTimeout);
+  PoolFactory setSubscriptionMessageTrackingTimeout(int messageTrackingTimeout);
+
+  /**
+   * A server has an inactivity monitor that ensures a message is sent to a client at least once a
+   * minute (60,000 milliseconds). If a subscription timeout multipler is set in the client it
+   * enables timing out of the subscription feed with failover to another server.
+   * <p>
+   * A value of zero (the default) disables timeouts
+   * <p>
+   * The resulting timeout will be multiplied by 1.25 in order to avoid race conditions with the
+   * server sending its "ping" message.
+   */
+  public PoolFactory setSubscriptionTimeoutMultiplier(int multiplier);
 
   /**
    * Sets the interval in milliseconds to wait before sending acknowledgements to the cache server
@@ -434,14 +456,14 @@ public interface PoolFactory {
    * @throws IllegalArgumentException if <code>ackInterval</code> is less than or equal to
    *         <code>0</code>.
    */
-  public PoolFactory setSubscriptionAckInterval(int ackInterval);
+  PoolFactory setSubscriptionAckInterval(int ackInterval);
 
   /**
    * Resets the configuration of this factory to its defaults.
    *
    * @return a reference to <code>this</code>
    */
-  public PoolFactory reset();
+  PoolFactory reset();
 
   /**
    * Create a new Pool for connecting a client to a set of GemFire Cache Servers. using this
@@ -452,7 +474,7 @@ public interface PoolFactory {
    * @throws IllegalStateException if a locator or server has not been added.
    * @return the newly created pool.
    */
-  public Pool create(String name);
+  Pool create(String name);
 
   /**
    * By default setPRSingleHopEnabled is <code>true</code> in which case the client is aware of the
@@ -475,7 +497,7 @@ public interface PoolFactory {
    * @return a reference to <code>this</code>
    * @since GemFire 6.5
    */
-  public PoolFactory setPRSingleHopEnabled(boolean enabled);
+  PoolFactory setPRSingleHopEnabled(boolean enabled);
 
   /**
    * If set to <code>true</code> then the created pool can be used by multiple authenticated users.
@@ -491,6 +513,6 @@ public interface PoolFactory {
    * @see ClientCache#createAuthenticatedView(java.util.Properties)
    * @since GemFire 6.5
    */
-  public PoolFactory setMultiuserAuthentication(boolean enabled);
+  PoolFactory setMultiuserAuthentication(boolean enabled);
 
 }

@@ -34,10 +34,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.dunit.Host;
@@ -75,7 +74,7 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };
@@ -125,8 +124,8 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
   public void testSimpleOutOfOffHeapMemoryMemberDisconnects() {
     final DistributedSystem system = getSystem();
     final Cache cache = getCache();
-    final DistributionManager dm =
-        (DistributionManager) ((InternalDistributedSystem) system).getDistributionManager();
+    final ClusterDistributionManager dm =
+        (ClusterDistributionManager) ((InternalDistributedSystem) system).getDistributionManager();
 
     Region<Object, Object> region =
         cache.createRegionFactory(getRegionShortcut()).setOffHeap(true).create(getRegionName());
@@ -146,10 +145,7 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
 
     // wait for cache instance to be nulled out
     with().pollInterval(100, TimeUnit.MILLISECONDS).await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> GemFireCacheImpl.getInstance() == null
-            && InternalDistributedSystem.getAnyInstance() == null);
-
-    assertNull(GemFireCacheImpl.getInstance());
+        .until(() -> cache.isClosed() && !system.isConnected());
 
     // verify system was closed out due to OutOfOffHeapMemoryException
     assertFalse(system.isConnected());

@@ -45,13 +45,12 @@ import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.util.ArrayUtils;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Flaky: GEODE-2790, GEODE-3205
  */
-@Category({IntegrationTest.class, FlakyTest.class})
+@Category(IntegrationTest.class)
 @SuppressWarnings("unused")
 public class DiskSpaceLimitIntegrationTest {
 
@@ -205,7 +204,7 @@ public class DiskSpaceLimitIntegrationTest {
     sampleUntilFileExists(archiveFile(newMainId, 1));
     assertThat(archiveFile(newMainId, 1)).exists();
 
-    validateNumberFiles(2);
+    validateNumberFilesIsAtLeast(2);
 
     for (int childId = 1; childId <= numberOfPreviousFiles; childId++) {
       assertThat(archiveFile(oldMainId, childId)).doesNotExist();
@@ -253,8 +252,7 @@ public class DiskSpaceLimitIntegrationTest {
     sampleUntilFileExists(archiveFile(newMainId, 1));
     assertThat(archiveFile(newMainId, 1)).exists();
 
-    // this might be a brittle assertion... ok to delete if following for-block-assertion passes
-    validateNumberFiles(2);
+    validateNumberFilesIsAtLeast(2);
 
     for (int childId = 1; childId <= numberOfPreviousFiles; childId++) {
       assertThat(archiveFile(oldMainId, childId)).doesNotExist();
@@ -267,6 +265,14 @@ public class DiskSpaceLimitIntegrationTest {
   private void validateNumberFiles(final int expected) {
     assertThat(numberOfFiles(this.dir)).as("Unexpected files: " + listFiles(this.dir))
         .isEqualTo(expected);
+  }
+
+  /**
+   * Validates number of files under this.dir while ignoring this.dirOfDeletedFiles.
+   */
+  private void validateNumberFilesIsAtLeast(final int expected) {
+    assertThat(numberOfFiles(this.dir)).as("Unexpected files: " + listFiles(this.dir))
+        .isGreaterThanOrEqualTo(expected);
   }
 
   private void sampleNumberOfTimes(final int value) throws InterruptedException {

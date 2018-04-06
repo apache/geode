@@ -475,16 +475,18 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
                 event.setRegion(bucket);
                 org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
                     .info("performing local destroy in " + bucket + " ccEnabled="
-                        + bucket.concurrencyChecksEnabled + " rvv=" + bucket.getVersionVector());
-                bucket.concurrencyChecksEnabled = false; // turn off cc so entry is removed
+                        + bucket.getConcurrencyChecksEnabled() + " rvv="
+                        + bucket.getVersionVector());
+                bucket.setConcurrencyChecksEnabled(false); // turn off cc so entry is removed
                 bucket.mapDestroy(event, false, false, null);
-                bucket.concurrencyChecksEnabled = true;
+                bucket.setConcurrencyChecksEnabled(true);
               }
             } else {
-              ((LocalRegion) myRegion).concurrencyChecksEnabled = false; // turn off cc so entry is
-                                                                         // removed
+              ((LocalRegion) myRegion).setConcurrencyChecksEnabled(false); // turn off cc so entry
+                                                                           // is
+              // removed
               ((LocalRegion) myRegion).mapDestroy(event, false, false, null);
-              ((LocalRegion) myRegion).concurrencyChecksEnabled = true;
+              ((LocalRegion) myRegion).setConcurrencyChecksEnabled(true);
             }
           }
         };

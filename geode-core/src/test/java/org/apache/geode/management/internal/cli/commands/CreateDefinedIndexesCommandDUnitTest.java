@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Properties;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,7 +26,6 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -57,12 +54,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
     locator = clusterStartupRule.startLocatorVM(0);
     server1 = clusterStartupRule.startServerVM(1, locator.getPort());
     server2 = clusterStartupRule.startServerVM(2, locator.getPort());
-
-    Properties server3Properties = new Properties();
-    server3Properties.setProperty(ConfigurationProperties.LOCATORS,
-        "localhost[" + locator.getPort() + "]");
-    server3Properties.setProperty(ConfigurationProperties.GROUPS, "group1");
-    server3 = clusterStartupRule.startServerVM(3, server3Properties);
+    server3 = clusterStartupRule.startServerVM(3, "group1", locator.getPort());
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("clear defined indexes").statusIsSuccess()

@@ -24,8 +24,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
 import org.junit.Rule;
 
 import org.apache.geode.cache.Cache;
@@ -35,6 +37,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.ClientCacheCreation;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -68,6 +71,23 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   public final void preTearDownCacheTestCase() throws Exception {
     this.xmlFile = null;
     GemFireCacheImpl.testCacheXml = null;
+
+    waitForNoRebalancing();
+    Invoke.invokeInEveryVM(CacheXmlTestCase::waitForNoRebalancing);
+
+    super.preTearDownCacheTestCase();
+  }
+
+  /**
+   * Some tests run so quickly that the rebalance operation doesn't even have time to start before
+   * regions are already being destroyed - GEDOE-4312.
+   */
+  private static void waitForNoRebalancing() {
+    if (cache != null && !cache.isClosed()) {
+      Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+        return cache.getResourceManager().getRebalanceOperations().size() == 0;
+      });
+    }
   }
 
   @Override

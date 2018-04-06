@@ -31,33 +31,33 @@ public interface Statistic extends java.io.Serializable {
    *
    * @return the identifying name of this statistic
    */
-  public String getName();
+  String getName();
 
   /**
    * Gets the value of this statistic as a <code>java.lang.Number</code>.
    *
    * @return the value of this statistic
    */
-  public Number getValue();
+  Number getValue();
 
   /**
    * Gets the unit of measurement (if any) this statistic represents.
    *
    * @return the unit of measurement (if any) this statistic represents
    */
-  public String getUnits();
+  String getUnits();
 
   /**
    * Returns true if this statistic represents a numeric value which always increases.
    *
    * @return true if this statistic represents a value which always increases
    */
-  public boolean isCounter();
+  boolean isCounter();
 
   /**
    * Gets the full description of this statistic.
    *
    * @return the full description of this statistic
    */
-  public String getDescription();
+  String getDescription();
 }

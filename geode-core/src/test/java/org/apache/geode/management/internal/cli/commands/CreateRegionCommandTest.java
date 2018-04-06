@@ -37,9 +37,14 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
+import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs.ExpirationAttrs;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -51,12 +56,21 @@ public class CreateRegionCommandTest {
 
   private CreateRegionCommand command;
   private InternalCache cache;
+  private DistributedRegionMXBean regionMXBean;
+  ManagementService service;
+
+  private static String COMMAND = "create region --name=region --type=REPLICATE ";
 
   @Before
   public void before() throws Exception {
     command = spy(CreateRegionCommand.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
+
+    service = mock(ManagementService.class);
+    doReturn(service).when(command).getManagementService();
+    regionMXBean = mock(DistributedRegionMXBean.class);
+    when(service.getDistributedRegionMXBean(any())).thenReturn(regionMXBean);
   }
 
   @Test
@@ -147,6 +161,7 @@ public class CreateRegionCommandTest {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(any(),
         any());
     doReturn(true).when(command).verifyDistributedRegionMbean(any(), any());
+    when(service.getDistributedRegionMXBean(any())).thenReturn(null);
 
     parser.executeCommandWithInstance(command, "create region --name=A --type=REPLICATE");
     ArgumentCaptor<RegionFunctionArgs> argsCaptor =
@@ -157,15 +172,16 @@ public class CreateRegionCommandTest {
     assertThat(args.getRegionPath()).isEqualTo("/A");
     assertThat(args.getRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE);
     assertThat(args.getTemplateRegion()).isNull();
-    assertThat(args.isSkipIfExists()).isFalse();
+    assertThat(args.isIfNotExists()).isFalse();
     assertThat(args.getKeyConstraint()).isNull();
     assertThat(args.getValueConstraint()).isNull();
     assertThat(args.isStatisticsEnabled()).isNull();
 
-    assertThat(args.getEntryExpirationIdleTime()).isNull();
-    assertThat(args.getEntryExpirationTTL()).isNull();
-    assertThat(args.getRegionExpirationIdleTime()).isNull();
-    assertThat(args.getRegionExpirationTTL()).isNull();
+    ExpirationAttrs empty = new ExpirationAttrs(null, null);
+    assertThat(args.getEntryExpirationIdleTime()).isEqualTo(empty);
+    assertThat(args.getEntryExpirationTTL()).isEqualTo(empty);
+    assertThat(args.getRegionExpirationIdleTime()).isEqualTo(empty);
+    assertThat(args.getRegionExpirationTTL()).isEqualTo(empty);
 
     assertThat(args.getDiskStore()).isNull();
     assertThat(args.isDiskSynchronous()).isNull();
@@ -189,29 +205,124 @@ public class CreateRegionCommandTest {
 
   @Test
   public void invalidCacheListener() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --cache-listener=abc-def");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString())
-        .contains("Specify a valid class name for cache-listener.");
+    parser
+        .executeAndAssertThat(command,
+            "create region --name=region --type=REPLICATE --cache-listener=abc-def")
+        .statusIsError().containsOutput("Invalid command");
   }
 
   @Test
   public void invalidCacheLoader() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --cache-loader=abc-def");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString())
-        .contains("Specify a valid class name for cache-loader.");
+    parser
+        .executeAndAssertThat(command,
+            "create region --name=region --type=REPLICATE --cache-loader=abc-def")
+        .statusIsError().containsOutput("Invalid command");
   }
 
   @Test
   public void invalidCacheWriter() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --cache-writer=abc-def");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString())
-        .contains("Specify a valid class name for cache-writer.");
+    parser
+        .executeAndAssertThat(command,
+            "create region --name=region --type=REPLICATE --cache-writer=abc-def")
+        .statusIsError().containsOutput("Invalid command");
+  }
+
+  @Test
+  public void declarableClassIsNullIfNotSpecified() throws Exception {
+    GfshParseResult result = parser.parse("create region --name=region --cache-writer");
+    assertThat(result.getParamValue("cache-writer")).isNull();
+    assertThat(result.getParamValue("cache-loader")).isNull();
+    assertThat(result.getParamValue("cache-listener")).isNull();
+  }
+
+  @Test
+  // this is enforced by the parser, if empty string is passed, parser will turn that into null
+  // first
+  public void declarableClassIsNullWhenEmptyStringIsPassed() {
+    GfshParseResult result = parser
+        .parse("create region --name=region --cache-writer='' --cache-loader --cache-listener=''");
+    assertThat(result.getParamValue("cache-writer")).isNull();
+    assertThat(result.getParamValue("cache-loader")).isNull();
+    assertThat(result.getParamValue("cache-listener")).isNull();
+  }
+
+  @Test
+  public void emptySpace() {
+    GfshParseResult result = parser
+        .parse("create region --name=region --cache-writer=' ' --cache-loader --cache-listener=''");
+    assertThat(result.getParamValue("cache-writer")).isEqualTo(ClassName.EMPTY);
+    assertThat(result.getParamValue("cache-listener")).isNull();
+    assertThat(result.getParamValue("cache-loader")).isNull();
+  }
+
+  @Test
+  public void parseDeclarableWithClassOnly() {
+    GfshParseResult result = parser.parse("create region --name=region --cache-writer=my.abc");
+    ClassName writer = (ClassName) result.getParamValue("cache-writer");
+    assertThat(writer.getClassName()).isEqualTo("my.abc");
+    assertThat(writer.getInitProperties()).isNotNull().isEmpty();
+  }
+
+  @Test
+  public void parseDeclarableWithClassAndProps() {
+    String json = "{'k1':'v1','k2':'v2'}";
+    GfshParseResult result =
+        parser.parse("create region --name=region --cache-writer=my.abc" + json);
+    ClassName writer = (ClassName) result.getParamValue("cache-writer");
+    assertThat(writer.getClassName()).isEqualTo("my.abc");
+    assertThat(writer.getInitProperties()).containsKeys("k1", "k2");
+  }
+
+  @Test
+  public void parseDeclarableWithJsonWithSpace() {
+    String json = "{'k1' : 'v   1', 'k2' : 'v2'}";
+    GfshParseResult result =
+        parser.parse("create region --name=region --cache-writer=\"my.abc" + json + "\"");
+    ClassName writer = (ClassName) result.getParamValue("cache-writer");
+    assertThat(writer.getClassName()).isEqualTo("my.abc");
+    assertThat(writer.getInitProperties()).containsOnlyKeys("k1", "k2").containsEntry("k1",
+        "v   1");
+  }
+
+  @Test
+  public void cacheListenerClassOnly() {
+    GfshParseResult result =
+        parser.parse("create region --name=region --cache-listener=my.abc,my.def");
+    ClassName[] listeners = (ClassName[]) result.getParamValue("cache-listener");
+    assertThat(listeners).hasSize(2).contains(new ClassName("my.abc"), new ClassName("my.def"));
+  }
+
+  @Test
+  public void cacheListenerClassAndProps() {
+    String json1 = "{'k1':'v1'}";
+    String json2 = "{'k2':'v2'}";
+    GfshParseResult result = parser
+        .parse("create region --name=region --cache-listener=my.abc" + json1 + ",my.def" + json2);
+    ClassName[] listeners = (ClassName[]) result.getParamValue("cache-listener");
+    assertThat(listeners).hasSize(2).contains(new ClassName("my.abc", json1),
+        new ClassName("my.def", json2));
+  }
+
+  @Test
+  public void cacheListenerClassAndJsonWithComma() {
+    String json1 = "{'k1':'v1','k2':'v2'}";
+    String json2 = "{'k2':'v2'}";
+    GfshParseResult result = parser
+        .parse("create region --name=region --cache-listener=my.abc" + json1 + ",my.def" + json2);
+    ClassName[] listeners = (ClassName[]) result.getParamValue("cache-listener");
+    assertThat(listeners).hasSize(2).contains(new ClassName("my.abc", json1),
+        new ClassName("my.def", json2));
+  }
+
+  @Test
+  public void cacheListenerClassAndJsonWithCommaAndSpace() {
+    String json1 = "{'k1' : 'v1', 'k2' : 'v2'}";
+    String json2 = "{'k2' : 'v2'}";
+    GfshParseResult result = parser.parse(
+        "create region --name=region --cache-listener=\"my.abc" + json1 + ",my.def" + json2 + "\"");
+    ClassName[] listeners = (ClassName[]) result.getParamValue("cache-listener");
+    assertThat(listeners).hasSize(2).contains(new ClassName("my.abc", json1),
+        new ClassName("my.def", json2));
   }
 
   @Test
@@ -236,5 +347,50 @@ public class CreateRegionCommandTest {
         "create region --name=region --type=REPLICATE --value-type=abc-def");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getContent().toString()).contains("Invalid command");
+  }
+
+  @Test
+  public void statisticsMustBeEnabledForExpiration() {
+    parser.executeAndAssertThat(command, COMMAND + "--entry-idle-time-expiration=10")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--entry-time-to-live-expiration=10")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--region-idle-time-expiration=10")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--region-time-to-live-expiration=10")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--entry-idle-time-expiration-action=destroy")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--entry-time-to-live-expiration-action=destroy")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--region-idle-time-expiration-action=destroy")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser
+        .executeAndAssertThat(command, COMMAND + "--region-time-to-live-expiration-action=destroy")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--entry-time-to-live-custom-expiry=abc")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--entry-idle-time-custom-expiry=abc")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+  }
+
+  @Test
+  public void nameCollisionCheck() {
+    when(regionMXBean.getMemberCount()).thenReturn(2);
+    when(regionMXBean.getEmptyNodes()).thenReturn(1);
+    when(regionMXBean.getRegionType()).thenReturn("REPLICATE");
+    parser.executeAndAssertThat(command, COMMAND).statusIsError()
+        .containsOutput("Region /region already exists on the cluster");
+    parser.executeAndAssertThat(command, COMMAND + " --if-not-exists").statusIsSuccess()
+        .containsOutput("Skipping: Region /region already exists on the cluster");
   }
 }

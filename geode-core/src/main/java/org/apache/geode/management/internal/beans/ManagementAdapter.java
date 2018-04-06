@@ -40,7 +40,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.locks.DLockService;
@@ -200,7 +200,7 @@ public class ManagementAdapter {
     MBeanJMXAdapter jmxAdapter = service.getJMXAdapter();
     Map<ObjectName, Object> registeredMBeans = jmxAdapter.getLocalGemFireMBean();
 
-    DistributedSystemBridge dsBridge = new DistributedSystemBridge(service);
+    DistributedSystemBridge dsBridge = new DistributedSystemBridge(service, internalCache);
     this.aggregator = new MBeanAggregator(dsBridge);
     // register the aggregator for Federation framework to use
     service.addProxyListener(aggregator);
@@ -475,6 +475,31 @@ public class ManagementAdapter {
     Notification notification = new Notification(JMXNotificationType.GATEWAY_RECEIVER_CREATED,
         memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_RECEIVER_CREATED_PREFIX);
+    memberLevelNotifEmitter.sendNotification(notification);
+  }
+
+  /**
+   * Handles Gateway receiver destroy
+   *
+   * @param recv specific gateway receiver
+   * @throws ManagementException
+   */
+  public void handleGatewayReceiverDestroy(GatewayReceiver recv) throws ManagementException {
+    if (!isServiceInitialised("handleGatewayReceiverDestroy")) {
+      return;
+    }
+
+    GatewayReceiverMBean mbean = (GatewayReceiverMBean) service.getLocalGatewayReceiverMXBean();
+    GatewayReceiverMBeanBridge bridge = mbean.getBridge();
+
+    bridge.destroyServer();
+    ObjectName objectName = (MBeanJMXAdapter
+        .getGatewayReceiverMBeanName(internalCache.getDistributedSystem().getDistributedMember()));
+
+    service.unregisterMBean(objectName);
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_RECEIVER_DESTROYED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
+        ManagementConstants.GATEWAY_RECEIVER_DESTROYED_PREFIX);
     memberLevelNotifEmitter.sendNotification(notification);
   }
 
@@ -963,6 +988,28 @@ public class ManagementAdapter {
     memberLevelNotifEmitter.sendNotification(notification);
   }
 
+  public void handleGatewaySenderRemoved(GatewaySender sender) throws ManagementException {
+    if (!isServiceInitialised("handleGatewaySenderRemoved")) {
+      return;
+    }
+    if ((sender.getRemoteDSId() < 0)) {
+      return;
+    }
+
+    GatewaySenderMBean bean =
+        (GatewaySenderMBean) service.getLocalGatewaySenderMXBean(sender.getId());
+    bean.stopMonitor();
+
+    ObjectName gatewaySenderName = MBeanJMXAdapter.getGatewaySenderMBeanName(
+        internalCache.getDistributedSystem().getDistributedMember(), sender.getId());
+    service.unregisterMBean(gatewaySenderName);
+
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_SENDER_REMOVED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
+        ManagementConstants.GATEWAY_SENDER_REMOVED_PREFIX + sender.getId());
+    memberLevelNotifEmitter.sendNotification(notification);
+  }
+
   public void handleCacheServiceCreation(CacheService cacheService) throws ManagementException {
     if (!isServiceInitialised("handleCacheServiceCreation")) {
       return;
@@ -970,7 +1017,7 @@ public class ManagementAdapter {
     // Don't register the CacheServices in the Locator
     InternalDistributedMember member =
         internalCache.getInternalDistributedSystem().getDistributedMember();
-    if (member.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+    if (member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
       return;
     }
     CacheServiceMBeanBase mbean = cacheService.getMBean();

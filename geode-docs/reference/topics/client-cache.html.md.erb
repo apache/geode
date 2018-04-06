@@ -18,7 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<a id="cc-client-cache"></a>
 
 This section documents all `cache.xml` elements that you use to configure <%=vars.product_name%> clients. All elements are sub-elements of the `<client-cache>` element.
 
@@ -256,6 +255,16 @@ Use for client caches. Defines a client's server pool used to communicate with s
 <tr class="even">
 <td>subscription-redundancy</td>
 <td>Number of servers to use as backup to the primary for highly available subscription queue management. If set to 0, none are used. If set to -1, all available servers are used.</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>subscription-timeout-multiplier</td>
+<td>Number of missing server pings that trigger timeout of a subscription feed.
+
+A value of zero (the default) disables timeouts. A value of one or more times out the server
+connection after the specified number of ping intervals have elapsed. A value of one is not
+recommended.
+</td>
 <td>0</td>
 </tr>
 <tr class="odd">
@@ -1751,8 +1760,8 @@ We recommend that you set the username and password with the `user-name` and `pa
 <td>connection-url</td>
 <td>URL for connecting to the datasource.
 <div class="note note">
-**Note:**
-<p>If you are connecting to a JCA data source driver that implements XA transactions (where the jndi-binding type is <strong>XAPooledDataSource</strong>), do not use this attribute. Instead, define configuration properties for your database. See [&lt;config-property&gt;](cache_xml.html#config-property) for an example.</p>
+<strong>Note:</strong>
+<p>If you are connecting to a JCA data source driver that implements XA transactions (where the jndi-binding type is <strong>XAPooledDataSource</strong>), do not use this attribute. Instead, define configuration properties for your database. See <a href="cache_xml.html#config-property">&lt;config-property&gt;</a> for an example.</p>
 </div></td>
 <td> </td>
 </tr>

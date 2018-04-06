@@ -17,6 +17,7 @@ package org.apache.geode.experimental.driver;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
 
@@ -85,4 +86,12 @@ public interface Region<K, V> {
    * @throws IOException
    */
   void remove(K key) throws IOException;
+
+  /**
+   * Gets all the keys for which this region has entries
+   *
+   * @return Set of keys in this region
+   * @throws IOException
+   */
+  Set<K> keySet() throws IOException;
 }

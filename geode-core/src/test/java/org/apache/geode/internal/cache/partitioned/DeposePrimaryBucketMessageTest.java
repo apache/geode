@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -31,7 +31,7 @@ public class DeposePrimaryBucketMessageTest {
   public void shouldBeMockable() throws Exception {
     DeposePrimaryBucketMessage mockDeposePrimaryBucketMessage =
         mock(DeposePrimaryBucketMessage.class);
-    DistributionManager mockDistributionManager = mock(DistributionManager.class);
+    ClusterDistributionManager mockDistributionManager = mock(ClusterDistributionManager.class);
     PartitionedRegion mockPartitionedRegion = mock(PartitionedRegion.class);
     long startTime = System.currentTimeMillis();
     when(mockDeposePrimaryBucketMessage.operateOnPartitionedRegion(eq(mockDistributionManager),

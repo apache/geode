@@ -46,7 +46,7 @@ public class RegionAttributesRequest extends RegionAdminRequest {
    * @param dm
    */
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return RegionAttributesResponse.create(dm, this.getSender(), this.getRegion(dm.getSystem()));
   }
 

@@ -24,7 +24,7 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
@@ -126,11 +126,6 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
 
   @Override
   public int calculateValueSize(Object val) {
-    return 0;
-  }
-
-  @Override
-  public int calculateRegionEntryValueSize(RegionEntry re) {
     return 0;
   }
 
@@ -357,7 +352,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
 
     @Override
     public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
-        DM distributionManager, final Version version) {
+        DistributionManager distributionManager, final Version version) {
       return false;
     }
 

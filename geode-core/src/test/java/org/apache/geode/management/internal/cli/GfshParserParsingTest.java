@@ -291,16 +291,6 @@ public class GfshParserParsingTest {
   }
 
   @Test
-  public void testAlterRegion() throws Exception {
-    String command =
-        "alter region --name=/Person --cache-writer='' --cache-listener='' --cache-loader=''";
-    GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValueAsString("cache-writer")).isNotNull().isEmpty();
-    assertThat(result.getParamValueAsString("cache-listener")).isNotNull().isEmpty();
-    assertThat(result.getParamValueAsString("cache-loader")).isNotNull().isEmpty();
-  }
-
-  @Test
   public void testValueOfJsonWithoutOuterQuoteAndSpace() throws Exception {
     String command = "put --key=('name':'id') --value=456 --region=/test";
     GfshParseResult result = parser.parse(command);

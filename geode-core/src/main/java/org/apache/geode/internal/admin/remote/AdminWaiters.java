@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.OperationCancelledException;
 import org.apache.geode.admin.RuntimeAdminException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -53,7 +53,7 @@ public class AdminWaiters {
    * @throws RuntimeAdminException if this method is interrupted, times out, cancelled
    *         ({@link #cancelWaiters}), or failed with an exception on the server side.
    */
-  public static AdminResponse sendAndWait(AdminRequest msg, DistributionManager dm) {
+  public static AdminResponse sendAndWait(AdminRequest msg, ClusterDistributionManager dm) {
 
     // Prior to GemFire 4.0 admin messages were only sent to other
     // VMs; it was impossible for an admin message to be destined for
@@ -166,7 +166,7 @@ public class AdminWaiters {
     // that depart.
   }
 
-  public static void cancelRequest(int msgId, DistributionManager dm) {
+  public static void cancelRequest(int msgId, ClusterDistributionManager dm) {
     AdminReplyProcessor processor = (AdminReplyProcessor) ReplyProcessor21.getProcessor(msgId);
     if (processor != null) {
       InternalDistributedMember recipient = processor.getResponder();

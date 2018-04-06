@@ -33,21 +33,21 @@ public interface RebalanceResults {
    * @return a <code>Set</code> of detailed information about each partitioned region that was
    *         rebalanced
    */
-  public Set<PartitionRebalanceInfo> getPartitionRebalanceDetails();
+  Set<PartitionRebalanceInfo> getPartitionRebalanceDetails();
 
   /**
    * Returns the total time, in milliseconds, that the rebalance operation took.
    *
    * @return the total time, in milliseconds, that the rebalance operation took
    */
-  public long getTotalTime();
+  long getTotalTime();
 
   /**
    * Returns the total number of buckets created during the rebalance operation.
    *
    * @return the total number of buckets created during the rebalance operation
    */
-  public int getTotalBucketCreatesCompleted();
+  int getTotalBucketCreatesCompleted();
 
   /**
    * Returns the total size, in bytes, of all of the buckets that were created as part of the
@@ -56,47 +56,47 @@ public interface RebalanceResults {
    * @return the total size, in bytes, of all of the buckets that were created as part of the
    *         rebalance operation
    */
-  public long getTotalBucketCreateBytes();
+  long getTotalBucketCreateBytes();
 
   /**
    * Returns the total time, in milliseconds, taken to create buckets.
    *
    * @return the total time, in milliseconds, taken to create buckets
    */
-  public long getTotalBucketCreateTime();
+  long getTotalBucketCreateTime();
 
   /**
    * Returns the total number of buckets transferred.
    *
    * @return the total number of buckets transferred
    */
-  public int getTotalBucketTransfersCompleted();
+  int getTotalBucketTransfersCompleted();
 
   /**
    * Returns the total size, in bytes, of buckets that were transferred.
    *
    * @return the total size, in bytes, of buckets that were transferred
    */
-  public long getTotalBucketTransferBytes();
+  long getTotalBucketTransferBytes();
 
   /**
    * Returns the total amount of time, in milliseconds, it took to transfer buckets.
    *
    * @return the total amount of time, in milliseconds, it took to transfer buckets
    */
-  public long getTotalBucketTransferTime();
+  long getTotalBucketTransferTime();
 
   /**
    * Returns the total number of primaries that were transferred.
    *
    * @return the total number of primaries that were transferred
    */
-  public int getTotalPrimaryTransfersCompleted();
+  int getTotalPrimaryTransfersCompleted();
 
   /**
    * Returns the total time, in milliseconds, spent transferring primaries.
    *
    * @return the total time, in milliseconds, spent transferring primaries
    */
-  public long getTotalPrimaryTransferTime();
+  long getTotalPrimaryTransferTime();
 }

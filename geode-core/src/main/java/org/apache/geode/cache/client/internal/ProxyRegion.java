@@ -607,7 +607,7 @@ public class ProxyRegion implements Region {
 
   private void preOp() {
     if (this.proxyCache.isClosed()) {
-      throw new CacheClosedException("Cache is closed for this user.");
+      throw proxyCache.getCacheClosedException("Cache is closed for this user.");
     }
     UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
   }

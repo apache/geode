@@ -15,12 +15,17 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+
+import java.io.Serializable;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -45,8 +50,25 @@ public class ClientAuthDUnitTest {
   public void authWithIncorrectPasswordShouldFail() throws Exception {
     IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
 
-    assertThatThrownBy(
-        () -> lsRule.startClientVM(0, "test", "invalidPassword", true, server.getPort()))
+    assertThatThrownBy(() -> lsRule.startClientVM(0, "test", "invalidPassword", true,
+        server.getPort(), new ClientCacheHook(lsRule)))
             .isInstanceOf(AuthenticationFailedException.class);
+  }
+
+  static class ClientCacheHook implements Runnable, Serializable {
+    final ClusterStartupRule lsRule;
+
+    ClientCacheHook(ClusterStartupRule lsRule) {
+      this.lsRule = lsRule;
+    }
+
+    public void run() {
+      // Perform an operation that causes the cache to lazy-initialize a pool with the invalid
+      // authentication so as to induce the exception.
+      ClientCache clientCache = lsRule.getClientCache();
+      ClientRegionFactory clientRegionFactory =
+          clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+      clientRegionFactory.create("region");
+    }
   }
 }

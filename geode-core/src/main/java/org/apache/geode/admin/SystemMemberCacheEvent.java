@@ -29,5 +29,5 @@ public interface SystemMemberCacheEvent extends SystemMembershipEvent {
   /**
    * Returns the actual operation that caused this event.
    */
-  public Operation getOperation();
+  Operation getOperation();
 }

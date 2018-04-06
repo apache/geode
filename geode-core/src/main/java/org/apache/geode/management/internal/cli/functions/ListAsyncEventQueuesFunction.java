@@ -24,10 +24,9 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
@@ -39,7 +38,7 @@ import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
  *
  * @since GemFire 8.0
  */
-public class ListAsyncEventQueuesFunction extends FunctionAdapter implements InternalEntity {
+public class ListAsyncEventQueuesFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;

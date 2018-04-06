@@ -21,14 +21,14 @@ import java.util.Iterator;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheRuntimeException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.logging.LogService;
 
 public class DistTXAdjunctCommitMessage extends TXCommitMessage {
 
   private static final Logger logger = LogService.getLogger();
 
-  public DistTXAdjunctCommitMessage(TXId txIdent, DM dm, TXState txState) {
+  public DistTXAdjunctCommitMessage(TXId txIdent, DistributionManager dm, TXState txState) {
     super(txIdent, dm, txState);
   }
 

@@ -30,8 +30,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.*;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -2045,7 +2045,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
           @Override
-          public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
+          public void beforeSendMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof TombstoneMessage
                 && ((TombstoneMessage) message).regionPath.contains(REGION_NAME)) {
               System.err.println("DAN DEBUG  about to send tombstone message, starting up R - "
@@ -2068,7 +2069,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
           @Override
-          public void afterProcessMessage(DistributionManager dm, DistributionMessage message) {
+          public void afterProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof TombstoneMessage
                 && ((TombstoneMessage) message).regionPath.contains(REGION_NAME)) {
               System.err.println(
@@ -2725,7 +2727,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     }
 
     @Override
-    public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
+    public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
       VersionTag tag = null;
       if (message instanceof UpdateMessage) {
         UpdateMessage um = (UpdateMessage) message;

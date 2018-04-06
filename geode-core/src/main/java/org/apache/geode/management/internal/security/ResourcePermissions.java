@@ -20,16 +20,36 @@ import static org.apache.geode.security.ResourcePermission.Operation.READ;
 import static org.apache.geode.security.ResourcePermission.Operation.WRITE;
 import static org.apache.geode.security.ResourcePermission.Resource.CLUSTER;
 import static org.apache.geode.security.ResourcePermission.Resource.DATA;
+import static org.apache.geode.security.ResourcePermission.Target.DEPLOY;
+import static org.apache.geode.security.ResourcePermission.Target.DISK;
+import static org.apache.geode.security.ResourcePermission.Target.GATEWAY;
+import static org.apache.geode.security.ResourcePermission.Target.QUERY;
 
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public final class ResourcePermissions {
+  public static final ResourcePermission ALL = new ResourcePermission(Resource.ALL, Operation.ALL);
+  public static final ResourcePermission DATA_ALL = new ResourcePermission(DATA, Operation.ALL);
+  public static final ResourcePermission CLUSTER_ALL =
+      new ResourcePermission(CLUSTER, Operation.ALL);
   public static final ResourcePermission DATA_READ = new ResourcePermission(DATA, READ);
   public static final ResourcePermission DATA_WRITE = new ResourcePermission(DATA, WRITE);
   public static final ResourcePermission DATA_MANAGE = new ResourcePermission(DATA, MANAGE);
   public static final ResourcePermission CLUSTER_READ = new ResourcePermission(CLUSTER, READ);
   public static final ResourcePermission CLUSTER_WRITE = new ResourcePermission(CLUSTER, WRITE);
   public static final ResourcePermission CLUSTER_MANAGE = new ResourcePermission(CLUSTER, MANAGE);
+  public static final ResourcePermission CLUSTER_READ_QUERY =
+      new ResourcePermission(CLUSTER, READ, QUERY);
+  public static final ResourcePermission CLUSTER_MANAGE_QUERY =
+      new ResourcePermission(CLUSTER, MANAGE, QUERY);
+  public static final ResourcePermission CLUSTER_MANAGE_DEPLOY =
+      new ResourcePermission(CLUSTER, MANAGE, DEPLOY);
+  public static final ResourcePermission CLUSTER_MANAGE_DISK =
+      new ResourcePermission(CLUSTER, MANAGE, DISK);
+  public static final ResourcePermission CLUSTER_MANAGE_GATEWAY =
+      new ResourcePermission(CLUSTER, MANAGE, GATEWAY);
 
   private ResourcePermissions() {}
 }

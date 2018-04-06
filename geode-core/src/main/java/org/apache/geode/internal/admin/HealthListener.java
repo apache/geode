@@ -32,6 +32,6 @@ public interface HealthListener {
    * @param member The member whose health has changed
    * @param status the new health status
    */
-  public void healthChanged(GemFireVM member, GemFireHealth.Health status);
+  void healthChanged(GemFireVM member, GemFireHealth.Health status);
 
 }

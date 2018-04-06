@@ -13,16 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM apachegeode/geode-build
+FROM openjdk:8
 ENTRYPOINT []
 
 # apt prerequisites for installing docker and gcloud
+RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+RUN apt-key adv --keyserver hkp://pgp.mit.edu --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 RUN apt-get update
 RUN apt-get install -y apt-transport-https ca-certificates aptitude lsb-release jq unzip vim htop golang cgroupfs-mount
-RUN apt-key adv --keyserver hkp://pgp.mit.edu --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-
-# Setup APT repostories
 ADD docker.list /etc/apt/sources.list.d/
 RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 
@@ -45,6 +43,10 @@ RUN go build -o /usr/local/bin/tini-wrapper ./tini-wrapper.go
 # Init script for docker inside our workers
 ADD ./initdocker /usr/local/bin/initdocker
 RUN chmod +x /usr/local/bin/initdocker
+
+# Install dunit-process
+RUN curl -Lo /usr/local/bin/dunit-progress https://github.com/jdeppe-pivotal/progress-util/releases/download/0.2/progress.linux
+RUN chmod +x /usr/local/bin/dunit-progress
 
 # Cache gradle for performance
 ENV GRADLE_USER_HOME /usr/local/maven_files

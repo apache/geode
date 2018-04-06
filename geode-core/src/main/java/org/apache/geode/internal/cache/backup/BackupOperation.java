@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -34,11 +34,11 @@ import org.apache.geode.internal.logging.LogService;
 abstract class BackupOperation implements BackupResultCollector {
   private static final Logger logger = LogService.getLogger();
 
-  private final DM dm;
+  private final DistributionManager dm;
   private final Map<DistributedMember, Set<PersistentID>> results =
       Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
 
-  protected BackupOperation(DM dm) {
+  protected BackupOperation(DistributionManager dm) {
     this.dm = dm;
   }
 
@@ -79,7 +79,7 @@ abstract class BackupOperation implements BackupResultCollector {
     return this.results;
   }
 
-  protected DM getDistributionManager() {
+  protected DistributionManager getDistributionManager() {
     return this.dm;
   }
 }

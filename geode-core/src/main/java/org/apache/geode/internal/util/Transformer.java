@@ -27,5 +27,5 @@ public interface Transformer<T1, T2> {
    * @param t the data to be transferred from.
    * @return the transformed data.
    */
-  public T2 transform(T1 t);
+  T2 transform(T1 t);
 }

@@ -1594,8 +1594,6 @@ public class LocalizedStrings {
   public static final StringId ServerConnection_0_HANDSHAKE_ACCEPT_FAILED_ON_SOCKET_1_2 =
       new StringId(1988, "{0}: Handshake accept failed on socket {1}: {2}");
 
-  public static final StringId ServerConnection_0_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE_1 =
-      new StringId(1991, "{0}: Received Unknown handshake reply code: {1}");
   public static final StringId ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE =
       new StringId(1992, "Received Unknown handshake reply code.");
   public static final StringId ServerConnection_0_UNEXPECTED_CANCELLATION =
@@ -1942,7 +1940,7 @@ public class LocalizedStrings {
   public static final StringId AbstractDistributionConfig_UNKNOWN_LOCATOR_HOST_0 =
       new StringId(2177, "Unknown locator host:  {0}");
 
-  public static final StringId AbstractLRURegionMap_UNKNOWN_EVICTION_ACTION_0 =
+  public static final StringId UNKNOWN_EVICTION_ACTION_0 =
       new StringId(2179, "Unknown eviction action:  {0}");
   public static final StringId AbstractPoolCache_ABSTRACTPOOLEDCACHEGETPOOLEDCONNECTIONFROMPOOLLOGIN_TIMEOUT_EXCEEDED =
       new StringId(2180,
@@ -6649,7 +6647,7 @@ public class LocalizedStrings {
       new StringId(5028, "Error deserializing values");
   public static final StringId DistributedRegion_INITIALIZED_FROM_DISK = new StringId(5030,
       "Region {0} recovered from the local disk. Old persistent ID: {1}, new persistent ID {2}");
-  public static final StringId BackupManager_README = new StringId(5031,
+  public static final StringId BackupService_README = new StringId(5031,
       "This directory contains a backup of the persistent data for a single gemfire VM. The layout is:\n\ndiskstores\n\tA backup of the persistent disk stores in the VM\nuser\n\tAny files specified by the backup element in the cache.xml file.\nconfig\n\tThe cache.xml and gemfire.properties for the backed up member.\nrestore.[sh|bat]\n\tA script to restore the backup.\n\nPlease note that the config is not restored, only the diskstores and user files.");
   public static final StringId PartitionedRegion_MULTIPLE_TARGET_NODE_FOUND_FOR =
       new StringId(5032, "Multiple target nodes found for single hop operation");
@@ -7713,6 +7711,8 @@ public class LocalizedStrings {
       new StringId(6664, "{0}: Providing synchronization event for key={1}; timestamp={2}: {3}");
   public static final StringId AbstractGatewaySender_ENQUEUEING_SYNCHRONIZATION_EVENT =
       new StringId(6665, "{0}: Enqueueing synchronization event: {1}");
+  public static final StringId PoolImpl_CACHE_MUST_BE_CREATED_BEFORE_CREATING_POOL =
+      new StringId(6666, "Cache must be created before creating pool");
 
   /** Testing strings, messageId 90000-99999 **/
 

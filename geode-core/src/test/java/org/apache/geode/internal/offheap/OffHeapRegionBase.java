@@ -688,7 +688,7 @@ public abstract class OffHeapRegionBase {
           .setCompressor(null).create("region1");
       assertEquals(true, r.containsKey(key));
       MemoryAllocatorImpl mai = MemoryAllocatorImpl.getAllocator();
-      List<OffHeapStoredObject> orphans = mai.getLostChunks();
+      List<OffHeapStoredObject> orphans = mai.getLostChunks(gfc);
       if (orphans.size() > 0) {
         fail("expected no orphan detected, but gets orphan size " + orphans.size());
       }

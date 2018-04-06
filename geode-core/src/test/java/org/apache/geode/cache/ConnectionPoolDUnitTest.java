@@ -14,8 +14,13 @@
  */
 package org.apache.geode.cache;
 
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.junit.runners.MethodSorters.*;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -49,7 +54,7 @@ import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.cache30.TestCacheLoader;
 import org.apache.geode.cache30.TestCacheWriter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -906,9 +911,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     List l = InternalDistributedSystem.getExistingSystems();
     if (l.size() > 1) {
       getSystem().getLogWriter().info("validateDS: size=" + l.size() + " isDedicatedAdminVM="
-          + DistributionManager.isDedicatedAdminVM() + " l=" + l);
+          + ClusterDistributionManager.isDedicatedAdminVM() + " l=" + l);
     }
-    assertFalse(DistributionManager.isDedicatedAdminVM());
+    assertFalse(ClusterDistributionManager.isDedicatedAdminVM());
     assertEquals(1, l.size());
   }
 
@@ -1433,12 +1438,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               return excuse;
             }
           };
-          try {
-            Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-          } catch (AssertionError e) {
-            // dumpStack();
-            throw e;
-          }
+          Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
 
           assertTrue(stats.getLoadConditioningConnect() > baselineLifetimeConnect);
           assertTrue(stats.getLoadConditioningDisconnect() > baselineLifetimeDisconnect);

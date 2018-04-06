@@ -24,539 +24,539 @@ public interface DMStats {
   /**
    * Returns the total number of messages sent by the distribution manager
    */
-  public long getSentMessages();
+  long getSentMessages();
 
   /**
    * Increments the total number of messages sent by the distribution manager
    */
-  public void incSentMessages(long messages);
+  void incSentMessages(long messages);
 
-  public void incTOSentMsg();
+  void incTOSentMsg();
 
   /**
    * Returns the total number of transaction commit messages sent by the distribution manager
    */
-  public long getSentCommitMessages();
+  long getSentCommitMessages();
 
   /**
    * Increments the total number of transaction commit messages sent by the distribution manager
    */
-  public void incSentCommitMessages(long messages);
+  void incSentCommitMessages(long messages);
 
   /**
    * Returns the total number commits that had to wait for an ack before completion.
    */
-  public long getCommitWaits();
+  long getCommitWaits();
 
   /**
    * Increments the number of commit waits by one.
    */
-  public void incCommitWaits();
+  void incCommitWaits();
 
   /**
    * Returns the total number of nanoseconds spent sending messages.
    */
-  public long getSentMessagesTime();
+  long getSentMessagesTime();
 
   /**
    * Increments the total number of nanoseconds spent sending messages.
    */
-  public void incSentMessagesTime(long nanos);
+  void incSentMessagesTime(long nanos);
 
   /**
    * Returns the total number of messages broadcast by the distribution manager
    */
-  public long getBroadcastMessages();
+  long getBroadcastMessages();
 
   /**
    * Increments the total number of messages broadcast by the distribution manager
    */
-  public void incBroadcastMessages(long messages);
+  void incBroadcastMessages(long messages);
 
   /**
    * Returns the total number of nanoseconds spent sending messages.
    */
-  public long getBroadcastMessagesTime();
+  long getBroadcastMessagesTime();
 
   /**
    * Increments the total number of nanoseconds spend sending messages.
    */
-  public void incBroadcastMessagesTime(long nanos);
+  void incBroadcastMessagesTime(long nanos);
 
   /**
    * Returns the total number of messages received by the distribution manager
    */
-  public long getReceivedMessages();
+  long getReceivedMessages();
 
   /**
    * Increments the total number of messages received by the distribution manager
    */
-  public void incReceivedMessages(long messages);
+  void incReceivedMessages(long messages);
 
   /**
    * Returns the total number of message bytes received by the distribution manager
    */
-  public long getReceivedBytes();
+  long getReceivedBytes();
 
   /**
    * Increments the total number of message bytes received by the distribution manager
    */
-  public void incReceivedBytes(long bytes);
+  void incReceivedBytes(long bytes);
 
   /**
    * Increments the total number of message bytes sent by the distribution manager
    */
-  public void incSentBytes(long bytes);
+  void incSentBytes(long bytes);
 
   /**
    * Returns the total number of messages processed by the distribution manager
    */
-  public long getProcessedMessages();
+  long getProcessedMessages();
 
   /**
    * Increments the total number of messages processed by the distribution manager
    */
-  public void incProcessedMessages(long messages);
+  void incProcessedMessages(long messages);
 
   /**
    * Returns the total number of nanoseconds spent processing messages.
    */
-  public long getProcessedMessagesTime();
+  long getProcessedMessagesTime();
 
   /**
    * Increments the total number of nanoseconds spent processing messages.
    */
-  public void incProcessedMessagesTime(long nanos);
+  void incProcessedMessagesTime(long nanos);
 
   /**
    * Returns the total number of nanoseconds spent scheduling messages to be processed.
    */
-  public long getMessageProcessingScheduleTime();
+  long getMessageProcessingScheduleTime();
 
-  public void incBatchSendTime(long start);
+  void incBatchSendTime(long start);
 
-  public void incBatchCopyTime(long start);
+  void incBatchCopyTime(long start);
 
-  public void incBatchWaitTime(long start);
+  void incBatchWaitTime(long start);
 
-  public void incBatchFlushTime(long start);
+  void incBatchFlushTime(long start);
 
   /**
    * Increments the total number of nanoseconds spent scheduling messages to be processed.
    */
-  public void incMessageProcessingScheduleTime(long nanos);
+  void incMessageProcessingScheduleTime(long nanos);
 
-  public int getOverflowQueueSize();
+  int getOverflowQueueSize();
 
-  public void incOverflowQueueSize(int messages);
+  void incOverflowQueueSize(int messages);
 
-  public int getNumProcessingThreads();
+  int getNumProcessingThreads();
 
-  public void incNumProcessingThreads(int threads);
+  void incNumProcessingThreads(int threads);
 
-  public int getNumSerialThreads();
+  int getNumSerialThreads();
 
-  public void incNumSerialThreads(int threads);
+  void incNumSerialThreads(int threads);
 
-  public void incMessageChannelTime(long val);
+  void incMessageChannelTime(long val);
 
-  public void incUDPDispatchRequestTime(long val);
+  void incUDPDispatchRequestTime(long val);
 
-  public long getUDPDispatchRequestTime();
+  long getUDPDispatchRequestTime();
 
-  public long getReplyMessageTime();
+  long getReplyMessageTime();
 
-  public void incReplyMessageTime(long val);
+  void incReplyMessageTime(long val);
 
-  public long getDistributeMessageTime();
+  long getDistributeMessageTime();
 
-  public void incDistributeMessageTime(long val);
+  void incDistributeMessageTime(long val);
 
-  public long startSocketWrite(boolean sync);
+  long startSocketWrite(boolean sync);
 
-  public void endSocketWrite(boolean sync, long start, int bytesWritten, int retries);
+  void endSocketWrite(boolean sync, long start, int bytesWritten, int retries);
 
   /**
    * increments the number of unicast writes performed and the number of bytes written
    *
    * @since GemFire 5.0
    */
-  public void incUcastWriteBytes(int bytesWritten);
+  void incUcastWriteBytes(int bytesWritten);
 
   /**
    * increment the number of unicast datagram payload bytes received and the number of unicast reads
    * performed
    */
-  public void incUcastReadBytes(int amount);
+  void incUcastReadBytes(int amount);
 
   /**
    * increment the number of multicast datagrams sent and the number of multicast bytes transmitted
    */
-  public void incMcastWriteBytes(int bytesWritten);
+  void incMcastWriteBytes(int bytesWritten);
 
   /**
    * increment the number of multicast datagram payload bytes received, and the number of mcast
    * messages read
    */
-  public void incMcastReadBytes(int amount);
+  void incMcastReadBytes(int amount);
 
   /**
    * returns the current value of the mcastWrites statistic
    */
-  public int getMcastWrites();
+  int getMcastWrites();
 
-  public int getMcastReads();
+  int getMcastReads();
 
-  public long startSerialization();
+  long startSerialization();
 
-  public void endSerialization(long start, int bytes);
+  void endSerialization(long start, int bytes);
 
-  public long startDeserialization();
+  long startDeserialization();
 
-  public void endDeserialization(long start, int bytes);
+  void endDeserialization(long start, int bytes);
 
-  public long startMsgSerialization();
+  long startMsgSerialization();
 
-  public void endMsgSerialization(long start);
+  void endMsgSerialization(long start);
 
-  public long startUDPMsgEncryption();
+  long startUDPMsgEncryption();
 
-  public void endUDPMsgEncryption(long start);
+  void endUDPMsgEncryption(long start);
 
-  public long startUDPMsgDecryption();
+  long startUDPMsgDecryption();
 
-  public void endUDPMsgDecryption(long start);
+  void endUDPMsgDecryption(long start);
 
-  public long startMsgDeserialization();
+  long startMsgDeserialization();
 
-  public void endMsgDeserialization(long start);
+  void endMsgDeserialization(long start);
 
-  public long getUDPMsgEncryptionTiime();
+  long getUDPMsgEncryptionTiime();
 
-  public long getUDPMsgDecryptionTime();
+  long getUDPMsgDecryptionTime();
 
-  public int getNodes();
+  int getNodes();
 
-  public void setNodes(int val);
+  void setNodes(int val);
 
-  public void incNodes(int val);
+  void incNodes(int val);
 
-  public int getReplyWaitsInProgress();
+  int getReplyWaitsInProgress();
 
-  public int getReplyWaitsCompleted();
+  int getReplyWaitsCompleted();
 
-  public long getReplyWaitTime();
+  long getReplyWaitTime();
 
   /**
    * @return the timestamp that marks the start of the operation
    */
-  public long startReplyWait();
+  long startReplyWait();
 
   /**
    * @param startNanos the timestamp taken when the operation started
    * @param initTime the time the operation begain (before msg transmission)
    */
-  public void endReplyWait(long startNanos, long initTime);
+  void endReplyWait(long startNanos, long initTime);
 
   /**
    * Increments the number of message replies that have timed out
    *
    * @since GemFire 3.5
    */
-  public void incReplyTimeouts();
+  void incReplyTimeouts();
 
   /**
    * Returns the number of message replies that have timed out
    *
    * @since GemFire 3.5
    */
-  public long getReplyTimeouts();
+  long getReplyTimeouts();
 
   /**
    * @since GemFire 4.1
    */
-  public void incReceivers();
+  void incReceivers();
 
   /**
    * @since GemFire 4.1
    */
-  public void decReceivers();
+  void decReceivers();
 
   /**
    * @since GemFire 4.1
    */
-  public void incFailedAccept();
+  void incFailedAccept();
 
   /**
    * @since GemFire 4.1
    */
-  public void incFailedConnect();
+  void incFailedConnect();
 
   /**
    * @since GemFire 4.1.1
    */
-  public void incReconnectAttempts();
+  void incReconnectAttempts();
 
   /**
    * @since GemFire 4.1
    */
-  public void incLostLease();
+  void incLostLease();
 
   /**
    * @since GemFire 4.1
    */
-  public void incSenders(boolean shared, boolean preserveOrder);
+  void incSenders(boolean shared, boolean preserveOrder);
 
   /**
    * @since GemFire 4.1
    */
-  public void decSenders(boolean shared, boolean preserveOrder);
+  void decSenders(boolean shared, boolean preserveOrder);
 
   /**
    * @since GemFire 4.1
    */
-  public int getSendersSU();
+  int getSendersSU();
 
   /**
    * increment the number of unicast UDP retransmission requests received from other processes
    *
    * @since GemFire 5.0
    */
-  public void incUcastRetransmits();
+  void incUcastRetransmits();
 
   /**
    * increment the number of multicast UDP retransmissions sent to other processes
    *
    * @since GemFire 5.0
    */
-  public void incMcastRetransmits();
+  void incMcastRetransmits();
 
   /**
    * returns the current number of multicast retransmission requests processed
    */
-  public int getMcastRetransmits();
+  int getMcastRetransmits();
 
   /**
    * increment the number of multicast UDP retransmission requests sent to other processes
    *
    * @since GemFire 5.0
    */
-  public void incMcastRetransmitRequests();
+  void incMcastRetransmitRequests();
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncSocketWritesInProgress();
+  int getAsyncSocketWritesInProgress();
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncSocketWrites();
+  int getAsyncSocketWrites();
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncSocketWriteRetries();
+  int getAsyncSocketWriteRetries();
 
   /**
    * @since GemFire 4.2.2
    */
-  public long getAsyncSocketWriteBytes();
+  long getAsyncSocketWriteBytes();
 
   /**
    * @since GemFire 4.2.2
    */
-  public long getAsyncSocketWriteTime();
+  long getAsyncSocketWriteTime();
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncQueues();
+  int getAsyncQueues();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncQueues(int inc);
+  void incAsyncQueues(int inc);
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncQueueFlushesInProgress();
+  int getAsyncQueueFlushesInProgress();
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncQueueFlushesCompleted();
+  int getAsyncQueueFlushesCompleted();
 
   /**
    * @since GemFire 4.2.2
    */
-  public long getAsyncQueueFlushTime();
+  long getAsyncQueueFlushTime();
 
   /**
    * @since GemFire 4.2.2
    */
-  public long startAsyncQueueFlush();
+  long startAsyncQueueFlush();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void endAsyncQueueFlush(long start);
+  void endAsyncQueueFlush(long start);
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncQueueTimeouts();
+  int getAsyncQueueTimeouts();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncQueueTimeouts(int inc);
+  void incAsyncQueueTimeouts(int inc);
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncQueueSizeExceeded();
+  int getAsyncQueueSizeExceeded();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncQueueSizeExceeded(int inc);
+  void incAsyncQueueSizeExceeded(int inc);
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncDistributionTimeoutExceeded();
+  int getAsyncDistributionTimeoutExceeded();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncDistributionTimeoutExceeded();
+  void incAsyncDistributionTimeoutExceeded();
 
   /**
    * @since GemFire 4.2.2
    */
-  public long getAsyncQueueSize();
+  long getAsyncQueueSize();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncQueueSize(long inc);
+  void incAsyncQueueSize(long inc);
 
   /**
    * @since GemFire 4.2.2
    */
-  public long getAsyncQueuedMsgs();
+  long getAsyncQueuedMsgs();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncQueuedMsgs();
+  void incAsyncQueuedMsgs();
 
   /**
    * @since GemFire 4.2.2
    */
-  public long getAsyncDequeuedMsgs();
+  long getAsyncDequeuedMsgs();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncDequeuedMsgs();
+  void incAsyncDequeuedMsgs();
 
   /**
    * @since GemFire 4.2.2
    */
-  public long getAsyncConflatedMsgs();
+  long getAsyncConflatedMsgs();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncConflatedMsgs();
+  void incAsyncConflatedMsgs();
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncThreads();
+  int getAsyncThreads();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncThreads(int inc);
+  void incAsyncThreads(int inc);
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncThreadInProgress();
+  int getAsyncThreadInProgress();
 
   /**
    * @since GemFire 4.2.2
    */
-  public int getAsyncThreadCompleted();
+  int getAsyncThreadCompleted();
 
   /**
    * @since GemFire 4.2.2
    */
-  public long getAsyncThreadTime();
+  long getAsyncThreadTime();
 
   /**
    * @since GemFire 4.2.2
    */
-  public long startAsyncThread();
+  long startAsyncThread();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void endAsyncThread(long start);
+  void endAsyncThread(long start);
 
   /**
    * @since GemFire 4.2.2
    */
-  public long getAsyncQueueAddTime();
+  long getAsyncQueueAddTime();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncQueueAddTime(long inc);
+  void incAsyncQueueAddTime(long inc);
 
   /**
    * @since GemFire 4.2.2
    */
-  public long getAsyncQueueRemoveTime();
+  long getAsyncQueueRemoveTime();
 
   /**
    * @since GemFire 4.2.2
    */
-  public void incAsyncQueueRemoveTime(long inc);
+  void incAsyncQueueRemoveTime(long inc);
 
   /**
    * @since GemFire 5.0.2.4
    */
-  public void incReceiverBufferSize(int inc, boolean direct);
+  void incReceiverBufferSize(int inc, boolean direct);
 
   /**
    * @since GemFire 5.0.2.4
    */
-  public void incSenderBufferSize(int inc, boolean direct);
+  void incSenderBufferSize(int inc, boolean direct);
 
   /**
    * @since GemFire 5.0.2.4
    */
-  public long startSocketLock();
+  long startSocketLock();
 
   /**
    * @since GemFire 5.0.2.4
    */
-  public void endSocketLock(long start);
+  void endSocketLock(long start);
 
   /**
    * @since GemFire 5.0.2.4
    */
-  public long startBufferAcquire();
+  long startBufferAcquire();
 
   /**
    * @since GemFire 5.0.2.4
    */
-  public void endBufferAcquire(long start);
+  void endBufferAcquire(long start);
 
   /**
    * increment/decrement the number of thread-owned receivers with the given domino count
@@ -564,7 +564,7 @@ public interface DMStats {
    * @param value
    * @param dominoCount thread-owned connection chain count
    */
-  public void incThreadOwnedReceivers(long value, int dominoCount);
+  void incThreadOwnedReceivers(long value, int dominoCount);
 
   /**
    * Called when a new message is received.
@@ -574,7 +574,7 @@ public interface DMStats {
    * @param bytes the number of bytes read, so far, for the message being received.
    * @since GemFire 5.0.2
    */
-  public void incMessagesBeingReceived(boolean newMsg, int bytes);
+  void incMessagesBeingReceived(boolean newMsg, int bytes);
 
   /**
    * Called when we finish processing a received message.
@@ -582,108 +582,108 @@ public interface DMStats {
    * @param bytes the number of bytes read off the wire for the message we have finished with.
    * @since GemFire 5.0.2
    */
-  public void decMessagesBeingReceived(int bytes);
+  void decMessagesBeingReceived(int bytes);
 
-  public void incReplyHandOffTime(long start);
+  void incReplyHandOffTime(long start);
 
   /**
    * Returns 1 if the system elder is this member, else returns 0.
    *
    * @return 1 if the system elder is this member, else returns 0
    */
-  public int getElders();
+  int getElders();
 
-  public void incElders(int val);
+  void incElders(int val);
 
   /**
    * Returns the number of initial image reply messages sent from this member which have not yet
    * been acked.
    */
-  public int getInitialImageMessagesInFlight();
+  int getInitialImageMessagesInFlight();
 
-  public void incInitialImageMessagesInFlight(int val);
+  void incInitialImageMessagesInFlight(int val);
 
   /**
    * Returns the number of initial images this member is currently requesting.
    */
-  public int getInitialImageRequestsInProgress();
+  int getInitialImageRequestsInProgress();
 
-  public void incInitialImageRequestsInProgress(int val);
+  void incInitialImageRequestsInProgress(int val);
 
-  public void incPdxSerialization(int bytesWritten);
+  void incPdxSerialization(int bytesWritten);
 
-  public void incPdxDeserialization(int i);
+  void incPdxDeserialization(int i);
 
-  public long startPdxInstanceDeserialization();
+  long startPdxInstanceDeserialization();
 
-  public void endPdxInstanceDeserialization(long start);
+  void endPdxInstanceDeserialization(long start);
 
-  public void incPdxInstanceCreations();
+  void incPdxInstanceCreations();
 
   // Stats for GMSHealthMonitor
-  public long getHeartbeatRequestsSent();
+  long getHeartbeatRequestsSent();
 
-  public void incHeartbeatRequestsSent();
+  void incHeartbeatRequestsSent();
 
-  public long getHeartbeatRequestsReceived();
+  long getHeartbeatRequestsReceived();
 
-  public void incHeartbeatRequestsReceived();
+  void incHeartbeatRequestsReceived();
 
-  public long getHeartbeatsSent();
+  long getHeartbeatsSent();
 
-  public void incHeartbeatsSent();
+  void incHeartbeatsSent();
 
-  public long getHeartbeatsReceived();
+  long getHeartbeatsReceived();
 
-  public void incHeartbeatsReceived();
-
-
-  public long getSuspectsSent();
-
-  public void incSuspectsSent();
-
-  public long getSuspectsReceived();
-
-  public void incSuspectsReceived();
+  void incHeartbeatsReceived();
 
 
-  public long getFinalCheckRequestsSent();
+  long getSuspectsSent();
 
-  public void incFinalCheckRequestsSent();
+  void incSuspectsSent();
 
-  public long getFinalCheckRequestsReceived();
+  long getSuspectsReceived();
 
-  public void incFinalCheckRequestsReceived();
-
-  public long getFinalCheckResponsesSent();
-
-  public void incFinalCheckResponsesSent();
-
-  public long getFinalCheckResponsesReceived();
-
-  public void incFinalCheckResponsesReceived();
+  void incSuspectsReceived();
 
 
-  public long getTcpFinalCheckRequestsSent();
+  long getFinalCheckRequestsSent();
 
-  public void incTcpFinalCheckRequestsSent();
+  void incFinalCheckRequestsSent();
 
-  public long getTcpFinalCheckRequestsReceived();
+  long getFinalCheckRequestsReceived();
 
-  public void incTcpFinalCheckRequestsReceived();
+  void incFinalCheckRequestsReceived();
 
-  public long getTcpFinalCheckResponsesSent();
+  long getFinalCheckResponsesSent();
 
-  public void incTcpFinalCheckResponsesSent();
+  void incFinalCheckResponsesSent();
 
-  public long getTcpFinalCheckResponsesReceived();
+  long getFinalCheckResponsesReceived();
 
-  public void incTcpFinalCheckResponsesReceived();
+  void incFinalCheckResponsesReceived();
 
 
-  public long getUdpFinalCheckRequestsSent();
+  long getTcpFinalCheckRequestsSent();
 
-  public void incUdpFinalCheckRequestsSent();
+  void incTcpFinalCheckRequestsSent();
+
+  long getTcpFinalCheckRequestsReceived();
+
+  void incTcpFinalCheckRequestsReceived();
+
+  long getTcpFinalCheckResponsesSent();
+
+  void incTcpFinalCheckResponsesSent();
+
+  long getTcpFinalCheckResponsesReceived();
+
+  void incTcpFinalCheckResponsesReceived();
+
+
+  long getUdpFinalCheckRequestsSent();
+
+  void incUdpFinalCheckRequestsSent();
 
   // UDP final check is implemented using HeartbeatRequestMessage and HeartbeatMessage
   // So the following code is commented out.
@@ -696,7 +696,7 @@ public interface DMStats {
   //
   // public void incUdpFinalCheckResponsesSent();
 
-  public long getUdpFinalCheckResponsesReceived();
+  long getUdpFinalCheckResponsesReceived();
 
-  public void incUdpFinalCheckResponsesReceived();
+  void incUdpFinalCheckResponsesReceived();
 }

@@ -43,8 +43,10 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -62,6 +64,10 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class BackupIntegrationTest {
 
   private static final String DISK_STORE_NAME = "diskStore";
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
   private GemFireCacheImpl cache = null;
   private File tmpDir;
   private File cacheXmlFile;
@@ -81,8 +87,7 @@ public class BackupIntegrationTest {
     if (tmpDir == null) {
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, "");
-      String tmpDirName = System.getProperty("java.io.tmpdir");
-      tmpDir = new File(tmpDirName == null ? "" : tmpDirName);
+      tmpDir = temporaryFolder.newFolder("temp");
       try {
         URL url = BackupIntegrationTest.class.getResource("BackupIntegrationTest.cache.xml");
         cacheXmlFile = new File(url.toURI().getPath());
@@ -186,10 +191,10 @@ public class BackupIntegrationTest {
       assertNull(region.get(i));
     }
 
-    BackupManager backup =
-        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareForBackup();
-    backup.doBackup(backupDir, null, false);
+    BackupService backup = cache.getBackupService();
+    BackupWriter writer = getBackupWriter();
+    backup.prepareBackup(cache.getMyId(), writer);
+    backup.doBackup();
 
     // Put another key to make sure we restore
     // from a backup that doesn't contain this key
@@ -235,12 +240,18 @@ public class BackupIntegrationTest {
   public void testBackupEmptyDiskStore() throws Exception {
     createDiskStore();
 
-    BackupManager backup =
-        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareForBackup();
-    backup.doBackup(backupDir, null, false);
+    BackupService backup = cache.getBackupService();
+    BackupWriter writer = getBackupWriter();
+    backup.prepareBackup(cache.getMyId(), writer);
+    backup.doBackup();
     assertEquals("No backup files should have been created", Collections.emptyList(),
         Arrays.asList(backupDir.list()));
+  }
+
+  private BackupWriter getBackupWriter() {
+    Properties backupProperties = BackupUtil.createBackupProperties(backupDir.toString(), null);
+    return BackupWriterFactory.FILE_SYSTEM.createWriter(backupProperties,
+        cache.getMyId().toString());
   }
 
   @Test
@@ -251,10 +262,9 @@ public class BackupIntegrationTest {
     // from a backup that doesn't contain this key
     region.put("A", "A");
 
-    BackupManager backup =
-        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareForBackup();
-    backup.doBackup(backupDir, null, false);
+    BackupService backup = cache.getBackupService();
+    backup.prepareBackup(cache.getMyId(), getBackupWriter());
+    backup.doBackup();
 
 
     assertEquals("No backup files should have been created", Collections.emptyList(),
@@ -279,14 +289,12 @@ public class BackupIntegrationTest {
       region.put(i, getBytes(i));
     }
 
-    BackupManager backupManager =
-        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backupManager.validateRequestingAdmin();
-    backupManager.prepareForBackup();
+    BackupService backupService = cache.getBackupService();
+    backupService.prepareBackup(cache.getMyId(), getBackupWriter());
     final Region theRegion = region;
     final DiskStore theDiskStore = ds;
     CompletableFuture.runAsync(() -> destroyAndCompact(theRegion, theDiskStore));
-    backupManager.doBackup(backupDir, null, false);
+    backupService.doBackup();
 
     cache.close();
     destroyDiskDirs();
@@ -314,10 +322,9 @@ public class BackupIntegrationTest {
     createDiskStore();
     createRegion();
 
-    BackupManager backup =
-        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareForBackup();
-    backup.doBackup(backupDir, null, false);
+    BackupService backupService = cache.getBackupService();
+    backupService.prepareBackup(cache.getMyId(), getBackupWriter());
+    backupService.doBackup();
     Collection<File> fileCollection = FileUtils.listFiles(backupDir,
         new RegexFileFilter("BackupIntegrationTest.cache.xml"), DirectoryFileFilter.DIRECTORY);
     assertEquals(1, fileCollection.size());

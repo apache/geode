@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.logging.log4j.Logger;
@@ -37,6 +36,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -92,8 +92,8 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     // gets the remaining
     // bucket
     Set<Region> targetRs = new HashSet<Region>();
-    for (LocalRegion pr : sender.getCache().getApplicationRegions()) {
-      if (pr.getAllGatewaySenderIds().contains(sender.getId())) {
+    for (InternalRegion pr : sender.getCache().getApplicationRegions()) {
+      if (((LocalRegion) pr).getAllGatewaySenderIds().contains(sender.getId())) {
         targetRs.add(pr);
       }
     }
@@ -242,8 +242,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       }
     } catch (InterruptedException e) {
       throw new InternalGemFireException(e);
-    } catch (RejectedExecutionException rejectedExecutionEx) {
-      throw rejectedExecutionEx;
     }
 
     stopperService.shutdown();

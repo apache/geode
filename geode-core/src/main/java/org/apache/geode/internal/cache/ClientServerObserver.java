@@ -28,69 +28,69 @@ public interface ClientServerObserver {
   /**
    * This callback is called when now primary Ep is identified.
    */
-  public void afterPrimaryIdentificationFromBackup(ServerLocation location);
+  void afterPrimaryIdentificationFromBackup(ServerLocation location);
 
   /**
    * This callback is called just before interest registartion
    */
-  public void beforeInterestRegistration();
+  void beforeInterestRegistration();
 
   /**
    * This callback is called just after interest registartion
    */
-  public void afterInterestRegistration();
+  void afterInterestRegistration();
 
   /**
    * This callback is called just before primary identification
    */
-  public void beforePrimaryIdentificationFromBackup();
+  void beforePrimaryIdentificationFromBackup();
 
   /**
    * This callback is called just before Interest Recovery by DSM thread happens
    */
-  public void beforeInterestRecovery();
+  void beforeInterestRecovery();
 
   /**
    * Invoked by CacheClientUpdater just before invoking endpointDied for fail over
    *
    * @param location ServerLocation which has failed
    */
-  public void beforeFailoverByCacheClientUpdater(ServerLocation location);
+  void beforeFailoverByCacheClientUpdater(ServerLocation location);
 
   /**
    * Invoked before sending an instantiator message to server
    *
    * @param eventId
    */
-  public void beforeSendingToServer(EventID eventId);
+  void beforeSendingToServer(EventID eventId);
 
   /**
    * Invoked after sending an instantiator message to server
    *
    * @param eventId
    */
-  public void afterReceivingFromServer(EventID eventId);
+  void afterReceivingFromServer(EventID eventId);
 
   /**
    * This callback is called just before sending client ack to the primary servrer.
    */
-  public void beforeSendingClientAck();
+  void beforeSendingClientAck();
 
   /**
    * Invoked after Message is created
    *
    * @param msg
    */
-  public void afterMessageCreation(Message msg);
+  void afterMessageCreation(Message msg);
 
   /**
    * Invoked after Queue Destroy Message has been sent
    */
-  public void afterQueueDestroyMessage();
+  void afterQueueDestroyMessage();
 
   /**
    * Invoked after a primary is recovered from a backup or new connection.
    */
-  public void afterPrimaryRecovered(ServerLocation location);
+  void afterPrimaryRecovered(ServerLocation location);
 
 }

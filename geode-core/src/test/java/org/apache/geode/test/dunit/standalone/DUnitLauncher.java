@@ -62,7 +62,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
@@ -96,8 +95,19 @@ public class DUnitLauncher {
 
   static int locatorPort;
 
+  /**
+   * Number of VMs to use during initialization.
+   */
   public static final int NUM_VMS = 4;
+
+  /**
+   * VM ID for the VM to use for the debugger.
+   */
   private static final int DEBUGGING_VM_NUM = -1;
+
+  /**
+   * VM ID for the VM to use for the locator.
+   */
   private static final int LOCATOR_VM_NUM = -2;
 
   static final long STARTUP_TIMEOUT = 120 * 1000;
@@ -484,12 +494,17 @@ public class DUnitLauncher {
     }
 
     /**
-     * this will not bounce VM to a different version. It will only get the current running VM or
-     * launch a new one if not already launched.
+     * Retrieves one of this host's VMs based on the specified VM ID. This will not bounce VM to a
+     * different version. It will only get the current running VM or launch a new one if not already
+     * launched.
+     *
+     * @param n ID of the requested VM; a value of <code>-1</code> will return the controller VM,
+     *        which may be useful for debugging.
+     * @return VM for the requested VM ID.
      */
     @Override
     public VM getVM(int n) {
-      if (n < getVMCount()) {
+      if (n < getVMCount() && n != DEBUGGING_VM_NUM) {
         VM current = super.getVM(n);
         return getVM(current.getVersion(), n);
       } else {

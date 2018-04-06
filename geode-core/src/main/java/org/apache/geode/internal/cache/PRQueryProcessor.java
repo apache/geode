@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.lang.Integer.*;
+import static java.lang.Integer.getInteger;
+import static java.lang.Integer.valueOf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -29,7 +30,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -153,28 +153,17 @@ public class PRQueryProcessor {
 
     if (callableTasks != null && !callableTasks.isEmpty()) {
       List futures = null;
-      try {
-        futures = execService.invokeAll(callableTasks, 300, TimeUnit.SECONDS);
-      } catch (RejectedExecutionException rejectedExecutionEx) {
-        throw rejectedExecutionEx;
-      }
+      futures = execService.invokeAll(callableTasks, 300, TimeUnit.SECONDS);
 
       if (futures != null) {
         Iterator itr = futures.iterator();
         while (itr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
-          // this._prds.partitionedRegion.checkReadiness();
           Future fut = (Future) itr.next();
           QueryTask.BucketQueryResult bqr = null;
 
           try {
             bqr = (QueryTask.BucketQueryResult) fut.get(BUCKET_QUERY_TIMEOUT, TimeUnit.SECONDS);
-            // if (retry.booleanValue()) {
-            // reattemptNeeded = true;
-            // fre = (ForceReattemptException)bqr.getException();
-            // } else {
-            bqr.handleAndThrowException(); // handles an exception if there was one,
-            // otherwise, the results have already been added to the resultQueue
-            // }
+            bqr.handleAndThrowException();
             if (bqr.retry) {
               reattemptNeeded = true;
             }
@@ -225,7 +214,7 @@ public class PRQueryProcessor {
   private void doBucketQuery(final Integer bId, final PartitionedRegionDataStore prds,
       final DefaultQuery query, final Object[] params, final PRQueryResultCollector rq)
       throws QueryException, ForceReattemptException, InterruptedException {
-    final BucketRegion bukRegion = (BucketRegion) prds.localBucket2RegionMap.get(bId);
+    final BucketRegion bukRegion = (BucketRegion) prds.getLocalBucket2RegionMap().get(bId);
     final PartitionedRegion pr = prds.getPartitionedRegion();
     try {
       pr.checkReadiness();

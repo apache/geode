@@ -75,7 +75,7 @@ public interface BucketOperator {
    * Wait for any pending asynchronous operations that this thread submitted earlier to complete.
    * Currently only createRedundantBucket may be asynchronous.
    */
-  public void waitForOperations();
+  void waitForOperations();
 
   /**
    * Callbacks for asnychonous operations. These methods will be invoked when an ansynchronous
@@ -85,9 +85,9 @@ public interface BucketOperator {
    *
    * They will be completed when createRedundantBucket or waitForOperations is called.
    */
-  public interface Completion {
-    public void onSuccess();
+  interface Completion {
+    void onSuccess();
 
-    public void onFailure();
+    void onFailure();
   }
 }

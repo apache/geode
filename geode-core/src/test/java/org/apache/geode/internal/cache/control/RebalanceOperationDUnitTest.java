@@ -1029,8 +1029,6 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         GemFireCacheImpl cache = spy(getGemfireCache());
-        // set the spied cache instance
-        GemFireCacheImpl origCache = GemFireCacheImpl.setInstanceForTests(cache);
 
         PartitionedRegion origRegion = (PartitionedRegion) cache.getRegion("region1");
         PartitionedRegion spyRegion = spy(origRegion);
@@ -1043,6 +1041,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
         doReturn(parRegions).when(cache).getPartitionedRegions();
         doReturn(redundancyProvider).when(spyRegion).getRedundancyProvider();
+
 
         // simulate create bucket fails on member2 and test if it creates on member3
         doReturn(false).when(redundancyProvider).createBackupBucketOnMember(anyInt(),
@@ -1097,9 +1096,6 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
         assertEquals(results.getTotalBucketCreatesCompleted(),
             stats.getRebalanceBucketCreatesCompleted());
         assertEquals(1, stats.getRebalanceBucketCreatesFailed());
-
-        // set the original cache
-        GemFireCacheImpl.setInstanceForTests(origCache);
       }
     });
 

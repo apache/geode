@@ -84,7 +84,7 @@ public class ConcurrentDeployDUnitTest {
   }
 
   public static void loopThroughDeployAndUndeploys(File jar1) throws Exception {
-    int numTimesToExecute = 500;
+    int numTimesToExecute = 50;
     String command;
 
     for (int i = 1; i <= numTimesToExecute; i++) {

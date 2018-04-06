@@ -182,22 +182,26 @@ alter disk-store --name=DiskStore1 --region=region1 --disk-dirs=/Disks/DiskStore
 
 Alters the configuration of a region.
 
+See [Specifying JSON within Command-Line Options](../json_in_gfsh.html)
+for syntax details.
+
 **Availability:** Online. You must be connected in <span class="keyword parmname">gfsh</span> to a JMX Manager member to use this command.
 
 **Syntax:**
 
 ``` pre
 alter region --name=value [--groups=value(,value)*]
-    [--entry-idle-time-expiration(=value)?]
+    [--entry-idle-time-expiration=value]
     [--entry-idle-time-expiration-action(=value)?]
-    [--entry-time-to-live-expiration(=value)?]
+    [--entry-time-to-live-expiration=value]
     [--entry-time-to-live-expiration-action(=value)?]
-    [--region-idle-time-expiration(=value)?]
+    [--entry-idle-time-custom-expiry=value] [--entry-time-to-live-custom-expiry=value]
+    [--region-idle-time-expiration=value]
     [--region-idle-time-expiration-action(=value)?]
-    [--region-time-to-live-expiration(=value)?]
+    [--region-time-to-live-expiration=value]
     [--region-time-to-live-expiration-action(=value)?]
-    [--cache-listener=value(,value)*] [--cache-loader(=value)?]
-    [--cache-writer(=value)?] [--async-event-queue-id=value(,value)*]
+    [--cache-listener=value(,value)*] [--cache-loader=value]
+    [--cache-writer=value] [--async-event-queue-id=value(,value)*]
     [--gateway-sender-id=value(,value)*] [--enable-cloning(=value)?]
     [--eviction-max(=value)?]
 ```
@@ -225,17 +229,17 @@ alter region --name=value [--groups=value(,value)*]
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-cache-listener</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured.</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td> </td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-cache-loader</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined.</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td></td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-cache-writer</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td></td>
 </tr>
 <tr class="odd">
@@ -308,6 +312,16 @@ Select one of the following expiration actions:
 </table>
 </div></td>
 <td><code class="ph codeph">invalidate</code></td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">\-\-entry-idle-time-custom-expiry</span></td>
+<td>The name of a class implementing CustomExpiry for entry idle time. Append a JSON string for initialization properties.</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">\-\-entry-time-to-live-custom-expiry</span></td>
+<td>The name of a class implementing CustomExpiry for entry time to live. Append a JSON string for initialization properties.</td>
+<td></td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-eviction-max</span></td>

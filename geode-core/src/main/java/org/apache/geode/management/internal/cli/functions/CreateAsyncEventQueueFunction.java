@@ -25,7 +25,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
@@ -33,8 +32,8 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -45,7 +44,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  *
  * @since GemFire 8.0
  */
-public class CreateAsyncEventQueueFunction implements Function, InternalEntity {
+public class CreateAsyncEventQueueFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
@@ -106,7 +105,8 @@ public class CreateAsyncEventQueueFunction implements Function, InternalEntity {
               "Listener properties were provided, but the listener specified does not implement Declarable.");
         }
 
-        ((Declarable) listenerInstance).init(listenerProperties);
+        ((Declarable) listenerInstance).initialize(cache, listenerProperties);
+        ((Declarable) listenerInstance).init(listenerProperties); // for backwards compatibility
 
         Map<Declarable, Properties> declarablesMap = new HashMap<Declarable, Properties>();
         declarablesMap.put((Declarable) listenerInstance, listenerProperties);
@@ -139,6 +139,6 @@ public class CreateAsyncEventQueueFunction implements Function, InternalEntity {
 
   @Override
   public String getId() {
-    return CreateDiskStoreFunction.class.getName();
+    return CreateAsyncEventQueueFunction.class.getName();
   }
 }

@@ -565,7 +565,9 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
                 .toLocalizedString(),
             ioe);
       }
-      EventID.system = sys;
+      if (((InternalDistributedMember) EventID.systemMemberId).getPort() != 0) {
+        EventID.system = sys;
+      }
     }
     return EventID.client_side_event_identity;
 

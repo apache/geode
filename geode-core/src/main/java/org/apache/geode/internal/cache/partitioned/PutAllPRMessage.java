@@ -34,7 +34,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -313,7 +313,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
    * indefinitely for the acknowledgement
    */
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws EntryExistsException, ForceReattemptException, DataLocationException {
     boolean sendReply = true;
 
@@ -342,8 +342,8 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
     @Retained
     EntryEventImpl ev = EntryEventImpl.create(r, putAllPRData[0].getOp(), putAllPRData[0].getKey(),
-        putAllPRData[0].getValue(), this.callbackArg, false /* originRemote */, getSender(),
-        true/* generate Callbacks */, putAllPRData[0].getEventID());
+        putAllPRData[0].getValue(r.getCache()), this.callbackArg, false /* originRemote */,
+        getSender(), true/* generate Callbacks */, putAllPRData[0].getEventID());
     return ev;
   }
 
@@ -493,7 +493,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
                   fre.setHash(ev.getKey().hashCode());
                   throw fre;
                 } else {
-                  succeeded.put(putAllPRData[i].getKey(), putAllPRData[i].getValue());
+                  succeeded.put(putAllPRData[i].getKey(), putAllPRData[i].getValue(r.getCache()));
                   this.versions.addKeyAndVersion(putAllPRData[i].getKey(), ev.getVersionTag());
                 }
               } finally {
@@ -582,18 +582,18 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     // eventSender,
     // true/* generate Callbacks */,
     // prd.getEventID());
+    Object prdValue = prd.getValue(r.getCache());
 
     @Retained
-    EntryEventImpl ev = EntryEventImpl.create(r, prd.getOp(), prd.getKey(), prd.getValue(), null,
-        false, eventSender, !skipCallbacks, prd.getEventID());
+    EntryEventImpl ev = EntryEventImpl.create(r, prd.getOp(), prd.getKey(), prdValue, null, false,
+        eventSender, !skipCallbacks, prd.getEventID());
     boolean evReturned = false;
     try {
 
-      if (prd.getValue() == null
-          && ev.getRegion().getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
+      if (prdValue == null && ev.getRegion().getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
         ev.setLocalInvalid(true);
       }
-      ev.setNewValue(prd.getValue());
+      ev.setNewValue(prdValue);
       ev.setOldValue(prd.getOldValue());
       if (bridgeContext != null) {
         ev.setContext(bridgeContext);
@@ -629,8 +629,8 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
   // override reply message type from PartitionMessage
   @Override
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      PartitionedRegion pr, long startTime) {
+  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, PartitionedRegion pr, long startTime) {
     // if (!result && getOperation().isCreate()) {
     // System.err.println("DEBUG: put returning false. ifNew=" + ifNew
     // +" ifOld="+ifOld + " message=" + this);
@@ -673,7 +673,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
     return _mayAddToMultipleSerialGateways(dm);
   }
 
@@ -751,7 +751,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 rp) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
       if (rp == null) {
         if (logger.isTraceEnabled(LogMarker.DM)) {
@@ -829,11 +829,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
      * @throws CacheException if the peer generates an error
      */
     public PutAllResult waitForResult() throws CacheException, ForceReattemptException {
-      try {
-        waitForCacheException();
-      } catch (ForceReattemptException e) {
-        throw e;
-      }
+      waitForCacheException();
       return new PutAllResult(this.returnValue, this.versions);
     }
   }

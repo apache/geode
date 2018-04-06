@@ -82,10 +82,10 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
@@ -138,26 +138,59 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * serialization.
    */
   private static final Map<String, DataSerializer> classesToSerializers = new ConcurrentHashMap<>();
+
+
+  /**
+   * This list contains classes that Geode's classes subclass, such as antlr AST classes which
+   * are used by our Object Query Language. It also contains certain
+   * classes that are DataSerializable but end up being serialized as part of other serializable
+   * objects. VersionedObjectList, for instance, is serialized as part of a
+   * partial putAll exception object.
+   * <p>
+   * Do not java-serialize objects that Geode does not have complete control over. This
+   * leaves us open to security attacks such as Gadget Chains and compromises the ability
+   * to do a rolling upgrade from one version of Geode to the next.
+   * <p>
+   * In general you shouldn't use java serialization and you should implement
+   * DataSerializableFixedID
+   * for internal Geode objects. This gives you better control over backward-compatibility.
+   * <p>
+   * Do not add to this list unless absolutely necessary. Instead put your classes either
+   * in the sanctionedSerializables file for your module or in its excludedClasses file.
+   * Run AnalyzeSerializables to generate the content for the file.
+   * <p>
+   */
   private static final String SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN =
       "java.**;javax.management.**" + ";javax.print.attribute.EnumSyntax" // used for some old enums
           + ";antlr.**" // query AST objects
-          + ";org.apache.commons.modeler.AttributeInfo" // old Admin API
-          + ";org.apache.commons.modeler.FeatureInfo" // old Admin API
-          + ";org.apache.commons.modeler.ManagedBean" // old Admin API
-          + ";org.apache.geode.distributed.internal.DistributionConfigSnapshot" // old Admin API
-          + ";org.apache.geode.distributed.internal.RuntimeDistributionConfigImpl" // old Admin API
-          + ";org.apache.geode.distributed.internal.DistributionConfigImpl" // old Admin API
-          + ";org.apache.geode.distributed.internal.membership.InternalDistributedMember" // RegionSnapshotService
-                                                                                          // function
-                                                                                          // WindowedExportFunction
+
+          // old Admin API
+          + ";org.apache.commons.modeler.AttributeInfo" + ";org.apache.commons.modeler.FeatureInfo"
+          + ";org.apache.commons.modeler.ManagedBean"
+          + ";org.apache.geode.distributed.internal.DistributionConfigSnapshot"
+          + ";org.apache.geode.distributed.internal.RuntimeDistributionConfigImpl"
+          + ";org.apache.geode.distributed.internal.DistributionConfigImpl"
+
+          // WindowedExportFunction, RegionSnapshotService
+          + ";org.apache.geode.distributed.internal.membership.InternalDistributedMember"
+          // putAll
           + ";org.apache.geode.internal.cache.persistence.PersistentMemberID" // putAll
           + ";org.apache.geode.internal.cache.persistence.DiskStoreID" // putAll
           + ";org.apache.geode.internal.cache.tier.sockets.VersionedObjectList" // putAll
-          + ";org.apache.shiro.*;org.apache.shiro.authz.*;org.apache.shiro.authc.*" // security
-                                                                                    // services
-          + ";org.apache.geode.modules.util.SessionCustomExpiry" // geode-modules
-          + ";com.healthmarketscience.rmiio.*;com.sun.proxy.*" // Jar deployment
-          + ";";
+
+          // security services
+          + ";org.apache.shiro.*;org.apache.shiro.authz.*;org.apache.shiro.authc.*"
+
+          // export logs
+          + ";org.apache.logging.log4j.Level" + ";org.apache.logging.log4j.spi.StandardLevel"
+
+          // jar deployment
+          + ";com.sun.proxy.$Proxy*" + ";com.healthmarketscience.rmiio.RemoteInputStream"
+
+          + ";org.apache.geode.connectors.jdbc.internal.**" // TODO - remove this! See GEODE-4752
+
+          // geode-modules
+          + ";org.apache.geode.modules.util.SessionCustomExpiry" + ";";
 
 
   private static InputStreamFilter defaultSerializationFilter = new EmptyInputStreamFilter();
@@ -231,9 +264,10 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       Collection<DistributedSystemService> services) {
     logger.info("initializing InternalDataSerializer with {} services", services.size());
     if (distributionConfig.getValidateSerializableObjects()) {
-      if (!ClassUtils.isClassAvailable("sun.misc.ObjectInputFilter")) {
+      if (!ClassUtils.isClassAvailable("sun.misc.ObjectInputFilter")
+          && !ClassUtils.isClassAvailable("java.io.ObjectInputFilter")) {
         throw new GemFireConfigException(
-            "A serialization filter has been specified but this version of Java does not support serialization filters - sun.misc.ObjectInputFilter is not available");
+            "A serialization filter has been specified but this version of Java does not support serialization filters - ObjectInputFilter is not available");
       }
       serializationFilter =
           new ObjectInputStreamFilterWrapper(SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN
@@ -1702,13 +1736,12 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
 
   /**
-   * Test to see if the object is in the gemfire package, to see if we should pass it on to a users
+   * Test to see if the object is in the gemfire package, to see if we should pass it on to a user's
    * custom serializater.
    */
-  private static boolean isGemfireObject(Object o) {
+  static boolean isGemfireObject(Object o) {
     return (o instanceof Function // fixes 43691
-        || o.getClass().getName().startsWith("org.apache.")
-        || o.getClass().getName().startsWith("org.apache.geode"))
+        || o.getClass().getName().startsWith("org.apache.geode."))
         && !(o instanceof PdxSerializerObject);
   }
 
@@ -3375,7 +3408,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       if (CacheClientNotifier.getInstance() != null) {
         // This is a server so we need to send the dataserializer to clients
         // right away. For that we need to load the class as the constructor of

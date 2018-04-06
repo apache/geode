@@ -14,10 +14,12 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.NO_AVAILABLE_SERVER;
+
+import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.NO_AVAILABLE_SERVER;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
@@ -26,24 +28,22 @@ import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.Failure;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.Result;
-import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.state.ConnectionTerminatingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
 
 @Experimental
 public class GetServerOperationHandler
     implements ProtobufOperationHandler<LocatorAPI.GetServerRequest, LocatorAPI.GetServerResponse> {
 
   @Override
-  public Result<LocatorAPI.GetServerResponse, ClientProtocol.ErrorResponse> process(
+  public Result<LocatorAPI.GetServerResponse> process(
       ProtobufSerializationService serializationService, LocatorAPI.GetServerRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
@@ -57,7 +57,8 @@ public class GetServerOperationHandler
     // note: an empty string is okay - the ServerLocator code checks for this
     String serverGroup = request.getServerGroup();
 
-    messageExecutionContext.setConnectionStateProcessor(new ConnectionTerminatingStateProcessor());
+    messageExecutionContext
+        .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
     InternalLocator internalLocator = (InternalLocator) messageExecutionContext.getLocator();
 
     // In order to ensure that proper checks are performed on the request we will use
@@ -69,14 +70,17 @@ public class GetServerOperationHandler
         .getServerLocatorAdvisee().processRequest(clientConnectionRequest);
 
     ServerLocation serverLocation = null;
-    if (connectionResponse != null) {
+    if (connectionResponse != null && connectionResponse.hasResult()) {
       serverLocation = connectionResponse.getServer();
     }
 
     if (serverLocation == null) {
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(NO_AVAILABLE_SERVER,
-          "Unable to find a server for you"));
-
+      StringBuilder builder = new StringBuilder("Unable to find a server");
+      if (!Objects.isNull(serverGroup) && !serverGroup.isEmpty()) {
+        builder.append(" in server group ");
+        builder.append(serverGroup);
+      }
+      return Failure.of(NO_AVAILABLE_SERVER, builder.toString());
     } else {
       LocatorAPI.GetServerResponse.Builder builder = LocatorAPI.GetServerResponse.newBuilder();
       BasicTypes.Server.Builder serverBuilder = BasicTypes.Server.newBuilder();

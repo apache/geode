@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.admin.DistributedSystemHealthConfig;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -47,7 +47,7 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
   /**
    * The distribution manager with which this MembershipListener is registered
    */
-  private DM dm;
+  private DistributionManager dm;
 
   /** The description of the distributed system being evaluated */
   private String description;
@@ -62,7 +62,7 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
   /**
    * Creates a new <code>DistributedSystemHealthEvaluator</code>
    */
-  DistributedSystemHealthEvaluator(DistributedSystemHealthConfig config, DM dm) {
+  DistributedSystemHealthEvaluator(DistributedSystemHealthConfig config, DistributionManager dm) {
     super(null, dm);
 
     this.config = config;
@@ -73,8 +73,8 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     sb.append("Distributed System ");
 
     String desc = null;
-    if (dm instanceof DistributionManager) {
-      desc = ((DistributionManager) dm).getDistributionConfigDescription();
+    if (dm instanceof ClusterDistributionManager) {
+      desc = ((ClusterDistributionManager) dm).getDistributionConfigDescription();
     }
 
     if (desc != null) {
@@ -135,21 +135,23 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     this.dm.removeMembershipListener(this);
   }
 
-  public void memberJoined(InternalDistributedMember id) {
+  public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
 
   }
 
   /**
    * Keeps track of which members depart unexpectedly
    */
-  public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+  @Override
+  public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
+      boolean crashed) {
     if (!crashed)
       return;
     synchronized (this) {
       int kind = id.getVmKind();
       switch (kind) {
-        case DistributionManager.LOCATOR_DM_TYPE:
-        case DistributionManager.NORMAL_DM_TYPE:
+        case ClusterDistributionManager.LOCATOR_DM_TYPE:
+        case ClusterDistributionManager.NORMAL_DM_TYPE:
           this.crashedApplications++;
           break;
         default:
@@ -158,10 +160,10 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     } // synchronized
   }
 
-  public void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining) {}
+  public void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-      String reason) {}
+  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {}
 
 }

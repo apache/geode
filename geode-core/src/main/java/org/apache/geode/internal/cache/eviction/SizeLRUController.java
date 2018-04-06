@@ -15,34 +15,61 @@
 package org.apache.geode.internal.cache.eviction;
 
 import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.Region;
+import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.size.Sizeable;
 
 abstract class SizeLRUController extends AbstractEvictionController {
 
-  private ObjectSizer sizer;
+  private int perEntryOverhead;
 
-  SizeLRUController(EvictionAction evictionAction, Region region, ObjectSizer sizer) {
-    super(evictionAction, region);
+  private final ObjectSizer sizer;
+
+  SizeLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction,
+      ObjectSizer sizer, EvictionAlgorithm algorithm) {
+    super(evictionCounters, evictionAction, algorithm);
     this.sizer = sizer;
+  }
+
+  public int getPerEntryOverhead() {
+    return perEntryOverhead;
+  }
+
+  @Override
+  public void setPerEntryOverhead(int entryOverhead) {
+    this.perEntryOverhead = entryOverhead;
   }
 
   /**
    * Return the size of an object as stored in GemFire. Typically this is the serialized size in
-   * bytes. This implementation is slow. Need to add Sizer interface and call it for customer
-   * objects.
+   * bytes.
    */
-  int sizeof(Object object) throws IllegalArgumentException {
-    return MemoryLRUController.basicSizeof(object, this.sizer);
-  }
+  int sizeof(Object object) {
+    final boolean cdChangingForm = object instanceof CachedDeserializableValueWrapper;
+    if (cdChangingForm) {
+      object = ((CachedDeserializableValueWrapper) object).getValue();
+    }
+    if (object == null || object == Token.INVALID || object == Token.LOCAL_INVALID
+        || object == Token.DESTROYED || object == Token.TOMBSTONE) {
+      return 0;
+    }
 
-  /**
-   * Sets the {@link ObjectSizer} used to calculate the size of objects placed in the cache.
-   *
-   * @param sizer The name of the sizer class
-   */
-  void setSizer(ObjectSizer sizer) {
-    this.sizer = sizer;
+    int size;
+    // Shouldn't we defer to the user's object sizer for these things?
+    if (object instanceof byte[] || object instanceof String) {
+      size = ObjectSizer.DEFAULT.sizeof(object);
+    } else if (object instanceof Sizeable) {
+      size = ((Sizeable) object).getSizeInBytes();
+    } else if (this.sizer != null) {
+      size = this.sizer.sizeof(object);
+    } else {
+      size = ObjectSizer.DEFAULT.sizeof(object);
+    }
+    if (cdChangingForm) {
+      size += CachedDeserializableFactory.overhead();
+    }
+    return size;
   }
-
 }

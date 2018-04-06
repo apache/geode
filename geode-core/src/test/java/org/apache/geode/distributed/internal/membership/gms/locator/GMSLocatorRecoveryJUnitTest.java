@@ -39,9 +39,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
@@ -166,7 +166,7 @@ public class GMSLocatorRecoveryJUnitTest {
       nonDefault.put(BIND_ADDRESS, localHost.getHostAddress());
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport =
-          new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+          new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
       // start the first membership manager
       DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
@@ -193,4 +193,27 @@ public class GMSLocatorRecoveryJUnitTest {
       }
     }
   }
+
+  @Test
+  public void testViewFileFoundWhenUserDirModified() throws Exception {
+    NetView view = new NetView();
+    populateStateFile(this.tempStateFile, GMSLocator.LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL,
+        view);
+
+    String userDir = System.getProperty("user.dir");
+    try {
+      File dir = new File("testViewFileFoundWhenUserDirModified");
+      dir.mkdir();
+      System.setProperty("user.dir", dir.getAbsolutePath());
+      File viewFileInNewDirectory = new File(tempStateFile.getName());
+      // GEODE-4180 - file in parent dir still seen with relative path
+      assertTrue(viewFileInNewDirectory.exists());
+      File locatorViewFile = locator.setViewFile(viewFileInNewDirectory);
+      assertFalse(locator.recoverFromFile(locatorViewFile));
+    } finally {
+      System.setProperty("user.dir", userDir);
+    }
+  }
+
+
 }

@@ -19,15 +19,20 @@ import java.util.Properties;
 
 import org.apache.shiro.authc.UsernamePasswordToken;
 
-import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.AuthInitialize;
 
 public class GeodeAuthenticationToken extends UsernamePasswordToken {
 
   Properties properties;
 
+  // in case security-username or security-password is not present in the properties, empty string
+  // is used to avoid a NPE in shiro
   public GeodeAuthenticationToken(Properties properties) {
-    super(properties.getProperty(ResourceConstants.USER_NAME),
-        properties.getProperty(ResourceConstants.PASSWORD));
+    super(
+        properties.getProperty(AuthInitialize.SECURITY_USERNAME) == null ? ""
+            : properties.getProperty(AuthInitialize.SECURITY_USERNAME),
+        properties.getProperty(AuthInitialize.SECURITY_PASSWORD) == null ? ""
+            : properties.getProperty(AuthInitialize.SECURITY_PASSWORD));
     this.properties = properties;
   }
 

@@ -36,7 +36,7 @@ import org.apache.geode.cache.lucene.internal.partition.BucketTargetingResolver;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.partition.PartitionListener;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -90,7 +90,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     // create PR fileAndChunkRegion, but not to create its buckets for now
     final String fileRegionName = createFileRegionName();
     PartitionAttributes partitionAttributes = dataRegion.getPartitionAttributes();
-    DM dm = this.cache.getInternalDistributedSystem().getDistributionManager();
+    DistributionManager dm = this.cache.getInternalDistributedSystem().getDistributionManager();
     LuceneBucketListener lucenePrimaryBucketListener =
         new LuceneBucketListener(partitionedRepositoryManager, dm);
 
@@ -211,7 +211,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   private void destroyOnRemoteMembers() {
     PartitionedRegion pr = (PartitionedRegion) getDataRegion();
-    DM dm = pr.getDistributionManager();
+    DistributionManager dm = pr.getDistributionManager();
     Set<InternalDistributedMember> recipients = pr.getRegionAdvisor().adviseAllPRNodes();
     if (!recipients.isEmpty()) {
       if (logger.isDebugEnabled()) {

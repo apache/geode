@@ -32,9 +32,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.domain.RegionInformation;
 import org.apache.geode.management.internal.cli.functions.GetRegionsFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -61,7 +59,7 @@ public class ListRegionCommand implements GfshCommand {
     try {
       Set<RegionInformation> regionInfoSet = new LinkedHashSet<>();
       ResultCollector<?, ?> rc;
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

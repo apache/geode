@@ -15,11 +15,6 @@
 
 package org.apache.geode.internal.admin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
@@ -39,80 +34,79 @@ public interface GemFireVM {
   /**
    * Constant for lightweight cache inspection. Entry values will be returned as Strings.
    */
-  public static final int LIGHTWEIGHT_CACHE_VALUE = 100;
+  int LIGHTWEIGHT_CACHE_VALUE = 100;
 
   /**
    * Constant for logical cache inspection. Entry values will be returned as a tree of
    * {@link EntryValueNode}s, with each node containing its logical elements.
    */
-  public static final int LOGICAL_CACHE_VALUE = 200;
+  int LOGICAL_CACHE_VALUE = 200;
 
   /**
    * Constant for physical cache inspection. Entry values will be returned as a tree of
    * {@link EntryValueNode}s, with each node containing its declared fields.
    */
-  public static final int PHYSICAL_CACHE_VALUE = 300;
+  int PHYSICAL_CACHE_VALUE = 300;
 
   /**
    * Returns the host the vm is running on.
    */
-  public java.net.InetAddress getHost();
+  java.net.InetAddress getHost();
 
   /**
    * Returns the name of the remote system connection.
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns the directory in which the member runs
    *
    * @since GemFire 4.0
    */
-  public java.io.File getWorkingDirectory();
+  java.io.File getWorkingDirectory();
 
   /**
    * Returns the product directory (the value of GEODE_HOME env variable)
    */
-  public java.io.File getGeodeHomeDir();
+  java.io.File getGeodeHomeDir();
 
   /**
    * Returns the time the system was started
    */
-  public java.util.Date getBirthDate();
+  java.util.Date getBirthDate();
 
   /**
    * Returns a String describing the vm's gemfire version info
    *
    * @since GemFire 3.5
    */
-  public String getVersionInfo();
+  String getVersionInfo();
 
   /**
    * Returns all statistic resources except those involving SharedClass
    */
-  public StatResource[] getStats(String statisticsTypeName);
+  StatResource[] getStats(String statisticsTypeName);
 
   /**
    * Returns all statistic resources
    */
-  public StatResource[] getAllStats();
+  StatResource[] getAllStats();
 
   /**
    * Returns a snapshot of the distributed lock services
    */
-  public DLockInfo[] getDistributedLockInfo();
+  DLockInfo[] getDistributedLockInfo();
 
   /**
    * Adds a {@link StatListener} for the given resource and attribute. Changes in value will be
    * streamed back from the vm.
    */
-  public void addStatListener(StatListener observer, StatResource observedResource,
-      Stat observedStat);
+  void addStatListener(StatListener observer, StatResource observedResource, Stat observedStat);
 
   /**
    * Removes {@link StatListener}
    */
-  public void removeStatListener(StatListener observer);
+  void removeStatListener(StatListener observer);
 
   /**
    * Adds a {@link HealthListener} with the given configuration to the vm. If a health listener has
@@ -121,21 +115,21 @@ public interface GemFireVM {
    * @param cfg determines how and when the health will be checked.
    * @since GemFire 3.5
    */
-  public void addHealthListener(HealthListener observer, GemFireHealthConfig cfg);
+  void addHealthListener(HealthListener observer, GemFireHealthConfig cfg);
 
   /**
    * Removes an added health listener.
    *
    * @since GemFire 3.5
    */
-  public void removeHealthListener();
+  void removeHealthListener();
 
   /**
    * Resets the current health status to "good".
    *
    * @since GemFire 3.5
    */
-  public void resetHealthStatus();
+  void resetHealthStatus();
 
   /**
    * Returns detailed information explaining the current health status. Each array element is a
@@ -146,12 +140,12 @@ public interface GemFireVM {
    *
    * @since GemFire 3.5
    */
-  public String[] getHealthDiagnosis(GemFireHealth.Health healthCode);
+  String[] getHealthDiagnosis(GemFireHealth.Health healthCode);
 
   /**
    * Returns the runtime {@link Config} from the vm
    */
-  public Config getConfig();
+  Config getConfig();
 
   /**
    * Returns the runtime {@link org.apache.geode.admin.GemFireMemberStatus} from the vm The idea is
@@ -160,7 +154,7 @@ public interface GemFireVM {
    *
    * @since GemFire 5.7
    */
-  public GemFireMemberStatus getSnapshot();
+  GemFireMemberStatus getSnapshot();
 
   /**
    * Returns the runtime {@link org.apache.geode.admin.RegionSubRegionSnapshot} from the vm The idea
@@ -168,40 +162,40 @@ public interface GemFireVM {
    *
    * @since GemFire 5.7
    */
-  public RegionSubRegionSnapshot getRegionSnapshot();
+  RegionSubRegionSnapshot getRegionSnapshot();
 
   /**
    * Sets the runtime configurable parameters in the gemfire vm's {@link Config}
    */
-  public void setConfig(Config cfg);
+  void setConfig(Config cfg);
 
   /**
    * Returns the locally running agent through which we access the remote vm
    */
-  public GfManagerAgent getManagerAgent();
+  GfManagerAgent getManagerAgent();
 
 
   /**
    * Returns the the main log and the tail of the currently active child log, or just the tail of
    * the main log if child logging is disabled.
    */
-  public String[] getSystemLogs();
+  String[] getSystemLogs();
 
   /**
    * Sets the additional classpath settings to be used in the remote vm when processing admin
    * messages from the console. It can be changed in between messages.
    */
-  public void setInspectionClasspath(String classpath);
+  void setInspectionClasspath(String classpath);
 
   /**
    * Returns classpath info set by {@link GemFireVM#setInspectionClasspath}
    */
-  public String getInspectionClasspath();
+  String getInspectionClasspath();
 
   /**
    * Returns the root cache region or null if the root region hasn't been created.
    */
-  public Region[] getRootRegions();
+  Region[] getRootRegions();
 
   /**
    * Return the existing region (or subregion) with the specified path that already exists or is
@@ -215,7 +209,7 @@ public interface GemFireVM {
    * @throws IllegalArgumentException if path is null, the empty string, or "/"
    * @since GemFire 3.5
    */
-  public Region getRegion(CacheInfo c, String path);
+  Region getRegion(CacheInfo c, String path);
 
   /**
    * Creates a new root VM region with the given name and attributes in this remote VM. Information
@@ -225,8 +219,7 @@ public interface GemFireVM {
    *
    * @since GemFire 4.0
    */
-  public Region createVMRootRegion(CacheInfo c, String name, RegionAttributes attrs)
-      throws AdminException;
+  Region createVMRootRegion(CacheInfo c, String name, RegionAttributes attrs) throws AdminException;
 
   /**
    * Creates a new root VM region with the given name and attributes in this remote VM. Information
@@ -236,7 +229,7 @@ public interface GemFireVM {
    *
    * @since GemFire 4.0
    */
-  public Region createSubregion(CacheInfo c, String parentPath, String name, RegionAttributes attrs)
+  Region createSubregion(CacheInfo c, String parentPath, String name, RegionAttributes attrs)
       throws AdminException;
 
   /**
@@ -245,13 +238,13 @@ public interface GemFireVM {
    *
    * @throws IllegalArgumentException if the type is not one of the appropriate constants
    */
-  public void setCacheInspectionMode(int mode);
+  void setCacheInspectionMode(int mode);
 
   /**
    * Returns one of these constants {@link #LIGHTWEIGHT_CACHE_VALUE}, {@link #LOGICAL_CACHE_VALUE},
    * or {@link #PHYSICAL_CACHE_VALUE}.
    */
-  public int getCacheInspectionMode();
+  int getCacheInspectionMode();
 
   /**
    * Causes a snapshot of the given region to be taken. Results are streamed back to any
@@ -259,7 +252,7 @@ public interface GemFireVM {
    *
    * @param regionName the region to snapshot
    */
-  public void takeRegionSnapshot(String regionName, int snapshotId);
+  void takeRegionSnapshot(String regionName, int snapshotId);
 
   // /**
   // * Clears any results of a snapshot request still waiting to be streamed back
@@ -280,52 +273,52 @@ public interface GemFireVM {
    * The distribution ID if this VM. Its used to identify this VM by members if this VM's
    * distributed system.
    */
-  public InternalDistributedMember getId();
+  InternalDistributedMember getId();
 
   /**
    * Returns information on this vm's cache. If the vm does not have a cache then <code>null</code>
    * is returned.
    */
-  public CacheInfo getCacheInfo();
+  CacheInfo getCacheInfo();
 
   /**
    * Sets the lockTimeout configuration value for the given cache and then returns the current info
    * for that cache.
    */
-  public CacheInfo setCacheLockTimeout(CacheInfo c, int v) throws AdminException;
+  CacheInfo setCacheLockTimeout(CacheInfo c, int v) throws AdminException;
 
   /**
    * Sets the lockLease configuration value for the given cache and then returns the current info
    * for that cache.
    */
-  public CacheInfo setCacheLockLease(CacheInfo c, int v) throws AdminException;
+  CacheInfo setCacheLockLease(CacheInfo c, int v) throws AdminException;
 
   /**
    * Sets the searchTimeout configuration value for the given cache and then returns the current
    * info for that cache.
    */
-  public CacheInfo setCacheSearchTimeout(CacheInfo c, int v) throws AdminException;
+  CacheInfo setCacheSearchTimeout(CacheInfo c, int v) throws AdminException;
 
   /**
    * Adds a bridge server a cache in this VM
    *
    * @since GemFire 4.0
    */
-  public AdminBridgeServer addCacheServer(CacheInfo cache) throws AdminException;
+  AdminBridgeServer addCacheServer(CacheInfo cache) throws AdminException;
 
   /**
    * Returns information about a bridge server that runs in this VM
    *
    * @param id The unique {@link AdminBridgeServer#getId id} of the bridge server
    */
-  public AdminBridgeServer getBridgeInfo(CacheInfo cache, int id) throws AdminException;
+  AdminBridgeServer getBridgeInfo(CacheInfo cache, int id) throws AdminException;
 
   /**
    * Starts a bridge server in this VM
    *
    * @since GemFire 4.0
    */
-  public AdminBridgeServer startBridgeServer(CacheInfo cache, AdminBridgeServer bridge)
+  AdminBridgeServer startBridgeServer(CacheInfo cache, AdminBridgeServer bridge)
       throws AdminException;
 
   /**
@@ -333,7 +326,7 @@ public interface GemFireVM {
    *
    * @since GemFire 4.0
    */
-  public AdminBridgeServer stopBridgeServer(CacheInfo cache, AdminBridgeServer bridge)
+  AdminBridgeServer stopBridgeServer(CacheInfo cache, AdminBridgeServer bridge)
       throws AdminException;
 
   /**
@@ -347,8 +340,7 @@ public interface GemFireVM {
    *
    * @since GemFire 5.7
    */
-  public void setAlertsManager(StatAlertDefinition[] alertDefs, long refreshInterval,
-      boolean setRemotely);
+  void setAlertsManager(StatAlertDefinition[] alertDefs, long refreshInterval, boolean setRemotely);
 
   /**
    * This method would be used to set refresh interval for the GemFireVM. This method would mostly
@@ -358,7 +350,7 @@ public interface GemFireVM {
    *
    * @since GemFire 5.7
    */
-  public void setRefreshInterval(long refreshInterval);
+  void setRefreshInterval(long refreshInterval);
 
   /**
    * This method would be used to set Sta Alert Definitions for the GemFireVM. This method would
@@ -372,5 +364,5 @@ public interface GemFireVM {
    *
    * @since GemFire 5.7
    */
-  public void updateAlertDefinitions(StatAlertDefinition[] alertDefs, int actionCode);
+  void updateAlertDefinitions(StatAlertDefinition[] alertDefs, int actionCode);
 }

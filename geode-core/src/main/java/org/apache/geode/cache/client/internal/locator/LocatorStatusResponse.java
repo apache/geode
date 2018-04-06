@@ -30,6 +30,7 @@ import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.util.ArgumentRedactor;
 
 /**
  * The LocatorStatusResponse class...
@@ -100,8 +101,7 @@ public class LocatorStatusResponse extends ServerLocationResponse {
 
   @SuppressWarnings("unchecked")
   public List<String> getJvmArgs() {
-    return Collections
-        .unmodifiableList(ObjectUtils.defaultIfNull(jvmArgs, Collections.emptyList()));
+    return Collections.unmodifiableList(jvmArgs != null ? jvmArgs : Collections.emptyList());
   }
 
   public Integer getPid() {
@@ -219,7 +219,8 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   protected void writePid(final DataOutput out) throws IOException {
-    out.writeInt(ObjectUtils.defaultIfNull(getPid(), 0));
+    Integer pid = getPid();
+    out.writeInt(pid != null ? pid : (Integer) 0);
   }
 
   protected void writeUptime(final DataOutput out) throws IOException {
@@ -227,7 +228,8 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   protected void writeWorkingDirectory(final DataOutput out) throws IOException {
-    out.writeUTF(ObjectUtils.defaultIfNull(getWorkingDirectory(), ""));
+    String workingDir = getWorkingDirectory();
+    out.writeUTF(workingDir != null ? workingDir : "");
   }
 
   protected void writeJvmArguments(final DataOutput out) throws IOException {
@@ -239,31 +241,38 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   protected void writeClasspath(final DataOutput out) throws IOException {
-    out.writeUTF(ObjectUtils.defaultIfNull(getClasspath(), ""));
+    String classpath = getClasspath();
+    out.writeUTF(classpath != null ? classpath : "");
   }
 
   protected void writeGemFireVersion(final DataOutput out) throws IOException {
-    out.writeUTF(ObjectUtils.defaultIfNull(getGemFireVersion(), ""));
+    String version = getGemFireVersion();
+    out.writeUTF(version != null ? version : "");
   }
 
   protected void writeJavaVersion(final DataOutput out) throws IOException {
-    out.writeUTF(ObjectUtils.defaultIfNull(getJavaVersion(), ""));
+    String version = getJavaVersion();
+    out.writeUTF(version != null ? version : "");
   }
 
   protected void writeLogFile(final DataOutput out) throws IOException {
-    out.writeUTF(ObjectUtils.defaultIfNull(getLogFile(), ""));
+    String log = getLogFile();
+    out.writeUTF(log != null ? log : "");
   }
 
   protected void writeHost(final DataOutput out) throws IOException {
-    out.writeUTF(ObjectUtils.defaultIfNull(getHost(), ""));
+    String host = getHost();
+    out.writeUTF(host != null ? host : "");
   }
 
   protected void writePort(final DataOutput out) throws IOException {
-    out.writeInt(ObjectUtils.defaultIfNull(getPort(), 0));
+    Integer port = getPort();
+    out.writeInt(port != null ? port : (Integer) 0);
   }
 
   protected void writeName(final DataOutput out) throws IOException {
-    out.writeUTF(ObjectUtils.defaultIfNull(getName(), ""));
+    String name = getName();
+    out.writeUTF(name != null ? name : "");
   }
 
   @Override
@@ -306,7 +315,7 @@ public class LocatorStatusResponse extends ServerLocationResponse {
     buffer.append("{ pid = ").append(getPid());
     buffer.append(", uptime = ").append(getUptime());
     buffer.append(", workingDirectory = ").append(getWorkingDirectory());
-    buffer.append(", jvmArgs = ").append(getJvmArgs());
+    buffer.append(", jvmArgs = ").append(ArgumentRedactor.redact(getJvmArgs()));
     buffer.append(", classpath = ").append(getClasspath());
     buffer.append(", gemfireVersion = ").append(getGemFireVersion());
     buffer.append(", javaVersion = ").append(getJavaVersion());

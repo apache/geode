@@ -20,9 +20,9 @@ package org.apache.geode.internal.admin;
  * GemFire system
  */
 public interface JoinLeaveListener extends java.util.EventListener {
-  public void nodeJoined(GfManagerAgent source, GemFireVM joined);
+  void nodeJoined(GfManagerAgent source, GemFireVM joined);
 
-  public void nodeLeft(GfManagerAgent source, GemFireVM left);
+  void nodeLeft(GfManagerAgent source, GemFireVM left);
 
-  public void nodeCrashed(GfManagerAgent source, GemFireVM crashed);
+  void nodeCrashed(GfManagerAgent source, GemFireVM crashed);
 }

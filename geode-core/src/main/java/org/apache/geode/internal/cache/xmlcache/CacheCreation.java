@@ -45,6 +45,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
@@ -96,8 +97,8 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -118,6 +119,7 @@ import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -127,7 +129,7 @@ import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.TXEntryStateFactory;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TombstoneService;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
@@ -195,6 +197,25 @@ public class CacheCreation implements InternalCache {
 
   // Stores the properties used to initialize declarables.
   private final Map<Declarable, Properties> declarablePropertiesMap = new HashMap<>();
+  private final List<DeclarableAndProperties> declarablePropertiesList = new ArrayList<>();
+
+  private static class DeclarableAndProperties {
+    private final Declarable declarable;
+    private final Properties properties;
+
+    public DeclarableAndProperties(Declarable d, Properties p) {
+      declarable = d;
+      properties = p;
+    }
+
+    public Declarable getDeclarable() {
+      return declarable;
+    }
+
+    public Properties getProperties() {
+      return properties;
+    }
+  }
 
   private final Set<GatewaySender> gatewaySenders = new HashSet<>();
 
@@ -416,6 +437,13 @@ public class CacheCreation implements InternalCache {
       throw new IllegalStateException(
           "You must use client-cache in the cache.xml when ClientCacheFactory is used.");
     }
+
+    initializeDeclarablesMap(cache);
+
+    if (hasFunctionService()) {
+      getFunctionServiceCreation().create();
+    }
+
     if (this.hasLockLease()) {
       cache.setLockLease(this.lockLease);
     }
@@ -549,12 +577,28 @@ public class CacheCreation implements InternalCache {
     }
 
     cache.setBackupFiles(this.backups);
-    cache.addDeclarableProperties(this.declarablePropertiesMap);
-    runInitializer();
+
+    runInitializer(cache);
     cache.setInitializer(getInitializer(), getInitializerProps());
 
     // Create all extensions
     this.extensionPoint.fireCreate(cache);
+  }
+
+  public void initializeDeclarablesMap(InternalCache cache) {
+    for (DeclarableAndProperties struct : this.declarablePropertiesList) {
+      Declarable declarable = struct.getDeclarable();
+      Properties properties = struct.getProperties();
+      try {
+        declarable.initialize(cache, properties);
+        declarable.init(properties); // for backwards compatibility
+      } catch (Exception ex) {
+        throw new CacheXmlException(
+            "Exception while initializing an instance of " + declarable.getClass().getName(), ex);
+      }
+      this.declarablePropertiesMap.put(declarable, properties);
+    }
+    cache.addDeclarableProperties(this.declarablePropertiesMap);
   }
 
   void initializeRegions(Map<String, Region<?, ?>> declarativeRegions, Cache cache) {
@@ -640,6 +684,12 @@ public class CacheCreation implements InternalCache {
             ex);
       }
     }
+  }
+
+  void removeCacheServers(List<CacheServer> declarativeCacheServers, Cache cache,
+      Integer serverPort, String serverBindAdd, Boolean disableDefaultServer) {
+
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   /**
@@ -1029,6 +1079,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public boolean removeCacheServer(final CacheServer cacheServer) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
   public void setReadSerializedForCurrentThread(final boolean value) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
@@ -1055,7 +1110,7 @@ public class CacheCreation implements InternalCache {
   }
 
   void addDeclarableProperties(final Declarable declarable, final Properties properties) {
-    this.declarablePropertiesMap.put(declarable, properties);
+    this.declarablePropertiesList.add(new DeclarableAndProperties(declarable, properties));
   }
 
   @Override
@@ -1110,7 +1165,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public Set<LocalRegion> getAllRegions() {
+  public Set<InternalRegion> getAllRegions() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -1180,7 +1235,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public Set<LocalRegion> getApplicationRegions() {
+  public Set<InternalRegion> getApplicationRegions() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -1216,6 +1271,10 @@ public class CacheCreation implements InternalCache {
 
   public void addGatewayReceiver(GatewayReceiver receiver) {
     this.gatewayReceivers.add(receiver);
+  }
+
+  public void removeGatewayReceiver(GatewayReceiver receiver) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public void addAsyncEventQueue(AsyncEventQueue asyncEventQueue) {
@@ -1256,6 +1315,11 @@ public class CacheCreation implements InternalCache {
   @Override
   public Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly) {
     return this.asyncEventQueues;
+  }
+
+  @Override
+  public void closeDiskStores() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
@@ -1414,8 +1478,19 @@ public class CacheCreation implements InternalCache {
     return new PoolFactoryImpl(this.poolManager).setStartDisabled(true);
   }
 
+  private volatile boolean hasFunctionService = false;
+
+  boolean hasFunctionService() {
+    return this.hasFunctionService;
+  }
+
   public void setFunctionServiceCreation(FunctionServiceCreation functionServiceCreation) {
+    this.hasFunctionService = true;
     this.functionServiceCreation = functionServiceCreation;
+  }
+
+  public FunctionServiceCreation getFunctionServiceCreation() {
+    return this.functionServiceCreation;
   }
 
   private volatile boolean hasResourceManager = false;
@@ -1467,7 +1542,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public InternalDistributedSystem getInternalDistributedSystem() {
-    return InternalDistributedSystem.getAnyInstance();
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
@@ -1568,11 +1643,6 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public BackupManager getBackupManager() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
-  }
-
-  @Override
   public void setDeclarativeCacheConfig(final CacheConfig cacheConfig) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
@@ -1654,7 +1724,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public BackupManager startBackup(final InternalDistributedMember sender) throws IOException {
+  public BackupService getBackupService() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -1693,9 +1763,11 @@ public class CacheCreation implements InternalCache {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  void runInitializer() {
-    if (getInitializer() != null) {
-      getInitializer().init(getInitializerProps());
+  void runInitializer(InternalCache cache) {
+    Declarable initializer = getInitializer();
+    if (initializer != null) {
+      initializer.initialize(cache, getInitializerProps());
+      initializer.init(getInitializerProps()); // for backwards compatibility
     }
   }
 
@@ -2046,7 +2118,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2056,7 +2128,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public void setRegionByPath(final String path, final LocalRegion r) {
+  public void setRegionByPath(final String path, final InternalRegion r) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2081,24 +2153,24 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public <K, V> RegionAttributes<K, V> invokeRegionBefore(final LocalRegion parent,
+  public <K, V> RegionAttributes<K, V> invokeRegionBefore(final InternalRegion parent,
       final String name, final RegionAttributes<K, V> attrs,
       final InternalRegionArguments internalRegionArgs) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
-  public void invokeRegionAfter(final LocalRegion region) {
+  public void invokeRegionAfter(final InternalRegion region) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
-  public void invokeBeforeDestroyed(final LocalRegion region) {
+  public void invokeBeforeDestroyed(final InternalRegion region) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
-  public void invokeCleanupFailedInitialization(final LocalRegion region) {
+  public void invokeCleanupFailedInitialization(final InternalRegion region) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2154,7 +2226,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public boolean removeRoot(final LocalRegion rootRgn) {
+  public boolean removeRoot(final InternalRegion rootRgn) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2170,6 +2242,11 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public boolean keepDurableSubscriptionsAlive() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public CacheClosedException getCacheClosedException(final String reason) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2224,11 +2301,6 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public void clearBackupManager() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
-  }
-
-  @Override
   public URL getCacheXmlURL() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
@@ -2245,8 +2317,13 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void invokeRegionEntrySynchronizationListenersAfterSynchronization(
-      InternalDistributedMember sender, LocalRegion region,
+      InternalDistributedMember sender, InternalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public Object convertPdxInstanceIfNeeded(Object obj) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 }

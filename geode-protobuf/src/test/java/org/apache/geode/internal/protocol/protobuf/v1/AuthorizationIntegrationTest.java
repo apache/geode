@@ -15,17 +15,18 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
@@ -41,12 +42,12 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
+import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -56,7 +57,11 @@ public class AuthorizationIntegrationTest {
 
   private static final String TEST_USERNAME = "bob";
   private static final String TEST_PASSWORD = "bobspassword";
-  public static final String TEST_REGION = "testRegion";
+
+  private static final String TEST_REGION1 = "testRegion1";
+  private static final String TEST_REGION2 = "testRegion2";
+  private static final String TEST_KEY1 = "testKey1";
+  private static final String TEST_KEY2 = "testKey2";
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -70,11 +75,47 @@ public class AuthorizationIntegrationTest {
   private InputStream inputStream;
   private ProtobufProtocolSerializer protobufProtocolSerializer;
   private Object securityPrincipal;
-  private SecurityManager mockSecurityManager;
-  public static final ResourcePermission READ_PERMISSION =
-      new ResourcePermission(ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ);
-  public static final ResourcePermission WRITE_PERMISSION =
-      new ResourcePermission(ResourcePermission.Resource.DATA, ResourcePermission.Operation.WRITE);
+  private TestSecurityManager securityManager;
+
+  // Read access to all regions, all keys
+  public static final ResourcePermission READ_PERMISSION = ResourcePermissions.DATA_READ;
+
+  // Write access to all regions, all keys
+  public static final ResourcePermission WRITE_PERMISSION = ResourcePermissions.DATA_WRITE;
+
+  private class TestSecurityManager implements SecurityManager {
+    private Set<ResourcePermission> allowedPermissions = new HashSet<>();
+
+    void addAllowedPermission(ResourcePermission permission) {
+      allowedPermissions.add(permission);
+    }
+
+    @Override
+    public Object authenticate(Properties credentials) throws AuthenticationFailedException {
+      return securityPrincipal;
+    }
+
+    @Override
+    public boolean authorize(Object principal, ResourcePermission permission) {
+      // Only allow data operations and only from the expected principal
+      if (principal != securityPrincipal
+          || permission.getResource() != ResourcePermission.Resource.DATA) {
+        return false;
+      }
+      // Succeed if user has permission for all regions and all keys for the given operation
+      if (allowedPermissions.contains(
+          new ResourcePermission(ResourcePermission.Resource.DATA, permission.getOperation()))) {
+        return true;
+      }
+      // Succeed if user has permission for all keys in the given region for the given operation
+      if (allowedPermissions.contains(new ResourcePermission(ResourcePermission.Resource.DATA,
+          permission.getOperation(), permission.getTarget()))) {
+        return true;
+      }
+
+      return allowedPermissions.contains(permission);
+    }
+  }
 
   @Before
   public void setUp() throws IOException, InvalidProtocolMessageException {
@@ -83,14 +124,13 @@ public class AuthorizationIntegrationTest {
     expectedAuthProperties.setProperty(ResourceConstants.PASSWORD, TEST_PASSWORD);
 
     securityPrincipal = "mockSecurityPrincipal";
-    mockSecurityManager = mock(SecurityManager.class);
-    when(mockSecurityManager.authenticate(expectedAuthProperties)).thenReturn(securityPrincipal);
+    securityManager = new TestSecurityManager();
 
     Properties properties = new Properties();
     CacheFactory cacheFactory = new CacheFactory(properties);
     cacheFactory.set("mcast-port", "0"); // sometimes it isn't due to other tests.
 
-    cacheFactory.setSecurityManager(mockSecurityManager);
+    cacheFactory.setSecurityManager(securityManager);
     cache = cacheFactory.create();
 
     cacheServer = cache.addCacheServer();
@@ -98,7 +138,8 @@ public class AuthorizationIntegrationTest {
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 
-    cache.createRegionFactory().create(TEST_REGION);
+    cache.createRegionFactory().create(TEST_REGION1);
+    cache.createRegionFactory().create(TEST_REGION2);
 
     System.setProperty("geode.feature-protobuf-protocol", "true");
     System.setProperty("geode.protocol-authentication-mode", "SIMPLE");
@@ -111,25 +152,20 @@ public class AuthorizationIntegrationTest {
     serializationService = new ProtobufSerializationService();
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
-    when(mockSecurityManager.authorize(same(securityPrincipal), any())).thenReturn(false);
-
     MessageUtil.performAndVerifyHandshake(socket);
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
-                .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
-                .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
+        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+            .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
+            .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD))
         .build();
     authenticationRequest.writeDelimitedTo(outputStream);
 
     ClientProtocol.Message responseMessage = ClientProtocol.Message.parseDelimitedFrom(inputStream);
-    assertEquals(ClientProtocol.Message.RESPONSE_FIELD_NUMBER,
+    assertEquals(ClientProtocol.Message.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
         responseMessage.getMessageTypeCase().getNumber());
-    assertEquals(ClientProtocol.Response.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
-        responseMessage.getResponse().getResponseAPICase().getNumber());
     ConnectionAPI.AuthenticationResponse authenticationResponse =
-        responseMessage.getResponse().getAuthenticationResponse();
+        responseMessage.getAuthenticationResponse();
     assertTrue(authenticationResponse.getAuthenticated());
   }
 
@@ -142,72 +178,181 @@ public class AuthorizationIntegrationTest {
 
   @Test
   public void validateNoPermissions() throws Exception {
-    when(mockSecurityManager.authorize(securityPrincipal, READ_PERMISSION)).thenReturn(false);
-    when(mockSecurityManager.authorize(securityPrincipal, WRITE_PERMISSION)).thenReturn(false);
-
-    verifyOperations(false, false);
+    verifyLocatorOperation(false);
+    verifyOperations(false, false, TEST_REGION1, TEST_KEY1);
   }
 
   @Test
   public void validateWritePermission() throws Exception {
-    when(mockSecurityManager.authorize(securityPrincipal, READ_PERMISSION)).thenReturn(false);
-    when(mockSecurityManager.authorize(securityPrincipal, WRITE_PERMISSION)).thenReturn(true);
+    securityManager.addAllowedPermission(WRITE_PERMISSION);
 
-    verifyOperations(false, true);
+    verifyLocatorOperation(false);
+    verifyOperations(false, true, TEST_REGION1, TEST_KEY1);
   }
 
   @Test
   public void validateReadPermission() throws Exception {
-    when(mockSecurityManager.authorize(securityPrincipal, READ_PERMISSION)).thenReturn(true);
-    when(mockSecurityManager.authorize(securityPrincipal, WRITE_PERMISSION)).thenReturn(false);
+    securityManager.addAllowedPermission(READ_PERMISSION);
 
-    verifyOperations(true, false);
+    verifyLocatorOperation(true);
+    verifyOperations(true, false, TEST_REGION1, TEST_KEY1);
   }
 
   @Test
   public void validateReadAndWritePermission() throws Exception {
-    when(mockSecurityManager.authorize(securityPrincipal, READ_PERMISSION)).thenReturn(true);
-    when(mockSecurityManager.authorize(securityPrincipal, WRITE_PERMISSION)).thenReturn(true);
+    securityManager.addAllowedPermission(WRITE_PERMISSION);
+    securityManager.addAllowedPermission(READ_PERMISSION);
 
-    verifyOperations(true, true);
+    verifyLocatorOperation(true);
+    verifyOperations(true, true, TEST_REGION1, TEST_KEY1);
   }
 
-  private void verifyOperations(boolean readAllowed, boolean writeAllowed) throws Exception {
-    ClientProtocol.Message getRegionsMessage =
-        ClientProtocol.Message.newBuilder().setRequest(ClientProtocol.Request.newBuilder()
-            .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder())).build();
+  @Test
+  public void validateRegionLevelPermissions() throws Exception {
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.WRITE, TEST_REGION1));
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, TEST_REGION2));
+
+    verifyOperations(false, true, TEST_REGION1, TEST_KEY1);
+    verifyOperations(false, true, TEST_REGION1, TEST_KEY2);
+    verifyOperations(true, false, TEST_REGION2, TEST_KEY1);
+    verifyOperations(true, false, TEST_REGION2, TEST_KEY2);
+  }
+
+  @Test
+  public void validateKeyLevelPermissions() throws Exception {
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.WRITE, TEST_REGION1, TEST_KEY1));
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, TEST_REGION2, TEST_KEY2));
+
+    verifyOperations(false, true, TEST_REGION1, TEST_KEY1);
+    verifyOperations(false, false, TEST_REGION1, TEST_KEY2);
+    verifyOperations(false, false, TEST_REGION2, TEST_KEY1);
+    verifyOperations(true, false, TEST_REGION2, TEST_KEY2);
+  }
+
+  @Test
+  public void validateRegionLevelPermissionsOnBatchOperations() throws Exception {
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.WRITE, TEST_REGION1));
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, TEST_REGION2));
+
+    verifyBatchOperation(true, TEST_REGION1, false, false);
+    verifyBatchOperation(false, TEST_REGION1, true, true);
+    verifyBatchOperation(true, TEST_REGION2, true, true);
+    verifyBatchOperation(false, TEST_REGION2, false, false);
+  }
+
+  @Test
+  public void validateKeyLevelPermissionsOnBatchOperations() throws Exception {
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.WRITE, TEST_REGION1, TEST_KEY1));
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, TEST_REGION2, TEST_KEY2));
+
+    verifyBatchOperation(true, TEST_REGION1, false, false);
+    verifyBatchOperation(false, TEST_REGION1, true, false);
+    verifyBatchOperation(true, TEST_REGION2, false, true);
+    verifyBatchOperation(false, TEST_REGION2, false, false);
+  }
+
+  private void verifyBatchOperation(boolean testRead, String region, boolean expectedKey1Success,
+      boolean expectedKey2Success) throws Exception {
+    ClientProtocol.Message request;
+    if (testRead) {
+      request = ClientProtocol.Message.newBuilder()
+          .setGetAllRequest(RegionAPI.GetAllRequest.newBuilder().setRegionName(region)
+              .addKey(serializationService.encode(TEST_KEY1))
+              .addKey(serializationService.encode(TEST_KEY2)))
+          .build();
+    } else {
+      request = ClientProtocol.Message.newBuilder().setPutAllRequest(RegionAPI.PutAllRequest
+          .newBuilder().setRegionName(region)
+          .addEntry(ProtobufUtilities.createEntry(serializationService, TEST_KEY1, "TEST_VALUE"))
+          .addEntry(ProtobufUtilities.createEntry(serializationService, TEST_KEY2, "TEST_VALUE")))
+          .build();
+    }
+
+    protobufProtocolSerializer.serialize(request, outputStream);
+    ClientProtocol.Message response = protobufProtocolSerializer.deserialize(inputStream);
+    assertNotEquals(ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE,
+        response.getMessageTypeCase());
+
+    List<BasicTypes.KeyedError> keyedErrors =
+        testRead ? response.getGetAllResponse().getFailuresList()
+            : response.getPutAllResponse().getFailedKeysList();
+    String operation = testRead ? "getAll" : "putAll";
+    if (errorListContainsKey(keyedErrors, serializationService.encode(TEST_KEY1))) {
+      if (expectedKey1Success) {
+        fail("Unexpectedly failed " + operation + " operation for key " + TEST_KEY1);
+      }
+    } else if (!expectedKey1Success) {
+      fail("Unexpected success in " + operation + " operation for key " + TEST_KEY1);
+    }
+    if (errorListContainsKey(keyedErrors, serializationService.encode(TEST_KEY2))) {
+      if (expectedKey2Success) {
+        fail("Unexpectedly failed " + operation + " operation for key " + TEST_KEY2);
+      }
+    } else if (!expectedKey2Success) {
+      fail("Unexpected success in " + operation + " operation for key " + TEST_KEY2);
+    }
+  }
+
+  private boolean errorListContainsKey(List<BasicTypes.KeyedError> errors,
+      BasicTypes.EncodedValue key) {
+    for (BasicTypes.KeyedError error : errors) {
+      if (error.getKey().equals(key)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private void verifyLocatorOperation(boolean readAllowed) throws Exception {
+    ClientProtocol.Message getRegionsMessage = ClientProtocol.Message.newBuilder()
+        .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder()).build();
     validateOperationAuthorized(getRegionsMessage, inputStream, outputStream,
-        readAllowed ? ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE
-            : ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE);
+        readAllowed ? ClientProtocol.Message.MessageTypeCase.GETREGIONNAMESRESPONSE
+            : ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE);
+  }
+
+  private void verifyOperations(boolean readAllowed, boolean writeAllowed, String region,
+      String key) throws Exception {
+    ClientProtocol.Message getMessage =
+        ClientProtocol.Message.newBuilder().setGetRequest(RegionAPI.GetRequest.newBuilder()
+            .setRegionName(region).setKey(serializationService.encode(key))).build();
+    validateOperationAuthorized(getMessage, inputStream, outputStream,
+        readAllowed ? ClientProtocol.Message.MessageTypeCase.GETRESPONSE
+            : ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE);
 
     ClientProtocol.Message putMessage = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setPutRequest(RegionAPI.PutRequest.newBuilder().setRegionName(TEST_REGION).setEntry(
-                ProtobufUtilities.createEntry(serializationService, "TEST_KEY", "TEST_VALUE"))))
+        .setPutRequest(RegionAPI.PutRequest.newBuilder().setRegionName(region)
+            .setEntry(ProtobufUtilities.createEntry(serializationService, key, "TEST_VALUE")))
         .build();
     validateOperationAuthorized(putMessage, inputStream, outputStream,
-        writeAllowed ? ClientProtocol.Response.ResponseAPICase.PUTRESPONSE
-            : ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE);
+        writeAllowed ? ClientProtocol.Message.MessageTypeCase.PUTRESPONSE
+            : ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE);
 
-    ClientProtocol.Message removeMessage = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setRemoveRequest(RegionAPI.RemoveRequest.newBuilder().setRegionName(TEST_REGION)
-                .setKey(serializationService.encode("TEST_KEY"))))
-        .build();
+    ClientProtocol.Message removeMessage =
+        ClientProtocol.Message.newBuilder().setRemoveRequest(RegionAPI.RemoveRequest.newBuilder()
+            .setRegionName(region).setKey(serializationService.encode(key))).build();
     validateOperationAuthorized(removeMessage, inputStream, outputStream,
-        writeAllowed ? ClientProtocol.Response.ResponseAPICase.REMOVERESPONSE
-            : ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE);
+        writeAllowed ? ClientProtocol.Message.MessageTypeCase.REMOVERESPONSE
+            : ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE);
   }
 
   private void validateOperationAuthorized(ClientProtocol.Message message, InputStream inputStream,
-      OutputStream outputStream, ClientProtocol.Response.ResponseAPICase expectedResponseType)
+      OutputStream outputStream, ClientProtocol.Message.MessageTypeCase expectedResponseType)
       throws Exception {
     protobufProtocolSerializer.serialize(message, outputStream);
     ClientProtocol.Message response = protobufProtocolSerializer.deserialize(inputStream);
-    assertEquals(expectedResponseType, response.getResponse().getResponseAPICase());
-    if (expectedResponseType == ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE) {
+    assertEquals(expectedResponseType, response.getMessageTypeCase());
+    if (expectedResponseType == ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE) {
       Assert.assertEquals(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
-          response.getResponse().getErrorResponse().getError().getErrorCode());
+          response.getErrorResponse().getError().getErrorCode());
     }
   }
 }

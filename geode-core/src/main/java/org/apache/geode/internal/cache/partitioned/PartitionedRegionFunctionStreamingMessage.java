@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -67,7 +67,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR;
+    return ClusterDistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR;
   }
 
   /**
@@ -75,7 +75,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
    * send the result one by one.
    */
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM,
@@ -121,8 +121,8 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
    * It sends message one by one until it gets lastMessage. Have to handle scenario when message is
    * large, in that case message will be broken into chunks and then sent across.
    */
-  public synchronized boolean sendReplyForOneResult(DM dm, PartitionedRegion pr, long startTime,
-      Object oneResult, boolean lastResult, boolean sendResultsInOrder)
+  public synchronized boolean sendReplyForOneResult(DistributionManager dm, PartitionedRegion pr,
+      long startTime, Object oneResult, boolean lastResult, boolean sendResultsInOrder)
       throws CacheException, ForceReattemptException, InterruptedException {
     if (this.replyLastMsg) {
       return false;
@@ -144,9 +144,9 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
   }
 
 
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      Object result, PartitionedRegion pr, long startTime, int msgNum, boolean lastResult,
-      boolean sendResultsInOrder) {
+  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, Object result, PartitionedRegion pr, long startTime, int msgNum,
+      boolean lastResult, boolean sendResultsInOrder) {
     // if there was an exception, then throw out any data
     if (ex != null) {
       this.result = null;

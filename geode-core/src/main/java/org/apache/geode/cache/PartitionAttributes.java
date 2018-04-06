@@ -18,7 +18,6 @@ package org.apache.geode.cache;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.partition.PartitionListener;
 
 /**
@@ -44,26 +43,12 @@ import org.apache.geode.cache.partition.PartitionListener;
  */
 public interface PartitionAttributes<K, V> {
   /**
-   * returns entryTimeToLive in ExpirationAttributes.
-   *
-   * @return expirationAttributes
-   */
-  // public ExpirationAttributes getEntryTimeToLive();
-
-  /**
-   * returns entryIdleTimeout in ExpirationAttributes.
-   *
-   * @return expirationAttributes
-   */
-  // public ExpirationAttributes getEntryIdleTimeout();
-
-  /**
    * The number of Backups for an entry in PartitionedRegion. This value should be between 0 and 3
    * (for a total of 1 to 4 instances of the data). The default value is 0.
    *
    * @return redundantCopies.
    */
-  public int getRedundantCopies();
+  int getRedundantCopies();
 
   /**
    * This method returns the maximum total size of the region in megabytes.
@@ -72,7 +57,7 @@ public interface PartitionAttributes<K, V> {
    * @return total size in megabytes.
    */
   @Deprecated
-  public long getTotalSize();
+  long getTotalSize();
 
   /**
    * This method returns the maximum total size of the region, in megabytes. Default value is
@@ -83,7 +68,7 @@ public interface PartitionAttributes<K, V> {
    * @deprecated since Geode 1.3.0
    */
   @Deprecated
-  public long getTotalMaxMemory();
+  long getTotalMaxMemory();
 
   /**
    * This method returns total number of buckets for a PartitionedRegion. Default number of buckets
@@ -91,20 +76,20 @@ public interface PartitionAttributes<K, V> {
    *
    * @return total number of buckets for a PartitionedRegion.
    */
-  public int getTotalNumBuckets();
+  int getTotalNumBuckets();
 
   /**
    * This method returns the maximum amount of local memory that can be used by the Region. By
    * default, a PartitionedRegion can contribute 90% of the maximum memory allocated to a VM.
    */
-  public int getLocalMaxMemory();
+  int getLocalMaxMemory();
 
   /**
    * Returns name of the colocated PartitionedRegion's name
    *
    * @since GemFire 6.0
    */
-  public String getColocatedWith();
+  String getColocatedWith();
 
   /**
    * This method returns local properties. There are currently no local properties defined that are
@@ -114,7 +99,7 @@ public interface PartitionAttributes<K, V> {
    * @return localProperties
    */
   @Deprecated
-  public Properties getLocalProperties();
+  Properties getLocalProperties();
 
   /**
    * This method returns global properties. There are currently no global properties defined that
@@ -125,7 +110,7 @@ public interface PartitionAttributes<K, V> {
    * @return globalProperties
    */
   @Deprecated
-  public Properties getGlobalProperties();
+  Properties getGlobalProperties();
 
   /**
    * Returns the PartitionResolver set for custom partitioning
@@ -133,7 +118,7 @@ public interface PartitionAttributes<K, V> {
    * @return <code>PartitionResolver</code> for the PartitionedRegion
    * @since GemFire 6.0
    */
-  public PartitionResolver<K, V> getPartitionResolver();
+  PartitionResolver<K, V> getPartitionResolver();
 
   /**
    * Returns the delay in milliseconds that existing members will wait before satisfying redundancy
@@ -142,7 +127,7 @@ public interface PartitionAttributes<K, V> {
    *
    * @since GemFire 6.0
    */
-  public long getRecoveryDelay();
+  long getRecoveryDelay();
 
   /**
    * Returns the delay in milliseconds that a new member will wait before trying to satisfy
@@ -151,7 +136,7 @@ public interface PartitionAttributes<K, V> {
    *
    * @since GemFire 6.0
    */
-  public long getStartupRecoveryDelay();
+  long getStartupRecoveryDelay();
 
   /**
    * Returns array of PartitionListener{s} configured on this partitioned region
@@ -160,7 +145,7 @@ public interface PartitionAttributes<K, V> {
    * @return PartitionListener configured on this partitioned region
    * @since GemFire 6.5
    */
-  public PartitionListener[] getPartitionListeners();
+  PartitionListener[] getPartitionListeners();
 
   /**
    * Returns <code>FixedPartitionAttributes</code>'s list of local partitions defined on this
@@ -168,6 +153,6 @@ public interface PartitionAttributes<K, V> {
    *
    * @since GemFire 6.6
    */
-  public List<FixedPartitionAttributes> getFixedPartitionAttributes();
+  List<FixedPartitionAttributes> getFixedPartitionAttributes();
 
 }

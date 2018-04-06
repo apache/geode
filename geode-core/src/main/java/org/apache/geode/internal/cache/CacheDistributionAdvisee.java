@@ -32,21 +32,21 @@ public interface CacheDistributionAdvisee extends DistributionAdvisee {
    *
    * @return the <code>CacheDistributionAdvisor</code>
    */
-  public CacheDistributionAdvisor getCacheDistributionAdvisor();
+  CacheDistributionAdvisor getCacheDistributionAdvisor();
 
   /**
    * Returns the <code>Cache</code> associated with this cache object.
    *
    * @return the Cache
    */
-  public InternalCache getCache();
+  InternalCache getCache();
 
   /**
    * Returns the <code>RegionAttributes</code> associated with this advisee.
    *
    * @return the <code>RegionAttributes</code> of this advisee
    */
-  public RegionAttributes getAttributes();
+  RegionAttributes getAttributes();
 
   /**
    * notifies the advisee that a new remote member has registered a profile showing that it is now
@@ -54,12 +54,12 @@ public interface CacheDistributionAdvisee extends DistributionAdvisee {
    *
    * @param profile the remote member's profile
    */
-  public void remoteRegionInitialized(CacheProfile profile);
+  void remoteRegionInitialized(CacheProfile profile);
 
   /**
    * Allow this advisee to know the CreateRegionReplyProcessor that is creating it.
    *
    * @param processor the CreateRegionReplyProcessor that is creating the advisee
    */
-  public default void registerCreateRegionReplyProcessor(CreateRegionReplyProcessor processor) {}
+  default void registerCreateRegionReplyProcessor(CreateRegionReplyProcessor processor) {}
 }

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
@@ -59,7 +59,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
   public static boolean send(InternalCache cache, Set<InternalDistributedMember> recipients) {
 
     InternalDistributedSystem ids = cache.getInternalDistributedSystem();
-    DM dm = ids.getDistributionManager();
+    DistributionManager dm = ids.getDistributionManager();
     Set<InternalDistributedMember> filteredRecipients = new HashSet<InternalDistributedMember>();
 
     // filtered recipients
@@ -105,7 +105,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     // do nothing. We are just pinging the server. send the reply back.
     ReplyMessage.send(getSender(), this.processorId, null, dm);
   }

@@ -402,7 +402,12 @@ public class HttpOperationInvoker implements OperationInvoker {
 
   @Override
   public String toString() {
-    return String.format("GemFire Manager HTTP service @ %1$s", httpRequester);
+    return String.format("GemFire Manager HTTP service @ %1$s", baseUrl);
+  }
+
+  public String getRemoteVersion() {
+    final URI link = HttpRequester.createURI(baseUrl, "/version/release");
+    return httpRequester.get(link, String.class);
   }
 
 

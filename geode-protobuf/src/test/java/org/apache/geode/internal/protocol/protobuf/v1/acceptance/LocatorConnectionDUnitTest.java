@@ -16,11 +16,9 @@
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
 import static org.apache.geode.internal.Assert.assertTrue;
-import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
@@ -36,17 +34,14 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
+import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -83,11 +78,8 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
   // Test getAvailableServers twice, validating stats before any messages, after 1, and after 2.
   @Test
   public void testGetAvailableServersWithStats() throws Throwable {
-    ClientProtocol.Request.Builder protobufRequestBuilder =
-        ProtobufUtilities.createProtobufRequestBuilder();
-    ClientProtocol.Message getAvailableServersRequestMessage =
-        ProtobufUtilities.createProtobufMessage(protobufRequestBuilder
-            .setGetServerRequest(ProtobufRequestUtilities.createGetServerRequest()).build());
+    ClientProtocol.Message getAvailableServersRequestMessage = ClientProtocol.Message.newBuilder()
+        .setGetServerRequest(ProtobufRequestUtilities.createGetServerRequest()).build();
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
@@ -126,14 +118,11 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
       throws IOException, InvalidProtocolMessageException {
     IgnoredException ignoredInvalidExecutionContext =
         IgnoredException.addIgnoredException("Invalid execution context");
+    IgnoredException ignoredOperationsOnTheLocator = IgnoredException
+        .addIgnoredException("Operations on the locator should not to try to operate on a server");
     try (Socket socket = createSocket()) {
-
-      ClientProtocol.Request.Builder protobufRequestBuilder =
-          ProtobufUtilities.createProtobufRequestBuilder();
-      ClientProtocol.Message getRegionNamesRequestMessage =
-          ProtobufUtilities.createProtobufMessage(protobufRequestBuilder
-              .setGetRegionNamesRequest(ProtobufRequestUtilities.createGetRegionNamesRequest())
-              .build());
+      ClientProtocol.Message getRegionNamesRequestMessage = ClientProtocol.Message.newBuilder()
+          .setGetRegionNamesRequest(ProtobufRequestUtilities.createGetRegionNamesRequest()).build();
 
       long messagesReceived = getMessagesReceived();
       long messagesSent = getMessagesSent();
@@ -147,19 +136,17 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
 
       ClientProtocol.Message getAvailableServersResponseMessage =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
-      assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE,
+      assertEquals(ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE,
           getAvailableServersResponseMessage.getMessageTypeCase());
-      ClientProtocol.Response messageResponse = getAvailableServersResponseMessage.getResponse();
-      assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-          messageResponse.getResponseAPICase());
       assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST,
-          messageResponse.getErrorResponse().getError().getErrorCode());
+          getAvailableServersResponseMessage.getErrorResponse().getError().getErrorCode());
 
       validateStats(messagesReceived + 1, messagesSent + 1,
           bytesReceived + getRegionNamesRequestMessage.getSerializedSize(),
           bytesSent + getAvailableServersResponseMessage.getSerializedSize(),
           clientConnectionStarts, clientConnectionTerminations + 1);
     }
+    ignoredOperationsOnTheLocator.remove();
     ignoredInvalidExecutionContext.remove();
   }
 
@@ -168,7 +155,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
         (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
 
     Statistics[] protobufServerStats = distributedSystem.findStatisticsByType(
-        distributedSystem.findType(ProtobufClientStatisticsImpl.PROTOBUF_CLIENT_STATISTICS));
+        distributedSystem.findType(ProtobufClientStatistics.PROTOBUF_CLIENT_STATISTICS));
     assertEquals(1, protobufServerStats.length);
     return protobufServerStats[0];
   }
@@ -218,12 +205,10 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
   private void validateGetAvailableServersResponse(
       ClientProtocol.Message getAvailableServersResponseMessage) {
     assertNotNull(getAvailableServersResponseMessage);
-    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE,
+    assertEquals(ClientProtocol.Message.MessageTypeCase.GETSERVERRESPONSE,
         getAvailableServersResponseMessage.getMessageTypeCase());
-    ClientProtocol.Response messageResponse = getAvailableServersResponseMessage.getResponse();
-    assertEquals(ClientProtocol.Response.ResponseAPICase.GETSERVERRESPONSE,
-        messageResponse.getResponseAPICase());
-    LocatorAPI.GetServerResponse getServerResponse = messageResponse.getGetServerResponse();
+    LocatorAPI.GetServerResponse getServerResponse =
+        getAvailableServersResponseMessage.getGetServerResponse();
     assertTrue(getServerResponse.hasServer());
   }
 

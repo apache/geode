@@ -49,7 +49,7 @@ public class DistributedAckPersistentRegionCCEOffHeapDUnitTest
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };

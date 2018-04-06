@@ -170,7 +170,6 @@ public class PutAllOp {
       boolean oneSubMapRetryFailed = false;
       Set<ServerLocation> failedServerSet = failedServers.keySet();
       for (ServerLocation failedServer : failedServerSet) {
-        // Throwable failedServers.values().iterator().next();
         RuntimeException savedRTE = failedServers.get(failedServer);
         if (savedRTE instanceof PutAllPartialResultException) {
           // will not retry for PutAllPartialResultException

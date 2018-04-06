@@ -199,17 +199,31 @@ public class AutoSerializableManager {
     return result;
   }
 
+  /**
+   * Determines whether objects of the named class are excluded from auto-serialization. The classes
+   * that are excluded are Geode-internal classes and Java classes.
+   *
+   * @param className Class name including packages.
+   * @return <code>true</code> if the named class is excluded.
+   */
+  public boolean isExcluded(String className) {
+    if (!noHardcodedExcludes) {
+      for (Pattern p : hardcodedExclusions) {
+        if (p.matcher(className).matches()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   public boolean defaultIsClassAutoSerialized(Class<?> clazz) {
     if (clazz.isEnum()) {
       return false;
     }
     String className = clazz.getName();
-    if (!noHardcodedExcludes) {
-      for (Pattern p : hardcodedExclusions) {
-        if (p.matcher(className).matches()) {
-          return false;
-        }
-      }
+    if (isExcluded(className)) {
+      return false;
     }
 
     for (Pattern p : classPatterns) {

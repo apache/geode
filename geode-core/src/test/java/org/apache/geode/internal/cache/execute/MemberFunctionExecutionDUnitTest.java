@@ -43,7 +43,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -323,7 +323,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     props.setProperty(MCAST_PORT, "0");
     ds = (InternalDistributedSystem) DistributedSystem.connect(props);
 
-    DM dm = ds.getDistributionManager();
+    DistributionManager dm = ds.getDistributionManager();
     assertEquals("Distributed System is not loner", true, dm instanceof LonerDistributionManager);
 
     DistributedMember localmember = ds.getDistributedMember();

@@ -23,10 +23,10 @@ import org.apache.geode.internal.sequencelog.GraphType;
  */
 public interface GraphReaderCallback {
 
-  public abstract void addEdge(long timestamp, GraphType graphType, String graphName,
-      String edgeName, String state, String source, String dest);
+  void addEdge(long timestamp, GraphType graphType, String graphName, String edgeName, String state,
+      String source, String dest);
 
-  public abstract void addEdgePattern(long timestamp, GraphType graphType, Pattern graphNamePattern,
+  void addEdgePattern(long timestamp, GraphType graphType, Pattern graphNamePattern,
       String edgeName, String state, String source, String dest);
 
 }

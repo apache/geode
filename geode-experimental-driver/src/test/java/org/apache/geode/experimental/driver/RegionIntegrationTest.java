@@ -14,13 +14,20 @@
  */
 package org.apache.geode.experimental.driver;
 
-import static org.apache.geode.internal.Assert.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,56 +46,13 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class RegionIntegrationTest {
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+public class RegionIntegrationTest extends IntegrationTestBase {
 
   /** a JSON document */
   private static final String jsonDocument =
       "{" + System.lineSeparator() + "  \"name\" : \"Charlemagne\"," + System.lineSeparator()
           + "  \"age\" : 1276," + System.lineSeparator() + "  \"nationality\" : \"french\","
           + System.lineSeparator() + "  \"emailAddress\" : \"none\"" + System.lineSeparator() + "}";
-
-
-  private static final String REGION = "region";
-  private Locator locator;
-  private Cache cache;
-  private Driver driver;
-
-  private org.apache.geode.cache.Region<Object, Object> serverRegion;
-
-  @Before
-  public void createServerAndDriver() throws Exception {
-    System.setProperty("geode.feature-protobuf-protocol", "true");
-
-    // Create a cache
-    CacheFactory cf = new CacheFactory();
-    cf.set(ConfigurationProperties.MCAST_PORT, "0");
-    cache = cf.create();
-
-    // Start a locator
-    locator = Locator.startLocatorAndDS(0, null, new Properties());
-    int locatorPort = locator.getPort();
-
-    // Start a server
-    CacheServer server = cache.addCacheServer();
-    server.setPort(0);
-    server.start();
-
-    // Create a region
-    serverRegion = cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION);
-
-    // Create a driver connected to the server
-    driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-
-  }
-
-  @After
-  public void cleanup() {
-    locator.stop();
-    cache.close();
-  }
-
 
 
   @Test
@@ -145,4 +109,54 @@ public class RegionIntegrationTest {
     assertNull(region.get(document));
   }
 
+  @Test
+  public void keySetTest() throws Exception {
+    Region<String, String> region = driver.getRegion("region");
+    Map<String, String> testMap = new HashMap<>();
+    testMap.put("Key1", "foo");
+    testMap.put("Key2", "foo");
+    testMap.put("Key3", "foo");
+    region.putAll(testMap);
+    assertArrayEquals(testMap.keySet().stream().sorted().toArray(),
+        region.keySet().stream().sorted().toArray());
+  }
+
+  @Test(expected = IOException.class)
+  public void putWithBadJSONKeyAndValue() throws IOException {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    JSONWrapper document = JSONWrapper.wrapJSON("{\"name\":\"Johan\"]");
+    region.put(document, document);
+  }
+
+  @Test(expected = IOException.class)
+  public void putAllWithBadJSONKeyAndValue() throws IOException {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    Map<JSONWrapper, JSONWrapper> putAllMap = new HashMap<>();
+    JSONWrapper document = JSONWrapper.wrapJSON("{\"name\":\"Johan\"]");
+    putAllMap.put(document, document);
+    region.putAll(putAllMap);
+  }
+
+  @Test(expected = IOException.class)
+  public void getWithBadJSONKey() throws IOException {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    region.get(JSONWrapper.wrapJSON("{\"name\":\"Johan\"]"));
+  }
+
+  @Test(expected = IOException.class)
+  public void getAllWithBadJSONKeyAndValue() throws IOException {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    Set<JSONWrapper> getAllKeys = new HashSet<>();
+    JSONWrapper document = JSONWrapper.wrapJSON("{\"name\":\"Johan\"]");
+    getAllKeys.add(document);
+    Map<JSONWrapper, JSONWrapper> result = region.getAll(getAllKeys);
+    assertTrue("missing key " + document + " in " + result, result.containsKey(document));
+    assertNull(result.get(document));
+  }
+
+  @Test(expected = IOException.class)
+  public void removeWithBadJSONKey() throws IOException {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    region.remove(JSONWrapper.wrapJSON("{\"name\":\"Johan\"]"));
+  }
 }

@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -38,7 +38,7 @@ public class FlushToDiskRequestTest {
 
   private FlushToDiskRequest flushToDiskRequest;
 
-  private DM dm;
+  private DistributionManager dm;
   private Set<InternalDistributedMember> recipients;
   private int msgId;
   private FlushToDiskFactory flushToDiskFactory;
@@ -48,7 +48,7 @@ public class FlushToDiskRequestTest {
 
   @Before
   public void setUp() throws Exception {
-    dm = mock(DM.class);
+    dm = mock(DistributionManager.class);
     sender = mock(InternalDistributedMember.class);
     cache = mock(InternalCache.class);
     flushToDiskFactory = mock(FlushToDiskFactory.class);

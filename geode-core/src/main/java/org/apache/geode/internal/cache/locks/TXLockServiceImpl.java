@@ -70,9 +70,7 @@ public class TXLockServiceImpl extends TXLockService {
   /** The distributed system for cancellation checks. */
   private final InternalDistributedSystem system;
 
-  /** Constructs new instance of transaction lock service */
-  TXLockServiceImpl(String name) {
-    InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
+  TXLockServiceImpl(String name, InternalDistributedSystem sys) {
     if (sys == null) {
       throw new IllegalStateException(
           LocalizedStrings.TXLockServiceImpl_TXLOCKSERVICE_CANNOT_BE_CREATED_UNTIL_CONNECTED_TO_DISTRIBUTED_SYSTEM
@@ -207,7 +205,7 @@ public class TXLockServiceImpl extends TXLockService {
         try {
           processor.waitForRepliesUninterruptibly();
         } catch (ReplyException e) {
-          e.handleAsUnexpected();
+          e.handleCause();
         }
       } // not lock grantor
     } // not recovering

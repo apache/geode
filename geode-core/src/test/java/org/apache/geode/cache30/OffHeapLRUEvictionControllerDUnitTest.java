@@ -48,7 +48,7 @@ public class OffHeapLRUEvictionControllerDUnitTest extends LRUEvictionController
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };

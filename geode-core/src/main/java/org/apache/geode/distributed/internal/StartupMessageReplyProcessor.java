@@ -28,9 +28,9 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21 {
    * receive replies from admin dm but they do not have the authority to accept us into the group.
    */
   private boolean receivedAcceptance;
-  private DM dm;
+  private DistributionManager dm;
 
-  public StartupMessageReplyProcessor(DM dm, Set recipients) {
+  public StartupMessageReplyProcessor(DistributionManager dm, Set recipients) {
     super(dm, recipients);
     this.dm = dm;
   }
@@ -87,7 +87,7 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21 {
   @Override
   protected void preWait() {
     this.waiting = true;
-    DM mgr = getDistributionManager();
+    DistributionManager mgr = getDistributionManager();
     this.statStart = mgr.getStats().startReplyWait();
     // Note we do not use addMembershipListenerAndGetDistributionManagerIds
     // because this is the startup message and we do not yet have any

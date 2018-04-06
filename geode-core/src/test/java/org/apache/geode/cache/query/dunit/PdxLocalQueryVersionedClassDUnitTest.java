@@ -26,6 +26,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
@@ -86,8 +87,8 @@ public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
             cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
 
         for (int i = 0; i < numberOfEntries; i++) {
-          PdxInstanceFactory pdxInstanceFactory =
-              PdxInstanceFactoryImpl.newCreator("PdxVersionedNewPortfolio", false);
+          PdxInstanceFactory pdxInstanceFactory = PdxInstanceFactoryImpl
+              .newCreator("PdxVersionedNewPortfolio", false, (InternalCache) cache);
           pdxInstanceFactory.writeInt("id", i);
           pdxInstanceFactory.writeString("status", (i % 2 == 0 ? "active" : "inactive"));
           PdxInstance pdxInstance = pdxInstanceFactory.create();

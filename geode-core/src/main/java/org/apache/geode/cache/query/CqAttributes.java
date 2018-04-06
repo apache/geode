@@ -32,7 +32,7 @@ public interface CqAttributes {
    * @see CqListener
    * @return CQListener[] array of CqListner
    */
-  public CqListener[] getCqListeners();
+  CqListener[] getCqListeners();
 
   /**
    * Get the CqListener set with the CQ. Returns the CqListener associated with the CQ. If there are
@@ -41,6 +41,6 @@ public interface CqAttributes {
    * @see CqListener
    * @return CqListener Object, returns null if there is no CqListener.
    */
-  public CqListener getCqListener();
+  CqListener getCqListener();
 
 }

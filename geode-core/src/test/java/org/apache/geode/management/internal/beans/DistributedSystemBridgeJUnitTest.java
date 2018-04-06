@@ -26,11 +26,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.backup.AbortBackupRequest;
 import org.apache.geode.internal.cache.backup.BackupDataStoreHelper;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.backup.FinishBackupRequest;
 import org.apache.geode.internal.cache.backup.PrepareBackupRequest;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
@@ -41,64 +42,62 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class DistributedSystemBridgeJUnitTest {
 
   private GemFireCacheImpl cache;
-  private BackupManager backupManager;
+  private BackupService backupService;
 
   @Before
   public void createCache() throws IOException {
     cache = Fakes.cache();
     PersistentMemberManager memberManager = mock(PersistentMemberManager.class);
-    backupManager = mock(BackupManager.class);
-    when(cache.startBackup(any())).thenReturn(backupManager);
+    backupService = mock(BackupService.class);
+    when(cache.getBackupService()).thenReturn(backupService);
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
-    when(cache.getBackupManager()).thenReturn(backupManager);
+    when(cache.getBackupService()).thenReturn(backupService);
 
     DLockService dlock = mock(DLockService.class);
     when(dlock.lock(any(), anyLong(), anyLong())).thenReturn(true);
 
     DLockService.addLockServiceForTests(BackupDataStoreHelper.LOCK_SERVICE_NAME, dlock);
-    GemFireCacheImpl.setInstanceForTests(cache);
   }
 
   @After
   public void clearCache() {
-    GemFireCacheImpl.setInstanceForTests(null);
     DLockService.removeLockServiceForTests(BackupDataStoreHelper.LOCK_SERVICE_NAME);
   }
 
   @Test
   public void testSuccessfulBackup() throws Exception {
-    DM dm = cache.getDistributionManager();
+    DistributionManager dm = cache.getDistributionManager();
 
-    DistributedSystemBridge bridge = new DistributedSystemBridge(null);
+    DistributedSystemBridge bridge = new DistributedSystemBridge(null, cache);
     bridge.backupAllMembers("/tmp", null);
 
-    InOrder inOrder = inOrder(dm, backupManager);
+    InOrder inOrder = inOrder(dm, backupService);
     inOrder.verify(dm).putOutgoing(isA(PrepareBackupRequest.class));
-    inOrder.verify(backupManager).prepareForBackup();
+    inOrder.verify(backupService).prepareBackup(any(), any());
     inOrder.verify(dm).putOutgoing(isA(FinishBackupRequest.class));
-    inOrder.verify(backupManager).doBackup(any(), any(), eq(false));
+    inOrder.verify(backupService).doBackup();
   }
 
   @Test
   public void testPrepareErrorAbortsBackup() throws Exception {
-    DM dm = cache.getDistributionManager();
+    DistributionManager dm = cache.getDistributionManager();
     PersistentMemberManager memberManager = mock(PersistentMemberManager.class);
-    BackupManager backupManager = mock(BackupManager.class);
-    when(cache.startBackup(any())).thenReturn(backupManager);
+    BackupService backupService = mock(BackupService.class);
+    when(cache.getBackupService()).thenReturn(backupService);
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
-    when(cache.getBackupManager()).thenReturn(backupManager);
+    when(cache.getBackupService()).thenReturn(backupService);
     when(dm.putOutgoing(isA(PrepareBackupRequest.class)))
         .thenThrow(new RuntimeException("Fail the prepare"));
 
 
-    DistributedSystemBridge bridge = new DistributedSystemBridge(null);
+    DistributedSystemBridge bridge = new DistributedSystemBridge(null, cache);
     try {
       bridge.backupAllMembers("/tmp", null);
       fail("Should have failed with an exception");
     } catch (RuntimeException expected) {
     }
 
-    verify(dm).putOutgoing(isA(FinishBackupRequest.class));
-    verify(backupManager).doBackup(any(), any(), eq(true));
+    verify(dm).putOutgoing(isA(AbortBackupRequest.class));
+    verify(backupService).abortBackup();
   }
 }

@@ -23,10 +23,9 @@ import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 
 /**
- * This class contains helper functions for generating ClientProtocol.Request objects
+ * This class contains helper functions for generating ClientProtocol.Message objects
  *
- * Response building helpers can be found in {@link ProtobufResponseUtilities}, while more general
- * purpose helpers can be found in {@link ProtobufUtilities}
+ * More general purpose helpers can be found in {@link ProtobufUtilities}
  */
 @Experimental
 public abstract class ProtobufRequestUtilities {
@@ -37,11 +36,11 @@ public abstract class ProtobufRequestUtilities {
    * @param key - Encoded key, see createEncodedValue in {@link ProtobufRequestUtilities}
    * @return Request object containing the passed params.
    */
-  public static ClientProtocol.Request createGetRequest(String regionName,
+  public static ClientProtocol.Message createGetRequest(String regionName,
       BasicTypes.EncodedValue key) {
     RegionAPI.GetRequest getRequest =
         RegionAPI.GetRequest.newBuilder().setRegionName(regionName).setKey(key).build();
-    return ClientProtocol.Request.newBuilder().setGetRequest(getRequest).build();
+    return ClientProtocol.Message.newBuilder().setGetRequest(getRequest).build();
   }
 
   /**
@@ -51,11 +50,11 @@ public abstract class ProtobufRequestUtilities {
    * @param key - Encoded key, see createEncodedValue in {@link ProtobufRequestUtilities}
    * @return Request object containing the passed params.
    */
-  public static ClientProtocol.Request createRemoveRequest(String regionName,
+  public static ClientProtocol.Message createRemoveRequest(String regionName,
       BasicTypes.EncodedValue key) {
     RegionAPI.RemoveRequest removeRequest =
         RegionAPI.RemoveRequest.newBuilder().setRegionName(regionName).setKey(key).build();
-    return ClientProtocol.Request.newBuilder().setRemoveRequest(removeRequest).build();
+    return ClientProtocol.Message.newBuilder().setRemoveRequest(removeRequest).build();
   }
 
   /**
@@ -74,10 +73,10 @@ public abstract class ProtobufRequestUtilities {
    * @param entry - Encoded key,value pair, see createEntry in {@link ProtobufRequestUtilities}
    * @return Request object containing the passed params.
    */
-  public static ClientProtocol.Request createPutRequest(String region, BasicTypes.Entry entry) {
+  public static ClientProtocol.Message createPutRequest(String region, BasicTypes.Entry entry) {
     RegionAPI.PutRequest putRequest =
         RegionAPI.PutRequest.newBuilder().setRegionName(region).setEntry(entry).build();
-    return ClientProtocol.Request.newBuilder().setPutRequest(putRequest).build();
+    return ClientProtocol.Message.newBuilder().setPutRequest(putRequest).build();
   }
 
   /**
@@ -102,16 +101,33 @@ public abstract class ProtobufRequestUtilities {
    * @param entries - key, value pairs to add to the region
    * @return Request object containing the putAll request for the passed parameters
    */
-  public static ClientProtocol.Request createPutAllRequest(String regionName,
+  public static ClientProtocol.Message createPutAllRequest(String regionName,
       Set<BasicTypes.Entry> entries) {
     RegionAPI.PutAllRequest.Builder putAllRequestBuilder =
         RegionAPI.PutAllRequest.newBuilder().setRegionName(regionName);
     putAllRequestBuilder.addAllEntry(entries);
-    return ClientProtocol.Request.newBuilder().setPutAllRequest(putAllRequestBuilder).build();
+    return ClientProtocol.Message.newBuilder().setPutAllRequest(putAllRequestBuilder).build();
   }
 
+  /**
+   * Create a request to retrieve a server.
+   *
+   * @return Request object containing the get-server request.
+   */
   public static LocatorAPI.GetServerRequest createGetServerRequest() {
     LocatorAPI.GetServerRequest.Builder builder = LocatorAPI.GetServerRequest.newBuilder();
+    return builder.build();
+  }
+
+  /**
+   * Create a request to retrieve a server from a server group.
+   *
+   * @param serverGroup Server group name.
+   * @return Request object containing the get-server request.
+   */
+  public static LocatorAPI.GetServerRequest createGetServerRequest(String serverGroup) {
+    LocatorAPI.GetServerRequest.Builder builder = LocatorAPI.GetServerRequest.newBuilder();
+    builder.setServerGroup(serverGroup);
     return builder.build();
   }
 }

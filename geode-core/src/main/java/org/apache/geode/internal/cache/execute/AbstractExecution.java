@@ -36,7 +36,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.QueryInvalidException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -80,11 +80,11 @@ public abstract class AbstractExecution implements InternalExecution {
    */
   protected Collection<InternalDistributedMember> executionNodes = null;
 
-  public static interface ExecutionNodesListener {
+  public interface ExecutionNodesListener {
 
-    public void afterExecutionNodesSet(AbstractExecution execution);
+    void afterExecutionNodesSet(AbstractExecution execution);
 
-    public void reset();
+    void reset();
   }
 
   protected ExecutionNodesListener executionNodesListener = null;
@@ -256,8 +256,8 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   public void executeFunctionOnLocalPRNode(final Function fn, final FunctionContext cx,
-      final PartitionedRegionFunctionResultSender sender, DM dm, boolean isTx) {
-    if (dm instanceof DistributionManager && !isTx) {
+      final PartitionedRegionFunctionResultSender sender, DistributionManager dm, boolean isTx) {
+    if (dm instanceof ClusterDistributionManager && !isTx) {
       if (ServerConnection.isExecuteFunctionOnLocalNodeOnly().byteValue() == 1) {
         ServerConnection.executeFunctionOnLocalNodeOnly((byte) 3);// executed locally
         executeFunctionLocally(fn, cx, sender, dm);
@@ -268,7 +268,7 @@ public abstract class AbstractExecution implements InternalExecution {
         }
       } else {
 
-        final DistributionManager newDM = (DistributionManager) dm;
+        final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
         newDM.getFunctionExcecutor().execute(new Runnable() {
           public void run() {
             executeFunctionLocally(fn, cx, sender, newDM);
@@ -294,9 +294,9 @@ public abstract class AbstractExecution implements InternalExecution {
   // main thread otherwise give execution to FunctionExecutor from
   // DistributionManager
   public void executeFunctionOnLocalNode(final Function<?> fn, final FunctionContext cx,
-      final ResultSender sender, DM dm, final boolean isTx) {
-    if (dm instanceof DistributionManager && !isTx) {
-      final DistributionManager newDM = (DistributionManager) dm;
+      final ResultSender sender, DistributionManager dm, final boolean isTx) {
+    if (dm instanceof ClusterDistributionManager && !isTx) {
+      final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
       newDM.getFunctionExcecutor().execute(new Runnable() {
         public void run() {
           executeFunctionLocally(fn, cx, sender, newDM);
@@ -318,7 +318,7 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   public void executeFunctionLocally(final Function<?> fn, final FunctionContext cx,
-      final ResultSender sender, DM dm) {
+      final ResultSender sender, DistributionManager dm) {
 
     FunctionStats stats = FunctionStats.getFunctionStats(fn.getId(), dm.getSystem());
 
@@ -473,7 +473,7 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   private void handleException(Throwable functionException, final Function fn,
-      final FunctionContext cx, final ResultSender sender, DM dm) {
+      final FunctionContext cx, final ResultSender sender, DistributionManager dm) {
     FunctionStats stats = FunctionStats.getFunctionStats(fn.getId(), dm.getSystem());
 
     if (logger.isDebugEnabled()) {

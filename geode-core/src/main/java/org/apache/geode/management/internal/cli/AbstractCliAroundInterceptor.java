@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
@@ -83,7 +85,7 @@ public abstract class AbstractCliAroundInterceptor implements CliAroundIntercept
     do {
       String userInput = interact(message);
 
-      if (isNullOrEmpty(userInput)) {
+      if (StringUtils.isEmpty(userInput)) {
         return defaultResponse;
       }
       response = Response.fromString(userInput);
@@ -91,36 +93,5 @@ public abstract class AbstractCliAroundInterceptor implements CliAroundIntercept
     } while (response == null);
 
     return response;
-  }
-
-  protected boolean isNullOrEmpty(final String userInput) {
-    return userInput == null || userInput.isEmpty();
-  }
-
-  protected static void info(String msg, Throwable th) {
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-    if (gfsh != null) {
-      gfsh.logInfo(msg, th);
-    } else {
-      LogWrapper.getInstance().info(msg, th);
-    }
-  }
-
-  protected static void warning(String msg, Throwable th) {
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-    if (gfsh != null) {
-      gfsh.logWarning(msg, th);
-    } else {
-      LogWrapper.getInstance().warning(msg, th);
-    }
-  }
-
-  protected static void severe(String msg, Throwable th) {
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-    if (gfsh != null) {
-      gfsh.logSevere(msg, th);
-    } else {
-      LogWrapper.getInstance().severe(msg, th);
-    }
   }
 }

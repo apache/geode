@@ -63,7 +63,7 @@ public class HARegion extends DistributedRegion {
 
   // Prevent this region from participating in a TX, bug 38709
   @Override
-  protected boolean isSecret() {
+  public boolean isSecret() {
     return true;
   }
 
@@ -145,7 +145,7 @@ public class HARegion extends DistributedRegion {
           LocalizedStrings.HARegion_TIMETOLIVE_MUST_NOT_BE_NULL.toLocalizedString());
     }
     if ((timeToLive.getAction() == ExpirationAction.LOCAL_DESTROY
-        && this.dataPolicy.withReplication())) {
+        && this.getDataPolicy().withReplication())) {
       throw new IllegalArgumentException(
           LocalizedStrings.HARegion_TIMETOLIVE_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_MIRROR_TYPE
               .toLocalizedString());
@@ -331,7 +331,7 @@ public class HARegion extends DistributedRegion {
   }
 
   @Override
-  protected void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
+  public void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
       InternalRegionArguments internalRegionArgs)
       throws TimeoutException, IOException, ClassNotFoundException {
     // Set this region in the ProxyBucketRegion early so that profile exchange will
@@ -363,13 +363,7 @@ public class HARegion extends DistributedRegion {
     Assert.assertTrue(!hasServerProxy());
     CacheLoader loader = basicGetLoader();
     if (loader != null) {
-      final LoaderHelper loaderHelper =
-          loaderHelperFactory.createLoaderHelper(key, aCallbackArgument,
-              false /* netSearchAllowed */, true /* netloadallowed */, null/* searcher */);
-      try {
-        value = loader.load(loaderHelper);
-      } finally {
-      }
+      value = callCacheLoader(loader, key, aCallbackArgument);
 
       if (value != null) {
         try {

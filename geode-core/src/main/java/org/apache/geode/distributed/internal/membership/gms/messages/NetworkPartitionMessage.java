@@ -16,7 +16,7 @@ package org.apache.geode.distributed.internal.membership.gms.messages;
 
 import java.util.Collection;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
@@ -34,7 +34,7 @@ public class NetworkPartitionMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     throw new IllegalStateException("this message is not intended to be executed");
   }
 

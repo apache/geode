@@ -22,7 +22,6 @@ import static org.apache.commons.lang.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
-import static org.apache.geode.internal.lang.ObjectUtils.defaultIfNull;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
@@ -431,11 +430,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Determines whether this launcher will redirect output to system logs when starting a new
-   * Locator process.
+   * Determines whether this launcher will redirect output to system logs when starting a new Server
+   * process.
    *
    * @return a boolean value indicating if this launcher will redirect output to system logs when
-   *         starting a new Locator process
+   *         starting a new Server process
    */
   public boolean isRedirectingOutput() {
     return this.redirectOutput;
@@ -550,7 +549,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @see #getServerPort()
    */
   public String getServerPortAsString() {
-    return defaultIfNull(getServerPort(), getDefaultServerPort()).toString();
+    Integer v1 = getServerPort();
+    return (v1 != null ? v1 : getDefaultServerPort()).toString();
   }
 
   /**
@@ -1165,12 +1165,28 @@ public class ServerLauncher extends AbstractLauncher<String> {
       if (this.cache.isReconnecting()) {
         this.cache.getDistributedSystem().stopReconnecting();
       }
-      this.cache.close();
-      this.cache = null;
-      if (this.process != null) {
-        this.process.stop(this.deletePidFileOnStop);
-        this.process = null;
+
+      // Another case of needing to use a non-daemon thread to keep the JVM alive until a clean
+      // shutdown can be performed. If not, the JVM may exit too early causing the member to be
+      // seen as having crashed and not cleanly departed.
+      final ServerLauncher shadow = this;
+      Thread t = new Thread(() -> {
+        shadow.cache.close();
+        shadow.cache = null;
+        if (shadow.process != null) {
+          shadow.process.stop(shadow.deletePidFileOnStop);
+          shadow.process = null;
+        }
+      });
+      t.setDaemon(false);
+      t.start();
+
+      try {
+        t.join();
+      } catch (InterruptedException e) {
+        // no matter, we're shutting down...
       }
+
       INSTANCE.compareAndSet(this, null); // note: other thread may return Status.NOT_RESPONDING now
       this.running.set(false);
       return new ServerState(this, Status.STOPPED);
@@ -1644,7 +1660,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see org.apache.geode.distributed.ServerLauncher.Command
      */
     public Command getCommand() {
-      return defaultIfNull(this.command, DEFAULT_COMMAND);
+      return this.command != null ? this.command : DEFAULT_COMMAND;
     }
 
     /**
@@ -1787,7 +1803,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see #setForce(Boolean)
      */
     public Boolean getForce() {
-      return defaultIfNull(this.force, DEFAULT_FORCE);
+      return this.force != null ? this.force : DEFAULT_FORCE;
     }
 
     /**
@@ -2022,7 +2038,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see #setServerPort(Integer)
      */
     public Integer getServerPort() {
-      return defaultIfNull(this.serverPort, getDefaultServerPort());
+      return this.serverPort != null ? this.serverPort : getDefaultServerPort();
     }
 
     boolean isServerPortSetByUser() {

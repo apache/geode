@@ -69,6 +69,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -92,6 +93,8 @@ public abstract class AbstractIndex implements IndexProtocol {
   // package-private to avoid synthetic accessor
   static final AtomicIntegerFieldUpdater<RegionEntryToValuesMap> atomicUpdater =
       AtomicIntegerFieldUpdater.newUpdater(RegionEntryToValuesMap.class, "numValues");
+
+  final InternalCache cache;
 
   final String indexName;
 
@@ -138,10 +141,10 @@ public abstract class AbstractIndex implements IndexProtocol {
   /** Flag to indicate if the index is populated with data */
   volatile boolean isPopulated = false;
 
-  AbstractIndex(String indexName, Region region, String fromClause, String indexedExpression,
-      String projectionAttributes, String originalFromClause, String originalIndexedExpression,
-      String[] defintions, IndexStatistics stats) {
-
+  AbstractIndex(InternalCache cache, String indexName, Region region, String fromClause,
+      String indexedExpression, String projectionAttributes, String originalFromClause,
+      String originalIndexedExpression, String[] defintions, IndexStatistics stats) {
+    this.cache = cache;
     this.indexName = indexName;
     this.region = region;
     this.indexedExpression = indexedExpression;
@@ -1338,7 +1341,9 @@ public abstract class AbstractIndex implements IndexProtocol {
         valuesInRegion = evaluateIndexIteratorsFromRE(re, context);
         valueInIndex = verifyAndGetPdxDomainObject(value);
       } else {
-        Object val = re.getValueInVM(context.getPartitionedRegion());
+        RegionEntryContext regionEntryContext = context.getPartitionedRegion() != null
+            ? context.getPartitionedRegion() : (RegionEntryContext) region;
+        Object val = re.getValueInVM(regionEntryContext);
         if (val instanceof CachedDeserializable) {
           val = ((CachedDeserializable) val).getDeserializedValue(getRegion(), re);
         }

@@ -91,7 +91,7 @@ public interface ProxyListener extends MembershipListener {
    *
    * @param notification
    */
-  public void handleNotification(Notification notification);
+  void handleNotification(Notification notification);
 
   /**
    * This is a very special method, Only to be invoked from MonitoringRegionCacheListener. The need
@@ -108,7 +108,7 @@ public interface ProxyListener extends MembershipListener {
    *        interface class type.
    * @param newVal new value for the proxy
    */
-  public void afterPseudoCreateProxy(ObjectName objectName, Class interfaceClass,
-      Object proxyObject, FederationComponent newVal);
+  void afterPseudoCreateProxy(ObjectName objectName, Class interfaceClass, Object proxyObject,
+      FederationComponent newVal);
 
 }

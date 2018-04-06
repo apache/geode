@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.JUnitSoftAssertions;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,22 +34,15 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Test class to verify proper locking interaction between transactions and the CLEAR region
@@ -76,46 +69,44 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
    * processing is complete before clearing the region. Failure to do so, would result in region
    * inconsistencies.
    */
-  VM vm0, vm1, opsVM, regionVM;
+  private static final String THE_KEY = "theKey";
+  private static final String THE_VALUE = "theValue";
+  private static final int NUMBER_OF_PUTS = 2;
+  private static final String REGION_NAME1 = "testRegion1";
+  private static final String REGION_NAME2 = "testRegion2";
 
   static Cache cache;
-
-  ArmLockHook theArmHook;
-
-  DistributedMember vm0ID, vm1ID;
-
-  static CacheTransactionManager txmgr;
-
-  static final String THE_KEY = "theKey";
-  static final String THE_VALUE = "theValue";
-  static final int NUMBER_OF_PUTS = 2;
-
-  static final String REGION_NAME1 = "testRegion1";
-  static final String REGION_NAME2 = "testRegion2";
-
   static CountDownLatch opsLatch;
-  static CountDownLatch regionLatch;
-  static CountDownLatch verifyLatch;
+  private static CountDownLatch regionLatch;
+  private static CountDownLatch verifyLatch;
 
-  private static final Logger logger = LogService.getLogger();
+  private VM vm0;
+  private VM vm1;
+  private VM opsVM;
+  private VM regionVM;
 
-  // test methods
+  @Before
+  public void setup() {
+    Host host = Host.getHost(0);
+    vm0 = host.getVM(0);
+    vm1 = host.getVM(1);
 
-  @Test
-  public void testPutWithClearSameVM() throws InterruptedException {
-    getVMs();
-    setupRegions(vm0, vm0);
-    setClearHook(REGION_NAME1, opsVM, regionVM);
-    performTestAndCheckResults(putOperationsTest);
+    createCache(vm0);
+    createCache(vm1);
   }
 
-  @Category(FlakyTest.class) // GEODE-2275
   @Test
-  public void testPutWithClearDifferentVM() throws InterruptedException {
-    getVMs();
+  public void testPutWithClearSameVM() {
+    setupRegions(vm0, vm0);
+    setClearHook(REGION_NAME1, opsVM, regionVM);
+    performTestAndCheckResults();
+  }
+
+  @Test
+  public void testPutWithClearDifferentVM() {
     setupRegions(vm0, vm1);
     setClearHook(REGION_NAME1, opsVM, regionVM);
-    performTestAndCheckResults(putOperationsTest);
+    performTestAndCheckResults();
   }
 
   /*
@@ -124,20 +115,18 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
    */
   @Ignore
   @Test
-  public void testPutWithCloseSameVM() throws InterruptedException {
-    getVMs();
+  public void testPutWithCloseSameVM() {
     setupRegions(vm0, vm0);
     setCloseHook(REGION_NAME1, opsVM, regionVM);
-    performTestAndCheckResults(putOperationsTest);
+    performTestAndCheckResults();
   }
 
   @Ignore
   @Test
-  public void testPutWithCloseDifferentVM() throws InterruptedException {
-    getVMs();
+  public void testPutWithCloseDifferentVM() {
     setupRegions(vm0, vm1);
     setCloseHook(REGION_NAME1, opsVM, regionVM);
-    performTestAndCheckResults(putOperationsTest);
+    performTestAndCheckResults();
   }
 
   /*
@@ -146,20 +135,18 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
    */
   @Ignore
   @Test
-  public void testPutWithDestroyRegionSameVM() throws InterruptedException {
-    getVMs();
+  public void testPutWithDestroyRegionSameVM() {
     setupRegions(vm0, vm0);
     setDestroyRegionHook(REGION_NAME1, opsVM, regionVM);
-    performTestAndCheckResults(putOperationsTest);
+    performTestAndCheckResults();
   }
 
   @Ignore
   @Test
-  public void testPutWithDestroyRegionDifferentVM() throws InterruptedException {
-    getVMs();
+  public void testPutWithDestroyRegionDifferentVM() {
     setupRegions(vm0, vm1);
     setDestroyRegionHook(REGION_NAME1, opsVM, regionVM);
-    performTestAndCheckResults(putOperationsTest);
+    performTestAndCheckResults();
   }
 
   // Local methods
@@ -167,24 +154,14 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   /*
    * This method executes a runnable test and then checks for region consistency
    */
-  private void performTestAndCheckResults(SerializableRunnable operationsTest)
-      throws InterruptedException {
+  private void performTestAndCheckResults() {
     try {
-      runLockingTest(opsVM, operationsTest);
+      opsVM.invoke(this::putOperationsTest);
       checkForConsistencyErrors(REGION_NAME1);
       checkForConsistencyErrors(REGION_NAME2);
     } finally {
       opsVM.invoke(() -> resetArmHook(REGION_NAME1));
     }
-  }
-
-  /*
-   * We will be using 2 vms. One for the transaction and one for the clear
-   */
-  private void getVMs() {
-    Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
   }
 
   /*
@@ -194,36 +171,21 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   private void setupRegions(VM opsTarget, VM regionTarget) {
     opsVM = opsTarget;
     regionVM = regionTarget;
-    vm0ID = createCache(vm0);
-    vm1ID = createCache(vm1);
     vm0.invoke(() -> createRegion(REGION_NAME1));
     vm0.invoke(() -> createRegion(REGION_NAME2));
     vm1.invoke(() -> createRegion(REGION_NAME1));
     vm1.invoke(() -> createRegion(REGION_NAME2));
   }
 
-  /*
-   * Invoke a runnable on the operations vm
-   */
-  private void runLockingTest(VM vm, SerializableRunnableIF theTest) {
-    vm.invoke(theTest);
+  private void putOperationsTest() {
+    opsVM.invoke(() -> doPuts(getCache(), regionVM));
   }
-
-  /*
-   * Runnable used to invoke the actual test
-   */
-  SerializableRunnable putOperationsTest = new SerializableRunnable("perform PUT") {
-    @Override
-    public void run() {
-      opsVM.invoke(() -> doPuts(getCache(), regionVM));
-    }
-  };
 
   /*
    * Set arm hook to detect when region operation is attempting to acquire write lock and stage the
    * clear that will be released half way through commit processing.
    */
-  public void setClearHook(String rname, VM whereOps, VM whereClear) {
+  private void setClearHook(String rname, VM whereOps, VM whereClear) {
     whereOps.invoke(() -> setArmHook(rname));
     whereClear.invokeAsync(() -> stageClear(rname, whereOps));
   }
@@ -235,7 +197,8 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
    * perform region verification.
    */
   private static void stageClear(String rname, VM whereOps) throws InterruptedException {
-    regionOperationWait();
+    regionLatch = new CountDownLatch(1);
+    regionOperationWait(regionLatch);
     LocalRegion r = (LocalRegion) cache.getRegion(rname);
     r.clear();
     whereOps.invoke(() -> releaseVerify());
@@ -244,25 +207,27 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   /*
    * Set and stage method for close and destroy are the same as clear
    */
-  public void setCloseHook(String rname, VM whereOps, VM whereClear) {
+  private void setCloseHook(String rname, VM whereOps, VM whereClear) {
     whereOps.invoke(() -> setArmHook(rname));
     whereClear.invokeAsync(() -> stageClose(rname, whereOps));
   }
 
   private static void stageClose(String rname, VM whereOps) throws InterruptedException {
-    regionOperationWait();
+    regionLatch = new CountDownLatch(1);
+    regionOperationWait(regionLatch);
     LocalRegion r = (LocalRegion) cache.getRegion(rname);
     r.close();
     whereOps.invoke(() -> releaseVerify());
   }
 
-  public void setDestroyRegionHook(String rname, VM whereOps, VM whereClear) {
+  private void setDestroyRegionHook(String rname, VM whereOps, VM whereClear) {
     whereOps.invoke(() -> setArmHook(rname));
     whereClear.invokeAsync(() -> stageDestroyRegion(rname, whereOps));
   }
 
   private static void stageDestroyRegion(String rname, VM whereOps) throws InterruptedException {
-    regionOperationWait();
+    regionLatch = new CountDownLatch(1);
+    regionOperationWait(regionLatch);
     LocalRegion r = (LocalRegion) cache.getRegion(rname);
     r.destroyRegion();
     whereOps.invoke(() -> releaseVerify());
@@ -272,16 +237,16 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
    * Set the abstract region map lock hook to detect attempt to acquire write lock by region
    * operation.
    */
-  public void setArmHook(String rname) {
+  private void setArmHook(String rname) {
     LocalRegion r = (LocalRegion) cache.getRegion(rname);
-    theArmHook = new ArmLockHook();
+    ArmLockHook theArmHook = new ArmLockHook();
     ((AbstractRegionMap) r.entries).setARMLockTestHook(theArmHook);
   }
 
   /*
    * Cleanup arm lock hook by setting it null
    */
-  public void resetArmHook(String rname) {
+  private void resetArmHook(String rname) {
     LocalRegion r = (LocalRegion) cache.getRegion(rname);
     ((AbstractRegionMap) r.entries).setARMLockTestHook(null);
   }
@@ -289,9 +254,11 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   /*
    * Wait to be notified it is time to perform region operation (i.e. CLEAR)
    */
-  private static void regionOperationWait() throws InterruptedException {
-    regionLatch = new CountDownLatch(1);
-    regionLatch.await();
+  private static void regionOperationWait(CountDownLatch latch) throws InterruptedException {
+    latch.await();
+    /*
+     * regionLatch = new CountDownLatch(1); regionLatch.await();
+     */
   }
 
   /*
@@ -342,32 +309,28 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   private InternalDistributedMember createCache(VM vm) {
-    return (InternalDistributedMember) vm.invoke(new SerializableCallable<Object>() {
-      public Object call() {
-        cache = getCache(new CacheFactory().set("conserve-sockets", "true"));
-        return getSystem().getDistributedMember();
-      }
+    return vm.invoke(() -> {
+      cache = getCache(new CacheFactory().set("conserve-sockets", "true"));
+      return getSystem().getDistributedMember();
     });
   }
 
   private static void createRegion(String rgnName) {
-    RegionFactory<Object, Object> rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
-    rf.setConcurrencyChecksEnabled(true);
-    rf.setScope(Scope.DISTRIBUTED_ACK);
-    rf.create(rgnName);
+    RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    factory.setConcurrencyChecksEnabled(true);
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    factory.create(rgnName);
   }
 
   /*
    * Get region contents from each member and verify they are consistent
    */
-  private void checkForConsistencyErrors(String rname) {
-    Map<Object, Object> r0Contents =
-        (Map<Object, Object>) vm0.invoke(() -> getRegionContents(rname));
-    Map<Object, Object> r1Contents =
-        (Map<Object, Object>) vm1.invoke(() -> getRegionContents(rname));
+  private void checkForConsistencyErrors(String regionName) {
+    Map<Object, Object> r0Contents = vm0.invoke(() -> getRegionContents(regionName));
+    Map<Object, Object> r1Contents = vm1.invoke(() -> getRegionContents(regionName));
 
     for (int i = 0; i < NUMBER_OF_PUTS; i++) {
-      String theKey = rname + THE_KEY + i;
+      String theKey = regionName + THE_KEY + i;
       if (r0Contents.containsKey(theKey)) {
         softly.assertThat(r1Contents.get(theKey))
             .as("region contents are not consistent for key %s", theKey)
@@ -395,12 +358,12 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
    * processing, release the region operation.
    */
   static class CommitTestCallback implements Runnable {
-    VM whereRegionOperation;
-    static int callCount;
+    private VM whereRegionOperation;
+    private int callCount;
     /* entered twice for each put lap since there are 2 regions */
-    static int releasePoint = NUMBER_OF_PUTS;
+    private int releasePoint = NUMBER_OF_PUTS;
 
-    public CommitTestCallback(VM whereRegion) {
+    CommitTestCallback(VM whereRegion) {
       whereRegionOperation = whereRegion;
       callCount = 0;
     }
@@ -422,12 +385,8 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
    * occurring. Before this occurs, resume commit processing.
    */
   public class ArmLockHook extends ARMLockTestHookAdapter {
-    int txCalls = 0;
-    int releasePoint = NUMBER_OF_PUTS / 2;
-    CountDownLatch putLatch = new CountDownLatch(1);
-
     @Override
-    public void beforeLock(LocalRegion owner, CacheEvent event) {
+    public void beforeLock(InternalRegion owner, CacheEvent event) {
       if (event != null) {
         if (event.getOperation().isClear() || event.getOperation().isRegionDestroy()
             || event.getOperation().isClose()) {

@@ -24,21 +24,21 @@ package org.apache.geode.internal.datasource;
 public interface DataSourceResources {
 
   /** Creates a new instance of DataSourceResources */
-  public static final String JNDI_CONNECTION_POOL_DATA_SOURCE = "jdbc/ConnectionPoolDataSource";
+  String JNDI_CONNECTION_POOL_DATA_SOURCE = "jdbc/ConnectionPoolDataSource";
   /* Default limit of maximum number of connection in the connection pool */
-  public static final int CONNECTION_POOL_DEFAULT_MAX_LIMIT = 30;
+  int CONNECTION_POOL_DEFAULT_MAX_LIMIT = 30;
   /* Default initial connection pool size */
-  public static final int CONNECTION_POOL_DEFAULT_INIT_LIMIT = 10;
+  int CONNECTION_POOL_DEFAULT_INIT_LIMIT = 10;
   /*
    * Default time in seconds after which the connections in the available pool will expire
    */
-  public static final int CONNECTION_POOL_DEFAULT_EXPIRATION_TIME = 600;
+  int CONNECTION_POOL_DEFAULT_EXPIRATION_TIME = 600;
   // Default time in seconds after which the connections in the active cache
   // will be destroyed */
-  public static final int CONNECTION_POOL_DEFAULT_ACTIVE_TIME_OUT = 120;
+  int CONNECTION_POOL_DEFAULT_ACTIVE_TIME_OUT = 120;
   // Default time in seconds after which the client thread for
   // retrieving connection will experience timeout
-  public static final int CONNECTION_POOL_DEFAULT_CLIENT_TIME_OUT = 30;
+  int CONNECTION_POOL_DEFAULT_CLIENT_TIME_OUT = 30;
   // Default Cleaner thread sleep time in seconds 30
-  public static final int CLEANER_THREAD_SLEEP = 30;
+  int CLEANER_THREAD_SLEEP = 30;
 }

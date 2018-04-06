@@ -40,6 +40,12 @@ fi
 EMAIL_SUBJECT="${BUILDROOT}/built-geode/subject"
 EMAIL_BODY="${BUILDROOT}/built-geode/body"
 
+echo "Geode unit tests  '\${BUILD_PIPELINE_NAME}/\${BUILD_JOB_NAME}' took too long to execute" > $EMAIL_SUBJECT
+echo "Pipeline results can be found at:" >$EMAIL_BODY
+echo "" >>$EMAIL_BODY
+echo "Concourse: \${ATC_EXTERNAL_URL}/teams/\${BUILD_TEAM_NAME}/pipelines/\${BUILD_PIPELINE_NAME}/jobs/\${BUILD_JOB_NAME}/builds/\${BUILD_NAME}" >>$EMAIL_BODY
+echo "" >>$EMAIL_BODY
+
 # Called by trap when the script is exiting
 function error_exit() {
   echo "Geode unit tests completed in '\${BUILD_PIPELINE_NAME}/\${BUILD_JOB_NAME}' with non-zero exit code" > $EMAIL_SUBJECT
@@ -98,6 +104,9 @@ fi
 DEFAULT_GRADLE_TASK_OPTIONS="--no-daemon -x javadoc -x spotlessCheck"
 
 mkdir -p ${GEODE_BUILD}
+if [ -v CALL_STACK_TIMEOUT ]; then
+  geode-ci/ci/scripts/capture-call-stacks.sh  ${CALL_STACK_TIMEOUT} &
+fi
 
 pushd geode
   tar cf - * | (cd ${GEODE_BUILD}; tar xpf -)

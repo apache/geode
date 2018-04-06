@@ -37,7 +37,7 @@ public interface ManagedEntity {
    *
    * @see #waitToStart
    */
-  public void start() throws AdminException;
+  void start() throws AdminException;
 
   /**
    * Stops this managed entity. Note that this method may return before the managed entity is
@@ -50,7 +50,7 @@ public interface ManagedEntity {
    *
    * @see #waitToStop
    */
-  public void stop() throws AdminException;
+  void stop() throws AdminException;
 
   /**
    * Waits for up to a given number of milliseconds for this managed entity to {@linkplain #start
@@ -62,7 +62,7 @@ public interface ManagedEntity {
    *
    * @throws InterruptedException If the thread invoking this method is interrupted while waiting.
    */
-  public boolean waitToStart(long timeout) throws InterruptedException;
+  boolean waitToStart(long timeout) throws InterruptedException;
 
   /**
    * Waits for up to a given number of milliseconds for this managed entity to {@linkplain #stop
@@ -74,7 +74,7 @@ public interface ManagedEntity {
    *
    * @throws InterruptedException If the thread invoking this method is interrupted while waiting.
    */
-  public boolean waitToStop(long timeout) throws InterruptedException;
+  boolean waitToStop(long timeout) throws InterruptedException;
 
   /**
    * Returns whether or not this managed entity is running. Note that this operation may attempt to
@@ -84,7 +84,7 @@ public interface ManagedEntity {
    *         <code>null</code> or empty (<code>""</code>)
    *         {@linkplain ManagedEntityConfig#getRemoteCommand remote command} has been specified.
    */
-  public boolean isRunning();
+  boolean isRunning();
 
   /**
    * Returns the tail of this manage entity's log file. Note that not all managed entities implement
@@ -95,6 +95,6 @@ public interface ManagedEntity {
    * @throws UnsupportedOperationException If this managed entity does not support retrieving its
    *         log.
    */
-  public String getLog() throws AdminException;
+  String getLog() throws AdminException;
 
 }

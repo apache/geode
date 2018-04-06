@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyPr
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
@@ -56,6 +57,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -214,11 +216,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     Assert.assertTrue(internalRegionArgs.getPartitionedRegion() != null);
     this.redundancy = internalRegionArgs.getPartitionedRegionBucketRedundancy();
     this.partitionedRegion = internalRegionArgs.getPartitionedRegion();
+    setEventSeqNum();
   }
 
   // Attempt to direct the GII process to the primary first
   @Override
-  protected void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
+  public void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
       InternalRegionArguments internalRegionArgs)
       throws TimeoutException, IOException, ClassNotFoundException {
     // Set this region in the ProxyBucketRegion early so that profile exchange will
@@ -226,28 +229,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     getBucketAdvisor().getProxyBucketRegion().setBucketRegion(this);
     boolean success = false;
     try {
-      if (this.partitionedRegion.isShadowPR()
-          && this.partitionedRegion.getColocatedWith() != null) {
-        PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(this.partitionedRegion);
-        BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
-        // needs to be set only once.
-        if (parentBucket.eventSeqNum == null) {
-          parentBucket.eventSeqNum = new AtomicLong5(getId());
-        }
-      }
-      if (this.partitionedRegion.getColocatedWith() == null) {
-        this.eventSeqNum = new AtomicLong5(getId());
-      } else {
-        PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(this.partitionedRegion);
-        BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
-        if (parentBucket == null && logger.isDebugEnabled()) {
-          logger.debug("The parentBucket of region {} bucketId {} is NULL",
-              this.partitionedRegion.getFullPath(), getId());
-        }
-        Assert.assertTrue(parentBucket != null);
-        this.eventSeqNum = parentBucket.eventSeqNum;
-      }
-
       final InternalDistributedMember primaryHolder = getBucketAdvisor().basicGetPrimaryMember();
       if (primaryHolder != null && !primaryHolder.equals(getMyId())) {
         // Ignore the provided image target, use an existing primary (if any)
@@ -265,6 +246,28 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  private void setEventSeqNum() {
+    if (this.partitionedRegion.isShadowPR() && this.partitionedRegion.getColocatedWith() != null) {
+      PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(this.partitionedRegion);
+      BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
+      // needs to be set only once.
+      if (parentBucket.eventSeqNum == null) {
+        parentBucket.eventSeqNum = new AtomicLong5(getId());
+      }
+    }
+    if (this.partitionedRegion.getColocatedWith() == null) {
+      this.eventSeqNum = new AtomicLong5(getId());
+    } else {
+      PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(this.partitionedRegion);
+      BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
+      if (parentBucket == null && logger.isDebugEnabled()) {
+        logger.debug("The parentBucket of region {} bucketId {} is NULL",
+            this.partitionedRegion.getFullPath(), getId());
+      }
+      Assert.assertTrue(parentBucket != null);
+      this.eventSeqNum = parentBucket.eventSeqNum;
+    }
+  }
 
 
   @Override
@@ -720,7 +723,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
 
     if (cache.isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw cache.getCacheClosedException("Cache is shutting down");
     }
 
     Object keys[] = new Object[1];
@@ -757,7 +760,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       checkForPrimary();
 
       if (cache.isCacheAtShutdownAll()) {
-        throw new CacheClosedException("Cache is shutting down");
+        throw cache.getCacheClosedException("Cache is shutting down");
       }
 
       isPrimary = true;
@@ -871,7 +874,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // 1) apply op locally
   // 2) update local bs, gateway
   @Override
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
+  public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     basicInvalidate(event, isInitialized(), false);
   }
 
@@ -998,7 +1001,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     if (event.getOperation().isLocal()) { // bug #45402 - localDestroy generated a version tag
       return false;
     }
-    return this.concurrencyChecksEnabled
+    return this.getConcurrencyChecksEnabled()
         && ((event.getVersionTag() == null) || event.getVersionTag().isGatewayTag());
   }
 
@@ -1140,7 +1143,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // 1) apply op locally
   // 2) update local bs, gateway
   @Override
-  protected void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
+  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
       Object expectedOldValue)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
 
@@ -1222,7 +1225,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
+  public void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
     long token = -1;
     DestroyOperation op = null;
     try {
@@ -1312,7 +1315,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     Assert.assertTrue(!isTX());
     Assert.assertTrue(event.getOperation().isDistributed());
 
-    LocalRegion lr = event.getLocalRegion();
+    LocalRegion lr = event.getRegion();
     AbstractRegionMap arm = ((AbstractRegionMap) lr.getRegionMap());
     try {
       arm.lockForCacheModification(lr, event);
@@ -1338,7 +1341,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         endLocalWrite(event);
       }
     } finally {
-      arm.releaseCacheModificationLock(event.getLocalRegion(), event);
+      arm.releaseCacheModificationLock(event.getRegion(), event);
     }
   }
 
@@ -1380,12 +1383,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   @Override
   public int sizeEstimate() {
     return size();
-  }
-
-  @Override
-  public int getRegionSize(DistributedMember target) {
-    // GEODE-3679. Do not forward the request again.
-    return getRegionSize();
   }
 
   @Override
@@ -2135,7 +2132,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  void updateSizeOnRemove(Object key, int oldSize) {
+  public void updateSizeOnRemove(Object key, int oldSize) {
     this.partitionedRegion.getPrStats().incDataStoreEntryCount(-1);
     updateBucket2Size(oldSize, 0, SizeOp.DESTROY);
   }
@@ -2178,7 +2175,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   protected void closeCallbacksExceptListener() {
     // closeCacheCallback(getCacheLoader()); - fix bug 40228 - do NOT close loader
     closeCacheCallback(getCacheWriter());
-    closeCacheCallback(getEvictionController());
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      evictionController.closeBucket(this);
+    }
   }
 
   public long getTotalBytes() {
@@ -2337,11 +2337,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     this.numEntriesInVM.addAndGet(delta);
   }
 
-  public void incEvictions(long delta) {
-    this.evictions.getAndAdd(delta);
+  @Override
+  public void incBucketEvictions() {
+    this.evictions.getAndAdd(1);
   }
 
-  public long getEvictions() {
+  public long getBucketEvictions() {
     return this.evictions.get();
   }
 
@@ -2454,4 +2455,25 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
     super.postDestroyRegion(destroyDiskRegion, event);
   }
+
+  @Override
+  public EvictionController getExistingController(InternalRegionArguments internalArgs) {
+    return internalArgs.getPartitionedRegion().getEvictionController();
+  }
+
+  @Override
+  public String getNameForStats() {
+    return this.getPartitionedRegion().getFullPath();
+  }
+
+  @Override
+  public void closeEntries() {
+    this.entries.close(this);
+  }
+
+  @Override
+  public Set<VersionSource> clearEntries(RegionVersionVector rvv) {
+    return this.entries.clear(rvv, this);
+  }
+
 }

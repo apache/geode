@@ -41,7 +41,7 @@ public class ExportLogsStatsOverHttpDUnitTest extends ExportLogsStatsDUnitTest {
   @Override
   public void connectIfNeeded() throws Exception {
     if (!connector.isConnected())
-      connector.connect(httpPort, GfshCommandRule.PortType.http);
+      connector.connect(locator.getHttpPort(), GfshCommandRule.PortType.http);
   }
 
   @Test
@@ -59,7 +59,7 @@ public class ExportLogsStatsOverHttpDUnitTest extends ExportLogsStatsDUnitTest {
     Set<String> actualZipEntries =
         new ZipFile(zipPath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
 
-    assertThat(actualZipEntries).isEqualTo(expectedZipEntries);
+    assertThat(actualZipEntries).containsAll(expectedZipEntries);
 
     // also verify that the zip file on locator is deleted
     assertThat(Arrays.stream(locator.getWorkingDir().listFiles())

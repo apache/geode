@@ -17,22 +17,20 @@ package org.apache.geode.internal.process;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.lang.SystemUtils.isWindows;
 import static org.apache.geode.internal.process.ProcessStreamReader.ReadingMode.BLOCKING;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assume.assumeTrue;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
  * Functional integration test {@link #hangsOnWindows} for BlockingProcessStreamReader which
@@ -52,20 +50,12 @@ public class BlockingProcessStreamReaderWindowsTest
   /** Timeout to confirm hang on Windows */
   private static final int HANG_TIMEOUT_SECONDS = 10;
 
-  private ExecutorService futures;
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Before
   public void setUp() throws Exception {
     assumeTrue(isWindows());
-
-    futures = Executors.newSingleThreadExecutor();
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    if (futures != null) {
-      assertThat(futures.shutdownNow()).isEmpty();
-    }
   }
 
   @Test
@@ -74,7 +64,7 @@ public class BlockingProcessStreamReaderWindowsTest
     givenRunningProcessWithStreamReaders(ProcessSleeps.class);
 
     // act
-    Future<Boolean> future = futures.submit(() -> {
+    Future<Boolean> future = executorServiceRule.submit(() -> {
       process.getOutputStream().close();
       process.getErrorStream().close();
       process.getInputStream().close();

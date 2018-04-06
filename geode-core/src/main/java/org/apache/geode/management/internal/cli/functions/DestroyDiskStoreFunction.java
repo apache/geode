@@ -15,11 +15,10 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
@@ -28,7 +27,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  *
  * @since GemFire 8.0
  */
-public class DestroyDiskStoreFunction implements Function, InternalEntity {
+public class DestroyDiskStoreFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
   @Override
@@ -69,5 +68,4 @@ public class DestroyDiskStoreFunction implements Function, InternalEntity {
     }
     context.getResultSender().lastResult(result);
   }
-
 }

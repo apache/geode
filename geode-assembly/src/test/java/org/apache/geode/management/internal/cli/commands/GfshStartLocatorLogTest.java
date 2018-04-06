@@ -24,7 +24,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.AbstractConfig;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -44,7 +43,7 @@ public class GfshStartLocatorLogTest {
 
   @Test
   public void startupConfigsOnlyLogsOnce() throws Exception {
-    final String startupConfigs = AbstractConfig.GEM_FIRE_PROPERTIES_USING_DEFAULT_VALUES;
+    final String startupConfigs = "### GemFire Properties using default values ###";
     String lines = getExecutionLogs();
     assertThat(lines.indexOf(startupConfigs)).isEqualTo(lines.lastIndexOf(startupConfigs));
   }

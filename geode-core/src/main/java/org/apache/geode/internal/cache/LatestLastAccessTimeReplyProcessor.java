@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -37,7 +37,8 @@ public class LatestLastAccessTimeReplyProcessor extends ReplyProcessor21 {
 
   private long latestLastAccessTime = 0;
 
-  public LatestLastAccessTimeReplyProcessor(DM dm, Set<InternalDistributedMember> recipients) {
+  public LatestLastAccessTimeReplyProcessor(DistributionManager dm,
+      Set<InternalDistributedMember> recipients) {
     super(dm, recipients);
   }
 

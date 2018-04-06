@@ -14,23 +14,27 @@
  */
 package org.apache.geode.cache.client.internal.pooling;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,11 +42,23 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.AllConnectionsInUseException;
 import org.apache.geode.cache.client.NoAvailableServersException;
-import org.apache.geode.cache.client.internal.*;
+import org.apache.geode.cache.client.internal.ClientUpdater;
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ConnectionFactory;
+import org.apache.geode.cache.client.internal.ConnectionImpl;
+import org.apache.geode.cache.client.internal.ConnectionStats;
+import org.apache.geode.cache.client.internal.Endpoint;
+import org.apache.geode.cache.client.internal.EndpointManager;
+import org.apache.geode.cache.client.internal.EndpointManagerImpl;
+import org.apache.geode.cache.client.internal.Op;
+import org.apache.geode.cache.client.internal.QueueManager;
+import org.apache.geode.cache.client.internal.ServerBlackList;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PoolStats;
@@ -102,6 +118,17 @@ public class ConnectionManagerJUnitTest {
       manager.close(false);
     }
     background.shutdownNow();
+  }
+
+  @Test
+  public void testAddVarianceToInterval() {
+    assertThat(ConnectionManagerImpl.addVarianceToInterval(0)).as("Zero gets zero variance")
+        .isEqualTo(0);
+    assertThat(ConnectionManagerImpl.addVarianceToInterval(300000))
+        .as("Large value gets +/-10% variance").isNotEqualTo(300000).isGreaterThanOrEqualTo(270000)
+        .isLessThanOrEqualTo(330000);
+    assertThat(ConnectionManagerImpl.addVarianceToInterval(9)).as("Small value gets +/-1 variance")
+        .isNotEqualTo(9).isGreaterThanOrEqualTo(8).isLessThanOrEqualTo(10);
   }
 
   @Test
@@ -564,6 +591,72 @@ public class ConnectionManagerJUnitTest {
     Assert.assertEquals(2, manager.getConnectionCount());
 
     manager.returnConnection(conn4);
+  }
+
+  /**
+   * This tests that a deadlock between connection formation and connection pool closing has been
+   * fixed. See GEODE-4615
+   */
+  @Test
+  public void testThatMapCloseCausesCacheClosedException() throws Exception {
+    final ConnectionManagerImpl connectionManager = new ConnectionManagerImpl("pool", factory,
+        endpointManager, 2, 0, -1, -1, logger, 60 * 1000, cancelCriterion, poolStats);
+    manager = connectionManager;
+    connectionManager.start(background);
+    final ConnectionManagerImpl.ConnectionMap connectionMap = connectionManager.allConnectionsMap;
+
+    final int thread1 = 0;
+    final int thread2 = 1;
+    final boolean[] ready = new boolean[2];
+    Thread thread = new Thread("ConnectionManagerJUnitTest thread") {
+      public void run() {
+        setReady(ready, thread1);
+        waitUntilReady(ready, thread2);
+        connectionMap.close(false);
+      }
+    };
+    thread.setDaemon(true);
+    thread.start();
+    try {
+      Connection firstConnection = connectionManager.borrowConnection(0);
+      synchronized (firstConnection) {
+        setReady(ready, thread2);
+        waitUntilReady(ready, thread1);
+        // the other thread will now try to close the connection map but it will block
+        // because this thread has locked one of the connections
+        Awaitility.await().atMost(5, SECONDS).until(() -> connectionMap.closing);
+        try {
+          connectionManager.borrowConnection(0);
+          fail("expected a CacheClosedException");
+        } catch (CacheClosedException e) {
+          // expected
+        }
+      }
+    } finally {
+      if (thread.isAlive()) {
+        System.out.println("stopping background thread");
+        thread.interrupt();
+        thread.join();
+      }
+    }
+  }
+
+  private void setReady(boolean[] ready, int index) {
+    System.out.println(
+        Thread.currentThread().getName() + ": setting that thread" + (index + 1) + " is ready");
+    synchronized (ready) {
+      ready[index] = true;
+    }
+  }
+
+  private void waitUntilReady(boolean[] ready, int index) {
+    System.out.println(
+        Thread.currentThread().getName() + ": waiting for thread" + (index + 1) + " to be ready");
+    Awaitility.await().atMost(20, SECONDS).until(() -> {
+      synchronized (ready) {
+        return (ready[index]);
+      }
+    });
   }
 
   @Test

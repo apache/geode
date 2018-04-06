@@ -18,8 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<a id="topic_3151ACDA3677431BB5059EB7FCB47D87"></a>
-
 
 Start servers, locators, gateway senders and gateway receivers, and monitoring tools.
 
@@ -64,13 +62,13 @@ Note that you can only have one gateway receiver on each member, and unlike a ga
 ``` pre
 start gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 ```
+**Parameters, start gateway-receiver**
 
 | Name                                           | Description                                                      |
 |------------------------------------------------|------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-members</span> | Name or ID of the member(s) on which to start the Gateway Receiver. |
 | <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to start the Gateway Receiver.      |
 
-<span class="tablecap">Table 1. Start Gateway-Receiver Parameters</span>
 
 **Example Commands:**
 
@@ -116,14 +114,13 @@ Note: By default, gateway senders are configured to start automatically. Manual 
 ``` pre
 start gateway-sender --id=value [--groups=value(,value)*] [--members=value(,value)*]
 ```
+**Parameters, start gateway-sender**
 
 | Name                                           | Description                                               |
 |------------------------------------------------|-----------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-id</span>     | *Required.* ID of the GatewaySender.                      |
 | <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to start the Gateway Sender. |
 | <span class="keyword parmname">\\-\\-members</span> | Member(s) on which to start the Gateway Sender                   |
-
-<span class="tablecap">Table 2. Start Gateway-Sender Parameters</span>
 
 **Example Commands:**
 
@@ -173,15 +170,15 @@ start jconsole [--interval=<seconds>] [--notile] [--version]
 [--J<jconsole JVM options>]
 ```
 
-| Name                                               | Description                                                                                                                                                                                                                                                                                                                                                                                                | Default Value |
-|----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
-| <span class="keyword parmname">\\-\\-interval</span>   | Set the update interval to n seconds (default is 4 seconds). (Equivalent to JConsole's `-interval=n`)                                                                                                                                                                                                                                                                                                      | 4             |
-| <span class="keyword parmname">\\-\\-notile</span>     | Whether to initially tile windows for two or more connections. This parameter is passed as `-notile` to JConsole.                                                                                                                                                                                                                                                                                          | false         |
-| <span class="keyword parmname">&#8209;&#8209;pluginpath</span> | Directories or JAR files which are searched for JConsole plugins. The path should contain a provider-configuration file named:`META-INF/services/com.sun.tools.jconsole.JConsolePlugin` containing one line for each plugin specifying the fully qualified class name of the class implementing the `com.sun.tools.jconsole.JConsolePlugin` class. |               |
-| <span class="keyword parmname">\\-\\-version</span>    | Display the JConsole version information. This parameter is passed as `-version` to JConsole.                                                                                                                                                                                                                                                                                                              | false         |
-| <span class="keyword parmname">\\-\\-J</span>          | Arguments passed to the JVM on which JConsole runs                                                                                                                                                                                                                                                                                                                                                         |               |
+**Parameters, start jconsole**
 
-<span class="tablecap">Table 3. Start JConsole Parameters</span>
+| Name         | Description    | Default Value |
+|--------------|----------------|---------------|
+| <span class="keyword parmname">\\-\\-interval</span>   | Set the update interval to n seconds (default is 4 seconds). (Equivalent to JConsole's `-interval=n`) | 4             |
+| <span class="keyword parmname">\\-\\-notile</span>     | Whether to initially tile windows for two or more connections. This parameter is passed as `-notile` to JConsole. | false         |
+| <span class="keyword parmname">&#8209;&#8209;pluginpath</span> | Directories or JAR files which are searched for JConsole plugins. The path should contain a provider-configuration file named:`META-INF/services/com.sun.tools.jconsole.JConsolePlugin` containing one line for each plugin specifying the fully qualified class name of the class implementing the `com.sun.tools.jconsole.JConsolePlugin` class. |               |
+| <span class="keyword parmname">\\-\\-version</span>    | Display the JConsole version information. This parameter is passed as `-version` to JConsole. | false         |
+| <span class="keyword parmname">\\-\\-J</span>          | Arguments passed to the JVM on which JConsole runs |               |
 
 **Example Commands:**
 
@@ -234,11 +231,11 @@ Start the JDK's Java VisualVM monitoring application in a separate process.
 start jvisualvm [--J=value(,value)*]
 ```
 
-| Name                                      | Description |
-|-------------------------------------------|------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-J</span> | VM-option passed to the spawned CacheServer VM. For example: `-J-Dfoo.bar=true` for setting foo.bar to 'true'. |
+**Parameters, start jvisualvm**
 
-<span class="tablecap">Table 4. Start JVisalVM Parameters</span>
+| Name       | Description |
+|------------|-------------|
+| <span class="keyword parmname">\\-\\-J</span> | VM-option passed to the spawned CacheServer VM. For example: `--J=-Dfoo.bar=true` for setting foo.bar to 'true'. |
 
 **Example Commands:**
 
@@ -270,10 +267,12 @@ start locator --name=value [--bind-address=value] [--force(=value)]
  [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value]
  [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value]
  [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-cluster-configuration-from-dir(=value)]
- [--cluster-config-dir=value]
+ [--cluster-config-dir=value] [--redirect-output(=value)]
  [--http-service-port=value] [--http-service-bind-address=value] 
  [--J=value(,value)*]
 ```
+
+**Parameters, start locator**
 
 <table>
 <colgroup>
@@ -392,6 +391,11 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <td>cluster-config</td>
 </tr>
 <tr class="even">
+<td><span class="keyword parmname">\-\-redirect-output</span></td>
+<td>When true, redirect standard output and standard error to the locator log file. If specified without a value, the value is set to true.</td>
+<td>false</td>
+</tr>
+<tr class="even">
 <td><span class="keyword parmname">\-\-http-service-port</span></td>
 <td>Specifies the HTTP service port.</td>
 <td>7070</td>
@@ -416,8 +420,6 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 </tbody>
 </table>
 
-<span class="tablecap">Table 5. Start Locator Parameters</span>
-
 **Example Commands:**
 
 ``` pre
@@ -438,11 +440,11 @@ For more information on <%=vars.product_name%> Pulse, see [<%=vars.product_name%
 start pulse [--url=value]
 ```
 
+**Parameters, start pulse**
+
 | Name                                        | Description                      | Default                       |
 |---------------------------------------------|----------------------------------|-------------------------------|
 | <span class="keyword parmname">\\-\\-url</span> | URL of the Pulse Web application | `http://localhost:7070/pulse` |
-
-<span class="tablecap">Table 6. Start Pulse Parameters</span>
 
 **Example Commands:**
 
@@ -480,12 +482,12 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
     [--hostname-for-clients=value] [--max-connections=value]
     [--message-time-to-live=value] [--max-message-count=value] [--max-threads=value]
     [--socket-buffer-size=value] [--lock-memory=value] [--off-heap-memory-size=value]
-    [--start-rest-api=value]
+    [--start-rest-api=value] [--redirect-output(=value)]
     [--http-service-port=value] [--http-service-bind-address=value]
     [--user=value] [--password=value]
 ```
 
-<a id="topic_3764EE2DB18B4AE4A625E0354471738A__table_at5_bwg_2w"></a>
+**Parameters, start server**
 
 <table>
 <colgroup>
@@ -734,6 +736,11 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <td>false</td>
 </tr>
 <tr class="even">
+<td><span class="keyword parmname">\-\-redirect-output</span></td>
+<td>When true, redirect standard output and standard error to the server log file. If specified without a value, the value is set to true.</td>
+<td>false</td>
+</tr>
+<tr class="even">
 <td><span class="keyword parmname">\-\-http-service-port</span></td>
 <td>Specifies the HTTP service port.</td>
 <td>7070</td>
@@ -761,8 +768,6 @@ the cluster.
 </tr>
 </tbody>
 </table>
-
-<span class="tablecap">Table 7. Start Server Parameters</span>
 
 
 ### <a id="topic_3764EE2DB18B4AE4A625E0354471738A__section_A50120613D3C4A848463236C4EFF18C7" class="no-quick-link"></a>Examples

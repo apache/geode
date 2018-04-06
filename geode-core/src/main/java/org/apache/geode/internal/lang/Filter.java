@@ -24,6 +24,6 @@ package org.apache.geode.internal.lang;
  */
 public interface Filter<T> {
 
-  public boolean accept(T obj);
+  boolean accept(T obj);
 
 }

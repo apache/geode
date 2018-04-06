@@ -30,11 +30,9 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -164,9 +162,7 @@ public class LRUListWithSyncSortingIntegrationTest {
   private LRUListWithSyncSorting getEvictionList(Region region, EvictionController eviction) {
     System.setProperty("geode." + SystemPropertyHelper.EVICTION_SCAN_ASYNC, "false");
     System.setProperty("geode." + SystemPropertyHelper.EVICTION_SEARCH_MAX_ENTRIES, "15");
-    return (LRUListWithSyncSorting) new EvictionListBuilder(EvictionAlgorithm.LRU_HEAP)
-        .withRegion(region).withEvictionController(eviction).withArgs(new InternalRegionArguments())
-        .create();
+    return (LRUListWithSyncSorting) new EvictionListBuilder(eviction).create();
   }
 
   private InternalRegion createRegion() throws Exception {

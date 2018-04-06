@@ -18,23 +18,23 @@ package org.apache.geode.internal.admin;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * Represents display information about a single distributed lock
  */
 public interface DLockInfo extends Serializable {
-  public String getService();
+  String getService();
 
-  public String getThreadId();
+  String getThreadId();
 
-  public String getLockName();
+  String getLockName();
 
-  public boolean isAcquired();
+  boolean isAcquired();
 
-  public int getRecursionCount();
+  int getRecursionCount();
 
-  public InternalDistributedMember getOwner();
+  InternalDistributedMember getOwner();
 
-  public Date getLeaseExpireTime();
+  Date getLeaseExpireTime();
 }

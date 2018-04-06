@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -256,7 +257,7 @@ public abstract class DynamicRegionFactory {
 
         if (isClient) {
           af.setScope(Scope.LOCAL);
-          af.setDataPolicy(DataPolicy.NORMAL); // MirrorType(MirrorType.NONE);
+          af.setDataPolicy(DataPolicy.NORMAL);
           af.setStatisticsEnabled(true);
           String cpName = this.config.getPoolName();
           if (cpName != null) {
@@ -278,7 +279,7 @@ public abstract class DynamicRegionFactory {
           af.setScope(Scope.DISTRIBUTED_ACK);
           if (!this.config.getPersistBackup()) { // if persistBackup, the data policy has already
                                                  // been set
-            af.setDataPolicy(DataPolicy.REPLICATE); // setMirrorType(MirrorType.KEYS_VALUES);
+            af.setDataPolicy(DataPolicy.REPLICATE);
           }
 
           for (GatewaySender gs : this.cache.getGatewaySenders()) {
@@ -587,7 +588,7 @@ public abstract class DynamicRegionFactory {
     AttributesFactory af = new AttributesFactory(rra);
     EvictionAttributes ev = rra.getEvictionAttributes();
     if (ev != null && ev.getAlgorithm().isLRU()) {
-      EvictionAttributes rev = new EvictionAttributesImpl((EvictionAttributesImpl) ev);
+      EvictionAttributes rev = new EvictionAttributesImpl(ev);
       af.setEvictionAttributes(rev);
     }
 
@@ -623,7 +624,7 @@ public abstract class DynamicRegionFactory {
     }
 
     if (this.config.getRegisterInterest()) {
-      ServerRegionProxy proxy = ((LocalRegion) newRegion).getServerProxy();
+      ServerRegionProxy proxy = ((InternalRegion) newRegion).getServerProxy();
       if (proxy != null) {
         if (((Pool) proxy.getPool()).getSubscriptionEnabled()) {
           try {
@@ -871,7 +872,7 @@ public abstract class DynamicRegionFactory {
 
     // This is an internal uses only region
     @Override
-    protected boolean isSecret() {
+    public boolean isSecret() {
       return true;
     }
 
@@ -980,7 +981,7 @@ public abstract class DynamicRegionFactory {
 
     // This is an internal uses only region
     @Override
-    protected boolean isSecret() {
+    public boolean isSecret() {
       return true;
     }
 

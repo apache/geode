@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -89,6 +89,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
         new ContainsKeyValueResponse(r.getSystem(), Collections.singleton(recipient), key);
     ContainsKeyValueMessage m =
         new ContainsKeyValueMessage(recipient, r.getPRId(), p, key, bucketId, valueCheck);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
@@ -105,7 +106,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) throws CacheException, ForceReattemptException {
     PartitionedRegionDataStore ds = r.getDataStore();
     final boolean replyVal;
@@ -200,7 +201,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
 
       if (processor == null) {
@@ -292,9 +293,6 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
       } catch (ForceReattemptException rce) {
         rce.checkKey(key);
         throw rce;
-      } catch (PrimaryBucketException pbe) {
-        // Is this necessary?
-        throw pbe;
       } catch (CacheException ce) {
         logger.debug("ContainsKeyValueResponse got remote CacheException; forcing reattempt. {}",
             ce.getMessage(), ce);

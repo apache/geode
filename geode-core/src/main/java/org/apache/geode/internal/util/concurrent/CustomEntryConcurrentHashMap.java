@@ -53,12 +53,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
@@ -118,7 +117,7 @@ import org.apache.geode.internal.util.ArrayUtils;
  * @param <V> the type of mapped values
  */
 public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
-    implements ConcurrentMap<K, V>, Serializable {
+    implements ConcurrentMapWithReusableEntries<K, V>, Serializable {
 
   private static final long serialVersionUID = -7056732555635108300L;
 
@@ -256,7 +255,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}
    * objects for each entry in the map.
    */
-  public static interface HashEntry<K, V> {
+  public interface HashEntry<K, V> {
 
     /**
      * Get the key object for this entry.
@@ -377,19 +376,19 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}
    * objects by caller. This can be used, for example, to return GemFire RegionEntries directly.
    */
-  public static interface HashEntryCreator<K, V> {
+  public interface HashEntryCreator<K, V> {
 
     /**
      * Create a new
      * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}
      * given the key, hash, value and next element.
      */
-    public HashEntry<K, V> newEntry(K key, int hash, HashEntry<K, V> next, V value);
+    HashEntry<K, V> newEntry(K key, int hash, HashEntry<K, V> next, V value);
 
     /**
      * Get the hashCode for given key object.
      */
-    public int keyHashCode(Object key, boolean compareValues);
+    int keyHashCode(Object key, boolean compareValues);
   }
 
   // End GemStone addition
@@ -1559,7 +1558,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @param <C> the type of context parameter passed to the creation/removal methods
    * @param <P> the type of extra parameter passed to the creation/removal methods
    */
-  public static interface MapCallback<K, V, C, P> {
+  public interface MapCallback<K, V, C, P> {
 
     /**
      * Create a new instance of the value object given the key and provided parameters for
@@ -1569,7 +1568,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * @param context any context in which this method has been invoked
      * @param createParams parameters, if any, required for construction of a new value object
      */
-    public V newValue(K key, C context, P createParams);
+    V newValue(K key, C context, P createParams);
 
     /**
      * Invoked when an existing value in map is read by the
@@ -1578,7 +1577,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      *
      * @param value the value read by create that will be returned
      */
-    public void oldValueRead(V value);
+    void oldValueRead(V value);
 
     /**
      * Check if the existing value should be removed by the
@@ -1588,7 +1587,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * @param context any context in which this method has been invoked
      * @param removeParams parameters, if any, to be passed for cleanup of the object
      */
-    public boolean doRemoveValue(V value, C context, P removeParams);
+    boolean doRemoveValue(V value, C context, P removeParams);
   }
 
   /**
@@ -1784,11 +1783,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     return segmentFor(hash).replace(key, hash, value);
   }
 
-  /**
-   * Removes all of the mappings from this map.
-   */
+  // GemStone addition
   @Override
-  public void clear() {
+  public void clearWithExecutor(Executor executor) {
     ArrayList<HashEntry<?, ?>> entries = null;
     try {
       for (int i = 0; i < this.segments.length; ++i) {
@@ -1809,10 +1806,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
           }
         };
         boolean submitted = false;
-        InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
-        if (ids != null) {
+        if (executor != null) {
           try {
-            ids.getDistributionManager().getWaitingThreadPool().execute(runnable);
+            executor.execute(runnable);
             submitted = true;
           } catch (RejectedExecutionException e) {
             // fall through with submitted false
@@ -1831,6 +1827,15 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       }
     }
   }
+
+  /**
+   * Removes all of the mappings from this map.
+   */
+  @Override
+  public void clear() {
+    clearWithExecutor(null);
+  }
+  // End GemStone addition
 
   /**
    * Returns a {@link Set} view of the keys contained in this map. The set is backed by the map, so
@@ -1892,23 +1897,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   // GemStone addition
 
-  /**
-   * Returns a {@link Set} view of the mappings contained in this map. The set is backed by the map,
-   * so changes to the map are reflected in the set, and vice-versa. The set supports element
-   * removal, which removes the corresponding mapping from the map, via the
-   * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and
-   * <tt>clear</tt> operations. It does not support the <tt>add</tt> or <tt>addAll</tt> operations.
-   *
-   * <p>
-   * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will never throw
-   * {@link java.util.ConcurrentModificationException}, and guarantees to traverse elements as they
-   * existed upon construction of the iterator, and may (but is not guaranteed to) reflect any
-   * modifications subsequent to construction.
-   *
-   * <p>
-   * This set provides entries that are reused during iteration so caller cannot store the returned
-   * <code>Map.Entry</code> objects.
-   */
+  @Override
   public Set<Map.Entry<K, V>> entrySetWithReusableEntries() {
     final Set<Map.Entry<K, V>> es = this.reusableEntrySet;
     return (es != null) ? es : (this.reusableEntrySet = new EntrySet(true));

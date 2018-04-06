@@ -21,7 +21,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
@@ -178,7 +178,7 @@ public interface RegionEntry {
    */
   boolean fillInValue(InternalRegion region,
       @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) Entry entry, ByteArrayDataInput in,
-      DM distributionManager, final Version version);
+      DistributionManager distributionManager, final Version version);
 
   /**
    * Returns true if this entry has overflowed to disk.

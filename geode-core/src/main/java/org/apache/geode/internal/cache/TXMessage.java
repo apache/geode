@@ -26,7 +26,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -66,7 +66,7 @@ public abstract class TXMessage extends SerialDistributionMessage
   }
 
   @Override
-  protected void process(final DistributionManager dm) {
+  protected void process(final ClusterDistributionManager dm) {
     Throwable thr = null;
     boolean sendReply = true;
     try {
@@ -75,8 +75,14 @@ public abstract class TXMessage extends SerialDistributionMessage
       }
       InternalCache cache = dm.getCache();
       if (checkCacheClosing(cache) || checkDSClosing(cache.getInternalDistributedSystem())) {
-        thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-            .toLocalizedString(dm.getId()));
+        if (cache == null) {
+          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+              .toLocalizedString(dm.getId()));
+        } else {
+          thr = cache
+              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+                  .toLocalizedString(dm.getId()));
+        }
         return;
       }
       TXManagerImpl txMgr = cache.getTXMgr();
@@ -135,7 +141,7 @@ public abstract class TXMessage extends SerialDistributionMessage
   }
 
   private void sendReply(InternalDistributedMember recipient, int processorId2,
-      DistributionManager dm, ReplyException rex) {
+      ClusterDistributionManager dm, ReplyException rex) {
     ReplyMessage.send(recipient, processorId2, rex, getReplySender(dm));
   }
 
@@ -162,7 +168,7 @@ public abstract class TXMessage extends SerialDistributionMessage
    * @param txId The transaction Id to operate on
    * @return true if TXMessage should send a reply false otherwise
    */
-  protected abstract boolean operateOnTx(TXId txId, DistributionManager dm)
+  protected abstract boolean operateOnTx(TXId txId, ClusterDistributionManager dm)
       throws RemoteOperationException;
 
   public int getTXUniqId() {

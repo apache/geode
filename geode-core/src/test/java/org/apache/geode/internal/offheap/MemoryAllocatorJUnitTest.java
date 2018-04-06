@@ -308,7 +308,7 @@ public class MemoryAllocatorJUnitTest {
       MemoryAllocatorImpl ma =
           MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(),
               new NullOffHeapMemoryStats(), new SlabImpl[] {slab});
-      assertEquals(Collections.emptyList(), ma.getLostChunks());
+      assertEquals(Collections.emptyList(), ma.getLostChunks(null));
     } finally {
       MemoryAllocatorImpl.freeOffHeapMemory();
     }

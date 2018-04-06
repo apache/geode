@@ -2056,7 +2056,8 @@ public interface DistributionConfig extends Config, LogConfig {
   String SECURITY_CLIENT_DHALGO_NAME = SECURITY_CLIENT_DHALGO;
 
   /**
-   * The name of the Diffie-Hellman symmetric algorithm "security-client-dhalgo" property.
+   * The name of the Diffie-Hellman symmetric algorithm "security-udp-dhalgo" property.
+   *
    */
   @ConfigAttribute(type = String.class)
   String SECURITY_UDP_DHALGO_NAME = SECURITY_UDP_DHALGO;
@@ -2064,16 +2065,16 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default Diffie-Hellman symmetric algorithm name.
    * <p>
-   * Actual value of this is one of the available symmetric algorithm names in JDK like "DES",
-   * "DESede", "AES", "Blowfish".
+   * Actual value of this is one of the available symmetric algorithm names in JDK like "AES:128" or
+   * "Blowfish".
    */
   String DEFAULT_SECURITY_CLIENT_DHALGO = "";
 
   /**
    * The default Diffie-Hellman symmetric algorithm name.
    * <p>
-   * Actual value of this is one of the available symmetric algorithm names in JDK like "DES",
-   * "DESede", "AES", "Blowfish".
+   * Actual value of this is one of the available symmetric algorithm names in JDK like "AES:128" or
+   * "Blowfish".
    */
   String DEFAULT_SECURITY_UDP_DHALGO = "";
 

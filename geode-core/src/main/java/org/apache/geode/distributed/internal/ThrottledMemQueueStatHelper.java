@@ -27,26 +27,26 @@ public interface ThrottledMemQueueStatHelper extends QueueStatHelper {
   /**
    * Called each time a thread was delayed by the throttle.
    */
-  public void incThrottleCount();
+  void incThrottleCount();
 
   /**
    * Called after a throttled operation has completed.
    *
    * @param nanos the amount of time, in nanoseconds, the throttle caused us to wait.
    */
-  public void throttleTime(long nanos);
+  void throttleTime(long nanos);
 
   /**
    * Increments the amount of memory consumed by queue contents.
    *
    * @param amount number of bytes added to the queue
    */
-  public void addMem(int amount);
+  void addMem(int amount);
 
   /**
    * Decrements the amount of memory consumed by queue contents.
    *
    * @param amount number of bytes removed from the queue
    */
-  public void removeMem(int amount);
+  void removeMem(int amount);
 }

@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.PartitionedRegionStorageException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -82,7 +82,7 @@ public class CreateBucketMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.WAITING_POOL_EXECUTOR;
+    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   /**
@@ -101,6 +101,7 @@ public class CreateBucketMessage extends PartitionMessage {
     NodeResponse p = new NodeResponse(r.getSystem(), recipient);
     CreateBucketMessage m =
         new CreateBucketMessage(recipient, r.getPRId(), p, bucketId, bucketSize);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     p.enableSevereAlertProcessing();
 
@@ -119,7 +120,7 @@ public class CreateBucketMessage extends PartitionMessage {
    * indefinitely for the acknowledgement
    */
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "CreateBucketMessage operateOnRegion: {}", r.getFullPath());
@@ -218,8 +219,8 @@ public class CreateBucketMessage extends PartitionMessage {
      * @param processorId the identity of the processor the requesting node is waiting on
      * @param dm the distribution manager used to send the acceptance message
      */
-    public static void sendResponse(InternalDistributedMember recipient, int processorId, DM dm,
-        InternalDistributedMember primary) {
+    public static void sendResponse(InternalDistributedMember recipient, int processorId,
+        DistributionManager dm, InternalDistributedMember primary) {
       Assert.assertTrue(recipient != null, "CreateBucketReplyMessage NULL reply message");
       CreateBucketReplyMessage m = new CreateBucketReplyMessage(processorId, primary);
       m.setRecipient(recipient);
@@ -232,7 +233,7 @@ public class CreateBucketMessage extends PartitionMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,
@@ -351,7 +352,7 @@ public class CreateBucketMessage extends PartitionMessage {
         if (t instanceof PartitionedRegionStorageException) {
           throw new PartitionedRegionStorageException(t.getMessage(), t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       CreateBucketReplyMessage message = this.msg;
       if (message == null) {

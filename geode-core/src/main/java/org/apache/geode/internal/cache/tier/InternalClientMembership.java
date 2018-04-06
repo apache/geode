@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
@@ -217,14 +216,14 @@ public class InternalClientMembership {
    *
    *
    */
-  public static Map getConnectedClients(boolean onlyClientsNotifiedByThisServer) {
+  public static Map getConnectedClients(boolean onlyClientsNotifiedByThisServer,
+      InternalCache cache) {
     ClientHealthMonitor chMon = ClientHealthMonitor.getInstance();
     Set filterProxyIDs = null;
     if (onlyClientsNotifiedByThisServer) {
       // Note it is not necessary to synchronize on the list of Client servers here,
       // since this is only a status (snapshot) of the system.
-      for (Iterator bsii = CacheFactory.getAnyInstance().getCacheServers().iterator(); bsii
-          .hasNext();) {
+      for (Iterator bsii = cache.getCacheServers().iterator(); bsii.hasNext();) {
         CacheServerImpl bsi = (CacheServerImpl) bsii.next();
         AcceptorImpl ai = bsi.getAcceptor();
         if (ai != null && ai.getCacheClientNotifier() != null) {
@@ -269,12 +268,11 @@ public class InternalClientMembership {
    *
    * @return all the clients
    */
-  public static Map getConnectedClients() {
+  public static Map getConnectedClients(InternalCache cache) {
 
     // Get all clients
     Map allClients = new HashMap();
-    for (Iterator bsii = CacheFactory.getAnyInstance().getCacheServers().iterator(); bsii
-        .hasNext();) {
+    for (Iterator bsii = cache.getCacheServers().iterator(); bsii.hasNext();) {
       CacheServerImpl bsi = (CacheServerImpl) bsii.next();
       AcceptorImpl ai = bsi.getAcceptor();
       if (ai != null && ai.getCacheClientNotifier() != null) {
@@ -287,10 +285,6 @@ public class InternalClientMembership {
       ClientHealthMonitor.getInstance().fillInClientInfo(allClients);
 
     return allClients;
-  }
-
-  public static Map getClientQueueSizes() {
-    return getClientQueueSizes((InternalCache) CacheFactory.getAnyInstance());
   }
 
   public static Map getClientQueueSizes(final InternalCache cache) {

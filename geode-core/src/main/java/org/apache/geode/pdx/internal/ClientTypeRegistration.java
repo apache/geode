@@ -116,9 +116,9 @@ public class ClientTypeRegistration implements TypeRegistration {
 
     if (pools.isEmpty()) {
       if (this.cache.isClosed()) {
-        throw new CacheClosedException("PDX detected cache was closed");
+        throw cache.getCacheClosedException("PDX detected cache was closed");
       }
-      throw new CacheClosedException(
+      throw cache.getCacheClosedException(
           "Client pools have been closed so the PDX type registry is not available.");
     }
     return pools;

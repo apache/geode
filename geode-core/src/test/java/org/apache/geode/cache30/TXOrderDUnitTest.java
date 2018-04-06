@@ -53,8 +53,6 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.transaction.Person;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.TransactionListenerAdapter;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -75,7 +73,6 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
   private final int TEST_DESTROY = 2;
 
   private transient Region r;
-  private transient DistributedMember otherId;
   protected transient int invokeCount;
 
   List expectedKeys;
@@ -84,16 +81,6 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
   private VM getOtherVm() {
     Host host = Host.getHost(0);
     return host.getVM(0);
-  }
-
-  private void initOtherId() {
-    VM vm = getOtherVm();
-    vm.invoke(new CacheSerializableRunnable("Connect") {
-      public void run2() throws CacheException {
-        getCache();
-      }
-    });
-    this.otherId = (DistributedMember) vm.invoke(() -> TXOrderDUnitTest.getVMDistributedMember());
   }
 
   private void doCommitOtherVm() {
@@ -118,10 +105,6 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  public static DistributedMember getVMDistributedMember() {
-    return InternalDistributedSystem.getAnyInstance().getDistributedMember();
-  }
-
   Object getCurrentExpectedKey() {
     Object result = this.expectedKeys.get(this.clCount);
     this.clCount += 1;
@@ -133,7 +116,6 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testFarSideOrder() throws CacheException {
-    initOtherId();
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(DataPolicy.REPLICATE);
     af.setScope(Scope.DISTRIBUTED_ACK);

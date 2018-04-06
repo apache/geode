@@ -14,18 +14,26 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.Properties;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -35,6 +43,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
  * Test of interrupting threads doing disk writes to see the effect.
@@ -48,8 +57,10 @@ public class InterruptDiskJUnitTest {
   private DistributedSystem ds;
   private Cache cache;
   private Region<Object, Object> region;
-  private ExecutorService ex;
   private AtomicLong nextValue = new AtomicLong();
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Test
   @Ignore
@@ -81,14 +92,12 @@ public class InterruptDiskJUnitTest {
         .create("store");
     region = cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT)
         .setDiskStoreName("store").create("region");
-    ex = Executors.newSingleThreadExecutor();
   }
 
 
   @After
   public void tearDown() {
     ds.disconnect();
-    ex.shutdownNow();
   }
 
 
@@ -110,7 +119,7 @@ public class InterruptDiskJUnitTest {
       }
     };
 
-    Future result = ex.submit(doPuts);
+    Future result = executorServiceRule.submit(doPuts);
 
 
     Thread.sleep(50);

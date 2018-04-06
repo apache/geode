@@ -27,16 +27,16 @@ public interface Aggregator {
    *
    * @param value
    */
-  public void accumulate(Object value);
+  void accumulate(Object value);
 
   /**
    * Initialize the Aggregator
    */
-  public void init();
+  void init();
 
   /**
    *
    * @return Return the result scalar value
    */
-  public Object terminate();
+  Object terminate();
 }

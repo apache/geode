@@ -51,7 +51,7 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
    * Must return a proper response to this request.
    */
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return FetchHealthDiagnosisResponse.create(dm, this.getSender(), this.id, this.healthCode);
   }
 

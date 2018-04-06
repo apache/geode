@@ -29,6 +29,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -38,8 +39,8 @@ import org.apache.geode.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class GfshExecutionStrategyTest {
-  private static final String COMMAND1_SUCESS = "Command1 Executed successfully";
-  private static final String COMMAND2_SUCESS = "Command2 Executed successfully";
+  private static final String COMMAND1_SUCCESS = "Command1 Executed successfully";
+  private static final String COMMAND2_SUCCESS = "Command2 Executed successfully";
 
   private Gfsh gfsh;
   private GfshParseResult parsedCommand;
@@ -48,6 +49,7 @@ public class GfshExecutionStrategyTest {
   @Before
   public void before() {
     gfsh = mock(Gfsh.class);
+    when(gfsh.getGfshFileLogger()).thenReturn(LogWrapper.getInstance(null));
     parsedCommand = mock(GfshParseResult.class);
     gfshExecutionStrategy = new GfshExecutionStrategy(gfsh);
   }
@@ -60,7 +62,7 @@ public class GfshExecutionStrategyTest {
     when(parsedCommand.getMethod()).thenReturn(Commands.class.getDeclaredMethod("offlineCommand"));
     when(parsedCommand.getInstance()).thenReturn(new Commands());
     Result result = (Result) gfshExecutionStrategy.execute(parsedCommand);
-    assertThat(result.nextLine().trim()).isEqualTo(COMMAND1_SUCESS);
+    assertThat(result.nextLine().trim()).isEqualTo(COMMAND1_SUCCESS);
   }
 
   /**
@@ -88,7 +90,7 @@ public class GfshExecutionStrategyTest {
     when(invoker.processCommand(any(CommandRequest.class))).thenReturn(jsonResult);
     when(gfsh.getOperationInvoker()).thenReturn(invoker);
     Result result = (Result) gfshExecutionStrategy.execute(parsedCommand);
-    assertThat(result.nextLine().trim()).isEqualTo(COMMAND2_SUCESS);
+    assertThat(result.nextLine().trim()).isEqualTo(COMMAND2_SUCCESS);
   }
 
   /**
@@ -97,12 +99,12 @@ public class GfshExecutionStrategyTest {
   public static class Commands implements CommandMarker {
     @CliMetaData(shellOnly = true)
     public Result offlineCommand() {
-      return ResultBuilder.createInfoResult(COMMAND1_SUCESS);
+      return ResultBuilder.createInfoResult(COMMAND1_SUCCESS);
     }
 
     @CliMetaData(shellOnly = false)
     public Result onlineCommand() {
-      return ResultBuilder.createInfoResult(COMMAND2_SUCESS);
+      return ResultBuilder.createInfoResult(COMMAND2_SUCCESS);
     }
   }
 }

@@ -14,283 +14,182 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertEquals;
 
-import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test aims to test the destroyRegion functionality.
- *
- *
- *
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionDestroyDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
 
-  ////// constructor //////////
-  public PartitionedRegionDestroyDUnitTest() {
+  private static volatile CountDownLatch signalLatch = new CountDownLatch(1);
 
-    super();
-  }// end of constructor
+  private String prNamePrefix;
+  private int numberOfRegions;
+  private int totalNumBuckets;
+  private int redundantCopies;
+  private int localMaxMemory;
+  private int loopSleepMillis;
 
-  public static final String PR_PREFIX = "PR";
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
 
-  static final int MAX_REGIONS = 2;
+  @Before
+  public void setUp() throws Exception {
+    prNamePrefix = "PR-";
+    numberOfRegions = 2;
+    totalNumBuckets = 5;
+    redundantCopies = 0;
+    localMaxMemory = 200;
+    loopSleepMillis = 100;
 
-  final int totalNumBuckets = 5;
-
-  VM vm0, vm1, vm2, vm3;
+    vm0 = getHost(0).getVM(0);
+    vm1 = getHost(0).getVM(1);
+    vm2 = getHost(0).getVM(2);
+    vm3 = getHost(0).getVM(3);
+  }
 
   @Test
-  public void testDestroyRegion() throws Exception, Throwable {
-    Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-    AsyncInvocation async1 = null;
-    CacheSerializableRunnable createPRs = new CacheSerializableRunnable("createPrRegions") {
+  public void testDestroyRegion() throws Exception {
+    vm0.invoke(() -> createPartitionedRegions());
+    vm1.invoke(() -> createPartitionedRegions());
+    vm2.invoke(() -> createPartitionedRegions());
+    vm3.invoke(() -> createPartitionedRegions());
 
-      public void run2() throws CacheException {
+    vm1.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException(RegionDestroyedException.class)) {
         Cache cache = getCache();
-        for (int i = 0; i < MAX_REGIONS; i++) {
-          cache.createRegion(PR_PREFIX + i, createRegionAttrsForPR(0, 200));
-        }
-        LogWriterUtils.getLogWriter()
-            .info("Successfully created " + MAX_REGIONS + " PartitionedRegions.");
-      }
-    };
-    // Create PRs
-    vm0.invoke(createPRs);
-    vm1.invoke(createPRs);
-    vm2.invoke(createPRs);
-    vm3.invoke(createPRs);
-
-    vm1.invoke(new CacheSerializableRunnable("doPutOperations-1") {
-
-      public void run2() {
-        int j = 0;
-        final String expectedExistsException = RegionDestroyedException.class.getName();
-        getCache().getLogger().info(
-            "<ExpectedException action=add>" + expectedExistsException + "</ExpectedException>");
-        try {
-          Cache cache = getCache();
-          for (; j < MAX_REGIONS; j++) {
-            PartitionedRegion pr =
-                (PartitionedRegion) cache.getRegion(Region.SEPARATOR + PR_PREFIX + j);
-            assertNotNull(pr);
-            // Create enough entries such that all bucket are created, integer keys assumes mod
-            // distribution
-            int totalEntries = pr.getTotalNumberOfBuckets() * 2;
-            for (int k = 0; k < totalEntries; k++) {
-              pr.put(new Integer(k), PR_PREFIX + k);
-            }
+        for (int i = 0; i < numberOfRegions; i++) {
+          Region<Integer, String> region = cache.getRegion(prNamePrefix + i);
+          // Create enough entries such that all bucket are created, integer keys assumes mod
+          // distribution
+          int totalEntries = ((PartitionedRegion) region).getTotalNumberOfBuckets() * 2;
+          for (int k = 0; k < totalEntries; k++) {
+            region.put(k, prNamePrefix + k);
           }
-
-        } catch (RegionDestroyedException e) {
-          // getLogWriter().info (
-          // "RegionDestroyedException occurred for Region = " + PR_PREFIX + j);
         }
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + expectedExistsException + "</ExpectedException>");
       }
     });
-    async1 = vm2.invokeAsync(new CacheSerializableRunnable("doPutOperations-2") {
 
-      public void run2() throws CacheException {
+    AsyncInvocation asyncVM2 = vm2.invokeAsync(() -> {
+      try (IgnoredException ie = addIgnoredException(RegionDestroyedException.class)) {
+        Cache cache = getCache();
 
-        int j = 0;
-        final String expectedException = RegionDestroyedException.class.getName();
-        getCache().getLogger()
-            .info("<ExpectedException action=add>" + expectedException + "</ExpectedException>");
-        try {
-          Cache cache = getCache();
+        // Grab the regions right away, before they get destroyed by the other thread
+        PartitionedRegion regions[] = new PartitionedRegion[numberOfRegions];
+        for (int i = 0; i < numberOfRegions; i++) {
+          regions[i] = (PartitionedRegion) cache.getRegion(Region.SEPARATOR + prNamePrefix + i);
+          assertThat(regions[i]).isNotNull();
+        }
 
-          // Grab the regions right away, before they get destroyed
-          // by the other thread
-          PartitionedRegion prs[] = new PartitionedRegion[MAX_REGIONS];
-          for (j = 0; j < MAX_REGIONS; j++) {
-            prs[j] = (PartitionedRegion) cache.getRegion(Region.SEPARATOR + PR_PREFIX + j);
-            if (prs[j] == null) {
-              fail("Region was destroyed before putter could find it");
-            }
-          }
+        signalLatch.countDown();
 
-          for (j = 0; j < MAX_REGIONS; j++) {
-            PartitionedRegion pr = prs[j];
-            assertNotNull(pr);
-            int startEntries = pr.getTotalNumberOfBuckets() * 20;
-            int endEntries = startEntries + pr.getTotalNumberOfBuckets();
-            for (int k = startEntries; k < endEntries; k++) {
-              pr.put(new Integer(k), PR_PREFIX + k);
-            }
+        for (int i = 0; i < numberOfRegions; i++) {
+          PartitionedRegion region = regions[i];
+          int startEntries = region.getTotalNumberOfBuckets() * 20;
+          int endEntries = startEntries + region.getTotalNumberOfBuckets();
+          boolean isDestroyed = false;
+          for (int k = startEntries; k < endEntries; k++) {
+            final int key = k;
             try {
-              Thread.sleep(100);
-            } catch (InterruptedException ie) {
-              fail("interrupted");
-            }
-          }
-        } catch (RegionDestroyedException e) {
-          LogWriterUtils.getLogWriter()
-              .info("RegionDestroyedException occurred for Region = " + PR_PREFIX + j);
-        }
-        getCache().getLogger()
-            .info("<ExpectedException action=remove>" + expectedException + "</ExpectedException>");
-      }
-    });
-
-    ThreadUtils.join(async1, 30 * 1000);
-    if (async1.exceptionOccurred()) {
-      Assert.fail("async1 failed", async1.getException());
-    }
-    final String expectedExceptions = "org.apache.geode.distributed.internal.ReplyException";
-    addExceptionTag(expectedExceptions);
-
-    Wait.pause(1000); // give async a chance to grab the regions...
-
-    vm0.invoke(new CacheSerializableRunnable("destroyPRRegions") {
-
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        for (int i = 0; i < MAX_REGIONS; i++) {
-          Region pr = cache.getRegion(Region.SEPARATOR + PR_PREFIX + i);
-          assertNotNull(pr);
-          pr.destroyRegion();
-          assertTrue(pr.isDestroyed());
-          Region prDes = cache.getRegion(Region.SEPARATOR + PR_PREFIX + i);
-          assertNull(prDes);
-        }
-      }
-    });
-
-    addExceptionTag(expectedExceptions);
-    CacheSerializableRunnable validateMetaDataAfterDestroy =
-        new CacheSerializableRunnable("validateMetaDataAfterDestroy") {
-
-          public void run2() throws CacheException {
-
-            InternalCache cache = getCache();
-            Region rootRegion = PartitionedRegionHelper.getPRRoot(cache);
-            // Region allPRs = PartitionedRegionHelper.getPRConfigRegion(rootRegion,
-            // getCache());
-
-            int trial = 0;
-            // verify that all the regions have received the destroy call.
-            while (trial < 10) {
-              if (cache.rootRegions().size() > 1) {
-                try {
-                  Thread.sleep(500);
-                } catch (InterruptedException e) {
-                  fail("interrupted");
-                }
-                trial++;
+              if (isDestroyed) {
+                assertThatThrownBy(() -> region.put(key, prNamePrefix + key))
+                    .isInstanceOf(RegionDestroyedException.class);
               } else {
-                break;
+                region.put(key, prNamePrefix + key);
               }
-            }
-
-            if (cache.rootRegions().size() > 1) {
-              fail("All Regions Not destroyed. # OF Regions Not Destroyed = "
-                  + (cache.rootRegions().size() - 1));
-            }
-
-            // Assert that all PartitionedRegions are gone
-            assertEquals(0, rootRegion.size());
-            LogWriterUtils.getLogWriter()
-                .info("allPartitionedRegions size() =" + rootRegion.size());
-            assertEquals(
-                "ThePrIdToPR Map size is:" + PartitionedRegion.prIdToPR.size() + " instead of 0",
-                MAX_REGIONS, PartitionedRegion.prIdToPR.size());
-            LogWriterUtils.getLogWriter()
-                .info("PartitionedRegion.prIdToPR.size() =" + PartitionedRegion.prIdToPR.size());
-            LogWriterUtils.getLogWriter()
-                .info("# of Subregions of root Region after destroy call = "
-                    + rootRegion.subregions(false).size());
-            Iterator itr = (rootRegion.subregions(false)).iterator();
-            while (itr.hasNext()) {
-              Region rg = (Region) itr.next();
-              LogWriterUtils.getLogWriter().info("Root Region SubRegionName = " + rg.getName());
-              // assertIndexDetailsEquals("REGION NAME FOUND:"+rg.getName(),-1,
-              // rg.getName().indexOf(
-              // PartitionedRegionHelper.BUCKET_2_NODE_TABLE_PREFIX));
-              assertEquals("regionFound that should be gone!:" + rg.getName(), -1,
-                  rg.getName().indexOf(PartitionedRegionHelper.BUCKET_REGION_PREFIX));
+            } catch (RegionDestroyedException e) {
+              isDestroyed = true;
             }
           }
-        };
-    vm0.invoke(validateMetaDataAfterDestroy);
-    vm1.invoke(validateMetaDataAfterDestroy);
-    vm2.invoke(validateMetaDataAfterDestroy);
-    vm3.invoke(validateMetaDataAfterDestroy);
-    vm0.invoke(createPRs);
-    vm1.invoke(createPRs);
-    vm2.invoke(createPRs);
-    vm3.invoke(createPRs);
-
-  }
-
-  protected RegionAttributes createRegionAttrsForPR(int red, int localMaxMem) {
-
-    AttributesFactory attr = new AttributesFactory();
-    attr.setDataPolicy(DataPolicy.PARTITION);
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes prAttr = paf.setRedundantCopies(red).setLocalMaxMemory(localMaxMem)
-        .setTotalNumBuckets(totalNumBuckets).create();
-    attr.setPartitionAttributes(prAttr);
-    return attr.create();
-  }
-
-  private void addExceptionTag(final String expectedException) {
-
-    SerializableRunnable addExceptionTag = new CacheSerializableRunnable("addExceptionTag") {
-      public void run2() {
-        getCache().getLogger()
-            .info("<ExpectedException action=add>" + expectedException + "</ExpectedException>");
+          Thread.sleep(loopSleepMillis);
+        }
       }
-    };
+    });
 
-    vm0.invoke(addExceptionTag);
-    vm1.invoke(addExceptionTag);
-    vm2.invoke(addExceptionTag);
-    vm3.invoke(addExceptionTag);
+    addIgnoredException(ReplyException.class);
+
+    vm2.invoke(() -> signalLatch.await(30, SECONDS));
+
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      for (int i = 0; i < numberOfRegions; i++) {
+        Region region = cache.getRegion(prNamePrefix + i);
+        assertThat(region).isNotNull();
+
+        region.destroyRegion();
+        assertThat(region.isDestroyed()).isTrue();
+
+        assertThat(cache.getRegion(prNamePrefix + i)).isNull();
+      }
+    });
+
+    asyncVM2.await();
+
+    vm0.invoke(() -> validateMetaDataAfterDestroy());
+    vm1.invoke(() -> validateMetaDataAfterDestroy());
+    vm2.invoke(() -> validateMetaDataAfterDestroy());
+    vm3.invoke(() -> validateMetaDataAfterDestroy());
   }
 
-  private void removeExceptionTag(final String expectedException) {
+  private void createPartitionedRegions() {
+    Cache cache = getCache();
 
-    SerializableRunnable removeExceptionTag = new CacheSerializableRunnable("removeExceptionTag") {
-      public void run2() throws CacheException {
-        getCache().getLogger()
-            .info("<ExpectedException action=remove>" + expectedException + "</ExpectedException>");
-      }
-    };
-    vm0.invoke(removeExceptionTag);
-    vm1.invoke(removeExceptionTag);
-    vm2.invoke(removeExceptionTag);
-    vm3.invoke(removeExceptionTag);
+    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
+    partitionAttributesFactory.setRedundantCopies(redundantCopies);
+    partitionAttributesFactory.setLocalMaxMemory(localMaxMemory);
+    partitionAttributesFactory.setTotalNumBuckets(totalNumBuckets);
+
+    RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+
+    for (int i = 0; i < numberOfRegions; i++) {
+      regionFactory.create(prNamePrefix + i);
+    }
+  }
+
+  private void validateMetaDataAfterDestroy() {
+    InternalCache cache = getCache();
+    Region rootRegion = PartitionedRegionHelper.getPRRoot(cache);
+
+    await().atMost(1, MINUTES).until(() -> assertThat(cache.rootRegions()).isEmpty());
+
+    assertEquals(
+        "ThePrIdToPR Map size is:" + PartitionedRegion.getPrIdToPR().size() + " instead of 0",
+        numberOfRegions, PartitionedRegion.getPrIdToPR().size());
+
+    assertThat(PartitionedRegion.getPrIdToPR()).hasSize(numberOfRegions);
+
+    for (Object regionObject : rootRegion.subregions(false)) {
+      Region region = (Region) regionObject;
+      assertThat(region.getName()).doesNotContain(PartitionedRegionHelper.BUCKET_REGION_PREFIX);
+    }
   }
 }

@@ -56,8 +56,6 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
@@ -136,7 +134,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
@@ -166,7 +164,8 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.FunctionExecutionNodePruner;
@@ -392,7 +391,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Maps each PR to a prId. This prId will uniquely identify the PR.
    */
-  static final PRIdMap prIdToPR = new PRIdMap();
+  private static final PRIdMap prIdToPR = new PRIdMap();
 
   /**
    * Flag to indicate whether region is closed
@@ -464,6 +463,10 @@ public class PartitionedRegion extends LocalRegion
 
   private final Object indexLock = new Object();
 
+  static PRIdMap getPrIdToPR() {
+    return prIdToPR;
+  }
+
   /**
    * Byte 0 = no NWHOP Byte 1 = NWHOP to servers in same server-grp Byte 2 = NWHOP tp servers in
    * other server-grp
@@ -510,13 +513,13 @@ public class PartitionedRegion extends LocalRegion
   }
 
   /**
-   * Returns the EvictionStatistics for this PR. This is needed to find the single instance of
-   * EvictionStatistics created early for a PR when it is recovered from disk. This fixes bug 41938
+   * Returns the EvictionController for this PR. This is needed to find the single instance of
+   * EvictionController created early for a PR when it is recovered from disk. This fixes bug 41938
    */
-  public EvictionStatistics getPRLRUStatsDuringInitialization() {
-    EvictionStatistics result = null;
+  public EvictionController getPREvictionControllerFromDiskInitialization() {
+    EvictionController result = null;
     if (getDiskStore() != null) {
-      result = getDiskStore().getPRLRUStats(this);
+      result = getDiskStore().getExistingPREvictionContoller(this);
     }
     return result;
   }
@@ -595,14 +598,6 @@ public class PartitionedRegion extends LocalRegion
     }
 
     public Object getRegion(Object key) throws PRLocallyDestroyedException {
-      if (cleared) {
-        Cache cache = GemFireCacheImpl.getInstance();
-        if (cache == null) {
-          throw new CacheClosedException();
-        } else {
-          cache.getCancelCriterion().checkCancelInProgress(null);
-        }
-      }
       Assert.assertTrue(key instanceof Integer);
 
       Object o = super.get(key);
@@ -836,7 +831,7 @@ public class PartitionedRegion extends LocalRegion
     /*
      * Start persistent profile logging if we are a persistent region.
      */
-    if (dataPolicy.withPersistence()) {
+    if (getDataPolicy().withPersistence()) {
       startPersistenceProfileLogging();
     }
   }
@@ -911,12 +906,12 @@ public class PartitionedRegion extends LocalRegion
 
   private void createAndValidatePersistentConfig() {
     DiskStoreImpl dsi = this.getDiskStore();
-    if (this.dataPolicy.withPersistence() && !this.concurrencyChecksEnabled
+    if (this.getDataPolicy().withPersistence() && !this.getConcurrencyChecksEnabled()
         && supportsConcurrencyChecks()) {
       logger.info(LocalizedMessage.create(
           LocalizedStrings.PartitionedRegion_ENABLING_CONCURRENCY_CHECKS_FOR_PERSISTENT_PR,
           this.getFullPath()));
-      this.concurrencyChecksEnabled = true;
+      this.setConcurrencyChecksEnabled(true);
     }
     if (dsi != null && this.getDataPolicy().withPersistence()) {
       String colocatedWith = colocatedWithRegion == null ? "" : colocatedWithRegion.getFullPath();
@@ -975,7 +970,7 @@ public class PartitionedRegion extends LocalRegion
     }
     /* Initialize the PartitionRegion */
     if (cache.isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw cache.getCacheClosedException("Cache is shutting down");
     }
     validator.validateColocation();
 
@@ -1013,7 +1008,7 @@ public class PartitionedRegion extends LocalRegion
       // after toggling the concurrencyChecksEnabled flag. This is
       // required because for persistent regions, we enforce concurrencyChecks
       if (!this.isDataStore() && supportsConcurrencyChecks()) {
-        this.concurrencyChecksEnabled = !this.concurrencyChecksEnabled;
+        this.setConcurrencyChecksEnabled(!this.getConcurrencyChecksEnabled());
         new CreateRegionProcessor(this).initializeRegion();
       } else {
         throw e;
@@ -1035,7 +1030,7 @@ public class PartitionedRegion extends LocalRegion
       StateFlushOperation sfo = new StateFlushOperation(getDistributionManager());
       try {
         sfo.flush(this.distAdvisor.adviseAllPRNodes(), getDistributionManager().getId(),
-            DistributionManager.HIGH_PRIORITY_EXECUTOR, false);
+            ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR, false);
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
         getCancelCriterion().checkCancelInProgress(ie);
@@ -1090,7 +1085,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void postCreateRegion() {
+  public void postCreateRegion() {
     super.postCreateRegion();
     CacheListener[] listeners = fetchCacheListenersField();
     if (listeners != null && listeners.length > 0) {
@@ -1155,7 +1150,7 @@ public class PartitionedRegion extends LocalRegion
    * Initializes the PartitionedRegion. OVERRIDES
    */
   @Override
-  protected void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
+  public void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
       InternalRegionArguments internalRegionArgs) throws TimeoutException, ClassNotFoundException {
     if (logger.isDebugEnabled()) {
       logger.debug("PartitionedRegion#initialize {}", getName());
@@ -1170,6 +1165,11 @@ public class PartitionedRegion extends LocalRegion
     }
     this.cache.addPartitionedRegion(this);
 
+  }
+
+  @Override
+  protected RegionVersionVector createRegionVersionVector() {
+    return null;
   }
 
   /**
@@ -2060,7 +2060,7 @@ public class PartitionedRegion extends LocalRegion
     }
     if (!result) {
       checkReadiness();
-      if (!ifNew && !ifOld && !this.concurrencyChecksEnabled) {
+      if (!ifNew && !ifOld && !this.getConcurrencyChecksEnabled()) {
         // may fail due to concurrency conflict
         // failed for unknown reason
         // throw new PartitionedRegionStorageException("unable to execute operation");
@@ -2156,7 +2156,7 @@ public class PartitionedRegion extends LocalRegion
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     if (cache.isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw cache.getCacheClosedException("Cache is shutting down");
     }
 
     final long startTime = PartitionedRegionStats.startTime();
@@ -2184,7 +2184,7 @@ public class PartitionedRegion extends LocalRegion
         if (versions.size() > 0) {
           partialKeys.addKeysAndVersions(versions);
           versions.saveVersions(keyToVersionMap);
-        } else if (!this.concurrencyChecksEnabled) { // no keys returned if not versioned
+        } else if (!this.getConcurrencyChecksEnabled()) { // no keys returned if not versioned
           Set keys = prMsg.getKeys();
           partialKeys.addKeys(keys);
         }
@@ -2248,7 +2248,7 @@ public class PartitionedRegion extends LocalRegion
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     if (cache.isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw cache.getCacheClosedException("Cache is shutting down");
     }
 
     final long startTime = PartitionedRegionStats.startTime();
@@ -2275,7 +2275,7 @@ public class PartitionedRegion extends LocalRegion
         if (versions.size() > 0) {
           partialKeys.addKeysAndVersions(versions);
           versions.saveVersions(keyToVersionMap);
-        } else if (!this.concurrencyChecksEnabled) { // no keys returned if not versioned
+        } else if (!this.getConcurrencyChecksEnabled()) { // no keys returned if not versioned
           Set keys = prMsg.getKeys();
           partialKeys.addKeys(keys);
         }
@@ -2807,7 +2807,7 @@ public class PartitionedRegion extends LocalRegion
             // given that most manipulation of values is remote (requiring serialization to send).
             // But... function execution always implies local manipulation of
             // values so keeping locally updated values in Object form should be more efficient.
-            if (!DistributionManager.isFunctionExecutionThread()) {
+            if (!ClusterDistributionManager.isFunctionExecutionThread()) {
               // TODO: this condition may not help since BucketRegion.virtualPut calls
               // forceSerialized
               br.forceSerialized(event);
@@ -3478,7 +3478,7 @@ public class PartitionedRegion extends LocalRegion
     }
     final LocalResultCollector<?, ?> localResultCollector =
         execution.getLocalResultCollector(function, rc);
-    final DM dm = getDistributionManager();
+    final DistributionManager dm = getDistributionManager();
     final PartitionedRegionFunctionResultSender resultSender =
         new PartitionedRegionFunctionResultSender(dm, this, 0L, localResultCollector,
             execution.getServerResultSender(), memberToKeysMap.isEmpty(), remoteOnly,
@@ -3619,7 +3619,7 @@ public class PartitionedRegion extends LocalRegion
     execution.setExecutionNodes(singleMember);
     LocalResultCollector<?, ?> localRC = execution.getLocalResultCollector(function, rc);
     if (targetNode.equals(localVm)) {
-      final DM dm = getDistributionManager();
+      final DistributionManager dm = getDistributionManager();
       PartitionedRegionFunctionResultSender resultSender =
           new PartitionedRegionFunctionResultSender(dm, PartitionedRegion.this, 0, localRC,
               execution.getServerResultSender(), true, false, execution.isForwardExceptions(),
@@ -3747,7 +3747,7 @@ public class PartitionedRegion extends LocalRegion
     }
     final LocalResultCollector<?, ?> localRC = execution.getLocalResultCollector(function, rc);
 
-    final DM dm = getDistributionManager();
+    final DistributionManager dm = getDistributionManager();
     final PartitionedRegionFunctionResultSender resultSender =
         new PartitionedRegionFunctionResultSender(dm, this, 0L, localRC,
             execution.getServerResultSender(), recipMap.isEmpty(), !isSelf,
@@ -3843,7 +3843,7 @@ public class PartitionedRegion extends LocalRegion
     }
     final LocalResultCollector<?, ?> localResultCollector =
         execution.getLocalResultCollector(function, rc);
-    final DM dm = getDistributionManager();
+    final DistributionManager dm = getDistributionManager();
     final PartitionedRegionFunctionResultSender resultSender =
         new PartitionedRegionFunctionResultSender(dm, this, 0L, localResultCollector,
             execution.getServerResultSender(), recipMap.isEmpty(), !isSelf,
@@ -4139,65 +4139,6 @@ public class PartitionedRegion extends LocalRegion
    */
   public Set localCacheKeySet() {
     return super.keys();
-  }
-
-  /**
-   * Test Method: Get a random set of keys from a randomly selected bucket using the provided
-   * {@code Random} number generator.
-   *
-   * @return A set of keys from a randomly chosen bucket or {@link Collections#EMPTY_SET}
-   */
-  public Set getSomeKeys(Random rnd) throws IOException, ClassNotFoundException {
-    InternalDistributedMember nod = null;
-    Integer buck = null;
-    Set buks = getRegionAdvisor().getBucketSet();
-
-    if (buks != null && !buks.isEmpty()) {
-      Object[] buksA = buks.toArray();
-      Set ret = null;
-      // Randomly pick a node to get some data from
-      for (int i = 0; i < buksA.length; i++) {
-        try {
-          logger.debug("getSomeKeys: iteration: {}", i);
-          int ind = rnd.nextInt(buksA.length);
-          if (ind >= buksA.length) {
-            // The GSRandom.nextInt(int) may return a value that includes the
-            // maximum.
-            ind = buksA.length - 1;
-          }
-          buck = (Integer) buksA[ind];
-
-          nod = getNodeForBucketRead(buck);
-          if (nod != null) {
-            logger.debug("getSomeKeys: iteration: {} for node {}", i, nod);
-            if (nod.equals(getMyId())) {
-              ret =
-                  dataStore.handleRemoteGetKeys(buck, InterestType.REGULAR_EXPRESSION, ".*", false);
-            } else {
-              FetchKeysResponse r = FetchKeysMessage.send(nod, this, buck, false);
-              ret = r.waitForKeys();
-            }
-
-            if (ret != null && !ret.isEmpty()) {
-              return ret;
-            }
-          }
-        } catch (ForceReattemptException movinOn) {
-          checkReadiness();
-          logger.debug(
-              "Test hook getSomeKeys caught a ForceReattemptException for bucketId={}{}{}. Moving on to another bucket",
-              getPRId(), BUCKET_ID_SEPARATOR, buck, movinOn);
-          continue;
-        } catch (PRLocallyDestroyedException ignore) {
-          logger.debug("getSomeKeys: Encountered PRLocallyDestroyedException");
-          checkReadiness();
-          continue;
-        }
-
-      } // nod != null
-    } // for
-    logger.debug("getSomeKeys: no keys found returning empty set");
-    return Collections.emptySet();
   }
 
   /**
@@ -4508,7 +4449,7 @@ public class PartitionedRegion extends LocalRegion
    * @return Map of <old members, set/map of bucket ids they host>.
    */
   private HashMap filterOldMembers(HashMap nodeToBuckets) {
-    DistributionManager dm = (DistributionManager) getDistributionManager();
+    ClusterDistributionManager dm = (ClusterDistributionManager) getDistributionManager();
     HashMap oldGuys = new HashMap();
 
     Set<InternalDistributedMember> oldMembers =
@@ -4944,7 +4885,7 @@ public class PartitionedRegion extends LocalRegion
     CacheProfile profile = (CacheProfile) p;
     // set fields on CacheProfile...
     profile.isPartitioned = true;
-    profile.isPersistent = dataPolicy.withPersistence();
+    profile.isPersistent = getDataPolicy().withPersistence();
     profile.dataPolicy = getDataPolicy();
     profile.hasCacheLoader = basicGetLoader() != null;
     profile.hasCacheWriter = basicGetWriter() != null;
@@ -4964,7 +4905,7 @@ public class PartitionedRegion extends LocalRegion
     profile.gatewaySenderIds = getGatewaySenderIds();
     profile.asyncEventQueueIds = getVisibleAsyncEventQueueIds();
 
-    if (dataPolicy.withPersistence()) {
+    if (getDataPolicy().withPersistence()) {
       profile.persistentID = getDiskStore().generatePersistentID(null);
     }
 
@@ -5629,7 +5570,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
+  public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     final long startTime = PartitionedRegionStats.startTime();
     try {
       if (event.getEventId() == null) {
@@ -6671,7 +6612,7 @@ public class PartitionedRegion extends LocalRegion
         ReplyProcessor21.forceSevereAlertProcessing();
       }
       try {
-        DM dm = cache.getInternalDistributedSystem().getDistributionManager();
+        DistributionManager dm = cache.getInternalDistributedSystem().getDistributionManager();
 
         long ackWaitThreshold = 0;
         long ackSAThreshold = dm.getConfig().getAckSevereAlertThreshold() * 1000;
@@ -6746,7 +6687,7 @@ public class PartitionedRegion extends LocalRegion
     private void basicTryLock(long time) {
       final Object key = this.lockName;
 
-      final DM dm = cache.getInternalDistributedSystem().getDistributionManager();
+      final DistributionManager dm = cache.getInternalDistributedSystem().getDistributionManager();
 
       long start = System.currentTimeMillis();
       long end;
@@ -6928,7 +6869,7 @@ public class PartitionedRegion extends LocalRegion
   public String toString() {
     return new StringBuffer().append("Partitioned Region ").append("@")
         .append(Integer.toHexString(hashCode())).append(" [").append("path='").append(getFullPath())
-        .append("'; dataPolicy=").append(this.dataPolicy).append("; prId=")
+        .append("'; dataPolicy=").append(this.getDataPolicy()).append("; prId=")
         .append(this.partitionedRegionId).append("; isDestroyed=").append(this.isDestroyed)
         .append("; isClosed=").append(this.isClosed).append("; retryTimeout=")
         .append(this.retryTimeout).append("; serialNumber=").append(getSerialNumber())
@@ -8040,7 +7981,7 @@ public class PartitionedRegion extends LocalRegion
   @Override
   protected void enableConcurrencyChecks() {
     if (supportsConcurrencyChecks()) {
-      this.concurrencyChecksEnabled = true;
+      this.setConcurrencyChecksEnabled(true);
       assert !isDataStore();
     }
   }
@@ -8268,7 +8209,7 @@ public class PartitionedRegion extends LocalRegion
 
     // Create indexManager.
     if (this.indexManager == null) {
-      this.indexManager = IndexUtils.getIndexManager(this, true);
+      this.indexManager = IndexUtils.getIndexManager(cache, this, true);
     }
 
     if (logger.isDebugEnabled()) {
@@ -8505,7 +8446,7 @@ public class PartitionedRegion extends LocalRegion
         if (bucket == null) {
           continue;
         }
-        IndexManager bucketIndexManager = IndexUtils.getIndexManager(bucket, true);
+        IndexManager bucketIndexManager = IndexUtils.getIndexManager(cache, bucket, true);
         Set<Index> bucketIndexes = getBucketIndexesForPRIndexes(bucket, indexes);
         try {
           bucketIndexManager.populateIndexes(bucketIndexes);
@@ -8662,7 +8603,7 @@ public class PartitionedRegion extends LocalRegion
         bucket = (LocalRegion) bucketEntry.getValue();
         if (bucket != null) {
           bucket.waitForData();
-          IndexManager indexMang = IndexUtils.getIndexManager(bucket, false);
+          IndexManager indexMang = IndexUtils.getIndexManager(cache, bucket, false);
           if (indexMang != null) {
             indexMang.removeIndexes();
             numBuckets++;
@@ -8969,7 +8910,8 @@ public class PartitionedRegion extends LocalRegion
     }
 
     @Override
-    public synchronized void memberJoined(InternalDistributedMember id) {
+    public synchronized void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
       // bug #44684 - this notification has been moved to a point AFTER the
       // other member has finished initializing its region
 
@@ -8978,15 +8920,16 @@ public class PartitionedRegion extends LocalRegion
     }
 
     @Override
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
     @Override
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
     @Override
-    public synchronized void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public synchronized void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       if (PartitionedRegion.this.isInitialized() && hasListener()) {
         RegionEventImpl event =
             new RegionEventImpl(PartitionedRegion.this, Operation.REGION_CLOSE, null, true, id);
@@ -9575,7 +9518,7 @@ public class PartitionedRegion extends LocalRegion
         logger.info(LocalizedMessage.create(
             LocalizedStrings.PartitionedRegion_THIS_IS_AN_ACCESSOR_VM_AND_DOESNT_CONTAIN_DATA));
 
-        prIndex = new PartitionedIndex(indexType, indexName, PartitionedRegion.this,
+        prIndex = new PartitionedIndex(cache, indexType, indexName, PartitionedRegion.this,
             indexedExpression, fromClause, imports);
       }
 
@@ -9597,8 +9540,8 @@ public class PartitionedRegion extends LocalRegion
       }
 
       // imports can be null
-      PartitionedIndex parIndex = new PartitionedIndex(indexType, indexName, PartitionedRegion.this,
-          indexedExpression, fromClause, imports);
+      PartitionedIndex parIndex = new PartitionedIndex(cache, indexType, indexName,
+          PartitionedRegion.this, indexedExpression, fromClause, imports);
 
       // In cases where we have no data yet (creation from cache xml), it would leave the populated
       // flag to false Not really an issue as a put will trigger bucket index creation which should
@@ -9618,7 +9561,7 @@ public class PartitionedRegion extends LocalRegion
 
         ExecutionContext externalContext = new ExecutionContext(null, cache);
         externalContext.setBucketRegion(PartitionedRegion.this, (BucketRegion) bucket);
-        IndexManager indMng = IndexUtils.getIndexManager(bucket, true);
+        IndexManager indMng = IndexUtils.getIndexManager(cache, bucket, true);
         try {
           Index bucketIndex = indMng.createIndex(indexName, indexType, indexedExpression,
               fromClause, imports, externalContext, parIndex, loadEntries);

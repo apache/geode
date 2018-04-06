@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
@@ -42,7 +42,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -102,14 +101,14 @@ public class UpdateAttributesProcessor {
     if (processor == null) {
       return;
     }
-    DM mgr = this.advisee.getDistributionManager();
+    DistributionManager mgr = this.advisee.getDistributionManager();
     try {
       // bug 36983 - you can't loop on a reply processor
       mgr.getCancelCriterion().checkCancelInProgress(null);
       try {
         processor.waitForRepliesUninterruptibly();
       } catch (ReplyException e) {
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     } finally {
       processor.cleanup();
@@ -117,7 +116,7 @@ public class UpdateAttributesProcessor {
   }
 
   public void sendProfileUpdate(boolean exchangeProfiles) {
-    DM mgr = this.advisee.getDistributionManager();
+    DistributionManager mgr = this.advisee.getDistributionManager();
     DistributionAdvisor advisor = this.advisee.getDistributionAdvisor();
     this.profileExchange = exchangeProfiles;
 
@@ -278,7 +277,7 @@ public class UpdateAttributesProcessor {
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       Throwable thr = null;
       boolean sendReply = this.processorId != 0;
       List<Profile> replyProfiles = null;
@@ -380,7 +379,7 @@ public class UpdateAttributesProcessor {
     Profile profile;
 
     public static void send(InternalDistributedMember recipient, int processorId,
-        ReplyException exception, DistributionManager dm, Profile profile) {
+        ReplyException exception, ClusterDistributionManager dm, Profile profile) {
       Assert.assertTrue(recipient != null, "Sending a ProfileReplyMessage to ALL");
       ProfileReplyMessage m = new ProfileReplyMessage();
 
@@ -449,7 +448,7 @@ public class UpdateAttributesProcessor {
     Profile[] profiles;
 
     public static void send(InternalDistributedMember recipient, int processorId,
-        ReplyException exception, DistributionManager dm, Profile[] profiles) {
+        ReplyException exception, ClusterDistributionManager dm, Profile[] profiles) {
       Assert.assertTrue(recipient != null, "Sending a ProfilesReplyMessage to ALL");
       ProfilesReplyMessage m = new ProfilesReplyMessage();
 

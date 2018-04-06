@@ -14,17 +14,14 @@
  */
 package org.apache.geode.test.process;
 
-import static org.junit.Assert.*;
-import static org.junit.contrib.java.lang.system.TextFromStandardInputStream.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.contrib.java.lang.system.TextFromStandardInputStream.emptyStandardInputStream;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,6 +29,7 @@ import org.junit.contrib.java.lang.system.TextFromStandardInputStream;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
  * Quick sanity tests to make sure MainLauncher is functional.
@@ -44,22 +42,16 @@ public class MainLauncherJUnitTest {
   private static volatile boolean flag = false;
 
   private final String launchedClass = getClass().getName();
-  private ExecutorService futures;
 
   @Rule
-  public final TextFromStandardInputStream systemInMock = emptyStandardInputStream();
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
+  @Rule
+  public TextFromStandardInputStream systemInMock = emptyStandardInputStream();
 
   @Before
   public void before() {
     flag = false;
-    this.futures = Executors.newSingleThreadExecutor();
-    assertFalse(flag);
-  }
-
-  @After
-  public void after() {
-    flag = false;
-    assertTrue(this.futures.shutdownNow().isEmpty());
   }
 
   @Test
@@ -100,14 +92,14 @@ public class MainLauncherJUnitTest {
 
   @Test
   public void testInvokeMainWithMainLauncherWithNoArgs() throws Exception {
-    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
+    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() throws Exception {
         Class<?> clazz = MainLauncher.class;
         Method mainMethod = clazz.getMethod("main", String[].class);
         String[] args = new String[] {launchedClass};
-        mainMethod.invoke(null, new Object[] {args}); // this will block until "\n" is fed to
-                                                      // System.in
+        // this will block until "\n" is fed to System.in
+        mainMethod.invoke(null, new Object[] {args});
         return true;
       }
     });
@@ -118,7 +110,7 @@ public class MainLauncherJUnitTest {
 
   @Test
   public void testInvokeMainWithMainLauncherWithOneArg() throws Exception {
-    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
+    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() throws Exception {
         Class<?> clazz = MainLauncher.class;
@@ -135,7 +127,7 @@ public class MainLauncherJUnitTest {
 
   @Test
   public void testInvokeMainWithMainLauncherWithTwoArgs() throws Exception {
-    Future<Boolean> future = this.futures.submit(new Callable<Boolean>() {
+    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
       @Override
       public Boolean call() throws Exception {
         Class<?> clazz = MainLauncher.class;

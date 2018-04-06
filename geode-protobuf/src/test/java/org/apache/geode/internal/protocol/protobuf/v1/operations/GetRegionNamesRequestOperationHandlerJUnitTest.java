@@ -29,11 +29,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.protocol.Result;
-import org.apache.geode.internal.protocol.Success;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -45,8 +45,6 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
 
   @Before
   public void setUp() throws Exception {
-    super.setUp();
-
     Region<String, String> region1Stub = mock(Region.class);
     when(region1Stub.getName()).thenReturn(TEST_REGION1);
     Region<String, String> region2Stub = mock(Region.class);
@@ -88,7 +86,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
 
   @Test
   public void processReturnsNoCacheRegions() throws Exception {
-    Cache emptyCache = mock(Cache.class);;
+    InternalCache emptyCache = mock(InternalCache.class);
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     Result result = operationHandler.process(serializationService,

@@ -78,9 +78,9 @@ subprojects {
       url 'http://geode.apache.org'
   
       scm {
-        url 'https://git-wip-us.apache.org/repos/asf?p=geode.git;a=tree'
-        connection 'scm:https://git-wip-us.apache.org/repos/asf/geode.git'
-        developerConnection 'scm:https://git-wip-us.apache.org/repos/asf/geode.git'
+        url 'https://github.com/apache/geode'
+        connection 'scm:git:https://github.com:apache/geode.git'
+        developerConnection 'scm:git:https://github.com:apache/geode.git'
       }
   
       licenses {

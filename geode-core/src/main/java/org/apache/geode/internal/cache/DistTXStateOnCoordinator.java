@@ -21,7 +21,7 @@ import java.util.TreeSet;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -259,7 +259,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   }
 
   @Override
-  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DM dm)
+  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
@@ -267,7 +267,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   }
 
   @Override
-  public void setCommitMessage(DistTXCommitMessage commitMsg, DM dm)
+  public void setCommitMessage(DistTXCommitMessage commitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
@@ -275,7 +275,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   }
 
   @Override
-  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DM dm)
+  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_ROLLBACK_NOT_SUPPORTED_IN_A_TRANSACTION
@@ -333,9 +333,10 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
       if (dtop.op.isPutAll()) {
         assert (dtop.getPutAllOperation() != null);
         // [DISTTX] TODO what do with versions next?
-        final VersionedObjectList versions = new VersionedObjectList(
-            dtop.getPutAllOperation().putAllDataSize, true, dtop.region.concurrencyChecksEnabled);
-        postPutAll(dtop.getPutAllOperation(), versions, dtop.region);
+        final VersionedObjectList versions =
+            new VersionedObjectList(dtop.getPutAllOperation().putAllDataSize, true,
+                dtop.getRegion().getConcurrencyChecksEnabled());
+        postPutAll(dtop.getPutAllOperation(), versions, dtop.getRegion());
       } else {
         result = putEntry(dtop, false/* ifNew */, false/* ifOld */, null/* expectedOldValue */,
             false/* requireOldValue */, 0L/* lastModified */, true/*
@@ -348,8 +349,8 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
         // [DISTTX] TODO what do with versions next?
         final VersionedObjectList versions =
             new VersionedObjectList(dtop.getRemoveAllOperation().removeAllDataSize, true,
-                dtop.region.concurrencyChecksEnabled);
-        postRemoveAll(dtop.getRemoveAllOperation(), versions, dtop.region);
+                dtop.getRegion().getConcurrencyChecksEnabled());
+        postRemoveAll(dtop.getRemoveAllOperation(), versions, dtop.getRegion());
       } else {
         destroyExistingEntry(dtop, false/* TODO [DISTTX] */, null/*
                                                                   * TODO [DISTTX]

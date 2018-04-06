@@ -14,11 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -29,69 +27,69 @@ import org.apache.geode.internal.cache.versions.VersionTag;
  */
 public interface ImageState /* extends Lock */ {
 
-  public boolean getRegionInvalidated();
+  boolean getRegionInvalidated();
 
-  public void setRegionInvalidated(boolean b);
+  void setRegionInvalidated(boolean b);
 
-  public void setInRecovery(boolean b);
+  void setInRecovery(boolean b);
 
-  public boolean getInRecovery();
+  boolean getInRecovery();
 
-  public void addDestroyedEntry(Object key);
+  void addDestroyedEntry(Object key);
 
-  public void removeDestroyedEntry(Object key);
+  void removeDestroyedEntry(Object key);
 
-  public boolean hasDestroyedEntry(Object key);
+  boolean hasDestroyedEntry(Object key);
 
-  public java.util.Iterator getDestroyedEntries();
+  java.util.Iterator getDestroyedEntries();
 
   /**
    * returns count of entries that have been destroyed by concurrent operations while in token mode
    */
-  public int getDestroyedEntriesCount();
+  int getDestroyedEntriesCount();
 
-  public void setClearRegionFlag(boolean isClearOn, RegionVersionVector rvv);
+  void setClearRegionFlag(boolean isClearOn, RegionVersionVector rvv);
 
-  public boolean getClearRegionFlag();
+  boolean getClearRegionFlag();
 
-  public RegionVersionVector getClearRegionVersionVector();
+  RegionVersionVector getClearRegionVersionVector();
 
-  public boolean wasRegionClearedDuringGII();
+  boolean wasRegionClearedDuringGII();
 
-  public void addVersionTag(Object key, VersionTag<?> tag);
+  void addVersionTag(Object key, VersionTag<?> tag);
 
-  public Iterator<VersionTagEntry> getVersionTags();
+  Iterator<VersionTagEntry> getVersionTags();
 
-  public void addLeftMember(VersionSource<?> mbr);
+  void addLeftMember(VersionSource<?> mbr);
 
-  public Set<VersionSource> getLeftMembers();
+  Set<VersionSource> getLeftMembers();
 
-  public boolean hasLeftMembers();
+  boolean hasLeftMembers();
 
-  public void lockGII();
+  void lockGII();
 
-  public void unlockGII();
+  void unlockGII();
 
-  public void readLockRI();
+  void readLockRI();
 
-  public void readUnlockRI();
+  void readUnlockRI();
 
-  public void writeLockRI();
+  void writeLockRI();
 
-  public void writeUnlockRI();
+  void writeUnlockRI();
 
-  public boolean isReplicate();
+  boolean isReplicate();
 
-  public boolean isClient();
+  boolean isClient();
 
-  public void init();
+  void init();
 
-  public interface VersionTagEntry {
-    public Object getKey();
+  interface VersionTagEntry {
+    Object getKey();
 
-    public VersionSource getMemberID();
+    VersionSource getMemberID();
 
-    public long getRegionVersion();
+    long getRegionVersion();
   }
 
 }

@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,6 +47,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -79,6 +82,10 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     vm1 = host.getVM(1);
     vm2 = host.getVM(2);
     vm3 = host.getVM(3);
+    vm0.invoke(() -> HARegionQueueDUnitTest.toCnt = true);
+    vm1.invoke(() -> HARegionQueueDUnitTest.toCnt = true);
+    vm2.invoke(() -> HARegionQueueDUnitTest.toCnt = true);
+    vm3.invoke(() -> HARegionQueueDUnitTest.toCnt = true);
   }
 
   /**
@@ -581,25 +588,29 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         factory.addCacheListener(new CacheListenerAdapter() {
           @Override
           public void afterCreate(final EntryEvent event) {
-            Conflatable conflatable = new ConflatableObject(event.getKey(), event.getNewValue(),
-                ((EntryEventImpl) event).getEventId(), false, event.getRegion().getFullPath());
+            if (toCnt) {
+              Conflatable conflatable = new ConflatableObject(event.getKey(), event.getNewValue(),
+                  ((EntryEventImpl) event).getEventId(), false, event.getRegion().getFullPath());
 
-            try {
-              hrq.put(conflatable);
-            } catch (Exception e) {
-              fail("The put operation in queue did not succeed due to exception =", e);
+              try {
+                hrq.put(conflatable);
+              } catch (Exception e) {
+                fail("The put operation in queue did not succeed due to exception =", e);
+              }
             }
           }
 
           @Override
           public void afterUpdate(final EntryEvent event) {
-            Conflatable conflatable = new ConflatableObject(event.getKey(), event.getNewValue(),
-                ((EntryEventImpl) event).getEventId(), true, event.getRegion().getFullPath());
+            if (toCnt) {
+              Conflatable conflatable = new ConflatableObject(event.getKey(), event.getNewValue(),
+                  ((EntryEventImpl) event).getEventId(), true, event.getRegion().getFullPath());
 
-            try {
-              hrq.put(conflatable);
-            } catch (Exception e) {
-              fail("The put operation in queue did not succeed due to exception =", e);
+              try {
+                hrq.put(conflatable);
+              } catch (Exception e) {
+                fail("The put operation in queue did not succeed due to exception =", e);
+              }
             }
           }
 
@@ -619,21 +630,20 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
 
           @Override
           public void run2() throws CacheException {
-            opThreads = new Thread[4 + 2 + 2 + 2];
+            opThreads = new RunOp[4 + 2 + 2 + 2];
             for (int i = 0; i < 4; ++i) {
-              opThreads[i] = new Thread(new RunOp(RunOp.PUT, i), "ID=" + i + ",Op=" + RunOp.PUT);
+              opThreads[i] = new RunOp(RunOp.PUT, i);
             }
             for (int i = 4; i < 6; ++i) {
-              opThreads[i] = new Thread(new RunOp(RunOp.PEEK, i), "ID=" + i + ",Op=" + RunOp.PEEK);
+              opThreads[i] = new RunOp(RunOp.PEEK, i);
             }
 
             for (int i = 6; i < 8; ++i) {
-              opThreads[i] = new Thread(new RunOp(RunOp.TAKE, i), "ID=" + i + ",Op=" + RunOp.TAKE);
+              opThreads[i] = new RunOp(RunOp.TAKE, i);
             }
 
             for (int i = 8; i < 10; ++i) {
-              opThreads[i] =
-                  new Thread(new RunOp(RunOp.TAKE, i), "ID=" + i + ",Op=" + RunOp.BATCH_PEEK);
+              opThreads[i] = new RunOp(RunOp.TAKE, i);
             }
 
             for (int i = 0; i < opThreads.length; ++i) {
@@ -641,20 +651,37 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
             }
 
           }
-
         };
 
     vm0.invokeAsync(spawnThreadsAndperformOps);
     vm1.invokeAsync(spawnThreadsAndperformOps);
     vm2.invokeAsync(spawnThreadsAndperformOps);
     vm3.invokeAsync(spawnThreadsAndperformOps);
-    try {
-      Thread.sleep(2000);
-    } catch (InterruptedException e1) {
-      fail("Test failed as the test thread encoutered exception in sleep", e1);
-    }
 
-    // Asif : In case of blocking HARegionQueue do some extra puts so that the
+
+    SerializableCallable guaranteeOperationsOccured =
+        new SerializableCallable("Check Ops Occurred") {
+          @Override
+          public Object call() throws CacheException {
+            for (int i = 0; i < opThreads.length; ++i) {
+              if (((RunOp) opThreads[i]).getNumOpsPerformed() == 0) {
+                return false;
+              }
+            }
+            return true;
+          }
+        };
+
+    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+        .until(() -> assertTrue((Boolean) vm0.invoke(guaranteeOperationsOccured)));
+    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+        .until(() -> assertTrue((Boolean) vm1.invoke(guaranteeOperationsOccured)));
+    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+        .until(() -> assertTrue((Boolean) vm2.invoke(guaranteeOperationsOccured)));
+    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+        .until(() -> assertTrue((Boolean) vm3.invoke(guaranteeOperationsOccured)));
+
+    // In case of blocking HARegionQueue do some extra puts so that the
     // blocking threads
     // are exited
     CacheSerializableRunnable toggleFlag =
@@ -825,7 +852,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     vm1.invoke(waitForCreateQueuesThread);
   }
 
-  private static class RunOp implements Runnable {
+  private static class RunOp extends Thread {
 
     private static final int PUT = 1;
     private static final int TAKE = 2;
@@ -835,9 +862,16 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     private int opType;
     private int threadID;
 
+    private int numOpsPerformed = 0;
+
     public RunOp(int opType, int id) {
+      super("ID=" + id + ",Op=" + opType);
       this.opType = opType;
       this.threadID = id;
+    }
+
+    public int getNumOpsPerformed() {
+      return numOpsPerformed;
     }
 
     @Override
@@ -848,7 +882,6 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
       Conflatable cnf;
       try {
         while (toCnt) {
-          Thread.sleep(20);
           // Thread.currentThread().getName() + " before doing operation of
           // type= "+ this.opType);
           switch (opType) {
@@ -885,6 +918,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
               break;
 
           }
+          numOpsPerformed++;
           // Thread.currentThread().getName() + " after Operation of type= "+
           // this.opType);
 

@@ -40,7 +40,7 @@ public interface SerializedCacheValue<V> {
    *         EntryEvent that this serialize value was obtained from returns and this value does not
    *         already have the serialized value.
    */
-  public byte[] getSerializedValue();
+  byte[] getSerializedValue();
 
   /**
    * Returns the deserialized object for this cache value.
@@ -49,5 +49,5 @@ public interface SerializedCacheValue<V> {
    * @throws IllegalStateException if off-heap and called after the method that was passed the
    *         EntryEvent that this serialize value was obtained from returns.
    */
-  public V getDeserializedValue();
+  V getDeserializedValue();
 }

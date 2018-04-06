@@ -142,7 +142,8 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
 
     private Map<DistributedMember, Boolean> responses;
 
-    public WaitUntilGatewaySenderFlushedReplyProcessor(DM dm, Collection initMembers) {
+    public WaitUntilGatewaySenderFlushedReplyProcessor(DistributionManager dm,
+        Collection initMembers) {
       super(dm, initMembers);
       initializeResponses();
     }

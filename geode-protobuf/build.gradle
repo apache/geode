@@ -16,7 +16,6 @@
  */
 
 dependencies {
-    provided project(':geode-client-protocol')
     provided project(':geode-core')
     compile project(':geode-protobuf-messages')
 

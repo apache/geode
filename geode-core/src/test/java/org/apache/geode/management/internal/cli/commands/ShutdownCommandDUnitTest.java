@@ -14,14 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -30,8 +24,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -44,27 +36,11 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class ShutdownCommandDUnitTest {
-  private static final String MANAGER_NAME = "Manager";
-  private static final String SERVER1_NAME = "Server1";
-  private static final String SERVER2_NAME = "Server2";
-  private static final String GROUP0 = "Group0";
-  private static final String GROUP1 = "Group1";
-  private static final String GROUP2 = "Group2";
 
-  private MemberVM manager;
+  private MemberVM locator;
   private MemberVM server1;
   private MemberVM server2;
-
-
-  @Parameterized.Parameter
-  public static boolean useHttp;
-
-  @Parameterized.Parameters
-  public static Object[] data() {
-    return new Object[] {true, false};
-  }
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
@@ -75,52 +51,34 @@ public class ShutdownCommandDUnitTest {
 
   @Before
   public void setup() throws Exception {
-    Properties managerProps = new Properties();
-    managerProps.setProperty(NAME, MANAGER_NAME);
-    managerProps.setProperty(GROUPS, GROUP0);
-    managerProps.setProperty(LOG_FILE, "someLog.log");
+    locator = clusterStartupRule.startLocatorVM(0);
+    server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    connect(locator);
+  }
 
-    manager = clusterStartupRule.startLocatorVM(0, managerProps);
-
-    Properties server1Props = new Properties();
-    server1Props.setProperty(NAME, SERVER1_NAME);
-    server1Props.setProperty(GROUPS, GROUP1);
-    server1 = clusterStartupRule.startServerVM(1, server1Props, manager.getPort());
-
-    Properties server2Props = new Properties();
-    server2Props.setProperty(NAME, SERVER2_NAME);
-    server2Props.setProperty(GROUPS, GROUP2);
-    server2 = clusterStartupRule.startServerVM(2, server2Props, manager.getPort());
-
-    if (useHttp) {
-      gfsh.connectAndVerify(manager.getHttpPort(), http);
-    } else {
-      gfsh.connectAndVerify(manager.getJmxPort(), jmxManager);
-    }
+  void connect(MemberVM locator) throws Exception {
+    gfsh.connectAndVerify(locator);
   }
 
   @Test
   public void testShutdownServers() {
     String command = "shutdown";
 
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
-    assertThat(gfsh.getGfshOutput()).contains("Shutdown is triggered");
-
+    gfsh.executeAndAssertThat(command).statusIsSuccess().containsOutput("Shutdown is triggered");
     verifyShutDown(server1, server2);
 
     // Make sure the locator is still running
     gfsh.executeAndAssertThat("list members").statusIsSuccess();
-    assertThat(gfsh.getGfshOutput()).contains(MANAGER_NAME);
+    assertThat(gfsh.getGfshOutput()).contains("locator-0");
   }
 
   @Test
   public void testShutdownAll() {
     String command = "shutdown --include-locators=true";
 
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
-    assertThat(gfsh.getGfshOutput()).contains("Shutdown is triggered");
-
-    verifyShutDown(server1, server2, manager);
+    gfsh.executeAndAssertThat(command).statusIsSuccess().containsOutput("Shutdown is triggered");
+    verifyShutDown(server1, server2, locator);
   }
 
   private void verifyShutDown(MemberVM... members) {

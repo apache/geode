@@ -84,7 +84,7 @@ public interface RegionSnapshotService<K, V> {
   /**
    * File extension for snapshot files
    */
-  public static final String SNAPSHOT_FILE_EXTENSION = ".gfd";
+  String SNAPSHOT_FILE_EXTENSION = ".gfd";
 
   /**
    * Creates a <code>SnapshotOptions</code> object configured with default settings. The options can

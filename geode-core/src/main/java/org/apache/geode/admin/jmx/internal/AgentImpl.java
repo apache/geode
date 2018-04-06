@@ -54,7 +54,7 @@ import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
 import org.apache.geode.admin.jmx.AgentFactory;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.ExitCode;
@@ -411,7 +411,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
           return ((AdminDistributedSystemJmxImpl) this.system).getObjectName();
         }
 
-        DistributionManager.setIsDedicatedAdminVM(true);
+        ClusterDistributionManager.setIsDedicatedAdminVM(true);
 
         AdminDistributedSystemJmxImpl systemJmx = (AdminDistributedSystemJmxImpl) this.system;
         if (systemJmx == null) {
@@ -458,7 +458,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
           return;
         }
         ((AdminDistributedSystemJmxImpl) this.system).disconnect();
-        // this.system = null;
       } catch (RuntimeException e) {
         logger.warn(e.getMessage(), e);
         throw e;
@@ -477,7 +476,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
         logger.warn(e.getMessage(), e);
         throw e;
       } finally {
-        DistributionManager.setIsDedicatedAdminVM(false);
+        ClusterDistributionManager.setIsDedicatedAdminVM(false);
       }
     }
   }
@@ -826,16 +825,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     return mBeanServer;
   }
 
-  // /**
-  // * Returns the active modeler Registry which has been initialized with all
-  // * the ModelMBean descriptors needed for GemFire MBeans.
-  // *
-  // * @return the modeler registry
-  // */
-  // private Registry getRegistry() {
-  // return MBeanUtil.getRegistry();
-  // }
-
   /**
    * Gets the current instance of LogWriter for logging
    *
@@ -1178,9 +1167,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       JMXServiceURL url = new JMXServiceURL(urlString);
 
       Map<String, Object> env = new HashMap<String, Object>();
-      // env.put(Context.INITIAL_CONTEXT_FACTORY,
-      // "com.sun.jndi.rmi.registry.RegistryContextFactory");
-      // env.put(Context.PROVIDER_URL, "rmi://localhost:1099");
 
       RMIServerSocketFactory ssf = new MX4JServerSocketFactory(this.agentConfig.isAgentSSLEnabled(), // true,
           this.agentConfig.isAgentSSLRequireAuth(), // true,
@@ -1394,20 +1380,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   }
 
   // -------------------------------------------------------------------------
-  // Private support methods...
-  // -------------------------------------------------------------------------
-
-  // /** Not used anymore but seems moderately useful... */
-  // private String[] parseSSLCiphers(String ciphers) {
-  // List list = new ArrayList();
-  // StringTokenizer st = new StringTokenizer(ciphers);
-  // while (st.hasMoreTokens()) {
-  // list.add(st.nextToken());
-  // }
-  // return (String[]) list.toArray(new String[list.size()]);
-  // }
-
-  // -------------------------------------------------------------------------
   // SSL configuration for GemFire
   // -------------------------------------------------------------------------
   public boolean isSSLEnabled() {
@@ -1526,13 +1498,11 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     StringBuffer sb = new StringBuffer();
     sb.append("AgentImpl[");
     sb.append("config=" + agentConfig.toProperties().toString());
-    // sb.append("; adaptor=" + httpAdaptor.toString());
     sb.append("; mbeanName=" + mbeanName);
     sb.append("; modelMBean=" + modelMBean);
     sb.append("; objectName=" + objectName);
     sb.append("; propertyFile=" + propertyFile);
     sb.append(": rmiConnector=" + rmiConnector);
-    // sb.append("; system=" + system);)
     sb.append("]");
     return sb.toString();
   }

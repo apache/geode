@@ -24,7 +24,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.internal.logging.InternalLogWriter;
 
 /**
  * A MembershipManager is responsible for reporting a MemberView, as well as having explicit
@@ -41,14 +40,14 @@ public interface MembershipManager {
    * this must be sent to the manager after instantiation to allow it to perform post-connection
    * chores
    */
-  public void postConnect();
+  void postConnect();
 
   /**
    * Fetch the current view of memberships in th distributed system, as an ordered list.
    *
    * @return list of members
    */
-  public NetView getView();
+  NetView getView();
 
   /**
    * Returns an object that is used to sync access to the view. While this lock is held the view
@@ -56,14 +55,14 @@ public interface MembershipManager {
    *
    * @since GemFire 5.7
    */
-  public ReadWriteLock getViewLock();
+  ReadWriteLock getViewLock();
 
   /**
    * Return a {@link InternalDistributedMember} representing the current system
    *
    * @return an address corresponding to the current system
    */
-  public InternalDistributedMember getLocalMember();
+  InternalDistributedMember getLocalMember();
 
   /**
    * Sanity checking, esp. for elder processing. Does the existing member (still) exist in our view?
@@ -71,7 +70,7 @@ public interface MembershipManager {
    * @param m the member
    * @return true if it still exists
    */
-  public boolean memberExists(DistributedMember m);
+  boolean memberExists(DistributedMember m);
 
   /**
    * Is this manager still connected? If it has not been initialized, this method will return true;
@@ -79,35 +78,35 @@ public interface MembershipManager {
    *
    * @return true if the manager is still connected.
    */
-  public boolean isConnected();
+  boolean isConnected();
 
 
   /**
    * A test hook for healthiness tests
    */
-  public boolean isBeingSick();
+  boolean isBeingSick();
 
   /**
    * Instructs this manager to shut down
    *
    * @param beforeJoined whether we've joined the cluster or not
    */
-  public void disconnect(boolean beforeJoined);
+  void disconnect(boolean beforeJoined);
 
   /**
    * Instruct this manager to release resources
    */
-  public void shutdown();
+  void shutdown();
 
   /**
    * Forcibly shut down the manager and inform its listeners of the failure
    */
-  public void uncleanShutdown(String reason, Exception e);
+  void uncleanShutdown(String reason, Exception e);
 
   /**
    * A shutdown message has been received from another member
    */
-  public void shutdownMessageReceived(InternalDistributedMember id, String reason);
+  void shutdownMessageReceived(InternalDistributedMember id, String reason);
 
   /**
    * Stall the current thread until we are ready to accept view events
@@ -115,14 +114,14 @@ public interface MembershipManager {
    * @throws InterruptedException if the thread is interrupted while waiting
    * @see #startEventProcessing()
    */
-  public void waitForEventProcessing() throws InterruptedException;
+  void waitForEventProcessing() throws InterruptedException;
 
   /**
    * Commence delivering events to my listener.
    *
    * @see #waitForEventProcessing()
    */
-  public void startEventProcessing();
+  void startEventProcessing();
 
 
   /**
@@ -136,8 +135,8 @@ public interface MembershipManager {
    *         not receive the message because they departed the distributed system.
    * @throws NotSerializableException If content cannot be serialized
    */
-  public Set send(InternalDistributedMember[] destinations, DistributionMessage content,
-      DMStats stats) throws NotSerializableException;
+  Set send(InternalDistributedMember[] destinations, DistributionMessage content, DMStats stats)
+      throws NotSerializableException;
 
   /**
    * Indicates to the membership manager that the system is shutting down. Typically speaking, this
@@ -145,7 +144,7 @@ public interface MembershipManager {
    * tolerated.
    *
    */
-  public void setShutdown();
+  void setShutdown();
 
 
   /**
@@ -153,7 +152,7 @@ public interface MembershipManager {
    *
    * @return true if it is shutting down
    */
-  public boolean shutdownInProgress();
+  boolean shutdownInProgress();
 
   /**
    * Returns a serializable map of communications state for use in state stabilization.
@@ -164,7 +163,7 @@ public interface MembershipManager {
    *         distributed member
    * @since GemFire 5.1
    */
-  public Map getMessageState(DistributedMember member, boolean includeMulticast);
+  Map getMessageState(DistributedMember member, boolean includeMulticast);
 
   /**
    * Waits for the given communications to reach the associated state
@@ -174,7 +173,7 @@ public interface MembershipManager {
    * @throws InterruptedException Thrown if the thread is interrupted
    * @since GemFire 5.1
    */
-  public void waitForMessageState(DistributedMember member, Map state) throws InterruptedException;
+  void waitForMessageState(DistributedMember member, Map state) throws InterruptedException;
 
   /**
    * Wait for the given member to not be in the membership view and for all direct-channel receivers
@@ -185,8 +184,7 @@ public interface MembershipManager {
    * @throws InterruptedException if interrupted by another thread
    * @throws TimeoutException if we wait too long for the member to go away
    */
-  public boolean waitForDeparture(DistributedMember mbr)
-      throws TimeoutException, InterruptedException;
+  boolean waitForDeparture(DistributedMember mbr) throws TimeoutException, InterruptedException;
 
   /**
    * Returns true if remoteId is an existing member, otherwise waits till timeout. Returns false if
@@ -195,19 +193,19 @@ public interface MembershipManager {
    * @param remoteId
    * @return true if membership is confirmed, else timeout and false
    */
-  public boolean waitForNewMember(InternalDistributedMember remoteId);
+  boolean waitForNewMember(InternalDistributedMember remoteId);
 
   /**
    * Release critical resources, avoiding any possibility of deadlock
    *
    * @see SystemFailure#emergencyClose()
    */
-  public void emergencyClose();
+  void emergencyClose();
 
   /**
    * Request the current membership coordinator to remove the given member
    */
-  public boolean requestMemberRemoval(DistributedMember member, String reason);
+  boolean requestMemberRemoval(DistributedMember member, String reason);
 
   /**
    * like memberExists() this checks to see if the given ID is in the current membership view. If it
@@ -219,20 +217,20 @@ public interface MembershipManager {
    * @param reason why the check is being done (must not be blank/null)
    * @return true if the member checks out
    */
-  public boolean verifyMember(DistributedMember mbr, String reason);
+  boolean verifyMember(DistributedMember mbr, String reason);
 
 
   /**
    * Initiate SUSPECT processing for the given members. This may be done if the members have not
    * been responsive. If they fail SUSPECT processing, they will be removed from membership.
    */
-  public void suspectMembers(Set members, String reason);
+  void suspectMembers(Set members, String reason);
 
   /**
    * Initiate SUSPECT processing for the given member. This may be done if the member has not been
    * responsive. If it fails SUSPECT processing, it will be removed from membership.
    */
-  public void suspectMember(DistributedMember member, String reason);
+  void suspectMember(DistributedMember member, String reason);
 
   /**
    * if the manager initiated shutdown, this will return the cause of abnormal termination of
@@ -240,28 +238,28 @@ public interface MembershipManager {
    *
    * @return the exception causing shutdown
    */
-  public Throwable getShutdownCause();
+  Throwable getShutdownCause();
 
   /**
    * register a test hook for membership events
    *
    * @see MembershipTestHook
    */
-  public void registerTestHook(MembershipTestHook mth);
+  void registerTestHook(MembershipTestHook mth);
 
   /**
    * remove a test hook previously registered with the manager
    */
-  public void unregisterTestHook(MembershipTestHook mth);
+  void unregisterTestHook(MembershipTestHook mth);
 
   /**
    * If this member is shunned, ensure that a warning is generated at least once.
    *
    * @param mbr the member that may be shunned
    */
-  public void warnShun(DistributedMember mbr);
+  void warnShun(DistributedMember mbr);
 
-  public boolean addSurpriseMember(DistributedMember mbr);
+  boolean addSurpriseMember(DistributedMember mbr);
 
   /**
    * if a StartupMessage is going to reject a new member, this should be used to make sure we don't
@@ -270,12 +268,12 @@ public interface MembershipManager {
    * @param mbr the failed member
    * @param failureMessage the reason for the failure (e.g., license limitation)
    */
-  public void startupMessageFailed(DistributedMember mbr, String failureMessage);
+  void startupMessageFailed(DistributedMember mbr, String failureMessage);
 
   /**
    * @return true if multicast is disabled, or if multicast is enabled and seems to be working
    */
-  public boolean testMulticast();
+  boolean testMulticast();
 
   /**
    * Returns true if the member is a surprise member.
@@ -283,25 +281,25 @@ public interface MembershipManager {
    * @param m the member in question
    * @return true if the member is a surprise member
    */
-  public boolean isSurpriseMember(DistributedMember m);
+  boolean isSurpriseMember(DistributedMember m);
 
   /**
    * Returns true if the member is being shunned
    */
-  public boolean isShunned(DistributedMember m);
+  boolean isShunned(DistributedMember m);
 
   /**
    * Forces use of UDP for communications in the current thread. UDP is connectionless, so no tcp/ip
    * connections will be created or used for messaging until this setting is released with
    * releaseUDPMessagingForCurrentThread.
    */
-  public void forceUDPMessagingForCurrentThread();
+  void forceUDPMessagingForCurrentThread();
 
   /**
    * Releases use of UDP for all communications in the current thread, as established by
    * forceUDPMessagingForCurrentThread.
    */
-  public void releaseUDPMessagingForCurrentThread();
+  void releaseUDPMessagingForCurrentThread();
 
 
   /**
@@ -310,7 +308,7 @@ public interface MembershipManager {
    *
    * @return the quorum checker to be used in reconnecting the system
    */
-  public QuorumChecker getQuorumChecker();
+  QuorumChecker getQuorumChecker();
 
 
   /**
@@ -319,11 +317,11 @@ public interface MembershipManager {
    *
    * @param checker the QuorumChecker instance
    */
-  public void releaseQuorumChecker(QuorumChecker checker);
+  void releaseQuorumChecker(QuorumChecker checker);
 
   /**
    * return the coordinator for the view.
    */
-  public DistributedMember getCoordinator();
+  DistributedMember getCoordinator();
 
 }

@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,11 +38,11 @@ import java.util.TreeSet;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.UnmodifiableException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.FlowControlParams;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.util.ArgumentRedactor;
 
 /**
  * Provides an implementation of the {@link Config} interface that implements functionality that all
@@ -49,37 +50,11 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  */
 public abstract class AbstractConfig implements Config {
 
-  public static final String GEM_FIRE_PROPERTIES_USING_DEFAULT_VALUES =
+  private static final String GEM_FIRE_PROPERTIES_USING_DEFAULT_VALUES =
       "### GemFire Properties using default values ###";
-  public static final String GEM_FIRE_PROPERTIES_DEFINED_WITH_PREFIX =
+  private static final String GEM_FIRE_PROPERTIES_DEFINED_WITH_PREFIX =
       "### GemFire Properties defined with ";
-  public static final String GEM_FIRE_PROPERTIES_DEFINED_WITH_SUFFIX = " ###";
-
-  /**
-   * Returns the string to use as the exception message when an attempt is made to set an
-   * unmodifiable attribute.
-   */
-  protected String _getUnmodifiableMsg(String attName) {
-    return LocalizedStrings.AbstractConfig_THE_0_CONFIGURATION_ATTRIBUTE_CAN_NOT_BE_MODIFIED
-        .toLocalizedString(attName);
-  }
-
-  /**
-   * Returns a map that contains attribute descriptions
-   */
-  protected abstract Map getAttDescMap();
-
-  protected abstract Map<String, ConfigSource> getAttSourceMap();
-
-  public static final String sourceHeader = "PropertiesSourceHeader";
-
-  /**
-   * Set to true if most of the attributes can be modified. Set to false if most of the attributes
-   * are read only.
-   */
-  protected boolean _modifiableDefault() {
-    return false;
-  }
+  private static final String GEM_FIRE_PROPERTIES_DEFINED_WITH_SUFFIX = " ###";
 
   /**
    * Use {@link #toLoggerString()} instead. If you need to override this in a subclass, be careful
@@ -88,7 +63,7 @@ public abstract class AbstractConfig implements Config {
    */
   @Override
   public String toString() {
-    return getClass().getName() + "@" + Integer.toHexString(hashCode());
+    return super.toString();
   }
 
   @Override
@@ -111,22 +86,16 @@ public abstract class AbstractConfig implements Config {
   /***
    * Gets the Map of GemFire properties and values from a given ConfigSource
    *
-   * @param source
-   *
    * @return map of GemFire properties and values
    */
   public Map<String, String> getConfigPropsFromSource(ConfigSource source) {
-    Map<String, String> configProps = new HashMap<String, String>();
+    Map<String, String> configProps = new HashMap<>();
     String[] validAttributeNames = getAttributeNames();
     Map<String, ConfigSource> sm = getAttSourceMap();
 
-    for (int i = 0; i < validAttributeNames.length; i++) {
-      String attName = validAttributeNames[i];
-      if (source == null) {
-        if (sm.get(attName) != null) {
-          continue;
-        }
-      } else if (!source.equals(sm.get(attName))) {
+    for (String attName : validAttributeNames) {
+      if ((source == null && sm.get(attName) != null)
+          || (source != null && !source.equals(sm.get(attName)))) {
         continue;
       }
       configProps.put(attName, this.getAttribute(attName));
@@ -140,122 +109,31 @@ public abstract class AbstractConfig implements Config {
    * @return Map of GemFire properties and values set using property files
    */
   public Map<String, String> getConfigPropsDefinedUsingFiles() {
-    Map<String, String> configProps = new HashMap<String, String>();
+    Map<String, String> configProps = new HashMap<>();
     for (ConfigSource fileSource : getFileSources()) {
       configProps.putAll(getConfigPropsFromSource(fileSource));
     }
     return configProps;
   }
 
-  private List<ConfigSource> getFileSources() {
-    ArrayList<ConfigSource> result = new ArrayList<ConfigSource>();
-    for (ConfigSource cs : getAttSourceMap().values()) {
-      if (cs.getType() == ConfigSource.Type.FILE || cs.getType() == ConfigSource.Type.SECURE_FILE) {
-        if (!result.contains(cs)) {
-          result.add(cs);
-        }
-      }
-    }
-    return result;
-  }
-
-  private void printSourceSection(ConfigSource source, PrintWriter pw) {
-    String[] validAttributeNames = getAttributeNames();
-    boolean sourceFound = false;
-    Map<String, ConfigSource> sm = getAttSourceMap();
-    boolean secureSource = false;
-    if (source != null && source.getType() == ConfigSource.Type.SECURE_FILE) {
-      secureSource = true;
-    }
-    for (int i = 0; i < validAttributeNames.length; i++) {
-      String attName = validAttributeNames[i];
-      if (source == null) {
-        if (sm.get(attName) != null) {
-          continue;
-        }
-      } else if (!source.equals(sm.get(attName))) {
-        continue;
-      }
-      if (!sourceFound) {
-        sourceFound = true;
-        if (source == null) {
-          pw.println(GEM_FIRE_PROPERTIES_USING_DEFAULT_VALUES);
-        } else {
-          pw.println(GEM_FIRE_PROPERTIES_DEFINED_WITH_PREFIX + source.getDescription()
-              + GEM_FIRE_PROPERTIES_DEFINED_WITH_SUFFIX);
-        }
-      }
-      // hide the shiro-init configuration for now. Remove after we can allow customer to specify
-      // shiro.ini file
-      if (attName.equals(SECURITY_SHIRO_INIT)) {
-        continue;
-      }
-      pw.print(attName);
-      pw.print('=');
-      if (source == null // always show defaults
-          || (!secureSource // show no values from a secure source
-              && okToDisplayPropertyValue(attName))) {
-        pw.println(getAttribute(attName));
-      } else {
-        pw.println("********");
-      }
-    }
-  }
-
-  private boolean okToDisplayPropertyValue(String attName) {
-    if (attName.startsWith(SECURITY_PREFIX)) {
-      return false;
-    }
-    if (attName.startsWith(DistributionConfig.SSL_SYSTEM_PROPS_NAME)) {
-      return false;
-    }
-    if (attName.startsWith(DistributionConfig.SYS_PROP_NAME)) {
-      return false;
-    }
-    return !attName.toLowerCase().contains("password");
-  }
-
-  /**
-   * This class was added to fix bug 39382. It does this be overriding "keys" which is used by the
-   * store0 implementation of Properties.
-   */
-  protected static class SortedProperties extends Properties {
-
-    private static final long serialVersionUID = 7156507110684631135L;
-
-    @Override
-    public Enumeration keys() {
-      // the TreeSet gets the sorting we desire but is only safe
-      // because the keys in this context are always String which is Comparable
-      return Collections.enumeration(new TreeSet(keySet()));
-    }
-  }
-
-  public boolean isDeprecated(String attName) {
-    return false;
-  }
-
+  @Override
   public Properties toProperties() {
     Properties result = new SortedProperties();
     String[] attNames = getAttributeNames();
-    for (int i = 0; i < attNames.length; i++) {
-      if (isDeprecated(attNames[i])) {
-        continue;
-      }
-      result.setProperty(attNames[i], getAttribute(attNames[i]));
+    for (String attName : attNames) {
+      result.setProperty(attName, getAttribute(attName));
     }
     return result;
   }
 
+  @Override
   public void toFile(File f) throws IOException {
-    FileOutputStream out = new FileOutputStream(f);
-    try {
+    try (FileOutputStream out = new FileOutputStream(f)) {
       toProperties().store(out, null);
-    } finally {
-      out.close();
     }
   }
 
+  @Override
   public boolean sameAs(Config other) {
     if (this == other) {
       return true;
@@ -267,53 +145,39 @@ public abstract class AbstractConfig implements Config {
       return false;
     }
     String[] validAttributeNames = getAttributeNames();
-    for (int i = 0; i < validAttributeNames.length; i++) {
-      String attName = validAttributeNames[i];
-      if (this.isDeprecated(attName)) {
-        // since toProperties skips isDeprecated sameAs
-        // needs to also skip them.
-        // See GEODE-405.
-        continue;
-      }
+    for (String attName : validAttributeNames) {
       Object thisAtt = this.getAttributeObject(attName);
       Object otherAtt = other.getAttributeObject(attName);
-      if (thisAtt == otherAtt) {
-        continue;
-      } else if (thisAtt == null) {
-        return false;
-      } else if (thisAtt.getClass().isArray()) {
-        int thisLength = Array.getLength(thisAtt);
-        int otherLength = Array.getLength(otherAtt);
-        if (thisLength != otherLength) {
+      if (thisAtt != otherAtt) {
+        if (thisAtt == null) {
           return false;
-        }
-        for (int j = 0; j < thisLength; j++) {
-          Object thisArrObj = Array.get(thisAtt, j);
-          Object otherArrObj = Array.get(otherAtt, j);
-          if (thisArrObj == otherArrObj) {
-            continue;
-          } else if (thisArrObj == null) {
-            return false;
-          } else if (!thisArrObj.equals(otherArrObj)) {
+        } else if (thisAtt.getClass().isArray()) {
+          int thisLength = Array.getLength(thisAtt);
+          int otherLength = Array.getLength(otherAtt);
+          if (thisLength != otherLength) {
             return false;
           }
+          for (int j = 0; j < thisLength; j++) {
+            Object thisArrObj = Array.get(thisAtt, j);
+            Object otherArrObj = Array.get(otherAtt, j);
+            if (thisArrObj != otherArrObj) {
+              if (thisArrObj == null) {
+                return false;
+              } else if (!thisArrObj.equals(otherArrObj)) {
+                return false;
+              }
+            }
+          }
+        } else if (!thisAtt.equals(otherAtt)) {
+          return false;
         }
-      } else if (!thisAtt.equals(otherAtt)) {
-        return false;
       }
     }
     return true;
   }
 
-  protected void checkAttributeName(String attName) {
-    String[] validAttNames = getAttributeNames();
-    if (!Arrays.asList(validAttNames).contains(attName.toLowerCase())) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.AbstractConfig_UNKNOWN_CONFIGURATION_ATTRIBUTE_NAME_0_VALID_ATTRIBUTE_NAMES_ARE_1
-              .toLocalizedString(new Object[] {attName, SystemAdmin.join(validAttNames)}));
-    }
-  }
 
+  @Override
   public String getAttribute(String attName) {
     Object result = getAttributeObject(attName);
     if (result instanceof String) {
@@ -335,7 +199,7 @@ public abstract class AbstractConfig implements Config {
 
     if (result instanceof InetAddress) {
       InetAddress addr = (InetAddress) result;
-      String addrName = null;
+      String addrName;
       if (addr.isMulticastAddress() || !SocketCreator.resolve_dns) {
         addrName = addr.getHostAddress(); // on Windows getHostName on mcast addrs takes ~5 seconds
       } else {
@@ -347,10 +211,12 @@ public abstract class AbstractConfig implements Config {
     return result.toString();
   }
 
+  @Override
   public ConfigSource getAttributeSource(String attName) {
     return getAttSourceMap().get(attName);
   }
 
+  @Override
   public void setAttribute(String attName, String attValue, ConfigSource source) {
     Object attObjectValue;
     Class valueType = getAttributeType(attName);
@@ -358,7 +224,7 @@ public abstract class AbstractConfig implements Config {
       if (valueType.equals(String.class)) {
         attObjectValue = attValue;
       } else if (valueType.equals(String[].class)) {
-        attObjectValue = commaDelimitedStringToStringArray(attValue);
+        attObjectValue = attValue.split(",");
       } else if (valueType.equals(Integer.class)) {
         attObjectValue = Integer.valueOf(attValue);
       } else if (valueType.equals(Long.class)) {
@@ -374,8 +240,8 @@ public abstract class AbstractConfig implements Config {
           throw new IllegalArgumentException(
               "expected a setting in the form X-Y but found no dash for attribute " + attName);
         }
-        value[0] = Integer.valueOf(attValue.substring(0, minus)).intValue();
-        value[1] = Integer.valueOf(attValue.substring(minus + 1)).intValue();
+        value[0] = Integer.valueOf(attValue.substring(0, minus));
+        value[1] = Integer.valueOf(attValue.substring(minus + 1));
         attObjectValue = value;
       } else if (valueType.equals(InetAddress.class)) {
         try {
@@ -383,13 +249,13 @@ public abstract class AbstractConfig implements Config {
         } catch (UnknownHostException ex) {
           throw new IllegalArgumentException(
               LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_BE_A_VALID_HOST_NAME_2
-                  .toLocalizedString(new Object[] {attName, attValue, ex.toString()}));
+                  .toLocalizedString(attName, attValue, ex.toString()));
         }
       } else if (valueType.equals(String[].class)) {
         if (attValue == null || attValue.length() == 0) {
           attObjectValue = null;
         } else {
-          String trimAttName = trimAttributeName(attName);
+          String trimAttName = attName.substring(0, attName.length() - 1);
           throw new UnmodifiableException(
               LocalizedStrings.AbstractConfig_THE_0_CONFIGURATION_ATTRIBUTE_CAN_NOT_BE_SET_FROM_THE_COMMAND_LINE_SET_1_FOR_EACH_INDIVIDUAL_PARAMETER_INSTEAD
                   .toLocalizedString(attName, trimAttName));
@@ -399,47 +265,139 @@ public abstract class AbstractConfig implements Config {
         if (values.length != 3) {
           throw new IllegalArgumentException(
               LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_HAVE_THREE_ELEMENTS_SEPARATED_BY_COMMAS
-                  .toLocalizedString(new Object[] {attName, attValue}));
+                  .toLocalizedString(attName, attValue));
         }
-        int credits = 0;
-        float thresh = (float) 0.0;
-        int waittime = 0;
+        int allowance;
+        float threshold;
+        int waitTime;
         try {
-          credits = Integer.parseInt(values[0].trim());
-          thresh = Float.valueOf(values[1].trim()).floatValue();
-          waittime = Integer.parseInt(values[2].trim());
+          allowance = Integer.parseInt(values[0].trim());
+          threshold = Float.valueOf(values[1].trim());
+          waitTime = Integer.parseInt(values[2].trim());
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException(
               LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_BE_COMPOSED_OF_AN_INTEGER_A_FLOAT_AND_AN_INTEGER
-                  .toLocalizedString(new Object[] {attName, attValue}));
+                  .toLocalizedString(attName, attValue));
         }
-        attObjectValue = new FlowControlParams(credits, thresh, waittime);
+        attObjectValue = new FlowControlParams(allowance, threshold, waitTime);
       } else if (valueType.isArray()
           && SecurableCommunicationChannel.class.equals(valueType.getComponentType())) {
         attObjectValue = commaDelimitedStringToSecurableCommunicationChannels(attValue);
       } else {
         throw new InternalGemFireException(
             LocalizedStrings.AbstractConfig_UNHANDLED_ATTRIBUTE_TYPE_0_FOR_1
-                .toLocalizedString(new Object[] {valueType, attName}));
+                .toLocalizedString(valueType, attName));
       }
-    } catch (NumberFormatException ex)
-
-    {
+    } catch (NumberFormatException ex) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_BE_A_NUMBER
-          .toLocalizedString(new Object[] {attName, attValue}));
+          .toLocalizedString(attName, attValue));
     }
 
     setAttributeObject(attName, attObjectValue, source);
-
   }
 
-  private String[] commaDelimitedStringToStringArray(final String tokenizeString) {
-    StringTokenizer stringTokenizer = new StringTokenizer(tokenizeString, ",");
-    String[] strings = new String[stringTokenizer.countTokens()];
-    for (int i = 0; i < strings.length; i++) {
-      strings[i] = stringTokenizer.nextToken();
+  @Override
+  public String getAttributeDescription(String attName) {
+    checkAttributeName(attName);
+    if (!getAttDescMap().containsKey(attName)) {
+      throw new InternalGemFireException(
+          LocalizedStrings.AbstractConfig_UNHANDLED_ATTRIBUTE_NAME_0.toLocalizedString(attName));
     }
-    return strings;
+    return (String) getAttDescMap().get(attName);
+  }
+
+  /**
+   * Returns the string to use as the exception message when an attempt is made to set an
+   * unmodifiable attribute.
+   */
+  protected String _getUnmodifiableMsg(String attName) {
+    return LocalizedStrings.AbstractConfig_THE_0_CONFIGURATION_ATTRIBUTE_CAN_NOT_BE_MODIFIED
+        .toLocalizedString(attName);
+  }
+
+  /**
+   * Returns a map that contains attribute descriptions
+   */
+  protected abstract Map getAttDescMap();
+
+  protected abstract Map<String, ConfigSource> getAttSourceMap();
+
+  /**
+   * Set to true if most of the attributes can be modified. Set to false if most of the attributes
+   * are read only.
+   */
+  protected boolean _modifiableDefault() {
+    return false;
+  }
+
+  protected void checkAttributeName(String attName) {
+    String[] validAttNames = getAttributeNames();
+    if (!Arrays.asList(validAttNames).contains(attName.toLowerCase())) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.AbstractConfig_UNKNOWN_CONFIGURATION_ATTRIBUTE_NAME_0_VALID_ATTRIBUTE_NAMES_ARE_1
+              .toLocalizedString(attName, SystemAdmin.join(validAttNames)));
+    }
+  }
+
+  private List<ConfigSource> getFileSources() {
+    ArrayList<ConfigSource> result = new ArrayList<>();
+    for (ConfigSource cs : getAttSourceMap().values()) {
+      if (cs.getType() == ConfigSource.Type.FILE || cs.getType() == ConfigSource.Type.SECURE_FILE) {
+        if (!result.contains(cs)) {
+          result.add(cs);
+        }
+      }
+    }
+    return result;
+  }
+
+  private void printSourceSection(ConfigSource source, PrintWriter pw) {
+    String[] validAttributeNames = getAttributeNames();
+    boolean sourceFound = false;
+    Map<String, ConfigSource> sourceMap = getAttSourceMap();
+    boolean sourceIsSecured = false;
+    if (source != null && source.getType() == ConfigSource.Type.SECURE_FILE) {
+      sourceIsSecured = true;
+    }
+    for (String attName : validAttributeNames) {
+      if (source == null) {
+        if (sourceMap.get(attName) != null) {
+          continue;
+        }
+      } else if (!source.equals(sourceMap.get(attName))) {
+        continue;
+      }
+      if (!sourceFound) {
+        sourceFound = true;
+        if (source == null) {
+          pw.println(GEM_FIRE_PROPERTIES_USING_DEFAULT_VALUES);
+        } else {
+          pw.println(GEM_FIRE_PROPERTIES_DEFINED_WITH_PREFIX + source.getDescription()
+              + GEM_FIRE_PROPERTIES_DEFINED_WITH_SUFFIX);
+        }
+      }
+      // hide the shiro-init configuration for now. Remove after we can allow customer to specify
+      // shiro.ini file
+      if (attName.equals(SECURITY_SHIRO_INIT)) {
+        continue;
+      }
+
+      String attributeValueToPrint;
+      if (source == null) {
+        // always show defaults values
+        attributeValueToPrint = getAttribute(attName);
+      } else if (sourceIsSecured) {
+        // Never show secure sources
+        attributeValueToPrint = ArgumentRedactor.redacted;
+      } else {
+        // Otherwise, redact based on the key string
+        attributeValueToPrint =
+            ArgumentRedactor.redactValueIfNecessary(attName, getAttribute(attName));
+      }
+      pw.print(attName);
+      pw.print('=');
+      pw.println(attributeValueToPrint);
+    }
   }
 
   private SecurableCommunicationChannel[] commaDelimitedStringToSecurableCommunicationChannels(
@@ -459,18 +417,18 @@ public abstract class AbstractConfig implements Config {
   }
 
   /**
-   * Removes the last character of the input string and returns the trimmed name
+   * This class was added to fix bug 39382. It does this be overriding "keys" which is used by the
+   * store0 implementation of Properties.
    */
-  protected static String trimAttributeName(String attName) {
-    return attName.substring(0, attName.length() - 1);
-  }
+  protected static class SortedProperties extends Properties {
 
-  public String getAttributeDescription(String attName) {
-    checkAttributeName(attName);
-    if (!getAttDescMap().containsKey(attName)) {
-      throw new InternalGemFireException(
-          LocalizedStrings.AbstractConfig_UNHANDLED_ATTRIBUTE_NAME_0.toLocalizedString(attName));
+    private static final long serialVersionUID = 7156507110684631135L;
+
+    @Override
+    public Enumeration keys() {
+      // the TreeSet gets the sorting we desire but is only safe
+      // because the keys in this context are always String which is Comparable
+      return Collections.enumeration(new TreeSet(keySet()));
     }
-    return (String) getAttDescMap().get(attName);
   }
 }

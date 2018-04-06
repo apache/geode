@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.logging.LogService;
@@ -44,7 +45,8 @@ public class ManagementMembershipListener implements MembershipListener {
   }
 
   @Override
-  public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+  public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
+      boolean crashed) {
     if (logger.isDebugEnabled()) {
       logger.debug("ManagementMembershipListener member departed.. {}", id.getId());
     }
@@ -59,7 +61,7 @@ public class ManagementMembershipListener implements MembershipListener {
   }
 
   @Override
-  public void memberJoined(InternalDistributedMember id) {
+  public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
 
     if (logger.isDebugEnabled()) {
       logger.debug("ManagementMembershipListener member joined .. {}", id.getId());
@@ -74,8 +76,8 @@ public class ManagementMembershipListener implements MembershipListener {
   }
 
   @Override
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-      String reason) {
+  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {
 
     if (logger.isDebugEnabled()) {
       logger.debug("ManagementMembershipListener member suspected .. {}", id.getId());
@@ -88,6 +90,6 @@ public class ManagementMembershipListener implements MembershipListener {
     }
   }
 
-  public void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining) {}
+  public void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 }

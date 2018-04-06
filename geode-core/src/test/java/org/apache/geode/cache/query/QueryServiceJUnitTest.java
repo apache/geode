@@ -122,7 +122,6 @@ public class QueryServiceJUnitTest {
   public void testCreateIndex() throws Exception {
     CacheUtils.log("testCreateIndex");
     QueryService qs = CacheUtils.getQueryService();
-    // DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
     Index index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Portfolios");
 
     try {
@@ -170,13 +169,10 @@ public class QueryServiceJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
     qs.removeIndexes();
     for (int i = 0; i < testData.length; i++) {
-      // CacheUtils.log("indexExpr="+testData[i][0]+" from="+testData[i][1]);
       Index index = null;
       try {
         String indexedExpr = (String) testData[i][0];
         String fromClause = (String) testData[i][1];
-        // if (indexedExpr.equals("status") && i == 7)
-        // DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
         index = qs.createIndex("index" + i, IndexType.FUNCTIONAL, indexedExpr, fromClause);
         if (testData[i][2] == Boolean.TRUE && index == null) {
           fail("QueryService.createIndex unable to  create index for indexExpr=" + testData[i][0]
@@ -186,10 +182,7 @@ public class QueryServiceJUnitTest {
               "QueryService.createIndex allows to create index for un-supported index definition (indexExpr="
                   + testData[i][0] + " from=" + testData[i][1] + ")");
         }
-        // CacheUtils.log((index == null ? "" : index.toString()));
       } catch (Exception e) {
-        // e.printStackTrace();
-        // CacheUtils.log("NOT ALLOWDED "+e);
         if (testData[i][2] == Boolean.TRUE) {
           e.printStackTrace();
           fail("QueryService.createIndex unable to  create index for indexExpr=" + testData[i][0]
@@ -199,7 +192,6 @@ public class QueryServiceJUnitTest {
         if (index != null)
           qs.removeIndex(index);
       }
-      // CacheUtils.log("");
     }
   }
 
@@ -231,26 +223,6 @@ public class QueryServiceJUnitTest {
     assertNotNull(qs.getIndex(r, "statusIndex"));
     qs.removeIndex(index);
   }
-
-
-  // no longer support getting indexes by fromClause, type, and indexedExpression, so this commented
-  // out
-  // private void runGetIndexTests(Object testData[][]){
-  // for(int i=0;i<testData.length;i++){
-  // try{
-  // Index index =
-  // CacheUtils.getQueryService().getIndex((String)testData[i][1],IndexType.FUNCTIONAL,(String)testData[i][0]);
-  // if(testData[i][2] == Boolean.TRUE && index == null){
-  // fail("QueryService.getIndex unable to find index for indexExpr="+testData[i][0]+"
-  // from="+testData[i][1]);
-  // }else if(testData[i][2] == Boolean.FALSE && index != null){
-  // fail("QueryService.getIndex return non-matching index for indexExpr="+testData[i][0]+"
-  // from="+testData[i][1]);
-  // }
-  // }catch(Exception e){
-  // }
-  // }
-  // }
 
   @Test
   public void testRemoveIndex() throws Exception {

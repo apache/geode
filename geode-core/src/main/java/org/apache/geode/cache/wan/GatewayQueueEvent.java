@@ -31,28 +31,28 @@ public interface GatewayQueueEvent<K, V> {
    * @return the <code>Region</code> associated with this AsyncEvent OR null if <code>Region</code>
    *         not found (e.g. this can happen if it is destroyed).
    */
-  public Region<K, V> getRegion();
+  Region<K, V> getRegion();
 
   /**
    * Returns the <code>Operation</code> that triggered this event.
    *
    * @return the <code>Operation</code> that triggered this event
    */
-  public Operation getOperation();
+  Operation getOperation();
 
   /**
    * Returns the callbackArgument associated with this event.
    *
    * @return the callbackArgument associated with this event
    */
-  public Object getCallbackArgument();
+  Object getCallbackArgument();
 
   /**
    * Returns the key associated with this event.
    *
    * @return the key associated with this event
    */
-  public K getKey();
+  K getKey();
 
   /**
    * Returns the deserialized value associated with this event.
@@ -62,7 +62,7 @@ public interface GatewayQueueEvent<K, V> {
    * @throws IllegalStateException may be thrown if the event's value was stored off-heap and
    *         {@link AsyncEventListener#processEvents(java.util.List)} has already returned.
    */
-  public V getDeserializedValue();
+  V getDeserializedValue();
 
   /**
    * Returns the serialized form of the value associated with this event.
@@ -72,5 +72,5 @@ public interface GatewayQueueEvent<K, V> {
    * @throws IllegalStateException may be thrown if the event's value was stored off-heap and
    *         {@link AsyncEventListener#processEvents(java.util.List)} has already returned.
    */
-  public byte[] getSerializedValue();
+  byte[] getSerializedValue();
 }

@@ -1,7 +1,7 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
@@ -14,52 +14,82 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
+import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
+import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
+import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
-import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({DistributedTest.class})
-public class BucketRebalanceStatRegressionTest extends CacheTestCase {
+/**
+ * Moving a bucket during rebalancing should update overflow stats (numEntriesInVM and
+ * numOverflowOnDisk).
+ *
+ * <p>
+ * GEODE-3566: Moving a bucket during rebalancing does not update overflow stats
+ */
+@Category(DistributedTest.class)
+@SuppressWarnings("serial")
+public class BucketRebalanceStatRegressionTest implements Serializable {
 
+  private static final String REGION_NAME = "TestRegion";
+
+  private static final int TOTAL_NUMBER_BUCKETS = 2;
   private static final int LRU_ENTRY_COUNT = 4;
   private static final int ENTRIES_IN_REGION = 20;
-  private static final int TOTAL_NUMBER_BUCKETS = 2;
-  private static final String REGION_NAME = "TestRegion";
-  private final VM vm0 = Host.getHost(0).getVM(0);
-  private final VM vm1 = Host.getHost(0).getVM(1);
+  private static final int BYTES_SIZE = 100;
+
+  private VM vm0;
+  private VM vm1;
+
+  @ClassRule
+  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
 
   @Before
   public void setUp() throws Exception {
-    getSystem();
-    getCache();
+    vm0 = getHost(0).getVM(0);
+    vm1 = getHost(0).getVM(1);
   }
 
   @After
@@ -70,42 +100,41 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
   @Test
   public void statsUpdatedAfterRebalancePersistentOverflowPR() throws Exception {
     initializeRegions(RegionShortcut.PARTITION_PERSISTENT, true);
+
     validateInitialOverflowStats();
     validateInitialRegion();
-    statsUpdatedAfterRebalance();
+    validateStatsUpdatedAfterRebalance();
   }
 
   @Test
   public void statsUpdatedAfterRebalanceOverflowPR() throws Exception {
     initializeRegions(RegionShortcut.PARTITION, true);
+
     validateInitialOverflowStats();
     validateInitialRegion();
-    statsUpdatedAfterRebalance();
+    validateStatsUpdatedAfterRebalance();
   }
 
   @Test
   public void statsUpdatedAfterRebalancePersistentPR() throws Exception {
     initializeRegions(RegionShortcut.PARTITION_PERSISTENT, false);
+
     validateInitialRegion();
-    statsUpdatedAfterRebalance();
+    validateStatsUpdatedAfterRebalance();
   }
 
   /**
    * Verify that overflow stats are updated when a bucket moves due to rebalancing.
-   *
-   * @param shortcut The region shortcut to use to create the region.
-   * @param overflow If true the region is configured for overflow to disk, false otherwise.
-   * @throws Exception
    */
-  private void statsUpdatedAfterRebalance() throws Exception {
+  private void validateStatsUpdatedAfterRebalance() {
     vm0.invoke(() -> rebalance());
-    assertThat(vm0.invoke(() -> getCache().getRegion(REGION_NAME).size()))
+    assertThat(vm0.invoke(() -> cacheRule.getCache().getRegion(REGION_NAME).size()))
         .isEqualTo(ENTRIES_IN_REGION);
-    assertThat(vm1.invoke(() -> getCache().getRegion(REGION_NAME).size()))
+    assertThat(vm1.invoke(() -> cacheRule.getCache().getRegion(REGION_NAME).size()))
         .isEqualTo(ENTRIES_IN_REGION);
-    assertThat(vm0.invoke(() -> ((PartitionedRegion) (getCache().getRegion(REGION_NAME)))
+    assertThat(vm0.invoke(() -> ((PartitionedRegion) (cacheRule.getCache().getRegion(REGION_NAME)))
         .getLocalBucketsListTestOnly().size())).isEqualTo(TOTAL_NUMBER_BUCKETS / 2);
-    assertThat(vm1.invoke(() -> ((PartitionedRegion) (getCache().getRegion(REGION_NAME)))
+    assertThat(vm1.invoke(() -> ((PartitionedRegion) (cacheRule.getCache().getRegion(REGION_NAME)))
         .getLocalBucketsListTestOnly().size())).isEqualTo(TOTAL_NUMBER_BUCKETS / 2);
     validateOverflowStats(vm0, "vm0");
     validateOverflowStats(vm1, "vm1");
@@ -117,55 +146,43 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
    * @param shortcut The region shortcut to use to create the region.
    * @param overflow If true, use overflow on the region, false otherwise.
    */
-  private void initializeRegions(RegionShortcut shortcut, boolean overflow) {
+  private void initializeRegions(final RegionShortcut shortcut, final boolean overflow) {
     // arrange: create regions and data
-    vm0.invoke(() -> {
-      createRegion(shortcut, overflow);
-    });
+    vm0.invoke(() -> createRegion(shortcut, overflow));
     vm0.invoke(() -> loadRegion());
-    vm1.invoke(() -> {
-      createRegion(shortcut, overflow);
-    });
+    vm1.invoke(() -> createRegion(shortcut, overflow));
   }
 
   /**
    * Do validation on the initial region before rebalancing. It is expected that all buckets and
    * data live on vm0; vm1 does not host any buckets.
-   *
-   * @param overflow If true the region is set for overflow to disk, false otherwise.
-   * @param vm0 One of the members hosting the partitioned region under test.
-   * @param vm1 Another member hosting the partitioned region under test.
    */
   private void validateInitialRegion() {
-    assertThat(vm0.invoke(() -> getCache().getRegion(REGION_NAME).size()))
+    assertThat(vm0.invoke(() -> cacheRule.getCache().getRegion(REGION_NAME).size()))
         .isEqualTo(ENTRIES_IN_REGION);
-    assertThat(vm1.invoke(() -> getCache().getRegion(REGION_NAME).size()))
+    assertThat(vm1.invoke(() -> cacheRule.getCache().getRegion(REGION_NAME).size()))
         .isEqualTo(ENTRIES_IN_REGION);
-    assertThat(vm0.invoke(() -> ((PartitionedRegion) (getCache().getRegion(REGION_NAME)))
+    assertThat(vm0.invoke(() -> ((PartitionedRegion) (cacheRule.getCache().getRegion(REGION_NAME)))
         .getLocalBucketsListTestOnly().size())).isEqualTo(TOTAL_NUMBER_BUCKETS);
-    assertThat(vm1.invoke(() -> ((PartitionedRegion) (getCache().getRegion(REGION_NAME)))
+    assertThat(vm1.invoke(() -> ((PartitionedRegion) (cacheRule.getCache().getRegion(REGION_NAME)))
         .getLocalBucketsListTestOnly().size())).isEqualTo(0);
   }
 
   /**
    * Do validation the initial region for the member containing all the data
-   *
    */
   private void validateInitialOverflowStats() {
-    assertThat(vm0.invoke(() -> ((PartitionedRegion) (getCache().getRegion(REGION_NAME)))
+    assertThat(vm0.invoke(() -> ((PartitionedRegion) (cacheRule.getCache().getRegion(REGION_NAME)))
         .getDiskRegionStats().getNumEntriesInVM())).isEqualTo(LRU_ENTRY_COUNT);
-    assertThat(vm0.invoke(() -> ((PartitionedRegion) (getCache().getRegion(REGION_NAME)))
+    assertThat(vm0.invoke(() -> ((PartitionedRegion) (cacheRule.getCache().getRegion(REGION_NAME)))
         .getDiskRegionStats().getNumOverflowOnDisk()))
             .isEqualTo(ENTRIES_IN_REGION - LRU_ENTRY_COUNT);
   }
 
   /**
    * Validate that the overflow stats are as expected on the given member.
-   *
-   * @param vm The member to check stats on.
-   * @param vmName The name of the member.
    */
-  private void validateOverflowStats(VM vm, String vmName) {
+  private void validateOverflowStats(final VM vm, final String vmName) {
     long[] overflowStats = vm.invoke(() -> getOverflowStats());
     long[] overflowEntries = vm.invoke(() -> getActualOverflowEntries());
 
@@ -180,14 +197,14 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
 
   /**
    * Rebalance the region, waiting for the rebalance operation to complete
-   *
-   * @throws Exception
    */
   private void rebalance() throws Exception {
-    ResourceManager resMan = getCache().getResourceManager();
-    RebalanceFactory factory = resMan.createRebalanceFactory();
-    RebalanceOperation rebalanceOp = factory.start();
-    RebalanceResults results = rebalanceOp.getResults(); // wait for rebalance to complete
+    ResourceManager resourceManager = cacheRule.getCache().getResourceManager();
+    RebalanceFactory rebalanceFactory = resourceManager.createRebalanceFactory();
+    RebalanceOperation rebalanceOperation = rebalanceFactory.start();
+
+    // wait for rebalance to complete
+    assertThat(rebalanceOperation.getResults()).isNotNull();
   }
 
   /**
@@ -195,9 +212,9 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
    *
    */
   private void loadRegion() {
-    Region aRegion = getCache().getRegion(REGION_NAME);
+    Region<Integer, byte[]> region = cacheRule.getCache().getRegion(REGION_NAME);
     for (int i = 1; i <= ENTRIES_IN_REGION; i++) {
-      aRegion.put(i, new byte[100]);
+      region.put(i, new byte[BYTES_SIZE]);
     }
   }
 
@@ -208,8 +225,9 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
    * @return [0] numEntriesInVM stat [1] numOverflowOnDisk stat
    */
   private long[] getOverflowStats() {
-    Region testRegion = getCache().getRegion(REGION_NAME);
-    PartitionedRegion partitionedRegion = (PartitionedRegion) testRegion;
+    Region<Integer, byte[]> region = cacheRule.getCache().getRegion(REGION_NAME);
+    PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+
     long numEntriesInVM = partitionedRegion.getDiskRegionStats().getNumEntriesInVM();
     long numOverflowOnDisk = partitionedRegion.getDiskRegionStats().getNumOverflowOnDisk();
     return new long[] {numEntriesInVM, numOverflowOnDisk};
@@ -222,11 +240,13 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
    * @return [0] total entries in VM [1] total entries on disk
    */
   private long[] getActualOverflowEntries() {
-    Region testRegion = getCache().getRegion(REGION_NAME);
-    PartitionedRegion pr = (PartitionedRegion) testRegion;
+    Region<Integer, byte[]> region = cacheRule.getCache().getRegion(REGION_NAME);
+    PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+
     int totalBucketEntriesInVM = 0;
     int totalBucketEntriesOnDisk = 0;
-    Set<Entry<Integer, BucketRegion>> buckets = pr.getDataStore().getAllLocalBuckets();
+    Set<Entry<Integer, BucketRegion>> buckets =
+        partitionedRegion.getDataStore().getAllLocalBuckets();
     for (Map.Entry<Integer, BucketRegion> entry : buckets) {
       BucketRegion bucket = entry.getValue();
       if (bucket != null) {
@@ -234,34 +254,36 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
         totalBucketEntriesOnDisk += bucket.testHookGetValuesOnDisk();
       }
     }
+
     return new long[] {totalBucketEntriesInVM, totalBucketEntriesOnDisk};
   }
 
-  /**
-   * Create a PartitionedRegion
-   */
-  private Region<?, ?> createRegion(RegionShortcut shortcut, boolean overflow) {
-    Cache cache = getCache();
+  private void createRegion(final RegionShortcut shortcut, final boolean overflow)
+      throws IOException {
+    Cache cache = cacheRule.getOrCreateCache();
     DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-    File[] diskDirs = getDiskDirs();
-    diskStoreFactory.setDiskDirs(diskDirs);
-    DiskStore diskStore = diskStoreFactory.create(getUniqueName());
+    diskStoreFactory.setDiskDirs(getDiskDirs());
+    DiskStore diskStore = diskStoreFactory.create(testName.getMethodName());
 
-    RegionFactory<String, String> regionFactory = cache.createRegionFactory(shortcut);
+    RegionFactory<Integer, byte[]> regionFactory = cache.createRegionFactory(shortcut);
     regionFactory.setDiskStoreName(diskStore.getName());
     regionFactory.setDiskSynchronous(true);
+
     if (overflow) {
-      EvictionAttributes evAttr = EvictionAttributes.createLRUEntryAttributes(LRU_ENTRY_COUNT,
-          EvictionAction.OVERFLOW_TO_DISK);
-      regionFactory.setEvictionAttributes(evAttr);
+      regionFactory
+          .setEvictionAttributes(createLRUEntryAttributes(LRU_ENTRY_COUNT, OVERFLOW_TO_DISK));
     }
 
-    PartitionAttributesFactory prFactory = new PartitionAttributesFactory();
-    prFactory.setTotalNumBuckets(TOTAL_NUMBER_BUCKETS);
-    prFactory.setRedundantCopies(0);
-    regionFactory.setPartitionAttributes(prFactory.create());
+    PartitionAttributesFactory<Integer, byte[]> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(0);
+    paf.setTotalNumBuckets(TOTAL_NUMBER_BUCKETS);
+    regionFactory.setPartitionAttributes(paf.create());
 
-    return regionFactory.create(REGION_NAME);
+    regionFactory.create(REGION_NAME);
   }
 
+  private File[] getDiskDirs() throws IOException {
+    File dir = temporaryFolder.newFolder("disk" + VM.getCurrentVMNum()).getAbsoluteFile();
+    return new File[] {dir};
+  }
 }

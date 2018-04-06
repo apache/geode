@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
  */
 public interface OfflineMemberDetails extends DataSerializable {
 
-  public static final OfflineMemberDetails EMPTY_DETAILS = new OfflineMemberDetails() {
+  OfflineMemberDetails EMPTY_DETAILS = new OfflineMemberDetails() {
     public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
       return Collections.emptySet();
     }
@@ -38,5 +38,5 @@ public interface OfflineMemberDetails extends DataSerializable {
     public void toData(DataOutput out) throws IOException {}
   };
 
-  public Set<PersistentMemberID> getOfflineMembers(int bucketId);
+  Set<PersistentMemberID> getOfflineMembers(int bucketId);
 }

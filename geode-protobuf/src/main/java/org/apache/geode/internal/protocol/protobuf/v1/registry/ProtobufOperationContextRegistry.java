@@ -20,94 +20,150 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Request.RequestAPICase;
+import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message.MessageTypeCase;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.DisconnectClientRequestOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnGroupRequestOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnMemberRequestOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionNamesRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetServerOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.KeySetOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.OqlQueryRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.RemoveRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.security.AuthenticationRequestOperationHandler;
+import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 @Experimental
 public class ProtobufOperationContextRegistry {
-  private Map<RequestAPICase, ProtobufOperationContext> operationContexts =
+  private Map<ClientProtocol.Message.MessageTypeCase, ProtobufOperationContext> operationContexts =
       new ConcurrentHashMap<>();
 
   public ProtobufOperationContextRegistry() {
     addContexts();
   }
 
-  public ProtobufOperationContext getOperationContext(RequestAPICase apiCase) {
+  public ProtobufOperationContext getOperationContext(
+      ClientProtocol.Message.MessageTypeCase apiCase) {
     return operationContexts.get(apiCase);
   }
 
+  private final ResourcePermission noneRequired =
+      new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL);
+
+  private ResourcePermission skipAuthorizationCheck(Object unused,
+      ProtobufSerializationService unused2) {
+    return noneRequired;
+  }
+
   private void addContexts() {
-    operationContexts.put(RequestAPICase.AUTHENTICATIONREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getAuthenticationRequest,
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.AUTHENTICATIONREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getAuthenticationRequest,
             new AuthenticationRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setAuthenticationResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            opsResp -> ClientProtocol.Message.newBuilder().setAuthenticationResponse(opsResp),
+            this::skipAuthorizationCheck));
 
-    operationContexts.put(RequestAPICase.GETREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getGetRequest,
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.DISCONNECTCLIENTREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getDisconnectClientRequest,
+            new DisconnectClientRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setDisconnectClientResponse(opsResp),
+            this::skipAuthorizationCheck));
+
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getGetRequest,
             new GetRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setGetResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            opsResp -> ClientProtocol.Message.newBuilder().setGetResponse(opsResp),
+            GetRequestOperationHandler::determineRequiredPermission));
 
-    operationContexts.put(RequestAPICase.GETALLREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getGetAllRequest,
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETALLREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getGetAllRequest,
             new GetAllRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setGetAllResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            opsResp -> ClientProtocol.Message.newBuilder().setGetAllResponse(opsResp),
+            // May require per-key checks, will be handled by OperationHandler
+            this::skipAuthorizationCheck));
 
-    operationContexts.put(RequestAPICase.PUTREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getPutRequest,
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.PUTREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getPutRequest,
             new PutRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setPutResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.WRITE)));
+            opsResp -> ClientProtocol.Message.newBuilder().setPutResponse(opsResp),
+            PutRequestOperationHandler::determineRequiredPermission));
 
-    operationContexts.put(RequestAPICase.PUTALLREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getPutAllRequest,
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.PUTALLREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getPutAllRequest,
             new PutAllRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setPutAllResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.WRITE)));
+            opsResp -> ClientProtocol.Message.newBuilder().setPutAllResponse(opsResp),
+            // May require per-key checks, will be handled by OperationHandler
+            this::skipAuthorizationCheck));
 
-    operationContexts.put(RequestAPICase.REMOVEREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getRemoveRequest,
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.REMOVEREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getRemoveRequest,
             new RemoveRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setRemoveResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.WRITE)));
+            opsResp -> ClientProtocol.Message.newBuilder().setRemoveResponse(opsResp),
+            RemoveRequestOperationHandler::determineRequiredPermission));
 
-    operationContexts.put(RequestAPICase.GETREGIONNAMESREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getGetRegionNamesRequest,
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREGIONNAMESREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getGetRegionNamesRequest,
             new GetRegionNamesRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setGetRegionNamesResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            opsResp -> ClientProtocol.Message.newBuilder().setGetRegionNamesResponse(opsResp),
+            ResourcePermissions.DATA_READ));
 
-    operationContexts.put(RequestAPICase.GETREGIONREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getGetRegionRequest,
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREGIONREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getGetRegionRequest,
             new GetRegionRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setGetRegionResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            opsResp -> ClientProtocol.Message.newBuilder().setGetRegionResponse(opsResp),
+            ResourcePermissions.DATA_READ));
 
-    operationContexts.put(RequestAPICase.GETSERVERREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getGetServerRequest,
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETSERVERREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getGetServerRequest,
             new GetServerOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setGetServerResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.CLUSTER,
-                ResourcePermission.Operation.READ)));
+            opsResp -> ClientProtocol.Message.newBuilder().setGetServerResponse(opsResp),
+            ResourcePermissions.CLUSTER_READ));
+
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONREGIONREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getExecuteFunctionOnRegionRequest,
+            new ExecuteFunctionOnRegionRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder()
+                .setExecuteFunctionOnRegionResponse(opsResp),
+            // Resource permissions get handled per-function, since they have varying permission
+            // requirements.
+            this::skipAuthorizationCheck));
+
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONMEMBERREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getExecuteFunctionOnMemberRequest,
+            new ExecuteFunctionOnMemberRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder()
+                .setExecuteFunctionOnMemberResponse(opsResp),
+            // Resource permissions get handled per-function, since they have varying permission
+            // requirements.
+            this::skipAuthorizationCheck));
+
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONGROUPREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getExecuteFunctionOnGroupRequest,
+            new ExecuteFunctionOnGroupRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder()
+                .setExecuteFunctionOnGroupResponse(opsResp),
+            // Resource permissions get handled per-function, since they have varying permission
+            // requirements.
+            this::skipAuthorizationCheck));
+    operationContexts.put(MessageTypeCase.OQLQUERYREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getOqlQueryRequest,
+            new OqlQueryRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setOqlQueryResponse(opsResp),
+            new ResourcePermission(Resource.DATA, Operation.READ)));
+
+    operationContexts.put(MessageTypeCase.KEYSETREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getKeySetRequest,
+            new KeySetOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setKeySetResponse(opsResp),
+            KeySetOperationHandler::determineRequiredPermission));
   }
 }

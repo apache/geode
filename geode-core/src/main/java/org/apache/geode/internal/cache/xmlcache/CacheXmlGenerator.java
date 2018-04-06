@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -885,12 +886,19 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * @throws SAXException
    */
   private void generateFunctionService() throws SAXException {
-    Map<String, Function> functions = FunctionService.getRegisteredFunctions();
+    Collection<Function> functions = Collections.emptyList();
+    if (this.cache instanceof CacheCreation) {
+      if (this.creation.hasFunctionService()) {
+        functions = this.creation.getFunctionServiceCreation().getFunctionList();
+      }
+    } else {
+      functions = FunctionService.getRegisteredFunctions().values();
+    }
     if (!generateDefaults() && functions.isEmpty()) {
       return;
     }
     handler.startElement("", FUNCTION_SERVICE, FUNCTION_SERVICE, EMPTY);
-    for (Function function : functions.values()) {
+    for (Function function : functions) {
       if (function instanceof Declarable) {
         handler.startElement("", FUNCTION, FUNCTION, EMPTY);
         generate((Declarable) function, false);
@@ -1185,11 +1193,17 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     AttributesImpl atts = new AttributesImpl();
     try {
       atts.addAttribute("", "", NAME, "", cp.getName());
-      if (this.version.compareTo(CacheXmlVersion.GEODE_1_0) > 0) {
+      if (this.version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+        if (generateDefaults() || cp
+            .getSubscriptionTimeoutMultiplier() != PoolFactory.DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER) {
+          atts.addAttribute("", "", SUBSCRIPTION_TIMEOUT_MULTIPLIER, "",
+              String.valueOf(cp.getSubscriptionTimeoutMultiplier()));
+        }
         if (generateDefaults()
-            || cp.getSocketConnectTimeout() != PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT)
+            || cp.getSocketConnectTimeout() != PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT) {
           atts.addAttribute("", "", SOCKET_CONNECT_TIMEOUT, "",
               String.valueOf(cp.getSocketConnectTimeout()));
+        }
       }
       if (generateDefaults()
           || cp.getFreeConnectionTimeout() != PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT)

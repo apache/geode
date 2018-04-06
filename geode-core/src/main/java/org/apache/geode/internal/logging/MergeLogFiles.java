@@ -467,16 +467,16 @@ public class MergeLogFiles {
   }
 
   /** interface for threaded and non-threaded reader classes */
-  static interface Reader {
-    public LogFileParser.LogEntry peek();
+  interface Reader {
+    LogFileParser.LogEntry peek();
 
-    public LogFileParser.LogEntry poll();
+    LogFileParser.LogEntry poll();
 
-    public String getFileName();
+    String getFileName();
 
-    public void setUniqueId(int id);
+    void setUniqueId(int id);
 
-    public int getUniqueId();
+    int getUniqueId();
   }
 
 

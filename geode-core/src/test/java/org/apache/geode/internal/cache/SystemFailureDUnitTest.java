@@ -36,7 +36,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
@@ -370,7 +370,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       return Boolean.TRUE; // uhhh, pretty dead!
     }
     try {
-      DistributionManager dm = (DistributionManager) ids.getDistributionManager();
+      ClusterDistributionManager dm = (ClusterDistributionManager) ids.getDistributionManager();
       if (dm == null) {
         return Boolean.TRUE;
       }

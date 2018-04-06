@@ -651,11 +651,10 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    *
    * @since GemFire 5.8Beta
    */
-  void validateColocation() {
+  void validateColocation(Cache cache) {
     if (this.colocatedRegionName == null) {
       return;
     }
-    Cache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       Region<?, ?> region = cache.getRegion(this.colocatedRegionName);
       if (region == null) {

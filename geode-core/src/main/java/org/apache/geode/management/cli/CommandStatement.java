@@ -30,19 +30,19 @@ public interface CommandStatement {
   /**
    * Returns the user specified command string.
    */
-  public String getCommandString();
+  String getCommandString();
 
   /**
    * Returns the CLI environment variables.
    */
-  public Map<String, String> getEnv();
+  Map<String, String> getEnv();
 
   /**
    * Processes this command statement with the user specified command string and environment
    *
    * @return The {@link Result} of the execution of this command statement.
    */
-  public Result process();
+  Result process();
 
 
   /**
@@ -50,5 +50,5 @@ public interface CommandStatement {
    *
    * @return True if the command statement is well formed, false otherwise.
    */
-  public boolean validate();
+  boolean validate();
 }

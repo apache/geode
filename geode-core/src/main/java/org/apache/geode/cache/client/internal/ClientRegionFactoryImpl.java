@@ -16,6 +16,8 @@ package org.apache.geode.cache.client.internal;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
+import java.util.Objects;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CustomExpiry;
@@ -31,7 +33,8 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
 
 /**
@@ -85,7 +88,6 @@ public class ClientRegionFactoryImpl<K, V> implements ClientRegionFactory<K, V> 
   private void initAttributeFactoryDefaults() {
     this.attrsFactory.setScope(Scope.LOCAL);
     this.attrsFactory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-    // this.attrsFactory.setIgnoreJTA(true); in 6.6 and later releases client regions support JTA
   }
 
   /**
@@ -214,13 +216,14 @@ public class ClientRegionFactoryImpl<K, V> implements ClientRegionFactory<K, V> 
   @Override
   public Region<K, V> createSubregion(Region<?, ?> parent, String name)
       throws RegionExistsException {
-    return ((LocalRegion) parent).createSubregion(name, createRegionAttributes());
+    return ((InternalRegion) parent).createSubregion(name, createRegionAttributes());
   }
 
   @SuppressWarnings("deprecation")
   private RegionAttributes<K, V> createRegionAttributes() {
     RegionAttributes<K, V> ra = this.attrsFactory.create();
-    if (isEmpty(ra.getPoolName())) {
+    if (isEmpty(ra.getPoolName())
+        || Objects.equals(GemFireCacheImpl.DEFAULT_POOL_NAME, ra.getPoolName())) {
       UserSpecifiedRegionAttributes<K, V> ura = (UserSpecifiedRegionAttributes<K, V>) ra;
       if (ura.requiresPoolName) {
         Pool dp = getDefaultPool();

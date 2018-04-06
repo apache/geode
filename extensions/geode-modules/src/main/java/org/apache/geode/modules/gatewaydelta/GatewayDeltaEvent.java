@@ -18,5 +18,5 @@ import org.apache.geode.cache.Cache;
 
 public interface GatewayDeltaEvent {
 
-  public void apply(Cache cache);
+  void apply(Cache cache);
 }

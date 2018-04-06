@@ -20,8 +20,8 @@ import org.apache.geode.CancelException;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.admin.MemberHealthConfig;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.CachePerfStats;
@@ -56,7 +56,7 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
   /**
    * Creates a new <code>MemberHealthEvaluator</code>
    */
-  MemberHealthEvaluator(GemFireHealthConfig config, DM dm) {
+  MemberHealthEvaluator(GemFireHealthConfig config, DistributionManager dm) {
     super(config, dm);
 
     this.config = config;
@@ -65,7 +65,6 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
     GemFireStatSampler sampler = system.getStatSampler();
     if (sampler != null) {
       // Sampling is enabled
-      // this.vmStats = sampler.getVMStats();
       this.processStats = sampler.getProcessStats();
     }
 

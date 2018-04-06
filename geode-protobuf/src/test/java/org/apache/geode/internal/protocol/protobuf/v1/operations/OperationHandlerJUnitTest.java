@@ -21,18 +21,19 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.protocol.operations.OperationHandler;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class OperationHandlerJUnitTest {
-  protected Cache cacheStub;
+  protected InternalCache cacheStub;
   protected ProtobufSerializationService serializationService;
-  protected OperationHandler operationHandler;
+  protected ProtobufOperationHandler operationHandler;
 
+  // if we name this setUp, then our children override, which is all kinds of annoying.
   @Before
-  public void setUp() throws Exception {
+  public void setUpForChildJUnitTests() throws Exception {
     cacheStub = mock(InternalCache.class);
     serializationService = new ProtobufSerializationService();
   }

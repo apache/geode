@@ -36,11 +36,11 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
     super(system, member);
   }
 
-  public ReliableReplyProcessor21(DM dm, InternalDistributedMember member) {
+  public ReliableReplyProcessor21(DistributionManager dm, InternalDistributedMember member) {
     super(dm, member);
   }
 
-  public ReliableReplyProcessor21(DM dm, Collection initMembers) {
+  public ReliableReplyProcessor21(DistributionManager dm, Collection initMembers) {
     super(dm, initMembers);
   }
 
@@ -58,7 +58,8 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
    * Note: race condition exists between membershipListener and processing of replies.
    */
   @Override
-  public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
+  public void memberDeparted(DistributionManager distributionManager,
+      final InternalDistributedMember id, final boolean crashed) {
     if (removeMember(id, true)) {
       synchronized (this) {
         if (this.departedMembers == null) {

@@ -345,10 +345,11 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
       final InterestResultPolicy policy, final boolean isDurable,
       final boolean receiveUpdatesAsInvalidates, final byte regionDataPolicy) {
     if (interestType == InterestType.KEY && key instanceof List) {
+      logger.warn(
+          "Usage of registerInterest(List) has been deprecated. Please use registerInterestForKeys(Iterable)");
       return registerInterestList((List) key, policy, isDurable, receiveUpdatesAsInvalidates,
           regionDataPolicy);
     } else {
-
       final RegisterInterestTracker rit = this.pool.getRITracker();
       List result = null;
       boolean finished = false;

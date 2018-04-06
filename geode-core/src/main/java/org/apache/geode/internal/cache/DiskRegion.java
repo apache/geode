@@ -29,6 +29,7 @@ import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
 import org.apache.geode.internal.cache.LocalRegion.RegionEntryCallback;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
@@ -137,15 +138,7 @@ public class DiskRegion extends AbstractDiskRegion {
     if (ra != null) {
       byte raLruAlgorithm = (byte) (ra.getEvictionAttributes().getAlgorithm().getValue());
       byte raLruAction = (byte) (ra.getEvictionAttributes().getAction().getValue());
-      int raLruLimit = 0;
-      if (!ra.getEvictionAttributes().getAlgorithm().isLRUHeap()) {
-        raLruLimit = ra.getEvictionAttributes().getMaximum();
-      }
-      // GemFireCache.getInstance().getLogger()
-      // .info("DEBUG isRecreated=" + isRecreated()
-      // + " raLruLimit=" + raLruLimit
-      // + " getLruLimit()=" + getLruLimit(),
-      // new RuntimeException("STACK"));
+      int raLruLimit = ra.getEvictionAttributes().getMaximum();
       if (isRecreated()) {
         // check to see if recovered config differs from current config
         if (raLruAlgorithm != getLruAlgorithm() || raLruAction != getLruAction()
@@ -542,7 +535,7 @@ public class DiskRegion extends AbstractDiskRegion {
    * returns the active child
    */
   Oplog testHook_getChild() {
-    return getDiskStore().persistentOplogs.getChild();
+    return getDiskStore().getPersistentOplogs().getChild();
   }
 
   /** For Testing * */
@@ -852,5 +845,12 @@ public class DiskRegion extends AbstractDiskRegion {
   @Override
   public void close() {
     // nothing needed
+  }
+
+  @Override
+  public EvictionController getExistingController(InternalRegionArguments internalArgs) {
+    // should never be called so throw an exception
+    throw new IllegalStateException(
+        "getExistingController should never be called on " + getClass());
   }
 }

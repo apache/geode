@@ -30,6 +30,7 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -73,7 +74,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   @Override
   protected void initializeMessageQueue(String id) {
     Set<Region> targetRs = new HashSet<Region>();
-    for (LocalRegion region : sender.getCache().getApplicationRegions()) {
+    for (InternalRegion region : sender.getCache().getApplicationRegions()) {
       if (region.getAllGatewaySenderIds().contains(id)) {
         targetRs.add(region);
       }

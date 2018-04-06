@@ -147,7 +147,7 @@ public interface IndexMap {
    * Destroy the index map and remove all data from disk. Once a map is destroyed, it will not be
    * recovered.
    */
-  public void destroy();
+  void destroy();
 
   /**
    * A single entry in an index

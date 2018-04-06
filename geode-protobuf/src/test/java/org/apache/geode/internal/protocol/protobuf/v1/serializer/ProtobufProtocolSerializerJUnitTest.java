@@ -24,15 +24,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.protocol.ProtocolSerializer;
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
+import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ProtobufProtocolSerializerJUnitTest {
-  private ProtocolSerializer<ClientProtocol.Message> protocolSerializer;
+  private ProtobufProtocolSerializer protocolSerializer;
 
   @Before
   public void startup() {

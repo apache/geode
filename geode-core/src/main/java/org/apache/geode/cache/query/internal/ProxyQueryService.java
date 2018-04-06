@@ -416,7 +416,7 @@ public class ProxyQueryService implements QueryService {
 
   private void preOp(boolean setTL) {
     if (this.proxyCache.isClosed()) {
-      throw new CacheClosedException("Cache is closed for this user.");
+      throw proxyCache.getCacheClosedException("Cache is closed for this user.");
     }
     if (setTL) {
       UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());

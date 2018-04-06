@@ -23,13 +23,12 @@ import java.util.Map;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CacheClientStatus;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -41,7 +40,7 @@ import org.apache.geode.management.internal.cli.domain.MemberInformation;
  * since 7.0
  */
 
-public class GetMemberInformationFunction extends FunctionAdapter implements InternalEntity {
+public class GetMemberInformationFunction implements InternalFunction {
   /**
    *
    */
@@ -64,10 +63,8 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
     return true;
   }
 
+  /* Read only function */
   @Override
-  /**
-   * Read only function
-   */
   public boolean optimizeForWrite() {
     return false;
   }
@@ -76,10 +73,6 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
   public void execute(FunctionContext functionContext) {
     try {
       Cache cache = functionContext.getCache();
-
-      /*
-       * TODO: 1) Get the CPU usage%
-       */
 
       InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
       DistributionConfig config = system.getConfig();
@@ -100,7 +93,7 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
       memberInfo.setHeapUsage(Long.toString(bytesToMeg(memUsage.getUsed())));
       memberInfo.setMaxHeapSize(Long.toString(bytesToMeg(memUsage.getMax())));
       memberInfo.setInitHeapSize(Long.toString(bytesToMeg(memUsage.getInit())));
-      memberInfo.setHostedRegions(CliUtil.getAllRegionNames());
+      memberInfo.setHostedRegions(CliUtil.getAllRegionNames(cache));
 
       List<CacheServer> csList = cache.getCacheServers();
 

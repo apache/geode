@@ -24,7 +24,10 @@ package org.apache.geode.cache;
  * hosted by another member of the distributed system.
  * </p>
  *
- *
+ * <p>
+ * WARNING: To avoid risk of deadlock, do not invoke CacheFactory.getAnyInstance() from within any
+ * callback methods. Instead use LoaderHelper.getRegion().getCache().
+ * </p>
  *
  * @see AttributesFactory#setCacheLoader
  * @see RegionAttributes#getCacheLoader
@@ -51,5 +54,5 @@ public interface CacheLoader<K, V> extends CacheCallback {
    *
    * @see Region#get(Object, Object) Region.get
    */
-  public V load(LoaderHelper<K, V> helper) throws CacheLoaderException;
+  V load(LoaderHelper<K, V> helper) throws CacheLoaderException;
 }

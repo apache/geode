@@ -22,9 +22,23 @@
 syntax = "proto3";
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import "google/protobuf/struct.proto";
+
 message Entry {
     EncodedValue key = 1;
     EncodedValue value = 2;
+}
+
+message EncodedValueList {
+  repeated EncodedValue element = 1;
+}
+
+//Represents a table, such as the results of
+//an OQL query. The field names and all rows
+//should have the same number of elements.
+message Table {
+    repeated string fieldName = 1;
+    repeated EncodedValueList row = 2;
 }
 
 message EncodedValue {
@@ -40,6 +54,8 @@ message EncodedValue {
         string stringResult = 9;
 
         string jsonObjectResult = 10;
+
+        google.protobuf.NullValue nullResult = 11;
     }
 }
 

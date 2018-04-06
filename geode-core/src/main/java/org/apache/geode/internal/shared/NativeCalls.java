@@ -80,30 +80,6 @@ public abstract class NativeCalls {
     return instance;
   }
 
-  @SuppressWarnings("unchecked")
-  protected static Map<String, String> getModifiableJavaEnv() {
-    final Map<String, String> env = System.getenv();
-    try {
-      final Field m = env.getClass().getDeclaredField("m");
-      m.setAccessible(true);
-      return (Map<String, String>) m.get(env);
-    } catch (Exception ex) {
-      return null;
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  protected static Map<String, String> getModifiableJavaEnvWIN() {
-    try {
-      final Field envField = Class.forName("java.lang.ProcessEnvironment")
-          .getDeclaredField("theCaseInsensitiveEnvironment");
-      envField.setAccessible(true);
-      return (Map<String, String>) envField.get(null);
-    } catch (Exception ex) {
-      return null;
-    }
-  }
-
   /**
    * Get the native kernel descriptor given the java Socket. This is a horribly implementation
    * dependent code checking various cases to get to the underlying kernel socket descriptor but
@@ -263,17 +239,6 @@ public abstract class NativeCalls {
   public abstract String getEnvironment(String name);
 
   /**
-   * Set the value of an environment variable. This modifies both the value in the process, and the
-   * cached static map maintained by JVM on the first call so further calls to
-   * {@link System#getenv(String)} will also return the modified value.
-   *
-   * @param name the name of the environment variable to be modified
-   * @param value the new value of the environment variable; a value of null clears the existing
-   *        value
-   */
-  public abstract void setEnvironment(String name, String value);
-
-  /**
    * Get the process ID of the current process.
    */
   public abstract int getProcessId();
@@ -431,12 +396,12 @@ public abstract class NativeCalls {
    *
    * @since GemFire 8.0
    */
-  public static interface RehashServerOnSIGHUP {
+  public interface RehashServerOnSIGHUP {
 
     /**
      * Perform the actions required to "rehash" the server.
      */
-    public void rehash();
+    void rehash();
   }
 
   /**
@@ -479,13 +444,10 @@ public abstract class NativeCalls {
    */
   public static class NativeCallsGeneric extends NativeCalls {
 
-    private static final Map<String, String> javaEnv;
-
     private static final boolean isWin;
 
     static {
       isWin = System.getProperty("os.name").indexOf("Windows") >= 0;
-      javaEnv = isWin ? getModifiableJavaEnvWIN() : getModifiableJavaEnv();
     }
 
     /**
@@ -502,21 +464,6 @@ public abstract class NativeCalls {
     @Override
     public String getEnvironment(final String name) {
       return System.getenv(name);
-    }
-
-    /**
-     * @see NativeCalls#setEnvironment(String, String)
-     */
-    @Override
-    public void setEnvironment(final String name, final String value) {
-      // just change the cached map in java env if possible
-      if (javaEnv != null) {
-        if (value != null) {
-          javaEnv.put(name, value);
-        } else {
-          javaEnv.remove(name);
-        }
-      }
     }
 
     /**

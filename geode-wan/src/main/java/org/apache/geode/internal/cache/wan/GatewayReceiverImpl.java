@@ -215,6 +215,17 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     receiver.stop();
   }
 
+  public void destroy() {
+    if (receiver.isRunning()) {
+      throw new GatewayReceiverException(
+          "Gateway Receiver is running and needs to be stopped first");
+    }
+    this.cache.removeGatewayReceiver(this);
+    this.cache.removeCacheServer(receiver);
+    InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
+    system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_DESTROY, this);
+  }
+
   public String getBindAddress() {
     return this.bindAdd;
   }

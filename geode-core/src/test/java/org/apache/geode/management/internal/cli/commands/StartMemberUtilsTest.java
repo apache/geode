@@ -24,6 +24,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
@@ -99,6 +103,32 @@ public class StartMemberUtilsTest {
 
     gemfireClasspath = StartMemberUtils.toClasspath(false, otherJars);
     assertThat(gemfireClasspath).startsWith(customGeodeCore);
+  }
+
+  @Test
+  public void testAddMaxHeap() {
+    List<String> baseCommandLine = new ArrayList<>();
+
+    // Empty Max Heap Option
+    StartMemberUtils.addMaxHeap(baseCommandLine, null);
+    assertThat(baseCommandLine.size()).isEqualTo(0);
+
+    StartMemberUtils.addMaxHeap(baseCommandLine, "");
+    assertThat(baseCommandLine.size()).isEqualTo(0);
+
+    // Only Max Heap Option Set
+    StartMemberUtils.addMaxHeap(baseCommandLine, "32g");
+    assertThat(baseCommandLine.size()).isEqualTo(3);
+    assertThat(baseCommandLine).containsExactly("-Xmx32g", "-XX:+UseConcMarkSweepGC",
+        "-XX:CMSInitiatingOccupancyFraction=" + StartMemberUtils.CMS_INITIAL_OCCUPANCY_FRACTION);
+
+    // All Options Set
+    List<String> customCommandLine = new ArrayList<>(
+        Arrays.asList("-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=30"));
+    StartMemberUtils.addMaxHeap(customCommandLine, "16g");
+    assertThat(customCommandLine.size()).isEqualTo(3);
+    assertThat(customCommandLine).containsExactly("-XX:+UseConcMarkSweepGC",
+        "-XX:CMSInitiatingOccupancyFraction=30", "-Xmx16g");
   }
 
   private void writePid(final File pidFile, final int pid) throws IOException {

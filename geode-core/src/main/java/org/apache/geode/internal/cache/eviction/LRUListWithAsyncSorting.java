@@ -55,11 +55,12 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
 
   private static final int DEFAULT_EVICTION_SCAN_THRESHOLD_PERCENT = 25;
 
-  private static final int MAX_EVICTION_ATTEMPTS = 10;
+  private static final int DEFAULT_MAX_EVICTION_ATTEMPTS = 10;
 
   private final AtomicInteger recentlyUsedCounter = new AtomicInteger();
 
   private final double scanThreshold;
+  private final int maxEvictionAttempts;
 
   private Future<?> currentScan;
 
@@ -85,16 +86,16 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
     return Executors.newFixedThreadPool(threads, threadFactory);
   }
 
-  LRUListWithAsyncSorting(InternalEvictionStatistics stats, BucketRegion region) {
-    this(stats, region, SINGLETON_EXECUTOR);
-    logger.info("Using experimental LRUListWithAsyncSorting");
+  LRUListWithAsyncSorting(EvictionController controller) {
+    this(controller, SINGLETON_EXECUTOR, DEFAULT_MAX_EVICTION_ATTEMPTS);
   }
 
-  LRUListWithAsyncSorting(InternalEvictionStatistics stats, BucketRegion region,
-      ExecutorService executor) {
-    super(stats, region);
+  LRUListWithAsyncSorting(EvictionController controller, ExecutorService executor,
+      int maxEvictionAttempts) {
+    super(controller);
     this.scanThreshold = calculateScanThreshold();
     this.executor = executor;
+    this.maxEvictionAttempts = maxEvictionAttempts;
   }
 
   private double calculateScanThreshold() {
@@ -111,8 +112,8 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
   }
 
   @Override
-  public void clear(RegionVersionVector regionVersionVector) {
-    super.clear(regionVersionVector);
+  public void clear(RegionVersionVector regionVersionVector, BucketRegion bucketRegion) {
+    super.clear(regionVersionVector, bucketRegion);
     recentlyUsedCounter.set(0);
   }
 
@@ -138,7 +139,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
         continue;
       }
 
-      if (evictionNode.isRecentlyUsed() && evictionAttempts < MAX_EVICTION_ATTEMPTS) {
+      if (evictionNode.isRecentlyUsed() && evictionAttempts < maxEvictionAttempts) {
         evictionAttempts++;
         evictionNode.unsetRecentlyUsed();
         appendEntry(evictionNode);
@@ -151,7 +152,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
       }
       if (evictionNode.isRecentlyUsed()) {
         scanIfNeeded();
-        stats.incGreedyReturns(1);
+        getStatistics().incGreedyReturns(1);
       }
       return (EvictableEntry) evictionNode;
     }
@@ -214,7 +215,8 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
   }
 
   private boolean hasThresholdBeenMet(int recentlyUsedCount) {
-    return size() > 0 && (double) recentlyUsedCount / size() >= this.scanThreshold;
+    return size() >= maxEvictionAttempts
+        && (double) recentlyUsedCount / size() >= this.scanThreshold;
   }
 
   private synchronized EvictionNode moveToTailAndGetNext(EvictionNode evictionNode) {

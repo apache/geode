@@ -49,10 +49,11 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.ServerSideHandshakeImpl;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
@@ -151,7 +152,7 @@ public class ExecuteFunction65Test {
         .thenReturn(this.functionResponseMessage);
     when(this.serverConnection.getChunkedResponseMessage()).thenReturn(this.chunkedResponseMessage);
     when(this.serverConnection.getAcceptor()).thenReturn(this.acceptor);
-    when(this.serverConnection.getHandshake()).thenReturn(mock(HandShake.class));
+    when(this.serverConnection.getHandshake()).thenReturn(mock(ServerSideHandshakeImpl.class));
 
     PowerMockito.mockStatic(FunctionService.class);
     PowerMockito.when(FunctionService.getFunction(eq(FUNCTION))).thenReturn(functionObject);

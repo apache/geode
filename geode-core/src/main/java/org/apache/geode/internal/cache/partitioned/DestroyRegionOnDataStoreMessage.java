@@ -17,20 +17,14 @@ package org.apache.geode.internal.cache.partitioned;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Set;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -62,17 +56,18 @@ public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
    */
   public static void send(InternalDistributedMember recipient, PartitionedRegion r,
       Object callbackArg) {
-    DM dm = r.getDistributionManager();
+    DistributionManager dm = r.getDistributionManager();
     ReplyProcessor21 rp = new ReplyProcessor21(dm, recipient);
     int procId = rp.getProcessorId();
     DestroyRegionOnDataStoreMessage m =
         new DestroyRegionOnDataStoreMessage(recipient, r.getPRId(), rp, callbackArg);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     r.getDistributionManager().putOutgoing(m);
     rp.waitForRepliesUninterruptibly();
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException {
 
     // This call has come to an uninitialized region.
@@ -91,7 +86,7 @@ public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.WAITING_POOL_EXECUTOR;
+    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   public int getDSFID() {

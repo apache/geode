@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,7 +31,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
@@ -52,9 +51,9 @@ import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSende
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender65;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -221,9 +220,9 @@ public class ExecuteFunction66 extends BaseCommand {
             new FunctionContextImpl(cache, functionObject.getId(), args, resultSender, isReexecute);
       }
 
-      HandShake handShake = (HandShake) serverConnection.getHandshake();
-      int earlierClientReadTimeout = handShake.getClientReadTimeout();
-      handShake.setClientReadTimeout(functionTimeout);
+      ServerSideHandshake handshake = serverConnection.getHandshake();
+      int earlierClientReadTimeout = handshake.getClientReadTimeout();
+      handshake.setClientReadTimeout(functionTimeout);
       try {
         if (logger.isDebugEnabled()) {
           logger.debug("Executing Function on Server: {} with context: {}", serverConnection,
@@ -247,7 +246,7 @@ public class ExecuteFunction66 extends BaseCommand {
          * if cache is null, then either cache has not yet been created on this node or it is a
          * shutdown scenario.
          */
-        DM dm = null;
+        DistributionManager dm = null;
         if (cache != null) {
           dm = cache.getDistributionManager();
         }
@@ -269,7 +268,7 @@ public class ExecuteFunction66 extends BaseCommand {
         stats.endFunctionExecutionWithException(functionObject.hasResult());
         throw new FunctionException(exception);
       } finally {
-        handShake.setClientReadTimeout(earlierClientReadTimeout);
+        handshake.setClientReadTimeout(earlierClientReadTimeout);
       }
     } catch (IOException ioException) {
       logger.warn(LocalizedMessage.create(
@@ -324,8 +323,8 @@ public class ExecuteFunction66 extends BaseCommand {
   }
 
   private void executeFunctionaLocally(final Function fn, final FunctionContext cx,
-      final ServerToClientFunctionResultSender65 sender, DM dm, final FunctionStats stats)
-      throws IOException {
+      final ServerToClientFunctionResultSender65 sender, DistributionManager dm,
+      final FunctionStats stats) throws IOException {
     long startExecution = stats.startTime();
     stats.startFunctionExecution(fn.hasResult());
 
@@ -397,7 +396,7 @@ public class ExecuteFunction66 extends BaseCommand {
          */
         execService.execute(functionExecution);
       } else {
-        final DistributionManager newDM = (DistributionManager) dm;
+        final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
         newDM.getFunctionExcecutor().execute(functionExecution);
       }
     }

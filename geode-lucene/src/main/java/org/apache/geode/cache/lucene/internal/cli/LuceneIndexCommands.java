@@ -170,8 +170,6 @@ public class LuceneIndexCommands implements GfshCommand {
       throws CommandResultException {
 
     Result result;
-    XmlEntity xmlEntity = null;
-
     // Every lucene index potentially writes to disk.
     getSecurityService().authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
 
@@ -185,23 +183,25 @@ public class LuceneIndexCommands implements GfshCommand {
     final ResultCollector<?, ?> rc =
         this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
     final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
-
+    final XmlEntity xmlEntity = funcResults.stream().filter(CliFunctionResult::isSuccessful)
+        .map(CliFunctionResult::getXmlEntity).filter(Objects::nonNull).findFirst().orElse(null);
     final TabularResultData tabularResult = ResultBuilder.createTabularResultData();
     for (final CliFunctionResult cliFunctionResult : funcResults) {
       tabularResult.accumulate("Member", cliFunctionResult.getMemberIdOrName());
 
       if (cliFunctionResult.isSuccessful()) {
         tabularResult.accumulate("Status", "Successfully created lucene index");
-        // if (xmlEntity == null) {
-        // xmlEntity = cliFunctionResult.getXmlEntity();
-        // }
       } else {
         tabularResult.accumulate("Status", "Failed: " + cliFunctionResult.getMessage());
       }
     }
 
     result = ResultBuilder.buildResult(tabularResult);
-
+    if (xmlEntity != null) {
+      persistClusterConfiguration(result, () -> {
+        getSharedConfiguration().addXmlEntity(xmlEntity, null);
+      });
+    }
     return result;
   }
 

@@ -25,37 +25,33 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
-import org.apache.geode.internal.protocol.Failure;
-import org.apache.geode.internal.protocol.Result;
-import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI.GetServerResponse;
+import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GetServerOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
-
-  private final String HOSTNAME_1 = "hostname1";
-  private final int PORT_1 = 12345;
-
-  private final String HOSTNAME_2 = "hostname2";
-  private final int PORT_2 = 23456;
-
-  private InternalLocator internalLocatorMock;
+  final String HOSTNAME = "hostname";
+  final int PORT = 12345;
+  final String EXISTENT_GROUP = "existent";
+  final String NONEXISTENT_GROUP = "nonexistent";
+  InternalLocator internalLocatorMock;
   ServerLocator serverLocatorAdviseeMock;
 
   @Before
-  public void setUp() throws Exception {
-    super.setUp();
-
+  public void setUp() {
     operationHandler = new GetServerOperationHandler();
     internalLocatorMock = mock(InternalLocator.class);
     serverLocatorAdviseeMock = mock(ServerLocator.class);
@@ -66,27 +62,55 @@ public class GetServerOperationHandlerJUnitTest extends OperationHandlerJUnitTes
   @Test
   public void testServerReturnedFromHandler() throws Exception {
     when(serverLocatorAdviseeMock.processRequest(any(Object.class)))
-        .thenReturn(new ClientConnectionResponse(new ServerLocation(HOSTNAME_1, PORT_1)));
+        .thenReturn(new ClientConnectionResponse(new ServerLocation(HOSTNAME, PORT)));
 
-    LocatorAPI.GetServerRequest GetServerRequest =
+    LocatorAPI.GetServerRequest getServerRequest =
         ProtobufRequestUtilities.createGetServerRequest();
-    Result operationHandlerResult = getOperationHandlerResult(GetServerRequest);
+    Result operationHandlerResult = getOperationHandlerResult(getServerRequest);
     assertTrue(operationHandlerResult instanceof Success);
     validateGetServerResponse((GetServerResponse) operationHandlerResult.getMessage());
   }
 
   @Test
-  public void testExceptionReturnedWhenNoServers() throws Exception {
+  public void testErrorReturnedWhenNoServers() throws Exception {
     when(serverLocatorAdviseeMock.processRequest(any(Object.class))).thenReturn(null);
 
-    LocatorAPI.GetServerRequest GetServerRequest =
+    LocatorAPI.GetServerRequest getServerRequest =
         ProtobufRequestUtilities.createGetServerRequest();
-    Result operationHandlerResult = getOperationHandlerResult(GetServerRequest);
+    Result operationHandlerResult = getOperationHandlerResult(getServerRequest);
     assertTrue(operationHandlerResult instanceof Failure);
     Failure failure = (Failure) operationHandlerResult;
-    ClientProtocol.ErrorResponse errorResponse =
-        (ClientProtocol.ErrorResponse) failure.getErrorMessage();
+    ClientProtocol.ErrorResponse errorResponse = failure.getErrorMessage();
     assertEquals(NO_AVAILABLE_SERVER, errorResponse.getError().getErrorCode());
+  }
+
+  @Test
+  public void testServerReturnedForExistentGroup() throws Exception {
+    when(
+        serverLocatorAdviseeMock.processRequest(new ClientConnectionRequest(any(), EXISTENT_GROUP)))
+            .thenReturn(new ClientConnectionResponse(new ServerLocation(HOSTNAME, PORT)));
+
+    LocatorAPI.GetServerRequest getServerRequest =
+        ProtobufRequestUtilities.createGetServerRequest(EXISTENT_GROUP);
+    Result operationHandlerResult = getOperationHandlerResult(getServerRequest);
+    assertTrue(operationHandlerResult instanceof Success);
+    validateGetServerResponse((GetServerResponse) operationHandlerResult.getMessage());
+  }
+
+  @Test
+  public void testErrorReturnedForNonexistentGroup() throws Exception {
+    when(serverLocatorAdviseeMock
+        .processRequest(new ClientConnectionRequest(any(), NONEXISTENT_GROUP)))
+            .thenReturn(new ClientConnectionResponse(null));
+
+    LocatorAPI.GetServerRequest getServerRequest =
+        ProtobufRequestUtilities.createGetServerRequest(NONEXISTENT_GROUP);
+    Result operationHandlerResult = getOperationHandlerResult(getServerRequest);
+    assertTrue(operationHandlerResult instanceof Failure);
+    Failure failure = (Failure) operationHandlerResult;
+    ClientProtocol.ErrorResponse errorResponse = failure.getErrorMessage();
+    assertEquals(NO_AVAILABLE_SERVER, errorResponse.getError().getErrorCode());
+    assertTrue(errorResponse.getError().getMessage().contains(NONEXISTENT_GROUP));
   }
 
   private Result getOperationHandlerResult(LocatorAPI.GetServerRequest GetServerRequest)
@@ -95,10 +119,10 @@ public class GetServerOperationHandlerJUnitTest extends OperationHandlerJUnitTes
         TestExecutionContext.getLocatorExecutionContext(internalLocatorMock));
   }
 
-  private void validateGetServerResponse(GetServerResponse GetServerResponse) {
-    assertTrue(GetServerResponse.hasServer());
-    BasicTypes.Server server = GetServerResponse.getServer();
-    assertEquals(HOSTNAME_1, server.getHostname());
-    assertEquals(PORT_1, server.getPort());
+  private void validateGetServerResponse(GetServerResponse getServerResponse) {
+    assertTrue(getServerResponse.hasServer());
+    BasicTypes.Server server = getServerResponse.getServer();
+    assertEquals(HOSTNAME, server.getHostname());
+    assertEquals(PORT, server.getPort());
   }
 }

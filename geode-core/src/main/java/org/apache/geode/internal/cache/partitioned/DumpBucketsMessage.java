@@ -22,7 +22,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
@@ -56,6 +56,7 @@ public class DumpBucketsMessage extends PartitionMessage {
     PartitionResponse p = new PartitionResponse(r.getSystem(), recipients);
     DumpBucketsMessage m =
         new DumpBucketsMessage(recipients, r.getPRId(), p, validateOnly, onlyBuckets);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     /* Set failures = */ r.getDistributionManager().putOutgoing(m);
     // if (failures != null && failures.size() > 0) {
@@ -65,7 +66,7 @@ public class DumpBucketsMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException {
 
     if (logger.isTraceEnabled(LogMarker.DM)) {

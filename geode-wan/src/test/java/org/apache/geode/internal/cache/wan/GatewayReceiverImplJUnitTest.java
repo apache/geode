@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache.wan;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -54,6 +56,60 @@ public class GatewayReceiverImplJUnitTest {
         new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
     gateway.start();
     assertEquals("hello", gateway.getHost());
+  }
+
+  @Test
+  public void destroyCalledOnRunningGatewayReceiverShouldThrowException() throws IOException {
+    InternalCache cache = mock(InternalCache.class);
+    CacheServerImpl server = mock(CacheServerImpl.class);
+    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem()).thenReturn(system);
+    when(server.getExternalAddress()).thenReturn("hello");
+    when(server.isRunning()).thenReturn(true);
+    when(cache.addCacheServer(eq(true))).thenReturn(server);
+    GatewayReceiverImpl gateway =
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
+    gateway.start();
+    try {
+      gateway.destroy();
+      fail();
+    } catch (GatewayReceiverException e) {
+      assertEquals("Gateway Receiver is running and needs to be stopped first", e.getMessage());
+    }
+  }
+
+  @Test
+  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveRecieverFromCacheServers()
+      throws IOException {
+    InternalCache cache = mock(InternalCache.class);
+    CacheServerImpl server = mock(CacheServerImpl.class);
+    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem()).thenReturn(system);
+    when(server.getExternalAddress()).thenReturn("hello");
+    when(cache.addCacheServer(eq(true))).thenReturn(server);
+    GatewayReceiverImpl gateway =
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
+    gateway.start();
+    // sender is mocked already to say running is false
+    gateway.destroy();
+    verify(cache, times(1)).removeCacheServer(server);
+  }
+
+  @Test
+  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveRecieverFromReceivers()
+      throws IOException {
+    InternalCache cache = mock(InternalCache.class);
+    CacheServerImpl server = mock(CacheServerImpl.class);
+    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem()).thenReturn(system);
+    when(server.getExternalAddress()).thenReturn("hello");
+    when(cache.addCacheServer(eq(true))).thenReturn(server);
+    GatewayReceiverImpl gateway =
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
+    gateway.start();
+    // sender is mocked already to say running is false
+    gateway.destroy();
+    verify(cache, times(1)).removeGatewayReceiver(gateway);
   }
 
 }

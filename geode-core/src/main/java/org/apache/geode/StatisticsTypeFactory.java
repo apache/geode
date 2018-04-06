@@ -95,83 +95,83 @@ public interface StatisticsTypeFactory {
    * <code>name</code>, <code>description</code>, <code>units</code>, and with larger values
    * indicating better performance.
    */
-  public StatisticDescriptor createIntCounter(String name, String description, String units);
+  StatisticDescriptor createIntCounter(String name, String description, String units);
 
   /**
    * Creates and returns a long counter {@link StatisticDescriptor} with the given
    * <code>name</code>, <code>description</code>, <code>units</code>, and with larger values
    * indicating better performance.
    */
-  public StatisticDescriptor createLongCounter(String name, String description, String units);
+  StatisticDescriptor createLongCounter(String name, String description, String units);
 
   /**
    * Creates and returns a double counter {@link StatisticDescriptor} with the given
    * <code>name</code>, <code>description</code>, <code>units</code>, and with larger values
    * indicating better performance.
    */
-  public StatisticDescriptor createDoubleCounter(String name, String description, String units);
+  StatisticDescriptor createDoubleCounter(String name, String description, String units);
 
   /**
    * Creates and returns an int gauge {@link StatisticDescriptor} with the given <code>name</code>,
    * <code>description</code>, <code>units</code>, and with smaller values indicating better
    * performance.
    */
-  public StatisticDescriptor createIntGauge(String name, String description, String units);
+  StatisticDescriptor createIntGauge(String name, String description, String units);
 
   /**
    * Creates and returns a long gauge {@link StatisticDescriptor} with the given <code>name</code>,
    * <code>description</code>, <code>units</code>, and with smaller values indicating better
    * performance.
    */
-  public StatisticDescriptor createLongGauge(String name, String description, String units);
+  StatisticDescriptor createLongGauge(String name, String description, String units);
 
   /**
    * Creates and returns a double gauge {@link StatisticDescriptor} with the given
    * <code>name</code>, <code>description</code>, <code>units</code>, and with smaller values
    * indicating better performance.
    */
-  public StatisticDescriptor createDoubleGauge(String name, String description, String units);
+  StatisticDescriptor createDoubleGauge(String name, String description, String units);
 
   /**
    * Creates and returns an int counter {@link StatisticDescriptor} with the given
    * <code>name</code>, <code>description</code>, <code>largerBetter</code>, and <code>units</code>.
    */
-  public StatisticDescriptor createIntCounter(String name, String description, String units,
+  StatisticDescriptor createIntCounter(String name, String description, String units,
       boolean largerBetter);
 
   /**
    * Creates and returns a long counter {@link StatisticDescriptor} with the given
    * <code>name</code>, <code>description</code>, <code>largerBetter</code>, and <code>units</code>.
    */
-  public StatisticDescriptor createLongCounter(String name, String description, String units,
+  StatisticDescriptor createLongCounter(String name, String description, String units,
       boolean largerBetter);
 
   /**
    * Creates and returns a double counter {@link StatisticDescriptor} with the given
    * <code>name</code>, <code>description</code>, <code>largerBetter</code>, and <code>units</code>.
    */
-  public StatisticDescriptor createDoubleCounter(String name, String description, String units,
+  StatisticDescriptor createDoubleCounter(String name, String description, String units,
       boolean largerBetter);
 
   /**
    * Creates and returns an int gauge {@link StatisticDescriptor} with the given <code>name</code>,
    * <code>description</code>, <code>largerBetter</code>, and <code>units</code>.
    */
-  public StatisticDescriptor createIntGauge(String name, String description, String units,
+  StatisticDescriptor createIntGauge(String name, String description, String units,
       boolean largerBetter);
 
   /**
    * Creates and returns a long gauge {@link StatisticDescriptor} with the given <code>name</code>,
    * <code>description</code>, <code>largerBetter</code>, and <code>units</code>.
    */
-  public StatisticDescriptor createLongGauge(String name, String description, String units,
+  StatisticDescriptor createLongGauge(String name, String description, String units,
       boolean largerBetter);
 
   /**
    * Creates and returns a double gauge {@link StatisticDescriptor} with the given
    * <code>name</code>, <code>description</code>, <code>largerBetter</code>, and <code>units</code>.
    */
-  public StatisticDescriptor createDoubleGauge(String name, String description, String units,
+  StatisticDescriptor createDoubleGauge(String name, String description, String units,
       boolean largerBetter);
 
 
@@ -180,7 +180,7 @@ public interface StatisticsTypeFactory {
    * <P>
    * Current value is: <code>254</code>
    */
-  public final int MAX_DESCRIPTORS_PER_TYPE = StatArchiveFormat.ILLEGAL_STAT_OFFSET - 1;
+  int MAX_DESCRIPTORS_PER_TYPE = StatArchiveFormat.ILLEGAL_STAT_OFFSET - 1;
 
   /**
    * Creates or finds and returns a {@link StatisticsType} with the given <code>name</code>,
@@ -189,13 +189,13 @@ public interface StatisticsTypeFactory {
    * @throws IllegalArgumentException if a type with the given <code>name</code> already exists and
    *         it differs from the given parameters.
    */
-  public StatisticsType createType(String name, String description, StatisticDescriptor[] stats);
+  StatisticsType createType(String name, String description, StatisticDescriptor[] stats);
 
   /**
    * Finds and returns an already created {@link StatisticsType} with the given <code>name</code>.
    * Returns <code>null</code> if the type does not exist.
    */
-  public StatisticsType findType(String name);
+  StatisticsType findType(String name);
 
   /**
    * Creates one or more {@link StatisticsType} from the contents of the given <code>reader</code>.
@@ -207,5 +207,5 @@ public interface StatisticsTypeFactory {
    * @throws IllegalArgumentException if a type defined in the reader already exists
    * @throws IOException Something went wrong while reading from <code>reader</code>
    */
-  public StatisticsType[] createTypesFromXml(Reader reader) throws IOException;
+  StatisticsType[] createTypesFromXml(Reader reader) throws IOException;
 }

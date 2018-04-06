@@ -22,7 +22,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -54,11 +54,11 @@ public class IdentityUpdateMessage extends DistributionMessage implements Messag
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     try {
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM, "{}: processing message {}", getClass().getName(), this);

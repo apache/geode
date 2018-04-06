@@ -30,7 +30,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -56,8 +56,8 @@ public class CompactRequest extends AdminRequest {
 
   private static String notExecutedMembers;
 
-  public static Map<DistributedMember, PersistentID> send(DM dm, String diskStoreName,
-      Set<?> recipients) {
+  public static Map<DistributedMember, PersistentID> send(DistributionManager dm,
+      String diskStoreName, Set<?> recipients) {
     Map<DistributedMember, PersistentID> results = Collections.emptyMap();
 
     if (recipients != null && !recipients.isEmpty()) {
@@ -90,12 +90,12 @@ public class CompactRequest extends AdminRequest {
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     super.process(dm);
   }
 
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     PersistentID compactedDiskStore = compactDiskStore(this.diskStoreName);
 
     return new CompactResponse(this.getSender(), compactedDiskStore);
@@ -144,7 +144,7 @@ public class CompactRequest extends AdminRequest {
     Map<DistributedMember, PersistentID> results =
         Collections.synchronizedMap(new HashMap<DistributedMember, PersistentID>());
 
-    public CompactReplyProcessor(DM dm, Collection<?> initMembers) {
+    public CompactReplyProcessor(DistributionManager dm, Collection<?> initMembers) {
       super(dm, initMembers);
     }
 

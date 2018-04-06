@@ -25,47 +25,56 @@ import "v1/region_API.proto";
 import "v1/locator_API.proto";
 import "v1/basicTypes.proto";
 import "v1/connection_API.proto";
+import "v1/function_API.proto";
 
 message Message {
     oneof messageType {
-        Request request = 1;
-        Response response = 2;
-    }
-}
+        ErrorResponse errorResponse = 1;
 
-message Request {
-    oneof requestAPI {
-        PutRequest putRequest = 10;
-        GetRequest getRequest = 11;
-        PutAllRequest putAllRequest = 12;
-        GetAllRequest getAllRequest = 13;
-        RemoveRequest removeRequest = 14;
+        PutRequest putRequest = 2;
+        PutResponse putResponse = 3;
 
-        GetServerRequest getServerRequest = 40;
+        GetRequest getRequest = 4;
+        GetResponse getResponse = 5;
 
-        GetRegionNamesRequest getRegionNamesRequest = 41;
-        GetRegionRequest getRegionRequest = 42;
+        PutAllRequest putAllRequest = 6;
+        PutAllResponse putAllResponse = 7;
 
-        AuthenticationRequest authenticationRequest = 100;
-    }
-}
+        GetAllRequest getAllRequest = 8;
+        GetAllResponse getAllResponse = 9;
 
-message Response {
-    oneof responseAPI {
-        PutResponse putResponse = 10;
-        GetResponse getResponse = 11;
-        PutAllResponse putAllResponse = 12;
-        GetAllResponse getAllResponse = 13;
-        RemoveResponse removeResponse = 14;
+        RemoveRequest removeRequest = 10;
+        RemoveResponse removeResponse = 11;
 
-        GetServerResponse getServerResponse = 40;
+        GetServerRequest getServerRequest = 12;
+        GetServerResponse getServerResponse = 13;
 
-        GetRegionNamesResponse getRegionNamesResponse = 41;
-        GetRegionResponse getRegionResponse = 42;
+        GetRegionNamesRequest getRegionNamesRequest = 14;
+        GetRegionNamesResponse getRegionNamesResponse = 15;
 
-        AuthenticationResponse authenticationResponse = 100;
+        GetRegionRequest getRegionRequest = 16;
+        GetRegionResponse getRegionResponse = 17;
 
-        ErrorResponse errorResponse = 1000;
+        ExecuteFunctionOnRegionRequest executeFunctionOnRegionRequest = 18;
+        ExecuteFunctionOnRegionResponse executeFunctionOnRegionResponse= 19;
+
+        ExecuteFunctionOnMemberRequest executeFunctionOnMemberRequest = 20;
+        ExecuteFunctionOnMemberResponse executeFunctionOnMemberResponse= 21;
+
+        AuthenticationRequest authenticationRequest = 22;
+        AuthenticationResponse authenticationResponse = 23;
+
+        ExecuteFunctionOnGroupRequest executeFunctionOnGroupRequest = 24;
+        ExecuteFunctionOnGroupResponse executeFunctionOnGroupResponse= 25;
+
+        OQLQueryRequest oqlQueryRequest = 26;
+        OQLQueryResponse oqlQueryResponse = 27;
+
+        KeySetRequest keySetRequest = 28;
+        KeySetResponse keySetResponse = 29;
+
+        DisconnectClientRequest disconnectClientRequest = 30;
+        DisconnectClientResponse disconnectClientResponse = 31;
     }
 }
 

@@ -35,7 +35,8 @@ public class RegionSizeResponse extends AdminResponse implements Cancellable {
   /**
    * Returns a <code>RegionSizeResponse</code> that will be returned to the specified recipient.
    */
-  public static RegionSizeResponse create(DM dm, InternalDistributedMember recipient) {
+  public static RegionSizeResponse create(DistributionManager dm,
+      InternalDistributedMember recipient) {
     RegionSizeResponse m = new RegionSizeResponse();
     m.setRecipient(recipient);
     return m;

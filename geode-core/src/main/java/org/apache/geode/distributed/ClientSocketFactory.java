@@ -37,5 +37,5 @@ public interface ClientSocketFactory {
    *
    * @return a <code>Socket</code> for the input address and port
    */
-  public Socket createSocket(InetAddress address, int port) throws IOException;
+  Socket createSocket(InetAddress address, int port) throws IOException;
 }

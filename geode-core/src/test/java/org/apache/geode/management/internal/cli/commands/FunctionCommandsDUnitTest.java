@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION1;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS;
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_RETURN_ARGS;
 import static org.awaitility.Awaitility.await;
 
@@ -24,7 +26,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.util.Strings;
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -44,21 +47,23 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class FunctionCommandsDUnitTest {
-  private MemberVM server1;
-  private MemberVM server2;
+  private static MemberVM locator;
+  private static MemberVM server1;
+  private static MemberVM server2;
 
   private static final String REGION_ONE = "RegionOne";
   private static final String REGION_TWO = "RegionTwo";
+  private static final String RESULT_HEADER = "Function Execution Result";
 
-  @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  @ClassRule
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
-  @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
+  @ClassRule
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  @Before
-  public void before() throws Exception {
-    MemberVM locator = lsRule.startLocatorVM(0);
+  @BeforeClass
+  public static void before() throws Exception {
+    locator = lsRule.startLocatorVM(0);
 
     Properties props = new Properties();
     props.setProperty("groups", "group-1");
@@ -95,9 +100,6 @@ public class FunctionCommandsDUnitTest {
       }
     });
 
-    registerFunction(new TestFunction(true, TEST_FUNCTION1), locator, server1, server2);
-    registerFunction(new TestFunction(true, TEST_FUNCTION_RETURN_ARGS), locator, server1, server2);
-
     locator.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
       ManagementService managementService = ManagementService.getManagementService(cache);
@@ -105,18 +107,32 @@ public class FunctionCommandsDUnitTest {
 
       await().atMost(120, TimeUnit.SECONDS).until(() -> dsMXBean.getMemberCount() == 3);
     });
-
-    connectGfsh(locator);
   }
 
-  private void registerFunction(Function function, MemberVM... vms) {
+  @Before
+  public void setup() throws Exception {
+    registerFunction(new TestFunction(true, TEST_FUNCTION1), locator, server1, server2);
+    registerFunction(new TestFunction(true, TEST_FUNCTION_RETURN_ARGS), locator, server1, server2);
+    registerFunction(new TestFunction(true, TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION), locator,
+        server1, server2);
+    registerFunction(new TestFunction(true, TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS), locator,
+        server1);
+
+    connectGfsh();
+  }
+
+  public void connectGfsh() throws Exception {
+    gfsh.connectAndVerify(getLocator().getJmxPort(), GfshCommandRule.PortType.jmxManager);
+  }
+
+  public MemberVM getLocator() {
+    return locator;
+  }
+
+  private static void registerFunction(Function function, MemberVM... vms) {
     for (MemberVM vm : vms) {
       vm.invoke(() -> FunctionService.registerFunction(function));
     }
-  }
-
-  public void connectGfsh(MemberVM vm) throws Exception {
-    gfsh.connectAndVerify(vm.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test
@@ -127,16 +143,24 @@ public class FunctionCommandsDUnitTest {
   }
 
   @Test
+  public void testExecuteFunctionOnUnknownRegion() throws Exception {
+    gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1 + " --region=/UNKNOWN")
+        .statusIsError().containsOutput("No members found");
+  }
+
+  @Test
   public void testExecuteUnknownFunction() throws Exception {
-    gfsh.executeAndAssertThat("execute function --id=UNKNOWN_FUNCTION").statusIsSuccess()
+    gfsh.executeAndAssertThat("execute function --id=UNKNOWN_FUNCTION").statusIsError()
         .containsOutput("UNKNOWN_FUNCTION is not registered on member");
   }
 
   @Test
   public void testExecuteFunctionOnRegionWithCustomResultCollector() {
-    gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION_RETURN_ARGS + " --region="
-        + REGION_ONE + " --arguments=arg1,arg2" + " --result-collector="
-        + ToUpperResultCollector.class.getName()).statusIsSuccess().containsOutput("ARG1");
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + TEST_FUNCTION_RETURN_ARGS + " --region=" + REGION_ONE
+            + " --arguments=arg1" + " --result-collector=" + ToUpperResultCollector.class.getName())
+        .statusIsSuccess()
+        .tableHasColumnOnlyWithValues(RESULT_HEADER, "[ARG1, ARG1]", "[ARG1, ARG1]");
   }
 
   @Test
@@ -155,30 +179,40 @@ public class FunctionCommandsDUnitTest {
   @Test
   public void testExecuteFunctionOnAllMembers() {
     gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1).statusIsSuccess()
-        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName());
+        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName())
+        .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER, "[false]", "[false]");
   }
 
   @Test
   public void testExecuteFunctionOnMultipleMembers() {
     gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1 + " --member="
         + Strings.join(server1.getName(), server2.getName()).with(",")).statusIsSuccess()
-        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName());
+        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName())
+        .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER, "[false]", "[false]");
   }
 
   @Test
   public void testExecuteFunctionOnMultipleMembersWithArgsAndResultCollector() {
-    gfsh.executeAndAssertThat(
-        "execute function --id=" + TEST_FUNCTION_RETURN_ARGS + " --arguments=arg1,arg2"
-            + " --result-collector=" + ToUpperResultCollector.class.getName())
+    gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION_RETURN_ARGS
+        + " --arguments=arg1" + " --result-collector=" + ToUpperResultCollector.class.getName())
         .statusIsSuccess()
         .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName())
-        .tableHasColumnWithValuesContaining("Function Execution Result", "ARG1", "ARG1");
+        .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER, "[ARG1]", "[ARG1]");
+  }
+
+  @Test
+  public void testFunctionOnlyRegisteredOnOneMember() {
+    gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS)
+        .tableHasColumnWithValuesContaining(RESULT_HEADER, "[false]",
+            "Function : executeFunctionOnOneMemberToReturnArgs is not registered on member.")
+        .statusIsError();
   }
 
   @Test
   public void testExecuteFunctionOnGroup() {
     gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1 + " --groups=group-1")
-        .statusIsSuccess().tableHasColumnWithValuesContaining("Member ID/Name", server1.getName());
+        .statusIsSuccess().tableHasColumnWithValuesContaining("Member ID/Name", server1.getName())
+        .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER, "[false]");
   }
 
   @Test
@@ -189,13 +223,15 @@ public class FunctionCommandsDUnitTest {
 
     gfsh.executeAndAssertThat("list functions").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION_RETURN_ARGS,
-            TEST_FUNCTION1, TEST_FUNCTION_RETURN_ARGS);
+            TEST_FUNCTION1, TEST_FUNCTION_RETURN_ARGS, TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION,
+            TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION, TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS);
     gfsh.executeAndAssertThat(
         "destroy function --id=" + TEST_FUNCTION1 + " --member=" + server2.getName())
         .statusIsSuccess();
     gfsh.executeAndAssertThat("list functions").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION_RETURN_ARGS,
-            TEST_FUNCTION_RETURN_ARGS);
+            TEST_FUNCTION_RETURN_ARGS, TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION,
+            TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION, TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS);
   }
 
   @Test
@@ -204,22 +240,36 @@ public class FunctionCommandsDUnitTest {
         .statusIsSuccess();
     gfsh.executeAndAssertThat("list functions").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION_RETURN_ARGS,
-            TEST_FUNCTION1, TEST_FUNCTION_RETURN_ARGS);
+            TEST_FUNCTION1, TEST_FUNCTION_RETURN_ARGS, TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION,
+            TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION, TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS);
   }
 
   @Test
   public void testListFunctions() {
     gfsh.executeAndAssertThat("list functions").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1, TEST_FUNCTION1,
-            TEST_FUNCTION_RETURN_ARGS, TEST_FUNCTION_RETURN_ARGS);
+            TEST_FUNCTION_RETURN_ARGS, TEST_FUNCTION_RETURN_ARGS,
+            TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION, TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION,
+            TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS);
 
     gfsh.executeAndAssertThat("list functions --matches=Test.*").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1, TEST_FUNCTION1);
+        .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1, TEST_FUNCTION1,
+            TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION, TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION);
 
     gfsh.executeAndAssertThat("list functions --matches=Test.* --groups=group-1").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1);
+        .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1,
+            TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION);
 
     gfsh.executeAndAssertThat("list functions --matches=Test.* --members=" + server1.getName())
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1);
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1,
+            TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION);
+  }
+
+  @Test
+  public void testFunctionException() {
+    gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION)
+        .tableHasColumnWithValuesContaining(RESULT_HEADER, "I have been thrown from TestFunction",
+            "I have been thrown from TestFunction")
+        .statusIsError();
   }
 }

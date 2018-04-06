@@ -168,7 +168,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   }
 
   public boolean isMulticastAddress() {
-    return false; // ipAddr.isMulticastAddress();
+    return false;
   }
 
   public boolean preferredForCoordinator() {

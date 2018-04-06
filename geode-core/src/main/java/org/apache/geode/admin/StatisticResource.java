@@ -31,14 +31,14 @@ public interface StatisticResource {
    *
    * @return the identifying name of this resource
    */
-  public String getName();
+  String getName();
 
   /**
    * Gets the full description of this resource.
    *
    * @return the full description of this resource
    */
-  public String getDescription();
+  String getDescription();
 
   /**
    * Gets the classification type of this resource.
@@ -46,14 +46,14 @@ public interface StatisticResource {
    * @return the classification type of this resource
    * @since GemFire 5.0
    */
-  public String getType();
+  String getType();
 
   /**
    * Returns a display string of the {@link SystemMember} owning this resource.
    *
    * @return a display string of the owning {@link SystemMember}
    */
-  public String getOwner();
+  String getOwner();
 
   /**
    * Returns an ID that uniquely identifies the resource within the {@link SystemMember} it belongs
@@ -61,14 +61,14 @@ public interface StatisticResource {
    *
    * @return unique id within the owning {@link SystemMember}
    */
-  public long getUniqueId();
+  long getUniqueId();
 
   /**
    * Returns a read-only array of every {@link Statistic} in this resource.
    *
    * @return read-only array of every {@link Statistic} in this resource
    */
-  public Statistic[] getStatistics();
+  Statistic[] getStatistics();
 
   /**
    * Refreshes the values of every {@link Statistic} in this resource by retrieving them from the
@@ -76,6 +76,6 @@ public interface StatisticResource {
    *
    * @throws org.apache.geode.admin.AdminException if unable to refresh statistic values
    */
-  public void refresh() throws org.apache.geode.admin.AdminException;
+  void refresh() throws org.apache.geode.admin.AdminException;
 
 }

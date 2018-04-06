@@ -41,7 +41,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    *
    * @return the key
    */
-  public K getKey();
+  K getKey();
 
 
   /**
@@ -56,7 +56,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    * @throws IllegalStateException if off-heap and called after the method that was passed this
    *         EntryEvent returns.
    */
-  public V getOldValue();
+  V getOldValue();
 
   /**
    * Returns the serialized form of the value in the cache before this event.
@@ -67,7 +67,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    *
    * @since GemFire 5.5
    */
-  public SerializedCacheValue<V> getSerializedOldValue();
+  SerializedCacheValue<V> getSerializedOldValue();
 
   /**
    * Returns the value in the cache after this event.
@@ -76,7 +76,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    * @throws IllegalStateException if off-heap and called after the method that was passed this
    *         EntryEvent returns.
    */
-  public V getNewValue();
+  V getNewValue();
 
   /**
    * Returns the serialized form of the value in the cache after this event.
@@ -87,7 +87,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    *
    * @since GemFire 5.5
    */
-  public SerializedCacheValue<V> getSerializedNewValue();
+  SerializedCacheValue<V> getSerializedNewValue();
 
   /**
    * Gets the TransactionId for this EntryEvent.
@@ -96,7 +96,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    *         if no transaction involved.
    * @since GemFire 4.0
    */
-  public TransactionId getTransactionId();
+  TransactionId getTransactionId();
 
   /**
    * Returns true if this event originated on a client.
@@ -104,7 +104,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    * @since GemFire 5.7
    * @return true if this event originated on a client.
    */
-  public boolean hasClientOrigin();
+  boolean hasClientOrigin();
 
   /**
    * Returns <code>true</code> if the old value is "available". Not available means that an old
@@ -113,5 +113,5 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    *
    * @since GemFire 6.0
    */
-  public boolean isOldValueAvailable();
+  boolean isOldValueAvailable();
 }

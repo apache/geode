@@ -117,6 +117,7 @@ public class RegionClusterStatsMonitor {
 
   private String parentRegion;
 
+  // this is actually the data policy of the region
   private String regionType;
 
   private String fullPath;
@@ -436,6 +437,7 @@ public class RegionClusterStatsMonitor {
     return this.parentRegion;
   }
 
+  // returns the data policy of the region
   public String getRegionType() {
     return this.regionType;
   }

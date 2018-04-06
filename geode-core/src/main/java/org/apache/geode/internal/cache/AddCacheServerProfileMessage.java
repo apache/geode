@@ -23,7 +23,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
@@ -41,7 +41,7 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
   int processorId;
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
     try {
       InternalCache cache = dm.getCache();
@@ -95,7 +95,7 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
   public void operateOnLocalCache(InternalCache cache) {
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
     try {
-      for (LocalRegion r : getAllRegions(cache)) {
+      for (InternalRegion r : getAllRegions(cache)) {
         FilterProfile fp = r.getFilterProfile();
         if (fp != null) {
           fp.getLocalProfile().hasCacheServer = true;
@@ -113,13 +113,13 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
   }
 
 
-  private Set<LocalRegion> getAllRegions(InternalCache internalCache) {
+  private Set<InternalRegion> getAllRegions(InternalCache internalCache) {
     return internalCache.getAllRegions();
   }
 
   private Set<DistributedRegion> getDistributedRegions(InternalCache internalCache) {
     Set<DistributedRegion> result = new HashSet<>();
-    for (LocalRegion r : internalCache.getAllRegions()) {
+    for (InternalRegion r : internalCache.getAllRegions()) {
       if (r instanceof DistributedRegion) {
         result.add((DistributedRegion) r);
       }

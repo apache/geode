@@ -33,21 +33,21 @@ public interface GatewaySenderFactory {
    *
    * @param isParallel boolean to indicate whether distribution policy is parallel
    */
-  public GatewaySenderFactory setParallel(boolean isParallel);
+  GatewaySenderFactory setParallel(boolean isParallel);
 
   /**
    * Adds a <code>GatewayEventFilter</code>
    *
    * @param filter GatewayEventFilter
    */
-  public GatewaySenderFactory addGatewayEventFilter(GatewayEventFilter filter);
+  GatewaySenderFactory addGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Adds a <code>GatewayTransportFilter</code>
    *
    * @param filter GatewayTransportFilter
    */
-  public GatewaySenderFactory addGatewayTransportFilter(GatewayTransportFilter filter);
+  GatewaySenderFactory addGatewayTransportFilter(GatewayTransportFilter filter);
 
   /**
    * Sets the buffer size in bytes of the socket connection for this <code>GatewaySender</code>. The
@@ -55,7 +55,7 @@ public interface GatewaySenderFactory {
    *
    * @param size The size in bytes of the socket buffer
    */
-  public GatewaySenderFactory setSocketBufferSize(int size);
+  GatewaySenderFactory setSocketBufferSize(int size);
 
   /**
    * Sets the number of milliseconds to wait for a response from a <code>GatewayReceiver</code>
@@ -65,28 +65,28 @@ public interface GatewaySenderFactory {
    * @param timeout number of milliseconds to wait for a response from a GatewayReceiver
    * @throws IllegalArgumentException if <code>timeout</code> is less than <code>0</code>.
    */
-  public GatewaySenderFactory setSocketReadTimeout(int timeout);
+  GatewaySenderFactory setSocketReadTimeout(int timeout);
 
   /**
    * Sets the disk store name for overflow or persistence
    *
    * @param name
    */
-  public GatewaySenderFactory setDiskStoreName(String name);
+  GatewaySenderFactory setDiskStoreName(String name);
 
   /**
    * Sets the number of dispatcher thread. Default number of dispatcher threads is 5.
    *
    * @param numThreads
    */
-  public GatewaySenderFactory setDispatcherThreads(int numThreads);
+  GatewaySenderFactory setDispatcherThreads(int numThreads);
 
   /**
    * Sets <code>OrderPolicy</code> for this GatewaySender. Default order policy is KEY.
    *
    * @param policy
    */
-  public GatewaySenderFactory setOrderPolicy(OrderPolicy policy);
+  GatewaySenderFactory setOrderPolicy(OrderPolicy policy);
 
   /**
    * Sets the maximum amount of memory (in MB) for a <code>GatewaySender</code>'s queue. Default is
@@ -95,7 +95,7 @@ public interface GatewaySenderFactory {
    * @param maxQueueMemory The maximum amount of memory (in MB) for a <code>GatewaySender</code>'s
    *        queue.
    */
-  public GatewaySenderFactory setMaximumQueueMemory(int maxQueueMemory);
+  GatewaySenderFactory setMaximumQueueMemory(int maxQueueMemory);
 
   /**
    * Sets the batch size to be picked at the time of dispatching from a <code>GatewaySender</code>'s
@@ -104,7 +104,7 @@ public interface GatewaySenderFactory {
    * @param size The size of batches sent from a <code>GatewaySender</code> to its corresponding
    *        <code>GatewayReceiver</code>.
    */
-  public GatewaySenderFactory setBatchSize(int size);
+  GatewaySenderFactory setBatchSize(int size);
 
   /**
    * Sets a time interval in milliseconds to wait to form a batch to be dispatched from a
@@ -114,7 +114,7 @@ public interface GatewaySenderFactory {
    *        batch is sent from a <code>GatewaySender</code> to its corresponding
    *        <code>GatewayReceiver</code>.
    */
-  public GatewaySenderFactory setBatchTimeInterval(int interval);
+  GatewaySenderFactory setBatchTimeInterval(int interval);
 
   /**
    * Sets whether to enable batch conflation for a <code>GatewaySender</code>'s queue. Default is
@@ -123,14 +123,14 @@ public interface GatewaySenderFactory {
    * @param isConflation Whether or not to enable batch conflation for batches sent from a
    *        <code>GatewaySender</code> to its corresponding <code>GatewayReceiver</code>.
    */
-  public GatewaySenderFactory setBatchConflationEnabled(boolean isConflation);
+  GatewaySenderFactory setBatchConflationEnabled(boolean isConflation);
 
   /**
    * Sets whether to enable persistence for a <code>GatewaySender</code>'s queue. Default is false.
    *
    * @param isPersistence Whether to enable persistence for a <code>GatewaySender</code>'s queue
    */
-  public GatewaySenderFactory setPersistenceEnabled(boolean isPersistence);
+  GatewaySenderFactory setPersistenceEnabled(boolean isPersistence);
 
   /**
    * Sets the alert threshold in milliseconds for entries in a <code>GatewaySender</code> 's queue.
@@ -138,7 +138,7 @@ public interface GatewaySenderFactory {
    *
    * @param threshold the alert threshold for entries in a <code>GatewaySender</code>'s queue
    */
-  public GatewaySenderFactory setAlertThreshold(int threshold);
+  GatewaySenderFactory setAlertThreshold(int threshold);
 
   /**
    * Sets the manual start boolean property for this <code>GatewaySender</code>. Default is false
@@ -148,7 +148,7 @@ public interface GatewaySenderFactory {
    * @deprecated - Manual start of senders is deprecated and will be removed in a later release.
    */
   @Deprecated
-  public GatewaySenderFactory setManualStart(boolean start);
+  GatewaySenderFactory setManualStart(boolean start);
 
   /**
    * Sets whether or not the writing to the disk is synchronous. Default is true.
@@ -156,31 +156,30 @@ public interface GatewaySenderFactory {
    * @param isSynchronous boolean if true indicates synchronous writes
    *
    */
-  public GatewaySenderFactory setDiskSynchronous(boolean isSynchronous);
+  GatewaySenderFactory setDiskSynchronous(boolean isSynchronous);
 
   /**
    * Removes the provided <code>GatewayEventFilter</code> from this GatewaySender.
    *
    * @param filter
    */
-  public GatewaySenderFactory removeGatewayEventFilter(GatewayEventFilter filter);
+  GatewaySenderFactory removeGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Removes the provided <code>GatewayTransportFilter</code> from this GatewaySender.
    *
    * @param filter
    */
-  public GatewaySenderFactory removeGatewayTransportFilter(GatewayTransportFilter filter);
+  GatewaySenderFactory removeGatewayTransportFilter(GatewayTransportFilter filter);
 
-  public GatewaySenderFactory setParallelFactorForReplicatedRegion(int parallel);
+  GatewaySenderFactory setParallelFactorForReplicatedRegion(int parallel);
 
   /**
    * Sets the provided <code>GatewayEventSubstitutionFilter</code> in this GatewaySenderFactory.
    *
    * @param filter The <code>GatewayEventSubstitutionFilter</code>
    */
-  public GatewaySenderFactory setGatewayEventSubstitutionFilter(
-      GatewayEventSubstitutionFilter filter);
+  GatewaySenderFactory setGatewayEventSubstitutionFilter(GatewayEventSubstitutionFilter filter);
 
   /**
    * Creates a <code>GatewaySender</code> to communicate with remote distributed system
@@ -191,6 +190,6 @@ public interface GatewaySenderFactory {
    * @throws IllegalStateException If the GatewaySender creation fails during validation due to
    *         mismatch of attributes of GatewaySender created on other nodes with same id
    */
-  public GatewaySender create(String id, int remoteDSId);
+  GatewaySender create(String id, int remoteDSId);
 
 }

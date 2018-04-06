@@ -23,5 +23,5 @@ public interface SlabFactory {
    *
    * @throws OutOfMemoryError if the create fails
    */
-  public Slab create(int size);
+  Slab create(int size);
 }

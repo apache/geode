@@ -25,8 +25,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -46,7 +46,7 @@ public class ClusterConfigNotEnabledDUnitTest {
     MemberVM server = lsRule.startServerVM(1, locator.getPort());
 
     server.invoke(() -> {
-      DM dm = ClusterStartupRule.getCache().getDistributionManager();
+      DistributionManager dm = ClusterStartupRule.getCache().getDistributionManager();
       Map<InternalDistributedMember, Collection<String>> locatorsWithClusterConfig =
           dm.getAllHostedLocatorsWithSharedConfiguration();
       assertThat(locatorsWithClusterConfig).isEmpty();

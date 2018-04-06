@@ -66,7 +66,6 @@ public class EndpointManagerImpl implements EndpointManager {
    * distributed.internal.ServerLocation)
    */
   public Endpoint referenceEndpoint(ServerLocation server, DistributedMember memberId) {
-    // logger.warn("REFENDPOINT server:"+server+" memberId:"+memberId);
     Endpoint endpoint = endpointMap.get(server);
     boolean addedEndpoint = false;
     if (endpoint == null || endpoint.isClosed()) {
@@ -89,10 +88,7 @@ public class EndpointManagerImpl implements EndpointManager {
     endpoint.addReference();
 
     if (addedEndpoint) {
-      // logger.warn("EMANFIRE2:JOIN:"+endpoint.getLocation()+" mid:"+endpoint.getMemberId());
       listener.endpointNowInUse(endpoint);
-    } else {
-      // logger.warn("EMANFIRE33:NOJOIN:"+endpoint.getLocation()+" mid:"+endpoint.getMemberId());
     }
 
     return endpoint;
@@ -289,7 +285,6 @@ public class EndpointManagerImpl implements EndpointManager {
     }
 
     public void endpointNowInUse(Endpoint endpoint) {
-      // logger.warn("HIGHUP:JOIN:"+endpoint.getLocation());
       for (Iterator<EndpointListener> itr = endpointListeners.iterator(); itr.hasNext();) {
         EndpointManager.EndpointListener listener = itr.next();
         if (!(listener instanceof PdxRegistryRecoveryListener)) {
@@ -317,7 +312,6 @@ public class EndpointManagerImpl implements EndpointManager {
       if (cancelCriterion.isCancelInProgress()) {
         return;
       }
-      // logger.warn("EMANFIRE:CRASH:"+endpoint.getLocation());
       InternalClientMembership.notifyServerCrashed(endpoint.getLocation());
     }
 
@@ -325,7 +319,6 @@ public class EndpointManagerImpl implements EndpointManager {
       if (cancelCriterion.isCancelInProgress()) {
         return;
       }
-      // logger.warn("EMANFIRE:LEFT:"+endpoint.getLocation());
       InternalClientMembership.notifyServerLeft(endpoint.getLocation());
     }
 
@@ -333,8 +326,6 @@ public class EndpointManagerImpl implements EndpointManager {
       if (cancelCriterion.isCancelInProgress()) {
         return;
       }
-      // logger.warn("EMANFIRE:JOIN:"+endpoint.getLocation()+" mid:"+endpoint.getMemberId(),new
-      // Exception());
       InternalClientMembership.notifyServerJoined(endpoint.getLocation());
     }
   }

@@ -120,7 +120,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores").statusIsSuccess()
         .containsOutput("Missing Disk Stores", "No missing colocated region found");
 
-    List<Object> diskstoreIDs = gfsh.getCommandResult().getColumnValues("Disk Store ID");
+    List<String> diskstoreIDs = gfsh.getCommandResult().getColumnValues("Disk Store ID");
     assertThat(diskstoreIDs.size()).isEqualTo(1);
 
     gfsh.executeAndAssertThat("revoke missing-disk-store --id=" + diskstoreIDs.get(0))
@@ -137,9 +137,7 @@ public class DiskStoreCommandsDUnitTest {
 
   @Test
   public void testDescribeOfflineDiskStoreCommand() throws Exception {
-    Properties props = new Properties();
-    props.setProperty("groups", GROUP);
-    MemberVM server1 = rule.startServerAsJmxManager(0, props);
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
 
     gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
 
@@ -165,9 +163,7 @@ public class DiskStoreCommandsDUnitTest {
 
   @Test
   public void testExportOfflineDiskStore() throws Exception {
-    Properties props = new Properties();
-    props.setProperty("groups", GROUP);
-    MemberVM server1 = rule.startServerAsJmxManager(0, props);
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
 
     gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
 

@@ -119,15 +119,15 @@ public interface DiskInitFileInterpreter {
   void cmnClearRegion(long drId,
       ConcurrentHashMap<DiskStoreID, RegionVersionHolder<DiskStoreID>> clearRVV);
 
-  public void cmnCrfCreate(long oplogId);
+  void cmnCrfCreate(long oplogId);
 
-  public void cmnDrfCreate(long oplogId);
+  void cmnDrfCreate(long oplogId);
 
-  public boolean cmnCrfDelete(long oplogId);
+  boolean cmnCrfDelete(long oplogId);
 
-  public boolean cmnDrfDelete(long oplogId);
+  boolean cmnDrfDelete(long oplogId);
 
-  public void cmnRegionConfig(long drId, byte lruAlgorithm, byte lruAction, int lruLimit,
+  void cmnRegionConfig(long drId, byte lruAlgorithm, byte lruAction, int lruLimit,
       int concurrencyLevel, int initialCapacity, float loadFactor, boolean statisticsEnabled,
       boolean isBucket, EnumSet<DiskRegionFlag> flags, String partitionName, int startingBucketId,
       String compressorClassName, boolean offHeap);

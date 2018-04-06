@@ -56,9 +56,8 @@ public class CommitCommand extends BaseCommand {
         (InternalDistributedMember) serverConnection.getProxyID().getDistributedMember();
     int uniqId = clientMessage.getTransactionId();
     TXId txId = new TXId(client, uniqId);
-    TXCommitMessage commitMsg = null;
-    if (txMgr.isHostedTxRecentlyCompleted(txId)) {
-      commitMsg = txMgr.getRecentlyCompletedMessage(txId);
+    TXCommitMessage commitMsg = txMgr.getRecentlyCompletedMessage(txId);
+    if (commitMsg != null) {
       if (logger.isDebugEnabled()) {
         logger.debug("TX: returning a recently committed txMessage for tx: {}", txId);
       }

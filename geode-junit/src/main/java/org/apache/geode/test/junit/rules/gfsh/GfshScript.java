@@ -25,7 +25,7 @@ public class GfshScript {
   private final String[] commands;
   private String name;
   private TimeUnit timeoutTimeUnit = TimeUnit.MINUTES;
-  private int timeout = 2;
+  private int timeout = 4;
   private boolean awaitQuietly = false;
   private int expectedExitValue = 0;
   private List<String> extendedClasspath = new ArrayList<>();

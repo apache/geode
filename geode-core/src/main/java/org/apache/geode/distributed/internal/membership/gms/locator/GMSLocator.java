@@ -41,7 +41,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -76,7 +76,7 @@ public class GMSLocator implements Locator, NetLocator {
   private InternalDistributedMember localAddress;
 
   private final Set<InternalDistributedMember> registrants = new HashSet<>();
-  public Map<InternalDistributedMemberWrapper, byte[]> registerMbrVsPK = new ConcurrentHashMap<>();
+  private Map<InternalDistributedMemberWrapper, byte[]> registerMbrVsPK = new ConcurrentHashMap<>();
 
   /**
    * The current membership view, or one recovered from disk. This is a copy-on-write variable.
@@ -137,14 +137,17 @@ public class GMSLocator implements Locator, NetLocator {
   /**
    * Test hook - set the persistent view file
    */
-  public void setViewFile(File file) {
-    this.viewFile = file;
+  public File setViewFile(File file) {
+    this.viewFile = new File(file.getAbsolutePath()); // GEODE-4180, use absolute paths
+    return this.viewFile;
   }
 
   @Override
   public void init(TcpServer server) throws InternalGemFireException {
     if (this.viewFile == null) {
-      this.viewFile = new File("locator" + server.getPort() + "view.dat");
+      // GEODE-4180, use absolute paths
+      this.viewFile =
+          new File(new File("locator" + server.getPort() + "view.dat").getAbsolutePath());
     }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",
@@ -212,8 +215,6 @@ public class GMSLocator implements Locator, NetLocator {
         services.getMessenger().setPublicKey(findRequest.getMyPublicKey(),
             findRequest.getMemberID());
       } else {
-        // GMSEncrypt.registerMember(findRequest.getMyPublicKey(),
-        // findRequest.getMemberID());
         if (findRequest.getMyPublicKey() != null) {
           registerMbrVsPK.put(new InternalDistributedMemberWrapper(findRequest.getMemberID()),
               findRequest.getMyPublicKey());
@@ -450,7 +451,7 @@ public class GMSLocator implements Locator, NetLocator {
       // GEODE-3052 - remove locators from the view. Since we couldn't recover from an existing
       // locator we know that all of the locators in the view are defunct
       for (InternalDistributedMember member : members) {
-        if (member.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+        if (member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
           recoveredView.remove(member);
         }
       }

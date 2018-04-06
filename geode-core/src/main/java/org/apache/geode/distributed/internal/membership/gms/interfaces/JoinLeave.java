@@ -41,7 +41,7 @@ public interface JoinLeave extends Service {
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been
    * received from the given member
    */
-  public void memberShutdown(DistributedMember mbr, String reason);
+  void memberShutdown(DistributedMember mbr, String reason);
 
   /**
    * returns the local address

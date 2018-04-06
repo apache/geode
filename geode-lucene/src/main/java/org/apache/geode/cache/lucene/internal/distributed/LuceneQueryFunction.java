@@ -18,15 +18,12 @@ package org.apache.geode.cache.lucene.internal.distributed;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.search.Query;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.RegionFunctionContext;
@@ -42,12 +39,11 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * {@link LuceneQueryFunction} coordinates text search on a member. It receives text search query
@@ -55,7 +51,7 @@ import org.apache.geode.security.ResourcePermission;
  * and provides a result collector. The locally collected results are sent to the search
  * coordinator.
  */
-public class LuceneQueryFunction implements Function<LuceneFunctionContext>, InternalEntity {
+public class LuceneQueryFunction implements InternalFunction<LuceneFunctionContext> {
   private static final long serialVersionUID = 1L;
   public static final String ID = LuceneQueryFunction.class.getName();
 
@@ -176,12 +172,5 @@ public class LuceneQueryFunction implements Function<LuceneFunctionContext>, Int
   @Override
   public boolean optimizeForWrite() {
     return true;
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    ResourcePermission read = new ResourcePermission(ResourcePermission.Resource.DATA,
-        ResourcePermission.Operation.READ, regionName);
-    return Collections.singleton(read);
   }
 }

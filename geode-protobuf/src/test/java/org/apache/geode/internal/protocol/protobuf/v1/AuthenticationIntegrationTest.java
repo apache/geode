@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import static org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics.PROTOBUF_CLIENT_STATISTICS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -33,12 +34,16 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
+import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -164,30 +169,28 @@ public class AuthenticationIntegrationTest {
   public void noopAuthenticationSucceeds() throws Exception {
     cache = createNoSecurityCache();
     setupCacheServerAndSocket();
-    ClientProtocol.Message getRegionsMessage =
-        ClientProtocol.Message.newBuilder().setRequest(ClientProtocol.Request.newBuilder()
-            .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder())).build();
+    ClientProtocol.Message getRegionsMessage = ClientProtocol.Message.newBuilder()
+        .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder()).build();
     protobufProtocolSerializer.serialize(getRegionsMessage, outputStream);
 
     ClientProtocol.Message regionsResponse = protobufProtocolSerializer.deserialize(inputStream);
-    assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE,
-        regionsResponse.getResponse().getResponseAPICase());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.GETREGIONNAMESRESPONSE,
+        regionsResponse.getMessageTypeCase());
   }
 
   @Test
   public void skippingAuthenticationFails() throws Exception {
     cache = createCacheWithSecurityManagerTakingExpectedCreds();
     setupCacheServerAndSocket();
-    ClientProtocol.Message getRegionsMessage =
-        ClientProtocol.Message.newBuilder().setRequest(ClientProtocol.Request.newBuilder()
-            .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder())).build();
+    ClientProtocol.Message getRegionsMessage = ClientProtocol.Message.newBuilder()
+        .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder()).build();
     protobufProtocolSerializer.serialize(getRegionsMessage, outputStream);
 
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
-    assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        errorResponse.getResponse().getResponseAPICase());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE,
+        errorResponse.getMessageTypeCase());
     assertEquals(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
-        errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
+        errorResponse.getErrorResponse().getError().getErrorCode());
     verifyConnectionClosed();
   }
 
@@ -197,10 +200,9 @@ public class AuthenticationIntegrationTest {
     setupCacheServerAndSocket();
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
-                .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
-                .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
+        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+            .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
+            .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD))
         .build();
     authenticationRequest.writeDelimitedTo(outputStream);
 
@@ -208,14 +210,13 @@ public class AuthenticationIntegrationTest {
         parseSimpleAuthenticationResponseFromInput();
     assertTrue(authenticationResponse.getAuthenticated());
 
-    ClientProtocol.Message getRegionsMessage =
-        ClientProtocol.Message.newBuilder().setRequest(ClientProtocol.Request.newBuilder()
-            .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder())).build();
+    ClientProtocol.Message getRegionsMessage = ClientProtocol.Message.newBuilder()
+        .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder()).build();
     protobufProtocolSerializer.serialize(getRegionsMessage, outputStream);
 
     ClientProtocol.Message regionsResponse = protobufProtocolSerializer.deserialize(inputStream);
-    assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE,
-        regionsResponse.getResponse().getResponseAPICase());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.GETREGIONNAMESRESPONSE,
+        regionsResponse.getMessageTypeCase());
 
   }
 
@@ -224,11 +225,8 @@ public class AuthenticationIntegrationTest {
     cache = createCacheWithSecurityManagerTakingExpectedCreds();
     setupCacheServerAndSocket();
 
-    ClientProtocol.Message authenticationRequest =
-        ClientProtocol.Message.newBuilder()
-            .setRequest(ClientProtocol.Request.newBuilder()
-                .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()))
-            .build();
+    ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
+        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()).build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
@@ -244,10 +242,9 @@ public class AuthenticationIntegrationTest {
     setupCacheServerAndSocket();
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
-                .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
-                .putCredentials(ResourceConstants.PASSWORD, "wrong password")))
+        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+            .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
+            .putCredentials(ResourceConstants.PASSWORD, "wrong password"))
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
@@ -256,6 +253,9 @@ public class AuthenticationIntegrationTest {
         parseSimpleAuthenticationResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
 
+    Statistics[] stats = cache.getDistributedSystem()
+        .findStatisticsByType(cache.getDistributedSystem().findType(PROTOBUF_CLIENT_STATISTICS));
+    assertEquals(1, stats[0].getLong("authenticationFailures"));
     verifyConnectionClosed();
   }
 
@@ -275,19 +275,16 @@ public class AuthenticationIntegrationTest {
     createLegacyAuthCache("security-client-authenticator");
     setupCacheServerAndSocket();
 
-    ClientProtocol.Message authenticationRequest =
-        ClientProtocol.Message.newBuilder()
-            .setRequest(ClientProtocol.Request.newBuilder()
-                .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()))
-            .build();
+    ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
+        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()).build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
-    assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        errorResponse.getResponse().getResponseAPICase());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE,
+        errorResponse.getMessageTypeCase());
     assertEquals(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
-        errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
+        errorResponse.getErrorResponse().getError().getErrorCode());
     verifyConnectionClosed();
   }
 
@@ -296,19 +293,16 @@ public class AuthenticationIntegrationTest {
     createLegacyAuthCache("security-peer-authenticator");
     setupCacheServerAndSocket();
 
-    ClientProtocol.Message authenticationRequest =
-        ClientProtocol.Message.newBuilder()
-            .setRequest(ClientProtocol.Request.newBuilder()
-                .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()))
-            .build();
+    ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
+        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()).build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
-    assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        errorResponse.getResponse().getResponseAPICase());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE,
+        errorResponse.getMessageTypeCase());
     assertEquals(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
-        errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
+        errorResponse.getErrorResponse().getError().getErrorCode());
     verifyConnectionClosed();
   }
 
@@ -343,10 +337,8 @@ public class AuthenticationIntegrationTest {
       throws IOException {
     ClientProtocol.Message authenticationResponseMessage =
         ClientProtocol.Message.parseDelimitedFrom(inputStream);
-    assertEquals(ClientProtocol.Message.RESPONSE_FIELD_NUMBER,
+    assertEquals(ClientProtocol.Message.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
         authenticationResponseMessage.getMessageTypeCase().getNumber());
-    assertEquals(ClientProtocol.Response.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
-        authenticationResponseMessage.getResponse().getResponseAPICase().getNumber());
-    return authenticationResponseMessage.getResponse().getAuthenticationResponse();
+    return authenticationResponseMessage.getAuthenticationResponse();
   }
 }

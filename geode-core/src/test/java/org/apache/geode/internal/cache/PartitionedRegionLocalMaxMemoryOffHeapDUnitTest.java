@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 
 import java.util.Properties;
 
@@ -23,8 +24,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -32,42 +31,38 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since Geode 1.0
  */
-@SuppressWarnings({"deprecation", "serial"})
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class PartitionedRegionLocalMaxMemoryOffHeapDUnitTest
     extends PartitionedRegionLocalMaxMemoryDUnitTest {
 
   @Override
   public final void preTearDownAssertions() throws Exception {
-    SerializableRunnable checkOrphans = new SerializableRunnable() {
+    checkOrphans();
+    invokeInEveryVM(() -> checkOrphans());
+  }
 
-      @Override
-      public void run() {
-        if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
-        }
-      }
-    };
-    Invoke.invokeInEveryVM(checkOrphans);
-    checkOrphans.run();
+  private void checkOrphans() {
+    if (hasCache()) {
+      OffHeapTestUtil.checkOrphans(getCache());
+    }
   }
 
   @Override
   public Properties getDistributedSystemProperties() {
-    Properties props = super.getDistributedSystemProperties();
+    Properties config = new Properties();
     // test creates a bit more than 1m of off heap so we need to total off heap size to be >1m
-    props.setProperty(OFF_HEAP_MEMORY_SIZE, "2m");
-    return props;
+    config.setProperty(OFF_HEAP_MEMORY_SIZE, "2m");
+    return config;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  protected RegionAttributes<?, ?> createRegionAttrsForPR(int red, int localMaxMem,
-      long recoveryDelay, EvictionAttributes evictionAttrs) {
-    RegionAttributes<?, ?> attrs =
-        super.createRegionAttrsForPR(red, localMaxMem, recoveryDelay, evictionAttrs);
-    AttributesFactory factory = new AttributesFactory(attrs);
-    factory.setOffHeap(true);
-    return factory.create();
+  protected RegionAttributes<?, ?> createRegionAttrsForPR(int redundancy, int localMaxMemory,
+      long recoveryDelay, EvictionAttributes evictionAttributes) {
+    RegionAttributes<?, ?> regionAttributes = PartitionedRegionTestHelper.createRegionAttrsForPR(
+        redundancy, localMaxMemory, recoveryDelay, evictionAttributes, null);
+    AttributesFactory attributesFactory = new AttributesFactory(regionAttributes);
+    attributesFactory.setOffHeap(true);
+    return attributesFactory.create();
   }
 }

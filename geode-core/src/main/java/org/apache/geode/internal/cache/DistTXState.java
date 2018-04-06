@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheWriterException;
@@ -368,11 +369,20 @@ public class DistTXState extends TXState {
         }
         dtop.setDistributedMember(sender);
         dtop.setOriginRemote(false);
+
         /*
          * [DISTTX} TODO handle call back argument version tag and other settings in PutMessage
          */
         String failureReason = null;
         try {
+          if (dtop.getRegion() == null) {
+            // Tx event from the peer.
+            if (dtop.getRegionName() == null) {
+              throw new InternalGemFireException("Region is unavailable on DistTxEntryEvent.");
+            }
+            dtop.setRegion((LocalRegion) getCache().getRegion(dtop.getRegionName()));
+          }
+
           if (dtop.getKeyInfo().isDistKeyInfo()) {
             dtop.getKeyInfo().setCheckPrimary(false);
           } else {
@@ -430,9 +440,10 @@ public class DistTXState extends TXState {
       if (dtop.op.isPutAll()) {
         assert (dtop.getPutAllOperation() != null);
         // [DISTTX] TODO what do with versions next?
-        final VersionedObjectList versions = new VersionedObjectList(
-            dtop.getPutAllOperation().putAllDataSize, true, dtop.region.concurrencyChecksEnabled);
-        postPutAll(dtop.getPutAllOperation(), versions, dtop.region);
+        final VersionedObjectList versions =
+            new VersionedObjectList(dtop.getPutAllOperation().putAllDataSize, true,
+                dtop.getRegion().getConcurrencyChecksEnabled());
+        postPutAll(dtop.getPutAllOperation(), versions, dtop.getRegion());
       } else {
         result = putEntryOnRemote(dtop, false/* ifNew */, false/* ifOld */,
             null/* expectedOldValue */, false/* requireOldValue */, 0L/* lastModified */,
@@ -446,8 +457,8 @@ public class DistTXState extends TXState {
         // [DISTTX] TODO what do with versions next?
         final VersionedObjectList versions =
             new VersionedObjectList(dtop.getRemoveAllOperation().removeAllDataSize, true,
-                dtop.region.concurrencyChecksEnabled);
-        postRemoveAll(dtop.getRemoveAllOperation(), versions, dtop.region);
+                dtop.getRegion().getConcurrencyChecksEnabled());
+        postRemoveAll(dtop.getRemoveAllOperation(), versions, dtop.getRegion());
       } else {
         destroyOnRemote(dtop, false/* TODO [DISTTX] */, null/*
                                                              * TODO [DISTTX]

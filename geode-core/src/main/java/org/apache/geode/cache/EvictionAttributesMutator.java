@@ -31,5 +31,5 @@ public interface EvictionAttributesMutator {
    *
    * @param maximum value used by the {@link EvictionAlgorithm}
    */
-  public void setMaximum(int maximum);
+  void setMaximum(int maximum);
 }

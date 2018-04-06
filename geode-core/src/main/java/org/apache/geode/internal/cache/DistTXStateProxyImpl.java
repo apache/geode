@@ -19,23 +19,18 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- *
- *
- */
 public abstract class DistTXStateProxyImpl extends TXStateProxyImpl {
 
   protected static final Logger logger = LogService.getLogger();
 
-  public DistTXStateProxyImpl(TXManagerImpl managerImpl, TXId id,
+  public DistTXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id,
       InternalDistributedMember clientMember) {
-    super(managerImpl, id, clientMember);
-    // TODO Auto-generated constructor stub
+    super(cache, managerImpl, id, clientMember);
   }
 
-  public DistTXStateProxyImpl(TXManagerImpl managerImpl, TXId id, boolean isjta) {
-    super(managerImpl, id, isjta);
-    // TODO Auto-generated constructor stub
+  public DistTXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id,
+      boolean isjta) {
+    super(cache, managerImpl, id, isjta);
   }
 
   @Override

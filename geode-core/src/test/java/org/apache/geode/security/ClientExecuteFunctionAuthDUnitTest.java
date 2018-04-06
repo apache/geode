@@ -16,92 +16,86 @@ package org.apache.geode.security;
 
 import static org.apache.geode.cache.execute.FunctionService.onServer;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
-import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
+import java.util.Properties;
 
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
 import org.apache.geode.management.internal.security.TestFunctions.WriteFunction;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClientVM;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.VMProvider;
 
 @Category({DistributedTest.class, SecurityTest.class})
-public class ClientExecuteFunctionAuthDUnitTest extends JUnit4DistributedTestCase {
-  final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
+public class ClientExecuteFunctionAuthDUnitTest {
+  private static Function writeFunction;
+  private static Function readFunction;
 
-  private Function writeFunction;
-  private Function readFunction;
+  private static MemberVM server;
+  private static ClientVM client1, client2;
 
-  @Rule
-  public ServerStarterRule server = new ServerStarterRule()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
+  @ClassRule
+  public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  @Before
-  public void before() {
-    writeFunction = new WriteFunction();
-    readFunction = new ReadFunction();
-    FunctionService.registerFunction(writeFunction);
-    FunctionService.registerFunction(readFunction);
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    properties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.management.internal.security.TestFunctions*");
+    server = cluster.startServerVM(0, properties);
+
+    server.invoke(() -> {
+      ClusterStartupRule.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("region");
+    });
+    client1 = cluster.startClientVM(1, "dataRead", "dataRead", true, server.getPort());
+    client2 = cluster.startClientVM(2, "dataWrite", "dataWrite", true, server.getPort());
+
+    VMProvider.invokeInEveryMember(() -> {
+      writeFunction = new WriteFunction();
+      readFunction = new ReadFunction();
+    }, server, client1, client2);
   }
 
   @Test
-  public void testExecuteFunctionWithClientRegistration() {
-    client1.invoke("logging in with dataReader", () -> {
-      ClientCache cache = createClientCache("dataRead", "dataRead", server.getPort());
-
-      FunctionService.registerFunction(writeFunction);
-      FunctionService.registerFunction(readFunction);
+  public void testExecuteFunctionWithFunctionObject() throws Exception {
+    client1.invoke(() -> {
+      ClientCache cache = ClusterStartupRule.getClientCache();
 
       // can not write
-      assertNotAuthorized(() -> onServer(cache.getDefaultPool()).execute(writeFunction.getId()),
-          "DATA:WRITE");
+      assertThatThrownBy(() -> onServer(cache.getDefaultPool()).execute(writeFunction))
+          .hasMessageContaining("DATA:WRITE");
 
       // can read
-      ResultCollector rc = onServer(cache.getDefaultPool()).execute(readFunction.getId());
+      ResultCollector rc = onServer(cache.getDefaultPool()).execute(readFunction);
       assertThat(((ArrayList) rc.getResult()).get(0)).isEqualTo(ReadFunction.SUCCESS_OUTPUT);
     });
 
-    client2.invoke("logging in with dataWriter", () -> {
-      ClientCache cache = createClientCache("dataWrite", "dataWrite", server.getPort());
-
-      FunctionService.registerFunction(writeFunction);
-      FunctionService.registerFunction(readFunction);
+    client2.invoke(() -> {
+      ClientCache cache = ClusterStartupRule.getClientCache();
       // can write
-      ResultCollector rc = onServer(cache.getDefaultPool()).execute(writeFunction.getId());
+      ResultCollector rc = onServer(cache.getDefaultPool()).execute(writeFunction);
       assertThat(((ArrayList) rc.getResult()).get(0)).isEqualTo(WriteFunction.SUCCESS_OUTPUT);
 
       // can not read
-      assertNotAuthorized(() -> onServer(cache.getDefaultPool()).execute(readFunction.getId()),
-          "DATA:READ");
+      assertThatThrownBy(() -> onServer(cache.getDefaultPool()).execute(readFunction))
+          .hasMessageContaining("DATA:READ");
     });
   }
-
-  @Test
-  // this would trigger the client to send a GetFunctionAttribute command before executing it
-  public void testExecuteFunctionWithOutClientRegistration() {
-    client1.invoke("logging in with dataReader", () -> {
-      ClientCache cache = createClientCache("dataRead", "dataRead", server.getPort());
-      assertNotAuthorized(() -> onServer(cache.getDefaultPool()).execute(writeFunction.getId()),
-          "DATA:WRITE");
-    });
-  }
-
 
 }

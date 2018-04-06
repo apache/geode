@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Properties;
 
@@ -24,7 +24,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
-import org.apache.geode.internal.cache.eviction.EvictionStatsDUnitTest;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -46,7 +45,7 @@ public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };

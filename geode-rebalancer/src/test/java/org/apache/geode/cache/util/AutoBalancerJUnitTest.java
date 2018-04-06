@@ -294,7 +294,7 @@ public class AutoBalancerJUnitTest {
     AutoBalancer balancer = new AutoBalancer();
     Properties props = getBasicConfig();
     props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "-1");
-    balancer.init(props);
+    balancer.initialize(null, props);
   }
 
   @Test(expected = GemFireConfigException.class)
@@ -302,7 +302,7 @@ public class AutoBalancerJUnitTest {
     AutoBalancer balancer = new AutoBalancer();
     Properties props = getBasicConfig();
     props.put(AutoBalancer.MINIMUM_SIZE, "-1");
-    balancer.init(props);
+    balancer.initialize(null, props);
   }
 
   @Test(expected = GemFireConfigException.class)
@@ -310,7 +310,7 @@ public class AutoBalancerJUnitTest {
     AutoBalancer balancer = new AutoBalancer();
     Properties props = getBasicConfig();
     props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "0");
-    balancer.init(props);
+    balancer.initialize(null, props);
   }
 
   @Test(expected = GemFireConfigException.class)
@@ -318,7 +318,7 @@ public class AutoBalancerJUnitTest {
     AutoBalancer balancer = new AutoBalancer();
     Properties props = getBasicConfig();
     props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "100");
-    balancer.init(props);
+    balancer.initialize(null, props);
   }
 
   @Test
@@ -336,7 +336,7 @@ public class AutoBalancerJUnitTest {
     });
 
     AutoBalancer autoR = new AutoBalancer(mockScheduler, mockAuditor, null, null);
-    autoR.init(props);
+    autoR.initialize(null, props);
   }
 
   @Test
@@ -560,7 +560,7 @@ public class AutoBalancerJUnitTest {
 
     assertEquals(3, latch.getCount());
     AutoBalancer autoR = new AutoBalancer(null, mockAuditor, mockClock, null);
-    autoR.init(props);
+    autoR.initialize(null, props);
     assertTrue(latch.await(1, TimeUnit.SECONDS));
   }
 
@@ -594,7 +594,7 @@ public class AutoBalancerJUnitTest {
 
     assertEquals(2, latch.getCount());
     AutoBalancer autoR = new AutoBalancer(null, mockAuditor, mockClock, null);
-    autoR.init(props);
+    autoR.initialize(null, props);
     assertTrue(latch.await(1, TimeUnit.SECONDS));
 
     // after destroy no more execute will be called.

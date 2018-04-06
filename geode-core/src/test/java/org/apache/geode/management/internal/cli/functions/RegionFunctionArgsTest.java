@@ -71,8 +71,7 @@ public class RegionFunctionArgsTest {
     EvictionAttributes attributes = args.getEvictionAttributes();
     assertThat(attributes.getAlgorithm()).isEqualTo(EvictionAlgorithm.LRU_HEAP);
     assertThat(attributes.getAction()).isEqualTo(EvictionAction.LOCAL_DESTROY);
-    assertThatThrownBy(() -> attributes.getMaximum())
-        .hasMessageContaining("LRUHeap does not support a maximum");
+    assertThat(attributes.getMaximum()).isEqualTo(0);
 
     args.setEvictionAttributes("overflow-to-disk", 1000, null, null);
     EvictionAttributes attributes1 = args.getEvictionAttributes();

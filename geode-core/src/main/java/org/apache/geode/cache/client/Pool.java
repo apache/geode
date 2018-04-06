@@ -15,9 +15,7 @@
 package org.apache.geode.cache.client;
 
 import java.net.InetSocketAddress;
-import java.util.Properties;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.query.QueryService;
 
@@ -59,98 +57,98 @@ public interface Pool {
    * @return the name of the pool
    * @see PoolFactory#create
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns the socket connect timeout of this pool.
    *
    * @see PoolFactory#setSocketConnectTimeout(int)
    */
-  public int getSocketConnectTimeout();
+  int getSocketConnectTimeout();
 
   /**
    * Returns the connection timeout of this pool.
    *
    * @see PoolFactory#setFreeConnectionTimeout
    */
-  public int getFreeConnectionTimeout();
+  int getFreeConnectionTimeout();
 
   /**
    * Returns the load conditioning interval of this pool.
    *
    * @see PoolFactory#setLoadConditioningInterval
    */
-  public int getLoadConditioningInterval();
+  int getLoadConditioningInterval();
 
   /**
    * Returns the socket buffer size of this pool.
    *
    * @see PoolFactory#setSocketBufferSize
    */
-  public int getSocketBufferSize();
+  int getSocketBufferSize();
 
   /**
    * Returns the read timeout of this pool.
    *
    * @see PoolFactory#setReadTimeout
    */
-  public int getReadTimeout();
+  int getReadTimeout();
 
   /**
    * Get the minimum connections for this pool.
    *
    * @see PoolFactory#setMinConnections(int)
    */
-  public int getMinConnections();
+  int getMinConnections();
 
   /**
    * Get the maximum connections for this pool.
    *
    * @see PoolFactory#setMaxConnections(int)
    */
-  public int getMaxConnections();
+  int getMaxConnections();
 
   /**
    * Get the maximum connections for this pool.
    *
    * @see PoolFactory#setIdleTimeout(long)
    */
-  public long getIdleTimeout();
+  long getIdleTimeout();
 
   /**
    * Get the ping interval for this pool.
    *
    * @see PoolFactory#setPingInterval(long)
    */
-  public long getPingInterval();
+  long getPingInterval();
 
   /**
    * Get the statistic interval for this pool.
    *
    * @see PoolFactory#setStatisticInterval(int)
    */
-  public int getStatisticInterval();
+  int getStatisticInterval();
 
   /**
    * Get the retry attempts for this pool.
    *
    * @see PoolFactory#setRetryAttempts(int)
    */
-  public int getRetryAttempts();
+  int getRetryAttempts();
 
   /**
    * Returns <code>true</code> if thread local connections are enabled on this pool.
    *
    * @see PoolFactory#setThreadLocalConnections
    */
-  public boolean getThreadLocalConnections();
+  boolean getThreadLocalConnections();
 
   /**
    * Returns the true if a server-to-client subscriptions are enabled on this pool.
    *
    * @see PoolFactory#setSubscriptionEnabled
    */
-  public boolean getSubscriptionEnabled();
+  boolean getSubscriptionEnabled();
 
   /**
    * Returns true if single-hop optimisation is enabled on this pool.
@@ -158,35 +156,35 @@ public interface Pool {
    * @see PoolFactory#setPRSingleHopEnabled
    * @since GemFire 6.5
    */
-  public boolean getPRSingleHopEnabled();
+  boolean getPRSingleHopEnabled();
 
   /**
    * Returns the subscription redundancy level of this pool.
    *
    * @see PoolFactory#setSubscriptionRedundancy
    */
-  public int getSubscriptionRedundancy();
+  int getSubscriptionRedundancy();
 
   /**
    * Returns the subscription message tracking timeout of this pool.
    *
    * @see PoolFactory#setSubscriptionMessageTrackingTimeout
    */
-  public int getSubscriptionMessageTrackingTimeout();
+  int getSubscriptionMessageTrackingTimeout();
 
   /**
    * Returns the subscription ack interval of this pool.
    *
    * @see PoolFactory#setSubscriptionAckInterval(int)
    */
-  public int getSubscriptionAckInterval();
+  int getSubscriptionAckInterval();
 
   /**
    * Returns the server group of this pool.
    *
    * @see PoolFactory#setServerGroup
    */
-  public String getServerGroup();
+  String getServerGroup();
 
   /**
    * Returns true if multiuser mode is enabled on this pool.
@@ -194,7 +192,7 @@ public interface Pool {
    * @see PoolFactory#setMultiuserAuthentication(boolean)
    * @since GemFire 6.5
    */
-  public boolean getMultiuserAuthentication();
+  boolean getMultiuserAuthentication();
 
 
   /**
@@ -204,7 +202,7 @@ public interface Pool {
    * <p>
    * If a pool has no locators then it can not discover servers or locators at runtime.
    */
-  public java.util.List<InetSocketAddress> getLocators();
+  java.util.List<InetSocketAddress> getLocators();
 
   /**
    * Returns an unmodifiable list of {@link java.net.InetSocketAddress} of the locators this pool is
@@ -214,14 +212,14 @@ public interface Pool {
    * The returned locator list may be slightly old information. If the locator does not exist, an
    * empty list is returned.
    */
-  public java.util.List<InetSocketAddress> getOnlineLocators();
+  java.util.List<InetSocketAddress> getOnlineLocators();
 
   /**
    * Returns an unmodifiable list of {@link java.net.InetSocketAddress} of the servers this pool is
    * using. These servers where either {@link PoolFactory#addServer added explicitly} when the pool
    * was created or were discovered using this pools {@link #getLocators locators}.
    */
-  public java.util.List<InetSocketAddress> getServers();
+  java.util.List<InetSocketAddress> getServers();
 
   /**
    * Destroys this pool closing any connections it produced.
@@ -230,21 +228,21 @@ public interface Pool {
    *        the timeout period
    * @throws IllegalStateException if the pool is still in use
    */
-  public void destroy(boolean keepAlive);
+  void destroy(boolean keepAlive);
 
   /**
    * Destroys this pool closing any connections it produced.
    *
    * @throws IllegalStateException if the pool is still in use
    */
-  public void destroy();
+  void destroy();
 
   /**
    * Indicates whether this Pool has been destroyed.
    *
    * @return true if the pool has been destroyed
    */
-  public boolean isDestroyed();
+  boolean isDestroyed();
 
   /**
    * If this pool was configured to to use thread local connections, then this method will release
@@ -253,7 +251,7 @@ public interface Pool {
    *
    * If this pool is not using thread local connections, this method will have no effect.
    */
-  public void releaseThreadLocalConnection();
+  void releaseThreadLocalConnection();
 
   /**
    * Returns the QueryService for this Pool. The query operations performed using this QueryService
@@ -261,7 +259,7 @@ public interface Pool {
    *
    * @return the QueryService
    */
-  public QueryService getQueryService();
+  QueryService getQueryService();
 
   /**
    * Returns the approximate number of pending subscription events maintained at server for this
@@ -291,6 +289,16 @@ public interface Pool {
    *         invocation of {@link ClientCache#readyForEvents()}.
    * @since GemFire 8.1
    */
-  public int getPendingEventCount();
+  int getPendingEventCount();
 
+  /**
+   * A server has an inactivity monitor that ensures a message is sent to a client at least once a
+   * minute (60,000 milliseconds). If a subscription timeout multipler is set in the client it
+   * enables timing out of the subscription feed with failover to another server.
+   *
+   * @see PoolFactory#setSubscriptionTimeoutMultiplier(int)
+   *
+   * @return The timeout multiplier
+   */
+  int getSubscriptionTimeoutMultiplier();
 }

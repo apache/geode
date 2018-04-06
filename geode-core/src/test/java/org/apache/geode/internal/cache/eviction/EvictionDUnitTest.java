@@ -27,7 +27,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.internal.cache.AbstractLRURegionMap;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -104,8 +103,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
       pr.put(new Integer(counter), new byte[1 * 1024 * 1024]);
     }
 
-    Assert.assertEquals(extraEntries,
-        ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics().getEvictions());
+    Assert.assertEquals(extraEntries, pr.getTotalEvictions());
   }
 
   @Test
@@ -127,8 +125,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
     for (int i = 0; i < 2; i++) {
       pr.put(new Integer(i + pr.getPartitionAttributes().getTotalNumBuckets()) * 3, "value1");
     }
-    assertEquals(0,
-        ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics().getEvictions());
+    assertEquals(0, pr.getTotalEvictions());
   }
 
   @Test
@@ -145,8 +142,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
       pr.put(new Integer(counter), new byte[1 * 1024 * 1024]);
     }
 
-    assertEquals(extraEntries,
-        ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics().getEvictions());
+    assertEquals(extraEntries, pr.getTotalEvictions());
 
     for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
       final Map.Entry entry = (Map.Entry) i.next();
@@ -184,19 +180,15 @@ public class EvictionDUnitTest extends EvictionTestBase {
       pr.put(new Integer(i), new byte[1 * 1024 * 1024]);
     }
 
-    assertTrue(
-        1 <= ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics().getEvictions());
-    assertTrue(
-        ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics().getEvictions() <= 2);
+    assertTrue(1 <= pr.getTotalEvictions());
+    assertTrue(pr.getTotalEvictions() <= 2);
 
     for (int i = 0; i < 11; i++) {
       dr.put(new Integer(i), new byte[1 * 1024 * 1024]);
     }
 
-    assertTrue(
-        1 <= ((AbstractLRURegionMap) dr.entries).getEvictionList().getStatistics().getEvictions());
-    assertTrue(
-        ((AbstractLRURegionMap) dr.entries).getEvictionList().getStatistics().getEvictions() <= 2);
+    assertTrue(1 <= dr.getTotalEvictions());
+    assertTrue(dr.getTotalEvictions() <= 2);
   }
 
   @Test

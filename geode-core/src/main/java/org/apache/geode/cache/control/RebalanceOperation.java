@@ -31,12 +31,12 @@ public interface RebalanceOperation {
   /**
    * Returns true if this operation was cancelled before it completed.
    */
-  public boolean isCancelled();
+  boolean isCancelled();
 
   /**
    * Returns true if this operation completed.
    */
-  public boolean isDone();
+  boolean isDone();
 
   /**
    * Cancels this rebalance operation. The rebalance operation will find a safe point and then stop.
@@ -44,7 +44,7 @@ public interface RebalanceOperation {
    * @return false if this operation could not be cancelled, typically because it has already
    *         completed; true otherwise
    */
-  public boolean cancel();
+  boolean cancel();
 
   /**
    * Wait for this operation to complete and return the results.
@@ -53,7 +53,7 @@ public interface RebalanceOperation {
    * @throws CancellationException if the operation was cancelled
    * @throws InterruptedException if the wait was interrupted
    */
-  public RebalanceResults getResults() throws CancellationException, InterruptedException;
+  RebalanceResults getResults() throws CancellationException, InterruptedException;
 
   /**
    * Wait for this operation to complete and return the results.
@@ -65,6 +65,6 @@ public interface RebalanceOperation {
    * @throws TimeoutException if the wait timed out
    * @throws InterruptedException if the wait was interrupted
    */
-  public RebalanceResults getResults(long timeout, TimeUnit unit)
+  RebalanceResults getResults(long timeout, TimeUnit unit)
       throws CancellationException, TimeoutException, InterruptedException;
 }

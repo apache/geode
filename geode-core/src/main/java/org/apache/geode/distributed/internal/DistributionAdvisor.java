@@ -215,15 +215,17 @@ public class DistributionAdvisor {
     this.advisee = advisee;
     this.ml = new MembershipListener() {
 
-      public void memberJoined(InternalDistributedMember id) {
+      public void memberJoined(DistributionManager distributionManager,
+          InternalDistributedMember id) {
         // Ignore
       }
 
-      public void quorumLost(Set<InternalDistributedMember> failures,
-          List<InternalDistributedMember> remaining) {}
+      public void quorumLost(DistributionManager distributionManager,
+          Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
       @SuppressWarnings("synthetic-access")
-      public void memberDeparted(final InternalDistributedMember id, boolean crashed) {
+      public void memberDeparted(DistributionManager distributionManager,
+          final InternalDistributedMember id, boolean crashed) {
         boolean shouldSync = crashed && shouldSyncForCrashedMember(id);
         final Profile profile = getProfile(id);
         boolean removed =
@@ -236,8 +238,8 @@ public class DistributionAdvisor {
         }
       }
 
-      public void memberSuspect(InternalDistributedMember id,
-          InternalDistributedMember whoSuspected, String reason) {}
+      public void memberSuspect(DistributionManager distributionManager,
+          InternalDistributedMember id, InternalDistributedMember whoSuspected, String reason) {}
 
     };
   }
@@ -374,8 +376,16 @@ public class DistributionAdvisor {
     }
   }
 
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     return getAdvisee().getDistributionManager();
+  }
+
+  /**
+   * Like getDistributionManager but does not check
+   * that the DistributedSystem is still connected
+   */
+  private DistributionManager getDistributionManagerWithNoCheck() {
+    return getAdvisee().getSystem().getDM();
   }
 
   public DistributionAdvisee getAdvisee() {
@@ -1208,10 +1218,9 @@ public class DistributionAdvisor {
     Iterator it = membershipListeners.keySet().iterator();
     while (it.hasNext()) {
       try {
-        ((MembershipListener) it.next()).memberJoined(member);
+        ((MembershipListener) it.next()).memberJoined(getDistributionManagerWithNoCheck(), member);
       } catch (Exception e) {
-        logger.fatal(
-            LocalizedMessage.create(LocalizedStrings.DistributionAdvisor_UNEXPECTED_EXCEPTION), e);
+        logger.warn("Ignoring exception during member joined listener notification", e);
       }
     }
   }
@@ -1220,10 +1229,10 @@ public class DistributionAdvisor {
     Iterator it = membershipListeners.keySet().iterator();
     while (it.hasNext()) {
       try {
-        ((MembershipListener) it.next()).memberDeparted(member, crashed);
+        ((MembershipListener) it.next()).memberDeparted(getDistributionManagerWithNoCheck(), member,
+            crashed);
       } catch (Exception e) {
-        logger.fatal(
-            LocalizedMessage.create(LocalizedStrings.DistributionAdvisor_UNEXPECTED_EXCEPTION), e);
+        logger.warn("Ignoring exception during member departed listener notification", e);
       }
     }
   }
@@ -1329,7 +1338,7 @@ public class DistributionAdvisor {
    * an arbitrary aggregator that has been passed to the {@link #visit} method. In addition this is
    * public for use by other classes.
    */
-  public static interface ProfileVisitor<T> {
+  public interface ProfileVisitor<T> {
 
     /**
      * Visit a given {@link Profile} accumulating the results in the given aggregate. Returns false
@@ -1511,15 +1520,15 @@ public class DistributionAdvisor {
 
 
   /** Filter interface */
-  protected static interface Filter {
-    public boolean include(Profile profile);
+  protected interface Filter {
+    boolean include(Profile profile);
   }
 
   /**
    * Marker interface to designate on object that serves and the unique id that identifies a
    * Profile.
    */
-  public static interface ProfileId {
+  public interface ProfileId {
   }
   /**
    * Profile information for a remote counterpart.
@@ -1611,8 +1620,8 @@ public class DistributionAdvisor {
     /**
      * Process add/remove/update of an incoming profile.
      */
-    public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
-        boolean exchangeProfiles, final List<Profile> replyProfiles) {
+    public void processIncoming(ClusterDistributionManager dm, String adviseePath,
+        boolean removeProfile, boolean exchangeProfiles, final List<Profile> replyProfiles) {
       // nothing by default; just log that nothing was done
       if (logger.isDebugEnabled()) {
         logger.debug("While processing UpdateAttributes message ignored incoming profile: {}",

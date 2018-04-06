@@ -28,7 +28,7 @@ import org.apache.geode.admin.OperationCancelledException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TransactionException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -93,6 +93,7 @@ public class FetchEntryMessage extends PartitionMessage {
     FetchEntryResponse p =
         new FetchEntryResponse(r.getSystem(), Collections.singleton(recipient), r, key);
     FetchEntryMessage m = new FetchEntryMessage(recipient, r.getPRId(), p, key, access);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
@@ -114,7 +115,7 @@ public class FetchEntryMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) throws ForceReattemptException {
     // FetchEntryMessage is used in refreshing client caches during interest list recovery,
     // so don't be too verbose or hydra tasks may time out
@@ -232,7 +233,7 @@ public class FetchEntryMessage extends PartitionMessage {
 
     /** Send an ack */
     public static void send(InternalDistributedMember recipient, int processorId,
-        EntrySnapshot value, DM dm, ReplyException re) {
+        EntrySnapshot value, DistributionManager dm, ReplyException re) {
       Assert.assertTrue(recipient != null, "FetchEntryReplyMessage NULL recipient");
       FetchEntryReplyMessage m = new FetchEntryReplyMessage(processorId, value, re);
       m.setRecipient(recipient);
@@ -245,7 +246,7 @@ public class FetchEntryMessage extends PartitionMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,

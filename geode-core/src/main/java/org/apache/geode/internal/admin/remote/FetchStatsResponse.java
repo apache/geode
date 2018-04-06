@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Statistics;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.StatisticsVisitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
@@ -40,8 +40,8 @@ public class FetchStatsResponse extends AdminResponse {
    * @param recipient the recipient who made the original request
    * @return response containing all remote stat resources
    */
-  public static FetchStatsResponse create(DM dm, InternalDistributedMember recipient,
-      final String statisticsTypeName) {
+  public static FetchStatsResponse create(DistributionManager dm,
+      InternalDistributedMember recipient, final String statisticsTypeName) {
     FetchStatsResponse m = new FetchStatsResponse();
     m.setRecipient(recipient);
     List<RemoteStatResource> statList = new ArrayList<RemoteStatResource>();

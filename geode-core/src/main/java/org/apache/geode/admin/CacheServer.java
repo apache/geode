@@ -28,7 +28,7 @@ public interface CacheServer extends SystemMember, ManagedEntity {
    * @deprecated as of 5.7 use {@link CacheVm#getVmConfig} instead.
    */
   @Deprecated
-  public CacheServerConfig getConfig();
+  CacheServerConfig getConfig();
 
   /**
    * Find whether this server is primary for given client (durableClientId)
@@ -38,6 +38,6 @@ public interface CacheServer extends SystemMember, ManagedEntity {
    *
    * @since GemFire 5.6
    */
-  public boolean isPrimaryForDurableClient(String durableClientId);
+  boolean isPrimaryForDurableClient(String durableClientId);
 
 }

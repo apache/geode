@@ -21,6 +21,6 @@ package org.apache.geode.internal.util;
  */
 public interface ObjectIntProcedure {
 
-  public boolean executeWith(Object a, int b);
+  boolean executeWith(Object a, int b);
 
 }

@@ -18,7 +18,7 @@ package org.apache.geode.management.internal;
 import java.util.Set;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -70,9 +70,9 @@ public class MemberMessenger {
 
     sendAsync(msg);
 
-    DM dm = system.getDistributionManager();
-    if (dm instanceof DistributionManager) {
-      msg.process((DistributionManager) system.getDistributionManager());
+    DistributionManager dm = system.getDistributionManager();
+    if (dm instanceof ClusterDistributionManager) {
+      msg.process((ClusterDistributionManager) system.getDistributionManager());
     }
 
 

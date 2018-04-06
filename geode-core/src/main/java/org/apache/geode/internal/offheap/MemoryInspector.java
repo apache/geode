@@ -23,18 +23,18 @@ import java.util.List;
  */
 public interface MemoryInspector {
 
-  public void clearSnapshot();
+  void clearSnapshot();
 
-  public void createSnapshot();
+  void createSnapshot();
 
-  public List<MemoryBlock> getSnapshot();
+  List<MemoryBlock> getSnapshot();
 
-  public MemoryBlock getFirstBlock();
+  MemoryBlock getFirstBlock();
 
-  public List<MemoryBlock> getAllBlocks();
+  List<MemoryBlock> getAllBlocks();
 
-  public List<MemoryBlock> getAllocatedBlocks();
+  List<MemoryBlock> getAllocatedBlocks();
 
-  public MemoryBlock getBlockAfter(MemoryBlock block);
+  MemoryBlock getBlockAfter(MemoryBlock block);
 
 }

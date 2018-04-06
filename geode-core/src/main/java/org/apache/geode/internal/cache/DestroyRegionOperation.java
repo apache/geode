@@ -30,15 +30,13 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheEvent;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -160,7 +158,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
           getSender());
     }
 
-    private Runnable destroyOp(final DistributionManager dm, final LocalRegion lclRgn,
+    private Runnable destroyOp(final ClusterDistributionManager dm, final LocalRegion lclRgn,
         final boolean sendReply) {
       return new Runnable() {
         public void run() {
@@ -271,7 +269,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
 
     /** Return true if a reply should be sent */
     @Override
-    protected void basicProcess(final DistributionManager dm, final LocalRegion lclRgn) {
+    protected void basicProcess(final ClusterDistributionManager dm, final LocalRegion lclRgn) {
       Assert.assertTrue(this.serialNum != DistributionAdvisor.ILLEGAL_SERIAL);
       try {
         this.lockRoot = null;
@@ -293,7 +291,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
       }
     }
 
-    protected LocalRegion getRegionFromPath(DistributionManager dm, String path) {
+    protected LocalRegion getRegionFromPath(ClusterDistributionManager dm, String path) {
       // allow a destroyed region to be returned if we're dealing with a
       // shared region, since another cache may
       // have already destroyed it in shared memory, in which our listeners
@@ -423,7 +421,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     }
 
     @Override
-    protected boolean operateOnRegion(CacheEvent event, DistributionManager dm)
+    protected boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
         throws EntryNotFoundException {
       Assert.assertTrue(false,
           LocalizedStrings.DestroyRegionOperation_REGION_DESTRUCTION_MESSAGE_IMPLEMENTATION_IS_IN_BASICPROCESS__NOT_THIS_METHOD

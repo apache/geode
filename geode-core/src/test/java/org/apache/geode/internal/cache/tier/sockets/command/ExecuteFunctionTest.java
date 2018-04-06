@@ -47,9 +47,10 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -101,7 +102,7 @@ public class ExecuteFunctionTest {
   @Mock
   private AcceptorImpl acceptor;
   @Mock
-  private HandShake handShake;
+  private ServerSideHandshake handshake;
   @Mock
   private InternalResourceManager internalResourceManager;
   @Mock
@@ -151,7 +152,7 @@ public class ExecuteFunctionTest {
         .thenReturn(this.functionResponseMessage);
     when(this.serverConnection.getChunkedResponseMessage()).thenReturn(this.chunkedResponseMessage);
     when(this.serverConnection.getAcceptor()).thenReturn(this.acceptor);
-    when(this.serverConnection.getHandshake()).thenReturn(this.handShake);
+    when(this.serverConnection.getHandshake()).thenReturn(this.handshake);
 
     PowerMockito.mockStatic(FunctionService.class);
     PowerMockito.when(FunctionService.getFunction(eq(FUNCTION))).thenReturn(functionObject);

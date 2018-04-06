@@ -24,9 +24,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -36,7 +35,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.RemoteOperationMessage.RemoteOperationResponse;
+import org.apache.geode.internal.cache.tx.RemoteOperationMessage.RemoteOperationResponse;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -55,7 +54,7 @@ public class TXRemoteCommitMessage extends TXMessage {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.WAITING_POOL_EXECUTOR;
+    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   public static RemoteCommitResponse send(Cache cache, int txUniqId,
@@ -72,7 +71,8 @@ public class TXRemoteCommitMessage extends TXMessage {
   }
 
   @Override
-  protected boolean operateOnTx(TXId txId, DistributionManager dm) throws RemoteOperationException {
+  protected boolean operateOnTx(TXId txId, ClusterDistributionManager dm)
+      throws RemoteOperationException {
     InternalCache cache = dm.getCache();
     TXManagerImpl txMgr = cache.getTXMgr();
 
@@ -80,16 +80,15 @@ public class TXRemoteCommitMessage extends TXMessage {
       logger.debug("TX: Committing: {}", txId);
     }
     final TXStateProxy txState = txMgr.getTXState();
-    TXCommitMessage cmsg = null;
+    TXCommitMessage commitMessage = txMgr.getRecentlyCompletedMessage(txId);
     try {
       // do the actual commit, only if it was not done before
-      if (txMgr.isHostedTxRecentlyCompleted(txId)) {
+      if (commitMessage != null) {
         if (logger.isDebugEnabled()) {
           logger.debug("TX: found a previously committed transaction:{}", txId);
         }
-        cmsg = txMgr.getRecentlyCompletedMessage(txId);
-        if (txMgr.isExceptionToken(cmsg)) {
-          throw txMgr.getExceptionForToken(cmsg, txId);
+        if (txMgr.isExceptionToken(commitMessage)) {
+          throw txMgr.getExceptionForToken(commitMessage, txId);
         }
       } else {
         // if no TXState was created (e.g. due to only getEntry/size operations
@@ -97,13 +96,14 @@ public class TXRemoteCommitMessage extends TXMessage {
         if (txState != null) {
           txState.setCommitOnBehalfOfRemoteStub(true);
           txMgr.commit();
-          cmsg = txState.getCommitMessage();
+          commitMessage = txState.getCommitMessage();
         }
       }
     } finally {
       txMgr.removeHostedTXState(txId);
     }
-    TXRemoteCommitReplyMessage.send(getSender(), getProcessorId(), cmsg, getReplySender(dm));
+    TXRemoteCommitReplyMessage.send(getSender(), getProcessorId(), commitMessage,
+        getReplySender(dm));
 
     /*
      * return false so there isn't another reply
@@ -171,6 +171,9 @@ public class TXRemoteCommitMessage extends TXMessage {
     public static void send(InternalDistributedMember recipient, int processorId,
         TXCommitMessage val, ReplySender replySender) throws RemoteOperationException {
       Assert.assertTrue(recipient != null, "TXRemoteCommitReply NULL reply message");
+      if (val != null) {
+        val.setClientVersion(null);
+      }
       TXRemoteCommitReplyMessage m = new TXRemoteCommitReplyMessage(processorId, val);
       m.setRecipient(recipient);
       replySender.putOutgoing(m);
@@ -182,7 +185,7 @@ public class TXRemoteCommitMessage extends TXMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,
@@ -267,19 +270,9 @@ public class TXRemoteCommitMessage extends TXMessage {
      * @return Object associated with the key that was sent in the get message
      */
     public TXCommitMessage waitForResponse() throws RemoteOperationException {
-      try {
-        // waitForRepliesUninterruptibly();
-        waitForCacheException();
-        if (DistributionStats.enableClockStats) {
-          getDistributionManager().getStats().incReplyHandOffTime(this.start);
-        }
-      } catch (RemoteOperationException e) {
-        final String msg = "RemoteCommitResponse got RemoteOperationException; rethrowing";
-        logger.debug(msg, e);
-        throw e;
-      } catch (TransactionDataNotColocatedException e) {
-        // Throw this up to user!
-        throw e;
+      waitForRemoteResponse();
+      if (DistributionStats.enableClockStats) {
+        getDistributionManager().getStats().incReplyHandOffTime(this.start);
       }
       return commitMessage;
     }

@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -49,8 +48,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   private final long throttleTime =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "GATEWAY_QUEUE_THROTTLE_TIME_MS", 100);
 
-  private final EvictionStatistics stats;
-
   private final ReentrantReadWriteLock initializationLock = new ReentrantReadWriteLock();
 
   private final GatewaySenderStats gatewaySenderStats;
@@ -66,7 +63,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   AbstractBucketRegionQueue(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
       InternalCache cache, InternalRegionArguments internalRegionArgs) {
     super(regionName, attrs, parentRegion, cache, internalRegionArgs);
-    this.stats = ((AbstractLRURegionMap) getRegionMap()).getLRUStatistics();
     this.gatewaySenderStats =
         this.getPartitionedRegion().getParallelGatewaySender().getStatistics();
   }
@@ -77,6 +73,8 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     return false;
   }
 
+  private final Object waitForEntriesToBeRemoved = new Object();
+
   protected void waitIfQueueFull() {
     if (maximumSize <= 0) {
       return;
@@ -85,10 +83,10 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     // Make the put block if the queue has reached the maximum size
     // If the queue is over the maximum size, the put will wait for
     // the given throttle time until there is space in the queue
-    if (stats.getCounter() > maximumSize) {
+    if (getEvictionCounter() > maximumSize) {
       try {
-        synchronized (this.stats) {
-          this.stats.wait(throttleTime);
+        synchronized (this.waitForEntriesToBeRemoved) {
+          this.waitForEntriesToBeRemoved.wait(throttleTime);
         }
       } catch (InterruptedException e) {
         // If the thread is interrupted, just continue on
@@ -99,8 +97,8 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   protected void notifyEntriesRemoved() {
     if (maximumSize > 0) {
-      synchronized (this.stats) {
-        this.stats.notifyAll();
+      synchronized (this.waitForEntriesToBeRemoved) {
+        this.waitForEntriesToBeRemoved.notifyAll();
       }
     }
   }
@@ -139,7 +137,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   }
 
   @Override
-  protected void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
+  public void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
     /**
      * We are doing local destroy on this bucket. No need to send destroy operation to remote nodes.
      */
@@ -346,7 +344,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   }
 
   @Override
-  protected void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
+  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
       Object expectedOldValue)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
     try {

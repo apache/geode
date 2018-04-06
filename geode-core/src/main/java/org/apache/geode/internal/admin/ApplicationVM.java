@@ -27,5 +27,5 @@ public interface ApplicationVM extends GemFireVM {
    *
    * @see org.apache.geode.internal.cache.CacheServerLauncher
    */
-  public boolean isDedicatedCacheServer();
+  boolean isDedicatedCacheServer();
 }

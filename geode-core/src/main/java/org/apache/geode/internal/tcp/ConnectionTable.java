@@ -42,7 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
@@ -177,7 +177,7 @@ public class ConnectionTable {
    * Returns true if calling thread owns its own communication resources.
    */
   boolean threadOwnsResources() {
-    DM d = getDM();
+    DistributionManager d = getDM();
     if (d != null) {
       return d.getSystem().threadOwnsResources() && !AlertAppender.isThreadAlerting();
     }
@@ -1123,7 +1123,7 @@ public class ConnectionTable {
     }
   }
 
-  protected DM getDM() {
+  protected DistributionManager getDM() {
     return this.owner.getDM();
   }
 
@@ -1255,9 +1255,11 @@ public class ConnectionTable {
         long now = System.currentTimeMillis();
         if (!severeAlertIssued && ackSATimeout > 0 && startTime + ackTimeout < now) {
           if (startTime + ackTimeout + ackSATimeout < now) {
-            logger.fatal(LocalizedMessage.create(
-                LocalizedStrings.ConnectionTable_UNABLE_TO_FORM_A_TCPIP_CONNECTION_TO_0_IN_OVER_1_SECONDS,
-                new Object[] {targetMember, (ackSATimeout + ackTimeout) / 1000}));
+            if (targetMember != null) {
+              logger.fatal(LocalizedMessage.create(
+                  LocalizedStrings.ConnectionTable_UNABLE_TO_FORM_A_TCPIP_CONNECTION_TO_0_IN_OVER_1_SECONDS,
+                  new Object[] {targetMember, (ackSATimeout + ackTimeout) / 1000}));
+            }
             severeAlertIssued = true;
           } else if (!suspected) {
             logger.warn(LocalizedMessage.create(

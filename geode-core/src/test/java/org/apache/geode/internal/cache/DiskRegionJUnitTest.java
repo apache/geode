@@ -44,8 +44,8 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.EvictionList;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.persistence.UninterruptibleFileChannel;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
@@ -173,9 +173,10 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
    */
   @Test
   public void testDiskRegionOverflow() throws Exception {
+    int evictionOverflowCapacity = 5;
     DiskRegionProperties props = new DiskRegionProperties();
     props.setOverflow(true);
-    props.setOverFlowCapacity(100);
+    props.setOverFlowCapacity(evictionOverflowCapacity);
     props.setDiskDirs(dirs);
     Region region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, props);
 
@@ -183,7 +184,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     assertNotNull(dr);
 
     DiskRegionStats diskStats = dr.getStats();
-    EvictionStatistics lruStats = ((LocalRegion) region).getEvictionController().getStatistics();
+    EvictionCounters lruStats = ((LocalRegion) region).getEvictionController().getCounters();
     assertNotNull(diskStats);
     assertNotNull(lruStats);
 

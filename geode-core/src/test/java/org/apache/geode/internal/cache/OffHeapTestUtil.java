@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.CacheClosedException;
@@ -25,19 +24,19 @@ import org.apache.geode.internal.offheap.MemoryBlock;
 import org.apache.geode.internal.offheap.RefCountChangeInfo;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
 
-@SuppressWarnings("deprecation")
 public class OffHeapTestUtil {
 
-  public static void checkOrphans() {
-    MemoryAllocatorImpl allocator = null;
+  public static void checkOrphans(InternalCache cache) {
+    MemoryAllocatorImpl allocator;
     try {
       allocator = MemoryAllocatorImpl.getAllocator();
     } catch (CacheClosedException ignore) {
       // no off-heap memory so no orphans
       return;
     }
+
     long end = System.currentTimeMillis() + 5000;
-    List<MemoryBlock> orphans = allocator.getOrphans();
+    List<MemoryBlock> orphans = allocator.getOrphans(cache);
 
     // Wait for the orphans to go away
     while (orphans != null && !orphans.isEmpty() && System.currentTimeMillis() < end) {
@@ -46,7 +45,7 @@ public class OffHeapTestUtil {
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
-      orphans = allocator.getOrphans();
+      orphans = allocator.getOrphans(null);
     }
 
     if (orphans != null && !orphans.isEmpty()) {
@@ -56,7 +55,7 @@ public class OffHeapTestUtil {
       System.out.println("Sample orphan: " + orphans.get(0));
       System.out.println("Orphan info: " + info);
     }
-    assertEquals(Collections.emptyList(), orphans);
-  }
 
+    assertThat(orphans).isEmpty();
+  }
 }

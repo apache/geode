@@ -26,7 +26,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.admin.remote.AdminResponse;
 
 /**
- * The response to a {@link PrepareBackupRequest} or {@link FinishBackupRequest}.
+ * The response to a {@link PrepareBackupRequest}, {@link AbortBackupRequest}, or
+ * {@link FinishBackupRequest}.
  */
 public class BackupResponse extends AdminResponse {
 

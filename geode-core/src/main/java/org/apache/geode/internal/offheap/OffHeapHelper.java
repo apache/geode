@@ -15,6 +15,7 @@
 package org.apache.geode.internal.offheap;
 
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
@@ -41,18 +42,19 @@ public class OffHeapHelper {
   }
 
   /**
-   * Just like {@link #copyIfNeeded(Object)} except that if off-heap is copied it is also released.
+   * Just like {@link #copyIfNeeded(Object, InternalCache)} except that if off-heap is copied it is
+   * also released.
    *
    * @param v If this value is off-heap then the caller must have already retained it.
    * @return the heap copy to use in place of v
    */
-  public static Object copyAndReleaseIfNeeded(@Released Object v) {
+  public static Object copyAndReleaseIfNeeded(@Released Object v, InternalCache cache) {
     if (v instanceof StoredObject) {
       @Unretained
       StoredObject ohv = (StoredObject) v;
       try {
         if (ohv.isSerialized()) {
-          return CachedDeserializableFactory.create(ohv.getSerializedValue());
+          return CachedDeserializableFactory.create(ohv.getSerializedValue(), cache);
         } else {
           // it is a byte[]
           return ohv.getDeserializedForReading();
@@ -75,12 +77,12 @@ public class OffHeapHelper {
    * @param v possible OFF_HEAP_REFERENCE
    * @return v or a heap copy of v
    */
-  public static Object copyIfNeeded(@Unretained Object v) {
+  public static Object copyIfNeeded(@Unretained Object v, InternalCache cache) {
     if (v instanceof StoredObject) {
       @Unretained
       StoredObject ohv = (StoredObject) v;
       if (ohv.isSerialized()) {
-        v = CachedDeserializableFactory.create(ohv.getSerializedValue());
+        v = CachedDeserializableFactory.create(ohv.getSerializedValue(), cache);
       } else {
         // it is a byte[]
         v = ohv.getDeserializedForReading();

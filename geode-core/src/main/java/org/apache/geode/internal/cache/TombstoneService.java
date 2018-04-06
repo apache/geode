@@ -164,7 +164,7 @@ public class TombstoneService {
 
   private TombstoneSweeper getSweeper(LocalRegion r) {
     if (r.getScope().isDistributed() && r.getServerProxy() == null
-        && r.dataPolicy.withReplication()) {
+        && r.getDataPolicy().withReplication()) {
       return this.replicatedTombstoneSweeper;
     } else {
       return this.nonReplicatedTombstoneSweeper;

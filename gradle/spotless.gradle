@@ -1,0 +1,75 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+subprojects {
+  apply plugin: "com.diffplug.gradle.spotless"
+  spotless {
+    lineEndings = 'unix'
+    java {
+      target project.fileTree(project.projectDir) {
+        include '**/*.java'
+        exclude '**/generated-src/**'
+      }
+
+      custom 'Remove commented-out import statements', {
+        it.replaceAll(/\n\/\/ import .*?;.*/, '')
+      }
+
+      custom 'End files with a single blank line', {
+        it.replaceAll(/\s+$/, '\n')
+      }
+
+      // Removes end-of-line whitespace
+      trimTrailingWhitespace()
+
+      // Enforce style import order
+      importOrderFile "${project(':geode-core').projectDir}/../etc/eclipseOrganizeImports.importorder"
+
+      // The formatter is relative to geode-core and not the root project as the root project would change
+      // if Geode and submodules are included as part of a different gradle project.
+      eclipseFormatFile "${project(':geode-core').projectDir}/../etc/eclipse-java-google-style.xml"
+
+      // Enforce style modifier order
+      custom 'Modifier ordering', {
+        def modifierRanking = [
+                public      : 1,
+                protected   : 2,
+                private     : 3,
+                abstract    : 4,
+                default     : 5,
+                static      : 6,
+                final       : 7,
+                transient   : 8,
+                volatile    : 9,
+                synchronized: 10,
+                native      : 11,
+                strictfp    : 12]
+        // Find any instance of multiple modifiers. Lead with a non-word character to avoid
+        // accidental matching against for instance, "an alternative default value"
+        it.replaceAll(/\W(?:public |protected |private |abstract |default |static |final |transient |volatile |synchronized |native |strictfp ){2,}/, {
+          // Do not replace the leading non-word character.  Identify the modifiers
+          it.replaceAll(/(?:public |protected |private |abstract |default |static |final |transient |volatile |synchronized |native |strictfp ){2,}/, {
+            // Sort the modifiers according to the ranking above
+            it.split().sort({ modifierRanking[it] }).join(' ') + ' '
+          }
+          )
+        }
+        )
+      }
+    }
+  }
+}

@@ -29,6 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionAdvisor.ProfileId;
 import org.apache.geode.internal.cache.GridAdvisor.GridProfile;
+import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -37,6 +38,7 @@ public class GridProfileTest {
   @Test
   public void shouldBeMockable() throws Exception {
     GridProfile mockGridProfile = mock(GridProfile.class);
+    InternalCache cache = Fakes.cache();
     ProfileId mockProfileId = mock(ProfileId.class);
     List<Profile> listOfProfiles = new ArrayList<>();
     listOfProfiles.add(mock(Profile.class));
@@ -48,12 +50,12 @@ public class GridProfileTest {
     mockGridProfile.setHost("host");
     mockGridProfile.setPort(2);
     mockGridProfile.tellLocalControllers(true, true, listOfProfiles);
-    mockGridProfile.tellLocalBridgeServers(true, true, listOfProfiles);
+    mockGridProfile.tellLocalBridgeServers(cache, true, true, listOfProfiles);
 
     verify(mockGridProfile, times(1)).setHost("host");
     verify(mockGridProfile, times(1)).setPort(2);
     verify(mockGridProfile, times(1)).tellLocalControllers(true, true, listOfProfiles);
-    verify(mockGridProfile, times(1)).tellLocalBridgeServers(true, true, listOfProfiles);
+    verify(mockGridProfile, times(1)).tellLocalBridgeServers(cache, true, true, listOfProfiles);
 
     assertThat(mockGridProfile.getHost()).isEqualTo("HOST");
     assertThat(mockGridProfile.getPort()).isEqualTo(1);

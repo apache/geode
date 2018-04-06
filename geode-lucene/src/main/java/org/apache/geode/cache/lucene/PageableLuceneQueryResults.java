@@ -37,26 +37,26 @@ public interface PageableLuceneQueryResults<K, V> extends Iterator<List<LuceneRe
    *
    * @return int value representing total number of hits for this query across all pages.
    */
-  public int size();
+  int size();
 
   /**
    * Returns the maximum score value across all pages.
    *
    * @return float value representing the maximum score across all the Lucene result pages.
    */
-  public float getMaxScore();
+  float getMaxScore();
 
   /**
    * Get the next page of results.
    *
    * @return a page of results, or null if there are no more pages
    */
-  public List<LuceneResultStruct<K, V>> next();
+  List<LuceneResultStruct<K, V>> next();
 
   /**
    * True if there is another page of results in PageableLuceneQueryResults.
    *
    * @return boolean value, true if another Lucene result page is present, false otherwise.
    */
-  public boolean hasNext();
+  boolean hasNext();
 }

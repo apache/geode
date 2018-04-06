@@ -19,6 +19,6 @@ package org.apache.geode.internal.statistics;
  */
 public interface StatisticsListener {
 
-  public void handleNotification(StatisticsNotification notification);
+  void handleNotification(StatisticsNotification notification);
 
 }

@@ -42,11 +42,11 @@ public class CachedDeserializableFactory {
   /**
    * Creates and returns an instance of CachedDeserializable that contains the specified byte array.
    */
-  public static CachedDeserializable create(byte[] v) {
+  public static CachedDeserializable create(byte[] v, InternalCache cache) {
     if (STORE_ALL_VALUE_FORMS) {
       return new StoreAllCachedDeserializable(v);
     } else if (PREFER_DESERIALIZED) {
-      if (isPdxEncoded(v) && cachePrefersPdx()) {
+      if (isPdxEncoded(v) && cachePrefersPdx(cache)) {
         return new PreferBytesCachedDeserializable(v);
       } else {
         return new VMCachedDeserializable(v);
@@ -68,11 +68,12 @@ public class CachedDeserializableFactory {
    * Creates and returns an instance of CachedDeserializable that contains the specified object
    * (that is not a byte[]).
    */
-  public static CachedDeserializable create(Object object, int serializedSize) {
+  public static CachedDeserializable create(Object object, int serializedSize,
+      InternalCache cache) {
     if (STORE_ALL_VALUE_FORMS) {
       return new StoreAllCachedDeserializable(object);
     } else if (PREFER_DESERIALIZED) {
-      if (object instanceof PdxInstance && cachePrefersPdx()) {
+      if (object instanceof PdxInstance && cachePrefersPdx(cache)) {
         return new PreferBytesCachedDeserializable(object);
 
       } else {
@@ -83,8 +84,8 @@ public class CachedDeserializableFactory {
     }
   }
 
-  private static boolean cachePrefersPdx() {
-    InternalCache internalCache = GemFireCacheImpl.getInstance();
+  private static boolean cachePrefersPdx(InternalCache internalCache) {
+    // InternalCache internalCache = GemFireCacheImpl.getInstance();
     return internalCache != null && internalCache.getPdxReadSerialized();
   }
 

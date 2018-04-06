@@ -21,11 +21,10 @@ import java.util.Set;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 
 /**
@@ -42,7 +41,7 @@ import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
  * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails
  * @since GemFire 7.0
  */
-public class ListDiskStoresFunction extends FunctionAdapter implements InternalEntity {
+public class ListDiskStoresFunction implements InternalFunction {
 
   @SuppressWarnings("unused")
   public void init(final Properties props) {}
@@ -73,5 +72,4 @@ public class ListDiskStoresFunction extends FunctionAdapter implements InternalE
       context.getResultSender().sendException(e);
     }
   }
-
 }

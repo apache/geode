@@ -23,7 +23,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.QueryException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -96,7 +96,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
    */
   public static void schedule(final PartitionedRegion pr) {
     if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRSanityCheckEnabled")) {
-      final DM dm = pr.getDistributionManager();
+      final DistributionManager dm = pr.getDistributionManager();
       // RegionAdvisor ra = pr.getRegionAdvisor();
       // final Set recipients = ra.adviseAllPRNodes();
       DistributedRegion prRoot =
@@ -110,8 +110,10 @@ public class PRSanityCheckMessage extends PartitionMessage {
       }
       final PRSanityCheckMessage delayedInstance =
           new PRSanityCheckMessage(recipients, pr.getPRId(), null, pr.getRegionIdentifier());
+      delayedInstance.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       PRSanityCheckMessage instance =
           new PRSanityCheckMessage(recipients, pr.getPRId(), null, pr.getRegionIdentifier());
+      instance.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       dm.putOutgoing(instance);
       int sanityCheckInterval = Integer
           .getInteger(DistributionConfig.GEMFIRE_PREFIX + "PRSanityCheckInterval", 5000).intValue();
@@ -138,7 +140,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
   }
 
   /**
@@ -148,12 +150,12 @@ public class PRSanityCheckMessage extends PartitionMessage {
    * @param dm the distribution manager to use
    */
   @Override
-  public void process(DistributionManager dm) {
+  public void process(ClusterDistributionManager dm) {
     PartitionedRegion.validatePRID(getSender(), this.regionId, this.regionName);
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime)
       throws CacheException, QueryException, ForceReattemptException, InterruptedException {
     return false;

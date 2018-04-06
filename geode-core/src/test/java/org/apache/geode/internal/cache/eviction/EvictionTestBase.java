@@ -40,7 +40,6 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.cache.AbstractLRURegionMap;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -114,8 +113,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
 
         WaitCriterion wc = new WaitCriterion() {
           public boolean done() {
-            final long currentEvictions = ((AbstractLRURegionMap) region.entries).getEvictionList()
-                .getStatistics().getEvictions();
+            final long currentEvictions = region.getTotalEvictions();
             if (Math.abs(currentEvictions - noOfExpectedEvictions) <= 1) { // Margin of error is 1
               return true;
             } else if (currentEvictions > noOfExpectedEvictions) {
@@ -126,8 +124,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
 
           public String description() {
             return "expected " + noOfExpectedEvictions + " evictions, but got "
-                + ((AbstractLRURegionMap) region.entries).getEvictionList().getStatistics()
-                    .getEvictions();
+                + region.getTotalEvictions();
           }
         };
         Wait.waitForCriterion(wc, 60000, 1000, true);
@@ -396,8 +393,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
               .info("FINAL bucket= " + bucketRegion.getFullPath() + "size= " + bucketRegion.size());
         }
 
-        return new Long(
-            ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics().getEvictions());
+        return pr.getTotalEvictions();
       }
     };
     long evictionsInVM1 = (Long) dataStore1.invoke(validate);
@@ -457,8 +453,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
     final SerializableCallable validate = new SerializableCallable("Validate evictions") {
       public Object call() throws Exception {
         final PartitionedRegion pr = (PartitionedRegion) cache.getRegion(regionName);
-        return new Long(
-            ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics().getEvictions());
+        return pr.getTotalEvictions();
       }
     };
     long evictionsInVM1 = (Long) dataStore3.invoke(validate);

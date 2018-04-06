@@ -15,14 +15,13 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 @Experimental
-public abstract class JdbcCliFunction<T1, T2> implements Function<T1>, InternalEntity {
+public abstract class JdbcCliFunction<T1, T2> implements InternalFunction<T1> {
 
   private final FunctionContextArgumentProvider argumentProvider;
   private final ExceptionHandler exceptionHandler;

@@ -30,7 +30,6 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher.GatewayAck;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -171,8 +170,6 @@ public class GatewaySenderBatchOp {
         this.failed = false;
         this.timedOut = true;
         throw ste;
-      } catch (Exception e) {
-        throw e;
       }
     }
 
@@ -202,7 +199,7 @@ public class GatewaySenderBatchOp {
         }
 
         try {
-          msg.recv();
+          msg.receive();
         } finally {
           msg.unsetComms();
           processSecureBytes(cnx, msg);

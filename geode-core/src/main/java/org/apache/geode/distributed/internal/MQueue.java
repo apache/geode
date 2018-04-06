@@ -25,6 +25,6 @@ public interface MQueue extends BlockingQueue {
   /**
    * Signals the semaphore on which this queue is waiting.
    */
-  public void wakeUp();
+  void wakeUp();
 
 }

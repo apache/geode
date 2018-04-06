@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 
 import java.util.Properties;
 
@@ -26,7 +26,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * Test all the PartitionedRegion api calls when ConserveSockets is set to false
  *
  * @since GemFire 5.0
- * @see org.apache.geode.distributed.DistributedSystem#setThreadsSocketPolicy(boolean)
  */
 @Category(DistributedTest.class)
 public class PartitionedRegionAPIConserveSocketsFalseDUnitTest
@@ -34,8 +33,8 @@ public class PartitionedRegionAPIConserveSocketsFalseDUnitTest
 
   @Override
   public Properties getDistributedSystemProperties() {
-    Properties ret = new Properties();
-    ret.setProperty(CONSERVE_SOCKETS, "false");
-    return ret;
+    Properties config = new Properties();
+    config.setProperty(CONSERVE_SOCKETS, "false");
+    return config;
   }
 }

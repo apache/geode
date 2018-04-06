@@ -14,9 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
@@ -34,18 +37,18 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.RegionCommandsUtils;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -54,7 +57,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  *
  * @since GemFire 7.0
  */
-public class RegionCreateFunction implements Function, InternalEntity {
+public class RegionCreateFunction implements InternalFunction {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -78,7 +81,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
 
     RegionFunctionArgs regionCreateArgs = (RegionFunctionArgs) context.getArguments();
 
-    if (regionCreateArgs.isSkipIfExists()) {
+    if (regionCreateArgs.isIfNotExists()) {
       Region<Object, Object> region = cache.getRegion(regionCreateArgs.getRegionPath());
       if (region != null) {
         resultSender.lastResult(new CliFunctionResult(memberNameOrId, true,
@@ -115,7 +118,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
     } catch (Exception e) {
       String exceptionMsg = e.getMessage();
       if (exceptionMsg == null) {
-        exceptionMsg = CliUtil.stackTraceAsString(e);
+        exceptionMsg = ExceptionUtils.getStackTrace(e);
       }
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
     }
@@ -182,23 +185,34 @@ public class RegionCreateFunction implements Function, InternalEntity {
     // Expiration attributes
     final RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime =
         regionCreateArgs.getEntryExpirationIdleTime();
-    if (entryExpirationIdleTime != null) {
-      factory.setEntryIdleTimeout(entryExpirationIdleTime.convertToExpirationAttributes());
+    if (entryExpirationIdleTime.isTimeOrActionSet()) {
+      factory.setEntryIdleTimeout(entryExpirationIdleTime.getExpirationAttributes());
     }
+
+    if (regionCreateArgs.getEntryIdleTimeCustomExpiry() != null) {
+      factory.setCustomEntryIdleTimeout(
+          regionCreateArgs.getEntryIdleTimeCustomExpiry().newInstance(cache));
+    }
+
+    if (regionCreateArgs.getEntryTTLCustomExpiry() != null) {
+      factory
+          .setCustomEntryTimeToLive(regionCreateArgs.getEntryTTLCustomExpiry().newInstance(cache));
+    }
+
     final RegionFunctionArgs.ExpirationAttrs entryExpirationTTL =
         regionCreateArgs.getEntryExpirationTTL();
-    if (entryExpirationTTL != null) {
-      factory.setEntryTimeToLive(entryExpirationTTL.convertToExpirationAttributes());
+    if (entryExpirationTTL.isTimeOrActionSet()) {
+      factory.setEntryTimeToLive(entryExpirationTTL.getExpirationAttributes());
     }
     final RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime =
         regionCreateArgs.getRegionExpirationIdleTime();
-    if (regionExpirationIdleTime != null) {
-      factory.setRegionIdleTimeout(regionExpirationIdleTime.convertToExpirationAttributes());
+    if (regionExpirationIdleTime.isTimeOrActionSet()) {
+      factory.setRegionIdleTimeout(regionExpirationIdleTime.getExpirationAttributes());
     }
     final RegionFunctionArgs.ExpirationAttrs regionExpirationTTL =
         regionCreateArgs.getRegionExpirationTTL();
-    if (regionExpirationTTL != null) {
-      factory.setRegionTimeToLive(regionExpirationTTL.convertToExpirationAttributes());
+    if (regionExpirationTTL.isTimeOrActionSet()) {
+      factory.setRegionTimeToLive(regionExpirationTTL.getExpirationAttributes());
     }
 
     EvictionAttributes evictionAttributes = regionCreateArgs.getEvictionAttributes();
@@ -270,14 +284,13 @@ public class RegionCreateFunction implements Function, InternalEntity {
     }
 
     // Set plugins
-    final Set<String> cacheListeners = regionCreateArgs.getCacheListeners();
+    final Set<ClassName<CacheListener>> cacheListeners = regionCreateArgs.getCacheListeners();
     if (cacheListeners != null && !cacheListeners.isEmpty()) {
-      for (String cacheListener : cacheListeners) {
-        Class<CacheListener<K, V>> cacheListenerKlass =
-            CliUtil.forName(cacheListener, CliStrings.CREATE_REGION__CACHELISTENER);
-        factory.addCacheListener(
-            CliUtil.newInstance(cacheListenerKlass, CliStrings.CREATE_REGION__CACHELISTENER));
+      List<CacheListener<K, V>> newListeners = new ArrayList<>();
+      for (ClassName<CacheListener> cacheListener : cacheListeners) {
+        newListeners.add(cacheListener.newInstance(cache));
       }
+      factory.initCacheListeners(newListeners.toArray(new CacheListener[0]));
     }
 
     // Compression provider
@@ -288,20 +301,14 @@ public class RegionCreateFunction implements Function, InternalEntity {
           CliUtil.newInstance(compressorKlass, CliStrings.CREATE_REGION__COMPRESSOR));
     }
 
-    final String cacheLoader = regionCreateArgs.getCacheLoader();
+    final ClassName<CacheLoader> cacheLoader = regionCreateArgs.getCacheLoader();
     if (cacheLoader != null) {
-      Class<CacheLoader<K, V>> cacheLoaderKlass =
-          CliUtil.forName(cacheLoader, CliStrings.CREATE_REGION__CACHELOADER);
-      factory.setCacheLoader(
-          CliUtil.newInstance(cacheLoaderKlass, CliStrings.CREATE_REGION__CACHELOADER));
+      factory.setCacheLoader(cacheLoader.newInstance(cache));
     }
 
-    final String cacheWriter = regionCreateArgs.getCacheWriter();
+    final ClassName<CacheWriter> cacheWriter = regionCreateArgs.getCacheWriter();
     if (cacheWriter != null) {
-      Class<CacheWriter<K, V>> cacheWriterKlass =
-          CliUtil.forName(cacheWriter, CliStrings.CREATE_REGION__CACHEWRITER);
-      factory.setCacheWriter(
-          CliUtil.newInstance(cacheWriterKlass, CliStrings.CREATE_REGION__CACHEWRITER));
+      factory.setCacheWriter(cacheWriter.newInstance(cache));
     }
 
     // If a region path indicates a sub-region,

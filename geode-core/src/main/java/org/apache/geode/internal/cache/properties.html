@@ -112,7 +112,7 @@ with random port selection.
 <p>
 See <code>org.apache.geode.internal.AvailablePort#isPortAvailable</code>.
 <p>
-When establishing a JGroups locator, this sets the <code>SO_TIMEOUT</code>
+When establishing a locator, this sets the <code>SO_TIMEOUT</code>
 characteristic on the UDP port that we attempt to test.
 <p>
 Units are in milliseconds.
@@ -277,10 +277,10 @@ This is the TCP accept backlog for the acceptor thread's listening socket.
 <p>
 <em>Integer</em> (default is 59000)
 <p>
-See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl#handShakeTimeout</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl#handshakeTimeout</code>.
 <p>
 <pre>
-  Test value for handshake timeout
+  Test value for handshake timeout.  Note the capital S in "handShakeTimeout".
 </pre>
 <p>
 Units are in milliseconds.
@@ -337,20 +337,6 @@ Enables logging for this class.
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>DistributionManager.DEBUG_JAVAGROUPS</strong></dt>
-<dd>
-<em>Public:</em> yes (general debugging)
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager</code>.
-<p>
-See <code>com.gemstone.org.jgroups.stack.Protocol#trace/<code>.
-<p>
-Enables JGroups-package debug logging.
-</dd>
-
-<!-- -------------------------------------------------------  -->
 <dt><strong>DistributionManager.DISCONNECT_WAIT</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -391,26 +377,6 @@ See <code>org.apache.geode.distributed.internal.DistributionManager#INCOMING_QUE
 TBA
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>DistributionManager.JAVAGROUPS_CONFIG</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>String</em>
-<p>
-If multicast is enabled, the default is org/apache/geode/distributed/internal/javagroups-mcast.txt.
-<p>
-If multicast is not enabled, the default is org/apache/geode/distributed/internal/javagroups-config.txt.
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-<pre>
-   The system property that specifies the name of a file from which to read
-   Jgroups configuration information
-</pre>
-<p>
-TBA
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>DistributionManager.MAX_FE_THREADS</strong></dt>
@@ -635,7 +601,7 @@ Enables certain additional (fine-level?) logging.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#VERBOSE_VIEWS</code>.
+See <code>org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager#VERBOSE_VIEWS</code>.
 <p>
 Enables additional info-level logging
 (see <code>#addShunnedMember</code> and <code>#addSurpriseMember</code>).
@@ -829,30 +795,18 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>JGroups.SHUN_SUNSET</strong></dt>
+<dt><strong>gemfire.shunned-member-timeout</strong></dt>
 <dd>
 <em>Public:</em> false
 <p>
 <em>Integer</em> (default is 90)
 <p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#isShunned</code>.
+See <code>org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager#isShunned</code>.
 <p>
 This is the length of time during which incoming messages from a departed peer
 are regarded as out-of-order messages and are hence ignored (shunned).
 <p>
 Units are in seconds.
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>Locator.forceAdminDMType</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.InternalLocator#FORCE_ADMIN_DM_TYPE</code>.
-<p>
-No longer exists as of 7.0.
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -945,22 +899,6 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>bind.address</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>String</em> (See <code>InetAddress.getByName</code>)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.FD_SOCK#setProperties(Properties)</code>.
-<p>
-See <code>com.gemstone.org.jgroups.protocols.MPING#setProperties(Properties)</code>.
-<p>
-See <code>com.gemstone.org.jgroups.protocols.TP#setProperties(Properties)</code>.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
 <dt><strong>java.util.concurrent.NanoTimerProvider</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -1025,32 +963,6 @@ TBA
 <em>Boolean</em> (default is false)
 <p>
 See <code>org.apache.geode.distributed.internal.DistributionAdvisor#disabled</code>.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>enable_canonicalization</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>com.gemstone.org.jgroups.Message#DISABLE_CANONICALIZATION</code>.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>force.properties</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>String</em>
-<p>
-See <code>com.gemstone.org.jgroups.conf.ConfiguratorFactory class init</code>.
-<p>
-A JGroups configuration string?
 <p>
 TBA
 </dd>
@@ -1532,25 +1444,6 @@ See <code>org.apache.geode.internal.cache.LocalRegion#EXPIRY_UNITS_MS</code>.
 TBA
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>gemfire.FD_TIMEOUT</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Long</em> (default is 0)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-If <code>gemfire.useFD</code> is true or this property's value is non-zero,
-the <code>FD</code> protocol is inserted on the JGroups stack.
-<p>
-Furthermore, the <code>MEMBER_TIMEOUT</code> string is substituted with this
-value in the JGroups default config, which in turn sets the
-<code>timeout</code> property in the <code>VERIFY_SUSPECT</code> protocol,
-which otherwise defaults to 2000 milliseconds.
-<p>
-TBA
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.IDLE_THREAD_TIMEOUT</strong></dt>
@@ -1577,6 +1470,23 @@ See <code>org.apache.geode.internal.cache.CacheServerLauncher.#isDedicatedCacheS
 <p>
 Tell admin API whether the member is a dedicated cache server
 </dd>
+
+<!-- -------------------------------------------------------  -->
+    <dt><strong>gemfire.locator-load-imbalance-threshold</strong></dt>
+    <dd>
+        <em>Public:</em> true
+        <p>
+            <em>Float</em> (default is 10.0)
+        <p>
+            See <code>org.apache.geode.distributed.internal.LocatorLoadSnapshot</code>
+        <p>
+            Sets the connection count threshold for rebalancing clients.  When a
+        client asks the locator whether it should switch to a less loaded server
+        the locator will respond "no" if the connection-count gap between the
+        highest-loaded server and the least-loaded server is within this threshold.
+        If the threshold is reached the locator will aggressivley reassign clients
+        until balance is re-established.
+    </dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.memoryEventTolerance</strong></dt>
@@ -1802,23 +1712,6 @@ See <code>org.apache.geode.internal.cache.partitioned.RegionAdvisor#VOLUNTERING_
 TBA
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>gemfire.VIEW_BUNDLING_WAIT_TIME</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Integer</em> (default is 150)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.pbcast.GMS#BUNDLE_WAITTIME</code>.
-<p>
-<pre>
-     GemStoneAddition - amount of time to wait for additional join/leave
-     requests before processing.  Set gemfire.VIEW_BUNDLING_WAIT_TIME to
-     the number of milliseconds.  Defaults to 150ms.
-</pre>
-<p>
-TBA
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.VM_OWNERSHIP_WAIT_TIME</strong></dt>
@@ -1975,18 +1868,6 @@ When set to false, avoid query execution during CQ when initial results are not 
 <em>Boolean</em> (default is false)
 <p>
 See <code>org.apache.geode.internal.SharedLibrary#getName</code>.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>gemfire.debug-frag2</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.FRAG2#DEBUG_FRAG2</code>.
 <p>
 TBA
 </dd>
@@ -2153,23 +2034,6 @@ See java.lang.management.ThreadMXBean
 for more information.
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>gemfire.fast-member-timeout</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Integer</em> (default is 1000)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.VERIFY_SUSPECT#suspect</code>.
-<p>
-<pre>
-  artificially age the entry for faster processing
-</pre>
-<p>
-Units are in milliseconds.
-<p>
-TBA
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.gateway-conserve-sockets-allowed</strong></dt>
@@ -2290,17 +2154,6 @@ Causes the code used by gfsh to launch a server or locator to install
 signal handlers using sun.misc.Signal.
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>gemfire.lightLocators</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.internal.gui.RemoteCommandManager#getLocatorStart</code>.
-<p>
-Adds the "-lightweight" argument when creating the locator.
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.loadLibrary.debug</strong></dt>
@@ -2342,7 +2195,7 @@ See <code>org.apache.geode.internal.gui.RemoteCommandManager#getLocatorStart</co
 See <code>org.apache.geode.internal.gui.StartStopManager#startLocalLocator</code>.
 <p>
 A JVM property, esp. "-Xmx400m"
-<p>
+</p>
 TBA
 </dd>
 
@@ -2497,21 +2350,8 @@ TBA
 <p>
 <pre>
    This property limits the number of threads that the locator will
-	use for processing gossip messages and server location
-	requests.
+	use for processing messages.
 </pre>
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>gemfire.useFD</strong></dt>
-<dd>
-<em>Public:</em> true
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 TBA
 </dd>
@@ -2568,10 +2408,12 @@ See <code>org.apache.geode.distributed.DistributedSystem#PROPERTY_FILE</code>.
      system path then the above search is done.  If it is an absolute
      file system path then that file must exist; no search for it is
      done.
+     </p>
      @since GemFire 5.0
 </pre>
 <p>
 TBA
+</p>
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2661,22 +2503,6 @@ are saved a close.
 TBA
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>ignore.bind.address</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.MPING#setProperties(Properties)</code>.
-<p>
-See <code>com.gemstone.org.jgroups.util.Util#isBindAddressPropertyIgnored</code>.
-<p>
-If <code>true</code>, the value of the
-<code>bind.address</code> property is ignored.
-<p>
-This is used in MPING, FD_SOCK, and TP.
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>install</strong></dt>
@@ -2690,52 +2516,6 @@ See <code>org.apache.geode.internal.gui.NavigationPane#NavigationPane()</code>.
 See <code>org.apache.geode.internal.gui.Service#Service()</code>.
 <p>
 TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>java.net.preferIPv6Addresses</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>com.gemstone.org.jgroups.util.Util#getFirstNonLoopbackAddress</code>.
-<p>
-TBA
-<p>
-Is this a standard Java property?
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>jboss.partition.udpGroup</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>String</em> (See <code>InetAddress.getByName</code>)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.UDP#setProperties</code>.
-<p>
-<pre>
-  The multicast address used for sending and receiving packets 
-</pre>
-If you manage to get here without setting mcast_addr_name, the default
-is 228.8.8.8.
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>jboss.partition.udpPort</strong></dt>
-<em>Integer</em>
-<p>
-See <code>com.gemstone.org.jgroups.protocols.UDP#setProperties</code>.
-<dd>
-<em>Public:</em> false
-<p>
-<p>
-<pre>
-  The multicast port used for sending and receiving packets
-</pre>
-<p>
-If you manage to get here without setting mcast_port, the default value is 7600.
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2766,19 +2546,6 @@ Units are in seconds.
 TBA Is this a standard JTA property?
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>local_addr.timeout</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Long</em> (default is 30000)
-<p>
-See <code>com.gemstone.org.jgroups.JChannel#LOCAL_ADDR_TIMEOUT</code>.
-<p>
-Units are in milliseconds.
-<p>
-TBA
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>mergelogs.TRIM_TIMESTAMPS</strong></dt>
@@ -2833,18 +2600,6 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>p2p.DEBUG_FAIL_FIRST</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.pbcast.ClientGmsImpl#join(Address)</code>.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
 <dt><strong>p2p.VERBOSE</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -2852,20 +2607,6 @@ TBA
 <em>Boolean</em> (default is false)
 <p>
 See <code>org.apache.geode.internal.tcp.TCPConduit#QUIET</code>.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.ackSenderThread</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.UNICAST#start</code>.
-<p>
-Creates an <code>AckSender</code> thread.
 <p>
 TBA
 </dd>
@@ -2904,17 +2645,10 @@ TBA
 <dd>
 <em>Public:</em> false
 <p>
-<em>Long</em> in JGroups, <em>Integer</em> in Connection.
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code> (default is 20).
+<em>Integer</em> in Connection.
 <p>
 See <code>org.apache.geode.internal.tcp.Connection#BATCH_FLUSH_MS</code>.
 (Default is 50)
-<p>
-Replaces <code>BUNDLING_TIMEOUT</code> in the JGroups config template.
-This in turn sets the <code>max_bundle_timeout</code> property in the
-<code>TP</code> JGroups protocol:
-<p>
 <pre>
     Max number of milliseconds until queued messages are sent. Messages are
     sent when max_bundle_size or
@@ -2932,18 +2666,6 @@ TBA
 <em>Boolean</em> (default is false)
 <p>
 See <code>org.apache.geode.internal.tcp.Connection#BATCH_SENDS</code>.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.debugConnect</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 TBA
 </dd>
@@ -2980,64 +2702,6 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>p2p.directAckTimeout</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Integer</em> (default is 15000)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.DirAck#DIRACK_TIMEOUT</code>.
-<p>
-<pre>
-  warning timer period for log message while waiting for acks
-</pre>
-<p>
-Units are in milliseconds.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.disableBatching</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-If true, sets <code>ENABLE_BUNDLING</code> to false and
-<code>BUNDLING_TIMEOUT</code> to 30 in the JGroups config template; otherwise
-it sets <code>ENABLE_BUNDLING</code> to true and <code>BUNDLING_TIMEOUT</code>
-to <code>p2p.batchFlushTime</code> (30 if not set).
-<p>
-<code>ENABLE_BUNDLING</code> maps to the <code>enable_bundling</code> property
-in <code>UDP</code>, and <code>BUNDLING_TIMEOUT</code> maps to the 
-<code>max_bundle_timeout</code> property in <code>UDP</code>.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.disableDirAckBypass</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (defaults to false)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.DirAck#DIRACK_BYPASS</code>.
-<p>
-See <code>com.gemstone.org.jgroups.protocols.TP#dirackBypass</code>.
-<p>
-<pre>
-   set -Dp2p.disableDirAckBypass=true to disengage bypassing most of the stack
-   on outgoing messages
-</pre>
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
 <dt><strong>p2p.disableSocketWrite</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -3061,102 +2725,10 @@ TBA
 <p>
 <em>Integer</em> (default is 3000)
 <p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#destroyMember</code>.
+See <code>org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager#destroyMember</code>.
 <p>
 TBA Workaround for bug 34010: small pause inserted before closing
 reader threads for a departed member.
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.discoveryProbes</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Integer</em> (default is 2)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-This substitutes the <code>NUM_PING_REQUESTS</code> field in the JGroups
-config template, which in turn sets the <code>num_ping_requests</code> property
-in the <code>Discovery</code> protocol.
-<p>
-<pre>
-Number of GET_MBRS_REQ messages to be sent (min=1), distributed over timeout ms
-</pre>
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.discoveryTimeout</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Long</em> (default is 1000)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-Sets the <code>DISCOVERY_TIMEOUT</code> field in the JGroups template, which
-in turn sets the <code>timeout</code> property in the <code>Discovery</code>
-protocol.
-<p>
-Units are in milliseconds.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.enableInitialCoordinator</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-See <code>com.gemstone.org.jgroups.protocols.pbcast.GMS#setProperties</code>.
-<p>
-The boolean inverse of this property substitutes <code>DISABLE_COORD</code> in
-the JGroups template file, which in turn sets the
-<code>disable_initial_coord property</code> in <code>pbcast.GMS</code>.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.enableJgStackStats</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#enableJgStackStats</code>.
-<p>
-<pre>
-  whether time-based statistics should be gathered for up/down events
-</pre>
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.enableUcastFlush</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#DISABLE_UCAST_FLUSH</code>.
-<p>
-Regarding the <code>DISABLE_UCAST_FLUSH = !Boolean.getBoolean()</code>:
-<pre>
-      Sometimes the jgroups channel is blocked until unicast messages
-      are all ack'd.  This boolean disables that blocking and can
-      increase performance in situations where it's okay to deliver
-      point-to-point and multicast messages out of order
-</pre>
-<p>
-TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -3181,35 +2753,18 @@ TBA
 See <code>org.apache.geode.internal.tcp</code>.
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.incomingPacketHandler</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-Substitutes <code>INCOMING_PACKET_HANDLER</code> in the JGroups template
-string, which in turn sets the <code>use_incoming_packet_handler</code>
-property in <code>UDP</code>.
-<p>
-If set, a separate thread is used to collect incoming UDP messages and to
-dispatch JGroups events.
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>p2p.joinTimeout</strong></dt>
 <dd>
 <em>Public:</em> false
 <p>
-<em>Long</em> (default is 10000)
+<em>Long</em> (default is 60000 for a server and 24000 for a locator)
 <p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.gms.ServiceConfig</code>.
 <p>
-Sets the <code>JOIN_TIMEOUT</code> field in the JGroups config template, which
-in turn sets the <code>join_timeout</code> property in the
-<code>pbcast.GMS protocol</code>.
+    Establishes the timeout for waiting for a join response when connecting to
+    the cluster
 <p>
 Units are in milliseconds.
 <p>
@@ -3280,27 +2835,6 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>p2p.maxSentMsgsSize</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Long</em> (default is 100000)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-This substitutes the <code>MAX_SENT_MSGS_SIZE</code> field in the JGroups
-config template, which in turn sets the <code>max_sent_msgs_size</code>
-property in the <code>pbcast.NAKACK</code> protocol.
-<p>
-<pre>
-  maximum number of sent messages
-</pre>
-<p>
-This controls uncontrolled backlog (memory growth) in the NAKACK JGroups
-protocol layer (this is a GemStone addition).
-</dd>
-
-<!-- -------------------------------------------------------  -->
 <dt><strong>p2p.nodirectBuffers</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -3316,25 +2850,6 @@ See <code>org.apache.geode.internal.tcp.TCPConduit#useDirectBuffers</code>.
 TBA
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.numInitialMembers</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Integer</em> (default is 1)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-This substitutes the <code>NUM_INITIAL_MEMBERS</code> string in the JGroups
-config template, which in turn sets the <code>num_initial_members</code>
-property in the <code>PING</code> protocol.
-<p>
-<pre>
-  the minimum number of initial members for a FIND_INITAL_MBRS, default is 2
-</pre>
-<p>
-TBA
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>p2p.oldIO</strong></dt>
@@ -3349,23 +2864,6 @@ If set, don't use java.nio.
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>p2p.outgoingPacketHandler</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-Sets <code>OUTGOING_PACKET_HANDLER</code> in the JGroups config template,
-which in turn sets the <code>use_outgoing_packet_handler</code> property in
-<code>UDP</code>.
-<p>
-If set, JGroups uses a separate thread to manage outgoing messages and
-related events.
-</dd>
-
-<!-- -------------------------------------------------------  -->
 <dt><strong>p2p.readerBufferSize</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -3377,78 +2875,6 @@ See <code>org.apache.geode.internal.tcp.Connection#INITIAL_CAPACITY</code>.
 TBA
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.retransmissionAcks</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>com.gemstone.org.jgroups.protocols.DirAck#ALWAYS_RELEASE</code>.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.simulateDiscard</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-If true, inserts a <code>DISCARD</code> protocol into the JGroups stack.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.simulateDiscard.received</strong></dt>
-<em>Double</em> (between 0 and 1, default is 0)
-<p>
-<dd>
-<em>Public:</em> false
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-Sets the <code>up</code> property in the JGroups <code>DISCARD</code> protocol.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.simulateDiscard.sent</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Double</em> (between 0 and 1, default is 0.05)
-<p>
-See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
-<p>
-Sets the <code>down</code> property in the JGroups <code>DISCARD</code>
-protocol.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.socket_timeout</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Long</em> (default is 60000)
-<p>
-See org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel.
-<p>
-Substitutes the <code>SOCKET_TIMEOUT</code> field in the JGroups config
-template, which in turn sets the <code>socket_timeout</code> field in the
-<code>DirAck</code> protocol.
-<p>
-Units are in milliseconds.
-<p>
-TBA 
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>p2p.tcpBufferSize</strong></dt>
@@ -3492,20 +2918,6 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>persist.properties</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>String</em>
-<p>
-See com.gemstone.org.jgroups.persistence.DBPersistenceManager#DBPersistenceManager(String).
-<p>
-This is the name of a file that is read when an instance is created.
-<p>
-Note: this class is not used by GemFire. 
-</dd>
-
-<!-- -------------------------------------------------------  -->
 <dt><strong>query.disableIndexes</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -3546,38 +2958,6 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>resolve.dns</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See com.gemstone.org.jgroups.stack.IpAddress class init.
-<p>
-See com.gemstone.org.jgroups.util.Util class init.
-<p>
-If set to true, InetAddress's may be printed by JGroups using getHostName instead of getHostAddress.
-<p>
-TBA 
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>scheduler.max.threads</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Integer</em> (default 128)
-<p>
-See com.gemstone.org.jgroups.util.Scheduler#Scheduler().
-<p>
-<pre>
-      max number of threads, will only be allocated when needed
-</pre>
-<p>
-TBA Is this class even used? 
-</dd>
-
-<!-- -------------------------------------------------------  -->
 <dt><strong>skipConnection</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -3585,7 +2965,7 @@ TBA Is this class even used?
 <em>Boolean</em> (default is false)
 <p>
 Removed in Geode 1.0 with removal of deprecated Bridge classes.
-<p>
+</p>
 TBA 
 </dd>
 
@@ -3890,7 +3270,7 @@ default keystore password.  See the JSSE documentation.
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strongjavax.net.ssl.trustStore></strong></dt>
+<dt><strong>javax.net.ssl.trustStore></strong></dt>
 <dd>
 <em>Public:</em> false
 <p>

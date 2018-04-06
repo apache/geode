@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -56,6 +57,7 @@ public class ConnectCommandTest {
   private ConnectCommand connectCommand;
   private Gfsh gfsh;
   private CommandResult result;
+  private OperationInvoker operationInvoker;
   private Properties properties;
   private ArgumentCaptor<File> fileCaptor;
 
@@ -63,12 +65,13 @@ public class ConnectCommandTest {
   public void before() throws Exception {
     properties = new Properties();
     gfsh = mock(Gfsh.class);
-    when(gfsh.getOperationInvoker()).thenReturn(mock(OperationInvoker.class));
+    operationInvoker = mock(OperationInvoker.class);
+    when(gfsh.getOperationInvoker()).thenReturn(operationInvoker);
     // using spy instead of mock because we want to call the real method when we do connect
     connectCommand = spy(ConnectCommand.class);
     when(connectCommand.getGfsh()).thenReturn(gfsh);
     doReturn(properties).when(connectCommand).loadProperties(any());
-    CommandResult result = mock(CommandResult.class);
+    result = mock(CommandResult.class);
     when(connectCommand.httpConnect(any(), any(), anyBoolean())).thenReturn(result);
     when(connectCommand.jmxConnect(any(), anyBoolean(), any(), any(), anyBoolean()))
         .thenReturn(result);
@@ -296,5 +299,37 @@ public class ConnectCommandTest {
     assertThat(properties).hasSize(9);
     assertThat(properties.getProperty(SSL_KEYSTORE)).isEqualTo("keystore2");
     assertThat(properties.getProperty(SSL_KEYSTORE_PASSWORD)).isEqualTo("password");
+  }
+
+  @Test
+  public void connectToManagerWithDifferentVersion() {
+    when(gfsh.getVersion()).thenReturn("1.2");
+    when(operationInvoker.getRemoteVersion()).thenReturn("1.3");
+    when(operationInvoker.isConnected()).thenReturn(true);
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsError()
+        .containsOutput("Cannot use a 1.2 gfsh client to connect to a 1.3 cluster.");
+  }
+
+  @Test
+  public void connectToOlderManagerWithNewerGfsh() {
+    when(gfsh.getVersion()).thenReturn("1.5");
+    when(operationInvoker.getRemoteVersion())
+        .thenThrow(new RuntimeException("release version not available"));
+    when(operationInvoker.isConnected()).thenReturn(true);
+
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsError().containsOutput("Cannot use a 1.5 gfsh client to connect to this cluster.");
+  }
+
+  @Test
+  public void connectToAValidManager() {
+    when(gfsh.getVersion()).thenReturn("1.5");
+    when(operationInvoker.getRemoteVersion()).thenReturn("1.5");
+    when(operationInvoker.isConnected()).thenReturn(true);
+
+    when(result.getStatus()).thenReturn(Result.Status.OK);
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsSuccess();
   }
 }

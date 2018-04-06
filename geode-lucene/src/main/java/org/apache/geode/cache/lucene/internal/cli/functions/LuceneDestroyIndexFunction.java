@@ -16,22 +16,20 @@ package org.apache.geode.cache.lucene.internal.cli.functions;
 
 import org.apache.commons.lang.StringUtils;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneDestroyIndexInfo;
 import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class LuceneDestroyIndexFunction implements Function, InternalEntity {
-
+public class LuceneDestroyIndexFunction implements InternalFunction {
   public void execute(final FunctionContext context) {
-    CliFunctionResult result = null;
+    CliFunctionResult result;
     String memberId = context.getCache().getDistributedSystem().getDistributedMember().getId();
     try {
       LuceneDestroyIndexInfo indexInfo = (LuceneDestroyIndexInfo) context.getArguments();

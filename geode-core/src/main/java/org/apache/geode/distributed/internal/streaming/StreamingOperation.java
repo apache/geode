@@ -33,14 +33,13 @@ import org.apache.geode.GemFireRethrowable;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.PRQueryTraceInfo;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -107,7 +106,7 @@ public abstract class StreamingOperation {
       }
       throw ex;
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
       // throws exception
     }
   }
@@ -278,7 +277,7 @@ public abstract class StreamingOperation {
     }
 
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       Throwable thr = null;
       ReplyException rex = null;
       Object nextObject = null;
@@ -381,13 +380,13 @@ public abstract class StreamingOperation {
     // StreamingReplyMessage.send(getSender(), this.processorId, null, dm, null, 0, 0, true);
     // }
 
-    protected void replyWithData(DistributionManager dm, HeapDataOutputStream outStream,
+    protected void replyWithData(ClusterDistributionManager dm, HeapDataOutputStream outStream,
         int numObjects, int msgNum, boolean lastMsg) {
       StreamingReplyMessage.send(getSender(), this.processorId, null, dm, outStream, numObjects,
           msgNum, lastMsg);
     }
 
-    protected void replyWithException(DistributionManager dm, ReplyException rex) {
+    protected void replyWithException(ClusterDistributionManager dm, ReplyException rex) {
       StreamingReplyMessage.send(getSender(), this.processorId, rex, dm, null, 0, 0, true);
     }
 
@@ -444,14 +443,14 @@ public abstract class StreamingOperation {
      * @param lastMsg if this is the last message in this series
      */
     public static void send(InternalDistributedMember recipient, int processorId,
-        ReplyException exception, DM dm, HeapDataOutputStream chunkStream, int numObjects,
-        int msgNum, boolean lastMsg) {
+        ReplyException exception, DistributionManager dm, HeapDataOutputStream chunkStream,
+        int numObjects, int msgNum, boolean lastMsg) {
       send(recipient, processorId, exception, dm, chunkStream, numObjects, msgNum, lastMsg, false);
     }
 
     public static void send(InternalDistributedMember recipient, int processorId,
-        ReplyException exception, DM dm, HeapDataOutputStream chunkStream, int numObjects,
-        int msgNum, boolean lastMsg, boolean pdxReadSerialized) {
+        ReplyException exception, DistributionManager dm, HeapDataOutputStream chunkStream,
+        int numObjects, int msgNum, boolean lastMsg, boolean pdxReadSerialized) {
       StreamingReplyMessage m = new StreamingReplyMessage();
       m.processorId = processorId;
 

@@ -66,14 +66,14 @@ public interface EndpointManager {
    *
    * @return a map of ServerLocation-> ConnectionStats
    */
-  public Map getAllStats();
+  Map getAllStats();
 
   /**
    * Test hook that returns the number of servers we currently have connections to.
    */
-  public int getConnectedServerCount();
+  int getConnectedServerCount();
 
-  public static interface EndpointListener {
+  interface EndpointListener {
 
     void endpointNoLongerInUse(Endpoint endpoint);
 
@@ -82,7 +82,7 @@ public interface EndpointManager {
     void endpointNowInUse(Endpoint endpoint);
   }
 
-  public static class EndpointListenerAdapter implements EndpointListener {
+  class EndpointListenerAdapter implements EndpointListener {
 
     public void endpointCrashed(Endpoint endpoint) {}
 
@@ -91,5 +91,5 @@ public interface EndpointManager {
     public void endpointNowInUse(Endpoint endpoint) {}
   }
 
-  public String getPoolName();
+  String getPoolName();
 }

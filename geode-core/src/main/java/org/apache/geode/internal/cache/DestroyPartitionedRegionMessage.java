@@ -25,8 +25,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -106,12 +106,13 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
         new DestroyPartitionedRegionResponse(r.getSystem(), recipients);
     DestroyPartitionedRegionMessage m =
         new DestroyPartitionedRegionMessage(recipients, r, resp, event, serials);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     r.getDistributionManager().putOutgoing(m);
     return resp;
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) throws CacheException {
     if (this.op.isLocal()) {
       // notify the advisor that the sending member has locally destroyed (or closed) the region

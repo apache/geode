@@ -18,29 +18,29 @@ import org.apache.juli.logging.Log;
 
 public interface SessionManager {
 
-  public String getRegionName();
+  String getRegionName();
 
-  public String getRegionAttributesId();
+  String getRegionAttributesId();
 
-  public int getMaxInactiveInterval();
+  int getMaxInactiveInterval();
 
-  public boolean getEnableGatewayReplication();
+  boolean getEnableGatewayReplication();
 
-  public boolean getEnableGatewayDeltaReplication();
+  boolean getEnableGatewayDeltaReplication();
 
-  public boolean getEnableDebugListener();
+  boolean getEnableDebugListener();
 
-  public boolean getEnableLocalCache();
+  boolean getEnableLocalCache();
 
-  public boolean isCommitValveEnabled();
+  boolean isCommitValveEnabled();
 
-  public boolean isCommitValveFailfastEnabled();
+  boolean isCommitValveFailfastEnabled();
 
-  public boolean isBackingCacheAvailable();
+  boolean isBackingCacheAvailable();
 
-  public boolean getPreferDeserializedForm();
+  boolean getPreferDeserializedForm();
 
-  public String getStatisticsName();
+  String getStatisticsName();
 
-  public Log getLogger();
+  Log getLogger();
 }

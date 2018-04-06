@@ -29,13 +29,14 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
   private DistTXPrecommitMessage preCommitMessage = null;
   private boolean preCommitResponse = false;
 
-  public DistTXStateProxyImplOnDatanode(TXManagerImpl managerImpl, TXId id,
+  public DistTXStateProxyImplOnDatanode(InternalCache cache, TXManagerImpl managerImpl, TXId id,
       InternalDistributedMember clientMember) {
-    super(managerImpl, id, clientMember);
+    super(cache, managerImpl, id, clientMember);
   }
 
-  public DistTXStateProxyImplOnDatanode(TXManagerImpl managerImpl, TXId id, boolean isjta) {
-    super(managerImpl, id, isjta);
+  public DistTXStateProxyImplOnDatanode(InternalCache cache, TXManagerImpl managerImpl, TXId id,
+      boolean isjta) {
+    super(cache, managerImpl, id, isjta);
   }
 
   @Override
@@ -91,8 +92,6 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
         txState.precommit();
       }
       this.preCommitResponse = retVal; // assign at last, if no exception
-    } catch (UnsupportedOperationInTransactionException e) {
-      throw e;
     } finally {
       inProgress = true;
     }

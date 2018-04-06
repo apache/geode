@@ -726,18 +726,22 @@ You must specify either a `--type` or a `--template-region` for initial configur
 
 See [Region Data Storage and Distribution](../../../developing/region_options/chapter_overview.html).
 
+See [Specifying JSON within Command-Line Options](../json_in_gfsh.html)
+for syntax details.
+
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
 
 ``` pre
  create region --name=value [--type=value] [--template-region=value]
-    [--groups=value(,value)*] [--skip-if-exists(=value)?]
+    [--groups=value(,value)*] [--if-not-exists(=value)?]
     [--key-constraint=value] [--value-constraint=value]
     [--enable-statistics=value] [--entry-idle-time-expiration=value]
     [--entry-idle-time-expiration-action=value]
     [--entry-time-to-live-expiration=value]
-    [--entry-time-to-live-expiriation-action=value]
+    [--entry-time-to-live-expiration-action=value]
+    [--entry-idle-time-custom-expiry=value] [--entry-time-to-live-custom-expiry=value]
     [--region-idle-time-expiration=value]
     [--region-idle-time-expiration-action=value]
     [--region-time-to-live-expiration=value]
@@ -794,9 +798,10 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 <td> </td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">\-\-skip-if-exists</span></td>
-<td>Skip region creation if the region already exists. If the parameter is specified without a value, the value is set to true. If the parameter is not specified, the value (default) is false.</td>
-<td><code class="ph codeph">true</code></td>
+<td><span class="keyword parmname">\-\-if-not-exists</span></td>
+<td>A new region will not be created if a region with the same name already exists. By default, an attempt to create a duplicate region is reported as an error.
+If this option is specified without a value or is specified with a value of <code>true</code>, then gfsh displays a "Skipping..." acknowledgement, but does not throw an error.</td>
+<td>false</td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-key-constraint</span></td>
@@ -834,9 +839,19 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 <td> </td>
 </tr>
 <tr class="odd">
+<td><span class="keyword parmname">\-\-entry-idle-time-custom-expiry</span></td>
+<td>The name of a class implementing CustomExpiry for entry idle time. Append a JSON string for initialization properties.</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">\-\-entry-time-to-live-custom-expiry</span></td>
+<td>The name of a class implementing CustomExpiry for entry time to live. Append a JSON string for initialization properties.</td>
+<td></td>
+</tr>
+<tr class="odd">
 <td><span class="keyword parmname">\-\-region-idle-time-expiration</span></td>
 <td>How long the region can remain in the cache without being accessed. The default is no expiration of this type.</td>
-<td>no expiration</td>
+<td></td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-region-idle-time-expiration-action </span></td>
@@ -875,17 +890,17 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-cache-listener</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured.</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td> </td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-cache-loader</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined.</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td> </td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-cache-writer</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region.</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td> </td>
 </tr>
 <tr class="even">

@@ -15,28 +15,26 @@
 package org.apache.geode.internal.cache;
 
 import java.io.Serializable;
-import java.util.concurrent.CountDownLatch;
 
 import org.apache.geode.cache.CacheEvent;
-import org.apache.geode.test.dunit.VM;
 
 public class ARMLockTestHookAdapter implements AbstractRegionMap.ARMLockTestHook, Serializable {
 
-  public void beforeBulkLock(LocalRegion region) {};
+  public void beforeBulkLock(InternalRegion region) {};
 
-  public void afterBulkLock(LocalRegion region) {};
+  public void afterBulkLock(InternalRegion region) {};
 
-  public void beforeBulkRelease(LocalRegion region) {};
+  public void beforeBulkRelease(InternalRegion region) {};
 
-  public void afterBulkRelease(LocalRegion region) {};
+  public void afterBulkRelease(InternalRegion region) {};
 
-  public void beforeLock(LocalRegion region, CacheEvent event) {};
+  public void beforeLock(InternalRegion region, CacheEvent event) {};
 
-  public void afterLock(LocalRegion region, CacheEvent event) {};
+  public void afterLock(InternalRegion region, CacheEvent event) {};
 
-  public void beforeRelease(LocalRegion region, CacheEvent event) {};
+  public void beforeRelease(InternalRegion region, CacheEvent event) {};
 
-  public void afterRelease(LocalRegion region, CacheEvent event) {};
+  public void afterRelease(InternalRegion region, CacheEvent event) {};
 
   public void beforeStateFlushWait() {}
 }

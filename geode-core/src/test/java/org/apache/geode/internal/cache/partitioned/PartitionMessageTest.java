@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -41,7 +41,7 @@ public class PartitionMessageTest {
 
   private GemFireCacheImpl cache;
   private PartitionMessage msg;
-  private DistributionManager dm;
+  private ClusterDistributionManager dm;
   private PartitionedRegion pr;
   private TXManagerImpl txMgr;
   private long startTime = 1;
@@ -50,7 +50,7 @@ public class PartitionMessageTest {
   @Before
   public void setUp() throws Exception {
     cache = Fakes.cache();
-    dm = mock(DistributionManager.class);
+    dm = mock(ClusterDistributionManager.class);
     msg = mock(PartitionMessage.class);
     pr = mock(PartitionedRegion.class);
     txMgr = mock(TXManagerImpl.class);
@@ -59,9 +59,9 @@ public class PartitionMessageTest {
     when(msg.checkCacheClosing(dm)).thenReturn(false);
     when(msg.checkDSClosing(dm)).thenReturn(false);
     when(msg.getPartitionedRegion()).thenReturn(pr);
-    when(msg.getInternalCache()).thenReturn(cache);
     when(msg.getStartPartitionMessageProcessingTime(pr)).thenReturn(startTime);
     when(msg.getTXManagerImpl(cache)).thenReturn(txMgr);
+    when(dm.getCache()).thenReturn(cache);
 
     doAnswer(CALLS_REAL_METHODS).when(msg).process(dm);
   }
@@ -107,7 +107,6 @@ public class PartitionMessageTest {
   public void noNewTxProcessingAfterTXManagerImplClosed() throws Exception {
     txMgr = new TXManagerImpl(null, cache);
     when(msg.getPartitionedRegion()).thenReturn(pr);
-    when(msg.getInternalCache()).thenReturn(cache);
     when(msg.getStartPartitionMessageProcessingTime(pr)).thenReturn(startTime);
     when(msg.getTXManagerImpl(cache)).thenReturn(txMgr);
     when(msg.canParticipateInTransaction()).thenReturn(true);

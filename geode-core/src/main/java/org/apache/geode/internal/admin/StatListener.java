@@ -25,12 +25,12 @@ public interface StatListener {
    * @param value The new value of the statistic
    * @param time The time at which the statistic's value change was detected
    */
-  public void statValueChanged(double value, long time);
+  void statValueChanged(double value, long time);
 
   /**
    * Invoked when the value of a statistic has not changed
    *
    * @param time The time of the latest statistic sample
    */
-  public void statValueUnchanged(long time);
+  void statValueUnchanged(long time);
 }

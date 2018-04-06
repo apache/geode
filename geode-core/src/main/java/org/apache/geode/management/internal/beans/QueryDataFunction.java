@@ -34,7 +34,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
@@ -54,6 +53,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
@@ -70,7 +70,7 @@ import org.apache.geode.management.internal.cli.json.TypedJson;
  * DistributedSystemMXBean.queryData()
  */
 @SuppressWarnings({"deprecation", "unchecked"})
-public class QueryDataFunction extends FunctionAdapter implements InternalEntity {
+public class QueryDataFunction implements Function, InternalEntity {
 
   private static final long serialVersionUID = 1L;
 
@@ -487,7 +487,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
   /**
    * Function to gather data locally. This function is required to execute query with region context
    */
-  private class LocalQueryFunction extends FunctionAdapter {
+  private class LocalQueryFunction implements InternalFunction {
 
     private static final long serialVersionUID = 1L;
 

@@ -848,7 +848,7 @@ public abstract class BaseCommand implements Command {
     Message requestMsg = null;
     try {
       requestMsg = servConn.getRequestMessage();
-      requestMsg.recv(servConn, MAX_INCOMING_DATA, INCOMING_DATA_LIMITER, INCOMING_MSG_LIMITER);
+      requestMsg.receive(servConn, MAX_INCOMING_DATA, INCOMING_DATA_LIMITER, INCOMING_MSG_LIMITER);
       return requestMsg;
     } catch (EOFException eof) {
       handleEOFException(null, servConn, eof);

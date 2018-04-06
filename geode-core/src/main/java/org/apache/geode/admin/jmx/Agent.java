@@ -64,81 +64,81 @@ import org.apache.geode.admin.AdminException;
 public interface Agent {
 
   /** Lookup name for RMIConnector when rmi-registry-enabled is true */
-  public static final String JNDI_NAME = "/jmxconnector";
+  String JNDI_NAME = "/jmxconnector";
 
   ////////////////////// Instance Methods //////////////////////
 
   /**
    * Returns the configuration object for this JMX Agent.
    */
-  public AgentConfig getConfig();
+  AgentConfig getConfig();
 
   /**
    * Starts this JMX Agent and its associated adapters. This method does not
    * {@linkplain #connectToSystem connect} to the distributed system.
    */
-  public void start();
+  void start();
 
   /**
    * Returns the JMX <code>MBeanServer</code> with which GemFire MBeans are registered or
    * <code>null</code> if this <code>Agent</code> is not started.
    */
-  public MBeanServer getMBeanServer();
+  MBeanServer getMBeanServer();
 
   /**
    * {@linkplain #disconnectFromSystem Disconnects} from the distributed system and stops this JMX
    * Agent and all of its associated adapters.
    */
-  public void stop();
+  void stop();
 
   /**
    * Returns the <code>ObjectName</code> of the JMX management bean that represents this agent or
    * <code>null</code> if this <code>Agent</code> has not been started.
    */
-  public ObjectName getObjectName();
+  ObjectName getObjectName();
 
   /**
    * Returns whether or not this JMX <code>Agent</code> is currently providing information about a
    * distributed system.
    */
-  public boolean isConnected();
+  boolean isConnected();
 
   /**
    * Connects to the distributed system described by this <code>Agent</code>'s configuration.
    *
    * @return The object name of the system that the <code>Agent</code> is now connected to.
    */
-  public ObjectName connectToSystem() throws AdminException, MalformedObjectNameException;
+  ObjectName connectToSystem() throws AdminException, MalformedObjectNameException;
 
   /**
    * Returns the <code>AdminDistributedSystem</code> that underlies this JMX <code>Agent</code> or
    * <code>null</code> is this agent is not {@linkplain #isConnected connected}.
    */
-  public AdminDistributedSystem getDistributedSystem();
+  AdminDistributedSystem getDistributedSystem();
 
   /**
    * Returns the object name of the JMX MBean that represents the distributed system administered by
    * this <code>Agent</code> or <code>null</code> if this <code>Agent</code> has not
    * {@linkplain #connectToSystem connected} to the distributed system.
    */
-  public ObjectName manageDistributedSystem() throws MalformedObjectNameException;
+  ObjectName manageDistributedSystem() throws MalformedObjectNameException;
 
   /**
    * Disconnects this agent from the distributed system and unregisters the management beans that
    * provided information about it. However, this agent's adapters are not stopped and it is
    * possible to reconfigure this <code>Agent</code> to connect to another distributed system.
    */
-  public void disconnectFromSystem();
+  void disconnectFromSystem();
 
   /**
    * Saves the configuration for this <code>Agent</code> to the file specified by @link
    * AgentConfig#getPropertyFile.
    */
-  public void saveProperties();
+  void saveProperties();
 
   /**
    * Returns the <code>LogWriter</code> used for logging information.
    */
-  public LogWriter getLogWriter();
+  LogWriter getLogWriter();
 
 }

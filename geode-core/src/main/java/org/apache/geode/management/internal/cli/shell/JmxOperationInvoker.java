@@ -46,12 +46,12 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteOutputStreamClient;
-import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -61,7 +61,6 @@ import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.beans.FileUploaderMBean;
 import org.apache.geode.management.internal.cli.CommandRequest;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 
 /**
@@ -70,6 +69,7 @@ import org.apache.geode.management.internal.security.ResourceConstants;
  * @since GemFire 7.0
  */
 public class JmxOperationInvoker implements OperationInvoker {
+  private static final Logger logger = LogService.getLogger();
 
   public static final String JMX_URL_FORMAT = "service:jmx:rmi://{0}/jndi/rmi://{0}:{1}/jmxrmi";
 
@@ -84,10 +84,6 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   // String representation of the GemFire JMX Manager endpoint, including host and port
   private String endpoints;
-
-  // the host and port of the GemFire Manager
-  private String managerHost;
-  private int managerPort;
 
   // MBean Proxies
   private DistributedSystemMXBean distributedSystemMXBeanProxy;
@@ -105,8 +101,6 @@ public class JmxOperationInvoker implements OperationInvoker {
       throws Exception {
     final Set<String> propsToClear = new TreeSet<>();
     try {
-      this.managerHost = host;
-      this.managerPort = port;
       this.endpoints = host + "[" + port + "]"; // Use the same syntax as the "connect" command.
 
       // Modify check period from default (60 sec) to 1 sec
@@ -167,15 +161,14 @@ public class JmxOperationInvoker implements OperationInvoker {
           MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
 
       if (this.distributedSystemMXBeanProxy == null) {
-        LogWrapper.getInstance().info(
+        logger.info(
             "DistributedSystemMXBean is not present on member with endpoints : " + this.endpoints);
         throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
       } else {
         this.managerMemberObjectName = this.distributedSystemMXBeanProxy.getMemberObjectName();
         if (this.managerMemberObjectName == null || !JMX.isMXBeanInterface(MemberMXBean.class)) {
-          LogWrapper.getInstance()
-              .info("MemberMXBean with ObjectName " + this.managerMemberObjectName
-                  + " is not present on member with endpoints : " + endpoints);
+          logger.info("MemberMXBean with ObjectName " + this.managerMemberObjectName
+              + " is not present on member with endpoints : " + endpoints);
           throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
         } else {
           this.memberMXBeanProxy =
@@ -215,6 +208,10 @@ public class JmxOperationInvoker implements OperationInvoker {
     } catch (NullPointerException e) {
       throw new JMXInvocationException("Given resourceName is null.", e);
     }
+  }
+
+  public String getRemoteVersion() {
+    return memberMXBeanProxy.getReleaseVersion();
   }
 
   @Override
@@ -380,14 +377,9 @@ public class JmxOperationInvoker implements OperationInvoker {
     // if host string contains ":", considering it as an IPv6 Address
     // Conforming to RFC2732 - http://www.ietf.org/rfc/rfc2732.txt
     if (hostAddress.contains(":")) {
-      LogWrapper logger = LogWrapper.getInstance();
-      if (logger.fineEnabled()) {
-        logger.fine("IPv6 host address detected, using IPv6 syntax for host in JMX connection URL");
-      }
+      logger.debug("IPv6 host address detected, using IPv6 syntax for host in JMX connection URL");
       hostAddress = "[" + hostAddress + "]";
-      if (logger.fineEnabled()) {
-        logger.fine("Compatible host address is : " + hostAddress);
-      }
+      logger.debug("Compatible host address is : " + hostAddress);
     }
     return hostAddress;
   }

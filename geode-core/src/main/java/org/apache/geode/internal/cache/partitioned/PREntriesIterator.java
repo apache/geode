@@ -29,10 +29,10 @@ public interface PREntriesIterator<T> extends Iterator<T> {
   /**
    * @return the PartitionedRegion being iterated
    */
-  public PartitionedRegion getPartitionedRegion();
+  PartitionedRegion getPartitionedRegion();
 
   /**
    * @return int bucket ID of the bucket in which the Local Entry resides.
    */
-  public int getBucketId();
+  int getBucketId();
 }

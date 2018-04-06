@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.persistence;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public interface PersistentStateListener {
-  public static class PersistentStateAdapter implements PersistentStateListener {
+  class PersistentStateAdapter implements PersistentStateListener {
 
     public void memberOffline(InternalDistributedMember member, PersistentMemberID persistentID) {}
 
@@ -26,9 +26,9 @@ public interface PersistentStateListener {
     public void memberRemoved(PersistentMemberID persistentID, boolean revoked) {}
   }
 
-  public void memberOnline(InternalDistributedMember member, PersistentMemberID persistentID);
+  void memberOnline(InternalDistributedMember member, PersistentMemberID persistentID);
 
-  public void memberOffline(InternalDistributedMember member, PersistentMemberID persistentID);
+  void memberOffline(InternalDistributedMember member, PersistentMemberID persistentID);
 
-  public void memberRemoved(PersistentMemberID persistentID, boolean revoked);
+  void memberRemoved(PersistentMemberID persistentID, boolean revoked);
 }

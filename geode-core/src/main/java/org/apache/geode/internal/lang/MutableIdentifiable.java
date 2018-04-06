@@ -34,6 +34,6 @@ public interface MutableIdentifiable<T> extends Identifiable {
    *
    * @param id an identifier uniquely identifying this Object.
    */
-  public void setId(T id);
+  void setId(T id);
 
 }

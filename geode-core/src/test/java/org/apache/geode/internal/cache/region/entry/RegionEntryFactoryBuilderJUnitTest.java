@@ -75,7 +75,9 @@ public class RegionEntryFactoryBuilderJUnitTest {
       "VersionedStatsDiskLRURegionEntryOffHeapFactory,true,true,true,true,true"})
   public void testRegionEntryFactoryUnitTest(String factoryName, boolean enableStats,
       boolean enableLRU, boolean enableDisk, boolean enableVersioning, boolean enableOffHeap) {
-    assertEquals(factoryName, regionEntryFactoryBuilder.getRegionEntryFactoryOrNull(enableStats,
-        enableLRU, enableDisk, enableVersioning, enableOffHeap).getClass().getSimpleName());
+    assertEquals(factoryName,
+        regionEntryFactoryBuilder
+            .create(enableStats, enableLRU, enableDisk, enableVersioning, enableOffHeap).getClass()
+            .getSimpleName());
   }
 }

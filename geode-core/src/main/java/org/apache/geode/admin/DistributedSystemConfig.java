@@ -14,7 +14,17 @@
  */
 package org.apache.geode.admin;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_DISK_SPACE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 
 import java.util.Properties;
 
@@ -261,55 +271,55 @@ public interface DistributedSystemConfig extends Cloneable {
    *
    * @since GemFire 4.0
    */
-  public String getEntityConfigXMLFile();
+  String getEntityConfigXMLFile();
 
   /**
    * Sets the name of the XML file that specifies the configuration of managed entities administered
    * by the <code>DistributedSystem</code>.
    */
-  public void setEntityConfigXMLFile(String xmlFile);
+  void setEntityConfigXMLFile(String xmlFile);
 
   /** Returns the string identity for the system */
-  public String getSystemId();
+  String getSystemId();
 
   /** Sets the string identity for the system */
-  public void setSystemId(String systemId);
+  void setSystemId(String systemId);
 
   /** Returns the optional non-unique name for the system */
-  public String getSystemName();
+  String getSystemName();
 
   /** Sets the optional non-unique name for the system */
-  public void setSystemName(final String name);
+  void setSystemName(final String name);
 
   /** Returns the multicast address for the system */
-  public String getMcastAddress();
+  String getMcastAddress();
 
   /** Sets the multicast address for the system */
-  public void setMcastAddress(String mcastAddress);
+  void setMcastAddress(String mcastAddress);
 
   /** Returns the multicast port for the system */
-  public int getMcastPort();
+  int getMcastPort();
 
   /** Sets the multicast port for the system */
-  public void setMcastPort(int mcastPort);
+  void setMcastPort(int mcastPort);
 
   /** Returns the ack-wait-threshold for the system */
-  public int getAckWaitThreshold();
+  int getAckWaitThreshold();
 
   /** Sets the ack-wait-threshold for the system */
-  public void setAckWaitThreshold(int seconds);
+  void setAckWaitThreshold(int seconds);
 
   /** Returns the ack-severe-alert-threshold for the system */
-  public int getAckSevereAlertThreshold();
+  int getAckSevereAlertThreshold();
 
   /** Sets the ack-severe-alert-threshold for the system */
-  public void setAckSevereAlertThreshold(int seconds);
+  void setAckSevereAlertThreshold(int seconds);
 
   /** Returns a comma-delimited list of locators for the system */
-  public String getLocators();
+  String getLocators();
 
   /** Sets the comma-delimited list of locators for the system */
-  public void setLocators(String locators);
+  void setLocators(String locators);
 
   /**
    * Returns the membership-port-range property of the Distributed System. This range is given as
@@ -317,7 +327,7 @@ public interface DistributedSystemConfig extends Cloneable {
    *
    * @since GemFire 6.5
    */
-  public String getMembershipPortRange();
+  String getMembershipPortRange();
 
   /**
    * Sets the membership-port-range property of the Distributed System. This range is given as two
@@ -325,7 +335,7 @@ public interface DistributedSystemConfig extends Cloneable {
    *
    * @since GemFire 6.5
    */
-  public void setMembershipPortRange(String membershipPortRange);
+  void setMembershipPortRange(String membershipPortRange);
 
 
   /**
@@ -333,14 +343,14 @@ public interface DistributedSystemConfig extends Cloneable {
    *
    * @since GemFire 6.5
    */
-  public void setTcpPort(int port);
+  void setTcpPort(int port);
 
   /**
    * Returns the primary communication port number for the Distributed System.
    *
    * @since GemFire 6.5
    */
-  public int getTcpPort();
+  int getTcpPort();
 
 
   /**
@@ -348,166 +358,166 @@ public interface DistributedSystemConfig extends Cloneable {
    * unicast messaging. This must be consistent across all members of the distributed system. The
    * default is to enable tcp.
    */
-  public void setDisableTcp(boolean flag);
+  void setDisableTcp(boolean flag);
 
   /**
    * Returns the disable-tcp property for the system. When tcp is disabled, the cache uses udp for
    * unicast messaging. This must be consistent across all members of the distributed system. The
    * default is to enable tcp.
    */
-  public boolean getDisableTcp();
+  boolean getDisableTcp();
 
 
   /**
    * Turns on network partition detection
    */
-  public void setEnableNetworkPartitionDetection(boolean newValue);
+  void setEnableNetworkPartitionDetection(boolean newValue);
 
   /**
    * Returns true if network partition detection is enabled.
    */
-  public boolean getEnableNetworkPartitionDetection();
+  boolean getEnableNetworkPartitionDetection();
 
   /**
    * Disables auto reconnect after being forced out of the distributed system
    */
-  public void setDisableAutoReconnect(boolean newValue);
+  void setDisableAutoReconnect(boolean newValue);
 
   /**
    * Returns true if auto reconnect is disabled
    */
-  public boolean getDisableAutoReconnect();
+  boolean getDisableAutoReconnect();
 
 
 
   /**
    * Returns the member-timeout millisecond value used in failure-detection protocols
    */
-  public int getMemberTimeout();
+  int getMemberTimeout();
 
   /**
    * Set the millisecond value of the member-timeout used in failure-detection protocols. This
    * timeout determines how long a member has to respond to a heartbeat request. The member is given
    * three chances before being kicked out of the distributed system with a SystemConnectException.
    */
-  public void setMemberTimeout(int value);
+  void setMemberTimeout(int value);
 
   /**
    * Returns the IP address to which the distributed system's server sockets are bound.
    *
    * @since GemFire 4.0
    */
-  public String getBindAddress();
+  String getBindAddress();
 
   /**
    * Sets the IP address to which the distributed system's server sockets are bound.
    *
    * @since GemFire 4.0
    */
-  public void setBindAddress(String bindAddress);
+  void setBindAddress(String bindAddress);
 
 
   /**
    * Returns the IP address to which client/server server sockets are bound
    */
-  public String getServerBindAddress();
+  String getServerBindAddress();
 
   /**
    * Sets the IP address to which a server cache will bind when listening for client cache
    * connections.
    */
-  public void setServerBindAddress(String bindAddress);
+  void setServerBindAddress(String bindAddress);
 
 
   /** Returns the remote command setting to use for remote administration */
-  public String getRemoteCommand();
+  String getRemoteCommand();
 
   /**
    * Sets the remote command setting to use for remote administration. This attribute may be
    * modified after this <code>DistributedSystemConfig</code> has been used to create an
    * <codE>AdminDistributedSystem</code>.
    */
-  public void setRemoteCommand(String command);
+  void setRemoteCommand(String command);
 
   /** Returns the value of the "ssl-enabled" property. */
-  public boolean isSSLEnabled();
+  boolean isSSLEnabled();
 
   /** Sets the value of the "ssl-enabled" property. */
-  public void setSSLEnabled(boolean enabled);
+  void setSSLEnabled(boolean enabled);
 
   /** Returns the value of the "ssl-protocols" property. */
-  public String getSSLProtocols();
+  String getSSLProtocols();
 
   /** Sets the value of the "ssl-protocols" property. */
-  public void setSSLProtocols(String protocols);
+  void setSSLProtocols(String protocols);
 
   /** Returns the value of the "ssl-ciphers" property. */
-  public String getSSLCiphers();
+  String getSSLCiphers();
 
   /** Sets the value of the "ssl-ciphers" property. */
-  public void setSSLCiphers(String ciphers);
+  void setSSLCiphers(String ciphers);
 
   /** Returns the value of the "ssl-require-authentication" property. */
-  public boolean isSSLAuthenticationRequired();
+  boolean isSSLAuthenticationRequired();
 
   /** Sets the value of the "ssl-require-authentication" property. */
-  public void setSSLAuthenticationRequired(boolean authRequired);
+  void setSSLAuthenticationRequired(boolean authRequired);
 
   /** Returns the provider-specific properties for SSL. */
-  public Properties getSSLProperties();
+  Properties getSSLProperties();
 
   /** Sets the provider-specific properties for SSL. */
-  public void setSSLProperties(Properties sslProperties);
+  void setSSLProperties(Properties sslProperties);
 
   /** Adds an SSL property */
-  public void addSSLProperty(String key, String value);
+  void addSSLProperty(String key, String value);
 
   /** Removes an SSL property */
-  public void removeSSLProperty(String key);
+  void removeSSLProperty(String key);
 
   /**
    * Returns the name of the log file to which informational messages are written.
    *
    * @see org.apache.geode.i18n.LogWriterI18n
    */
-  public String getLogFile();
+  String getLogFile();
 
   /**
    * Sets the name of the log file to which informational messages are written.
    *
    * @see org.apache.geode.i18n.LogWriterI18n
    */
-  public void setLogFile(String logFile);
+  void setLogFile(String logFile);
 
   /**
    * Returns the level at which informational messages are logged.
    */
-  public String getLogLevel();
+  String getLogLevel();
 
   /**
    * Sets the level at which information messages are logged.
    */
-  public void setLogLevel(String logLevel);
+  void setLogLevel(String logLevel);
 
   /**
    * Returns the log disk space limit in megabytes
    */
-  public int getLogDiskSpaceLimit();
+  int getLogDiskSpaceLimit();
 
   /**
    * Sets the log disk space limit in megabytes
    */
-  public void setLogDiskSpaceLimit(int limit);
+  void setLogDiskSpaceLimit(int limit);
 
   /**
    * Returns the log file size limit in megabytes
    */
-  public int getLogFileSizeLimit();
+  int getLogFileSizeLimit();
 
   /**
    * Sets the log file size limit in megabytes
    */
-  public void setLogFileSizeLimit(int limit);
+  void setLogFileSizeLimit(int limit);
 
   /**
    * Returns the refreshInterval in seconds used for auto-polling and updating
@@ -516,14 +526,14 @@ public interface DistributedSystemConfig extends Cloneable {
    *
    * @since GemFire 6.0
    */
-  public int getRefreshInterval();
+  int getRefreshInterval();
 
   /**
    * Sets the refreshInterval in seconds
    *
    * @since GemFire 6.0
    */
-  public void setRefreshInterval(int timeInSecs);
+  void setRefreshInterval(int timeInSecs);
 
   /**
    * Returns an array of configurations for statically known <code>CacheServers</code>.
@@ -531,7 +541,7 @@ public interface DistributedSystemConfig extends Cloneable {
    * @deprecated as of 5.7 use {@link #getCacheVmConfigs} instead.
    */
   @Deprecated
-  public CacheServerConfig[] getCacheServerConfigs();
+  CacheServerConfig[] getCacheServerConfigs();
 
   /**
    * Creates the configuration for a CacheServer
@@ -539,7 +549,7 @@ public interface DistributedSystemConfig extends Cloneable {
    * @deprecated as of 5.7 use {@link #createCacheVmConfig} instead.
    */
   @Deprecated
-  public CacheServerConfig createCacheServerConfig();
+  CacheServerConfig createCacheServerConfig();
 
   /**
    * Removes the configuration for a CacheServer
@@ -547,51 +557,51 @@ public interface DistributedSystemConfig extends Cloneable {
    * @deprecated as of 5.7 use {@link #removeCacheVmConfig} instead.
    */
   @Deprecated
-  public void removeCacheServerConfig(CacheServerConfig managerConfig);
+  void removeCacheServerConfig(CacheServerConfig managerConfig);
 
   /**
    * Returns an array of configurations for statically known {@link CacheVm}s.
    *
    * @since GemFire 5.7
    */
-  public CacheVmConfig[] getCacheVmConfigs();
+  CacheVmConfig[] getCacheVmConfigs();
 
   /**
    * Creates the configuration for a {@link CacheVm}.
    *
    * @since GemFire 5.7
    */
-  public CacheVmConfig createCacheVmConfig();
+  CacheVmConfig createCacheVmConfig();
 
   /**
    * Removes the configuration for a {@link CacheVm}
    *
    * @since GemFire 5.7
    */
-  public void removeCacheVmConfig(CacheVmConfig existing);
+  void removeCacheVmConfig(CacheVmConfig existing);
 
   /**
    * Returns configuration information about {@link DistributionLocator}s that are managed by an
    * <code>AdminDistributedSystem</code>.
    */
-  public DistributionLocatorConfig[] getDistributionLocatorConfigs();
+  DistributionLocatorConfig[] getDistributionLocatorConfigs();
 
   /**
    * Creates a new <code>DistributionLocatorConfig</code> for a distribution locator that is managed
    * in this distributed system. The default locator config is set to not use multicast
    */
-  public DistributionLocatorConfig createDistributionLocatorConfig();
+  DistributionLocatorConfig createDistributionLocatorConfig();
 
   /**
    * Removes a <code>DistributionLocatorConfig</code> from the distributed system.
    */
-  public void removeDistributionLocatorConfig(DistributionLocatorConfig config);
+  void removeDistributionLocatorConfig(DistributionLocatorConfig config);
 
   /** Registers listener for notification of changes in this config. */
-  public void addListener(ConfigListener listener);
+  void addListener(ConfigListener listener);
 
   /** Removes previously registered listener of this config. */
-  public void removeListener(ConfigListener listener);
+  void removeListener(ConfigListener listener);
 
   /**
    * Validates that this distributed system configuration is correct and consistent.
@@ -600,7 +610,7 @@ public interface DistributedSystemConfig extends Cloneable {
    * @throws AdminXmlException If the {@linkplain #getEntityConfigXMLFile entity config XML file} is
    *         not valid
    */
-  public void validate();
+  void validate();
 
   /**
    * Returns a copy of this <code>DistributedSystemConfig</code> object whose configuration can be
@@ -609,17 +619,17 @@ public interface DistributedSystemConfig extends Cloneable {
    *
    * @since GemFire 4.0
    */
-  public Object clone() throws CloneNotSupportedException;
+  Object clone() throws CloneNotSupportedException;
 
   ////////////////////// Inner Classes //////////////////////
 
   /**
    * A listener whose callback methods are invoked when this config changes.
    */
-  public interface ConfigListener extends java.util.EventListener {
+  interface ConfigListener extends java.util.EventListener {
 
     /** Invoked when this configurated is changed. */
-    public void configChanged(DistributedSystemConfig config);
+    void configChanged(DistributedSystemConfig config);
   }
 
 }

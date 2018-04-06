@@ -46,14 +46,14 @@ public interface RegionMembershipListener<K, V> extends CacheListener<K, V> {
    * @param initialMembers an array of the other members that have this region at the time this
    *        listener is added.
    */
-  public void initialMembers(Region<K, V> region, DistributedMember[] initialMembers);
+  void initialMembers(Region<K, V> region, DistributedMember[] initialMembers);
 
   /**
    * Invoked when another member has created the distributed region this listener is on.
    *
    * @param event the event from the member whose region was created.
    */
-  public void afterRemoteRegionCreate(RegionEvent<K, V> event);
+  void afterRemoteRegionCreate(RegionEvent<K, V> event);
 
   /**
    * Invoked when another member's distributed region is no longer available to this cache due to
@@ -68,7 +68,7 @@ public interface RegionMembershipListener<K, V> extends CacheListener<K, V> {
    *
    * @param event the event from the member whose region is no longer available.
    */
-  public void afterRemoteRegionDeparture(RegionEvent<K, V> event);
+  void afterRemoteRegionDeparture(RegionEvent<K, V> event);
 
   /**
    * Invoked when another member's distributed region is no longer available to this cache because
@@ -77,5 +77,5 @@ public interface RegionMembershipListener<K, V> extends CacheListener<K, V> {
    *
    * @param event the event from the member whose region is no longer available.
    */
-  public void afterRemoteRegionCrash(RegionEvent<K, V> event);
+  void afterRemoteRegionCrash(RegionEvent<K, V> event);
 }

@@ -25,15 +25,13 @@ import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 
 
-
-public class RebalanceFunction implements Function, InternalEntity {
+public class RebalanceFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   public static final String ID = RebalanceFunction.class.getName();

@@ -18,15 +18,15 @@ import org.apache.geode.cache.CacheCallback;
 
 public interface InterestFilter extends CacheCallback {
 
-  public boolean notifyOnCreate(InterestEvent event);
+  boolean notifyOnCreate(InterestEvent event);
 
-  public boolean notifyOnUpdate(InterestEvent event);
+  boolean notifyOnUpdate(InterestEvent event);
 
-  public boolean notifyOnDestroy(InterestEvent event);
+  boolean notifyOnDestroy(InterestEvent event);
 
-  public boolean notifyOnInvalidate(InterestEvent event);
+  boolean notifyOnInvalidate(InterestEvent event);
 
-  public boolean notifyOnRegister(InterestEvent event);
+  boolean notifyOnRegister(InterestEvent event);
 
 
 }

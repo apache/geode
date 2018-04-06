@@ -132,7 +132,6 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     List<?> results = null;
 
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
-    GemFireCacheImpl.setInstanceForTests(null);
 
     smdsFunc.execute(context);
     results = resultSender.getResults();

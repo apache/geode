@@ -14,7 +14,8 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.shiro.authz.permission.WildcardPermission;
@@ -30,96 +31,207 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class ResourcePermissionTest {
-  private ResourcePermission context;
-
   @Test
   public void testEmptyConstructor() {
-    context = new ResourcePermission();
-    assertEquals(Resource.NULL, context.getResource());
-    assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(ResourcePermission.ALL, context.getTarget());
+    ResourcePermission context = new ResourcePermission();
+    assertThat(Resource.NULL).isEqualTo(context.getResource());
+    assertThat(Operation.NULL).isEqualTo(context.getOperation());
+    assertThat(ResourcePermission.ALL).isEqualTo(context.getTarget());
   }
 
   @Test
   public void testIsPermission() {
-    context = new ResourcePermission();
+    ResourcePermission context = new ResourcePermission();
     assertTrue(context instanceof WildcardPermission);
   }
 
   @Test
   public void testConstructor() {
-    context = new ResourcePermission();
-    assertEquals(Resource.NULL, context.getResource());
-    assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(ResourcePermission.ALL, context.getTarget());
+    ResourcePermission permission = new ResourcePermission();
+    assertThat(Resource.NULL).isEqualTo(permission.getResource());
+    assertThat(Operation.NULL).isEqualTo(permission.getOperation());
+    assertThat(ResourcePermission.ALL).isEqualTo(permission.getTarget());
 
-    context = new ResourcePermission();
-    assertEquals(Resource.NULL, context.getResource());
-    assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(ResourcePermission.ALL, context.getTarget());
+    permission = new ResourcePermission();
+    assertThat(Resource.NULL).isEqualTo(permission.getResource());
+    assertThat(Operation.NULL).isEqualTo(permission.getOperation());
+    assertThat(ResourcePermission.ALL).isEqualTo(permission.getTarget());
 
-    context = new ResourcePermission(Resource.DATA, null);
-    assertEquals(Resource.DATA, context.getResource());
-    assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(ResourcePermission.ALL, context.getTarget());
+    permission = new ResourcePermission(Resource.DATA, null);
+    assertThat(Resource.DATA).isEqualTo(permission.getResource());
+    assertThat(Operation.NULL).isEqualTo(permission.getOperation());
+    assertThat(ResourcePermission.ALL).isEqualTo(permission.getTarget());
 
-    context = new ResourcePermission(Resource.CLUSTER, null);
-    assertEquals(Resource.CLUSTER, context.getResource());
-    assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(ResourcePermission.ALL, context.getTarget());
+    permission = new ResourcePermission(Resource.CLUSTER, null);
+    assertThat(Resource.CLUSTER).isEqualTo(permission.getResource());
+    assertThat(Operation.NULL).isEqualTo(permission.getOperation());
+    assertThat(ResourcePermission.ALL).isEqualTo(permission.getTarget());
 
-    context = new ResourcePermission(null, Operation.MANAGE, "REGIONA");
-    assertEquals(Resource.NULL, context.getResource());
-    assertEquals(Operation.MANAGE, context.getOperation());
-    assertEquals("REGIONA", context.getTarget());
+    permission = new ResourcePermission(null, Operation.MANAGE, "REGIONA");
+    assertThat(Resource.NULL).isEqualTo(permission.getResource());
+    assertThat(Operation.MANAGE).isEqualTo(permission.getOperation());
+    assertThat("REGIONA").isEqualTo(permission.getTarget());
 
-    context = new ResourcePermission(Resource.DATA, Operation.MANAGE, "REGIONA");
-    assertEquals(Resource.DATA, context.getResource());
-    assertEquals(Operation.MANAGE, context.getOperation());
-    assertEquals("REGIONA", context.getTarget());
+    permission = new ResourcePermission(Resource.DATA, Operation.MANAGE, "REGIONA");
+    assertThat(Resource.DATA).isEqualTo(permission.getResource());
+    assertThat(Operation.MANAGE).isEqualTo(permission.getOperation());
+    assertThat("REGIONA").isEqualTo(permission.getTarget());
 
-    context = new ResourcePermission(Resource.CLUSTER, Operation.MANAGE);
-    assertEquals(Resource.CLUSTER, context.getResource());
-    assertEquals(Operation.MANAGE, context.getOperation());
-    assertEquals(ResourcePermission.ALL, context.getTarget());
+    permission = new ResourcePermission(Resource.CLUSTER, Operation.MANAGE);
+    assertThat(Resource.CLUSTER).isEqualTo(permission.getResource());
+    assertThat(Operation.MANAGE).isEqualTo(permission.getOperation());
+    assertThat(ResourcePermission.ALL).isEqualTo(permission.getTarget());
 
     // make sure "ALL" in the resource "DATA" means regionName won't be converted to *
-    context = new ResourcePermission(Resource.DATA, Operation.READ, "ALL");
-    assertEquals(Resource.DATA, context.getResource());
-    assertEquals(Operation.READ, context.getOperation());
-    assertEquals("ALL", context.getTarget());
+    permission = new ResourcePermission(Resource.DATA, Operation.READ, "ALL");
+    assertThat(Resource.DATA).isEqualTo(permission.getResource());
+    assertThat(Operation.READ).isEqualTo(permission.getOperation());
+    assertThat("ALL").isEqualTo(permission.getTarget());
 
-    context = new ResourcePermission(Resource.CLUSTER, Operation.READ, Target.ALL);
-    assertEquals(context.getTarget(), ResourcePermission.ALL);
+    permission = new ResourcePermission(Resource.CLUSTER, Operation.READ, Target.ALL);
+    assertThat(permission.getTarget()).isEqualTo(ResourcePermission.ALL);
+
+    permission = new ResourcePermission((String) null, (String) null);
+    assertThat(permission.getResourceString()).isEqualTo(ResourcePermission.NULL);
+    assertThat(permission.getOperationString()).isEqualTo(ResourcePermission.NULL);
+    assertThat(permission.getTarget()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getKey()).isEqualTo(ResourcePermission.ALL);
+
+    permission = new ResourcePermission((Resource) null, (Operation) null);
+    assertThat(permission.getResource()).isEqualTo(Resource.NULL);
+    assertThat(permission.getOperation()).isEqualTo(Operation.NULL);
+    assertThat(permission.getResourceString()).isEqualTo(ResourcePermission.NULL);
+    assertThat(permission.getOperationString()).isEqualTo(ResourcePermission.NULL);
+    assertThat(permission.getTarget()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getKey()).isEqualTo(ResourcePermission.ALL);
+
+    permission = new ResourcePermission("*", "*");
+    assertThat(permission.getResource()).isEqualTo(Resource.ALL);
+    assertThat(permission.getOperation()).isEqualTo(Operation.ALL);
+    assertThat(permission.getResourceString()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getOperationString()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getTarget()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getKey()).isEqualTo(ResourcePermission.ALL);
+
+    permission = new ResourcePermission("ALL", "ALL");
+    assertThat(permission.getResource()).isEqualTo(Resource.ALL);
+    assertThat(permission.getOperation()).isEqualTo(Operation.ALL);
+    assertThat(permission.getResourceString()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getOperationString()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getTarget()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getKey()).isEqualTo(ResourcePermission.ALL);
+
+    permission = new ResourcePermission("NULL", "NULL");
+    assertThat(permission.getResource()).isEqualTo(Resource.NULL);
+    assertThat(permission.getOperation()).isEqualTo(Operation.NULL);
+    assertThat(permission.getResourceString()).isEqualTo(ResourcePermission.NULL);
+    assertThat(permission.getOperationString()).isEqualTo(ResourcePermission.NULL);
+    assertThat(permission.getTarget()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getKey()).isEqualTo(ResourcePermission.ALL);
+
+    permission = new ResourcePermission("*", "READ");
+    assertThat(permission.getResource()).isEqualTo(Resource.ALL);
+    assertThat(permission.getOperation()).isEqualTo(Operation.READ);
+    assertThat(permission.getResourceString()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getOperationString()).isEqualTo("READ");
+    assertThat(permission.getTarget()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.getKey()).isEqualTo(ResourcePermission.ALL);
+    assertThat(permission.toString()).isEqualTo("*:READ");
+  }
+
+  @Test
+  public void invalidResourceOperation() {
+    assertThatThrownBy(() -> new ResourcePermission("invalid", "invalid"))
+        .isInstanceOf(java.lang.IllegalArgumentException.class);
+  }
+
+  @Test
+  public void regionNameIsStripped() {
+    ResourcePermission permission = new ResourcePermission("DATA", "READ", "/regionA");
+    assertThat(permission.getResource()).isEqualTo(Resource.DATA);
+    assertThat(permission.getOperation()).isEqualTo(Operation.READ);
+    assertThat(permission.getTarget()).isEqualTo("regionA");
+    assertThat(permission.getKey()).isEqualTo(ResourcePermission.ALL);
+  }
+
+  @Test
+  public void allImplies() {
+    ResourcePermission permission = ResourcePermissions.ALL;
+    assertThat(permission.implies(new ResourcePermission("DATA", "READ"))).isTrue();
+    assertThat(permission.implies(new ResourcePermission("DATA", "WRITE"))).isTrue();
+    assertThat(permission.implies(new ResourcePermission("DATA", "MANAGE"))).isTrue();
+    assertThat(permission.implies(new ResourcePermission("CLUSTER", "READ"))).isTrue();
+    assertThat(permission.implies(new ResourcePermission("CLUSTER", "WRITE"))).isTrue();
+    assertThat(permission.implies(new ResourcePermission("CLUSTER", "MANAGE"))).isTrue();
+
+    permission = ResourcePermissions.DATA_ALL;
+    assertThat(permission.implies(new ResourcePermission("DATA", "READ"))).isTrue();
+    assertThat(permission.implies(new ResourcePermission("DATA", "WRITE"))).isTrue();
+    assertThat(permission.implies(new ResourcePermission("DATA", "MANAGE"))).isTrue();
+    assertThat(permission.implies(new ResourcePermission("CLUSTER", "READ"))).isFalse();
+    assertThat(permission.implies(new ResourcePermission("CLUSTER", "WRITE"))).isFalse();
+    assertThat(permission.implies(new ResourcePermission("CLUSTER", "MANAGE"))).isFalse();
+
+    permission = ResourcePermissions.CLUSTER_ALL;
+    assertThat(permission.implies(new ResourcePermission("DATA", "READ"))).isFalse();
+    assertThat(permission.implies(new ResourcePermission("DATA", "WRITE"))).isFalse();
+    assertThat(permission.implies(new ResourcePermission("DATA", "MANAGE"))).isFalse();
+    assertThat(permission.implies(new ResourcePermission("CLUSTER", "READ"))).isTrue();
+    assertThat(permission.implies(new ResourcePermission("CLUSTER", "WRITE"))).isTrue();
+    assertThat(permission.implies(new ResourcePermission("CLUSTER", "MANAGE"))).isTrue();
   }
 
   @Test
   public void testToString() {
-    context = new ResourcePermission();
-    assertEquals("NULL:NULL", context.toString());
+    ResourcePermission context = new ResourcePermission();
+    assertThat("NULL:NULL").isEqualTo(context.toString());
 
-    context = new ResourcePermission(Resource.DATA, Operation.MANAGE);
-    assertEquals("DATA:MANAGE", context.toString());
+    context = new ResourcePermission("data", "manage");
+    assertThat("DATA:MANAGE").isEqualTo(context.toString());
+
+    context = new ResourcePermission("data", "read", "regionA");
+    assertThat("DATA:READ:regionA").isEqualTo(context.toString());
+
+    context = new ResourcePermission("DATA", "READ", "/regionA", "key");
+    assertThat("DATA:READ:regionA:key").isEqualTo(context.toString());
 
     context = new ResourcePermission(Resource.DATA, Operation.MANAGE, "REGIONA");
-    assertEquals("DATA:MANAGE:REGIONA", context.toString());
+    assertThat("DATA:MANAGE:REGIONA").isEqualTo(context.toString());
 
     context = new ResourcePermission(Resource.DATA, Operation.MANAGE);
-    assertEquals("DATA:MANAGE", context.toString());
+    assertThat("DATA:MANAGE").isEqualTo(context.toString());
+
+    context = new ResourcePermission("ALL", "READ");
+    assertThat(context.toString()).isEqualTo("*:READ");
+
+    context = new ResourcePermission("DATA", "ALL");
+    assertThat(context.toString()).isEqualTo("DATA");
+
+    context = new ResourcePermission("ALL", "ALL", "regionA", "*");
+    assertThat(context.toString()).isEqualTo("*:*:regionA");
   }
 
   @Test
-  public void testImplies() {
-    WildcardPermission role = new WildcardPermission("*:read");
-    role.implies(new ResourcePermission(Resource.DATA, Operation.READ));
-    role.implies(new ResourcePermission(Resource.CLUSTER, Operation.READ));
+  public void impliesWithWildCardPermission() {
+    // If caseSensitive=false, the permission string becomes lower-case, which will cause failures
+    // when testing implication against our (case sensitive) resources, e.g., DATA
 
-    role = new WildcardPermission("*:read:*");
-    role.implies(new ResourcePermission(Resource.DATA, Operation.READ, "testRegion"));
-    role.implies(new ResourcePermission(Resource.CLUSTER, Operation.READ, "anotherRegion", "key1"));
+    WildcardPermission context = new WildcardPermission("*:READ", true);
+    assertThat(context.implies(new ResourcePermission(Resource.DATA, Operation.READ))).isTrue();
+    assertThat(context.implies(new ResourcePermission(Resource.CLUSTER, Operation.READ))).isTrue();
 
-    role = new WildcardPermission("data:*:testRegion");
-    role.implies(new ResourcePermission(Resource.DATA, Operation.READ, "testRegion"));
-    role.implies(new ResourcePermission(Resource.DATA, Operation.WRITE, "testRegion"));
+    context = new WildcardPermission("*:READ:*", true);
+    assertThat(context.implies(new ResourcePermission(Resource.DATA, Operation.READ, "testRegion")))
+        .isTrue();
+    assertThat(context
+        .implies(new ResourcePermission(Resource.CLUSTER, Operation.READ, "anotherRegion", "key1")))
+            .isTrue();
+
+    context = new WildcardPermission("DATA:*:testRegion", true);
+    assertThat(context.implies(new ResourcePermission(Resource.DATA, Operation.READ, "testRegion")))
+        .isTrue();
+    assertThat(
+        context.implies(new ResourcePermission(Resource.DATA, Operation.WRITE, "testRegion")))
+            .isTrue();
   }
 }

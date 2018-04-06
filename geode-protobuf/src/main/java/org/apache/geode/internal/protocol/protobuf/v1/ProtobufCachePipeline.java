@@ -21,13 +21,12 @@ import java.io.OutputStream;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
+import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 
 
 @Experimental
 public final class ProtobufCachePipeline implements ClientProtocolProcessor {
-  private final ProtocolClientStatistics statistics;
+  private final ClientStatistics statistics;
   private final ProtobufStreamProcessor streamProcessor;
   private final MessageExecutionContext messageExecutionContext;
 

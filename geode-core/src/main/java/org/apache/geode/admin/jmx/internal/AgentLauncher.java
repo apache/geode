@@ -43,7 +43,7 @@ import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
 import org.apache.geode.admin.jmx.AgentFactory;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
@@ -376,7 +376,7 @@ public class AgentLauncher {
   }
 
   private Agent createAgent(final Properties props) throws IOException, AdminException {
-    DistributionManager.setIsDedicatedAdminVM(true);
+    ClusterDistributionManager.setIsDedicatedAdminVM(true);
     SystemFailure.setExitOK(true);
 
     final AgentConfigImpl config = new AgentConfigImpl(props);

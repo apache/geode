@@ -117,7 +117,10 @@ public class StartLocatorCommand implements GfshCommand {
       @CliOption(key = CliStrings.START_LOCATOR__HTTP_SERVICE_PORT,
           help = CliStrings.START_LOCATOR__HTTP_SERVICE_PORT__HELP) final Integer httpServicePort,
       @CliOption(key = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS,
-          help = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress)
+          help = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress,
+      @CliOption(key = CliStrings.START_LOCATOR__REDIRECT_OUTPUT, unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
+          help = CliStrings.START_LOCATOR__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput)
       throws Exception {
     if (StringUtils.isBlank(memberName)) {
       // when the user doesn't give us a name, we make one up!
@@ -167,9 +170,6 @@ public class StartLocatorCommand implements GfshCommand {
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, jmxManagerHostnameForClients);
 
-    // read the OSProcess enable redirect system property here
-    // TODO: replace with new GFSH argument
-    final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
     LocatorLauncher.Builder locatorLauncherBuilder =
         new LocatorLauncher.Builder().setBindAddress(bindAddress).setForce(force).setPort(port)
             .setRedirectOutput(redirectOutput).setWorkingDirectory(workingDirectory);
@@ -293,13 +293,14 @@ public class StartLocatorCommand implements GfshCommand {
     // If the connect succeeds add the connected message to the result,
     // Else, ask the user to use the "connect" command to connect to the Locator.
     if (shouldAutoConnect(connect)) {
-      doAutoConnect(locatorHostName, locatorPort, configProperties, infoResultData);
-    }
+      boolean connected =
+          doAutoConnect(locatorHostName, locatorPort, configProperties, infoResultData);
 
-    // Report on the state of the Shared Configuration service if enabled...
-    if (enableSharedConfiguration) {
-      infoResultData.addLine(ClusterConfigurationStatusRetriever.fromLocator(locatorHostName,
-          locatorPort, configProperties));
+      // Report on the state of the Shared Configuration service if enabled...
+      if (enableSharedConfiguration && connected) {
+        infoResultData.addLine(ClusterConfigurationStatusRetriever.fromLocator(locatorHostName,
+            locatorPort, configProperties));
+      }
     }
 
     return ResultBuilder.buildResult(infoResultData);
@@ -314,7 +315,7 @@ public class StartLocatorCommand implements GfshCommand {
     return (connect && !isConnectedAndReady());
   }
 
-  private void doAutoConnect(final String locatorHostname, final int locatorPort,
+  private boolean doAutoConnect(final String locatorHostname, final int locatorPort,
       final Properties configurationProperties, final InfoResultData infoResultData) {
     boolean connectSuccess = false;
     boolean jmxManagerAuthEnabled = false;
@@ -375,27 +376,28 @@ public class StartLocatorCommand implements GfshCommand {
       infoResultData.addLine("\n");
       infoResultData.addLine(responseFailureMessage);
     }
-
+    return connectSuccess;
   }
 
   private void doOnConnectionFailure(final String locatorHostName, final int locatorPort,
       final boolean jmxManagerAuthEnabled, final boolean jmxManagerSslEnabled,
       final InfoResultData infoResultData) {
     infoResultData.addLine("\n");
-    infoResultData.addLine(CliStrings.format(CliStrings.START_LOCATOR__USE__0__TO__CONNECT,
-        new CommandStringBuilder(CliStrings.CONNECT)
-            .addOption(CliStrings.CONNECT__LOCATOR, locatorHostName + "[" + locatorPort + "]")
-            .toString()));
+    CommandStringBuilder commandUsage = new CommandStringBuilder(CliStrings.CONNECT)
+        .addOption(CliStrings.CONNECT__LOCATOR, locatorHostName + "[" + locatorPort + "]");
 
     StringBuilder message = new StringBuilder();
 
     if (jmxManagerAuthEnabled) {
+      commandUsage.addOption(CliStrings.CONNECT__USERNAME).addOption(CliStrings.CONNECT__PASSWORD);
       message.append("Authentication");
     }
     if (jmxManagerSslEnabled) {
       message.append(jmxManagerAuthEnabled ? " and " : StringUtils.EMPTY)
           .append("SSL configuration");
     }
+    infoResultData.addLine(CliStrings.format(
+        CliStrings.START_LOCATOR__USE__0__TO__CONNECT_WITH_SECURITY, commandUsage.toString()));
     if (jmxManagerAuthEnabled || jmxManagerSslEnabled) {
       message.append(" required to connect to the Manager.");
       infoResultData.addLine("\n");
@@ -429,6 +431,10 @@ public class StartLocatorCommand implements GfshCommand {
     commandLine.add("-Djava.awt.headless=true");
     commandLine.add(
         "-Dsun.rmi.dgc.server.gcInterval".concat("=").concat(Long.toString(Long.MAX_VALUE - 1)));
+    if (launcher.isRedirectingOutput()) {
+      commandLine
+          .add("-D".concat(OSProcess.DISABLE_REDIRECTION_CONFIGURATION_PROPERTY).concat("=true"));
+    }
     commandLine.add(LocatorLauncher.class.getName());
     commandLine.add(LocatorLauncher.Command.START.getName());
 
@@ -459,6 +465,7 @@ public class StartLocatorCommand implements GfshCommand {
     if (launcher.isRedirectingOutput()) {
       commandLine.add("--redirect-output");
     }
+
     return commandLine.toArray(new String[commandLine.size()]);
   }
 

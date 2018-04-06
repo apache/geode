@@ -34,5 +34,5 @@ public interface WritablePdxInstance extends PdxInstance {
    * @throws PdxFieldDoesNotExistException if the named field does not exist
    * @throws PdxFieldTypeMismatchException if the type of the value is not compatible with the field
    */
-  public void setField(String fieldName, Object value);
+  void setField(String fieldName, Object value);
 }

@@ -25,22 +25,22 @@ public interface ConnectionProvider {
    *
    * @return a PooledConnection object to the user.
    */
-  public Object borrowConnection() throws PoolException;
+  Object borrowConnection() throws PoolException;
 
   /**
    * Returns a PooledConnection object to the pool.
    *
    * @param connectionObject to be returned to the pool
    */
-  public void returnConnection(Object connectionObject);
+  void returnConnection(Object connectionObject);
 
   /**
    * Closes a PooledConnection object .
    */
-  public void returnAndExpireConnection(Object connectionObject);
+  void returnAndExpireConnection(Object connectionObject);
 
   /**
    * Clean up the resources before restart of Cache
    */
-  public void clearUp();
+  void clearUp();
 }

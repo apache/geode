@@ -35,7 +35,7 @@ public interface HashingStrategy extends Serializable {
    * @param o object for which the hash-code is to be computed
    * @return the hashCode
    */
-  public int hashCode(Object o);
+  int hashCode(Object o);
 
   /**
    * Compares o1 and o2 for equality. Strategy implementors may use the objects' own equals()
@@ -45,5 +45,5 @@ public interface HashingStrategy extends Serializable {
    * @param o2 an <code>Object</code> value
    * @return true if the objects are equal according to this strategy.
    */
-  public boolean equals(Object o1, Object o2);
+  boolean equals(Object o1, Object o2);
 }

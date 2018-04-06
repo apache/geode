@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXCommitMessage;
+import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXSynchronizationRunnable;
@@ -72,7 +73,7 @@ public class TXSynchronizationCommand extends BaseCommand {
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
-
+    final boolean isDebugEnabled = logger.isDebugEnabled();
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
     CompletionType type = CompletionType.values()[clientMessage.getPart(0).getInt()];
@@ -93,11 +94,33 @@ public class TXSynchronizationCommand extends BaseCommand {
     // get the tx state without associating it with this thread. That's done later
     final TXStateProxy txProxy = txMgr.masqueradeAs(clientMessage, member, true);
 
+    final TXId txId = txProxy.getTxId();
+    TXCommitMessage commitMessage = txMgr.getRecentlyCompletedMessage(txId);
+    if (commitMessage != null && commitMessage != TXCommitMessage.ROLLBACK_MSG) {
+      assert type == CompletionType.AFTER_COMPLETION;
+      try {
+        CommitCommand.writeCommitResponse(commitMessage, clientMessage, serverConnection);
+      } catch (IOException e) {
+        if (isDebugEnabled) {
+          logger.debug("Problem writing reply to client", e);
+        }
+      } catch (RuntimeException e) {
+        try {
+          writeException(clientMessage, e, false, serverConnection);
+        } catch (IOException ioe) {
+          if (isDebugEnabled) {
+            logger.debug("Problem writing reply to client", ioe);
+          }
+        }
+      }
+      serverConnection.setAsTrue(RESPONDED);
+      return;
+    }
+
     // we have to run beforeCompletion and afterCompletion in the same thread
     // because beforeCompletion obtains locks for the thread and afterCompletion
     // releases them
     if (txProxy != null) {
-      final boolean isDebugEnabled = logger.isDebugEnabled();
       try {
         if (type == CompletionType.BEFORE_COMPLETION) {
           Runnable beforeCompletion = new Runnable() {
@@ -143,7 +166,8 @@ public class TXSynchronizationCommand extends BaseCommand {
             }
           };
           TXSynchronizationRunnable sync =
-              new TXSynchronizationRunnable(beforeCompletion, serverConnection.getAcceptor());
+              new TXSynchronizationRunnable(serverConnection.getCache().getCancelCriterion(),
+                  serverConnection.getAcceptor(), beforeCompletion);
           txProxy.setSynchronizationRunnable(sync);
           Executor exec = InternalDistributedSystem.getConnectedInstance().getDistributionManager()
               .getWaitingThreadPool();

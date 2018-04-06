@@ -168,7 +168,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     this.acker = acker;
   }
 
-  public ReplySender getReplySender(DM dm) {
+  public ReplySender getReplySender(DistributionManager dm) {
     if (acker != null) {
       return acker;
     } else {
@@ -189,12 +189,12 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   public boolean orderedDelivery() {
     final int processorType = getProcessorType();
     switch (processorType) {
-      case DistributionManager.SERIAL_EXECUTOR:
+      case ClusterDistributionManager.SERIAL_EXECUTOR:
         // no need to use orderedDelivery for PR ops particularly when thread
         // does not own resources
         // case DistributionManager.PARTITIONED_REGION_EXECUTOR:
         return true;
-      case DistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR:
+      case ClusterDistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR:
         // allow nested distributed functions to be executed from within the
         // execution of a function
         return false;
@@ -331,7 +331,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   /**
    * Return the Executor in which to process this message.
    */
-  protected Executor getExecutor(DistributionManager dm) {
+  protected Executor getExecutor(ClusterDistributionManager dm) {
     return dm.getExecutor(getProcessorType(), sender);
   }
 
@@ -346,12 +346,12 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    *
    * @param dm the distribution manager that is processing the message.
    */
-  protected abstract void process(DistributionManager dm);
+  protected abstract void process(ClusterDistributionManager dm);
 
   /**
    * Scheduled action to take when on this message when we are ready to process it.
    */
-  protected void scheduleAction(final DistributionManager dm) {
+  protected void scheduleAction(final ClusterDistributionManager dm) {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "Processing '{}'", this);
     }
@@ -417,9 +417,9 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   /**
    * Schedule this message's process() method in a thread determined by getExecutor()
    */
-  protected void schedule(final DistributionManager dm) {
+  protected void schedule(final ClusterDistributionManager dm) {
     boolean inlineProcess = INLINE_PROCESS
-        && getProcessorType() == DistributionManager.SERIAL_EXECUTOR && !isPreciousThread();
+        && getProcessorType() == ClusterDistributionManager.SERIAL_EXECUTOR && !isPreciousThread();
 
     boolean forceInline = this.acker != null || getInlineProcess() || Connection.isDominoThread();
 
@@ -481,7 +481,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     } // not inline
   }
 
-  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
     // subclasses should override this method if processing
     // them may add to multiple serial gateways.
     return false;

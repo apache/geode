@@ -34,7 +34,7 @@ public interface Query {
    *
    * @return the original query string
    */
-  public String getQueryString();
+  String getQueryString();
 
 
   /**
@@ -78,8 +78,8 @@ public interface Query {
    * @throws PartitionOfflineException If persistent data recovery is not complete for a partitioned
    *         region referred to in the query.
    */
-  public Object execute() throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException;
+  Object execute() throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException;
 
   /**
    * Executes this query with the given parameters and returns an object that represent its result.
@@ -125,7 +125,7 @@ public interface Query {
    *         region referred to in the query.
    *
    */
-  public Object execute(Object... params) throws FunctionDomainException, TypeMismatchException,
+  Object execute(Object... params) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException;
 
   /**
@@ -184,7 +184,7 @@ public interface Query {
    * @throws PartitionOfflineException If persistent data recovery is not complete for a partitioned
    *         region referred to in the query.
    */
-  public Object execute(RegionFunctionContext context) throws FunctionDomainException,
+  Object execute(RegionFunctionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
 
   /**
@@ -244,9 +244,8 @@ public interface Query {
    * @throws PartitionOfflineException If persistent data recovery is not complete for a partitioned
    *         region referred to in the query.
    */
-  public Object execute(RegionFunctionContext context, Object[] params)
-      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
-      QueryInvocationTargetException;
+  Object execute(RegionFunctionContext context, Object[] params) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
 
   /**
    * Compiles this <code>Query</code> to achieve higher performance execution.
@@ -257,7 +256,7 @@ public interface Query {
    * @deprecated as of 6.5
    */
   @Deprecated
-  public void compile() throws TypeMismatchException, NameResolutionException;
+  void compile() throws TypeMismatchException, NameResolutionException;
 
   /**
    * Return whether this query has been compiled into VM bytecodes.
@@ -266,11 +265,11 @@ public interface Query {
    * @deprecated as of 6.5
    */
   @Deprecated
-  public boolean isCompiled();
+  boolean isCompiled();
 
 
   /**
    * Get statistics information for this query.
    */
-  public QueryStatistics getStatistics();
+  QueryStatistics getStatistics();
 }

@@ -14,32 +14,43 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import static org.apache.geode.internal.cache.backup.AbstractBackupWriterConfig.TYPE;
+
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 
 class PrepareBackupFactory {
 
-  BackupReplyProcessor createReplyProcessor(BackupResultCollector resultCollector, DM dm,
-      Set<InternalDistributedMember> recipients) {
+  BackupReplyProcessor createReplyProcessor(BackupResultCollector resultCollector,
+      DistributionManager dm, Set<InternalDistributedMember> recipients) {
     return new BackupReplyProcessor(resultCollector, dm, recipients);
   }
 
   PrepareBackupRequest createRequest(InternalDistributedMember sender,
-      Set<InternalDistributedMember> recipients, int processorId) {
-    return new PrepareBackupRequest(sender, recipients, processorId, this);
+      Set<InternalDistributedMember> recipients, int processorId, Properties properties) {
+    return new PrepareBackupRequest(sender, recipients, processorId, this, properties);
   }
 
-  PrepareBackup createPrepareBackup(InternalDistributedMember member, InternalCache cache) {
-    return new PrepareBackup(member, cache);
+  PrepareBackup createPrepareBackup(InternalDistributedMember member, InternalCache cache,
+      Properties properties) {
+    String memberId = cleanSpecialCharacters(member.toString());
+    BackupWriter backupWriter = BackupWriterFactory.getFactoryForType(properties.getProperty(TYPE))
+        .createWriter(properties, memberId);
+    return new PrepareBackup(member, cache, backupWriter);
   }
 
   BackupResponse createBackupResponse(InternalDistributedMember sender,
       HashSet<PersistentID> persistentIds) {
     return new BackupResponse(sender, persistentIds);
+  }
+
+  private String cleanSpecialCharacters(String string) {
+    return string.replaceAll("[^\\w]+", "_");
   }
 }

@@ -21,6 +21,7 @@ import java.util.Set;
 import javax.management.Notification;
 import javax.management.ObjectName;
 
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -394,22 +395,23 @@ public class MBeanAggregator implements ProxyListener {
   }
 
   @Override
-  public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+  public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
+      boolean crashed) {
     distributedSystemBridge.memberDeparted(id, crashed);
   }
 
   @Override
-  public void memberJoined(InternalDistributedMember id) {
+  public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
     distributedSystemBridge.memberJoined(id);
 
   }
 
-  public void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining) {}
+  public void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
   @Override
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-      String reason) {
+  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {
     distributedSystemBridge.memberSuspect(id, whoSuspected);
   }
 

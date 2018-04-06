@@ -30,7 +30,7 @@ public interface SystemMembershipEvent {
   /**
    * Returns the distributed member as a String.
    */
-  public String getMemberId();
+  String getMemberId();
 
   /**
    * Returns the {@link DistributedMember} that this event originated in.
@@ -38,5 +38,5 @@ public interface SystemMembershipEvent {
    * @return the member that performed the operation that originated this event.
    * @since GemFire 5.0
    */
-  public DistributedMember getDistributedMember();
+  DistributedMember getDistributedMember();
 }

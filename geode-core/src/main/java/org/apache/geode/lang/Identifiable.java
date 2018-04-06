@@ -34,6 +34,6 @@ public interface Identifiable<T extends Comparable<T>> extends Serializable {
    *
    * @return an identifier uniquely identifying this Object.
    */
-  public T getId();
+  T getId();
 
 }

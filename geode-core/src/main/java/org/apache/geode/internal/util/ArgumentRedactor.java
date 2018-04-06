@@ -16,98 +16,99 @@
 package org.apache.geode.internal.util;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 public class ArgumentRedactor {
+  public static final String redacted = "********";
+
+  // All taboo words should be entirely lowercase.
+  private static final List<String> tabooToContain = ArrayUtils.asList("password");
+  private static final List<String> tabooForKeyToStartWith =
+      ArrayUtils.asList(DistributionConfig.SYS_PROP_NAME, DistributionConfig.SSL_SYSTEM_PROPS_NAME,
+          ConfigurationProperties.SECURITY_PREFIX);
+
+  // This pattern consists of three capture groups:
+  // The option, consisting of
+  // (a) A leading space or starting string boundary, followed by one or two hyphens
+  // (b) one or more non-whitespace, non-"=" characters, matching greedily
+  // The option-value separator, consisting of: any amount of whitespace surrounding at most 1 "="
+  // The value, consisting of:
+  // (a) If not wrapped in quotes, all non-whitespace characters, matching greedily.
+  // (b) If wrapped in quotes, any non-quote character, matching greedily, until the closing quote.
+  // -- -- This will therefore break on, e.g., --opt="escaped \" quote" and only redact "escaped."
+  // Positive lookahead between groups 1 and 2 to require space or "=", while * and ? match empty.
+  // Negative lookahead between groups 2 and 3 to avoid "--boolFlag --newOption" matching as a pair.
+  private static final Pattern optionWithValuePattern =
+      Pattern.compile("([^ ]--?[^\\s=]+)(?=[ =])( *=? *)(?!-)((?:\"[^\"]*\"|\\S+))");
 
   private ArgumentRedactor() {}
 
-  public static String redact(final List<String> args) {
-    StringBuilder redacted = new StringBuilder();
-    for (String arg : args) {
-      redacted.append(redact(arg)).append(" ");
-    }
-    return redacted.toString().trim();
-  }
-
   /**
-   * Accept a map of key/value pairs and produce a printable string, redacting any necessary values.
+   * Parse a string to find key-value pairs and redact the values if necessary.<br>
    *
-   * @param map A {@link Map} of key/value pairs such as a collection of properties
-   *
-   * @return A printable string with redacted fields. E.g., "username=jdoe password=********"
-   */
-  public static String redact(final Map<String, String> map) {
-    StringBuilder redacted = new StringBuilder();
-    for (Entry<String, String> entry : map.entrySet()) {
-      redacted.append(entry.getKey());
-      redacted.append("=");
-      redacted.append(redact(entry));
-      redacted.append(" ");
-    }
-    return redacted.toString().trim();
-  }
-
-  /**
-   * Returns the redacted value of the {@link Entry} if the key indicates redaction is necessary.
-   * Otherwise, value is returned, unchanged.
-   *
-   * @param entry A key/value pair
-   *
-   * @return The redacted string for value.
-   */
-  public static String redact(Entry<String, String> entry) {
-    return redact(entry.getKey(), entry.getValue());
-  }
-
-  /**
-   * Parse a string to find key=value pairs and redact the values if necessary. If more than one
-   * key=value pair exists in the input, each pair must be preceded by a hyphen '-' to delineate the
-   * pairs. <br>
-   * Example:<br>
-   * Single value: "password=secret" or "--password=secret" Multiple values: "-Dflag -Dkey=value
-   * --classpath=."
+   * The following format is expected:<br>
+   * - Each key-value pair should be separated by spaces.<br>
+   * - The key of each key-value pair must be preceded by a hyphen '-'.<br>
+   * - Values may or may not be wrapped in quotation marks.<br>
+   * - If a value is wrapped in quotation marks, the actual value should not contain any quotation
+   * mark.<br>
+   * - Keys and values may be separated by an equals sign '=' or any number of spaces.<br>
+   * <br>
+   * Examples:<br>
+   * "--password=secret"<br>
+   * "--user me --password secret"<br>
+   * "-Dflag -Dkey=value"<br>
+   * "--classpath=."<br>
    *
    * @param line The argument input to be parsed
+   * @param permitFirstPairWithoutHyphen When true, prepends the line with a "-", which is later
+   *        removed. This allows the use on, e.g., "password=secret" rather than "--password=secret"
+   *
    * @return A redacted string that has sensitive information obscured.
    */
-  public static String redact(String line) {
-    StringBuilder redacted = new StringBuilder();
-    if (line.startsWith("-")) {
-      line = " " + line;
-      String[] args = line.split(" -");
-      StringBuilder param = new StringBuilder();
-      for (String arg : args) {
-        if (arg.isEmpty()) {
-          param.append("-");
-        } else {
-          String[] pair = arg.split("=", 2);
-          param.append(pair[0].trim());
-          if (pair.length == 1) {
-            redacted.append(param);
-          } else {
-            redacted.append(param).append("=").append(redact(param.toString(), pair[1].trim()));
-          }
-          redacted.append(" ");
-        }
-        param.setLength(0);
-        param.append("-");
-      }
-    } else {
-      String[] args = line.split("=", 2);
-      if (args.length == 1) {
-        redacted.append(line);
-      } else {
-        redacted.append(args[0].trim()).append("=").append(redact(args[0], args[1]));
-      }
-      redacted.append(" ");
+  public static String redact(String line, boolean permitFirstPairWithoutHyphen) {
+
+    boolean wasPaddedWithHyphen = false;
+    if (!line.trim().startsWith("-") && permitFirstPairWithoutHyphen) {
+      line = "-" + line.trim();
+      wasPaddedWithHyphen = true;
     }
-    return redacted.toString().trim();
+
+    // We capture the key, separator, and values separately, replacing only the value at print.
+    Matcher matcher = optionWithValuePattern.matcher(line);
+    while (matcher.find()) {
+      String option = matcher.group(1);
+      if (!isTaboo(option)) {
+        continue;
+      }
+
+      String separator = matcher.group(2);
+      String withRedaction = option + separator + redacted;
+      line = line.replace(matcher.group(), withRedaction);
+    }
+
+    if (wasPaddedWithHyphen) {
+      line = line.substring(1);
+    }
+    return line;
   }
 
-  public static String redactScriptLine(String line) {
-    return line.replaceAll("password=[\\S]+", "password=********");
+  /**
+   * This alias permits the first key-value pair to be given without a leading hyphen, so that
+   * "password=secret" will be properly redacted.
+   *
+   * See {@link org.apache.geode.internal.util.ArgumentRedactor#redact(java.lang.String, boolean)}
+   */
+  public static String redact(String line) {
+    return redact(line, true);
+  }
+
+  public static String redact(final List<String> args) {
+    return redact(String.join(" ", args));
   }
 
   /**
@@ -121,33 +122,35 @@ public class ArgumentRedactor {
    * @return A redacted string if the key indicates it should be redacted, otherwise the string is
    *         unchanged.
    */
-  public static String redact(String key, String value) {
-    if (shouldBeRedacted(key)) {
-      return "********";
+  public static String redactValueIfNecessary(String key, String value) {
+    if (isTaboo(key)) {
+      return redacted;
     }
-    return value.trim();
+    return value;
   }
+
 
   /**
    * Determine whether a key's value should be redacted.
    *
-   * @param key The key in question.
+   * @param key The option key in question.
    *
    * @return true if the value should be redacted, otherwise false.
    */
-  private static boolean shouldBeRedacted(String key) {
+  static boolean isTaboo(String key) {
     if (key == null) {
       return false;
     }
-
-    // Clean off any flags such as -J and -D to get to the actual start of the parameter
-    String compareKey = key;
-    if (key.startsWith("-J")) {
-      compareKey = key.substring(2);
+    for (String taboo : tabooForKeyToStartWith) {
+      if (key.toLowerCase().startsWith(taboo)) {
+        return true;
+      }
     }
-    if (compareKey.startsWith("-D")) {
-      compareKey = compareKey.substring(2);
+    for (String taboo : tabooToContain) {
+      if (key.toLowerCase().contains(taboo)) {
+        return true;
+      }
     }
-    return compareKey.toLowerCase().contains("password");
+    return false;
   }
 }

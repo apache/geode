@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +26,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -39,7 +38,7 @@ public class FinishBackupFactoryTest {
   private FinishBackupFactory finishBackupFactory;
 
   private BackupResultCollector resultCollector;
-  private DM dm;
+  private DistributionManager dm;
   private InternalDistributedMember sender;
   private Set<InternalDistributedMember> recipients;
   private InternalDistributedMember member;
@@ -48,7 +47,7 @@ public class FinishBackupFactoryTest {
   @Before
   public void setUp() throws Exception {
     resultCollector = mock(BackupResultCollector.class);
-    dm = mock(DM.class);
+    dm = mock(DistributionManager.class);
     sender = mock(InternalDistributedMember.class);
     member = mock(InternalDistributedMember.class);
     cache = mock(InternalCache.class);
@@ -69,14 +68,13 @@ public class FinishBackupFactoryTest {
 
   @Test
   public void createRequestReturnsFinishBackupRequest() throws Exception {
-    assertThat(finishBackupFactory.createRequest(sender, recipients, 1, new File("targetDir"),
-        new File("baselineDir"), false)).isInstanceOf(FinishBackupRequest.class);
+    assertThat(finishBackupFactory.createRequest(sender, recipients, 1))
+        .isInstanceOf(FinishBackupRequest.class);
   }
 
   @Test
   public void createFinishBackupReturnsFinishBackup() throws Exception {
-    assertThat(finishBackupFactory.createFinishBackup(cache, new File("targetDir"),
-        new File("baselineDir"), false)).isInstanceOf(FinishBackup.class);
+    assertThat(finishBackupFactory.createFinishBackup(cache)).isInstanceOf(FinishBackup.class);
   }
 
   @Test

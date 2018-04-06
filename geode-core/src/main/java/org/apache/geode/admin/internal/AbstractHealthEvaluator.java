@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -58,7 +58,7 @@ public abstract class AbstractHealthEvaluator {
    * processed before the <code>InternalDistributedSystem</code>'s <code>DistributionManager</code>
    * is set.
    */
-  protected AbstractHealthEvaluator(GemFireHealthConfig config, DM dm) {
+  protected AbstractHealthEvaluator(GemFireHealthConfig config, DistributionManager dm) {
     this.numEvaluations = 0;
   }
 

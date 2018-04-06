@@ -414,34 +414,34 @@ public class InternalResourceManager implements ResourceManager {
   /**
    * For testing only. Receives callbacks for resource related events.
    */
-  public static interface ResourceObserver {
+  public interface ResourceObserver {
     /**
      * Indicates that rebalancing has started on a given region.
      *
      * @param region
      */
-    public void rebalancingStarted(Region region);
+    void rebalancingStarted(Region region);
 
     /**
      * Indicates that rebalancing has finished on a given region.
      *
      * @param region
      */
-    public void rebalancingFinished(Region region);
+    void rebalancingFinished(Region region);
 
     /**
      * Indicates that recovery has started on a given region.
      *
      * @param region
      */
-    public void recoveryStarted(Region region);
+    void recoveryStarted(Region region);
 
     /**
      * Indicates that recovery has finished on a given region.
      *
      * @param region
      */
-    public void recoveryFinished(Region region);
+    void recoveryFinished(Region region);
 
     /**
      * Indicated that a membership event triggered a recovery operation, but the recovery operation
@@ -450,7 +450,7 @@ public class InternalResourceManager implements ResourceManager {
      *
      * @param region
      */
-    public void recoveryConflated(PartitionedRegion region);
+    void recoveryConflated(PartitionedRegion region);
 
     /**
      * Indicates that a bucket is being moved from the source member to the target member.
@@ -460,7 +460,7 @@ public class InternalResourceManager implements ResourceManager {
      * @param source the member the bucket is moving from
      * @param target the member the bucket is moving to
      */
-    public void movingBucket(Region region, int bucketId, DistributedMember source,
+    void movingBucket(Region region, int bucketId, DistributedMember source,
         DistributedMember target);
 
     /**
@@ -471,7 +471,7 @@ public class InternalResourceManager implements ResourceManager {
      * @param source the member the bucket primary is moving from
      * @param target the member the bucket primary is moving to
      */
-    public void movingPrimary(Region region, int bucketId, DistributedMember source,
+    void movingPrimary(Region region, int bucketId, DistributedMember source,
         DistributedMember target);
   }
 

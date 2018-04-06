@@ -30,7 +30,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * This class implements a connection pool for Managed connection. Extends the AbstractPoolCache to
- * inherit the pool bahavior.
+ * inherit the pool behavior.
  *
  */
 public class ManagedPoolCacheImpl extends AbstractPoolCache {

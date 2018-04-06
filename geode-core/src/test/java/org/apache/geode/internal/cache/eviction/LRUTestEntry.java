@@ -18,7 +18,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
@@ -62,7 +62,8 @@ class LRUTestEntry implements EvictableEntry {
 
   @Override
   public boolean fillInValue(final InternalRegion region, final InitialImageOperation.Entry entry,
-      final ByteArrayDataInput in, final DM distributionManager, final Version version) {
+      final ByteArrayDataInput in, final DistributionManager distributionManager,
+      final Version version) {
     return false;
   }
 

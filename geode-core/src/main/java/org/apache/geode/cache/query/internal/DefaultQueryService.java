@@ -219,7 +219,7 @@ public class DefaultQueryService implements InternalQueryService {
 
     } else {
 
-      IndexManager indexManager = IndexUtils.getIndexManager(region, true);
+      IndexManager indexManager = IndexUtils.getIndexManager(this.cache, region, true);
       Index index = indexManager.createIndex(indexName, indexType, indexedExpression, fromClause,
           imports, null, null, loadEntries);
 
@@ -284,7 +284,7 @@ public class DefaultQueryService implements InternalQueryService {
     if (region == null) {
       return null;
     }
-    IndexManager indexManager = IndexUtils.getIndexManager(region, true);
+    IndexManager indexManager = IndexUtils.getIndexManager(cache, region, true);
     IndexData indexData = indexManager.getIndex(indexType, definitions, indexedExpression, context);
     return indexData;
   }
@@ -300,7 +300,7 @@ public class DefaultQueryService implements InternalQueryService {
     if (region instanceof PartitionedRegion) {
       return (Index) ((PartitionedRegion) region).getIndex().get(indexName);
     } else {
-      IndexManager indexManager = IndexUtils.getIndexManager(region, false);
+      IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
       if (indexManager == null)
         return null;
       return indexManager.getIndex(indexName);
@@ -343,7 +343,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
     // return getBestMatchIndex(region, indexType, definitions,
     // indexedExpression);
-    IndexManager indexManager = IndexUtils.getIndexManager(region, false);
+    IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
     if (indexManager == null) {
       return null;
     }
@@ -378,7 +378,7 @@ public class DefaultQueryService implements InternalQueryService {
     if (region instanceof PartitionedRegion) {
       return ((PartitionedRegion) region).getIndexes();
     }
-    IndexManager indexManager = IndexUtils.getIndexManager(region, false);
+    IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
     if (indexManager == null)
       return null;
     return indexManager.getIndexes();
@@ -391,7 +391,7 @@ public class DefaultQueryService implements InternalQueryService {
           "Index Operation is not supported on the Server Region.");
     }
 
-    IndexManager indexManager = IndexUtils.getIndexManager(region, false);
+    IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
     if (indexManager == null)
       return null;
     return indexManager.getIndexes(indexType);
@@ -461,7 +461,7 @@ public class DefaultQueryService implements InternalQueryService {
             .create(LocalizedStrings.DefaultQueryService_EXCEPTION_REMOVING_INDEX___0), ex);
       }
     }
-    IndexManager indexManager = IndexUtils.getIndexManager(region, false);
+    IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
     if (indexManager == null)
       return;
 
@@ -937,7 +937,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
     // Second step is iterating over REs and populating all the created
     // indexes
-    IndexManager indexManager = IndexUtils.getIndexManager(region, false);
+    IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
     if (indexManager == null) {
       for (IndexCreationData icd : icds) {
         exceptionsMap.put(icd.getIndexName(),

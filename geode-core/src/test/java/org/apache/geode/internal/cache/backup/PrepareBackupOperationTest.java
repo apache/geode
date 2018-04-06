@@ -24,8 +24,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Before;
@@ -36,7 +38,7 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -45,7 +47,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class PrepareBackupOperationTest {
 
-  private DM dm;
+  private DistributionManager dm;
   private InternalCache cache;
   private Set<InternalDistributedMember> recipients;
 
@@ -62,7 +64,7 @@ public class PrepareBackupOperationTest {
 
   @Before
   public void setUp() throws Exception {
-    dm = mock(DM.class);
+    dm = mock(DistributionManager.class);
     cache = mock(InternalCache.class);
 
     prepareBackupReplyProcessor = mock(BackupReplyProcessor.class);
@@ -71,21 +73,28 @@ public class PrepareBackupOperationTest {
 
     prepareBackupFactory = mock(PrepareBackupFactory.class);
 
+    File targetDir = mock(File.class);
+    File baselineDir = mock(File.class);
+
     sender = mock(InternalDistributedMember.class, "sender");
     member1 = mock(InternalDistributedMember.class, "member1");
     member2 = mock(InternalDistributedMember.class, "member2");
     recipients = new HashSet<>();
 
-    prepareBackupOperation =
-        new PrepareBackupOperation(dm, sender, cache, recipients, prepareBackupFactory);
+    Properties backupProperties =
+        BackupUtil.createBackupProperties(targetDir.toString(), baselineDir.toString());
+
+    prepareBackupOperation = new PrepareBackupOperation(dm, sender, cache, recipients,
+        prepareBackupFactory, backupProperties);
 
     when(prepareBackupReplyProcessor.getProcessorId()).thenReturn(42);
 
     when(prepareBackupFactory.createReplyProcessor(eq(prepareBackupOperation), eq(dm),
         eq(recipients))).thenReturn(prepareBackupReplyProcessor);
-    when(prepareBackupFactory.createRequest(eq(sender), eq(recipients), eq(42)))
-        .thenReturn(prepareBackupRequest);
-    when(prepareBackupFactory.createPrepareBackup(eq(sender), eq(cache))).thenReturn(prepareBackup);
+    when(prepareBackupFactory.createRequest(eq(sender), eq(recipients), eq(42),
+        eq(backupProperties))).thenReturn(prepareBackupRequest);
+    when(prepareBackupFactory.createPrepareBackup(eq(sender), eq(cache), eq(backupProperties)))
+        .thenReturn(prepareBackup);
   }
 
   @Test

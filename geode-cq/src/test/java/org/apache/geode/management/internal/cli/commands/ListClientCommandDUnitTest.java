@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -56,7 +57,6 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -297,9 +297,9 @@ public class ListClientCommandDUnitTest extends CliCommandTestBase {
               return false;
 
             } catch (Exception e) {
-              LogWrapper.getInstance()
+              LogWrapper.getInstance(cache)
                   .warning("waitForListClientMbean3 Exception in waitForListClientMbean ::: "
-                      + CliUtil.stackTraceAsString(e));
+                      + ExceptionUtils.getStackTrace(e));
             }
             return false;
           }
@@ -351,7 +351,7 @@ public class ListClientCommandDUnitTest extends CliCommandTestBase {
           assertNotNull(p);
         } catch (Exception eee) {
           System.err.println("Exception in creating pool " + poolName + "    Exception =="
-              + CliUtil.stackTraceAsString(eee));
+              + ExceptionUtils.getStackTrace(eee));
         }
       }
     });
@@ -382,9 +382,9 @@ public class ListClientCommandDUnitTest extends CliCommandTestBase {
               }
               return false;
             } catch (Exception e) {
-              LogWrapper.getInstance()
+              LogWrapper.getInstance(cache)
                   .warning("waitForListClientMbean Exception in waitForListClientMbean ::: "
-                      + CliUtil.stackTraceAsString(e));
+                      + ExceptionUtils.getStackTrace(e));
             }
             return false;
           }

@@ -30,7 +30,7 @@ import org.junit.runners.MethodSorters;
 
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
@@ -38,9 +38,9 @@ import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.eviction.EvictionNode;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -61,7 +61,7 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
   private static Cache cache = null;
 
   /** Stores LIFO Related Statistics */
-  private static EvictionStatistics lifoStats = null;
+  private static EvictionCounters lifoStats = null;
 
   /** The distributedSystem instance */
   private static DistributedSystem distributedSystem = null;
@@ -635,7 +635,8 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
 
     @Override
     public boolean fillInValue(final InternalRegion region, final Entry entry,
-        final ByteArrayDataInput in, final DM distributionManager, final Version version) {
+        final ByteArrayDataInput in, final DistributionManager distributionManager,
+        final Version version) {
       return false;
     }
 

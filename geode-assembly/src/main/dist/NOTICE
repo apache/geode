@@ -1,5 +1,5 @@
 Apache Geode
-Copyright 2016-2017 The Apache Software Foundation.
+Copyright 2016-2018 The Apache Software Foundation.
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -26,7 +26,7 @@ Java ClassMate library was originally written by Tatu Saloranta (tatu.saloranta@
   
   * Brian Langel
 
-Jackson Core 2.9.3
+Jackson Core 2.9.4
 
   # Jackson JSON processor
 
@@ -119,7 +119,7 @@ Apache Lucene
 Servlet-api.jar and javax.servlet-*.jar are under the CDDL license, the original
 source code for this can be found at http://www.eclipse.org/jetty/downloads.php
 
-Spring Framework 4.3.13.RELEASE
+Spring Framework 4.3.14.RELEASE
 Copyright (c) 2002-2017 Pivotal, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0
@@ -131,7 +131,7 @@ Copyright (c) 2002-2017 Pivotal, Inc.
   these subcomponents is subject to the terms and conditions of the
   subcomponent's license, as noted in the license.txt file.
 
-Spring Hateoas 0.23.0.RELEASE
+Spring Hateoas 0.24.0.RELEASE
 Copyright (c) [2012-2017] Pivotal Software, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0 (the "License").  
@@ -142,7 +142,7 @@ Copyright (c) [2012-2017] Pivotal Software, Inc.
   code for the these subcomponents is subject to the terms and
   conditions of the subcomponent's license, as noted in the LICENSE file.
 
-Spring LDAP Core 2.3.1.RELEASE
+Spring LDAP Core 2.3.2.RELEASE
 
    This product includes software developed by the Spring LDAP
    Project (http://www.springframework.org/ldap).

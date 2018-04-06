@@ -624,7 +624,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
    */
   public static class ArmBasicClearHook extends ARMLockTestHookAdapter {
     @Override
-    public void afterRelease(LocalRegion owner, CacheEvent event) {
+    public void afterRelease(InternalRegion owner, CacheEvent event) {
       if ((event.getOperation().isCreate()) && owner.getName().startsWith("test")) {
         invokeClear(theOtherVM);
       }
@@ -637,7 +637,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   public static class ArmRemoveAndInvalidateClearHook extends ARMLockTestHookAdapter {
 
     @Override
-    public void afterRelease(LocalRegion owner, CacheEvent event) {
+    public void afterRelease(InternalRegion owner, CacheEvent event) {
       if ((event.getOperation().isDestroy() || event.getOperation().isInvalidate())
           && owner.getName().startsWith("test")) {
         invokeClear(theOtherVM);
@@ -650,7 +650,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
    */
   public static class ArmNoAckRemoteHook extends ARMLockTestHookAdapter {
     @Override
-    public void beforeLock(LocalRegion owner, CacheEvent event) {
+    public void beforeLock(InternalRegion owner, CacheEvent event) {
       if (event.isOriginRemote() && event.getOperation().isCreate()
           && owner.getName().startsWith("test")) {
         theOtherVM.invoke(() -> releaseStep1()); // start clear
@@ -671,7 +671,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
    */
   public static class ArmBulkClearHook extends ARMLockTestHookAdapter {
     @Override
-    public void afterBulkRelease(LocalRegion region) {
+    public void afterBulkRelease(InternalRegion region) {
       invokeClear(theOtherVM);
     }
   }

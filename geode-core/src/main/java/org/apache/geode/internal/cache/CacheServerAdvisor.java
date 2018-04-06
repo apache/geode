@@ -23,8 +23,8 @@ import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 
@@ -118,12 +118,12 @@ public class CacheServerAdvisor extends GridAdvisor {
      * @since GemFire 5.7
      */
     @Override
-    public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
-        boolean exchangeProfiles, final List<Profile> replyProfiles) {
+    public void processIncoming(ClusterDistributionManager dm, String adviseePath,
+        boolean removeProfile, boolean exchangeProfiles, final List<Profile> replyProfiles) {
       // tell local controllers about this cache server
       tellLocalControllers(removeProfile, exchangeProfiles, replyProfiles);
       // for QRM messaging we need cache servers to know about each other
-      tellLocalBridgeServers(removeProfile, exchangeProfiles, replyProfiles);
+      tellLocalBridgeServers(dm.getCache(), removeProfile, exchangeProfiles, replyProfiles);
     }
 
     @Override

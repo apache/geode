@@ -20,9 +20,9 @@ package org.apache.geode.modules.session.internal.jmx;
  */
 public interface SessionStatisticsMXBean {
 
-  public int getActiveSessions();
+  int getActiveSessions();
 
-  public int getTotalSessions();
+  int getTotalSessions();
 
-  public long getRegionUpdates();
+  long getRegionUpdates();
 }

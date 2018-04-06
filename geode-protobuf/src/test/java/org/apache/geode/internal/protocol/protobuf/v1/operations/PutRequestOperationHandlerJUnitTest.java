@@ -28,18 +28,18 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.protocol.Failure;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.Result;
-import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -51,8 +51,6 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
 
   @Before
   public void setUp() throws Exception {
-    super.setUp();
-
     regionMock = mock(Region.class);
     when(regionMock.put(TEST_KEY, TEST_VALUE)).thenReturn(1);
 
@@ -71,10 +69,10 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     verify(regionMock, times(1)).put(anyString(), anyString());
   }
 
-  @Test
-  public void test_invalidEncodingType() throws Exception {
+  @Test(expected = DecodingException.class)
+  public void processThrowsExceptionWhenUnableToDecode() throws Exception {
     String exceptionText = "unsupported type!";
-    EncodingException exception = new EncodingException(exceptionText);
+    Exception exception = new DecodingException(exceptionText);
     ProtobufSerializationService serializationServiceStub =
         mock(ProtobufSerializationService.class);
     when(serializationServiceStub.decode(any())).thenThrow(exception);
@@ -88,32 +86,13 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     BasicTypes.Entry testEntry = ProtobufUtilities.createEntry(encodedKey, testValue);
     RegionAPI.PutRequest putRequest =
         ProtobufRequestUtilities.createPutRequest(TEST_REGION, testEntry).getPutRequest();
-    Result result = operationHandler.process(serializationServiceStub, putRequest,
+    operationHandler.process(serializationServiceStub, putRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertTrue(result instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage =
-        (ClientProtocol.ErrorResponse) result.getErrorMessage();
-    assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST, errorMessage.getError().getErrorCode());
   }
 
   @Test
   public void test_RegionNotFound() throws Exception {
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(null);
-    PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    Result result = operationHandler.process(serializationService, generateTestRequest(),
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertTrue(result instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage =
-        (ClientProtocol.ErrorResponse) result.getErrorMessage();
-    assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
-  }
-
-  @Test
-  public void test_RegionThrowsClasscastException() throws Exception {
-    when(regionMock.put(any(), any())).thenThrow(ClassCastException.class);
-
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
     Result result = operationHandler.process(serializationService, generateTestRequest(),
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));

@@ -30,7 +30,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -43,6 +43,7 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -53,16 +54,16 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
 
   private InternalDistributedMember recipient;
 
-  private LocalRegion region;
+  private InternalRegion region;
 
   private List<GatewaySenderQueueEntrySynchronizationEntry> entriesToSynchronize;
 
   private static final Logger logger = LogService.getLogger();
 
   protected GatewaySenderQueueEntrySynchronizationOperation(InternalDistributedMember recipient,
-      LocalRegion region, List<InitialImageOperation.Entry> giiEntriesToSynchronize) {
+      InternalRegion internalRegion, List<InitialImageOperation.Entry> giiEntriesToSynchronize) {
     this.recipient = recipient;
-    this.region = region;
+    this.region = internalRegion;
     initializeEntriesToSynchronize(giiEntriesToSynchronize);
   }
 
@@ -74,7 +75,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
           this.entriesToSynchronize);
     }
     // Create and send message
-    DM dm = this.region.getDistributionManager();
+    DistributionManager dm = this.region.getDistributionManager();
     GatewaySenderQueueEntrySynchronizationReplyProcessor processor =
         new GatewaySenderQueueEntrySynchronizationReplyProcessor(dm, this.recipient, this);
     GatewaySenderQueueEntrySynchronizationMessage message =
@@ -86,7 +87,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
     try {
       processor.waitForReplies();
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     } catch (InterruptedException e) {
       dm.getCancelCriterion().checkCancelInProgress(e);
       Thread.currentThread().interrupt();
@@ -111,7 +112,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
 
     private GatewaySenderQueueEntrySynchronizationOperation operation;
 
-    public GatewaySenderQueueEntrySynchronizationReplyProcessor(DM dm,
+    public GatewaySenderQueueEntrySynchronizationReplyProcessor(DistributionManager dm,
         InternalDistributedMember recipient,
         GatewaySenderQueueEntrySynchronizationOperation operation) {
       super(dm, recipient);
@@ -188,7 +189,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       Object result = null;
       ReplyException replyException = null;
       try {

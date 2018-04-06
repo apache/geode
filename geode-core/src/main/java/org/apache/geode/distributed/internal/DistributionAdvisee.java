@@ -15,9 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 /**
  * Resource which uses a {@link DistributionAdvisor}.
@@ -31,19 +29,19 @@ public interface DistributionAdvisee {
    *
    * @return the underlying <code>DistributionManager</code>
    */
-  public DM getDistributionManager();
+  DistributionManager getDistributionManager();
 
   /**
    * @return the cancellation object for the advisee
    */
-  public CancelCriterion getCancelCriterion();
+  CancelCriterion getCancelCriterion();
 
   /**
    * Returns the <code>DistributionAdvisor</code> that provides advice for this advisee.
    *
    * @return the <code>DistributionAdvisor</code>
    */
-  public DistributionAdvisor getDistributionAdvisor();
+  DistributionAdvisor getDistributionAdvisor();
 
   /**
    * Returns the <code>Profile</code> representing this member in the
@@ -51,48 +49,48 @@ public interface DistributionAdvisee {
    *
    * @return the <code>Profile</code> representing this member
    */
-  public Profile getProfile();
+  Profile getProfile();
 
   /**
    * Returns this advisees parent or null if no parent exists.
    *
    * @return parent advisee
    */
-  public DistributionAdvisee getParentAdvisee();
+  DistributionAdvisee getParentAdvisee();
 
   /**
    * Returns the underlying <code>InternalDistributedSystem</code> connection.
    *
    * @return the underlying <code>InternalDistributedSystem</code>
    */
-  public InternalDistributedSystem getSystem();
+  InternalDistributedSystem getSystem();
 
   /**
    * Returns the simple name of this resource.
    *
    * @return the simple name of this resource
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns the full path of this resource.
    *
    * @return the full path of this resource.
    */
-  public String getFullPath();
+  String getFullPath();
 
   /**
    * Fill in the <code>Profile</code> with details from the advisee.
    *
    * @param profile the <code>Profile</code> to fill in with details
    */
-  public void fillInProfile(Profile profile);
+  void fillInProfile(Profile profile);
 
   /**
    * @return the serial number which identifies the static order in which this region was created in
    *         relation to other regions or other instances of this region during the life of this
    *         JVM.
    */
-  public int getSerialNumber();
+  int getSerialNumber();
 
 }

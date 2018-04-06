@@ -46,6 +46,8 @@ resources:
   source:
     uri: https://github.com/apache/geode.git
     branch: develop
+    ignore_paths:
+    - ci/*
 - name: geode-ci
   type: git
   source:
@@ -54,6 +56,12 @@ resources:
     branch: develop
     paths:
     - ci/*
+- name: geode-examples
+  type: git
+  source:
+    uri: https://github.com/apache/geode-examples.git
+    branch: develop
+    depth: 10
 - name: geode-build-version
   type: semver
   source:
@@ -134,8 +142,9 @@ jobs:
         params:
           rootfs: true
     - task: runtests
+      tags: [large]
       privileged: true
-      timeout: 7h
+      timeout: 8h
       config:
         inputs:
           - name: geode
@@ -152,6 +161,7 @@ jobs:
           PUBLIC_BUCKET: ((!public-bucket))
           PARALLEL_DUNIT: true
           DUNIT_PARALLEL_FORKS: 7
+          CALL_STACK_TIMEOUT: 25200
         run:
           args:
           - distributedTest
@@ -200,7 +210,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 7h
+      timeout: 8h
       config:
         inputs:
           - name: geode
@@ -217,6 +227,7 @@ jobs:
           PUBLIC_BUCKET: ((!public-bucket))
           PARALLEL_DUNIT: true
           DUNIT_PARALLEL_FORKS: 1
+          CALL_STACK_TIMEOUT: 25200
         run:
           args:
           - :geode-assembly:acceptanceTest
@@ -265,7 +276,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 7h
+      timeout: 8h
       config:
         inputs:
           - name: geode
@@ -282,6 +293,7 @@ jobs:
           PUBLIC_BUCKET: ((!public-bucket))
           PARALLEL_DUNIT: true
           DUNIT_PARALLEL_FORKS: 1
+          CALL_STACK_TIMEOUT: 25200
         run:
           args:
           - integrationTest
@@ -330,7 +342,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 7h
+      timeout: 8h
       config:
         inputs:
           - name: geode
@@ -345,6 +357,7 @@ jobs:
           MAINTENANCE_VERSION: ((!maintenance-version))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
           PUBLIC_BUCKET: ((!public-bucket))
+          CALL_STACK_TIMEOUT: 25200
         run:
           args:
           - flakyTest
@@ -376,6 +389,38 @@ jobs:
                - flakyTest
                - flakytestfiles
                path: geode-ci/ci/scripts/test-archive.sh
+
+- name: TestExamples
+  serial: true
+  public: true
+  plan:
+    - get: geode
+      passed: [AcceptanceTest, DistributedTest, IntegrationTest]
+      trigger: true
+    - aggregate:
+      - get: geode-ci
+      - get: geode-examples
+        trigger: true
+      - get: docker-test-image
+        params:
+          rootfs: true
+    - task: testexamples
+      privileged: true
+      timeout: 7h
+      config:
+        inputs:
+          - name: geode-ci
+          - name: geode-examples
+          - name: docker-test-image
+        platform: linux
+        image_resource: *docker-geode-build-image
+        params:
+          MAINTENANCE_VERSION: ((!maintenance-version))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+        run:
+          args:
+          path: geode-ci/ci/scripts/build-examples.sh
 
 - name: UpdatePassingRef
   serial: true

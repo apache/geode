@@ -31,7 +31,7 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.*;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -150,10 +150,10 @@ public class Bug39356DUnitTest extends JUnit4CacheTestCase {
     }
 
 
-    public void afterProcessMessage(DistributionManager dm, DistributionMessage message) {}
+    public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {}
 
 
-    public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof ManageBucketMessage) {
         vm0.invoke(new SerializableRunnable("Disconnect VM 0") {
           public void run() {

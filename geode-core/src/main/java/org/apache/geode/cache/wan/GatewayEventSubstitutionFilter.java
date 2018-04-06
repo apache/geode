@@ -32,5 +32,5 @@ public interface GatewayEventSubstitutionFilter<K, V> extends CacheCallback {
    * @return the substitute value to be stored in the <code>GatewayQueueEvent</code> and enqueued in
    *         the <code>RegionQueue</code>
    */
-  public Object getSubstituteValue(EntryEvent<K, V> event);
+  Object getSubstituteValue(EntryEvent<K, V> event);
 }

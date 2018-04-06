@@ -19,14 +19,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.*;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -222,7 +220,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     InternalDistributedMember elder;
     ElderState es = null;
 
-    final DM dm = sys.getDistributionManager();
+    final DistributionManager dm = sys.getDistributionManager();
     boolean elderCallStarted = false;
     while (!elderCallStarted) {
       dm.throwIfDistributionStopped();
@@ -334,7 +332,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       int dlsSerialNumber, InternalDistributedSystem system, InternalDistributedMember oldTurk,
       byte opCode) {
     GrantorInfo result = null;
-    DM dm = system.getDistributionManager();
+    DistributionManager dm = system.getDistributionManager();
     GrantorRequestContext grc = system.getGrantorRequestContext();
     boolean tryNewElder;
     boolean interrupted = false;
@@ -387,7 +385,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
             try {
               processor.waitForRepliesUninterruptibly();
             } catch (ReplyException e) {
-              e.handleAsUnexpected();
+              e.handleCause();
             }
             if (processor.result != null) {
               result = processor.result;
@@ -478,7 +476,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
      * @return true if the message was sent
      */
     protected static boolean send(long grantorVersion, int dlsSerialNumber, String serviceName,
-        InternalDistributedMember elder, DM dm, ReplyProcessor21 proc,
+        InternalDistributedMember elder, DistributionManager dm, ReplyProcessor21 proc,
         InternalDistributedMember oldTurk, byte opCode) {
       // bug36361: the following assertion doesn't work, since the client that sent us
       // the request might have a different notion of the elder (no view synchrony on the
@@ -512,16 +510,16 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       return this.processorId;
     }
 
-    private void replyGrantorInfo(DM dm, GrantorInfo gi) {
+    private void replyGrantorInfo(DistributionManager dm, GrantorInfo gi) {
       GrantorInfoReplyMessage.send(this, dm, gi);
     }
 
-    private void replyClear(DM dm) {
+    private void replyClear(DistributionManager dm) {
       ReplyMessage.send(this.getSender(), this.getProcessorId(), null, dm);
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       // executeBasicProcess(dm); // TODO change to this after things are stable
       basicProcess(dm);
     }
@@ -540,7 +538,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     // }
     // }
 
-    protected void basicProcess(final DM dm) {
+    protected void basicProcess(final DistributionManager dm) {
       // we should be in the elder
       ElderState es = dm.getElderState(true, false);
       switch (this.opCode) {
@@ -643,7 +641,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     private int grantorSerialNumber;
     private boolean needsRecovery;
 
-    public static void send(MessageWithReply reqMsg, DM dm, GrantorInfo gi) {
+    public static void send(MessageWithReply reqMsg, DistributionManager dm, GrantorInfo gi) {
       GrantorInfoReplyMessage m = new GrantorInfoReplyMessage();
       m.grantor = gi.getId();
       m.needsRecovery = gi.needsRecovery();

@@ -58,7 +58,7 @@ public class DurableClientInfoRequest extends AdminRequest {
    *
    * @param dm
    */
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return DurableClientInfoResponse.create(dm, this.getSender(), this);
   }
 

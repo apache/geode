@@ -30,6 +30,6 @@ public interface Initable {
    * construction by subclasses needing to instantiate other collaborators or starting of additional
    * services, like Threads, and so on.
    */
-  public void init();
+  void init();
 
 }

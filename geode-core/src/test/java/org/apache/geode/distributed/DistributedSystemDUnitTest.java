@@ -17,8 +17,8 @@ package org.apache.geode.distributed;
 import static java.lang.Integer.parseInt;
 import static java.net.NetworkInterface.getNetworkInterfaces;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.internal.ClusterDistributionManager.*;
 import static org.apache.geode.distributed.internal.DistributionConfig.*;
-import static org.apache.geode.distributed.internal.DistributionManager.*;
 import static org.apache.geode.internal.AvailablePort.*;
 import static org.apache.geode.internal.AvailablePortHelper.*;
 import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
@@ -48,7 +48,7 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.SizeableRunnable;
@@ -109,7 +109,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
         new InternalDistributedMember("localhost", 12345, "", "", NORMAL_DM_TYPE, null, null);
 
     // schedule a message in order to create a queue for the fake member
-    DistributionManager distributionManager = (DistributionManager) system.getDistributionManager();
+    ClusterDistributionManager distributionManager =
+        (ClusterDistributionManager) system.getDistributionManager();
     final FakeMessage message = new FakeMessage(null);
 
     distributionManager.getExecutor(SERIAL_EXECUTOR, member).execute(new SizeableRunnable(100) {
@@ -220,7 +221,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     InternalDistributedSystem system = getSystem(config);
 
-    DistributionManager dm = (DistributionManager) system.getDistributionManager();
+    ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
     GMSMembershipManager mgr = (GMSMembershipManager) dm.getMembershipManager();
     assertThat(mgr.getDirectChannelPort()).isEqualTo(this.tcpPort);
   }
@@ -254,7 +255,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
         this.lowerBoundOfPortRange + "-" + this.upperBoundOfPortRange);
 
     InternalDistributedSystem system = getSystem(config);
-    DistributionManager dm = (DistributionManager) system.getDistributionManager();
+    ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
     InternalDistributedMember member = dm.getDistributionManagerId();
 
     verifyMembershipPortsInRange(member, this.lowerBoundOfPortRange, this.upperBoundOfPortRange);
@@ -271,7 +272,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     Cache cache = CacheFactory.create(system);
     cache.addCacheServer();
 
-    DistributionManager dm = (DistributionManager) system.getDistributionManager();
+    ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
     InternalDistributedMember member = dm.getDistributionManagerId();
     GMSMembershipManager gms =
         (GMSMembershipManager) MembershipManagerHelper.getMembershipManager(system);
@@ -376,7 +377,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
       this.blocked = blocked;
     }
 
-    public void doAction(DistributionManager dm, boolean block) {
+    public void doAction(ClusterDistributionManager dm, boolean block) {
       this.processed = true;
       if (block) {
         synchronized (this.blocked) { // throws NullPointerException here
@@ -396,7 +397,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       // this is never called
     }
 

@@ -47,4 +47,16 @@ public interface Driver {
    * @return the region object
    */
   <K, V> Region<K, V> getRegion(String regionName);
+
+  QueryService getQueryService();
+
+  /**
+   * Close this Driver, rendering it useless
+   */
+  void close();
+
+  /**
+   * Is this driver connected?
+   */
+  boolean isConnected();
 }

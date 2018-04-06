@@ -12,117 +12,98 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.query.partitioned;
 
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
-import static org.junit.Assert.*;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.data.PortfolioData;
-import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
+@SuppressWarnings("serial")
+public class PRInvalidQueryDUnitTest extends CacheTestCase {
 
-{
-  /**
-   * constructor *
-   *
-   * @param name
-   */
+  private static final String REGION_NAME = "Portfolios";
 
-  public PRInvalidQueryDUnitTest() {
+  private static final int START_PORTFOLIO_DATA_INDEX = 0;
+  private static final int TOTAL_DATA_SIZE = 90;
+  private static final int START_KEY = 0;
+  private static final int START_KEY_STEP = 20;
+  private static final int REDUNDANCY = 0;
 
-    super();
+  private PRQueryDUnitHelper prQueryDUnitHelper;
+
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
+
+  @Before
+  public void setUp() {
+    vm0 = getHost(0).getVM(0);
+    vm1 = getHost(0).getVM(1);
+    vm2 = getHost(0).getVM(2);
+    vm3 = getHost(0).getVM(3);
+
+    vm0.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm1.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm2.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm3.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+
+    prQueryDUnitHelper = new PRQueryDUnitHelper();
   }
 
-  public void setCacheInVMs(VM... vms) {
-    for (VM vm : vms) {
-      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
-    }
+  @After
+  public void tearDown() {
+    disconnectAllFromDS();
+    invokeInEveryVM(() -> PRQueryDUnitHelper.setCache(null));
   }
 
-  int totalNumBuckets = 100;
-
-  PRQueryDUnitHelper prq = new PRQueryDUnitHelper();
-
-  final String name = "Portfolios";
-
-  final int i = 0, step = 20, cnt = 0, cntDest = 90;
-
-  final int redundancy = 0;
-
   /**
-   * This test <pr> 1. Creates PR regions across with scope = DACK <br>
+   * 1. Creates PR regions across with scope = DACK <br>
    * 2. Creates a Local region on one of the VM's <br>
    * 3. Puts in the data in PR region & the Local Region <br>
-   * 4. Queries the PR qith an Invalid Query Syntax <br>
-   * 5. Verfies that there is an QueryInavalidException
-   *
-   * @throws Exception
+   * 4. Queries the PR with an Invalid Query Syntax <br>
+   * 5. Verifies that there is an QueryInvalidException
    */
-
   @Test
   public void testPRDAckCreationAndQueryingWithInvalidQuery() throws Exception {
-    LogWriterUtils.getLogWriter().info(
-        "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Querying PR Test with Expected InvalidQueryException*****");
-    Host host = Host.getHost(0);
-
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
-    setCacheInVMs(vm0, vm1, vm2, vm3);
-    // Creting PR's on the participating VM's
-
     // Creating Accessor node on the VM
-    LogWriterUtils.getLogWriter().info(
-        "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Creating the Accessor node in the PR");
-    vm0.invoke(
-        prq.getCacheSerializableRunnableForPRAccessorCreate(name, redundancy, PortfolioData.class));
-    LogWriterUtils.getLogWriter().info(
-        "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Successfully created the Accessor node in the PR");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRAccessorCreate(REGION_NAME,
+        REDUNDANCY, PortfolioData.class));
 
     // Creating the Datastores Nodes in the VM's
-    LogWriterUtils.getLogWriter().info(
-        "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Creating the Datastore node in the PR");
-    vm1.invoke(prq.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm2.invoke(prq.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(prq.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    LogWriterUtils.getLogWriter().info(
-        "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Successfully Created the Datastore node in the PR");
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(REGION_NAME, REDUNDANCY,
+        PortfolioData.class));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(REGION_NAME, REDUNDANCY,
+        PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(REGION_NAME, REDUNDANCY,
+        PortfolioData.class));
 
-    LogWriterUtils.getLogWriter().info(
-        "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Successfully Created PR's across all VM's");
-
-    // Generating portfolio object array to be populated across the PR's & Local
-    // Regions
-
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+    // Generating portfolio object array to be populated across the PR's & Local Regions
+    PortfolioData[] portfolioData =
+        createPortfolioData(START_PORTFOLIO_DATA_INDEX, TOTAL_DATA_SIZE);
 
     // Putting the data into the PR's created
-    vm0.invoke(prq.getCacheSerializableRunnableForPRPuts(name, portfolio, i, i + step));
-    vm1.invoke(
-        prq.getCacheSerializableRunnableForPRPuts(name, portfolio, i + step, i + (2 * step)));
-    vm2.invoke(
-        prq.getCacheSerializableRunnableForPRPuts(name, portfolio, i + (2 * step), i + (3 * step)));
-    vm3.invoke(prq.getCacheSerializableRunnableForPRPuts(name, portfolio, i + (3 * step), cntDest));
-    LogWriterUtils.getLogWriter().info(
-        "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: Successfully Inserted Portfolio data across PR's");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolioData,
+        START_KEY, START_KEY + START_KEY_STEP));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolioData,
+        START_KEY + START_KEY_STEP, START_KEY + (2 * START_KEY_STEP)));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolioData,
+        START_KEY + (2 * START_KEY_STEP), START_KEY + (3 * START_KEY_STEP)));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolioData,
+        START_KEY + (3 * START_KEY_STEP), TOTAL_DATA_SIZE));
 
-    final String invalidQuery = "Invalid Query";
     // querying the VM for data
-    vm0.invoke(prq.getCacheSerializableRunnableForPRInvalidQuery(name));
-    LogWriterUtils.getLogWriter().info(
-        "PRInvalidQueryDUnitTest#testPRDAckCreationAndQueryingWithInvalidQuery: *****Querying PR's Test with Expected Invalid Query Exception *****");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRInvalidQuery(REGION_NAME));
   }
 }

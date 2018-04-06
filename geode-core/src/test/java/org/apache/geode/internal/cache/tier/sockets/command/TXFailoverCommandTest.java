@@ -14,22 +14,19 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.FindRemoteTXMessage;
 import org.apache.geode.internal.cache.FindRemoteTXMessage.FindRemoteTXMessageReplyProcessor;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXId;
@@ -38,46 +35,45 @@ import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-
 @Category(UnitTest.class)
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.UnitTest")
-@PrepareForTest({FindRemoteTXMessage.class})
 public class TXFailoverCommandTest {
+
   @Test
-  public void testTXFailoverSettingTargetNode()
-      throws ClassNotFoundException, IOException, InterruptedException {
-    TXFailoverCommand cmd = mock(TXFailoverCommand.class);
-    Message msg = mock(Message.class);
-    ServerConnection serverConnection = mock(ServerConnection.class);
+  public void testTXFailoverSettingTargetNode() throws Exception {
     ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+    FindRemoteTXMessageReplyProcessor processor = mock(FindRemoteTXMessageReplyProcessor.class);
+    InternalCache cache = mock(InternalCache.class);
     InternalDistributedMember client = mock(InternalDistributedMember.class);
-    TXManagerImpl txMgr = mock(TXManagerImpl.class);
-    InternalCache cache = Fakes.cache();
+    InternalDistributedMember host = mock(InternalDistributedMember.class);
+    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
+    Message message = mock(Message.class);
+    ServerConnection serverConnection = mock(ServerConnection.class);
+    TXManagerImpl txManager = mock(TXManagerImpl.class);
+
     int uniqueId = 1;
     TXId txId = new TXId(client, uniqueId);
-    TXStateProxyImpl proxy = new TXStateProxyImpl(txMgr, txId, null);
-    FindRemoteTXMessageReplyProcessor processor = mock(FindRemoteTXMessageReplyProcessor.class);
-    InternalDistributedMember host = mock(InternalDistributedMember.class);
+    TXStateProxyImpl proxy = new TXStateProxyImpl(cache, txManager, txId, null);
 
-    doCallRealMethod().when(cmd).cmdExecute(msg, serverConnection, null, 1);
-    when(serverConnection.getProxyID()).thenReturn(clientProxyMembershipID);
+    when(cache.getCacheTransactionManager()).thenReturn(txManager);
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getDistributedSystem()).thenReturn(system);
     when(clientProxyMembershipID.getDistributedMember()).thenReturn(client);
-    when(msg.getTransactionId()).thenReturn(uniqueId);
-    when(serverConnection.getCache()).thenReturn(cache);
-    when(cache.getCacheTransactionManager()).thenReturn(txMgr);
-    when(txMgr.getTXState()).thenReturn(proxy);
-    when(cmd.createTXId(client, uniqueId)).thenReturn(txId);
-    PowerMockito.mockStatic(FindRemoteTXMessage.class);
-    PowerMockito.when(FindRemoteTXMessage.send(cache, txId)).thenReturn(processor);
+    when(message.getTransactionId()).thenReturn(uniqueId);
     when(processor.getHostingMember()).thenReturn(host);
-    when(proxy.getCache()).thenReturn(cache);
-    when(cache.getDistributedSystem()).thenReturn(mock(DistributedSystem.class));
+    when(serverConnection.getProxyID()).thenReturn(clientProxyMembershipID);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(txManager.getTXState()).thenReturn(proxy);
 
-    cmd.cmdExecute(msg, serverConnection, null, 1);
+    when(serverConnection.getReplyMessage()).thenReturn(mock(Message.class));
+
+    TXFailoverCommand command = spy(new TXFailoverCommand());
+    doReturn(txId).when(command).createTXId(client, uniqueId);
+    doReturn(processor).when(command).sendFindRemoteTXMessage(cache, txId);
+
+    command.cmdExecute(message, serverConnection, null, 1);
+
     assertNotNull(proxy.getRealDeal(host));
     assertEquals(proxy.getTarget(), host);
   }

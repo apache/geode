@@ -44,6 +44,12 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
  *
  */
 public class LocatorLoadSnapshot {
+
+  public static final String LOAD_IMBALANCE_THRESHOLD_PROPERTY_NAME =
+      "gemfire.locator-load-imbalance-threshold";
+
+  public static final float DEFAULT_LOAD_IMBALANCE_THRESHOLD = 10;
+
   private final Map/* <ServerLocation, String[]> */ serverGroupMap = new HashMap();
 
   private final Map/* <String(server group), Map<ServerLocation, LoadHolder> */
@@ -55,6 +61,19 @@ public class LocatorLoadSnapshot {
   private final ConcurrentMap/* <EstimateMapKey, LoadEstimateTask> */
   estimateMap = new ConcurrentHashMap();
 
+  /**
+   * when replacing a client's current server we do not move a client from a highly loaded server to
+   * a less loaded server until imbalance reaches this threshold. Then we aggressively move clients
+   * until balance is achieved.
+   */
+  private float loadImbalanceThreshold;
+
+  /**
+   * when the loadImbalanceThreshold is hit this variable will be true and it will remain true until
+   * balance is achieved.
+   */
+  private boolean rebalancing;
+
   private final ScheduledThreadPoolExecutor estimateTimeoutProcessor =
       new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
         public Thread newThread(final Runnable r) {
@@ -64,10 +83,17 @@ public class LocatorLoadSnapshot {
         }
       });
 
+
   public LocatorLoadSnapshot() {
     connectionLoadMap.put(null, new HashMap());
     queueLoadMap.put(null, new HashMap());
     this.estimateTimeoutProcessor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+    String property = System.getProperty(LOAD_IMBALANCE_THRESHOLD_PROPERTY_NAME);
+    if (property != null) {
+      loadImbalanceThreshold = Float.parseFloat(property);
+    } else {
+      loadImbalanceThreshold = DEFAULT_LOAD_IMBALANCE_THRESHOLD;
+    }
   }
 
   public void addServer(ServerLocation location, String[] groups, ServerLoad initialLoad) {
@@ -141,7 +167,12 @@ public class LocatorLoadSnapshot {
     return isBalanced(groupServers);
   }
 
-  private synchronized boolean isBalanced(Map groupServers) {
+  private synchronized boolean isBalanced(Map<ServerLocation, LoadHolder> groupServers) {
+    return isBalanced(groupServers, false);
+  }
+
+  private synchronized boolean isBalanced(Map<ServerLocation, LoadHolder> groupServers,
+      boolean withThresholdCheck) {
     if (groupServers == null || groupServers.isEmpty()) {
       return true;
     }
@@ -150,9 +181,8 @@ public class LocatorLoadSnapshot {
     float largestLoadPerConnection = Float.MIN_VALUE;
     float worstLoad = Float.MIN_VALUE;
 
-    for (Iterator itr = groupServers.entrySet().iterator(); itr.hasNext();) {
-      Map.Entry next = (Entry) itr.next();
-      LoadHolder nextLoadReference = (LoadHolder) next.getValue();
+    for (Entry<ServerLocation, LoadHolder> loadHolderEntry : groupServers.entrySet()) {
+      LoadHolder nextLoadReference = loadHolderEntry.getValue();
       float nextLoad = nextLoadReference.getLoad();
       float nextLoadPerConnection = nextLoadReference.getLoadPerConnection();
 
@@ -167,7 +197,52 @@ public class LocatorLoadSnapshot {
       }
     }
 
-    return (worstLoad - bestLoad) <= largestLoadPerConnection;
+    boolean balanced = (worstLoad - bestLoad) <= largestLoadPerConnection;
+
+    if (withThresholdCheck) {
+      balanced = thresholdCheck(bestLoad, worstLoad, largestLoadPerConnection, balanced);
+    }
+
+    return balanced;
+  }
+
+
+  /**
+   * In order to keep from ping-ponging clients around the cluster we don't move a client unless
+   * imbalance is greater than the loadImbalanceThreshold.
+   * <p>
+   * When the threshold is reached we report imbalance until proper balance is achieved.
+   * </p>
+   * <p>
+   * This method has the side-effect of setting the <code>rebalancing</code> instance variable
+   * which, at the time of this writing, is only used by this method.
+   * </p>
+   */
+  synchronized boolean thresholdCheck(float bestLoad, float worstLoad,
+      float largestLoadPerConnection, boolean balanced) {
+    if (rebalancing) {
+      if (balanced) {
+        rebalancing = false;
+      }
+      return balanced;
+    }
+
+    // see if we're out of balance enough to trigger rebalancing or whether we
+    // should tolerate the imbalance
+    if (!balanced) {
+      float imbalance = worstLoad - bestLoad;
+      if (imbalance >= (largestLoadPerConnection * loadImbalanceThreshold)) {
+        rebalancing = true;
+      } else {
+        // we're not in balance but are within the threshold
+        balanced = true;
+      }
+    }
+    return balanced;
+  }
+
+  synchronized boolean isRebalancing() {
+    return rebalancing;
   }
 
   /**
@@ -246,13 +321,13 @@ public class LocatorLoadSnapshot {
       group = null;
     }
 
-    Map groupServers = (Map) connectionLoadMap.get(group);
+    Map<ServerLocation, LoadHolder> groupServers = (Map) connectionLoadMap.get(group);
     if (groupServers == null || groupServers.isEmpty()) {
       return null;
     }
 
     // check to see if we are currently balanced
-    if (isBalanced(groupServers)) {
+    if (isBalanced(groupServers, true)) {
       // if we are then return currentServer
       return currentServer;
     }
@@ -347,7 +422,7 @@ public class LocatorLoadSnapshot {
    * Test hook to get the current load for all servers Returns a map of ServerLocation->Load for
    * each server.
    */
-  public synchronized Map getLoadMap() {
+  public synchronized Map<ServerLocation, ServerLoad> getLoadMap() {
     Map connectionMap = (Map) connectionLoadMap.get(null);
     Map queueMap = (Map) queueLoadMap.get(null);
     Map result = new HashMap();
@@ -412,7 +487,16 @@ public class LocatorLoadSnapshot {
     }
   }
 
-  private List/* <LoadHolder> */ findBestServers(Map groupServers, Set excludedServers, int count) {
+  /**
+   *
+   * @param groupServers the servers to consider
+   * @param excludedServers servers to exclude
+   * @param count how many you want. a negative number means all of them in order of best to worst
+   * @return a list of best...worst server LoadHolders
+   */
+  private List /* <LoadHolder> */ findBestServers(Map<ServerLocation, LoadHolder> groupServers,
+      Set excludedServers, int count) {
+
     TreeSet bestEntries = new TreeSet(new Comparator() {
       public int compare(Object o1, Object o2) {
         LoadHolder l1 = (LoadHolder) o1;
@@ -427,19 +511,21 @@ public class LocatorLoadSnapshot {
       }
     });
 
+    boolean retainAll = (count < 0);
     float lastBestLoad = Float.MAX_VALUE;
-    for (Iterator itr = groupServers.entrySet().iterator(); itr.hasNext();) {
-      Map.Entry next = (Entry) itr.next();
-      ServerLocation location = (ServerLocation) next.getKey();
+
+    for (Map.Entry<ServerLocation, LoadHolder> loadEntry : groupServers.entrySet()) {
+      ServerLocation location = loadEntry.getKey();
       if (excludedServers.contains(location)) {
         continue;
       }
-      LoadHolder nextLoadReference = (LoadHolder) next.getValue();
+
+      LoadHolder nextLoadReference = loadEntry.getValue();
       float nextLoad = nextLoadReference.getLoad();
 
-      if (bestEntries.size() < count || count == -1 || nextLoad < lastBestLoad) {
+      if ((bestEntries.size() < count) || retainAll || (nextLoad < lastBestLoad)) {
         bestEntries.add(nextLoadReference);
-        if (count != -1 && bestEntries.size() > count) {
+        if (!retainAll && (bestEntries.size() > count)) {
           bestEntries.remove(bestEntries.last());
         }
         LoadHolder lastBestHolder = (LoadHolder) bestEntries.last();
@@ -453,18 +539,18 @@ public class LocatorLoadSnapshot {
   /**
    * If it is most loaded then return its LoadHolder; otherwise return null;
    */
-  private LoadHolder isCurrentServerMostLoaded(ServerLocation currentServer, Map groupServers) {
-    final LoadHolder currentLH = (LoadHolder) groupServers.get(currentServer);
+  private LoadHolder isCurrentServerMostLoaded(ServerLocation currentServer,
+      Map<ServerLocation, LoadHolder> groupServers) {
+    final LoadHolder currentLH = groupServers.get(currentServer);
     if (currentLH == null)
       return null;
     final float currentLoad = currentLH.getLoad();
-    for (Iterator itr = groupServers.entrySet().iterator(); itr.hasNext();) {
-      Map.Entry next = (Entry) itr.next();
-      ServerLocation location = (ServerLocation) next.getKey();
+    for (Map.Entry<ServerLocation, LoadHolder> loadEntry : groupServers.entrySet()) {
+      ServerLocation location = loadEntry.getKey();
       if (location.equals(currentServer)) {
         continue;
       }
-      LoadHolder nextLoadReference = (LoadHolder) next.getValue();
+      LoadHolder nextLoadReference = loadEntry.getValue();
       float nextLoad = nextLoadReference.getLoad();
       if (nextLoad > currentLoad) {
         // found a guy who has a higher load than us so...

@@ -14,7 +14,9 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -29,16 +31,15 @@ import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public interface IndexProtocol extends Index {
   /**
    * Constants that indicate three situations where we are removing a mapping. Some implementations
    * of index handle some of the cases and not others.
    */
-  static final int OTHER_OP = 0; // not an UPDATE but some other operation
-  static final int BEFORE_UPDATE_OP = 1; // handled when there is no reverse map
-  static final int AFTER_UPDATE_OP = 2; // handled when there is a reverse map
+  int OTHER_OP = 0; // not an UPDATE but some other operation
+  int BEFORE_UPDATE_OP = 1; // handled when there is no reverse map
+  int AFTER_UPDATE_OP = 2; // handled when there is a reverse map
 
   boolean addIndexMapping(RegionEntry entry) throws IMQException;
 
@@ -171,7 +172,7 @@ public interface IndexProtocol extends Index {
    *
    * @return String array containing canonicalized definitions
    */
-  public String[] getCanonicalizedIteratorDefinitions();
+  String[] getCanonicalizedIteratorDefinitions();
 
   /**
    * Asif: Object type of the data ( tuple ) contained in the Index Results . It will be either of
@@ -179,11 +180,11 @@ public interface IndexProtocol extends Index {
    *
    * @return ObjectType
    */
-  public ObjectType getResultSetType();
+  ObjectType getResultSetType();
 
-  public int getSizeEstimate(Object key, int op, int matchLevel) throws TypeMismatchException;
+  int getSizeEstimate(Object key, int op, int matchLevel) throws TypeMismatchException;
 
-  public boolean isMatchingWithIndexExpression(CompiledValue condnExpr, String condnExprStr,
+  boolean isMatchingWithIndexExpression(CompiledValue condnExpr, String condnExprStr,
       ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException;
 }

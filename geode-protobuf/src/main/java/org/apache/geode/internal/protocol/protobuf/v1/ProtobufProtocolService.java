@@ -15,32 +15,30 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
-import org.apache.geode.internal.protocol.LocatorMessageExecutionContext;
-import org.apache.geode.internal.protocol.ServerMessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
-import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
+import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
+import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionHandshakeStateProcessor;
-import org.apache.geode.internal.protocol.statistics.NoOpStatistics;
-import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 import org.apache.geode.internal.security.SecurityService;
 
 public class ProtobufProtocolService implements ClientProtocolService {
-  private volatile ProtocolClientStatistics statistics;
+  private volatile ClientStatistics statistics;
   private final ProtobufStreamProcessor protobufStreamProcessor = new ProtobufStreamProcessor();
 
   @Override
   public synchronized void initializeStatistics(String statisticsName, StatisticsFactory factory) {
     if (statistics == null) {
-      statistics = new ProtobufClientStatisticsImpl(factory, statisticsName);
+      statistics = new ProtobufClientStatistics(factory, statisticsName);
     }
   }
 
   @Override
-  public ClientProtocolProcessor createProcessorForCache(Cache cache,
+  public ClientProtocolProcessor createProcessorForCache(InternalCache cache,
       SecurityService securityService) {
     assert (statistics != null);
 
@@ -54,7 +52,7 @@ public class ProtobufProtocolService implements ClientProtocolService {
    * For internal use. This is necessary because the statistics may get initialized in another
    * thread.
    */
-  ProtocolClientStatistics getStatistics() {
+  ClientStatistics getStatistics() {
     if (statistics == null) {
       return new NoOpStatistics();
     }

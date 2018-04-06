@@ -24,17 +24,19 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.protocol.Failure;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.Result;
-import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.Failure;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOpsProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
-import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -48,8 +50,6 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
 
   @Before
   public void setUp() throws Exception {
-    super.setUp();
-
     Region regionStub = mock(Region.class);
     when(regionStub.get(TEST_KEY)).thenReturn(TEST_VALUE);
     when(regionStub.get(MISSING_KEY)).thenReturn(null);
@@ -106,9 +106,9 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     Assert.assertTrue(response instanceof Success);
   }
 
-  @Test
-  public void processReturnsErrorWhenUnableToDecodeRequest() throws Exception {
-    EncodingException exception = new EncodingException("error finding codec for type");
+  @Test(expected = DecodingException.class)
+  public void processThrowsExceptionWhenUnableToDecodeRequest() throws Exception {
+    Exception exception = new DecodingException("error finding codec for type");
     ProtobufSerializationService serializationServiceStub =
         mock(ProtobufSerializationService.class);
     when(serializationServiceStub.decode(any())).thenThrow(exception);
@@ -118,14 +118,8 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     RegionAPI.GetRequest getRequest =
         ProtobufRequestUtilities.createGetRequest(TEST_REGION, encodedKey).getGetRequest();
 
-    Result response = operationHandler.process(serializationServiceStub, getRequest,
+    operationHandler.process(serializationServiceStub, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    Assert.assertTrue(response instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage =
-        (ClientProtocol.ErrorResponse) response.getErrorMessage();
-    Assert.assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST,
-        errorMessage.getError().getErrorCode());
   }
 
   private RegionAPI.GetRequest generateTestRequest(boolean missingRegion, boolean missingKey,

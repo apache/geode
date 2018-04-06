@@ -37,7 +37,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -62,7 +62,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category({DistributedTest.class, DLockTest.class})
 public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
-  private static DistributedSystem system;
+  private static InternalDistributedSystem system;
 
   protected static boolean testTXRecoverGrantor_replyCode_PASS = false;
   protected static boolean testTXRecoverGrantor_heldLocks_PASS = false;
@@ -127,7 +127,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testTXRecoverGrantorMessageProcessor() throws Exception {
-    TXLockService.createDTLS();
+    TXLockService.createDTLS(system);
     checkDLockRecoverGrantorMessageProcessor();
 
     /*
@@ -188,13 +188,13 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
   public void testTXGrantorMigration() throws Exception {
     // first make sure some other VM is the grantor
     Host.getHost(0).getVM(0).invoke("become lock grantor", () -> {
-      TXLockService.createDTLS();
+      TXLockService.createDTLS(system);
       TXLockService vm0dtls = TXLockService.getDTLS();
       DLockService vm0dlock = ((TXLockServiceImpl) vm0dtls).getInternalDistributedLockService();
       vm0dlock.becomeLockGrantor();
     });
 
-    TXLockService.createDTLS();
+    TXLockService.createDTLS(system);
     checkDLockRecoverGrantorMessageProcessor();
 
     /*
@@ -287,7 +287,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     }
 
     @Override
-    public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof DLockRecoverGrantorMessage) {
         synchronized (preventingMessageProcessing) {
           preventingMessageProcessing[0] = true;
@@ -327,7 +327,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
     Host.getHost(0).getVM(grantorVM).invoke(new SerializableRunnable() {
       public void run() {
-        TXLockService.createDTLS();
+        TXLockService.createDTLS(system);
       }
     });
     sleep(20);
@@ -337,7 +337,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
     Host.getHost(0).getVM(clientA).invoke(new SerializableRunnable() {
       public void run() {
-        TXLockService.createDTLS();
+        TXLockService.createDTLS(system);
       }
     });
 
@@ -355,7 +355,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
     Host.getHost(0).getVM(clientB).invoke(new SerializableRunnable() {
       public void run() {
-        TXLockService.createDTLS();
+        TXLockService.createDTLS(system);
       }
     });
 
@@ -444,7 +444,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
     Host.getHost(0).getVM(grantorVM).invoke(new SerializableRunnable() {
       public void run() {
-        TXLockService.createDTLS();
+        TXLockService.createDTLS(system);
       }
     });
 
@@ -461,7 +461,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
     Host.getHost(0).getVM(originatorVM).invoke(new SerializableRunnable() {
       public void run() {
-        TXLockService.createDTLS();
+        TXLockService.createDTLS(system);
       }
     });
     Host.getHost(0).getVM(originatorVM).invoke(new SerializableRunnable(
@@ -477,12 +477,12 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     // create dtls in each participant
     Host.getHost(0).getVM(particpantA).invoke(new SerializableRunnable() {
       public void run() {
-        TXLockService.createDTLS();
+        TXLockService.createDTLS(system);
       }
     });
     Host.getHost(0).getVM(particpantB).invoke(new SerializableRunnable() {
       public void run() {
-        TXLockService.createDTLS();
+        TXLockService.createDTLS(system);
       }
     });
 
@@ -543,7 +543,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
       Host.getHost(0).getVM(finalvm).invoke(new SerializableRunnable() {
         public void run() {
-          TXLockService.createDTLS();
+          TXLockService.createDTLS(system);
         }
       });
 
@@ -698,7 +698,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
   protected static void checkGetAndDestroy() {
     assertNull(TXLockService.getDTLS());
 
-    TXLockService dtls = TXLockService.createDTLS();
+    TXLockService dtls = TXLockService.createDTLS(system);
     assertNotNull(dtls);
     assertEquals(true, dtls == TXLockService.getDTLS());
     assertEquals(false, dtls.isDestroyed());
@@ -707,7 +707,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     assertEquals(true, dtls.isDestroyed());
     assertNull(TXLockService.getDTLS());
 
-    dtls = TXLockService.createDTLS();
+    dtls = TXLockService.createDTLS(system);
     assertNotNull(dtls);
     assertEquals(true, dtls == TXLockService.getDTLS());
     assertEquals(false, dtls.isDestroyed());
@@ -809,7 +809,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
   // -------------------------------------------------------------------------
 
   private static class TestDLockRecoverGrantorProcessor extends ReplyProcessor21 {
-    public TestDLockRecoverGrantorProcessor(DM dm, Set members) {
+    public TestDLockRecoverGrantorProcessor(DistributionManager dm, Set members) {
       super(dm.getSystem(), members);
     }
 

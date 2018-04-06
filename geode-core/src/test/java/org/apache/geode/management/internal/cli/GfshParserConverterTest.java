@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.event.ParseResult;
 
+import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.management.internal.cli.converters.DiskStoreNameConverter;
 import org.apache.geode.management.internal.cli.converters.FilePathConverter;
 import org.apache.geode.management.internal.cli.converters.FilePathStringConverter;
@@ -183,4 +184,26 @@ public class GfshParserConverterTest {
     assertThat(commandCandidate.getFirstCandidate()).isEqualTo(command + "/regionA");
   }
 
+  @Test
+  public void testExpirationAction() {
+    String command = "create region --name=A --type=PARTITION --entry-idle-time-expiration-action=";
+    commandCandidate = parser.complete(command);
+    assertThat(commandCandidate.size()).isEqualTo(4);
+    assertThat(commandCandidate.getFirstCandidate()).isEqualTo(command + "DESTROY");
+
+    GfshParseResult result = parser.parse(command + "DESTROY");
+    assertThat(result.getParamValue("entry-idle-time-expiration-action"))
+        .isEqualTo(ExpirationAction.DESTROY);
+
+    result = parser.parse(command + "local-destroy");
+    assertThat(result.getParamValue("entry-idle-time-expiration-action"))
+        .isEqualTo(ExpirationAction.LOCAL_DESTROY);
+
+    result = parser.parse(command + "LOCAL_INVALIDATE");
+    assertThat(result.getParamValue("entry-idle-time-expiration-action"))
+        .isEqualTo(ExpirationAction.LOCAL_INVALIDATE);
+
+    result = parser.parse(command + "invalid_action");
+    assertThat(result).isNull();
+  }
 }

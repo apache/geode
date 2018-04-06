@@ -18,8 +18,6 @@ package org.apache.geode.internal.tcp;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.geode.i18n.LogWriterI18n;
-
 /**
  * Base interface for {@link MsgStreamer} and {@link MsgStreamerList} to send a message over a list
  * of connections to one or more peers.
@@ -28,31 +26,31 @@ import org.apache.geode.i18n.LogWriterI18n;
  */
 public interface BaseMsgStreamer {
 
-  public void reserveConnections(long startTime, long ackTimeout, long ackSDTimeout);
+  void reserveConnections(long startTime, long ackTimeout, long ackSDTimeout);
 
   /**
    * Returns a list of the Connections that the message was sent to. Call this after
    * {@link #writeMessage}.
    */
-  public List<?> getSentConnections();
+  List<?> getSentConnections();
 
   /**
    * Returns an exception the describes which cons the message was not sent to. Call this after
    * {@link #writeMessage}.
    */
-  public ConnectExceptions getConnectExceptions();
+  ConnectExceptions getConnectExceptions();
 
   /**
    * Writes the message to the connected streams and returns the number of bytes written.
    *
    * @throws IOException if serialization failure
    */
-  public int writeMessage() throws IOException;
+  int writeMessage() throws IOException;
 
   /**
    * Close this streamer.
    *
    * @throws IOException on exception
    */
-  public void close() throws IOException;
+  void close() throws IOException;
 }

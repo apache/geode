@@ -16,13 +16,13 @@ package org.apache.geode.distributed.internal;
 
 import java.util.Set;
 
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 
 /**
  * This interface is used by direct ack messages to send a reply to the original sender of the
  * message. Any message which implements {@link DirectReplyMessage} must reply by calling
- * putOutgoing on the ReplySender returned by {@link DistributionMessage#getReplySender(DM)}
+ * putOutgoing on the ReplySender returned by
+ * {@link DistributionMessage#getReplySender(DistributionManager)}
  *
  * The reply sender may be the distribution manager itself, or it may send the reply directly back
  * on the same socket the message as received on.
@@ -30,6 +30,6 @@ import org.apache.geode.internal.cache.DirectReplyMessage;
  */
 public interface ReplySender {
 
-  public Set putOutgoing(DistributionMessage msg);
+  Set putOutgoing(DistributionMessage msg);
 
 }

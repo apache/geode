@@ -37,17 +37,17 @@ public interface Struct {
    *
    * @see StructType#getFieldIndex
    */
-  public Object get(String fieldName);
+  Object get(String fieldName);
 
   /**
    * Get the values in this struct
    *
    * @return the array of values
    */
-  public Object[] getFieldValues();
+  Object[] getFieldValues();
 
   /**
    * Returns the <code>StructType</code> that describes the fields of this <code>Struct</code>.
    */
-  public StructType getStructType();
+  StructType getStructType();
 }

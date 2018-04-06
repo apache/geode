@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 
 /**
@@ -34,9 +35,9 @@ public interface DirectReplyMessage {
    * was sent on. This flag only takes effect when
    * {@link org.apache.geode.distributed.DistributedSystem#setThreadsSocketPolicy(boolean)} is set
    * to <code>false</code> If this flag is set to true, the process method <b> must </b> reply by
-   * calling {@link DistributionMessage#getReplySender(org.apache.geode.distributed.internal.DM)}
-   * and using the result to send the reply. the ReplySender determines whether to reply directly or
-   * through the shared channel.
+   * calling {@link DistributionMessage#getReplySender(DistributionManager)} and using the result to
+   * send the reply. the ReplySender determines whether to reply directly or through the shared
+   * channel.
    *
    * @return true if a direct acknowledgement is allowed
    * @see org.apache.geode.distributed.internal.direct.DirectChannel

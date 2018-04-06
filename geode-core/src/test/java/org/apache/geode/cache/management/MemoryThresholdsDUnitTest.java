@@ -71,6 +71,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
@@ -438,7 +439,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    *
    * @throws Exception
    */
-  @Category(FlakyTest.class) // GEODE-427: random ports, time sensitive, waitForCriterions
   @Test
   public void testEventDelivery() throws Exception {
     final Host host = Host.getHost(0);
@@ -458,7 +458,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     // NORMAL -> CRITICAL
     server2.invoke(new SerializableCallable("NORMAL->CRITICAL") {
       public Object call() throws Exception {
-        GemFireCacheImpl gfCache = (GemFireCacheImpl) getCache();
+        InternalCache gfCache = getCache();
         getCache().getLoggerI18n().fine(addExpectedExString);
         gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(950);
         getCache().getLoggerI18n().fine(removeExpectedExString);
@@ -477,7 +477,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     // CRITICAL -> EVICTION
     server2.invoke(new SerializableCallable("CRITICAL->EVICTION") {
       public Object call() throws Exception {
-        GemFireCacheImpl gfCache = (GemFireCacheImpl) getCache();
+        InternalCache gfCache = getCache();
         getCache().getLoggerI18n().fine(addExpectedBelow);
         gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(850);
         getCache().getLoggerI18n().fine(removeExpectedBelow);
@@ -494,7 +494,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     // EVICTION -> EVICTION
     server2.invoke(new SerializableCallable("EVICTION->EVICTION") {
       public Object call() throws Exception {
-        GemFireCacheImpl gfCache = (GemFireCacheImpl) getCache();
+        InternalCache gfCache = getCache();
         gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(840);
         return null;
       }
@@ -509,7 +509,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     // EVICTION -> NORMAL
     server2.invoke(new SerializableCallable("EVICTION->NORMAL") {
       public Object call() throws Exception {
-        GemFireCacheImpl gfCache = (GemFireCacheImpl) getCache();
+        InternalCache gfCache = getCache();
         gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(750);
         return null;
       }
@@ -522,17 +522,29 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     verifyListenerValue(server1, MemoryState.EVICTION, 2, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 1, true);
 
-    LogWriterUtils.getLogWriter().info("before NORMAL->CRITICAL->NORMAL");
-    // NORMAL -> EVICTION -> NORMAL
-    server2.invoke(new SerializableCallable("NORMAL->CRITICAL->NORMAL") {
+    // NORMAL -> CRITICAL
+    server2.invoke(new SerializableCallable("NORMAL->CRITICAL") {
       public Object call() throws Exception {
-        GemFireCacheImpl gfCache = (GemFireCacheImpl) getCache();
+        InternalCache gfCache = getCache();
         gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(950);
+        return null;
+      }
+    });
+
+    verifyListenerValue(server2, MemoryState.CRITICAL, 2, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 3, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 1, true);
+    verifyListenerValue(server1, MemoryState.CRITICAL, 2, true);
+    verifyListenerValue(server1, MemoryState.EVICTION, 3, true);
+    verifyListenerValue(server1, MemoryState.NORMAL, 1, true);
+
+    server2.invoke(new SerializableCallable("CRITICAL->NORMAL") {
+      public Object call() throws Exception {
+        InternalCache gfCache = getCache();
         gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(750);
         return null;
       }
     });
-    LogWriterUtils.getLogWriter().info("after NORMAL->CRITICAL->NORMAL");
 
     verifyListenerValue(server2, MemoryState.CRITICAL, 2, true);
     verifyListenerValue(server2, MemoryState.EVICTION, 3, true);
@@ -544,7 +556,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     // NORMAL -> EVICTION
     server2.invoke(new SerializableCallable("NORMAL->EVICTION") {
       public Object call() throws Exception {
-        GemFireCacheImpl gfCache = (GemFireCacheImpl) getCache();
+        InternalCache gfCache = getCache();
         gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(850);
         return null;
       }

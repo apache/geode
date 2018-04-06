@@ -41,7 +41,7 @@ public class FetchDistLockInfoRequest extends AdminRequest {
    * @param dm
    */
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return FetchDistLockInfoResponse.create(dm, this.getSender());
   }
 

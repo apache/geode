@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,7 +35,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.GetAllOp.GetAllOpImpl;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -72,8 +70,6 @@ public class SingleHopClientExecutor {
       List futures = null;
       try {
         futures = execService.invokeAll(callableTasks);
-      } catch (RejectedExecutionException rejectedExecutionEx) {
-        throw rejectedExecutionEx;
       } catch (InterruptedException e) {
         throw new InternalGemFireException(e.getMessage());
       }
@@ -111,8 +107,6 @@ public class SingleHopClientExecutor {
       List futures = null;
       try {
         futures = execService.invokeAll(callableTasks);
-      } catch (RejectedExecutionException rejectedExecutionEx) {
-        throw rejectedExecutionEx;
       } catch (InterruptedException e) {
         throw new InternalGemFireException(e.getMessage());
       }
@@ -238,8 +232,6 @@ public class SingleHopClientExecutor {
       List futures = null;
       try {
         futures = execService.invokeAll(callableTasks);
-      } catch (RejectedExecutionException rejectedExecutionEx) {
-        throw rejectedExecutionEx;
       } catch (InterruptedException e) {
         throw new InternalGemFireException(e.getMessage());
       }
@@ -319,8 +311,6 @@ public class SingleHopClientExecutor {
       List futures = null;
       try {
         futures = execService.invokeAll(callableTasks);
-      } catch (RejectedExecutionException rejectedExecutionEx) {
-        throw rejectedExecutionEx;
       } catch (InterruptedException e) {
         throw new InternalGemFireException(e.getMessage());
       }

@@ -31,7 +31,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.AvailablePort;
@@ -76,7 +76,8 @@ public class Bug41091DUnitTest extends JUnit4CacheTestCase {
           DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
             @Override
-            public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+            public void beforeProcessMessage(ClusterDistributionManager dm,
+                DistributionMessage message) {
               if (message instanceof RequestImageMessage) {
                 RequestImageMessage rim = (RequestImageMessage) message;
                 Region region = getCache().getRegion(rim.regionPath);

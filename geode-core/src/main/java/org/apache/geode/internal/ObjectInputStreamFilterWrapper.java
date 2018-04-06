@@ -16,22 +16,53 @@ package org.apache.geode.internal;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import sun.misc.ObjectInputFilter;
 
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.internal.logging.LogService;
 
 
+/**
+ * ObjectInputStreamFilterWrapper isolates InternalDataSerializer from the JDK's
+ * ObjectInputFilter class, which is absent in builds of java8 prior to 121 and
+ * is sun.misc.ObjectInputFilter in later builds but is java.io.ObjectInputFilter
+ * in java9.
+ * <p>
+ * This class uses reflection and dynamic proxies to find the class and create a
+ * serialization filter. Once java8 is retired and no longer supported by Geode the
+ * use of reflection should be removed ObjectInputFilter can be directly used by
+ * InternalDataSerializer.
+ */
 public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
   private static final Logger logger = LogService.getLogger();
-  private final ObjectInputFilter serializationFilter;
+
+  private boolean usingJava8;
+  private Object serializationFilter;
+
+  private Class configClass; // ObjectInputFilter$Config
+  private Method setObjectInputFilterMethod; // method on ObjectInputFilter$Config or
+                                             // ObjectInputStream
+  private Method createFilterMethod; // method on ObjectInputFilter$Config
+
+  private Class filterClass; // ObjectInputFilter
+  private Object ALLOWED; // field on ObjectInputFilter
+  private Object REJECTED; // field on ObjectInputFilter
+  private Method checkInputMethod; // method on ObjectInputFilter
+
+  private Class filterInfoClass; // ObjectInputFilter$FilterInfo
+  private Method serialClassMethod; // method on ObjectInputFilter$FilterInfo
 
   public ObjectInputStreamFilterWrapper(String serializationFilterSpec,
       Collection<DistributedSystemService> services) {
@@ -62,33 +93,151 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
 
     logger.info("setting a serialization filter containing {}", serializationFilterSpec);
 
-    final ObjectInputFilter userFilter =
-        ObjectInputFilter.Config.createFilter(serializationFilterSpec);
-    serializationFilter = filterInfo -> {
-      if (filterInfo.serialClass() == null) {
-        return userFilter.checkInput(filterInfo);
-      }
+    // try java8 - this will not throw an exception if ObjectInputFilter can't be found
+    if (createJava8Filter(serializationFilterSpec, sanctionedClasses)) {
+      return;
+    }
 
-      String className = filterInfo.serialClass().getName();
-      if (filterInfo.serialClass().isArray()) {
-        className = filterInfo.serialClass().getComponentType().getName();
-      }
-      if (sanctionedClasses.contains(className)) {
-        return ObjectInputFilter.Status.ALLOWED;
-        // return ObjectInputFilter.Status.UNDECIDED;
-      } else {
-        ObjectInputFilter.Status status = userFilter.checkInput(filterInfo);
-        if (status == ObjectInputFilter.Status.REJECTED) {
-          logger.fatal("Serialization filter is rejecting class {}", className, new Exception(""));
-        }
-        return status;
-      }
-    };
-
+    // try java9 - this throws an exception if it fails to create the filter
+    createJava9Filter(serializationFilterSpec, sanctionedClasses);
   }
 
   @Override
   public void setFilterOn(ObjectInputStream objectInputStream) {
-    ObjectInputFilter.Config.setObjectInputFilter(objectInputStream, serializationFilter);
+    try {
+      if (usingJava8) {
+        setObjectInputFilterMethod.invoke(configClass, objectInputStream, serializationFilter);
+      } else {
+        setObjectInputFilterMethod.invoke(objectInputStream, serializationFilter);
+      }
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new InternalGemFireError("Unable to filter serialization", e);
+    }
   }
+
+  /**
+   * java8 has sun.misc.ObjectInputFilter and uses ObjectInputFilter$Config.setObjectInputFilter()
+   */
+  private boolean createJava8Filter(String serializationFilterSpec,
+      Collection<String> sanctionedClasses) {
+    ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
+    try {
+
+      filterInfoClass = classPathLoader.forName("sun.misc.ObjectInputFilter$FilterInfo");
+      serialClassMethod = filterInfoClass.getDeclaredMethod("serialClass");
+
+      filterClass = classPathLoader.forName("sun.misc.ObjectInputFilter");
+      checkInputMethod = filterClass.getDeclaredMethod("checkInput", filterInfoClass);
+
+      Class statusClass = classPathLoader.forName("sun.misc.ObjectInputFilter$Status");
+      ALLOWED = statusClass.getEnumConstants()[1];
+      REJECTED = statusClass.getEnumConstants()[2];
+      if (!ALLOWED.toString().equals("ALLOWED") || !REJECTED.toString().equals("REJECTED")) {
+        throw new GemFireConfigException(
+            "ObjectInputFilter$Status enumeration in this JDK is not as expected");
+      }
+
+      configClass = classPathLoader.forName("sun.misc.ObjectInputFilter$Config");
+      setObjectInputFilterMethod = configClass.getDeclaredMethod("setObjectInputFilter",
+          ObjectInputStream.class, filterClass);
+      createFilterMethod = configClass.getDeclaredMethod("createFilter", String.class);
+
+      serializationFilter = createSerializationFilter(serializationFilterSpec, sanctionedClasses);
+      usingJava8 = true;
+
+    } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException
+        | NoSuchMethodException e) {
+      if (filterInfoClass != null) {
+        throw new GemFireConfigException(
+            "A serialization filter has been specified but Geode was unable to configure a filter",
+            e);
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  /** java9 has java.io.ObjectInputFilter and uses ObjectInputStream.setObjectInputFilter() */
+  private void createJava9Filter(String serializationFilterSpec,
+      Collection<String> sanctionedClasses) {
+    try {
+      ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
+
+      filterInfoClass = classPathLoader.forName("java.io.ObjectInputFilter$FilterInfo");
+      serialClassMethod = filterInfoClass.getDeclaredMethod("serialClass");
+
+
+      filterClass = classPathLoader.forName("java.io.ObjectInputFilter");
+      checkInputMethod = filterClass.getDeclaredMethod("checkInput", filterInfoClass);
+
+      Class statusClass = classPathLoader.forName("java.io.ObjectInputFilter$Status");
+      ALLOWED = statusClass.getEnumConstants()[1];
+      REJECTED = statusClass.getEnumConstants()[2];
+      if (!ALLOWED.toString().equals("ALLOWED") || !REJECTED.toString().equals("REJECTED")) {
+        throw new GemFireConfigException(
+            "ObjectInputFilter$Status enumeration in this JDK is not as expected");
+      }
+
+      configClass = classPathLoader.forName("java.io.ObjectInputFilter$Config");
+      setObjectInputFilterMethod =
+          ObjectInputStream.class.getDeclaredMethod("setObjectInputFilter", filterClass);
+      createFilterMethod = configClass.getDeclaredMethod("createFilter", String.class);
+
+      serializationFilter = createSerializationFilter(serializationFilterSpec, sanctionedClasses);
+
+    } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException
+        | NoSuchMethodException e) {
+      throw new GemFireConfigException(
+          "A serialization filter has been specified but Geode was unable to configure a filter",
+          e);
+    }
+  }
+
+
+  private Object createSerializationFilter(String serializationFilterSpec,
+      Collection<String> sanctionedClasses)
+      throws InvocationTargetException, IllegalAccessException {
+
+    /*
+     * create a user filter with the serialization whitelist/blacklist. This will be wrapped
+     * by a filter that white-lists sanctioned classes
+     */
+    Object userFilter = createFilterMethod.invoke(null, serializationFilterSpec);
+
+    InvocationHandler handler = (proxy, method, args) -> {
+      switch (method.getName()) {
+        case "checkInput":
+          Object filterInfo = args[0];
+          Class serialClass = (Class) serialClassMethod.invoke(filterInfo);
+          if (serialClass == null) { // no class to check, so nothing to white-list
+            return checkInputMethod.invoke(userFilter, filterInfo);
+          }
+          String className = serialClass.getName();
+          if (serialClass.isArray()) {
+            className = serialClass.getComponentType().getName();
+          }
+          if (sanctionedClasses.contains(className)) {
+            return ALLOWED;
+          } else {
+            Object status = checkInputMethod.invoke(userFilter, filterInfo);
+            if (status == REJECTED) {
+              logger.fatal("Serialization filter is rejecting class {}", className,
+                  new Exception(""));
+            }
+            return status;
+          }
+        default:
+          throw new UnsupportedOperationException(
+              "ObjectInputFilter." + method.getName() + " is not implemented");
+      }
+    };
+
+    ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
+    return Proxy.newProxyInstance(classPathLoader.asClassLoader(), new Class[] {filterClass},
+        handler);
+
+  }
+
+
 }

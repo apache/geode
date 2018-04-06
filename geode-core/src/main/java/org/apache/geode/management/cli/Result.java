@@ -36,7 +36,7 @@ public interface Result {
    *
    * @since GemFire 7.0
    */
-  public enum Status {
+  enum Status {
     /**
      * Indicates that the command completed successfully.
      */
@@ -64,19 +64,19 @@ public interface Result {
   /**
    * Returns the status of a processed command.
    */
-  public Status getStatus();
+  Status getStatus();
 
   /**
    * Resets the pointer to the first line in the Result.
    */
-  public void resetToFirstLine();
+  void resetToFirstLine();
 
   /**
    * Returns whether the result has any more lines of information.
    *
    * @return True if there are more lines, false otherwise.
    */
-  public boolean hasNextLine();
+  boolean hasNextLine();
 
   /**
    * Returns the next line of information from the Result.
@@ -84,14 +84,14 @@ public interface Result {
    * @throws IndexOutOfBoundsException if this method is called more times than there are lines of
    *         information.
    */
-  public String nextLine();
+  String nextLine();
 
   /**
    * Returns whether this Result has a file as a part of the command output.
    *
    * @return True if there is a file, false otherwise.
    */
-  public boolean hasIncomingFiles();
+  boolean hasIncomingFiles();
 
   /**
    * Save the file(s) from this Result. {@link #hasIncomingFiles()} should be used before calling
@@ -101,7 +101,7 @@ public interface Result {
    * @throws IOException If an error occurs while saving the file.
    * @throws RuntimeException If there is no file in the Result to save.
    */
-  public void saveIncomingFiles(String directory) throws IOException;
+  void saveIncomingFiles(String directory) throws IOException;
 
   /****
    * Return whether the configuration changes due to command have been persisted to cluster
@@ -109,7 +109,7 @@ public interface Result {
    *
    * @return True if the command has failed to persist configuration changes , false otherwise.
    */
-  public boolean failedToPersist();
+  boolean failedToPersist();
 
   /*****
    * Sets whether the command changes have not been persisted to the cluster configuration
@@ -117,5 +117,5 @@ public interface Result {
    * @param commandPersisted true if the command changes are persisted to the cluster configuration,
    *        false otherwise.
    */
-  public void setCommandPersisted(boolean commandPersisted);
+  void setCommandPersisted(boolean commandPersisted);
 }

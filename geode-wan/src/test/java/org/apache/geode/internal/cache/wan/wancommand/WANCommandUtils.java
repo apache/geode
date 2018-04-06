@@ -45,6 +45,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerAdvisor;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
@@ -216,7 +217,7 @@ public class WANCommandUtils implements Serializable {
       queueRegionNameSuffix = "_SERIAL_GATEWAY_SENDER_QUEUE";
     }
     Set<String> allRegions = ((GemFireCacheImpl) cache).getAllRegions().stream()
-        .map(LocalRegion::getName).collect(Collectors.toSet());
+        .map(InternalRegion::getName).collect(Collectors.toSet());
 
     assertThat(allRegions).doesNotContain(senderId + queueRegionNameSuffix);
   }

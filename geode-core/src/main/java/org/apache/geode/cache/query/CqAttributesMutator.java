@@ -30,7 +30,7 @@ public interface CqAttributesMutator {
    * @param aListener the user defined CQ listener to add to the CqQuery.
    * @throws IllegalArgumentException if <code>aListener</code> is null
    */
-  public void addCqListener(CqListener aListener);
+  void addCqListener(CqListener aListener);
 
   /**
    * Removes given CQ listener from the list of CQ listeners on this CqQuery. Does nothing if the
@@ -40,7 +40,7 @@ public interface CqAttributesMutator {
    * @param aListener the CQ listener to remove from the CqQuery.
    * @throws IllegalArgumentException if <code>aListener</code> is null
    */
-  public void removeCqListener(CqListener aListener);
+  void removeCqListener(CqListener aListener);
 
   /**
    * Adds the given set CqListner on this CQ. If the CQ already has CqListeners, this removes those
@@ -49,6 +49,6 @@ public interface CqAttributesMutator {
    * @param newListeners a possibly null or empty array of listeners to add to this CqQuery.
    * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
    */
-  public void initCqListeners(CqListener[] newListeners);
+  void initCqListeners(CqListener[] newListeners);
 
 }

@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.AlertLevel;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -58,7 +58,7 @@ public class AlertLevelChangeMessage extends SerialDistributionMessage {
   ////////////////////// Instance Methods //////////////////////
 
   @Override
-  public void process(DistributionManager dm) {
+  public void process(ClusterDistributionManager dm) {
     AlertAppender.getInstance().removeAlertListener(this.getSender());
 
     if (this.newLevel != Alert.OFF) {

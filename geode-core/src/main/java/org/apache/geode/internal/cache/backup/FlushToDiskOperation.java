@@ -19,7 +19,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -35,14 +35,15 @@ import org.apache.geode.internal.logging.LogService;
 public class FlushToDiskOperation {
   private static final Logger logger = LogService.getLogger();
 
-  private final DM dm;
+  private final DistributionManager dm;
   private final InternalDistributedMember member;
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
   private final FlushToDiskFactory flushToDiskFactory;
 
-  FlushToDiskOperation(DM dm, InternalDistributedMember member, InternalCache cache,
-      Set<InternalDistributedMember> recipients, FlushToDiskFactory flushToDiskFactory) {
+  FlushToDiskOperation(DistributionManager dm, InternalDistributedMember member,
+      InternalCache cache, Set<InternalDistributedMember> recipients,
+      FlushToDiskFactory flushToDiskFactory) {
     this.flushToDiskFactory = flushToDiskFactory;
     this.dm = dm;
     this.member = member;

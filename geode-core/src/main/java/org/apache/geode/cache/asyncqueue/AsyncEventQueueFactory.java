@@ -14,12 +14,9 @@
  */
 package org.apache.geode.cache.asyncqueue;
 
-import java.util.List;
-
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
-import org.apache.geode.cache.wan.GatewaySenderFactory;
 
 /**
  * Factory to create the <code>AsyncEventQueue</code>. Below example illustrates how to get the
@@ -52,7 +49,7 @@ public interface AsyncEventQueueFactory {
    *
    * @param name
    */
-  public AsyncEventQueueFactory setDiskStoreName(String name);
+  AsyncEventQueueFactory setDiskStoreName(String name);
 
   /**
    * Sets the maximum amount of memory (in MB) for an <code>AsyncEventQueue</code>'s queue. Default
@@ -60,7 +57,7 @@ public interface AsyncEventQueueFactory {
    *
    * @param memory The maximum amount of memory (in MB) for an <code>AsyncEventQueue</code>'s queue
    */
-  public AsyncEventQueueFactory setMaximumQueueMemory(int memory);
+  AsyncEventQueueFactory setMaximumQueueMemory(int memory);
 
   /**
    * Sets whether or not the writing to the disk is synchronous. Default is true.
@@ -68,14 +65,14 @@ public interface AsyncEventQueueFactory {
    * @param isSynchronous boolean if true indicates synchronous writes
    *
    */
-  public AsyncEventQueueFactory setDiskSynchronous(boolean isSynchronous);
+  AsyncEventQueueFactory setDiskSynchronous(boolean isSynchronous);
 
   /**
    * Sets the batch size for an <code>AsyncEventQueue</code>'s queue. Default is 100.
    *
    * @param size The size of batches sent to its <code>AsyncEventListener</code>
    */
-  public AsyncEventQueueFactory setBatchSize(int size);
+  AsyncEventQueueFactory setBatchSize(int size);
 
   /**
    * Sets the batch time interval (in milliseconds) for a <code>AsyncEventQueue</code>. Default is 5
@@ -84,14 +81,14 @@ public interface AsyncEventQueueFactory {
    * @param interval The maximum time interval that can elapse before a partial batch is sent from a
    *        <code>AsyncEventQueue</code>.
    */
-  public AsyncEventQueueFactory setBatchTimeInterval(int interval);
+  AsyncEventQueueFactory setBatchTimeInterval(int interval);
 
   /**
    * Sets whether the <code>AsyncEventQueue</code> is persistent or not. Default is false.
    *
    * @param isPersistent Whether to enable persistence for an <code>AsyncEventQueue</code>.
    */
-  public AsyncEventQueueFactory setPersistent(boolean isPersistent);
+  AsyncEventQueueFactory setPersistent(boolean isPersistent);
 
   /**
    * Indicates whether all VMs need to distribute events to remote site. In this case only the
@@ -100,7 +97,7 @@ public interface AsyncEventQueueFactory {
    * @param isParallel boolean to indicate whether distribution policy is parallel
    */
 
-  public AsyncEventQueueFactory setParallel(boolean isParallel);
+  AsyncEventQueueFactory setParallel(boolean isParallel);
 
   /**
    * Sets whether to enable batch conflation for <code>AsyncEventQueue</code>. Default is false.
@@ -108,14 +105,14 @@ public interface AsyncEventQueueFactory {
    * @param isConflation Whether or not to enable batch conflation for batches sent from a
    *        <code>AsyncEventQueue</code>
    */
-  public AsyncEventQueueFactory setBatchConflationEnabled(boolean isConflation);
+  AsyncEventQueueFactory setBatchConflationEnabled(boolean isConflation);
 
   /**
    * Sets the number of dispatcher thread. Default is 5.
    *
    * @param numThreads
    */
-  public AsyncEventQueueFactory setDispatcherThreads(int numThreads);
+  AsyncEventQueueFactory setDispatcherThreads(int numThreads);
 
   /**
    * Adds a <code>GatewayEventFilter</code> to the attributes of AsyncEventQueue being created by
@@ -123,7 +120,7 @@ public interface AsyncEventQueueFactory {
    *
    * @param filter GatewayEventFilter
    */
-  public AsyncEventQueueFactory addGatewayEventFilter(GatewayEventFilter filter);
+  AsyncEventQueueFactory addGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Removes the provided <code>GatewayEventFilter</code> from the attributes of AsyncEventQueue
@@ -131,22 +128,21 @@ public interface AsyncEventQueueFactory {
    *
    * @param filter
    */
-  public AsyncEventQueueFactory removeGatewayEventFilter(GatewayEventFilter filter);
+  AsyncEventQueueFactory removeGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Sets the order policy for multiple dispatchers. Default is KEY.
    *
    * @param policy
    */
-  public AsyncEventQueueFactory setOrderPolicy(OrderPolicy policy);
+  AsyncEventQueueFactory setOrderPolicy(OrderPolicy policy);
 
   /**
    * Sets the <code>GatewayEventSubstitutionFilter</code>.
    *
    * @param filter The <code>GatewayEventSubstitutionFilter</code>
    */
-  public AsyncEventQueueFactory setGatewayEventSubstitutionListener(
-      GatewayEventSubstitutionFilter filter);
+  AsyncEventQueueFactory setGatewayEventSubstitutionListener(GatewayEventSubstitutionFilter filter);
 
   /**
    * Forwards destroy operations from expiration action to AsyncEventQueue. By default the
@@ -155,7 +151,7 @@ public interface AsyncEventQueueFactory {
    *
    * @param forward boolean to indicate whether to forward expiration destroy events.
    */
-  public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward);
+  AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward);
 
   /**
    * Creates the <code>AsyncEventQueue</code>. It accepts Id of AsyncEventQueue and instance of
@@ -169,5 +165,5 @@ public interface AsyncEventQueueFactory {
    * @param listener <code>AsyncEventListener</code> to be added to the regions that are configured
    *        to use this queue.
    */
-  public AsyncEventQueue create(String id, AsyncEventListener listener);
+  AsyncEventQueue create(String id, AsyncEventListener listener);
 }

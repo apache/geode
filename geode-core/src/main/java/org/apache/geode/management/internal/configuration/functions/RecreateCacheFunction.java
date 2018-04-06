@@ -14,20 +14,19 @@
  */
 package org.apache.geode.management.internal.configuration.functions;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
-public class RecreateCacheFunction implements Function, InternalEntity {
+public class RecreateCacheFunction implements InternalFunction {
   @Override
   public void execute(FunctionContext context) {
     CliFunctionResult result = null;
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = (InternalCache) context.getCache();
     InternalDistributedSystem ds = cache.getInternalDistributedSystem();
     CacheConfig cacheConfig = cache.getCacheConfig();
     try {

@@ -48,7 +48,7 @@ public class RegionResponse extends AdminResponse {
    * Returns a <code>RegionResponse</code> that will be returned to the specified recipient. The
    * message will contains a copy of the local manager's system config.
    */
-  public static RegionResponse create(DM dm, InternalDistributedMember recipient,
+  public static RegionResponse create(DistributionManager dm, InternalDistributedMember recipient,
       RegionRequest request) {
     RegionResponse m = new RegionResponse();
 

@@ -39,7 +39,7 @@ public interface DynamicRegionListener {
    * @param parentRegionName The name of the parent region
    * @param regionName The name of the region being created
    */
-  public void beforeRegionCreate(String parentRegionName, String regionName);
+  void beforeRegionCreate(String parentRegionName, String regionName);
 
   /**
    * Handles the 'after region creation' event of a dynamic region. This method is invoked after the
@@ -47,7 +47,7 @@ public interface DynamicRegionListener {
    *
    * @param event A <code>RegionEvent</code> describing the event
    */
-  public void afterRegionCreate(RegionEvent<?, ?> event);
+  void afterRegionCreate(RegionEvent<?, ?> event);
 
   /**
    * Handles the 'before region destroyed' event of a dynamic region. This method is invoked before
@@ -55,7 +55,7 @@ public interface DynamicRegionListener {
    *
    * @param event A <code>RegionEvent</code> describing the event
    */
-  public void beforeRegionDestroy(RegionEvent<?, ?> event);
+  void beforeRegionDestroy(RegionEvent<?, ?> event);
 
   /**
    * Handles the 'after region destroyed' event of a dynamic region. This method is invoked after
@@ -63,5 +63,5 @@ public interface DynamicRegionListener {
    *
    * @param event A <code>RegionEvent</code> describing the event
    */
-  public void afterRegionDestroy(RegionEvent<?, ?> event);
+  void afterRegionDestroy(RegionEvent<?, ?> event);
 }

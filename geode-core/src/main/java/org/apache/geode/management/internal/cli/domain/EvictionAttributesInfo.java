@@ -46,9 +46,7 @@ public class EvictionAttributesInfo implements Serializable {
     if (evictionAlgo != null) {
       evictionAlgorithm = evictionAlgo.toString();
     }
-    if (!EvictionAlgorithm.LRU_HEAP.equals(evictionAlgo)) {
-      evictionMaxValue = ea.getMaximum();
-    }
+    evictionMaxValue = ea.getMaximum();
   }
 
   public String getEvictionAction() {

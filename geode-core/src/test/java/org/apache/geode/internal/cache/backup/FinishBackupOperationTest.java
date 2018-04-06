@@ -24,7 +24,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,7 +36,7 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -46,7 +45,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class FinishBackupOperationTest {
 
-  private DM dm;
+  private DistributionManager dm;
   private InternalCache cache;
   private Set<InternalDistributedMember> recipients;
 
@@ -54,8 +53,6 @@ public class FinishBackupOperationTest {
   private InternalDistributedMember member1;
   private InternalDistributedMember member2;
 
-  private File targetDir = new File("targetDir");
-  private File baselineDir = new File("baselineDir");
   private boolean abort = false;
 
   private FinishBackupFactory finishBackupFactory;
@@ -67,7 +64,7 @@ public class FinishBackupOperationTest {
 
   @Before
   public void setUp() throws Exception {
-    dm = mock(DM.class);
+    dm = mock(DistributionManager.class);
     cache = mock(InternalCache.class);
 
     finishBackupReplyProcessor = mock(BackupReplyProcessor.class);
@@ -81,18 +78,17 @@ public class FinishBackupOperationTest {
     member2 = mock(InternalDistributedMember.class, "member2");
     recipients = new HashSet<>();
 
-    finishBackupOperation = new FinishBackupOperation(dm, sender, cache, recipients, targetDir,
-        baselineDir, abort, finishBackupFactory);
+    finishBackupOperation =
+        new FinishBackupOperation(dm, sender, cache, recipients, finishBackupFactory);
 
     when(finishBackupReplyProcessor.getProcessorId()).thenReturn(42);
 
     when(
         finishBackupFactory.createReplyProcessor(eq(finishBackupOperation), eq(dm), eq(recipients)))
             .thenReturn(finishBackupReplyProcessor);
-    when(finishBackupFactory.createRequest(eq(sender), eq(recipients), eq(42), eq(targetDir),
-        eq(baselineDir), eq(abort))).thenReturn(finishBackupRequest);
-    when(finishBackupFactory.createFinishBackup(eq(cache), eq(targetDir), eq(baselineDir),
-        eq(abort))).thenReturn(finishBackup);
+    when(finishBackupFactory.createRequest(eq(sender), eq(recipients), eq(42)))
+        .thenReturn(finishBackupRequest);
+    when(finishBackupFactory.createFinishBackup(eq(cache))).thenReturn(finishBackup);
   }
 
   @Test

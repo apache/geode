@@ -64,6 +64,7 @@ import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
+import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
@@ -93,9 +94,7 @@ public class ConnectCommand implements GfshCommand {
       @CliOption(key = {CliStrings.CONNECT__USE_HTTP}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.CONNECT__USE_HTTP__HELP) boolean useHttp,
-      @CliOption(key = {CliStrings.CONNECT__URL},
-          unspecifiedDefaultValue = CliStrings.CONNECT__DEFAULT_BASE_URL,
-          help = CliStrings.CONNECT__URL__HELP) String url,
+      @CliOption(key = {CliStrings.CONNECT__URL}, help = CliStrings.CONNECT__URL__HELP) String url,
       @CliOption(key = {CliStrings.CONNECT__USERNAME},
           help = CliStrings.CONNECT__USERNAME__HELP) String userName,
       @CliOption(key = {CliStrings.CONNECT__PASSWORD},
@@ -130,6 +129,10 @@ public class ConnectCommand implements GfshCommand {
           .createInfoResult("Already connected to: " + getGfsh().getOperationInvoker().toString());
     }
 
+    if (StringUtils.startsWith(url, "https")) {
+      useSsl = true;
+    }
+
     // ssl options are passed in in the order defined in USER_INPUT_PROPERTIES, note the two types
     // are null, because we don't have connect command options for them yet
     Properties gfProperties = resolveSslProperties(gfsh, useSsl, null, gfSecurityPropertiesFile,
@@ -151,13 +154,37 @@ public class ConnectCommand implements GfshCommand {
       gfProperties.setProperty(UserInputProperty.PASSWORD.getKey(), password);
     }
 
-    if (useHttp) {
+    if (StringUtils.isNotEmpty(url)) {
       result = httpConnect(gfProperties, url, skipSslValidation);
     } else {
       result = jmxConnect(gfProperties, useSsl, jmxManagerEndPoint, locatorEndPoint, false);
     }
 
-    return result;
+    OperationInvoker invoker = gfsh.getOperationInvoker();
+    if (invoker == null || !invoker.isConnected()) {
+      return result;
+    }
+
+    String gfshVersion = gfsh.getVersion();
+    String remoteVersion = null;
+    try {
+      remoteVersion = invoker.getRemoteVersion();
+      if (remoteVersion.equalsIgnoreCase(gfshVersion)) {
+        return result;
+      }
+    } catch (Exception e) {
+      gfsh.logInfo("failed to get the the remote version.", e);
+    }
+
+    // will reach here only when remoteVersion is not available or does not match
+    invoker.stop();
+    if (remoteVersion == null) {
+      return ResultBuilder.createUserErrorResult(
+          String.format("Cannot use a %s gfsh client to connect to this cluster.", gfshVersion));
+    } else {
+      return ResultBuilder.createUserErrorResult(String.format(
+          "Cannot use a %s gfsh client to connect to a %s cluster.", gfshVersion, remoteVersion));
+    }
   }
 
   /**
@@ -255,7 +282,7 @@ public class ConnectCommand implements GfshCommand {
 
       gfsh.setOperationInvoker(operationInvoker);
 
-      LogWrapper.getInstance()
+      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
           .info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
       return ResultBuilder.createInfoResult(
           CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
@@ -276,8 +303,6 @@ public class ConnectCommand implements GfshCommand {
     } catch (Exception e) {
       // all other exceptions, just logs it and returns a connection error
       return handleException(e);
-    } finally {
-      Gfsh.redirectInternalJavaLoggers();
     }
   }
 
@@ -333,8 +358,8 @@ public class ConnectCommand implements GfshCommand {
       gfsh.setOperationInvoker(operationInvoker);
       infoResultData.addLine(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
           jmxHostPortToConnect.toString(false)));
-      LogWrapper.getInstance().info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
-          jmxHostPortToConnect.toString(false)));
+      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).info(CliStrings
+          .format(CliStrings.CONNECT__MSG__SUCCESS, jmxHostPortToConnect.toString(false)));
       return ResultBuilder.buildResult(infoResultData);
     } catch (SecurityException | AuthenticationFailedException e) {
       // if it's security exception, and we already sent in username and password, still returns the
@@ -352,8 +377,6 @@ public class ConnectCommand implements GfshCommand {
     } catch (Exception e) {
       // all other exceptions, just logs it and returns a connection error
       return handleException(e, jmxHostPortToConnect);
-    } finally {
-      Gfsh.redirectInternalJavaLoggers();
     }
   }
 
@@ -474,7 +497,7 @@ public class ConnectCommand implements GfshCommand {
   }
 
   private Result handleException(Exception e, String errorMessage) {
-    LogWrapper.getInstance().severe(errorMessage, e);
+    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).severe(errorMessage, e);
     return ResultBuilder.createConnectionErrorResult(errorMessage);
   }
 

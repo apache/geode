@@ -44,9 +44,9 @@ import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
@@ -1131,7 +1131,7 @@ public class TCPConduit implements Runnable {
     if (ct == null) {
       return false;
     } else {
-      DM d = getDM();
+      DistributionManager d = getDM();
       if (d != null) {
         return d.getSystem().threadOwnsResources();
       } else {
@@ -1143,7 +1143,7 @@ public class TCPConduit implements Runnable {
   /**
    * Returns the distribution manager of the direct channel
    */
-  public DM getDM() {
+  public DistributionManager getDM() {
     return directChannel.getDM();
   }
 
@@ -1186,7 +1186,7 @@ public class TCPConduit implements Runnable {
      */
     @Override
     public String cancelInProgress() {
-      DM dm = getDM();
+      DistributionManager dm = getDM();
       if (dm == null) {
         return "no distribution manager";
       }
@@ -1207,7 +1207,7 @@ public class TCPConduit implements Runnable {
       if (reason == null) {
         return null;
       }
-      DM dm = getDM();
+      DistributionManager dm = getDM();
       if (dm == null) {
         return new DistributedSystemDisconnectedException("no distribution manager");
       }

@@ -15,10 +15,9 @@
 package org.apache.geode.modules.session.catalina.internal;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 
 public interface DeltaSessionAttributeEvent extends DataSerializable {
 
-  public void apply(DeltaSessionInterface session);
+  void apply(DeltaSessionInterface session);
 }

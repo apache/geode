@@ -25,7 +25,7 @@ import java.util.concurrent.RejectedExecutionException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
@@ -50,7 +50,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();
 
   static void sendMessage(Set members, InternalDistributedMember originator, TXLockId txLockId,
-      DLockGrantor grantor, DM dm) {
+      DLockGrantor grantor, DistributionManager dm) {
     TXOriginatorRecoveryProcessor processor = new TXOriginatorRecoveryProcessor(dm, members);
 
     TXOriginatorRecoveryMessage msg = new TXOriginatorRecoveryMessage();
@@ -70,7 +70,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
     if (members.contains(dm.getId())) {
       if (msg.getSender() == null)
         msg.setSender(dm.getId());
-      msg.process((DistributionManager) dm);
+      msg.process((ClusterDistributionManager) dm);
     }
 
     // keep waiting even if interrupted
@@ -79,7 +79,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
     try {
       processor.waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     }
 
     // release txLockId...
@@ -99,7 +99,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
 
   /** Creates a new instance of TXOriginatorRecoveryProcessor */
-  private TXOriginatorRecoveryProcessor(DM dm, Set members) {
+  private TXOriginatorRecoveryProcessor(DistributionManager dm, Set members) {
     super(dm, members);
   }
 
@@ -135,7 +135,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       final TXOriginatorRecoveryMessage msg = this;
 
       try {
@@ -149,7 +149,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
       }
     }
 
-    protected void processTXOriginatorRecoveryMessage(final DistributionManager dm,
+    protected void processTXOriginatorRecoveryMessage(final ClusterDistributionManager dm,
         final TXOriginatorRecoveryMessage msg) {
 
       ReplyException replyException = null;

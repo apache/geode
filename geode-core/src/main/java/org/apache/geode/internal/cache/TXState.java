@@ -32,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -324,20 +323,16 @@ public class TXState implements TXStateInterface {
 
     final long conflictStart = CachePerfStats.getStatTime();
     this.locks = createLockRequest();
-    try {
-      this.locks.obtain();
-      // for now check account the dlock service time
-      // later this stat end should be moved to a finally block
-      if (CachePerfStats.enableClockStats)
-        this.proxy.getTxMgr().getCachePerfStats()
-            .incTxConflictCheckTime(CachePerfStats.getStatTime() - conflictStart);
-      if (this.internalAfterReservation != null) {
-        this.internalAfterReservation.run();
-      }
-      checkForConflicts();
-    } catch (CommitConflictException conflict) {
-      throw conflict;
+    this.locks.obtain(getCache().getInternalDistributedSystem());
+    // for now check account the dlock service time
+    // later this stat end should be moved to a finally block
+    if (CachePerfStats.enableClockStats)
+      this.proxy.getTxMgr().getCachePerfStats()
+          .incTxConflictCheckTime(CachePerfStats.getStatTime() - conflictStart);
+    if (this.internalAfterReservation != null) {
+      this.internalAfterReservation.run();
     }
+    checkForConflicts();
   }
 
   byte[] getBaseMembershipId() {
@@ -850,7 +845,7 @@ public class TXState implements TXStateInterface {
       if (this.locks != null) {
         final long conflictStart = CachePerfStats.getStatTime();
         try {
-          this.locks.cleanup();
+          this.locks.cleanup(getCache().getInternalDistributedSystem());
         } catch (IllegalArgumentException e) {
           iae = e;
         }
@@ -1054,8 +1049,9 @@ public class TXState implements TXStateInterface {
         Assert.assertTrue(this.locks != null,
             "Gemfire Transaction afterCompletion called with illegal state.");
         try {
-          this.proxy.getTxMgr().setTXState(null);
+          proxy.getTxMgr().setTXState(null);
           commit();
+          saveTXCommitMessageForClientFailover();
         } catch (CommitConflictException error) {
           Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
               + " afterCompletion failed.due to CommitConflictException: " + error);
@@ -1069,6 +1065,7 @@ public class TXState implements TXStateInterface {
         this.jtaLifeTime = opStart - getBeginTime();
         this.proxy.getTxMgr().setTXState(null);
         rollback();
+        saveTXCommitMessageForClientFailover();
         this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
         break;
       default:
@@ -1077,6 +1074,9 @@ public class TXState implements TXStateInterface {
     // System.err.println("end afterCompletion");
   }
 
+  private void saveTXCommitMessageForClientFailover() {
+    proxy.getTxMgr().saveTXStateForClientFailover(proxy);
+  }
 
 
   /**
@@ -1180,8 +1180,8 @@ public class TXState implements TXStateInterface {
    *
    * @see org.apache.geode.internal.cache.TXStateInterface#getCache()
    */
-  public Cache getCache() {
-    return this.proxy.getTxMgr().getCache();
+  public InternalCache getCache() {
+    return this.proxy.getCache();
   }
 
   /*

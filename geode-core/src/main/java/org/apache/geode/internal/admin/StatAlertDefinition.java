@@ -26,11 +26,11 @@ public interface StatAlertDefinition extends DataSerializable {
   /**
    * Get the unique ID for AlertDefinition, created using the hashCode of StringRepresentation
    */
-  public int getId();
+  int getId();
 
-  public StatisticInfo[] getStatisticInfo();
+  StatisticInfo[] getStatisticInfo();
 
-  public void setStatisticInfo(StatisticInfo[] info);
+  void setStatisticInfo(StatisticInfo[] info);
 
   // public boolean isADecoratorOf(Constant decoType [Function,
   // SystemWideFunction, Gauge, Number]);
@@ -38,25 +38,25 @@ public interface StatAlertDefinition extends DataSerializable {
   /**
    * Evaluate using the passed params and not using the getValue
    */
-  public boolean evaluate(Number[] params);
+  boolean evaluate(Number[] params);
 
   /**
    * Evaluate the said AlertDefinition. Value of Statistic would be gotten from StatisticInfo
    * Objects
    */
-  public boolean evaluate();
+  boolean evaluate();
 
   /**
    * Evaluate using the passed params and not using the getValue Return a StatAlert object if one is
    * raised
    */
-  public StatAlert evaluateAndAlert(Number[] params);
+  StatAlert evaluateAndAlert(Number[] params);
 
   /**
    * Evaluate the said AlertDefinition. Value of Statistic would be gotten from StatisticInfo
    * Objects. Return a StatAlert object if one is raised
    */
-  public StatAlert evaluateAndAlert();
+  StatAlert evaluateAndAlert();
 
   /**
    * Get the value of the Statistic this Definition object is created for Depending on the Decorator
@@ -64,7 +64,7 @@ public interface StatAlertDefinition extends DataSerializable {
    *
    * @return Number[]
    */
-  public Number[] getValue();
+  Number[] getValue();
 
   /**
    * Get the value of the Statistic this Definition object is created for Depending on the Decorator
@@ -72,27 +72,27 @@ public interface StatAlertDefinition extends DataSerializable {
    *
    * @return Number[]
    */
-  public Number[] getValue(Number[] vals);
+  Number[] getValue(Number[] vals);
 
-  public boolean verify(StatisticsFactory factory);
+  boolean verify(StatisticsFactory factory);
 
-  public boolean hasDecorator(String decoratorID);
+  boolean hasDecorator(String decoratorID);
 
-  public StatAlertDefinition getDecorator(String decoratorID);
+  StatAlertDefinition getDecorator(String decoratorID);
 
-  public String getStringRepresentation();
+  String getStringRepresentation();
 
   /**
    * This method returns the name of this stat alert definition.
    *
    * @return Name of the StatAlertDefinition
    */
-  public String getName();
+  String getName();
 
   /**
    * This method sets the name of this stat alert definition.
    *
    * @param name name to be set for this StatAlertDefinition.
    */
-  public void setName(String name);
+  void setName(String name);
 }

@@ -18,7 +18,18 @@ package org.apache.geode.internal.cache.partitioned;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
@@ -28,7 +39,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
@@ -38,10 +48,21 @@ import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
+import org.apache.geode.internal.cache.BucketPersistenceAdvisor;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.BucketServerLocation66;
+import org.apache.geode.internal.cache.CacheDistributionAdvisor;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.Node;
 import org.apache.geode.internal.cache.PRHARedundancyProvider.DataStoreBuckets;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionStats;
+import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
@@ -1538,7 +1559,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * A visitor interface for the buckets of this region used by
    * {@link RegionAdvisor#accept(BucketVisitor, Object)}.
    */
-  public static interface BucketVisitor<T> {
+  public interface BucketVisitor<T> {
 
     /**
      * Visit a given {@link ProxyBucketRegion} accumulating the results in the given aggregate.

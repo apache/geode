@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import java.io.IOException;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 
@@ -21,7 +23,7 @@ public class PartitionedBackupPrepareAndFinishMsgDUnitTest
     extends BackupPrepareAndFinishMsgDUnitTest {
 
   @Override
-  public Region<Integer, Integer> createRegion() {
+  public Region<Integer, Integer> createRegion() throws IOException {
     return createRegion(RegionShortcut.PARTITION_PERSISTENT);
   }
 }

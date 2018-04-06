@@ -25,6 +25,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.InternalCache;
 
 @SuppressWarnings("serial")
 public class GatewayDeltaCreateEvent extends AbstractGatewayDeltaEvent {
@@ -44,7 +45,8 @@ public class GatewayDeltaCreateEvent extends AbstractGatewayDeltaEvent {
 
   public void apply(Cache cache) {
     Region<String, CachedDeserializable> region = getRegion(cache);
-    region.put(this.key, CachedDeserializableFactory.create(this.gatewayDelta), true);
+    region.put(this.key,
+        CachedDeserializableFactory.create(this.gatewayDelta, (InternalCache) cache), true);
     if (cache.getLogger().fineEnabled()) {
       StringBuilder builder = new StringBuilder();
       builder.append("Applied ").append(this);

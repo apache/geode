@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class JdbcAsyncWriterTest {
 
   private SqlHandler sqlHandler;
-  private InternalRegion<Object, Object> region;
+  private InternalRegion region;
 
   private JdbcAsyncWriter writer;
 
@@ -67,7 +67,7 @@ public class JdbcAsyncWriterTest {
   }
 
   @Test
-  public void writesAProvidedEvent() {
+  public void writesAProvidedEvent() throws Exception {
     writer.processEvents(Collections.singletonList(createMockEvent()));
 
     verify(sqlHandler, times(1)).write(any(), any(), any(), any());
@@ -76,7 +76,7 @@ public class JdbcAsyncWriterTest {
   }
 
   @Test
-  public void writesMultipleProvidedEvents() {
+  public void writesMultipleProvidedEvents() throws Exception {
     List<AsyncEvent> events = new ArrayList<>();
     events.add(createMockEvent());
     events.add(createMockEvent());

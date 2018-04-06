@@ -24,12 +24,9 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
@@ -41,57 +38,43 @@ public class ListMembersCommand implements GfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result listMember(@CliOption(key = {CliStrings.GROUP}, unspecifiedDefaultValue = "",
+  public Result listMember(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.LIST_MEMBER__GROUP__HELP) String group) {
-    Result result;
+      help = CliStrings.LIST_MEMBER__GROUP__HELP) String[] groups) {
 
-    // TODO: Add the code for identifying the system services
-    try {
-      Set<DistributedMember> memberSet = new TreeSet<>();
-      InternalCache cache = getCache();
+    Set<DistributedMember> memberSet = new TreeSet<>();
+    memberSet.addAll(this.findMembersIncludingLocators(groups, null));
 
-      // default get all the members in the DS
-      if (group.isEmpty()) {
-        memberSet.addAll(CliUtil.getAllMembers(cache));
-      } else {
-        memberSet.addAll(cache.getDistributedSystem().getGroupMembers(group));
-      }
-
-      if (memberSet.isEmpty()) {
-        result = ResultBuilder.createInfoResult(CliStrings.LIST_MEMBER__MSG__NO_MEMBER_FOUND);
-      } else {
-
-        TabularResultData resultData = ResultBuilder.createTabularResultData();
-        final String coordinatorMember = getCoordinator();
-        resultData.accumulate("Name", "Coordinator:");
-        resultData.accumulate("Id", coordinatorMember);
-        for (DistributedMember member : memberSet) {
-          resultData.accumulate("Name", member.getName());
-          resultData.accumulate("Id", member.getId());
-        }
-
-        result = ResultBuilder.buildResult(resultData);
-      }
-    } catch (Exception e) {
-      result = ResultBuilder
-          .createGemFireErrorResult("Could not fetch the list of members. " + e.getMessage());
-      LogWrapper.getInstance().warning(e.getMessage(), e);
+    if (memberSet.isEmpty()) {
+      return ResultBuilder.createInfoResult(CliStrings.LIST_MEMBER__MSG__NO_MEMBER_FOUND);
     }
-    return result;
+
+    TabularResultData resultData = ResultBuilder.createTabularResultData();
+    final DistributedMember coordinatorMember = getCoordinator();
+    for (DistributedMember member : memberSet) {
+      resultData.accumulate("Name", member.getName());
+      if (member == coordinatorMember) {
+        resultData.accumulate("Id", member.getId() + " [Coordinator]");
+      } else {
+        resultData.accumulate("Id", member.getId());
+      }
+    }
+
+    return ResultBuilder.buildResult(resultData);
   }
 
-  private String getCoordinator() {
-    String result = "unknown";
+  DistributedMember getCoordinator() {
     InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
-    if ((ids != null) && (ids.isConnected())) {
-      MembershipManager mmgr = ids.getDistributionManager().getMembershipManager();
-      DistributedMember coord = mmgr.getCoordinator();
-      if (coord != null) {
-        result = coord.toString();
-      }
+    if (ids == null || !ids.isConnected()) {
+      return null;
     }
 
-    return result;
+    MembershipManager mmgr = ids.getDistributionManager().getMembershipManager();
+    if (mmgr == null) {
+      return null;
+    }
+
+    return mmgr.getCoordinator();
+
   }
 }

@@ -27,14 +27,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -170,7 +169,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       Throwable thr = null;
       JmxManagerProfile p = null;
       try {
@@ -237,7 +236,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
      * @param recips The recipients of the message
      * @throws ReplyException
      */
-    public static void send(final DM dm, Set<InternalDistributedMember> recips,
+    public static void send(final DistributionManager dm, Set<InternalDistributedMember> recips,
         JmxManagerProfile profile) {
       JmxManagerProfileMessage r = new JmxManagerProfileMessage(recips, profile);
       dm.putOutgoing(r);
@@ -325,8 +324,8 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
-        boolean exchangeProfiles, final List<Profile> replyProfiles) {
+    public void processIncoming(ClusterDistributionManager dm, String adviseePath,
+        boolean removeProfile, boolean exchangeProfiles, final List<Profile> replyProfiles) {
       final InternalCache cache = dm.getCache();
       if (cache != null && !cache.isClosed()) {
         handleDistributionAdvisee(cache.getJmxManagerAdvisor().getAdvisee(), removeProfile,

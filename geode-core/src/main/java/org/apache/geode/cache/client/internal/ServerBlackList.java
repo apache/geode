@@ -14,7 +14,11 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -145,10 +149,10 @@ public class ServerBlackList {
     }
   }
 
-  public static interface BlackListListener {
-    public void serverAdded(ServerLocation location);
+  public interface BlackListListener {
+    void serverAdded(ServerLocation location);
 
-    public void serverRemoved(ServerLocation location);
+    void serverRemoved(ServerLocation location);
   }
 
   public static class BlackListListenerAdapter implements BlackListListener {

@@ -26,7 +26,6 @@ import org.assertj.core.api.Assertions;
 import org.json.JSONArray;
 
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 
 
@@ -147,8 +146,8 @@ public class CommandResultAssert
    * </pre>
    */
   public CommandResultAssert tableHasColumnWithExactValuesInExactOrder(String header,
-      Object... expectedValues) {
-    List<Object> actualValues = actual.getCommandResult().getColumnValues(header);
+      String... expectedValues) {
+    List<String> actualValues = actual.getCommandResult().getColumnValues(header);
     assertThat(actualValues).containsExactly(expectedValues);
 
     return this;
@@ -175,8 +174,8 @@ public class CommandResultAssert
    * </pre>
    */
   public CommandResultAssert tableHasColumnWithExactValuesInAnyOrder(String header,
-      Object... expectedValues) {
-    List<Object> actualValues = actual.getCommandResult().getColumnValues(header);
+      String... expectedValues) {
+    List<String> actualValues = actual.getCommandResult().getColumnValues(header);
     assertThat(actualValues).containsExactlyInAnyOrder(expectedValues);
 
     return this;
@@ -184,8 +183,7 @@ public class CommandResultAssert
 
 
 
-  public CommandResultAssert tableHasRowWithValues(String... headersThenValues)
-      throws GfJsonException {
+  public CommandResultAssert tableHasRowWithValues(String... headersThenValues) {
     assertThat(headersThenValues.length % 2)
         .describedAs("You need to pass even number of parameters.").isEqualTo(0);
 
@@ -195,10 +193,10 @@ public class CommandResultAssert
     String[] expectedValues =
         Arrays.copyOfRange(headersThenValues, numberOfColumn, headersThenValues.length);
 
-    Map<String, List<Object>> allValues = new HashMap<>();
+    Map<String, List<String>> allValues = new HashMap<>();
     int numberOfRows = -1;
     for (String header : headers) {
-      List<Object> columnValues = actual.getCommandResult().getColumnValues(header);
+      List<String> columnValues = actual.getCommandResult().getColumnValues(header);
       if (numberOfRows > 0) {
         assertThat(columnValues.size()).isEqualTo(numberOfRows);
       }
@@ -235,7 +233,7 @@ public class CommandResultAssert
    */
   public CommandResultAssert tableHasColumnWithValuesContaining(String header,
       String... expectedValues) {
-    List<Object> actualValues = actual.getCommandResult().getColumnValues(header);
+    List<String> actualValues = actual.getCommandResult().getColumnValues(header);
 
     for (Object actualValue : actualValues) {
       String actualValueString = (String) actualValue;
@@ -243,7 +241,8 @@ public class CommandResultAssert
           Arrays.stream(expectedValues).anyMatch(actualValueString::contains);
 
       if (!actualValueContainsAnExpectedValue) {
-        failWithMessage("Found unexpected value: " + actualValue);
+        failWithMessage(
+            "Expecting: " + Arrays.toString(expectedValues) + ", but found: " + actualValue);
       }
     }
 
@@ -255,7 +254,7 @@ public class CommandResultAssert
    * one of the expectedValues.
    */
   public CommandResultAssert tableHasColumnOnlyWithValues(String header, String... expectedValues) {
-    List<Object> actualValues = actual.getCommandResult().getColumnValues(header);
+    List<String> actualValues = actual.getCommandResult().getColumnValues(header);
     assertThat(actualValues).containsOnly(expectedValues);
 
     return this;

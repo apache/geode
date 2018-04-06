@@ -17,19 +17,19 @@ package org.apache.geode.internal.cache.locks;
 
 import org.apache.geode.distributed.internal.locks.DLockBatchId;
 import org.apache.geode.distributed.internal.locks.LockGrantorId;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /** Specifies a set of keys to try-lock within the scope of a region */
 public interface TXLockId extends DLockBatchId {
   /** Gets the member id of the owner of this lock */
-  public InternalDistributedMember getMemberId();
+  InternalDistributedMember getMemberId();
 
   /** Gets the count that identifies the lock id in this member */
-  public int getCount();
+  int getCount();
 
   /** Sets the lock grantor id that granted this lock */
-  public void setLockGrantorId(LockGrantorId lockGrantorId);
+  void setLockGrantorId(LockGrantorId lockGrantorId);
 
   /** Gets the lock grantor id that granted this lock */
-  public LockGrantorId getLockGrantorId();
+  LockGrantorId getLockGrantorId();
 }

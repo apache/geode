@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
@@ -39,7 +39,7 @@ public class FindVersionTagOperation {
   private static final Logger logger = LogService.getLogger();
 
   public static VersionTag findVersionTag(LocalRegion r, EventID eventId, boolean isBulkOp) {
-    DM dm = r.getDistributionManager();
+    DistributionManager dm = r.getDistributionManager();
     Set recipients;
     if (r instanceof DistributedRegion) {
       recipients = ((DistributedRegion) r).getDistributionAdvisor().adviseCacheOp();
@@ -64,7 +64,7 @@ public class FindVersionTagOperation {
 
     VersionTag versionTag;
 
-    public ResultReplyProcessor(DM dm, Collection initMembers) {
+    public ResultReplyProcessor(DistributionManager dm, Collection initMembers) {
       super(dm, initMembers);
     }
 
@@ -118,10 +118,10 @@ public class FindVersionTagOperation {
     public FindVersionTagMessage() {}
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       VersionTag result = null;
       try {
-        LocalRegion r = findRegion(dm);
+        LocalRegion r = (LocalRegion) findRegion(dm);
         if (r == null) {
           if (logger.isDebugEnabled()) {
             logger.debug("Region not found, so ignoring version tag request: {}", this);
@@ -155,7 +155,7 @@ public class FindVersionTagOperation {
       }
     }
 
-    private LocalRegion findRegion(DistributionManager dm) {
+    private InternalRegion findRegion(ClusterDistributionManager dm) {
       try {
         InternalCache cache = dm.getCache();
         if (cache != null) {

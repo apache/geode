@@ -21,7 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,20 +34,27 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+
 
 @Category(IntegrationTest.class)
 public class DiskStoreImplIntegrationTest {
   private static final String DISK_STORE_NAME = "testDiskStore";
   private static final String REGION_NAME = "testRegion";
+  private final int TIME_INTERVAL = 300000;
 
   @Rule
   public TemporaryFolder temporaryDirectory = new TemporaryFolder();
 
   private Cache cache;
+  private Region aRegion;
+  private DiskStoreStats diskStoreStats;
 
   @Before
   public void setup() {
@@ -68,7 +77,7 @@ public class DiskStoreImplIntegrationTest {
     List<Path> tempDirs = new ArrayList<>();
     for (File diskDir : diskStore.getDiskDirs()) {
       Path tempDir =
-          diskDir.toPath().resolve(BackupManager.DATA_STORES_TEMPORARY_DIRECTORY + "testing");
+          diskDir.toPath().resolve(BackupService.DATA_STORES_TEMPORARY_DIRECTORY + "testing");
       Files.createDirectories(tempDir);
       tempDirs.add(tempDir);
     }
@@ -80,10 +89,50 @@ public class DiskStoreImplIntegrationTest {
     tempDirs.forEach(tempDir -> assertThat(Files.exists(tempDir)).isFalse());
   }
 
+  @Test
+  public void queueSizeStatIncrementedAfterAsyncFlush() throws Exception {
+    File baseDir = temporaryDirectory.newFolder();
+    final int QUEUE_SIZE = 50;
+    createRegionWithDiskStoreAndAsyncQueue(baseDir, QUEUE_SIZE);
+    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> diskStoreStats.getQueueSize() == 0);
+
+    putEntries(QUEUE_SIZE - 1);
+    Awaitility.await().atMost(1, TimeUnit.MINUTES)
+        .until(() -> diskStoreStats.getQueueSize() == QUEUE_SIZE - 1);
+
+    putEntries(1);
+    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> diskStoreStats.getQueueSize() == 0);
+  }
+
+  private void putEntries(int numToPut) {
+    for (int i = 1; i <= numToPut; i++) {
+      aRegion.put(i, i);
+    }
+  }
+
   private void createRegionWithDiskStore(File baseDir) {
     cache.createDiskStoreFactory().setDiskDirs(new File[] {baseDir}).create(DISK_STORE_NAME);
     cache.<String, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
         .setDiskStoreName(DISK_STORE_NAME).create(REGION_NAME);
+  }
+
+  private void createRegionWithDiskStoreAndAsyncQueue(File baseDir, int queueSize) {
+    createDiskStoreWithQueue(baseDir, queueSize, TIME_INTERVAL);
+
+    RegionFactory regionFactory =
+        cache.<String, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
+    regionFactory.setDiskSynchronous(false);
+    regionFactory.setDiskStoreName(DISK_STORE_NAME);
+    aRegion = regionFactory.create(REGION_NAME);
+  }
+
+  private void createDiskStoreWithQueue(File baseDir, int queueSize, long timeInterval) {
+    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(new File[] {baseDir});
+    diskStoreFactory.setQueueSize(queueSize);
+    diskStoreFactory.setTimeInterval(timeInterval);
+    DiskStore diskStore = diskStoreFactory.create(DISK_STORE_NAME);
+    diskStoreStats = ((DiskStoreImpl) diskStore).getStats();
   }
 
   private Cache createCache() {

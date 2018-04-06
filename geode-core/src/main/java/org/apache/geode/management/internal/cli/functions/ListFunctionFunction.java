@@ -29,10 +29,10 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 
-public class ListFunctionFunction implements Function, InternalEntity {
+public class ListFunctionFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   public static final String ID = ListFunctionFunction.class.getName();

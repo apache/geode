@@ -14,8 +14,22 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION1;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION2;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION3;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION7;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_BUCKET_FILTER;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_HA;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_LASTRESULT;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_REEXECUTE_EXCEPTION;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -30,13 +44,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -44,6 +57,8 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionAdapter;
@@ -53,153 +68,93 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.internal.cache.EntrySnapshot;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalDataSet;
-import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
-import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
-  private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
-  private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;
+  private static final String STRING_KEY = "execKey";
 
-  static Cache cache = null;
-  static String regionName = null;
+  private String regionName;
 
-  @Override
-  public final void postTearDown() throws Exception {
-    cache = null;
-    regionName = null;
+  private String regionNameTop;
+  private String regionNameColocated1;
+  private String regionNameColocated2;
+
+  @Before
+  public void setUp() {
+    regionName = getUniqueName();
+
+    regionNameTop = regionName + "_top";
+    regionNameColocated1 = regionName + "_colo1";
+    regionNameColocated2 = regionName + "_colo2";
+  }
+
+  @After
+  public void tearDown() {
+    invokeInEveryVM(() -> DistributedSystem.setThreadsSocketPolicy(false));
+    DistributedSystem.setThreadsSocketPolicy(false);
   }
 
   @Override
   public Properties getDistributedSystemProperties() {
-    Properties result = super.getDistributedSystemProperties();
-    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.test.junit.rules.**;org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;org.apache.geode.internal.cache.execute.**;org.apache.geode.internal.cache.functions.**;org.apache.geode.test.dunit.**");
-    return result;
+    Properties config = new Properties();
+    config.put(SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.test.junit.rules.**;org.apache.geode.internal.cache.execute.**;org.apache.geode.internal.cache.functions.**;org.apache.geode.test.dunit.**");
+    return config;
   }
-
-
 
   /**
    * Test to validate that the function execution is successful on PR with Loner Distributed System
    */
   @Test
   public void testFunctionExecution() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore = host.getVM(3);
+    Properties config = getDistributedSystemProperties();
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
+    getCache(config);
 
-    datastore.invoke(new SerializableCallable("Create PR with Function Factory") {
-      public Object call() throws Exception {
+    Region<String, Integer> region = createPartitionedRegion(regionName, 10, 0);
 
-        Properties props = new Properties();
-        props.setProperty(MCAST_PORT, "0");
-        props.setProperty(LOCATORS, "");
+    Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION1);
+    FunctionService.registerFunction(function);
 
-        DistributedSystem ds = getSystem(props);
-        assertNotNull(ds);
-        ds.disconnect();
-        ds = getSystem(props);
-        cache = CacheFactory.create(ds);
-        assertNotNull(cache);
+    Execution<Boolean, Boolean, Collection<Boolean>> execution = FunctionService.onRegion(region);
 
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
+    ResultCollector<Boolean, Collection<Boolean>> resultCollector =
+        execution.setArguments(true).withFilter(createKeySet(STRING_KEY)).execute(function);
 
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-
-        Region pr = cache.createRegion(rName, raf.create());
-
-        final String testKey = "execKey";
-        final Set testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
-        FunctionService.registerFunction(function);
-
-        Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector result =
-            dataSet.setArguments(Boolean.TRUE).withFilter(testKeysSet).execute(function);
-        System.out.println("KBKBKB : Result I got : " + result.getResult());
-        return Boolean.TRUE;
-      }
-    });
+    assertThat(resultCollector.getResult()).containsExactly(true);
   }
 
   @Test
   public void testHAFunctionExecution() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore = host.getVM(3);
-    getCache();
+    Region<String, Integer> region = createPartitionedRegion(regionName, 10, 0);
 
-    datastore.invoke(new SerializableCallable("Create PR with Function Factory") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
+    Function<Void> function = new TestFunction<>(false, TestFunction.TEST_FUNCTION10);
 
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
+    assertThatThrownBy(() -> FunctionService.registerFunction(function))
+        .isInstanceOf(FunctionException.class)
+        .hasMessageContaining("For Functions with isHA true, hasResult must also be true.");
 
-        Region pr = getCache().createRegion(rName, raf.create());
-        final String testKey = "execKey";
-        final Set testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-
-        Function function = new TestFunction(false, TestFunction.TEST_FUNCTION10);
-        try {
-          FunctionService.registerFunction(function);
-          fail("It should have failed with Function attributes don't match");
-        } catch (Exception expected) {
-          expected.printStackTrace();
-          assertTrue(expected.getMessage()
-              .contains("For Functions with isHA true, hasResult must also be true."));
-        }
-
-        try {
-          Execution dataSet = FunctionService.onRegion(pr);
-          dataSet.withFilter(testKeysSet).setArguments(testKey).execute(function);
-          fail("It should have failed with Function attributes don't match");
-        } catch (Exception expected) {
-          expected.printStackTrace();
-          assertTrue(expected.getMessage()
-              .contains("For Functions with isHA true, hasResult must also be true."));
-        }
-        return Boolean.TRUE;
-      }
-    });
+    Execution<String, Void, Void> dataSet = FunctionService.onRegion(region);
+    assertThatThrownBy(() -> dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(STRING_KEY)
+        .execute(function)).isInstanceOf(FunctionException.class)
+            .hasMessageContaining("For Functions with isHA true, hasResult must also be true.");
   }
 
   /**
@@ -207,73 +162,44 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testRemoteSingleKeyExecution_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(2);
-    final VM datastore = host.getVM(3);
-    getCache();
+    VM accessor = getHost(0).getVM(2);
+    VM datastore = getHost(0).getVM(3);
 
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    datastore.invoke(new SerializableCallable("Create PR with Function Factory") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
-
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-
-        getCache().createRegion(rName, raf.create());
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        return Boolean.TRUE;
-      }
+    datastore.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
     });
 
-    accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
+    accessor.invoke(() -> {
+      Region<String, Integer> region = getPartitionedRegion(regionName);
+      region.put(STRING_KEY, 1);
 
-        final String testKey = "execKey";
-        final Set testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        try {
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        } catch (Exception expected) {
-          // No data should cause exec to throw
-          assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
-        }
-        pr.put(testKey, new Integer(1));
-        ResultCollector rs1 =
-            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
-        ResultCollector rs2 =
-            dataSet.withFilter(testKeysSet).setArguments(testKey).execute(function.getId());
-        assertEquals(new Integer(1), ((List) rs2.getResult()).get(0));
+      Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+      Execution<Object, Object, List<Object>> dataSet = FunctionService.onRegion(region);
+      dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function.getId());
 
-        HashMap putData = new HashMap();
-        putData.put(testKey + "1", new Integer(2));
-        putData.put(testKey + "2", new Integer(3));
-        ResultCollector rs3 =
-            dataSet.withFilter(testKeysSet).setArguments(putData).execute(function.getId());
-        assertEquals(Boolean.TRUE, ((List) rs3.getResult()).get(0));
+      ResultCollector<Object, List<Object>> resultCollector =
+          dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function.getId());
 
-        assertEquals(new Integer(2), pr.get(testKey + "1"));
-        assertEquals(new Integer(3), pr.get(testKey + "2"));
-        return Boolean.TRUE;
-      }
+      assertThat(resultCollector.getResult()).hasSize(1).containsExactly(true);
+
+      resultCollector = dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(STRING_KEY)
+          .execute(function.getId());
+
+      assertThat(resultCollector.getResult()).hasSize(1).containsExactly(1);
+
+      Map<String, Integer> putData = createEntryMap(2, STRING_KEY, 1, 2);
+      resultCollector = dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(putData)
+          .execute(function.getId());
+
+      assertThat(resultCollector.getResult()).hasSize(1).containsExactly(true);
+      assertThat(region.get(STRING_KEY + "1")).isEqualTo(2);
+      assertThat(region.get(STRING_KEY + "2")).isEqualTo(3);
     });
   }
 
@@ -285,41 +211,18 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
   @Test
   public void testLocalSingleKeyExecution_byName_FunctionInvocationTargetException()
       throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore = host.getVM(3);
-    getCache();
+    Region<String, Integer> region = createPartitionedRegion(regionName, 10, 0);
+    region.put(STRING_KEY, 1);
 
-    datastore.invoke(new SerializableCallable("Create PR with Function Factory") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
+    Function<Integer> function = new TestFunction<>(true, TEST_FUNCTION_REEXECUTE_EXCEPTION);
+    FunctionService.registerFunction(function);
+    Execution<Boolean, Integer, List<Integer>> dataSet = FunctionService.onRegion(region);
 
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
+    ResultCollector<Integer, List<Integer>> resultCollector =
+        dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function.getId());
 
-        Region pr = getCache().createRegion(rName, raf.create());
-        final String testKey = "execKey";
-        final Set testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_REEXECUTE_EXCEPTION);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        pr.put(testKey, new Integer(1));
-        try {
-          ResultCollector rs1 =
-              dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-          List list = (ArrayList) rs1.getResult();
-          assertEquals(list.get(0), 5);
-        } catch (Throwable e) {
-          e.printStackTrace();
-          Assert.fail("This is not expected Exception", e);
-        }
-        return Boolean.TRUE;
-      }
-    });
+    List<Integer> list = resultCollector.getResult();
+    assertThat(list.get(0)).isEqualTo(5);
   }
 
   /**
@@ -331,59 +234,32 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
   @Test
   public void testRemoteSingleKeyExecution_byName_FunctionInvocationTargetException()
       throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(2);
-    final VM datastore = host.getVM(3);
-    getCache();
+    VM accessor = getHost(0).getVM(2);
+    VM datastore = getHost(0).getVM(3);
 
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    datastore.invoke(new SerializableCallable("Create PR with Function Factory") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
-
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-        getCache().createRegion(rName, raf.create());
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_REEXECUTE_EXCEPTION);
-        FunctionService.registerFunction(function);
-        return Boolean.TRUE;
-      }
+    datastore.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      Function function = new TestFunction(true, TEST_FUNCTION_REEXECUTE_EXCEPTION);
+      FunctionService.registerFunction(function);
     });
 
-    accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
+    accessor.invoke(() -> {
+      Region<String, Integer> region = getPartitionedRegion(regionName);
+      region.put(STRING_KEY, 1);
 
-        final String testKey = "execKey";
-        final Set testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_REEXECUTE_EXCEPTION);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        pr.put(testKey, new Integer(1));
-        try {
-          ResultCollector rs1 =
-              dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-          List list = (ArrayList) rs1.getResult();
-          assertEquals(list.get(0), 5);
-        } catch (Throwable e) {
-          e.printStackTrace();
-          Assert.fail("This is not expected Exception", e);
-        }
-        return Boolean.TRUE;
-      }
+      Function<Integer> function = new TestFunction<>(true, TEST_FUNCTION_REEXECUTE_EXCEPTION);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Integer, List<Integer>> dataSet = FunctionService.onRegion(region);
+
+      ResultCollector<Integer, List<Integer>> resultCollector =
+          dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function.getId());
+
+      List<Integer> list = resultCollector.getResult();
+      assertThat(list.get(0)).isEqualTo(5);
     });
   }
 
@@ -392,78 +268,47 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testRemoteSingleKeyExecution_byInstance() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(2);
-    final VM datastore = host.getVM(3);
-    getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
+    VM accessor = getHost(0).getVM(2);
+    VM datastore = getHost(0).getVM(3);
 
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    datastore.invoke(new SerializableCallable("Create PR with Function Factory") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
+    datastore.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
 
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-
-        getCache().createRegion(rName, raf.create());
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        return Boolean.TRUE;
-      }
+      Function function = new TestFunction(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
     });
 
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
+    accessor.invoke(() -> {
+      Region<String, Integer> region = getPartitionedRegion(regionName);
+      region.put(STRING_KEY, 1);
 
-        final String testKey = "execKey";
-        final Set testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        // DefaultResultCollector rs = new DefaultResultCollector();
-        Execution dataSet = FunctionService.onRegion(pr); // withCollector(rs);
+      Function function = new TestFunction(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
 
-        try {
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
+      Execution<Boolean, Boolean, List<Boolean>> booleanDataSet = FunctionService.onRegion(region);
+      ResultCollector<Boolean, List<Boolean>> booleanResultCollector =
+          booleanDataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function);
+      assertThat(booleanResultCollector.getResult().get(0)).isTrue();
 
-        } catch (Exception expected) {
-          // No data should cause exec to throw
-          assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
-        }
+      Execution<String, Integer, List<Integer>> integerDataSet = FunctionService.onRegion(region);
+      ResultCollector<Integer, List<Integer>> integerResultCollector = integerDataSet
+          .withFilter(createKeySet(STRING_KEY)).setArguments(STRING_KEY).execute(function);
+      assertThat(integerResultCollector.getResult().get(0)).isEqualTo(1);
 
-        pr.put(testKey, new Integer(1));
-        ResultCollector rs1 =
-            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
-        assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
-        ResultCollector rs2 =
-            dataSet.withFilter(testKeysSet).setArguments(testKey).execute(function);
-        assertEquals(new Integer(1), ((List) rs2.getResult()).get(0));
+      Map<String, Integer> putData = createEntryMap(2, STRING_KEY, 1, 2);
+      Execution<Map<String, Integer>, Boolean, List<Boolean>> mapDataSet =
+          FunctionService.onRegion(region);
+      ResultCollector<Boolean, List<Boolean>> mapResultCollector =
+          mapDataSet.withFilter(createKeySet(STRING_KEY)).setArguments(putData).execute(function);
+      assertThat(mapResultCollector.getResult().get(0)).isTrue();
 
-        HashMap putData = new HashMap();
-        putData.put(testKey + "1", new Integer(2));
-        putData.put(testKey + "2", new Integer(3));
-        ResultCollector rs3 =
-            dataSet.withFilter(testKeysSet).setArguments(putData).execute(function);
-        assertEquals(Boolean.TRUE, ((List) rs3.getResult()).get(0));
-
-        assertEquals(new Integer(2), pr.get(testKey + "1"));
-        assertEquals(new Integer(3), pr.get(testKey + "2"));
-        return Boolean.TRUE;
-      }
+      assertThat(region.get(STRING_KEY + "1")).isEqualTo(2);
+      assertThat(region.get(STRING_KEY + "2")).isEqualTo(3);
     });
-    assertEquals(Boolean.TRUE, o);
   }
 
   /**
@@ -471,70 +316,27 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testRemoteSingleKeyExecution_byInlineFunction() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(2);
-    final VM datastore = host.getVM(3);
-    getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
+    VM accessor = getHost(0).getVM(2);
+    VM datastore = getHost(0).getVM(3);
 
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    datastore.invoke(new SerializableCallable("Create PR with Function Factory") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
-
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-
-        getCache().createRegion(rName, raf.create());
-        return Boolean.TRUE;
-      }
+    datastore.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
     });
 
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
+    accessor.invoke(() -> {
+      Region<String, Integer> region = getPartitionedRegion(regionName);
+      region.put(STRING_KEY, 1);
 
-        final String testKey = "execKey";
-        final Set testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Execution dataSet = FunctionService.onRegion(pr);
-        pr.put(testKey, new Integer(1));
-        ResultCollector rs1 = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE)
-            .execute(new FunctionAdapter() {
-              @Override
-              public void execute(FunctionContext context) {
-                if (context.getArguments() instanceof String) {
-                  context.getResultSender().lastResult("Success");
-                } else if (context.getArguments() instanceof Boolean) {
-                  context.getResultSender().lastResult(Boolean.TRUE);
-                }
-              }
+      Execution<Boolean, Boolean, List<Boolean>> dataSet = FunctionService.onRegion(region);
+      ResultCollector<Boolean, List<Boolean>> rs1 = dataSet.withFilter(createKeySet(STRING_KEY))
+          .setArguments(true).execute(new BooleanFunction(true));
 
-              @Override
-              public String getId() {
-                return getClass().getName();
-              }
-
-              @Override
-              public boolean hasResult() {
-                return true;
-              }
-            });
-        assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
-        return Boolean.TRUE;
-      }
+      assertThat(rs1.getResult().get(0)).isTrue();
     });
-    assertEquals(Boolean.TRUE, o);
   }
 
   /**
@@ -543,234 +345,161 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testRemoteMultiKeyExecution_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TEST_FUNCTION2);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-
-        try {
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        } catch (Exception expected) {
-          assertTrue(expected.getMessage(),
-              expected.getMessage().contains("No target node found for KEY"));
-        }
-
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
-        ResultCollector rs =
-            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        List l = ((List) rs.getResult());
-        assertEquals(3, l.size());
-
-        for (Iterator i = l.iterator(); i.hasNext();) {
-          assertEquals(Boolean.TRUE, i.next());
-        }
-
-        // DefaultResultCollector rc2 = new DefaultResultCollector();
-        ResultCollector rc2 =
-            dataSet.withFilter(testKeysSet).setArguments(testKeysSet).execute(function.getId());
-        List l2 = ((List) rc2.getResult());
-        assertEquals(3, l2.size());
-        HashSet foundVals = new HashSet();
-        for (Iterator i = l2.iterator(); i.hasNext();) {
-          ArrayList subL = (ArrayList) i.next();
-          assertTrue(subL.size() > 0);
-          for (Iterator subI = subL.iterator(); subI.hasNext();) {
-            assertTrue(foundVals.add(subI.next()));
-          }
-        }
-        assertEquals(origVals, foundVals);
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Set<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      Collection<Integer> expectedValues = new HashSet<>();
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        expectedValues.add(value);
+        pr.put(key, value);
+      }
+
+      Function function = new TestFunction(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+
+      Execution<Boolean, Boolean, List<Boolean>> booleanExecution = FunctionService.onRegion(pr);
+      ResultCollector<Boolean, List<Boolean>> booleanResultCollector =
+          booleanExecution.withFilter(keySet).setArguments(true).execute(function.getId());
+
+      List<Boolean> booleanResultList = booleanResultCollector.getResult();
+      assertThat(booleanResultList).hasSize(3).containsExactly(true, true, true);
+
+      Execution<Set<String>, List<Integer>, List<List<Integer>>> integerExecution =
+          FunctionService.onRegion(pr);
+      ResultCollector<List<Integer>, List<List<Integer>>> valuesResultCollector =
+          integerExecution.withFilter(keySet).setArguments(keySet).execute(function.getId());
+
+      List<List<Integer>> valuesResults = valuesResultCollector.getResult();
+      assertThat(valuesResults).hasSize(3).isInstanceOf(List.class);
+      assertThat(valuesResults.get(0)).isInstanceOf(List.class);
+
+      Collection<Integer> actualValues = new HashSet<>();
+      for (List<Integer> values : valuesResults) {
+        assertThat(values.size()).isGreaterThan(0);
+        for (int value : values) {
+          assertThat(actualValues.add(value)).isTrue();
+        }
+      }
+      assertThat(actualValues).isEqualTo(expectedValues);
+    });
   }
 
   @Test
   public void testRemoteMultiKeyExecution_BucketMoved() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        AttributesFactory factory = new AttributesFactory();
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setTotalNumBuckets(113);
-        paf.setLocalMaxMemory(0);
-        paf.setRedundantCopies(1);
-        paf.setStartupRecoveryDelay(0);
-        PartitionAttributes partitionAttributes = paf.create();
-        factory.setDataPolicy(DataPolicy.PARTITION);
-        factory.setPartitionAttributes(partitionAttributes);
-        RegionAttributes attrs = factory.create();
-        getCache().createRegion(rName, attrs);
-        return Boolean.TRUE;
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(0, 1, 0, 113));
+    });
+
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(40, 1, 0, 113));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_LASTRESULT));
+    });
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(40, 1, 0, 113));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_LASTRESULT));
+    });
+
+    accessor.invoke(() -> {
+      Region<Integer, String> region = getPartitionedRegion(regionName);
+      for (int i = 0; i < 113; i++) {
+        region.put(i, STRING_KEY + i);
       }
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            AttributesFactory factory = new AttributesFactory();
-            PartitionAttributesFactory paf = new PartitionAttributesFactory();
-            paf.setTotalNumBuckets(113);
-            paf.setLocalMaxMemory(40);
-            paf.setRedundantCopies(1);
-            paf.setStartupRecoveryDelay(0);
-            PartitionAttributes partitionAttributes = paf.create();
-            factory.setDataPolicy(DataPolicy.PARTITION);
-            factory.setPartitionAttributes(partitionAttributes);
-            RegionAttributes attrs = factory.create();
-            getCache().createRegion(rName, attrs);
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_LASTRESULT);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-
-    SerializableCallable put = new SerializableCallable("put in PR") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        for (int i = 0; i < 113; i++) {
-          pr.put(i, "execKey-" + i);
-        }
-        return Boolean.TRUE;
-      }
-    };
-    accessor.invoke(put);
-
-    datastore2.invoke(dataStoreCreate);
-
-    Object result = accessor.invoke(new SerializableCallable("invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_LASTRESULT);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc2 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
-        List l = ((List) rc2.getResult());
-        return l;
-      }
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(40, 1, 0, 113));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_LASTRESULT));
     });
-    List l = (List) result;
-    assertEquals(2, l.size());
 
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION_LASTRESULT);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Boolean, List<Boolean>> dataSet = FunctionService.onRegion(pr);
+
+      ResultCollector<Boolean, List<Boolean>> resultCollector =
+          dataSet.setArguments(true).execute(function.getId());
+
+      List<Boolean> resultList = resultCollector.getResult();
+      assertThat(resultList).hasSize(2).containsExactly(true, true);
+    });
   }
 
   @Test
   public void testLocalMultiKeyExecution_BucketMoved() throws Exception {
     IgnoredException.addIgnoredException("BucketMovedException");
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    getCache();
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            AttributesFactory factory = new AttributesFactory();
-            PartitionAttributesFactory paf = new PartitionAttributesFactory();
-            paf.setTotalNumBuckets(113);
-            paf.setLocalMaxMemory(40);
-            paf.setRedundantCopies(0);
-            paf.setStartupRecoveryDelay(0);
-            PartitionAttributes partitionAttributes = paf.create();
-            factory.setDataPolicy(DataPolicy.PARTITION);
-            factory.setPartitionAttributes(partitionAttributes);
-            RegionAttributes attrs = factory.create();
-            getCache().createRegion(rName, attrs);
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_LASTRESULT);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
 
-    SerializableCallable put = new SerializableCallable("put in PR") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        for (int i = 0; i < 113; i++) {
-          pr.put(i, "execKey-" + i);
-        }
-        return Boolean.TRUE;
-      }
-    };
-    datastore0.invoke(put);
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(40, 0, 0, 113));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_LASTRESULT));
+    });
 
-    datastore1.invoke(dataStoreCreate);
-
-    Object result = datastore0.invoke(new SerializableCallable("invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_LASTRESULT);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc2 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
-        List l = ((List) rc2.getResult());
-        return l;
+    datastore0.invoke(() -> {
+      Region<Integer, String> region = getPartitionedRegion(regionName);
+      for (int i = 0; i < 113; i++) {
+        region.put(i, STRING_KEY + i);
       }
     });
 
-    List l = (List) result;
-    assertEquals(2, l.size());
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(40, 0, 0, 113));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_LASTRESULT));
+    });
 
+    datastore0.invoke(() -> {
+      Region<Integer, String> region = getPartitionedRegion(regionName);
+
+      Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION_LASTRESULT);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Boolean, List<Boolean>> dataSet = FunctionService.onRegion(region);
+
+      ResultCollector<Boolean, List<Boolean>> resultCollector =
+          dataSet.setArguments(true).execute(function.getId());
+
+      List<Boolean> resultList = resultCollector.getResult();
+      assertThat(resultList).hasSize(2).containsExactly(true, true);
+    });
   }
 
   /**
@@ -782,276 +511,158 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
   @Test
   public void testRemoteMultipleKeyExecution_byName_FunctionInvocationTargetException()
       throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function =
-                new TestFunction(true, TestFunction.TEST_FUNCTION_REEXECUTE_EXCEPTION);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_REEXECUTE_EXCEPTION);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
-        try {
-          ResultCollector rs =
-              dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-          List list = (ArrayList) rs.getResult();
-          assertEquals(list.get(0), 5);
-        } catch (Throwable e) {
-          e.printStackTrace();
-          Assert.fail("This is not expected Exception", e);
-        }
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_REEXECUTE_EXCEPTION));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_REEXECUTE_EXCEPTION));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_REEXECUTE_EXCEPTION));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Set<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      Function<Integer> function = new TestFunction<>(true, TEST_FUNCTION_REEXECUTE_EXCEPTION);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Integer, List<Integer>> dataSet = FunctionService.onRegion(pr);
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      ResultCollector<Integer, List<Integer>> resultCollector =
+          dataSet.withFilter(keySet).setArguments(true).execute(function.getId());
+
+      List<Integer> resultList = resultCollector.getResult();
+      assertThat(resultList).hasSize(3).containsExactly(5, 5, 5);
+    });
   }
 
   @Test
   public void testRemoteMultiKeyExecutionHA_CacheClose() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        cache = getCache();
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(1, 0);
-        cache.createRegion(rName, ra);
-        regionName = rName;
-        return Boolean.TRUE;
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 1);
+    });
+
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 1);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_HA));
+    });
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 1);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_HA));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 1);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_HA));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Collection<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
       }
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(1, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
+    AsyncInvocation<List<Boolean>> async = accessor.invokeAsync(() -> executeFunction());
 
-    Object o = accessor.invoke(new SerializableCallable("Create data") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) cache.getRegion(regionName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      Thread.sleep(3_000);
+      getCache().close();
     });
 
-    assertEquals(Boolean.TRUE, o);
-
-    int AsyncInvocationArrSize = 1;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = accessor.invokeAsync(() -> PRFunctionExecutionDUnitTest.executeFunction());
-
-    o = datastore0.invoke(new SerializableCallable("close cache") {
-      public Object call() throws Exception {
-        long startTime = System.currentTimeMillis();
-        WaitCriterion wc = new WaitCriterion() {
-          String excuse;
-
-          public boolean done() {
-            return false;
-          }
-
-          public String description() {
-            return excuse;
-          }
-        };
-        Wait.waitForCriterion(wc, 3000, 200, false);
-        long endTime = System.currentTimeMillis();
-        getCache().getLogger().fine("Time wait for Cache Close = " + (endTime - startTime));
-        getCache().close();
-        return Boolean.TRUE;
-      }
-    });
-    assertEquals(Boolean.TRUE, o);
-
-    ThreadUtils.join(async[0], 60 * 1000);
-
-    if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
-    }
-    List l = (List) async[0].getReturnValue();
-    assertEquals(2, l.size());
+    List<Boolean> resultList = async.get();
+    assertThat(resultList).hasSize(2).containsExactly(true, true);
   }
 
   @Test
   public void testRemoteMultiKeyExecutionHA_Disconnect() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        cache = getCache();
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(1, 0);
-        cache.createRegion(rName, ra);
-        regionName = rName;
-        return Boolean.TRUE;
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 1);
+    });
+
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 1);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_HA));
+    });
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 1);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_HA));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 1);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_HA));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Collection<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
       }
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(1, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
+    AsyncInvocation<List<Boolean>> async = accessor.invokeAsync(() -> executeFunction());
 
-    Object o = accessor.invoke(new SerializableCallable("Create data") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) cache.getRegion(regionName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      Thread.sleep(3000);
+      getCache().getDistributedSystem().disconnect();
     });
 
-    assertEquals(Boolean.TRUE, o);
-
-    int AsyncInvocationArrSize = 1;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = accessor.invokeAsync(() -> PRFunctionExecutionDUnitTest.executeFunction());
-
-    o = datastore0.invoke(new SerializableCallable("disconnect") {
-      public Object call() throws Exception {
-        long startTime = System.currentTimeMillis();
-        WaitCriterion wc = new WaitCriterion() {
-          String excuse;
-
-          public boolean done() {
-            return false;
-          }
-
-          public String description() {
-            return excuse;
-          }
-        };
-        Wait.waitForCriterion(wc, 3000, 200, false);
-        long endTime = System.currentTimeMillis();
-        getCache().getLogger().fine("Time wait for Cache Close = " + (endTime - startTime));
-        getCache().getDistributedSystem().disconnect();
-        return Boolean.TRUE;
-      }
-    });
-    assertEquals(Boolean.TRUE, o);
-
-    ThreadUtils.join(async[0], 60 * 1000);
-
-    if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
-    }
-    List l = (List) async[0].getReturnValue();
-    assertEquals(2, l.size());
-  }
-
-  public static Object executeFunction() {
-    PartitionedRegion pr = (PartitionedRegion) cache.getRegion(regionName);
-    final HashSet testKeysSet = new HashSet();
-    for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-      testKeysSet.add("execKey-" + i);
-    }
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
-    FunctionService.registerFunction(function);
-    Execution dataSet = FunctionService.onRegion(pr);
-    ResultCollector rs =
-        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-    List l = ((List) rs.getResult());
-    return l;
+    List<Boolean> resultList = async.get();
+    assertThat(resultList).hasSize(2).containsExactly(true, true);
   }
 
   /**
@@ -1060,84 +671,49 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testRemoteMultiKeyExecution_byInlineFunction() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Execution dataSet = FunctionService.onRegion(pr);
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
-        ResultCollector rs = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE)
-            .execute(new FunctionAdapter() {
-              @Override
-              public void execute(FunctionContext context) {
-                if (context.getArguments() instanceof String) {
-                  context.getResultSender().lastResult("Success");
-                } else if (context.getArguments() instanceof Boolean) {
-                  context.getResultSender().lastResult(Boolean.TRUE);
-                }
-              }
-
-              @Override
-              public String getId() {
-                return getClass().getName();
-              }
-
-              @Override
-              public boolean hasResult() {
-                return true;
-              }
-            });
-        List l = ((List) rs.getResult());
-        assertEquals(3, l.size());
-        for (Iterator i = l.iterator(); i.hasNext();) {
-          assertEquals(Boolean.TRUE, i.next());
-        }
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Set<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      Execution<Boolean, Boolean, List<Boolean>> execution = FunctionService.onRegion(pr);
+
+      ResultCollector<Boolean, List<Boolean>> resultCollector =
+          execution.withFilter(keySet).setArguments(true).execute(new BooleanFunction(true));
+
+      List<Boolean> results = resultCollector.getResult();
+      assertThat(results).hasSize(3).containsExactly(true, true, true);
+    });
   }
 
   /**
@@ -1146,68 +722,55 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testRemoteMultiKeyExecutionWithCollector_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TEST_FUNCTION2);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        dataSet.withCollector(new CustomResultCollector());
-        int j = 0;
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          pr.put(i.next(), val);
-        }
-        ResultCollector rs =
-            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        List l = ((List) rs.getResult());
-        assertEquals(3, l.size());
-
-        for (Iterator i = l.iterator(); i.hasNext();) {
-          assertEquals(Boolean.TRUE, i.next());
-        }
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Set<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Boolean, List<Boolean>> execution =
+          FunctionService.onRegion(pr).withCollector(new CustomResultCollector());
+
+      ResultCollector<Boolean, List<Boolean>> resultCollector =
+          execution.withFilter(keySet).setArguments(true).execute(function.getId());
+
+      List<Boolean> results = resultCollector.getResult();
+      assertThat(results).hasSize(3).containsExactly(true, true, true);
+    });
   }
 
   /**
@@ -1216,72 +779,54 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testRemoteMultiKeyExecutionNoResult_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(false, TEST_FUNCTION7);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(false, TEST_FUNCTION7);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
-        ResultCollector rs;
-        try {
-          rs = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-          rs.getResult();
-        } catch (Exception expected) {
-          expected.printStackTrace();
-          assertTrue(expected.getMessage()
-              .startsWith(LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-                  .toLocalizedString("return any")));
-          return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(false, TEST_FUNCTION7));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(false, TEST_FUNCTION7));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(false, TEST_FUNCTION7));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Set<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      Function<Void> function = new TestFunction<>(false, TEST_FUNCTION7);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Void, Void> dataSet = FunctionService.onRegion(pr);
+
+      ResultCollector<Void, Void> resultCollector =
+          dataSet.withFilter(keySet).setArguments(true).execute(function.getId());
+      assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+          .hasMessageStartingWith(LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
+              .toLocalizedString("return any"));
+    });
   }
 
   /**
@@ -1291,70 +836,54 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testRemoteMultiKeyExecution_timeout() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TEST_FUNCTION2);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
-        // long startTime = System.currentTimeMillis();
-        ResultCollector rs = dataSet.withFilter(testKeysSet).setArguments("TestingTimeOut")
-            .execute(function.getId());
-        // long endTime = System.currentTimeMillis();
-        List l = ((List) rs.getResult(10000, TimeUnit.MILLISECONDS));
-        assertEquals(3, l.size()); // this test may fail..but rarely
-
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Set<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+      Execution<String, Object, List<Object>> dataSet = FunctionService.onRegion(pr);
+
+      ResultCollector<Object, List<Object>> resultCollector =
+          dataSet.withFilter(keySet).setArguments("TestingTimeOut").execute(function.getId());
+
+      List<Object> resultList = resultCollector.getResult(10, TimeUnit.SECONDS);
+      assertThat(resultList).hasSize(3).containsExactly(null, null, null);
+    });
   }
 
   /**
@@ -1363,72 +892,56 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testRemoteMultiKeyExecutionWithCollectorNoResult_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(false, TEST_FUNCTION7);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(false, TEST_FUNCTION7);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        dataSet.withCollector(new CustomResultCollector());
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
-        ResultCollector rs;
-        try {
-          rs = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-          rs.getResult();
-        } catch (Exception expected) {
-          assertTrue(expected.getMessage()
-              .startsWith(LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-                  .toLocalizedString("return any")));
-          return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(false, TEST_FUNCTION7));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(false, TEST_FUNCTION7));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(false, TEST_FUNCTION7));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Set<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      Function<Object> function = new TestFunction<>(false, TEST_FUNCTION7);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Object, List<Object>> dataSet =
+          FunctionService.onRegion(pr).withCollector(new CustomResultCollector());
+
+      ResultCollector<Object, List<Object>> resultCollector =
+          dataSet.withFilter(keySet).setArguments(true).execute(function.getId());
+
+      assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+          .hasMessageStartingWith(LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
+              .toLocalizedString("return any"));
+    });
   }
 
   /**
@@ -1437,99 +950,73 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testRemoteMultiKeyExecution_byInstance() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TEST_FUNCTION2);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        try {
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
-        } catch (Exception expected) {
-          // No data should cause exec to throw
-          LogWriterUtils.getLogWriter().warning("Exception Occurred : " + expected.getMessage());
-          // boolean expectedStr = expected.getMessage().startsWith("No target
-          // node was found for routingKey");
-          // assertTrue("Unexpected exception: " + expected, expectedStr);
-        }
-
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
-        // DefaultResultCollector rc1 = new DefaultResultCollector();
-        ResultCollector rc1 =
-            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
-        List l = ((List) rc1.getResult());
-        assertEquals(3, l.size());
-
-        for (Iterator i = l.iterator(); i.hasNext();) {
-          assertEquals(Boolean.TRUE, i.next());
-        }
-
-        // DefaultResultCollector rc2 = new DefaultResultCollector();
-        ResultCollector rc2 =
-            dataSet.withFilter(testKeysSet).setArguments(testKeysSet).execute(function);
-        List l2 = ((List) rc2.getResult());
-        // assertIndexDetailsEquals(pr.getTotalNumberOfBuckets(), l2.size());
-        assertEquals(3, l2.size());
-
-        // assertIndexDetailsEquals(pr.getTotalNumberOfBuckets(), l.size());
-        HashSet foundVals = new HashSet();
-        for (Iterator i = l2.iterator(); i.hasNext();) {
-          ArrayList subL = (ArrayList) i.next();
-          assertTrue(subL.size() > 0);
-          for (Iterator subI = subL.iterator(); subI.hasNext();) {
-            assertTrue(foundVals.add(subI.next()));
-          }
-        }
-        assertEquals(origVals, foundVals);
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Set<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      Collection<Integer> expectedValues = new HashSet<>();
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        expectedValues.add(value);
+        pr.put(key, value);
+      }
+
+      Function<List<Integer>> function = new TestFunction<>(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+
+      Execution<Boolean, Boolean, List<Boolean>> booleanExecution = FunctionService.onRegion(pr);
+      ResultCollector<Boolean, List<Boolean>> booleanResultCollector =
+          booleanExecution.withFilter(keySet).setArguments(true).execute(function.getId());
+
+      List<Boolean> booleanResultList = booleanResultCollector.getResult();
+      assertThat(booleanResultList).hasSize(3).containsExactly(true, true, true);
+
+      Execution<Set<String>, List<Integer>, List<List<Integer>>> keysExecution =
+          FunctionService.onRegion(pr);
+      ResultCollector<List<Integer>, List<List<Integer>>> valuesResultCollector =
+          keysExecution.withFilter(keySet).setArguments(keySet).execute(function.getId());
+
+      List<List<Integer>> valueListResultList = valuesResultCollector.getResult();
+      assertThat(valueListResultList).hasSize(3);
+
+      Collection<Integer> actualValues = new HashSet<>();
+      for (List<Integer> values : valueListResultList) {
+        assertThat(values.size()).isGreaterThan(0);
+        for (int value : values) {
+          assertThat(actualValues.add(value)).isTrue();
+        }
+      }
+      assertThat(actualValues).isEqualTo(expectedValues);
+    });
   }
 
   /**
@@ -1537,206 +1024,136 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testBucketFilter_1() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        PartitionResolver resolver = new BucketFilterPRResolver();
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0, resolver);
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0, new DivisorResolver(10));
+    });
+
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, new DivisorResolver(10));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_BUCKET_FILTER));
+    });
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, new DivisorResolver(10));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_BUCKET_FILTER));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, new DivisorResolver(10));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_BUCKET_FILTER));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+      for (int i = 0; i < 50; ++i) {
+        pr.put(i, i);
       }
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            PartitionResolver resolver = new BucketFilterPRResolver();
-            RegionAttributes ra =
-                PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10, resolver);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
 
-    Object o = accessor.invoke(new SerializableCallable("Create data") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        for (int i = 0; i < 50; ++i) {
-          pr.put(i, i);
-        }
-        return Boolean.TRUE;
-      }
+      Function<Integer> function = new TestFunction<>(true, TEST_FUNCTION_BUCKET_FILTER);
+      FunctionService.registerFunction(function);
+      InternalExecution execution = (InternalExecution) FunctionService.onRegion(pr);
+
+      Set<Integer> bucketIdSet = createBucketIdSet(2);
+
+      ResultCollector<Integer, List<Integer>> resultCollector =
+          execution.withBucketFilter(bucketIdSet).execute(function);
+
+      List<Integer> results = resultCollector.getResult();
+      assertThat(results).hasSameElementsAs(bucketIdSet);
     });
-    assertEquals(Boolean.TRUE, o);
 
-    o = accessor.invoke(new SerializableCallable("Execute function single filter") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
-        FunctionService.registerFunction(function);
-        InternalExecution dataSet = (InternalExecution) FunctionService.onRegion(pr);
-        Set<Integer> bucketSet = new HashSet<Integer>();
-        bucketSet.add(2);
-        ResultCollector<Integer, List<Integer>> rc =
-            dataSet.withBucketFilter(bucketSet).execute(function);
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
 
-        List<Integer> results = rc.getResult();
-        assertEquals(bucketSet.size(), results.size());
-        for (Integer bucket : results) {
-          bucketSet.remove(bucket);
-        }
-        assertTrue(bucketSet.isEmpty());
-        return Boolean.TRUE;
-      }
+      Function<Integer> function = new TestFunction<>(true, TEST_FUNCTION_BUCKET_FILTER);
+      FunctionService.registerFunction(function);
+      InternalExecution execution = (InternalExecution) FunctionService.onRegion(pr);
+
+      Set<Integer> bucketIdSet = createBucketIdSet(2, 3);
+
+      ResultCollector<Integer, List<Integer>> resultCollector =
+          execution.withBucketFilter(bucketIdSet).execute(function);
+
+      List<Integer> results = resultCollector.getResult();
+      assertThat(results).hasSameElementsAs(bucketIdSet);
     });
-    assertEquals(Boolean.TRUE, o);
 
-    o = accessor.invoke(new SerializableCallable("Execute function multiple filter") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
-        FunctionService.registerFunction(function);
-        InternalExecution dataSet = (InternalExecution) FunctionService.onRegion(pr);
-        Set<Integer> bucketSet = new HashSet<Integer>();
-        bucketSet.add(2);
-        bucketSet.add(3);
-        ResultCollector<Integer, List<Integer>> rc =
-            dataSet.withBucketFilter(bucketSet).execute(function);
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
 
-        List<Integer> results = rc.getResult();
-        assertEquals(bucketSet.size(), results.size());
-        for (Integer bucket : results) {
-          bucketSet.remove(bucket);
-        }
-        assertTrue(bucketSet.isEmpty());
-        return Boolean.TRUE;
-      }
+      Function<Integer> function = new TestFunction<>(true, TEST_FUNCTION_BUCKET_FILTER);
+      FunctionService.registerFunction(function);
+      InternalExecution dataSet = (InternalExecution) FunctionService.onRegion(pr);
+
+      Set<Integer> bucketIdSet = createBucketIdSet(1, 2, 3, 0, 4);
+
+      ResultCollector<Integer, List<Integer>> resultCollector =
+          dataSet.withBucketFilter(bucketIdSet).execute(function);
+
+      List<Integer> results = resultCollector.getResult();
+      assertThat(results).hasSameElementsAs(bucketIdSet);
     });
-    assertEquals(Boolean.TRUE, o);
-
-    o = accessor.invoke(new SerializableCallable("Execute function multiple filter") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
-        FunctionService.registerFunction(function);
-        InternalExecution dataSet = (InternalExecution) FunctionService.onRegion(pr);
-        Set<Integer> bucketSet = new HashSet<Integer>();
-        bucketSet.add(1);
-        bucketSet.add(2);
-        bucketSet.add(3);
-        bucketSet.add(0);
-        bucketSet.add(4);
-        ResultCollector<Integer, List<Integer>> rc =
-            dataSet.withBucketFilter(bucketSet).execute(function);
-
-        List<Integer> results = rc.getResult();
-        assertEquals(bucketSet.size(), results.size());
-        for (Integer bucket : results) {
-          bucketSet.remove(bucket);
-        }
-        getCache().getLogger().info("results buckets=" + results);
-        getCache().getLogger().info("bucketset=" + bucketSet);
-        assertTrue(bucketSet.isEmpty());
-        return Boolean.TRUE;
-      }
-    });
-    assertEquals(Boolean.TRUE, o);
-
   }
 
   @Test
   public void testBucketFilterOverride() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        PartitionResolver resolver = new BucketFilterPRResolver();
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0, resolver);
-        getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0, new DivisorResolver(10));
+    });
+
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, new DivisorResolver(10));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_BUCKET_FILTER));
+    });
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, new DivisorResolver(10));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_BUCKET_FILTER));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, new DivisorResolver(10));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_BUCKET_FILTER));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+      for (int i = 0; i < 50; ++i) {
+        pr.put(i, i);
       }
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            PartitionResolver resolver = new BucketFilterPRResolver();
-            RegionAttributes ra =
-                PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10, resolver);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
 
-    Object o = accessor.invoke(new SerializableCallable("Create data") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        for (int i = 0; i < 50; ++i) {
-          pr.put(i, i);
-        }
-        return Boolean.TRUE;
-      }
+      Function<Integer> function = new TestFunction<>(true, TEST_FUNCTION_BUCKET_FILTER);
+      FunctionService.registerFunction(function);
+      InternalExecution execution = (InternalExecution) FunctionService.onRegion(pr);
+
+      Set<Integer> bucketIdSet = createBucketIdSet(2);
+      Set<Integer> keySet = createKeySet(33, 43);
+      Set<Integer> expectedBucketIdSet = createBucketIdSet(3, 4);
+
+      ResultCollector<Integer, List<Integer>> resultCollector =
+          execution.withBucketFilter(bucketIdSet).withFilter(keySet).execute(function);
+
+      List<Integer> results = resultCollector.getResult();
+      assertThat(results).hasSameElementsAs(expectedBucketIdSet);
     });
-    assertEquals(Boolean.TRUE, o);
-
-    o = accessor.invoke(new SerializableCallable("Execute function with bucket filter override") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
-        FunctionService.registerFunction(function);
-        InternalExecution dataSet = (InternalExecution) FunctionService.onRegion(pr);
-        Set<Integer> bucketSet = new HashSet<Integer>();
-        bucketSet.add(1);
-        Set<Integer> keySet = new HashSet<Integer>();
-        keySet.add(33);
-        keySet.add(43);
-        Set<Integer> expectedBucketSet = new HashSet<Integer>();
-        expectedBucketSet.add(3);
-        expectedBucketSet.add(4);
-        ResultCollector<Integer, List<Integer>> rc =
-            dataSet.withBucketFilter(bucketSet).withFilter(keySet).execute(function);
-
-        List<Integer> results = rc.getResult();
-        assertEquals(keySet.size(), results.size());
-        for (Integer bucket : results) {
-          expectedBucketSet.remove(bucket);
-        }
-        assertTrue(expectedBucketSet.isEmpty());
-        return Boolean.TRUE;
-      }
-    });
-    assertEquals(Boolean.TRUE, o);
-
-
   }
 
   /**
@@ -1745,74 +1162,47 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testLocalMultiKeyExecution_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    VM localOnly = host.getVM(3);
-    getCache();
-    Object o = localOnly.invoke(new SerializableCallable("Create PR, validate local execution)") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-        PartitionedRegion pr = (PartitionedRegion) getCache().createRegion(rName, raf.create());
-        final String testKey = "execKey";
-        DistributedSystem.setThreadsSocketPolicy(false);
-        // Function function = new TestFunction(true,"TestFunction2");
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        final HashSet testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-        try {
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        } catch (Exception expected) {
-          // No data should cause exec to throw
-          assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
-        }
+    PartitionedRegion pr = createPartitionedRegion(regionName, 10, 0);
 
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
+    Set<String> keySet = new HashSet<>();
+    for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+      keySet.add(STRING_KEY + i);
+    }
 
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
+    Collection<Integer> expectedValues = new HashSet<>();
+    int valueIndex = 0;
+    for (String key : keySet) {
+      int value = valueIndex++;
+      expectedValues.add(value);
+      pr.put(key, value);
+    }
 
-        ResultCollector rc1 =
-            dataSet.withFilter(testKeys).setArguments(Boolean.TRUE).execute(function.getId());
-        List l = ((List) rc1.getResult());
-        // assertIndexDetailsEquals(pr.getTotalNumberOfBuckets(), l.size());
-        assertEquals(1, l.size());
-        for (Iterator i = l.iterator(); i.hasNext();) {
-          assertEquals(Boolean.TRUE, i.next());
-        }
+    Function<Integer> function = new TestFunction<>(true, TEST_FUNCTION2);
+    FunctionService.registerFunction(function);
 
-        // DefaultResultCollector rc2 = new DefaultResultCollector();
-        ResultCollector rc2 =
-            dataSet.withFilter(testKeys).setArguments(testKeys).execute(function.getId());
-        List l2 = ((List) rc2.getResult());
-        assertEquals(1, l2.size());
+    Execution<Boolean, Boolean, List<Boolean>> booleanExecution = FunctionService.onRegion(pr);
+    ResultCollector<Boolean, List<Boolean>> booleanResultCollector =
+        booleanExecution.withFilter(keySet).setArguments(true).execute(function.getId());
 
-        HashSet foundVals = new HashSet();
-        for (Iterator i = l2.iterator(); i.hasNext();) {
-          ArrayList subL = (ArrayList) i.next();
-          assertTrue(subL.size() > 0);
-          for (Iterator subI = subL.iterator(); subI.hasNext();) {
-            assertTrue(foundVals.add(subI.next()));
-          }
-        }
-        assertEquals(origVals, foundVals);
-        return Boolean.TRUE;
+    List<Boolean> booleanResults = booleanResultCollector.getResult();
+    assertThat(booleanResults).hasSize(1).containsExactly(true);
+
+    Execution<Set<String>, List<Integer>, List<List<Integer>>> valuesExecution =
+        FunctionService.onRegion(pr);
+    ResultCollector<List<Integer>, List<List<Integer>>> valuesResultCollector =
+        valuesExecution.withFilter(keySet).setArguments(keySet).execute(function.getId());
+
+    List<List<Integer>> valuesResults = valuesResultCollector.getResult();
+    assertThat(valuesResults).hasSize(1);
+
+    Collection<Integer> actualValues = new HashSet<>();
+    for (List<Integer> values : valuesResults) {
+      assertThat(values.size()).isGreaterThan(0);
+      for (int value : values) {
+        assertThat(actualValues.add(value)).isTrue();
       }
-    });
-    assertEquals(Boolean.TRUE, o);
+    }
+    assertThat(actualValues).isEqualTo(expectedValues);
   }
 
   /**
@@ -1820,74 +1210,47 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testLocalMultiKeyExecution_byInstance() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    VM localOnly = host.getVM(3);
-    getCache();
-    Object o = localOnly.invoke(new SerializableCallable("Create PR, validate local execution)") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-        PartitionedRegion pr = (PartitionedRegion) getCache().createRegion(rName, raf.create());
-        final String testKey = "execKey";
-        DistributedSystem.setThreadsSocketPolicy(false);
-        // Function function = new TestFunction(true,"TestFunction2");
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        // DefaultResultCollector rs = new DefaultResultCollector();
-        Execution dataSet = FunctionService.onRegion(pr);
-        final HashSet testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-        try {
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
-        } catch (Exception expected) {
-          // No data should cause exec to throw
-          assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
-        }
+    PartitionedRegion pr = createPartitionedRegion(regionName, 10, 0);
 
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
+    Set<String> keySet = new HashSet<>();
+    for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+      keySet.add(STRING_KEY + i);
+    }
 
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
+    Collection<Integer> expectedValues = new HashSet<>();
+    int valueIndex = 0;
+    for (String key : keySet) {
+      int value = valueIndex++;
+      expectedValues.add(value);
+      pr.put(key, value);
+    }
 
-        // DefaultResultCollector rc1 = new DefaultResultCollector();
-        ResultCollector rc1 =
-            dataSet.withFilter(testKeys).setArguments(Boolean.TRUE).execute(function);
-        List l = ((List) rc1.getResult());
-        assertEquals(1, l.size());
-        for (Iterator i = l.iterator(); i.hasNext();) {
-          assertEquals(Boolean.TRUE, i.next());
-        }
+    Function function = new TestFunction(true, TEST_FUNCTION2);
+    FunctionService.registerFunction(function);
 
-        // DefaultResultCollector rc2 = new DefaultResultCollector();
-        ResultCollector rc2 = dataSet.withFilter(testKeys).setArguments(testKeys).execute(function);
-        List l2 = ((List) rc2.getResult());
-        assertEquals(1, l2.size());
+    Execution<Boolean, Boolean, List<Boolean>> booleanExecution = FunctionService.onRegion(pr);
+    ResultCollector<Boolean, List<Boolean>> booleanResultCollector =
+        booleanExecution.withFilter(keySet).setArguments(true).execute(function);
 
-        HashSet foundVals = new HashSet();
-        for (Iterator i = l2.iterator(); i.hasNext();) {
-          ArrayList subL = (ArrayList) i.next();
-          assertTrue(subL.size() > 0);
-          for (Iterator subI = subL.iterator(); subI.hasNext();) {
-            assertTrue(foundVals.add(subI.next()));
-          }
-        }
-        assertEquals(origVals, foundVals);
-        return Boolean.TRUE;
+    List<Boolean> booleanResults = booleanResultCollector.getResult();
+    assertThat(booleanResults).hasSize(1).containsExactly(true);
+
+    Execution<Set<String>, List<Integer>, List<List<Integer>>> valuesExecution =
+        FunctionService.onRegion(pr);
+    ResultCollector<List<Integer>, List<List<Integer>>> valuesResultCollector =
+        valuesExecution.withFilter(keySet).setArguments(keySet).execute(function);
+
+    List<List<Integer>> valuesResults = valuesResultCollector.getResult();
+    assertThat(valuesResults).hasSize(1);
+
+    Collection<Integer> actualValues = new HashSet<>();
+    for (List<Integer> values : valuesResults) {
+      assertThat(values.size()).isGreaterThan(0);
+      for (int value : values) {
+        assertThat(actualValues.add(value)).isTrue();
       }
-    });
-    assertEquals(Boolean.TRUE, o);
+    }
+    assertThat(actualValues).isEqualTo(expectedValues);
   }
 
   /**
@@ -1896,75 +1259,77 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testMultiKeyExecutionOnASingleBucket_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    final VM datastore3 = host.getVM(3);
-    getCache();
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TEST_FUNCTION2);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-    datastore3.invoke(dataStoreCreate);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+    VM datastore3 = getHost(0).getVM(3);
 
-    Object o = datastore3.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 3); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
-        int j = 0;
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          pr.put(i.next(), val);
-        }
-        // Assert there is data each bucket
-        for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
-          assertTrue(pr.getBucketKeys(bid).size() > 0);
-        }
-        for (Iterator kiter = testKeys.iterator(); kiter.hasNext();) {
-          Set singleKeySet = Collections.singleton(kiter.next());
-          Function function = new TestFunction(true, TEST_FUNCTION2);
-          FunctionService.registerFunction(function);
-          Execution dataSet = FunctionService.onRegion(pr);
-          ResultCollector rc1 =
-              dataSet.withFilter(singleKeySet).setArguments(Boolean.TRUE).execute(function.getId());
-          List l = ((List) rc1.getResult());
-          assertEquals(1, l.size());
-          assertEquals(Boolean.TRUE, l.iterator().next());
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
 
-          // DefaultResultCollector rc2 = new DefaultResultCollector();
-          ResultCollector rc2 = dataSet.withFilter(singleKeySet)
-              .setArguments(new HashSet(singleKeySet)).execute(function.getId());
-          List l2 = ((List) rc2.getResult());
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
 
-          assertEquals(1, l2.size());
-          List subList = (List) l2.iterator().next();
-          assertEquals(1, subList.size());
-          assertEquals(pr.get(singleKeySet.iterator().next()), subList.iterator().next());
-        }
-        return Boolean.TRUE;
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore3.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore3.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Collection<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      // Assert there is data each bucket
+      for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
+        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+      }
+
+      Function function = new TestFunction(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+
+      for (String key : keySet) {
+        Set<String> singleKeySet = createKeySet(key);
+
+        Execution<Boolean, Boolean, List<Boolean>> booleanExecution = FunctionService.onRegion(pr);
+        ResultCollector<Boolean, List<Boolean>> booleanResultCollector =
+            booleanExecution.withFilter(singleKeySet).setArguments(true).execute(function.getId());
+
+        List<Boolean> booleanResults = booleanResultCollector.getResult();
+        assertThat(booleanResults).hasSize(1).containsExactly(true);
+
+        Execution<Set<String>, List<Integer>, List<List<Integer>>> valuesExecution =
+            FunctionService.onRegion(pr);
+        ResultCollector<List<Integer>, List<List<Integer>>> valuesResultCollector = valuesExecution
+            .withFilter(singleKeySet).setArguments(singleKeySet).execute(function.getId());
+
+        List<List<Integer>> valuesResults = valuesResultCollector.getResult();
+        assertThat(valuesResults).hasSize(1);
+
+        List<Integer> values = valuesResults.get(0);
+
+        assertThat(values).hasSize(1);
+        assertThat(values.get(0)).isEqualTo(pr.get(singleKeySet.iterator().next()));
       }
     });
-    assertEquals(Boolean.TRUE, o);
   }
 
   /**
@@ -1973,75 +1338,77 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testMultiKeyExecutionOnASingleBucket_byInstance() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    final VM datastore3 = host.getVM(3);
-    getCache();
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-    datastore3.invoke(dataStoreCreate);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+    VM datastore3 = getHost(0).getVM(3);
 
-    Object o = datastore3.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 3); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
-        int j = 0;
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          pr.put(i.next(), val);
-        }
-        // Assert there is data each bucket
-        for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
-          assertTrue(pr.getBucketKeys(bid).size() > 0);
-        }
-        for (Iterator kiter = testKeys.iterator(); kiter.hasNext();) {
-          Set singleKeySet = Collections.singleton(kiter.next());
-          Function function = new TestFunction(true, TEST_FUNCTION2);
-          FunctionService.registerFunction(function);
-          Execution dataSet = FunctionService.onRegion(pr);
-          ResultCollector rc1 =
-              dataSet.withFilter(singleKeySet).setArguments(Boolean.TRUE).execute(function);
-          List l = ((List) rc1.getResult());
-          assertEquals(1, l.size());
-          assertEquals(Boolean.TRUE, l.iterator().next());
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
 
-          // DefaultResultCollector rc2 = new DefaultResultCollector();
-          ResultCollector rc2 = dataSet.withFilter(singleKeySet)
-              .setArguments(new HashSet(singleKeySet)).execute(function);
-          List l2 = ((List) rc2.getResult());
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
 
-          assertEquals(1, l2.size());
-          List subList = (List) l2.iterator().next();
-          assertEquals(1, subList.size());
-          assertEquals(pr.get(singleKeySet.iterator().next()), subList.iterator().next());
-        }
-        return Boolean.TRUE;
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore3.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore3.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Collection<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 3; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      // Assert there is data each bucket
+      for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
+        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+      }
+
+      Function function = new TestFunction(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+
+      for (String key : keySet) {
+        Set<String> singleKeySet = createKeySet(key);
+
+        Execution<Boolean, Boolean, List<Boolean>> booleanExecution = FunctionService.onRegion(pr);
+        ResultCollector<Boolean, List<Boolean>> booleanResultCollector =
+            booleanExecution.withFilter(singleKeySet).setArguments(true).execute(function);
+
+        List<Boolean> booleanResults = booleanResultCollector.getResult();
+        assertThat(booleanResults).hasSize(1).containsExactly(true);
+
+        Execution<Set<String>, List<Integer>, List<List<Integer>>> valuesExecution =
+            FunctionService.onRegion(pr);
+        ResultCollector<List<Integer>, List<List<Integer>>> valuesResultCollector =
+            valuesExecution.withFilter(singleKeySet).setArguments(singleKeySet).execute(function);
+
+        List<List<Integer>> valuesResults = valuesResultCollector.getResult();
+        assertThat(valuesResults).hasSize(1);
+
+        List<Integer> values = valuesResults.get(0);
+
+        assertThat(values).hasSize(1);
+        assertThat(values.get(0)).isEqualTo(pr.get(singleKeySet.iterator().next()));
       }
     });
-    assertEquals(Boolean.TRUE, o);
   }
 
   /**
@@ -2049,68 +1416,60 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testExecutionOnAllNodes_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    final VM datastore3 = host.getVM(3);
-    getCache();
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            // Function function = new TestFunction(true,"TestFunction2");
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-    datastore3.invoke(dataStoreCreate);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+    VM datastore3 = getHost(0).getVM(3);
 
-    Object o = datastore3.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 3); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
-        int j = 0;
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          pr.put(i.next(), val);
-        }
-        // Assert there is data in each bucket
-        for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
-          assertTrue(pr.getBucketKeys(bid).size() > 0);
-        }
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
-        List l = ((List) rc1.getResult());
-        LogWriterUtils.getLogWriter()
-            .info("PRFunctionExecutionDUnitTest#testExecutionOnAllNodes_byName : Result size :"
-                + l.size() + " Result : " + l);
-        assertEquals(4, l.size());
-
-        for (int i = 0; i < 4; i++) {
-          assertEquals(Boolean.TRUE, l.iterator().next());
-        }
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore3.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore3.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Collection<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 3; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      // Assert there is data in each bucket
+      for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
+        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+      }
+
+      Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Boolean, List<Boolean>> execution = FunctionService.onRegion(pr);
+
+      ResultCollector<Boolean, List<Boolean>> resultCollector =
+          execution.setArguments(true).execute(function.getId());
+
+      List<Boolean> results = resultCollector.getResult();
+      assertThat(results).hasSize(4).containsExactly(true, true, true, true);
+    });
   }
 
   /**
@@ -2118,80 +1477,59 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testExecutionOnAllNodes_byInstance() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    final VM accessor = host.getVM(3);
-    getCache();
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+    VM accessor = getHost(0).getVM(3);
 
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        AttributesFactory raf = new AttributesFactory(ra);
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        pa.setTotalNumBuckets(17);
-        raf.setPartitionAttributes(pa);
-
-        getCache().createRegion(rName, raf.create());
-        return Boolean.TRUE;
-      }
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(0, 0, 17));
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            // Function function = new TestFunction(true,"TestFunction2");
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 3); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
-        int j = 0;
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          pr.put(i.next(), val);
-        }
-        // Assert there is data in each bucket
-        for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
-          assertTrue(pr.getBucketKeys(bid).size() > 0);
-        }
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(function);
-
-        List l = ((List) rc1.getResult());
-        assertEquals(3, l.size());
-
-        for (int i = 0; i < 3; i++) {
-          assertEquals(Boolean.TRUE, l.iterator().next());
-        }
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Collection<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 3; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      // Assert there is data in each bucket
+      for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
+        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+      }
+
+      Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Boolean, List<Boolean>> dataSet = FunctionService.onRegion(pr);
+
+      ResultCollector<Boolean, List<Boolean>> resultCollector =
+          dataSet.setArguments(true).execute(function);
+
+      List<Boolean> booleanResults = resultCollector.getResult();
+      assertThat(booleanResults).hasSize(3).containsExactly(true, true, true);
+    });
   }
 
   /**
@@ -2199,183 +1537,53 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testExecutionOnAllNodes_byInlineFunction() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    final VM datastore3 = host.getVM(3);
-    getCache();
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-    datastore3.invoke(dataStoreCreate);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+    VM datastore3 = getHost(0).getVM(3);
 
-    Object o = datastore3.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 3); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
-        int j = 0;
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          pr.put(i.next(), val);
-        }
-        // Assert there is data in each bucket
-        for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
-          assertTrue(pr.getBucketKeys(bid).size() > 0);
-        }
-        Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
-          @Override
-          public void execute(FunctionContext context) {
-            if (context.getArguments() instanceof String) {
-              context.getResultSender().lastResult("Success");
-            } else if (context.getArguments() instanceof Boolean) {
-              context.getResultSender().lastResult(Boolean.TRUE);
-            }
-          }
-
-          @Override
-          public String getId() {
-            return getClass().getName();
-          }
-
-          @Override
-          public boolean hasResult() {
-            return true;
-          }
-        });
-        List l = ((List) rc1.getResult());
-        LogWriterUtils.getLogWriter()
-            .info("PRFunctionExecutionDUnitTest#testExecutionOnAllNodes_byName : Result size :"
-                + l.size() + " Result : " + l);
-        assertEquals(4, l.size());
-        Iterator iterator = l.iterator();
-        for (int i = 0; i < 4; i++) {
-          assertEquals(Boolean.TRUE, iterator.next());
-        }
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
     });
-    assertEquals(Boolean.TRUE, o);
-  }
 
-  @Test
-  public void testBug40714() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    final VM datastore3 = host.getVM(3);
-    getCache();
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            FunctionService.registerFunction(new FunctionAdapter() {
-              @Override
-              public void execute(FunctionContext context) {
-                if (context.getArguments() instanceof String) {
-                  context.getResultSender().lastResult("Failure");
-                } else if (context.getArguments() instanceof Boolean) {
-                  context.getResultSender().lastResult(Boolean.FALSE);
-                }
-              }
-
-              @Override
-              public String getId() {
-                return "Function";
-              }
-
-              @Override
-              public boolean hasResult() {
-                return true;
-              }
-            });
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-    datastore3.invoke(dataStoreCreate);
-
-    Object o = datastore3.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 3); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
-        int j = 0;
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          pr.put(i.next(), val);
-        }
-        // Assert there is data in each bucket
-        for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
-          assertTrue(pr.getBucketKeys(bid).size() > 0);
-        }
-        Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
-          @Override
-          public void execute(FunctionContext context) {
-            if (context.getArguments() instanceof String) {
-              context.getResultSender().lastResult("Success");
-            } else if (context.getArguments() instanceof Boolean) {
-              context.getResultSender().lastResult(Boolean.TRUE);
-            }
-          }
-
-          @Override
-          public String getId() {
-            return "Function";
-          }
-
-          @Override
-          public boolean hasResult() {
-            return true;
-          }
-        });
-        List l = ((List) rc1.getResult());
-        LogWriterUtils.getLogWriter()
-            .info("PRFunctionExecutionDUnitTest#testExecutionOnAllNodes_byName : Result size :"
-                + l.size() + " Result : " + l);
-        assertEquals(4, l.size());
-        Iterator iterator = l.iterator();
-        for (int i = 0; i < 4; i++) {
-          Boolean res = (Boolean) iterator.next();
-          assertEquals(Boolean.TRUE, res);
-        }
-        return Boolean.TRUE;
-      }
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+    });
+
+    datastore3.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0, 17));
+    });
+
+    datastore3.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Collection<String> keySet = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 3; i > 0; i--) {
+        keySet.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : keySet) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      // Assert there is data in each bucket
+      for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
+        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+      }
+
+      Execution<Boolean, Boolean, List<Boolean>> execution = FunctionService.onRegion(pr);
+      ResultCollector<Boolean, List<Boolean>> booleanResultCollector =
+          execution.setArguments(true).execute(new BooleanFunction(true));
+
+      List<Boolean> booleanResults = booleanResultCollector.getResult();
+      assertThat(booleanResults).hasSize(4).containsExactly(true, true, true, true);
+    });
   }
 
   /**
@@ -2384,75 +1592,63 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testExecutionOnAllNodes_LocalReadPR() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    final VM datastore3 = host.getVM(3);
-    getCache();
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            pa.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION3);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-    datastore3.invoke(dataStoreCreate);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+    VM datastore3 = getHost(0).getVM(3);
 
-    Object o = datastore3.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        final HashSet testKeys = new HashSet();
-
-        // here put custid and Customer into the PR
-        // later check for them
-        for (int i = 1; i <= 10; i++) {
-          CustId custid = new CustId(i);
-          Customer customer = new Customer("name" + i, "Address" + i);
-          try {
-            pr.put(custid, customer);
-            assertNotNull(pr.get(custid));
-            assertEquals(customer, pr.get(custid));
-            testKeys.add(custid);
-          } catch (Exception e) {
-            Assert.fail(
-                "putCustomerPartitionedRegion : failed while doing put operation in CustomerPartitionedRegion ",
-                e);
-          }
-          LogWriterUtils.getLogWriter().fine("Customer :- { " + custid + " : " + customer + " }");
-        }
-
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION3);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.setArguments(testKeys).execute(function.getId());
-
-        List l = ((List) rc1.getResult());
-        assertEquals(4, l.size());
-        ArrayList vals = new ArrayList();
-        Iterator itr = l.iterator();
-        for (int i = 0; i < 4; i++) {
-          vals.addAll((ArrayList) itr.next());
-        }
-        assertEquals(vals.size(), testKeys.size());
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION3));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION3));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION3));
+    });
+
+    datastore3.invoke(() -> {
+      createPartitionedRegion(regionName, createPartitionAttributes(10, 0,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION3));
+    });
+
+    datastore3.invoke(() -> {
+      Region<CustId, Customer> region = getPartitionedRegion(regionName);
+
+      Set<CustId> keySet = new HashSet<>();
+      for (int i = 1; i <= 10; i++) {
+        CustId custId = new CustId(i);
+        Customer customer = new Customer("name" + i, "Address" + i);
+        region.put(custId, customer);
+        keySet.add(custId);
+      }
+
+      Function<List<Customer>> function = new TestFunction<>(true, TEST_FUNCTION3);
+      FunctionService.registerFunction(function);
+      Execution<Set<CustId>, List<Customer>, List<List<Customer>>> execution =
+          FunctionService.onRegion(region);
+
+      ResultCollector<List<Customer>, List<List<Customer>>> resultCollector =
+          execution.setArguments(keySet).execute(function.getId());
+
+      List<List<Customer>> customerListResults = resultCollector.getResult();
+      assertThat(customerListResults).hasSize(4);
+
+      List<Customer> values = new ArrayList<>();
+      for (List<Customer> customers : customerListResults) {
+        values.addAll(customers);
+      }
+      assertThat(values).hasSameSizeAs(keySet);
+    });
   }
 
   /**
@@ -2461,122 +1657,102 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testExecutionOnMultiNodes_LocalReadPR() throws Exception {
-    // final String rName = getUniqueName();
-    final String rName1 = "CustomerPartitionedRegionName";
-    final String rName2 = "OrderPartitionedRegionName";
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    final VM datastore3 = host.getVM(3);
-    getCache();
-    SerializableCallable dataStoreCreate1 =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            pa.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName1, raf.create());
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION3);
-            FunctionService.registerFunction(function);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+    VM datastore3 = getHost(0).getVM(3);
 
-            return Boolean.TRUE;
-          }
-        };
+    String customerRegionName = "CustomerPartitionedRegionName";
+    String orderRegionName = "OrderPartitionedRegionName";
 
-    SerializableCallable dataStoreCreate2 =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            pa.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-            pa.setColocatedWith(rName1);
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName2, raf.create());
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate1);
-    datastore1.invoke(dataStoreCreate1);
-    datastore2.invoke(dataStoreCreate1);
-    datastore3.invoke(dataStoreCreate1);
-
-    datastore0.invoke(dataStoreCreate2);
-    datastore1.invoke(dataStoreCreate2);
-    datastore2.invoke(dataStoreCreate2);
-    datastore3.invoke(dataStoreCreate2);
-
-    Object o = datastore3.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName1);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        final HashSet testKeys = new HashSet();
-
-        // here put custid and Customer into the PR
-        // later check for them
-        for (int i = 1; i <= 100; i++) {
-          CustId custid = new CustId(i);
-          Customer customer = new Customer("name" + i, "Address" + i);
-          try {
-            pr.put(custid, customer);
-            assertNotNull(pr.get(custid));
-            assertEquals(customer, pr.get(custid));
-            if (i > 5)
-              testKeys.add(custid);
-          } catch (Exception e) {
-            Assert.fail(
-                "putCustomerPartitionedRegion : failed while doing put operation in CustomerPartitionedRegion ",
-                e);
-          }
-          LogWriterUtils.getLogWriter().fine("Customer :- { " + custid + " : " + customer + " }");
-        }
-
-        PartitionedRegion partitionedregion = (PartitionedRegion) getCache().getRegion(rName2);
-        assertNotNull(partitionedregion);
-        for (int i = 1; i <= 100; i++) {
-          CustId custid = new CustId(i);
-          for (int j = 1; j <= 10; j++) {
-            int oid = (i * 10) + j;
-            OrderId orderId = new OrderId(oid, custid);
-            Order order = new Order("OREDR" + oid);
-            try {
-              partitionedregion.put(orderId, order);
-              // assertTrue(partitionedregion.containsKey(orderId));
-              // assertIndexDetailsEquals(order,partitionedregion.get(orderId));
-
-            } catch (Exception e) {
-              Assert.fail(
-                  "putOrderPartitionedRegion : failed while doing put operation in OrderPartitionedRegion ",
-                  e);
-            }
-            LogWriterUtils.getLogWriter().fine("Order :- { " + orderId + " : " + order + " }");
-          }
-        }
-
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION3);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-
-        ResultCollector rc1 = dataSet.withFilter(testKeys).execute(function.getId());
-        List l = ((List) rc1.getResult());
-        assertTrue(4 >= l.size());
-        ArrayList vals = new ArrayList();
-        Iterator itr = l.iterator();
-        for (int i = 0; i < l.size(); i++) {
-          vals.addAll((ArrayList) itr.next());
-        }
-        assertEquals(testKeys.size(), vals.size());
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(customerRegionName, createPartitionAttributes(10, 0,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION3));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(customerRegionName, createPartitionAttributes(10, 0,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION3));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(customerRegionName, createPartitionAttributes(10, 0,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION3));
+    });
+
+    datastore3.invoke(() -> {
+      createPartitionedRegion(customerRegionName, createPartitionAttributes(10, 0,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 17));
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION3));
+    });
+
+    datastore0.invoke(() -> {
+      createPartitionedRegion(orderRegionName, createPartitionAttributes(customerRegionName, 10,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 0, 17));
+    });
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(orderRegionName, createPartitionAttributes(customerRegionName, 10,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 0, 17));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(orderRegionName, createPartitionAttributes(customerRegionName, 10,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 0, 17));
+    });
+
+    datastore3.invoke(() -> {
+      createPartitionedRegion(orderRegionName, createPartitionAttributes(customerRegionName, 10,
+          new CustomerIDPartitionResolver("CustomerIDPartitionResolver"), 0, 17));
+    });
+
+    datastore3.invoke(() -> {
+      Region<CustId, Customer> customerRegion = getPartitionedRegion(customerRegionName);
+
+      Set<CustId> keySet = new HashSet<>();
+      for (int i = 1; i <= 10; i++) {
+        CustId custId = new CustId(i);
+        Customer customer = new Customer("name" + i, "Address" + i);
+        customerRegion.put(custId, customer);
+        keySet.add(custId);
+      }
+
+      Region<OrderId, Order> orderRegion = getPartitionedRegion(orderRegionName);
+
+      for (int i = 1; i <= 100; i++) {
+        CustId custId = new CustId(i);
+        for (int j = 1; j <= 10; j++) {
+          int orderIdInt = i * 10 + j;
+
+          OrderId orderId = new OrderId(orderIdInt, custId);
+          Order order = new Order("Order" + orderIdInt);
+
+          orderRegion.put(orderId, order);
+          // TODO: assertTrue(partitionedregion.containsKey(orderId));
+          // TODO: assertIndexDetailsEquals(order,partitionedregion.get(orderId));
+        }
+      }
+
+      Function<List<Order>> function = new TestFunction<>(true, TEST_FUNCTION3);
+      FunctionService.registerFunction(function);
+      Execution<Set<CustId>, List<Order>, List<List<Order>>> execution =
+          FunctionService.onRegion(customerRegion);
+
+      ResultCollector<List<Order>, List<List<Order>>> resultCollector =
+          execution.withFilter(keySet).execute(function.getId());
+
+      Collection<List<Order>> results = resultCollector.getResult();
+      assertThat(results.size()).isGreaterThan(0).isLessThanOrEqualTo(4);
+
+      List<Order> values = new ArrayList<>();
+      for (List<Order> orderList : results) {
+        values.addAll(orderList);
+      }
+      assertThat(values).hasSameSizeAs(keySet);
+    });
   }
 
   /**
@@ -2584,75 +1760,82 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testLocalDataContext() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(1);
-    final VM datastore1 = host.getVM(2);
-    final VM datastore2 = host.getVM(3);
-    getCache();
-    final Integer key1 = new Integer(1);
-    final Integer key2 = new Integer(2);
+    VM accessor = getHost(0).getVM(1);
+    VM datastore1 = getHost(0).getVM(2);
+    VM datastore2 = getHost(0).getVM(3);
 
-    final SerializableCallable createDataStore =
-        new SerializableCallable("Create datastore for " + rName) {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            getCache().createRegion(rName, ra);
-            return Boolean.TRUE;
-          }
-        };
-    datastore1.invoke(createDataStore);
-    datastore2.invoke(createDataStore);
-
-    accessor.invoke(new SerializableCallable("Create accessor for " + rName + ", create buckets") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        Region pr = getCache().createRegion(rName, ra);
-        // Assuming that bucket balancing will create a single bucket (per key)
-        // in different datastores
-        pr.put(key1, key1);
-        pr.put(key2, key2);
-        return Boolean.TRUE;
-      }
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
     });
 
-    final SerializableCallable assertFuncionContext =
-        new SerializableCallable("Invoke function, assert context") {
-          public Object call() throws Exception {
-            Region r = getCache().getRegion(rName);
-            Function f = new FunctionAdapter() {
-              // @Override
-              @Override
-              public void execute(FunctionContext context) {
-                RegionFunctionContext rContext = (RegionFunctionContext) context;
-                assertEquals(Collections.singleton(key1), rContext.getFilter());
-                assertTrue(PartitionRegionHelper.isPartitionedRegion(rContext.getDataSet()));
-                final Region ld = PartitionRegionHelper.getLocalDataForContext(rContext);
-                assertTrue(PartitionRegionHelper.getColocatedRegions(ld).isEmpty());
-                // Assert the data is local only
-                assertNull(ld.get(key2));
-                assertEquals(key1, ld.get(key1));
-                assertLocalKeySet(key1, ld.keySet());
-                assertLocalValues(key1, ld.values());
-                assertLocalEntrySet(key1, ld.entrySet());
-                context.getResultSender().lastResult(Boolean.TRUE);
-              }
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+    });
 
-              // @Override
-              @Override
-              public String getId() {
-                return getClass().getName();
-              }
-            };
-            ArrayList res = (ArrayList) FunctionService.onRegion(r)
-                .withFilter(Collections.singleton(key1)).execute(f).getResult();
-            assertEquals(1, res.size());
-            return res.get(0);
-          }
-        };
-    assertTrue(((Boolean) accessor.invoke(assertFuncionContext)).booleanValue());
-    assertTrue(((Boolean) datastore1.invoke(assertFuncionContext)).booleanValue());
-    assertTrue(((Boolean) datastore2.invoke(assertFuncionContext)).booleanValue());
+    int key1 = 1;
+    int key2 = 2;
+
+    accessor.invoke(() -> {
+      Region<Integer, Integer> region = createPartitionedRegion(regionName, 0, 0);
+      // Assuming that bucket balancing will create a single bucket (per key)
+      // in different datastores
+      region.put(key1, key1);
+      region.put(key2, key2);
+    });
+
+    accessor.invoke(() -> validateLocalDataContext(key1, key2));
+    datastore1.invoke(() -> validateLocalDataContext(key1, key2));
+    datastore2.invoke(() -> validateLocalDataContext(key1, key2));
+  }
+
+  private void validateLocalDataContext(final int key1, final int key2) {
+    Region region = getPartitionedRegion(regionName);
+    Function function = new FunctionAdapter() {
+      @Override
+      public void execute(FunctionContext context) {
+        RegionFunctionContext regionFunctionContext = (RegionFunctionContext) context;
+
+        Iterable<Integer> filterSet = (Set<Integer>) regionFunctionContext.getFilter();
+        assertThat(filterSet).hasSize(1).containsExactly(key1);
+
+        Region<Integer, Integer> dataSet = regionFunctionContext.getDataSet();
+        assertThat(PartitionRegionHelper.isPartitionedRegion(dataSet)).isTrue();
+
+        Region localData = PartitionRegionHelper.getLocalDataForContext(regionFunctionContext);
+        assertThat(PartitionRegionHelper.getColocatedRegions(localData)).isEmpty();
+
+        // Assert the data is local only
+        assertThat(localData.get(key2)).isNull();
+        assertThat(localData.get(key1)).isEqualTo(key1);
+
+        Set<Integer> localDataKeySet = localData.keySet();
+        assertThat(localDataKeySet).hasSize(1).containsExactly(key1);
+
+        Collection<Integer> localDataValuesCollection = localData.values();
+        assertThat(localDataValuesCollection).hasSize(1).containsExactly(key1);
+
+        validateLocalEntrySet(key1, localData.entrySet());
+
+        Set<Map.Entry<Integer, Integer>> localDataEntrySet = localData.entrySet();
+        assertThat(localDataEntrySet).hasSize(1);
+        Map.Entry<Integer, Integer> localDataEntry = localDataEntrySet.iterator().next();
+        assertThat(localDataEntry.getKey()).isEqualTo(key1);
+        assertThat(localDataEntry.getValue()).isEqualTo(key1);
+
+        context.getResultSender().lastResult(true);
+      }
+
+      // @Override
+      @Override
+      public String getId() {
+        return getClass().getName();
+      }
+    };
+
+    List<Boolean> results = (List) FunctionService.onRegion(region)
+        .withFilter(Collections.singleton(key1)).execute(function).getResult();
+
+    assertThat(results).hasSize(1).containsExactly(true);
   }
 
   /**
@@ -2660,369 +1843,353 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
    */
   @Test
   public void testLocalDataContextWithColocation() throws Exception {
-    String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(1);
-    final VM datastore1 = host.getVM(2);
-    final VM datastore2 = host.getVM(3);
-    getCache();
-    final Integer key1 = new Integer(1);
-    final Integer key2 = new Integer(2);
+    VM accessor = getHost(0).getVM(1);
+    VM datastore1 = getHost(0).getVM(2);
+    VM datastore2 = getHost(0).getVM(3);
 
-    final String rName_top = rName + "_top";
-    final String rName_colo1 = rName + "_colo1";
-    final String rName_colo2 = rName + "_colo2";
+    datastore1.invoke(() -> createColocatedPartitionedRegions(10));
+    datastore2.invoke(() -> createColocatedPartitionedRegions(10));
+    accessor.invoke(() -> createColocatedPartitionedRegions(0));
 
-    final SerializableCallable createDataStore =
-        new SerializableCallable("Create datastore for " + rName + " with colocated Regions") {
-          public Object call() throws Exception {
-            // create the "top" root region
-            createRootRegion(rName_top, createColoRegionAttrs(0, 10, null));
-            // create a root region colocated with top
-            RegionAttributes colo = createColoRegionAttrs(0, 10, rName_top);
-            createRootRegion(rName_colo1, colo);
-            // Create a subregion colocated with top
-            createRegion(rName_colo2, colo);
-            return Boolean.TRUE;
-          }
-        };
-    datastore1.invoke(createDataStore);
-    datastore2.invoke(createDataStore);
+    int key1 = 1;
+    int key2 = 2;
 
-    accessor.invoke(new SerializableCallable(
-        "Create accessor for " + rName + " with colocated Regions and create buckets") {
-      public Object call() throws Exception {
-        // create the "top" root region
-        Region rtop = createRootRegion(rName_top, createColoRegionAttrs(0, 0, null));
-        // create a root region colocated with top
-        RegionAttributes colo = createColoRegionAttrs(0, 0, rName_top);
-        Region rc1 = createRootRegion(rName_colo1, colo);
-        // Create a subregion colocated with top
-        Region rc2 = createRegion(rName_colo2, colo);
+    accessor.invoke(() -> {
+      Region<Integer, Integer> regionTop = getCache().getRegion(regionNameTop);
+      Region<Integer, Integer> regionColocated1 = getCache().getRegion(regionNameColocated1);
+      Region<Integer, Integer> regionColocated2 =
+          getCache().getRegion("root" + SEPARATOR + regionNameColocated2);
 
-        // Assuming that bucket balancing will create a single bucket (per key)
-        // in different datastores
-        rtop.put(key1, key1);
-        rtop.put(key2, key2);
-        rc1.put(key1, key1);
-        rc1.put(key2, key2);
-        rc2.put(key1, key1);
-        rc2.put(key2, key2);
-        return Boolean.TRUE;
-      }
+      // Assuming that bucket balancing will create a single bucket (per key)
+      // in different datastores
+      regionTop.put(key1, key1);
+      regionTop.put(key2, key2);
+      regionColocated1.put(key1, key1);
+      regionColocated1.put(key2, key2);
+      regionColocated2.put(key1, key1);
+      regionColocated2.put(key2, key2);
     });
 
-    final SerializableCallable assertFuncionContext =
-        new SerializableCallable("Invoke function, assert context with colocation") {
-          public Object call() throws Exception {
-            Region r = getRootRegion(rName_top);
-            Function f = new FunctionAdapter() {
-              // @Override
-              @Override
-              public void execute(FunctionContext context) {
-                RegionFunctionContext rContext = (RegionFunctionContext) context;
-                assertEquals(Collections.singleton(key1), rContext.getFilter());
-                assertTrue(PartitionRegionHelper.isPartitionedRegion(rContext.getDataSet()));
-
-                final Region pr = rContext.getDataSet();
-                final Map<String, ? extends Region> prColos =
-                    PartitionRegionHelper.getColocatedRegions(pr);
-
-                final Region ld = PartitionRegionHelper.getLocalDataForContext(rContext);
-                final Map<String, ? extends Region> ldColos =
-                    PartitionRegionHelper.getColocatedRegions(ld);
-
-                // Assert the colocation set doesn't contain the "top"
-                assertFalse(prColos.containsKey(rName_top));
-                assertFalse(ldColos.containsKey(rName_top));
-
-                Region c1 = getRootRegion(rName_colo1);
-                Region c2 = getRootRegion().getSubregion(rName_colo2);
-                // assert colocated regions and local forms of colocated regions
-                {
-                  assertSame(c1, prColos.get(c1.getFullPath()));
-                  Region lc = PartitionRegionHelper.getLocalData(c1);
-                  assertTrue(lc instanceof LocalDataSet);
-                  assertLocalKeySet(key1, lc.keySet());
-                  assertLocalValues(key1, lc.values());
-                  assertLocalEntrySet(key1, lc.entrySet());
-                }
-                {
-                  assertSame(c2, prColos.get(c2.getFullPath()));
-                  Region lc = PartitionRegionHelper.getLocalData(c2);
-                  assertTrue(lc instanceof LocalDataSet);
-                  assertLocalEntrySet(key1, lc.entrySet());
-                  assertLocalKeySet(key1, lc.keySet());
-                  assertLocalValues(key1, lc.values());
-                }
-
-                // Assert context's local colocated data
-                {
-                  Region lc1 = ldColos.get(c1.getFullPath());
-                  assertEquals(c1.getFullPath(), lc1.getFullPath());
-                  assertTrue(lc1 instanceof LocalDataSet);
-                  assertLocalEntrySet(key1, lc1.entrySet());
-                  assertLocalKeySet(key1, lc1.keySet());
-                  assertLocalValues(key1, lc1.values());
-                }
-                {
-                  Region lc2 = ldColos.get(c2.getFullPath());
-                  assertEquals(c2.getFullPath(), lc2.getFullPath());
-                  assertTrue(lc2 instanceof LocalDataSet);
-                  assertLocalEntrySet(key1, lc2.entrySet());
-                  assertLocalKeySet(key1, lc2.keySet());
-                  assertLocalValues(key1, lc2.values());
-                }
-
-                // Assert both local forms of the "target" region is local only
-                assertNull(ld.get(key2));
-                assertEquals(key1, ld.get(key1));
-
-                assertLocalEntrySet(key1, ld.entrySet());
-                assertLocalKeySet(key1, ld.keySet());
-                assertLocalValues(key1, ld.values());
-                context.getResultSender().lastResult(Boolean.TRUE);
-              }
-
-              // @Override
-              @Override
-              public String getId() {
-                return getClass().getName();
-              }
-            };
-            ArrayList res = (ArrayList) FunctionService.onRegion(r)
-                .withFilter(Collections.singleton(key1)).execute(f).getResult();
-            assertEquals(1, res.size());
-            return res.get(0);
-          }
-        };
-    assertTrue(((Boolean) accessor.invoke(assertFuncionContext)).booleanValue());
-    assertTrue(((Boolean) datastore1.invoke(assertFuncionContext)).booleanValue());
-    assertTrue(((Boolean) datastore2.invoke(assertFuncionContext)).booleanValue());
-
+    accessor.invoke(() -> validateRegionFunctionContextForColocatedRegions(key1, key2));
+    datastore1.invoke(() -> validateRegionFunctionContextForColocatedRegions(key1, key2));
+    datastore2.invoke(() -> validateRegionFunctionContextForColocatedRegions(key1, key2));
   }
 
-  /**
-   * This tests make sure that, in case of LonerDistributedSystem we dont get ClassCast Exception.
-   * Just making sure that the function executed on lonerDistribuedSystem
-   */
-  @Test
-  public void testBug41118() {
-    Host host = Host.getHost(0);
-    final VM lonerVM = host.getVM(1);
-    lonerVM.invoke(() -> PRFunctionExecutionDUnitTest.bug41118());
+  private void createColocatedPartitionedRegions(final int localMaxMemory) {
+    createRootRegion(regionNameTop,
+        createColocatedPartitionedRegionAttributes(null, localMaxMemory, 0));
+    RegionAttributes colo =
+        createColocatedPartitionedRegionAttributes(regionNameTop, localMaxMemory, 0);
+    createRootRegion(regionNameColocated1, colo);
+    createRegion(regionNameColocated2, "root", colo);
   }
 
-  public static void bug41118() {
-    InternalDistributedSystem ds = new PRFunctionExecutionDUnitTest().getSystem();
-    assertNotNull(ds);
-    ds.disconnect();
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    ds = (InternalDistributedSystem) DistributedSystem.connect(props);
+  private void validateRegionFunctionContextForColocatedRegions(final int key1, final int key2) {
+    Region rootRegion = getRootRegion(regionNameTop);
+    Function function = new FunctionAdapter() {
+      // @Override
+      @Override
+      public void execute(FunctionContext context) {
+        RegionFunctionContext regionFunctionContext = (RegionFunctionContext) context;
+        Iterable<Integer> filterSet = (Set<Integer>) regionFunctionContext.getFilter();
+        assertThat(filterSet).hasSize(1).containsExactly(key1);
 
-    DM dm = ds.getDistributionManager();
-    assertEquals("Distributed System is not loner", true, dm instanceof LonerDistributionManager);
+        Region region = regionFunctionContext.getDataSet();
+        assertThat(region).isInstanceOf(PartitionedRegion.class);
 
-    Cache cache = CacheFactory.create(ds);
-    AttributesFactory factory = new AttributesFactory();
-    factory.setDataPolicy(DataPolicy.PARTITION);
-    assertNotNull(cache);
-    Region region = cache.createRegion("PartitonedRegion", factory.create());
-    for (int i = 0; i < 20; i++) {
-      region.put("KEY_" + i, "VALUE_" + i);
-    }
-    Set<String> keysForGet = new HashSet<String>();
-    keysForGet.add("KEY_4");
-    keysForGet.add("KEY_9");
-    keysForGet.add("KEY_7");
-    try {
-      Execution execution =
-          FunctionService.onRegion(region).withFilter(keysForGet).setArguments(Boolean.TRUE);
-      ResultCollector rc = execution.execute(new FunctionAdapter() {
-        @Override
-        public void execute(FunctionContext fc) {
-          RegionFunctionContext context = (RegionFunctionContext) fc;
-          Set keys = context.getFilter();
-          Set keysTillSecondLast = new HashSet();
-          int setSize = keys.size();
-          Iterator keysIterator = keys.iterator();
-          for (int i = 0; i < (setSize - 1); i++) {
-            keysTillSecondLast.add(keysIterator.next());
-          }
-          for (Object k : keysTillSecondLast) {
-            context.getResultSender().sendResult(
-                (Serializable) PartitionRegionHelper.getLocalDataForContext(context).get(k));
-          }
-          Object lastResult = keysIterator.next();
-          context.getResultSender().lastResult(
-              (Serializable) PartitionRegionHelper.getLocalDataForContext(context).get(lastResult));
+        Map<String, ? extends Region> colocatedRegionsMap =
+            PartitionRegionHelper.getColocatedRegions(region);
+        assertThat(colocatedRegionsMap).doesNotContainKey(regionNameTop);
+
+        Region localData = PartitionRegionHelper.getLocalDataForContext(regionFunctionContext);
+        Map<String, ? extends Region> colocatedLocalDataMap =
+            PartitionRegionHelper.getColocatedRegions(localData);
+        assertThat(colocatedLocalDataMap).doesNotContainKey(regionNameTop);
+
+        Region colocatedRegion1 = getRootRegion(regionNameColocated1);
+        Region colocatedRegion2 = getRootRegion().getSubregion(regionNameColocated2);
+        {
+          assertThat(colocatedRegionsMap.get(colocatedRegion1.getFullPath()))
+              .isSameAs(colocatedRegion1);
+
+          Region localDataRegion = PartitionRegionHelper.getLocalData(colocatedRegion1);
+          assertThat(localDataRegion).isInstanceOf(LocalDataSet.class);
+
+          validateLocalKeySet(key1, localDataRegion.keySet());
+          validateLocalValues(key1, localDataRegion.values());
+          validateLocalEntrySet(key1, localDataRegion.entrySet());
+        }
+        {
+          assertThat(colocatedRegionsMap.get(colocatedRegion2.getFullPath()))
+              .isSameAs(colocatedRegion2);
+
+          Region localDataRegion = PartitionRegionHelper.getLocalData(colocatedRegion2);
+          assertThat(localDataRegion).isInstanceOf(LocalDataSet.class);
+
+          validateLocalEntrySet(key1, localDataRegion.entrySet());
+          validateLocalKeySet(key1, localDataRegion.keySet());
+          validateLocalValues(key1, localDataRegion.values());
         }
 
-        @Override
-        public String getId() {
-          return getClass().getName();
+        // Assert context's local colocated data
+        {
+          Region localDataRegion = colocatedLocalDataMap.get(colocatedRegion1.getFullPath());
+          assertThat(localDataRegion.getFullPath()).isEqualTo(colocatedRegion1.getFullPath());
+          assertThat(localDataRegion).isInstanceOf(LocalDataSet.class);
+
+          validateLocalEntrySet(key1, localDataRegion.entrySet());
+          validateLocalKeySet(key1, localDataRegion.keySet());
+          validateLocalValues(key1, localDataRegion.values());
         }
-      });
-      rc.getResult();
-      ds.disconnect();
-    } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
-      e.printStackTrace();
-      Assert.fail("Test failed", e);
-    }
-  }
+        {
+          Region localDataRegion = colocatedLocalDataMap.get(colocatedRegion2.getFullPath());
+          assertThat(localDataRegion.getFullPath()).isEqualTo(colocatedRegion2.getFullPath());
+          assertThat(localDataRegion).isInstanceOf(LocalDataSet.class);
 
-  /**
-   * Test function that only throws exception.
-   */
-  public static class TestFunctionException implements Function {
+          validateLocalEntrySet(key1, localDataRegion.entrySet());
+          validateLocalKeySet(key1, localDataRegion.keySet());
+          validateLocalValues(key1, localDataRegion.values());
+        }
 
-    private static final long serialVersionUID = 3745637361374073217L;
+        // Assert both local forms of the "target" region is local only
+        assertThat(localData.get(key2)).isNull();
+        assertThat(localData.get(key1)).isEqualTo(key1);
 
-    static final String ID = "TestFunctionException";
-
-    public boolean hasResult() {
-      return true;
-    }
-
-    public void execute(FunctionContext context) {
-      // first send some results
-      for (int index = 0; index < 5; ++index) {
-        context.getResultSender().sendResult(Integer.valueOf(index));
+        validateLocalEntrySet(key1, localData.entrySet());
+        validateLocalKeySet(key1, localData.keySet());
+        validateLocalValues(key1, localData.values());
       }
-      // then throw an exception
-      throw new NullPointerException(
-          "simulated exception with myId: " + GemFireCacheImpl.getInstance().getMyId());
-    }
 
-    public String getId() {
-      return ID;
-    }
+      // @Override
+      @Override
+      public String getId() {
+        return getClass().getName();
+      }
+    };
 
-    public boolean optimizeForWrite() {
-      return false;
-    }
-
-    public boolean isHA() {
-      return false;
-    }
+    FunctionService.onRegion(rootRegion).withFilter(createKeySet(key1)).execute(function);
   }
 
-  @Test
-  public void testFunctionExecutionException_41779() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore1 = host.getVM(0);
-    final VM datastore2 = host.getVM(1);
-    final VM datastore3 = host.getVM(2);
-    final VM datastore4 = host.getVM(3);
-    final Cache cache = getCache();
+  private List<Boolean> executeFunction() {
+    PartitionedRegion pr = getPartitionedRegion(regionName);
 
-    @SuppressWarnings("serial")
-    final SerializableRunnable createFact =
-        new SerializableRunnable("Create PR with Function Factory") {
-          public void run() {
-            RegionAttributes<?, ?> ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            @SuppressWarnings("unchecked")
-            AttributesFactory<?, ?> raf = new AttributesFactory(ra);
-
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-
-            getCache().createRegionFactory(raf.create()).create(rName);
-            Function function = new TestFunctionException();
-            FunctionService.registerFunction(function);
-          }
-        };
-    // create stores on all VMs including controller
-    datastore1.invoke(createFact);
-    datastore2.invoke(createFact);
-    datastore3.invoke(createFact);
-    datastore4.invoke(createFact);
-    createFact.run();
-
-    InternalExecution exec = (InternalExecution) FunctionService.onRegion(cache.getRegion(rName));
-    exec.setWaitOnExceptionFlag(true);
-    try {
-      List results = (List) exec.execute(TestFunctionException.ID).getResult();
-      fail("expected a function exception");
-    } catch (FunctionException fe) {
-      // expect exceptions from all VMs
-      assertEquals("did not get expected number of exceptions: " + fe.getExceptions(), 5,
-          fe.getExceptions().size());
+    Set<String> keySet = new HashSet<>();
+    for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+      keySet.add(STRING_KEY + i);
     }
+
+    Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION_HA);
+    FunctionService.registerFunction(function);
+    Execution dataSet = FunctionService.onRegion(pr);
+
+    ResultCollector<Boolean, List<Boolean>> resultCollector =
+        dataSet.withFilter(keySet).setArguments(true).execute(function.getId());
+
+    return resultCollector.getResult();
   }
 
-  protected static void assertLocalValues(final Integer value, final Collection values) {
-    assertEquals(values, Collections.singleton(value));
-    assertTrue(values.contains(value));
-    assertEquals(1, values.size());
-    Iterator vsi = values.iterator();
-    assertTrue(vsi.hasNext());
-    assertEquals(value, vsi.next());
-    assertFalse(vsi.hasNext());
+  private void validateLocalValues(final int value, final Iterable<Integer> values) {
+    assertThat(Collections.singleton(value)).isEqualTo(values);
+    assertThat(values).contains(value);
+    assertThat(values).hasSize(1);
+
+    Iterator iterator = values.iterator();
+    assertThat(iterator.hasNext()).isTrue();
+    assertThat(iterator.next()).isEqualTo(value);
+    assertThat(iterator.hasNext()).isFalse();
   }
 
-  protected static void assertLocalKeySet(final Integer key, final Set keySet) {
-    assertEquals(keySet, Collections.singleton(key));
-    assertEquals(1, keySet.size());
+  private void validateLocalKeySet(final int key, final Iterable<Integer> keys) {
+    assertThat(Collections.singleton(key)).isEqualTo(keys);
+    assertThat(keys).hasSize(1);
   }
 
-  protected static void assertLocalEntrySet(final Integer key, final Set entrySet) {
-    assertEquals(1, entrySet.size());
-    Iterator esi = entrySet.iterator();
-    assertTrue(esi.hasNext());
-    Region.Entry re = (Entry) esi.next();
-    if (re instanceof EntrySnapshot) {
-      assertTrue(((EntrySnapshot) re).wasInitiallyLocal());
+  private void validateLocalEntrySet(final int key, final Iterable<Integer> entries) {
+    assertThat(entries).hasSize(1);
+
+    Iterator iterator = entries.iterator();
+    assertThat(iterator.hasNext()).isTrue();
+
+    Entry regionEntry = (Entry) iterator.next();
+    if (regionEntry instanceof EntrySnapshot) {
+      assertThat(((EntrySnapshot) regionEntry).wasInitiallyLocal()).isTrue();
     } else {
-      assertTrue(re.isLocal());
+      assertThat(regionEntry.isLocal()).isTrue();
     }
-    assertEquals(key, re.getKey());
-    assertEquals(key, re.getValue());
-    assertFalse(esi.hasNext());
+
+    assertThat(regionEntry.getKey()).isEqualTo(key);
+    assertThat(regionEntry.getValue()).isEqualTo(key);
+    assertThat(iterator.hasNext()).isFalse();
   }
 
-  public static class TestResolver implements PartitionResolver, Serializable {
-    public String getName() {
-      return "ResolverName_" + getClass().getName();
-    }
+  private RegionAttributes createColocatedPartitionedRegionAttributes(final String colocatedWith,
+      final int localMaxMemory, final int redundancy) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setColocatedWith(colocatedWith);
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setPartitionResolver(new SimpleResolver());
+    paf.setRedundantCopies(redundancy);
 
+    AttributesFactory af = new AttributesFactory();
+    af.setPartitionAttributes(paf.create());
+    return af.create();
+  }
+
+  private PartitionedRegion createPartitionedRegion(final String regionName,
+      final int localMaxMemory, final int redundancy) {
+    PartitionAttributes pa = createPartitionAttributes(localMaxMemory, redundancy);
+    return createPartitionedRegion(regionName, pa);
+  }
+
+  private PartitionedRegion createPartitionedRegion(final String regionName,
+      final int localMaxMemory, final int redundancy, final PartitionResolver resolver) {
+    PartitionAttributes pa = createPartitionAttributes(localMaxMemory, redundancy, resolver);
+    return createPartitionedRegion(regionName, pa);
+  }
+
+  private PartitionedRegion createPartitionedRegion(final String regionName,
+      final PartitionAttributes partitionAttributes) {
+    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setPartitionAttributes(partitionAttributes);
+    return (PartitionedRegion) regionFactory.create(regionName);
+  }
+
+  private PartitionAttributes createPartitionAttributes(final int localMaxMemory,
+      final int redundancy) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setRedundantCopies(redundancy);
+    return paf.create();
+  }
+
+  private PartitionAttributes createPartitionAttributes(final int localMaxMemory,
+      final int redundancy, final PartitionResolver resolver) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setPartitionResolver(resolver);
+    paf.setRedundantCopies(redundancy);
+    return paf.create();
+  }
+
+  private PartitionAttributes createPartitionAttributes(final int localMaxMemory,
+      final int redundancy, final PartitionResolver resolver, final int totalNumBuckets) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setPartitionResolver(resolver);
+    paf.setRedundantCopies(redundancy);
+    paf.setTotalNumBuckets(totalNumBuckets);
+    return paf.create();
+  }
+
+  private PartitionAttributes createPartitionAttributes(final int localMaxMemory,
+      final int redundancy, final long startupRecoveryDelay, final int totalNumBuckets) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setRedundantCopies(redundancy);
+    paf.setStartupRecoveryDelay(startupRecoveryDelay);
+    paf.setTotalNumBuckets(totalNumBuckets);
+    return paf.create();
+  }
+
+  private PartitionAttributes createPartitionAttributes(final int localMaxMemory,
+      final int redundancy, final int totalNumBuckets) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setRedundantCopies(redundancy);
+    paf.setTotalNumBuckets(totalNumBuckets);
+    return paf.create();
+  }
+
+  private PartitionAttributes createPartitionAttributes(final String colocatedWith,
+      final int localMaxMemory, final PartitionResolver resolver, final int redundancy,
+      final int totalNumBuckets) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setColocatedWith(colocatedWith);
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setPartitionResolver(resolver);
+    paf.setRedundantCopies(redundancy);
+    paf.setTotalNumBuckets(totalNumBuckets);
+    return paf.create();
+  }
+
+  private PartitionedRegion getPartitionedRegion(final String regionName) {
+    return (PartitionedRegion) getCache().getRegion(regionName);
+  }
+
+  private Set<String> createKeySet(final String... keys) {
+    Set<String> keySet = new HashSet<>();
+    for (String key : keys) {
+      keySet.add(key);
+    }
+    return keySet;
+  }
+
+  private Set<Integer> createKeySet(final int... keys) {
+    Set<Integer> keySet = new HashSet<>();
+    for (int key : keys) {
+      keySet.add(key);
+    }
+    return keySet;
+  }
+
+  private Map<String, Integer> createEntryMap(final int count, final String keyPrefix,
+      final int startKey, final int startValue) {
+    Map<String, Integer> entryMap = new HashMap<>();
+    int value = startValue;
+    for (int keyIndex = startKey; keyIndex < startKey + count; keyIndex++) {
+      entryMap.put(keyPrefix + keyIndex, value++);
+    }
+    return entryMap;
+  }
+
+  private Set<Integer> createBucketIdSet(final int... bucketIds) {
+    Set<Integer> bucketIdSet = new HashSet<>();
+    for (int bucketId : bucketIds) {
+      bucketIdSet.add(bucketId);
+    }
+    return bucketIdSet;
+  }
+
+  private static class SimpleResolver implements PartitionResolver, Serializable {
+
+    @Override
     public Serializable getRoutingObject(EntryOperation opDetails) {
       return (Serializable) opDetails.getKey();
     }
 
-    public void close() {}
+    @Override
+    public String getName() {
+      return getClass().getName();
+    }
 
-    public Properties getProperties() {
-      return new Properties();
+    @Override
+    public void close() {
+      // nothing
     }
   }
 
-  protected RegionAttributes createColoRegionAttrs(int red, int mem, String coloRegion) {
-    final TestResolver resolver = new TestResolver();
-    AttributesFactory attr = new AttributesFactory();
-    attr.setPartitionAttributes(new PartitionAttributesFactory().setPartitionResolver(resolver)
-        .setRedundantCopies(red).setLocalMaxMemory(mem).setColocatedWith(coloRegion).create());
-    return attr.create();
-  }
+  private static class DivisorResolver implements PartitionResolver {
 
-  public static class BucketFilterPRResolver implements PartitionResolver {
+    private final int divisor;
 
-    @Override
-    public void close() {}
+    DivisorResolver(final int divisor) {
+      this.divisor = divisor;
+    }
 
     @Override
     public Object getRoutingObject(EntryOperation opDetails) {
       Object key = opDetails.getKey();
-      return key.hashCode() / 10;
+      return key.hashCode() / divisor;
     }
 
     @Override
     public String getName() {
-      return "testBucketFilter_1";
+      return getClass().getName();
+    }
+
+    @Override
+    public void close() {
+      // nothing
     }
   }
 }

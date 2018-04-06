@@ -168,6 +168,6 @@ public class NanoTimer {
     /**
      * Returns the current time.
      */
-    public long getTime();
+    long getTime();
   }
 }

@@ -765,13 +765,13 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
   }
 
   private long getSizeFromEvictionStats(LocalRegion region) {
-    long result = region.getEvictionController().getStatistics().getCounter();
+    long result = region.getEvictionCounter();
     // region.getCache().getLogger().info("DEBUG evictionSize=" + result);
     return result;
   }
 
   private long getEvictions(LocalRegion region) {
-    return region.getEvictionController().getStatistics().getEvictions();
+    return region.getTotalEvictions();
   }
 
   private void setDeltaRecalculatesSize(VM vm, final boolean shouldSizeChange) {

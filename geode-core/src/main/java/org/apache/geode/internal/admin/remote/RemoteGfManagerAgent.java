@@ -41,8 +41,8 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.security.AuthenticationFailedException;
 
 /**
- * An implementation of <code>GfManagerAgent</code> that uses a {@link DistributionManager} to
- * communicate with other members of the distributed system. Because it is a
+ * An implementation of <code>GfManagerAgent</code> that uses a {@link ClusterDistributionManager}
+ * to communicate with other members of the distributed system. Because it is a
  * <code>MembershipListener</code> it is alerted when members join and leave the distributed system.
  * It also implements support for {@link JoinLeaveListener}s as well suport for collecting and
  * collating the pieces of a {@linkplain CacheCollector cache snapshot}.
@@ -357,15 +357,15 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           }
         }
         try {
-          DM dm = system.getDistributionManager();
+          DistributionManager dm = system.getDistributionManager();
           synchronized (this.myMembershipListenerLock) {
             if (this.myMembershipListener != null) {
               dm.removeMembershipListener(this.myMembershipListener);
             }
           }
 
-          if (dm instanceof DistributionManager) {
-            ((DistributionManager) dm).setAgent(null);
+          if (dm instanceof ClusterDistributionManager) {
+            ((ClusterDistributionManager) dm).setAgent(null);
           }
 
         } catch (IllegalArgumentException ignore) {
@@ -375,7 +375,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           // ignore a forced disconnect and finish clean-up
         }
 
-        if (system != null && DistributionManager.isDedicatedAdminVM() && system.isConnected()) {
+        if (system != null && ClusterDistributionManager.isDedicatedAdminVM()
+            && system.isConnected()) {
           system.disconnect();
         }
 
@@ -528,7 +529,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
         sending.set(Boolean.TRUE);
       }
 
-      DistributionManager dm = (DistributionManager) this.system.getDistributionManager();
+      ClusterDistributionManager dm =
+          (ClusterDistributionManager) this.system.getDistributionManager();
       if (isConnected()) {
         return msg.sendAndWait(dm);
       } else {
@@ -774,9 +776,9 @@ class RemoteGfManagerAgent implements GfManagerAgent {
       props.setProperty("name", this.displayName);
     }
     this.system = (InternalDistributedSystem) InternalDistributedSystem.connectForAdmin(props);
-    DM dm = system.getDistributionManager();
-    if (dm instanceof DistributionManager) {
-      ((DistributionManager) dm).setAgent(this);
+    DistributionManager dm = system.getDistributionManager();
+    if (dm instanceof ClusterDistributionManager) {
+      ((ClusterDistributionManager) dm).setAgent(this);
     }
 
     synchronized (this) {
@@ -1000,7 +1002,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     }
   } // end SnapshotResultDispatcher
 
-  public DM getDM() {
+  public DistributionManager getDM() {
     InternalDistributedSystem sys = this.system;
     if (sys == null) {
       return null;
@@ -1051,14 +1053,14 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     try {
       GemFireVM member = null;
       switch (id.getVmKind()) {
-        case DistributionManager.NORMAL_DM_TYPE:
+        case ClusterDistributionManager.NORMAL_DM_TYPE:
           member = addMember(id);
           break;
-        case DistributionManager.LOCATOR_DM_TYPE:
+        case ClusterDistributionManager.LOCATOR_DM_TYPE:
           break;
-        case DistributionManager.ADMIN_ONLY_DM_TYPE:
+        case ClusterDistributionManager.ADMIN_ONLY_DM_TYPE:
           break;
-        case DistributionManager.LONER_DM_TYPE:
+        case ClusterDistributionManager.LONER_DM_TYPE:
           break; // should this ever happen? :-)
         default:
           throw new IllegalArgumentException(LocalizedStrings.RemoteGfManagerAgent_UNKNOWN_VM_KIND_0
@@ -1353,7 +1355,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
      *
      * @see JoinLeaveListener#nodeJoined
      */
-    public void memberJoined(final InternalDistributedMember id) {
+    public void memberJoined(DistributionManager distributionManager,
+        final InternalDistributedMember id) {
       if (!isListening()) {
         return;
       }
@@ -1366,11 +1369,11 @@ class RemoteGfManagerAgent implements GfManagerAgent {
       }
     }
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
     /**
      * This method is invoked after a member has explicitly left the system. It may not get invoked
@@ -1379,7 +1382,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
      * @see JoinLeaveListener#nodeCrashed
      * @see JoinLeaveListener#nodeLeft
      */
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       synchronized (this) {
         if (!this.distributedMembers.remove(id)) {
           return;
@@ -1394,14 +1398,14 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
       RemoteGemFireVM member = null;
       switch (id.getVmKind()) {
-        case DistributionManager.NORMAL_DM_TYPE:
+        case ClusterDistributionManager.NORMAL_DM_TYPE:
           member = removeMember(id);
           break;
-        case DistributionManager.ADMIN_ONLY_DM_TYPE:
+        case ClusterDistributionManager.ADMIN_ONLY_DM_TYPE:
           break;
-        case DistributionManager.LOCATOR_DM_TYPE:
+        case ClusterDistributionManager.LOCATOR_DM_TYPE:
           break;
-        case DistributionManager.LONER_DM_TYPE:
+        case ClusterDistributionManager.LONER_DM_TYPE:
           break; // should this ever happen?
         default:
           throw new IllegalArgumentException(

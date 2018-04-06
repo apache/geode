@@ -33,7 +33,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.QueryException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -202,14 +202,15 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     }
 
     @Override
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       if (id != null && waitingOnMember(id)) {
         this.failedMembers.add(id);
         this.memberDepartedMessage =
             LocalizedStrings.StreamingPartitionOperation_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
                 .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)});
       }
-      super.memberDeparted(id, crashed);
+      super.memberDeparted(distributionManager, id, crashed);
     }
 
     /**
@@ -236,7 +237,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         } else if (t instanceof PrimaryBucketException) {
           throw new PrimaryBucketException("Peer failed primary test", t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
         // This won't be reached, because of the above,
         // but it makes the compiler happy.
         throw e;
@@ -342,8 +343,8 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
      * @see PutMessage#sendReply
      */
     @Override
-    protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-        PartitionedRegion pr, long startTime) {
+    protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+        ReplyException ex, PartitionedRegion pr, long startTime) {
       // if there was an exception, then throw out any data
       if (ex != null) {
         this.outStream = null;
@@ -369,8 +370,8 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
      * @throws ForceReattemptException if the peer is no longer available
      */
     @Override
-    protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
-        long startTime)
+    protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm,
+        PartitionedRegion pr, long startTime)
         throws CacheException, QueryException, ForceReattemptException, InterruptedException {
       final boolean isTraceEnabled = logger.isTraceEnabled();
 

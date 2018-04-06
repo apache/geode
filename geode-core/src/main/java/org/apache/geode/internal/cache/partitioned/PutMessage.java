@@ -33,7 +33,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -59,8 +59,8 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.cache.RemotePutMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -303,6 +303,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       boolean ifOld, DirectReplyProcessor processor, boolean sendDeltaWithFullValue) {
     PutMessage msg = new PutMessage(Collections.EMPTY_SET, true, r.getPRId(), processor, event, 0,
         ifNew, ifOld, null, false);
+    msg.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     msg.setInternalDs(r.getSystem());
     msg.versionTag = event.getVersionTag();
     msg.setSendDeltaWithFullValue(sendDeltaWithFullValue);
@@ -675,7 +676,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
    * indefinitely for the acknowledgement
    */
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) throws EntryExistsException, DataLocationException, IOException {
     this.setInternalDs(r.getSystem());// set the internal DS. Required to
                                       // checked DS level delta-enabled property
@@ -811,8 +812,8 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   }
 
 
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      PartitionedRegion pr, long startTime, EntryEventImpl ev) {
+  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, PartitionedRegion pr, long startTime, EntryEventImpl ev) {
     if (pr != null && startTime > 0) {
       pr.getPrStats().endPartitionMessagesProcessing(startTime);
       pr.getCancelCriterion().checkCancelInProgress(null); // bug 39014 - don't send a positive
@@ -873,7 +874,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
     return _mayAddToMultipleSerialGateways(dm);
   }
 
@@ -941,7 +942,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 rp) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,
@@ -1117,7 +1118,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
             // Why is this code not happening for bug 41916?
             && (ex != null && ex.getCause() instanceof InvalidDeltaException)) {
           final PutMessage putMsg = new PutMessage(this.putMessage);
-          final DM dm = getDistributionManager();
+          final DistributionManager dm = getDistributionManager();
           Runnable sendFullObject = new Runnable() {
             public void run() {
               putMsg.resetRecipients();

@@ -16,13 +16,12 @@ package org.apache.geode.management.internal.cli.functions;
 
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
 
-public class GetStackTracesFunction extends FunctionAdapter implements InternalEntity {
+public class GetStackTracesFunction implements InternalFunction {
 
   private static final long serialVersionUID = 1L;
 

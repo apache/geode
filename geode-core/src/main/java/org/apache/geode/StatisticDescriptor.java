@@ -37,36 +37,36 @@ public interface StatisticDescriptor extends Comparable<StatisticDescriptor> {
    *
    * @throws IllegalStateException The id has not been initialized yet
    */
-  public int getId();
+  int getId();
 
   /**
    * Returns the name of this statistic
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns a description of this statistic
    */
-  public String getDescription();
+  String getDescription();
 
   /**
    * Returns the type of this statistic
    */
-  public Class<?> getType();
+  Class<?> getType();
 
   /**
    * Returns true if this statistic is a counter; false if its a gauge. Counter statistics have
    * values that always increase. Gauge statistics have unconstrained values.
    */
-  public boolean isCounter();
+  boolean isCounter();
 
   /**
    * Returns true if a larger statistic value indicates better performance.
    */
-  public boolean isLargerBetter();
+  boolean isLargerBetter();
 
   /**
    * Returns the unit in which this statistic is measured
    */
-  public String getUnit();
+  String getUnit();
 }

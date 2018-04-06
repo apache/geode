@@ -20,15 +20,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.Alert;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.ManagerLogWriter;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 
 /**
  * A message that is sent to a particular distribution manager to let it know that the sender is an
@@ -49,7 +44,7 @@ public class AdminConsoleMessage extends PooledDistributionMessage {
   }
 
   @Override
-  public void process(DistributionManager dm) {
+  public void process(ClusterDistributionManager dm) {
     if (this.level != Alert.OFF) {
       AlertAppender.getInstance().addAlertListener(this.getSender(), this.level);
     }

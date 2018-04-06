@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region.Entry;
@@ -90,7 +89,7 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Cache getCache() {
+  public InternalCache getCache() {
     return null;
   }
 

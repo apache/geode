@@ -28,26 +28,26 @@ public interface SessionCache {
   /**
    * Initialize the cache and create the appropriate region.
    */
-  public void initialize();
+  void initialize();
 
   /**
    * Stop the cache.
    */
-  public void stop();
+  void stop();
 
   /**
    * Retrieve the cache reference.
    *
    * @return a {@code GemFireCache} reference
    */
-  public GemFireCache getCache();
+  GemFireCache getCache();
 
   /**
    * Get the {@code Region} being used by client code to put attributes.
    *
    * @return a {@code Region<String, HttpSession>} reference
    */
-  public Region<String, HttpSession> getOperatingRegion();
+  Region<String, HttpSession> getOperatingRegion();
 
   /**
    * Get the backing {@code Region} being used. This may not be the same as the region being used by
@@ -55,12 +55,12 @@ public interface SessionCache {
    *
    * @return a {@code Region<String, HttpSession>} reference
    */
-  public Region<String, HttpSession> getSessionRegion();
+  Region<String, HttpSession> getSessionRegion();
 
   /**
    * Is this cache client-server? The only other alternative is peer-to-peer.
    *
    * @return true if this cache is client-server.
    */
-  public boolean isClientServer();
+  boolean isClientServer();
 }

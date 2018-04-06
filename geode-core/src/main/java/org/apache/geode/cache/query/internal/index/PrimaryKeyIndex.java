@@ -41,6 +41,7 @@ import org.apache.geode.cache.query.internal.Support;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -51,11 +52,11 @@ public class PrimaryKeyIndex extends AbstractIndex {
   protected long numUses = 0;
   ObjectType indexResultType;
 
-  public PrimaryKeyIndex(String indexName, Region region, String fromClause,
+  public PrimaryKeyIndex(InternalCache cache, String indexName, Region region, String fromClause,
       String indexedExpression, String projectionAttributes, String origFromClause,
       String origIndxExpr, String[] defintions, IndexStatistics indexStatistics) {
-    super(indexName, region, fromClause, indexedExpression, projectionAttributes, origFromClause,
-        origIndxExpr, defintions, indexStatistics);
+    super(cache, indexName, region, fromClause, indexedExpression, projectionAttributes,
+        origFromClause, origIndxExpr, defintions, indexStatistics);
     // TODO: Check if the below is correct
     Class constr = region.getAttributes().getValueConstraint();
     if (constr == null)

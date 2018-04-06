@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
@@ -38,9 +37,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 public class DiskStoreMonitor {
   private static final Logger logger = LogService.getLogger();
-
-  private static final boolean DISABLE_MONITOR =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_DISABLE_MONITORING");
 
   private static final int USAGE_CHECK_INTERVAL = Integer
       .getInteger(DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_POLLING_INTERVAL_MILLIS", 10000);
@@ -88,6 +84,11 @@ public class DiskStoreMonitor {
     }
   }
 
+  static final String DISK_USAGE_DISABLE_MONITORING =
+      DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_DISABLE_MONITORING";
+
+  private final boolean disableMonitor = Boolean.getBoolean(DISK_USAGE_DISABLE_MONITORING);
+
   private final ScheduledExecutorService exec;
 
   private final Map<DiskStoreImpl, Set<DirectoryHolderUsage>> disks;
@@ -100,20 +101,20 @@ public class DiskStoreMonitor {
     void handleDiskStateChange(DiskState state);
   }
 
-  public DiskStoreMonitor() {
+  public DiskStoreMonitor(File logFile) {
     disks = new ConcurrentHashMap<DiskStoreImpl, Set<DirectoryHolderUsage>>();
-    logDisk = new LogUsage(getLogDir());
+    logDisk = new LogUsage(getLogDir(logFile));
 
     if (logger.isTraceEnabled(LogMarker.DISK_STORE_MONITOR)) {
       logger.trace(LogMarker.DISK_STORE_MONITOR, "Disk monitoring is {}",
-          (DISABLE_MONITOR ? "disabled" : "enabled"));
+          (disableMonitor ? "disabled" : "enabled"));
       logger.trace(LogMarker.DISK_STORE_MONITOR, "Log directory usage warning is set to {}%",
           LOG_WARNING_THRESHOLD_PCT);
       logger.trace(LogMarker.DISK_STORE_MONITOR, "Scheduling disk usage checks every {} ms",
           USAGE_CHECK_INTERVAL);
     }
 
-    if (DISABLE_MONITOR) {
+    if (disableMonitor) {
       exec = null;
     } else {
       final ThreadGroup tg = LoggingThreadGroup.createThreadGroup(
@@ -139,6 +140,10 @@ public class DiskStoreMonitor {
         }
       }, 0, USAGE_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     }
+  }
+
+  LogUsage getLogDisk() {
+    return logDisk;
   }
 
   public void addDiskStore(DiskStoreImpl ds) {
@@ -209,27 +214,17 @@ public class DiskStoreMonitor {
     logDisk.update(LOG_WARNING_THRESHOLD_PCT, 100);
   }
 
-  private File getLogDir() {
-    File log = null;
-    InternalCache internalCache = GemFireCacheImpl.getInstance();
-    if (internalCache != null) {
-      InternalDistributedSystem ds = internalCache.getInternalDistributedSystem();
-      if (ds != null) {
-        DistributionConfig conf = ds.getConfig();
-        if (conf != null) {
-          log = conf.getLogFile();
-          if (log != null) {
-            log = log.getParentFile();
-          }
-        }
-      }
+  private static File getLogDir(File logFile) {
+    File logDir = null;
+    if (logFile != null) {
+      logDir = logFile.getParentFile();
     }
 
-    if (log == null) {
+    if (logDir == null) {
       // assume current directory
-      log = new File(".");
+      logDir = new File(".");
     }
-    return log;
+    return logDir;
   }
 
   abstract static class DiskUsage {

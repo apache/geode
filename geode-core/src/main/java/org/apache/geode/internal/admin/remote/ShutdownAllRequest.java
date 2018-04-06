@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -37,7 +37,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ConnectionTable;
@@ -60,9 +59,10 @@ public class ShutdownAllRequest extends AdminRequest {
    * Sends a shutdownAll request to all other members and performs local shutdownAll processing in
    * the waitingThreadPool.
    */
-  public static Set send(final DM dm, long timeout) {
-    boolean hadCache = hasCache();
-    DistributionManager dism = dm instanceof DistributionManager ? (DistributionManager) dm : null;
+  public static Set send(final DistributionManager dm, long timeout) {
+    boolean hadCache = hasCache(dm);
+    ClusterDistributionManager dism =
+        dm instanceof ClusterDistributionManager ? (ClusterDistributionManager) dm : null;
     InternalDistributedMember myId = dm.getDistributionManagerId();
 
     Set recipients = dm.getOtherNormalDistributionManagerIds();
@@ -101,7 +101,7 @@ public class ShutdownAllRequest extends AdminRequest {
       }
     } catch (ReplyException e) {
       if (!(e.getCause() instanceof CancelException)) {
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     } catch (CancelException ignore) {
       // expected
@@ -138,8 +138,8 @@ public class ShutdownAllRequest extends AdminRequest {
   }
 
   @Override
-  protected void process(DistributionManager dm) {
-    boolean isToShutdown = hasCache();
+  protected void process(ClusterDistributionManager dm) {
+    boolean isToShutdown = hasCache(dm);
     super.process(dm);
 
     if (isToShutdown) {
@@ -167,14 +167,14 @@ public class ShutdownAllRequest extends AdminRequest {
     }
   }
 
-  private static boolean hasCache() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+  private static boolean hasCache(DistributionManager manager) {
+    InternalCache cache = manager.getCache();
     return cache != null && !cache.isClosed();
   }
 
   @Override
-  protected AdminResponse createResponse(DM dm) {
-    boolean isToShutdown = hasCache();
+  protected AdminResponse createResponse(DistributionManager dm) {
+    boolean isToShutdown = hasCache(dm);
     if (isToShutdown) {
       boolean isSuccess = false;
       try {
@@ -239,7 +239,7 @@ public class ShutdownAllRequest extends AdminRequest {
   private static class ShutDownAllReplyProcessor extends AdminMultipleReplyProcessor {
     Set results = Collections.synchronizedSet(new TreeSet());
 
-    ShutDownAllReplyProcessor(DM dm, Collection initMembers) {
+    ShutDownAllReplyProcessor(DistributionManager dm, Collection initMembers) {
       super(dm, initMembers);
     }
 

@@ -22,7 +22,7 @@ public abstract class HighPriorityDistributionMessage extends DistributionMessag
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
   }
 
 }

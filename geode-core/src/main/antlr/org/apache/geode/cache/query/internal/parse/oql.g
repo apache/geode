@@ -83,6 +83,7 @@ TOK_GT      :       '>'             ;
 TOK_LBRACK  :       '['             ;
 TOK_RBRACK  :       ']'             ;
 TOK_DOLLAR  :       '$'             ;
+TOK_PERCENTAGE:     '%'             ;
 
 /* Character Classes */
 protected
@@ -749,8 +750,8 @@ additiveExpr :
         multiplicativeExpr
         (
             (
-                TOK_PLUS^
-            |   TOK_MINUS^
+                TOK_PLUS^<AST=org.apache.geode.cache.query.internal.parse.ASTArithmeticOp>
+            |   TOK_MINUS^<AST=org.apache.geode.cache.query.internal.parse.ASTArithmeticOp>
             |   TOK_CONCAT^
             |   "union"^
             |   "except"^
@@ -764,9 +765,10 @@ multiplicativeExpr :
         inExpr
         (
             (
-                TOK_STAR^
-            |   TOK_SLASH^
-            |   "mod"^
+                TOK_STAR^<AST=org.apache.geode.cache.query.internal.parse.ASTArithmeticOp>
+            |   TOK_SLASH^<AST=org.apache.geode.cache.query.internal.parse.ASTArithmeticOp>
+            |   "mod"^<AST=org.apache.geode.cache.query.internal.parse.ASTArithmeticOp>
+            |   TOK_PERCENTAGE^<AST=org.apache.geode.cache.query.internal.parse.ASTArithmeticOp>
             |   "intersect"^
             )
             inExpr

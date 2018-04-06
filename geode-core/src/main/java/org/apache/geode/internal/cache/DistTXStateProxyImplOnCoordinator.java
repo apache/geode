@@ -15,10 +15,8 @@
 package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -30,11 +28,9 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionInDoubtException;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistTXPrecommitMessage.DistTxPrecommitResponse;
-import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryData;
-import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistClientTXStateStub;
@@ -48,19 +44,23 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    * A map of distributed system member to either {@link DistPeerTXStateStub} or
    * {@link DistTXStateOnCoordinator} (in case of TX coordinator is also a data node)
    */
-  protected HashMap<DistributedMember, DistTXCoordinatorInterface> target2realDeals =
+  private final HashMap<DistributedMember, DistTXCoordinatorInterface> target2realDeals =
       new HashMap<>();
-  private HashMap<LocalRegion, DistributedMember> rrTargets;
-  private Set<DistributedMember> txRemoteParticpants = null; // other than local
-  protected HashMap<String, ArrayList<DistTxThinEntryState>> txEntryEventMap = null;
 
-  public DistTXStateProxyImplOnCoordinator(TXManagerImpl managerImpl, TXId id,
+  private HashMap<LocalRegion, DistributedMember> rrTargets;
+
+  private Set<DistributedMember> txRemoteParticpants = null; // other than local
+
+  private HashMap<String, ArrayList<DistTxThinEntryState>> txEntryEventMap = null;
+
+  public DistTXStateProxyImplOnCoordinator(InternalCache cache, TXManagerImpl managerImpl, TXId id,
       InternalDistributedMember clientMember) {
-    super(managerImpl, id, clientMember);
+    super(cache, managerImpl, id, clientMember);
   }
 
-  public DistTXStateProxyImplOnCoordinator(TXManagerImpl managerImpl, TXId id, boolean isjta) {
-    super(managerImpl, id, isjta);
+  public DistTXStateProxyImplOnCoordinator(InternalCache cache, TXManagerImpl managerImpl, TXId id,
+      boolean isjta) {
+    super(cache, managerImpl, id, isjta);
   }
 
   /*
@@ -97,7 +97,6 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
           logger.debug("DistTXStateProxyImplOnCoordinator.commit Commit "
               + (phase2commitDone ? "Done" : "Failed"));
         }
-        // [DISTTX] TODO Handle this exception well
         if (!phase2commitDone) {
           throw new TransactionInDoubtException(
               LocalizedStrings.ClientTXStateStub_COMMIT_FAILED_ON_SERVER.toLocalizedString());
@@ -108,14 +107,11 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
               "DistTXStateProxyImplOnCoordinator.commit precommitResult = " + precommitResult);
         }
       }
-    } catch (CommitConflictException e) {
-      throw e;
     } catch (UnsupportedOperationInTransactionException e) {
       // fix for #42490
       preserveTx = true;
       throw e;
     } finally {
-      // [DISTTX] TODO What about rollback exceptions?
       if (!precommitResult) {
         rollback();
       }
@@ -132,10 +128,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    * those
    */
   private HashMap<DistributedMember, DistTXCoordinatorInterface> getSecondariesAndReplicasForTxOps() {
-    final GemFireCacheImpl cache =
-        GemFireCacheImpl.getExisting("getSecondariesAndReplicasForTxOps");
     InternalDistributedMember currentNode =
-        cache.getInternalDistributedSystem().getDistributedMember();
+        getCache().getInternalDistributedSystem().getDistributedMember();
 
     HashMap<DistributedMember, DistTXCoordinatorInterface> secondaryTarget2realDeals =
         new HashMap<>();
@@ -196,8 +190,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     }
 
     boolean finalResult = false;
-    final GemFireCacheImpl cache = GemFireCacheImpl.getExisting("Applying Dist TX Rollback");
-    final DM dm = cache.getDistributionManager();
+    final DistributionManager dm = getCache().getDistributionManager();
     try {
       // Create Tx Participants
       Set<DistributedMember> txRemoteParticpants = getTxRemoteParticpants(dm);
@@ -335,7 +328,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         // Code to keep going forward
         if (r.hasServerProxy()) {
           // TODO [DISTTX] See what we need for client?
-          this.realDeal = new DistClientTXStateStub(this, target, r);
+          this.realDeal =
+              new DistClientTXStateStub(r.getCache(), r.getDistributionManager(), this, target, r);
           if (r.scope.isDistributed()) {
             if (txDistributedClientWarningIssued.compareAndSet(false, true)) {
               logger.warn(LocalizedMessage.create(
@@ -421,7 +415,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     return m;
   }
 
-  private Set<DistributedMember> getTxRemoteParticpants(final DM dm) {
+  private Set<DistributedMember> getTxRemoteParticpants(final DistributionManager dm) {
     if (this.txRemoteParticpants == null) {
       Set<DistributedMember> txParticpants = target2realDeals.keySet();
       this.txRemoteParticpants = new HashSet<DistributedMember>(txParticpants);
@@ -438,8 +432,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
   private boolean doPrecommit() {
     boolean finalResult = true;
-    final GemFireCacheImpl cache = GemFireCacheImpl.getExisting("Applying Dist TX Precommit");
-    final DM dm = cache.getDistributionManager();
+    final DistributionManager dm = getCache().getDistributionManager();
     Set<DistributedMember> txRemoteParticpants = getTxRemoteParticpants(dm);
 
     // create processor and precommit message
@@ -623,8 +616,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    */
   private boolean doCommit() {
     boolean finalResult = true;
-    final GemFireCacheImpl cache = GemFireCacheImpl.getExisting("Applying Dist TX Commit");
-    final DM dm = cache.getDistributionManager();
+    final DistributionManager dm = getCache().getDistributionManager();
 
     // Create Tx Participants
     Set<DistributedMember> txRemoteParticpants = getTxRemoteParticpants(dm);
@@ -783,7 +775,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         if (putAllForBucket == null) {
           // TODO DISTTX: event is never released
           EntryEventImpl event = EntryEventImpl.createPutAllEvent(null, region,
-              Operation.PUTALL_CREATE, key, putallOp.putAllData[i].getValue());
+              Operation.PUTALL_CREATE, key, putallOp.putAllData[i].getValue(region.getCache()));
           event.setEventId(putallOp.putAllData[i].getEventID());
           putAllForBucket =
               new DistributedPutAllOperation(event, putallOp.putAllDataSize, putallOp.isBridgeOp);
@@ -940,8 +932,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   public DistributedMember getOwnerForKey(LocalRegion r, KeyInfo key) {
     DistributedMember m = r.getOwnerForKey(key);
     if (m == null) {
-      GemFireCacheImpl cache = GemFireCacheImpl.getExisting("getOwnerForKey");
-      m = cache.getDistributedSystem().getDistributedMember();
+      m = getCache().getDistributedSystem().getDistributedMember();
     }
     return m;
   }

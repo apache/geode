@@ -26,8 +26,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -44,7 +44,7 @@ public class ConnectionTableTest {
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     when(system.isShareSockets()).thenReturn(false);
 
-    DM dm = mock(DM.class);
+    DistributionManager dm = mock(DistributionManager.class);
     when(dm.getSystem()).thenReturn(system);
 
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);

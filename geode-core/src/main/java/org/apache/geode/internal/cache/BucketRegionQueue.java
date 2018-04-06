@@ -356,7 +356,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   }
 
   @Override
-  protected void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
+  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
       Object expectedOldValue)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
     if (getPartitionedRegion().isConflationEnabled()) {

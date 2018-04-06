@@ -43,7 +43,7 @@ public interface DiskWriteAttributes extends java.io.Serializable {
    * @deprecated as of 6.5 use {@link RegionAttributes#isDiskSynchronous} instead.
    */
   @Deprecated
-  public boolean isSynchronous();
+  boolean isSynchronous();
 
 
   /**
@@ -51,7 +51,7 @@ public interface DiskWriteAttributes extends java.io.Serializable {
    *
    * @return Returns true if the oplogs is to be rolled or false otherwise
    */
-  public boolean isRollOplogs();
+  boolean isRollOplogs();
 
   /**
    * Get the maximum size in megabytes a single oplog (operation log) file should be
@@ -60,7 +60,7 @@ public interface DiskWriteAttributes extends java.io.Serializable {
    * @deprecated as of 6.5 use {@link DiskStore#getMaxOplogSize()} instead.
    */
   @Deprecated
-  public int getMaxOplogSize();
+  int getMaxOplogSize();
 
   /**
    * Returns the number of milliseconds that can elapse before unwritten data is written to disk. If
@@ -71,7 +71,7 @@ public interface DiskWriteAttributes extends java.io.Serializable {
    * @deprecated as of 6.5 use {@link DiskStore#getTimeInterval()} instead.
    */
   @Deprecated
-  public long getTimeInterval();
+  long getTimeInterval();
 
   /**
    * Returns the number of unwritten bytes of data that can be enqueued before being written to
@@ -82,7 +82,7 @@ public interface DiskWriteAttributes extends java.io.Serializable {
    * @deprecated as of 6.5 use {@link DiskStore#getQueueSize()} instead.
    */
   @Deprecated
-  public long getBytesThreshold();
+  long getBytesThreshold();
 
   /**
    * Two <code>DiskWriteAttributes</code> are equal if the both specify the synchronous writes, or
@@ -91,6 +91,6 @@ public interface DiskWriteAttributes extends java.io.Serializable {
    *
    * @return true if o is equal else false
    */
-  public boolean equals(Object o);
+  boolean equals(Object o);
 
 }

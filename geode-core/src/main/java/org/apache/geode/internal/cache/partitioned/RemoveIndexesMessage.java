@@ -27,7 +27,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -125,7 +125,7 @@ public class RemoveIndexesMessage extends PartitionMessage {
    *         shutdown.
    */
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime)
       throws CacheException, QueryException, ForceReattemptException, InterruptedException {
     // TODO Auto-generated method stub
@@ -166,8 +166,8 @@ public class RemoveIndexesMessage extends PartitionMessage {
    * @param result represents remove index worked properly.
    * @param bucketIndexesRemoved number of bucket indexes removed properly.
    */
-  void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      boolean result, int bucketIndexesRemoved, int totalNumBuckets) {
+  void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, boolean result, int bucketIndexesRemoved, int totalNumBuckets) {
     RemoveIndexesReplyMessage.send(member, processorId, dm, ex, result, bucketIndexesRemoved,
         totalNumBuckets);
 
@@ -199,11 +199,13 @@ public class RemoveIndexesMessage extends PartitionMessage {
     }
     if (removeAllIndex) {
       RemoveIndexesMessage rm = new RemoveIndexesMessage(recipients, pr.getPRId(), processor);
+      rm.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       /* Set failures = */ pr.getDistributionManager().putOutgoing(rm);
     } else {
       // remove a single index.
       RemoveIndexesMessage rm =
           new RemoveIndexesMessage(recipients, pr.getPRId(), processor, true, ind.getName());
+      rm.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       /* Set failures = */ pr.getDistributionManager().putOutgoing(rm);
     }
     return processor;
@@ -239,7 +241,7 @@ public class RemoveIndexesMessage extends PartitionMessage {
    * Processes remove index on the receiver.
    */
   @Override
-  public void process(final DistributionManager dm) {
+  public void process(final ClusterDistributionManager dm) {
 
     Throwable thr = null;
     boolean sendReply = true;
@@ -488,8 +490,9 @@ public class RemoveIndexesMessage extends PartitionMessage {
      * @param numBucketsIndexesRemoved number of buckets indexed
      * @param numTotalBuckets total number of buckets
      */
-    public static void send(InternalDistributedMember recipient, int processorId, DM dm,
-        ReplyException ex, boolean result, int numBucketsIndexesRemoved, int numTotalBuckets) {
+    public static void send(InternalDistributedMember recipient, int processorId,
+        DistributionManager dm, ReplyException ex, boolean result, int numBucketsIndexesRemoved,
+        int numTotalBuckets) {
       RemoveIndexesReplyMessage rmIndMsg = new RemoveIndexesReplyMessage(processorId, ex, result,
           numBucketsIndexesRemoved, numTotalBuckets);
       rmIndMsg.setRecipient(recipient);
@@ -502,7 +505,7 @@ public class RemoveIndexesMessage extends PartitionMessage {
      * @param dm distribution manager
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 p) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 p) {
       RemoveIndexesResponse processor = (RemoveIndexesResponse) p;
       if (processor != null) {
         processor.setResponse(this.result, this.numBucketsIndexesRemoved, this.numTotalBuckets);

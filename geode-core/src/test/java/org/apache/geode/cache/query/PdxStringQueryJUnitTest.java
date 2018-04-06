@@ -33,6 +33,7 @@ import org.apache.geode.cache.query.internal.index.CompactRangeIndex;
 import org.apache.geode.cache.query.internal.index.IndexStore.IndexStoreEntry;
 import org.apache.geode.cache.query.internal.index.PrimaryKeyIndex;
 import org.apache.geode.cache.query.internal.index.RangeIndex;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
@@ -49,7 +50,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  */
 @Category(IntegrationTest.class)
 public class PdxStringQueryJUnitTest {
-  private Cache c;
+  private InternalCache c;
   private Region r;
   private String regName = "exampleRegion";
   QueryService qs;
@@ -62,7 +63,7 @@ public class PdxStringQueryJUnitTest {
 
   @Before
   public void setUp() {
-    this.c = new CacheFactory().set(MCAST_PORT, "0").create();
+    this.c = (InternalCache) new CacheFactory().set(MCAST_PORT, "0").create();
     r = c.createRegionFactory().create(regName);
     qs = c.getQueryService();
   }
@@ -137,7 +138,7 @@ public class PdxStringQueryJUnitTest {
   public void testQueriesWithRangeIndex() throws Exception {
     Index index = qs.createIndex("index2", "p.secId", "/exampleRegion p, p.positions.values");
     assertTrue(index instanceof RangeIndex);
-    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 111);
     pf.writeString("secId", "IBM");
     pf.writeString("status", "active");
@@ -154,7 +155,7 @@ public class PdxStringQueryJUnitTest {
     positions.put("price", "120");
     r.put("YHOO", new TestObject(222, "YHOO", positions, "inactive"));
 
-    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 333);
     pf.writeString("secId", "GOOGL");
     pf.writeString("status", "active");
@@ -185,7 +186,7 @@ public class PdxStringQueryJUnitTest {
   public void testQueriesWithRangeIndexWithREUpdateInProgress() throws Exception {
     Index index = qs.createIndex("index2", "p.secId", "/exampleRegion p, p.positions.values");
     assertTrue(index instanceof RangeIndex);
-    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 111);
     pf.writeString("secId", "IBM");
     pf.writeString("status", "active");
@@ -202,7 +203,7 @@ public class PdxStringQueryJUnitTest {
     positions.put("price", "120");
     r.put("YHOO", new TestObject(222, "YHOO", positions, "inactive"));
 
-    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 333);
     pf.writeString("secId", "GOOGL");
     pf.writeString("status", "active");
@@ -257,28 +258,28 @@ public class PdxStringQueryJUnitTest {
   }
 
   public void putPdxInstances() throws Exception {
-    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 111);
     pf.writeString("status", "active");
     pf.writeString("secId", "IBM");
     PdxInstance pi = pf.create();
     r.put("IBM", pi);
 
-    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 222);
     pf.writeString("status", "inactive");
     pf.writeString("secId", "YHOO");
     pi = pf.create();
     r.put("YHOO", pi);
 
-    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 333);
     pf.writeString("status", "active");
     pf.writeString("secId", "GOOGL");
     pi = pf.create();
     r.put("GOOGL", pi);
 
-    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 111);
     pf.writeString("status", "inactive");
     pf.writeString("secId", "VMW");
@@ -287,28 +288,28 @@ public class PdxStringQueryJUnitTest {
   }
 
   public void putPdxInstancesWithREUpdateInProgress() throws Exception {
-    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 111);
     pf.writeString("status", "active");
     pf.writeString("secId", "IBM");
     PdxInstance pi = pf.create();
     r.put("IBM", pi);
 
-    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 222);
     pf.writeString("status", "inactive");
     pf.writeString("secId", "YHOO");
     pi = pf.create();
     r.put("YHOO", pi);
 
-    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 333);
     pf.writeString("status", "active");
     pf.writeString("secId", "GOOGL");
     pi = pf.create();
     r.put("GOOGL", pi);
 
-    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 111);
     pf.writeString("status", "inactive");
     pf.writeString("secId", "VMW");
@@ -329,7 +330,7 @@ public class PdxStringQueryJUnitTest {
   }
 
   public void putHeterogeneousObjects() throws Exception {
-    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 111);
     pf.writeString("secId", "IBM");
     pf.writeString("status", "active");
@@ -339,7 +340,7 @@ public class PdxStringQueryJUnitTest {
     r.put("YHOO", new TestObject(222, "YHOO", "inactive"));
     r.put("GOOGL", new TestObject(333, "GOOGL", "active"));
 
-    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, this.c);
     pf.writeInt("ID", 111);
     pf.writeString("secId", "VMW");
     pf.writeString("status", "inactive");

@@ -26,7 +26,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -51,7 +51,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
   final ArrayList durableLocations = new ArrayList();
 
   public static ArrayList sendAndFind(ServerLocator locator, ClientProxyMembershipID proxyId,
-      DM dm) {
+      DistributionManager dm) {
     Set members = ((GridAdvisor) locator.getDistributionAdvisor()).adviseBridgeServers();
     if (members.contains(dm.getId())) {
       // Don't send message to local server, see #50534.
@@ -65,7 +65,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     try {
       processor.waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     }
     ArrayList locations = processor.durableLocations;
     // This will add any local queues to the list
@@ -107,7 +107,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
   /**
    * Creates a new instance of FindDurableQueueProcessor
    */
-  private FindDurableQueueProcessor(DM dm, Set members) {
+  private FindDurableQueueProcessor(DistributionManager dm, Set members) {
     super(dm, members);
   }
 
@@ -116,7 +116,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     private int processorId;
     private ClientProxyMembershipID proxyId;
 
-    protected static void send(ClientProxyMembershipID proxyId, DM dm, Set members,
+    protected static void send(ClientProxyMembershipID proxyId, DistributionManager dm, Set members,
         ReplyProcessor21 proc) {
       FindDurableQueueMessage msg = new FindDurableQueueMessage();
       msg.processorId = proc.getProcessorId();
@@ -138,7 +138,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       ArrayList<ServerLocation> matches = new ArrayList<ServerLocation>();
       try {
         findLocalDurableQueues(proxyId, matches);

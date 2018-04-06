@@ -200,7 +200,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable create =
         new SerializableCallable("Create Cache and Regions from cache.xml") {
           public Object call() throws CacheException {
-            // DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
             locatorPort = locPort;
             Properties props = getDistributedSystemProperties();
             props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
@@ -212,8 +211,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             Region myRegion = cache.getRegion("root/myRegion");
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
             myRegion.put("MyKey1", "MyValue1");
-            // MembershipManagerHelper.getMembershipManager(cache.getDistributedSystem()).setDebugJGroups(true);
-            // myRegion.put("Mykey2", "MyValue2");
             return savedSystem.getDistributedMember();
           }
         };
@@ -254,8 +251,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   public void doTestReconnectOnForcedDisconnect(final boolean createInAppToo) throws Exception {
 
     IgnoredException.addIgnoredException("killing member's ds");
-    // getSystem().disconnect();
-    // getLogWriter().fine("Cache Closed ");
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -272,18 +267,15 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable create1 =
         new SerializableCallable("Create Cache and Regions from cache.xml") {
           public Object call() throws CacheException {
-            // DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
             locatorPort = locPort;
             Properties props = getDistributedSystemProperties();
             props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
             props.put(MAX_WAIT_TIME_RECONNECT, "1000");
             props.put(MAX_NUM_RECONNECT_TRIES, "2");
-            // props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
             Cache cache = new CacheFactory(props).create();
             Region myRegion = cache.getRegion("root/myRegion");
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
             myRegion.put("MyKey1", "MyValue1");
-            // myRegion.put("Mykey2", "MyValue2");
             return savedSystem.getDistributedMember();
           }
         };
@@ -291,7 +283,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable create2 =
         new SerializableCallable("Create Cache and Regions from cache.xml") {
           public Object call() throws CacheException {
-            // DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
             locatorPort = locPort;
             final Properties props = getDistributedSystemProperties();
             props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
@@ -299,16 +290,12 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             props.put(MAX_NUM_RECONNECT_TRIES, "2");
             props.put(START_LOCATOR, "localhost[" + secondLocPort + "]");
             props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + secondLocPort + "]");
-            // props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
             getSystem(props);
-            // MembershipManagerHelper.getMembershipManager(system).setDebugJGroups(true);
             final Cache cache = getCache();
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
             Region myRegion = cache.getRegion("root/myRegion");
-            // myRegion.put("MyKey1", "MyValue1");
             myRegion.put("Mykey2", "MyValue2");
             assertNotNull(myRegion.get("MyKey1"));
-            // getLogWriter().fine("MyKey1 value is : "+myRegion.get("MyKey1"));
             if (createInAppToo) {
               Thread recreateCacheThread = new Thread("ReconnectDUnitTest.createInAppThread") {
                 public void run() {
@@ -1027,8 +1014,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
     final int locPort = locatorPort;
 
-    final String xmlFileLoc = (new File(".")).getAbsolutePath();
-
     SerializableRunnable createCache = new SerializableRunnable("Create Cache and Regions") {
       public void run() {
         locatorPort = locPort;
@@ -1074,7 +1059,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * GEODE-2155 Auto-reconnect fails with NPE due to a cache listener not implementing Declarable
+   * GEODE-2155 Auto-reconnect fails with NPE due to a cache listener Declarable.init method
+   * throwing an exception.
    */
   @Test
   public void testReconnectFailsDueToBadCacheXML() throws Exception {
@@ -1084,8 +1070,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
     final int locPort = locatorPort;
-
-    final String xmlFileLoc = (new File(".")).getAbsolutePath();
 
     SerializableRunnable createCache = new SerializableRunnable("Create Cache and Regions") {
       public void run() {
@@ -1097,7 +1081,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         ReconnectDUnitTest.savedCache = (GemFireCacheImpl) getCache();
         Region myRegion = createRegion("myRegion", createAtts());
         myRegion.put("MyKey", "MyValue");
-        myRegion.getAttributesMutator().addCacheListener(new NonDeclarableListener());
+        myRegion.getAttributesMutator().addCacheListener(new ListenerWhoseInitMethodAlwaysThrows());
       }
     };
 
@@ -1276,13 +1260,14 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * A non-Declarable listener will be rejected by the XML parser when rebuilding the cache, causing
-   * auto-reconnect to fail.
+   * A listener whose init always throws an exception.
+   * Since init is always called during cache.xml parsing
+   * this listener is not able to be used from cache.xml.
    */
-  public static class NonDeclarableListener extends CacheListenerAdapter {
+  public static class ListenerWhoseInitMethodAlwaysThrows extends CacheListenerAdapter {
     @Override
     public void init(Properties props) {
-      throw new RuntimeException("Simulate non-declarable listener");
+      throw new RuntimeException("Cause parsing to fail");
     };
   }
 

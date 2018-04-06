@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -68,6 +68,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
     ReplyProcessor21 response = new ReplyProcessor21(pr.getSystem(), acceptedMembers);
     EndBucketCreationMessage msg =
         new EndBucketCreationMessage(acceptedMembers, pr.getPRId(), response, bid, newPrimary);
+    msg.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
 
     pr.getDistributionManager().putOutgoing(msg);
   }
@@ -80,7 +81,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
   public int getProcessorType() {
     // use the waiting pool because operateOnPartitionedRegion will
     // try to get a dlock
-    return DistributionManager.WAITING_POOL_EXECUTOR;
+    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   @Override
@@ -95,8 +96,8 @@ public class EndBucketCreationMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion region,
-      long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm,
+      PartitionedRegion region, long startTime) throws ForceReattemptException {
 
     // this is executing in the WAITING_POOL_EXECUTOR
 

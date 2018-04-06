@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.backup;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -59,7 +60,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -206,51 +206,33 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     });
   }
 
-  /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
-   *
-   * @param vm a member of the distributed system
-   * @return the status of the backup.
-   */
   private BackupStatus baseline(VM vm) {
     return vm.invoke(() -> {
       try {
-        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(), getBaselineDir(),
-            null);
+        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+            getBaselineDir().toString(), null);
       } catch (ManagementException e) {
         throw new RuntimeException(e);
       }
     });
   }
 
-  /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
-   *
-   * @param vm a member of the distributed system.
-   * @return a status of the backup operation.
-   */
   private BackupStatus incremental(VM vm) {
     return vm.invoke(() -> {
       try {
         return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
-            getIncrementalDir(), getBaselineBackupDir());
+            getIncrementalDir().toString(), getBaselineBackupDir().toString());
       } catch (ManagementException e) {
         throw new RuntimeException(e);
       }
     });
   }
 
-  /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
-   *
-   * @param vm a member of the distributed system.
-   * @return a status of the backup operation.
-   */
   private BackupStatus incremental2(VM vm) {
     return vm.invoke(() -> {
       try {
         return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
-            getIncremental2Dir(), getIncrementalBackupDir());
+            getIncremental2Dir().toString(), getIncrementalBackupDir().toString());
       } catch (ManagementException e) {
         throw new RuntimeException(e);
       }
@@ -581,7 +563,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     File backupDir = getBackupDirForMember(getBaselineDir(), getMemberId(vm));
     assertTrue(backupDir.exists());
 
-    File incomplete = new File(backupDir, BackupManager.INCOMPLETE_BACKUP_FILE);
+    File incomplete = new File(backupDir, BackupWriter.INCOMPLETE_BACKUP_FILE);
     incomplete.createNewFile();
   }
 
@@ -959,7 +941,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
       public Object call() {
         try {
           return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
-              getIncrementalDir(), this.baselineDir);
+              getIncrementalDir().toString(), this.baselineDir.toString());
 
         } catch (ManagementException e) {
           throw new RuntimeException(e);
@@ -980,7 +962,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     Collection<File> memberIncrementalOplogs =
         FileUtils.listFiles(getBackupDirForMember(getIncrementalDir(), memberId),
             new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(memberIncrementalOplogs.isEmpty());
+    assertThat(memberIncrementalOplogs).isNotEmpty();
 
     List<String> memberIncrementalOplogNames = new LinkedList<>();
     TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,

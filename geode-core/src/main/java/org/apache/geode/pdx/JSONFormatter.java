@@ -327,88 +327,76 @@ public class JSONFormatter {
 
   private void setNumberField(JsonParser jp, JSONToPdxMapper pih, String fieldName)
       throws IOException {
-    try {
-      NumberType nt = jp.getNumberType();
+    NumberType nt = jp.getNumberType();
 
-      switch (nt) {
-        case BIG_DECIMAL:
-          pih.addBigDecimalField(fieldName, jp.getDecimalValue());
-          break;
-        case BIG_INTEGER: {
-          BigInteger bi = jp.getBigIntegerValue();
-          pih.addBigIntegerField(fieldName, bi);
-        }
-          break;
-        case DOUBLE:
-          pih.addDoubleField(fieldName, jp.getDoubleValue());
-          break;
-        case FLOAT:
-          pih.addFloatField(fieldName, jp.getFloatValue());
-          break;
-        case INT: {
-          int val = jp.getIntValue();
-          if (val > Short.MAX_VALUE || val < Short.MIN_VALUE) {
-            pih.addIntField(fieldName, val);
-          } else if (val > Byte.MAX_VALUE || val < Byte.MIN_VALUE) {
-            pih.addShortField(fieldName, (short) val);
-          } else {
-            pih.addByteField(fieldName, (byte) val);
-          }
-        }
-          break;
-        case LONG:
-          pih.addLongField(fieldName, jp.getLongValue());
-          break;
-        default:
-          throw new IllegalStateException("setNumberField:unknow number type " + nt);
+    switch (nt) {
+      case BIG_DECIMAL:
+        pih.addBigDecimalField(fieldName, jp.getDecimalValue());
+        break;
+      case BIG_INTEGER: {
+        BigInteger bi = jp.getBigIntegerValue();
+        pih.addBigIntegerField(fieldName, bi);
       }
-    } catch (JsonParseException jpe) {
-      throw jpe;
-    } catch (IOException e) {
-      throw e;
+        break;
+      case DOUBLE:
+        pih.addDoubleField(fieldName, jp.getDoubleValue());
+        break;
+      case FLOAT:
+        pih.addFloatField(fieldName, jp.getFloatValue());
+        break;
+      case INT: {
+        int val = jp.getIntValue();
+        if (val > Short.MAX_VALUE || val < Short.MIN_VALUE) {
+          pih.addIntField(fieldName, val);
+        } else if (val > Byte.MAX_VALUE || val < Byte.MIN_VALUE) {
+          pih.addShortField(fieldName, (short) val);
+        } else {
+          pih.addByteField(fieldName, (byte) val);
+        }
+      }
+        break;
+      case LONG:
+        pih.addLongField(fieldName, jp.getLongValue());
+        break;
+      default:
+        throw new IllegalStateException("setNumberField:unknow number type " + nt);
     }
   }
 
   private void setNumberField(JsonParser jp, PdxListHelper pih) throws IOException {
-    try {
-      NumberType nt = jp.getNumberType();
+    NumberType nt = jp.getNumberType();
 
-      switch (nt) {
-        case BIG_DECIMAL:
-          pih.addBigDecimalField(jp.getDecimalValue());
-          break;
-        case BIG_INTEGER: {
-          BigInteger bi = jp.getBigIntegerValue();
-          pih.addBigIntegerField(bi);
-        }
-          break;
-        case DOUBLE:
-          pih.addDoubleField(jp.getDoubleValue());
-          break;
-        case FLOAT:
-          pih.addFloatField(jp.getFloatValue());
-          break;
-        case INT: {
-          int val = jp.getIntValue();
-          if (val > Short.MAX_VALUE || val < Short.MIN_VALUE) {
-            pih.addIntField(val);
-          } else if (val > Byte.MAX_VALUE || val < Byte.MIN_VALUE) {
-            pih.addShortField((short) val);
-          } else {
-            pih.addByteField((byte) val);
-          }
-        }
-          break;
-        case LONG:
-          pih.addLongField(jp.getLongValue());
-          break;
-        default:
-          throw new IllegalStateException("setNumberField:unknow number type " + nt);
+    switch (nt) {
+      case BIG_DECIMAL:
+        pih.addBigDecimalField(jp.getDecimalValue());
+        break;
+      case BIG_INTEGER: {
+        BigInteger bi = jp.getBigIntegerValue();
+        pih.addBigIntegerField(bi);
       }
-    } catch (JsonParseException jpe) {
-      throw jpe;
-    } catch (IOException e) {
-      throw e;
+        break;
+      case DOUBLE:
+        pih.addDoubleField(jp.getDoubleValue());
+        break;
+      case FLOAT:
+        pih.addFloatField(jp.getFloatValue());
+        break;
+      case INT: {
+        int val = jp.getIntValue();
+        if (val > Short.MAX_VALUE || val < Short.MIN_VALUE) {
+          pih.addIntField(val);
+        } else if (val > Byte.MAX_VALUE || val < Byte.MIN_VALUE) {
+          pih.addShortField((short) val);
+        } else {
+          pih.addByteField((byte) val);
+        }
+      }
+        break;
+      case LONG:
+        pih.addLongField(jp.getLongValue());
+        break;
+      default:
+        throw new IllegalStateException("setNumberField:unknow number type " + nt);
     }
   }
 

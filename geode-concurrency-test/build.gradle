@@ -14,14 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-apply plugin: "com.github.upthewaterspout.jpf"
-
-jpf {
-  sourceSet='main'
-  downloadUrl='https://bitbucket.org/upthewaterspout/jpf-core/downloads/jpf-core-r34.zip'
-  installDir=System.getProperty('user.home') + '/.jpf'
-}
-
 dependencies {
   compile 'junit:junit:' + project.'junit.version'
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'

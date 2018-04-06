@@ -23,5 +23,5 @@ public interface EntrySnapshot extends CacheSnapshot {
   /**
    * Returns the value of the <code>Region</code> entry
    */
-  public Object getValue();
+  Object getValue();
 }

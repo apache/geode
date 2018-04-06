@@ -22,11 +22,11 @@ package org.apache.geode.internal.util;
  */
 public interface Versionable {
 
-  public abstract Comparable getVersion();
+  Comparable getVersion();
 
-  public abstract boolean isNewerThan(Versionable other);
+  boolean isNewerThan(Versionable other);
 
-  public abstract boolean isSame(Versionable other);
+  boolean isSame(Versionable other);
 
-  public abstract boolean isOlderThan(Versionable other);
+  boolean isOlderThan(Versionable other);
 }

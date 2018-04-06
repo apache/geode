@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -44,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -66,7 +70,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -152,7 +155,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.CacheTime;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
@@ -172,7 +175,8 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
@@ -260,15 +264,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /** The default "copy on read" attribute value */
   public static final boolean DEFAULT_COPY_ON_READ = false;
 
-  /** the last instance of GemFireCache created */
-  private static volatile GemFireCacheImpl instance = null;
-
-  /**
-   * Just like instance but is valid for a bit longer so that pdx can still find the cache during a
-   * close.
-   */
-  private static volatile GemFireCacheImpl pdxInstance = null;
-
   /**
    * The default amount of time to wait for a {@code netSearch} to complete
    */
@@ -285,6 +280,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private static final boolean ASYNC_EVENT_LISTENERS =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Cache.ASYNC_EVENT_LISTENERS");
+
+  /**
+   * Name of the default pool.
+   */
+  public static final String DEFAULT_POOL_NAME = "DEFAULT";
 
   /**
    * If true then when a delta is applied the size of the entry value will be recalculated. If false
@@ -308,7 +308,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * System property to limit the max query-execution time. By default its turned off (-1), the time
    * is set in milliseconds.
    */
-  public static final int MAX_QUERY_EXECUTION_TIME =
+  public static int MAX_QUERY_EXECUTION_TIME =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.MAX_QUERY_EXECUTION_TIME", -1);
 
   /**
@@ -329,14 +329,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private volatile ConfigurationResponse configurationResponse;
 
-  /** To test MAX_QUERY_EXECUTION_TIME option. */
-  public int testMaxQueryExecutionTime = -1;
-
   private final InternalDistributedSystem system;
 
-  private final DM dm;
+  private final DistributionManager dm;
 
-  private final Map<String, LocalRegion> rootRegions;
+  private final Map<String, InternalRegion> rootRegions;
 
   /**
    * True if this cache is being created by a ClientCacheFactory.
@@ -350,7 +347,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private Pool defaultPool;
 
-  private final ConcurrentMap<String, Region<?, ?>> pathToRegion = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, InternalRegion> pathToRegion = new ConcurrentHashMap<>();
 
   private volatile boolean isInitialized;
 
@@ -510,7 +507,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final InternalResourceManager resourceManager;
 
-  private final AtomicReference<BackupManager> backupManager = new AtomicReference<>();
+  private final BackupService backupService;
 
   private HeapEvictor heapEvictor = null;
 
@@ -684,16 +681,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   @Deprecated
   public static GemFireCacheImpl getInstance() {
-    return instance;
-  }
+    InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
+    if (system == null) {
+      return null;
+    }
+    GemFireCacheImpl cache = (GemFireCacheImpl) system.getCache();
+    if (cache == null) {
+      return null;
+    }
 
-  /**
-   * Used for testing, retain the old instance in the test and re-set the value when test completes
-   */
-  public static GemFireCacheImpl setInstanceForTests(GemFireCacheImpl cache) {
-    GemFireCacheImpl oldInstance = instance;
-    instance = cache;
-    return oldInstance;
+    if (cache.isClosing) {
+      return null;
+    }
+
+    return cache;
+
   }
 
   /**
@@ -705,13 +707,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   @Deprecated
   public static GemFireCacheImpl getExisting() {
-    final GemFireCacheImpl result = instance;
+    final GemFireCacheImpl result = getInstance();
     if (result != null && !result.isClosing) {
       return result;
     }
     if (result != null) {
       throw result.getCacheClosedException(
-          LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
+          LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString());
     }
     throw new CacheClosedException(
         LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
@@ -736,13 +738,22 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Pdx is allowed to obtain the cache even while it is being closed
+   *
+   * @deprecated Rather than fishing for a cache with this static method, use a cache that is passed
+   *             in to your method.
    */
   public static GemFireCacheImpl getForPdx(String reason) {
-    GemFireCacheImpl result = pdxInstance;
-    if (result == null) {
+
+    InternalDistributedSystem system = getAnyInstance();
+    if (system == null) {
       throw new CacheClosedException(reason);
     }
-    return result;
+    GemFireCacheImpl cache = (GemFireCacheImpl) system.getCache();
+    if (cache == null) {
+      throw new CacheClosedException(reason);
+    }
+
+    return cache;
   }
 
   public static GemFireCacheImpl createClient(InternalDistributedSystem system, PoolFactory pf,
@@ -770,7 +781,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       CacheWriterException, GatewayException, RegionExistsException {
     try {
       synchronized (GemFireCacheImpl.class) {
-        GemFireCacheImpl instance = checkExistingCache(existingOk, cacheConfig);
+        GemFireCacheImpl instance = checkExistingCache(existingOk, cacheConfig, system);
         if (instance == null) {
           instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig, asyncEventListeners,
               typeRegistry);
@@ -790,8 +801,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private static GemFireCacheImpl checkExistingCache(boolean existingOk, CacheConfig cacheConfig) {
-    GemFireCacheImpl instance = getInstance();
+  private static GemFireCacheImpl checkExistingCache(boolean existingOk, CacheConfig cacheConfig,
+      InternalDistributedSystem system) {
+    GemFireCacheImpl instance =
+        ALLOW_MULTIPLE_SYSTEMS ? (GemFireCacheImpl) system.getCache() : getInstance();
 
     if (instance != null && !instance.isClosed()) {
       if (existingOk) {
@@ -859,7 +872,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
 
       // Don't let admin-only VMs create Cache's just yet.
-      if (this.dm.getDMType() == DistributionManager.ADMIN_ONLY_DM_TYPE) {
+      if (this.dm.getDMType() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE) {
         throw new IllegalStateException(
             LocalizedStrings.GemFireCache_CANNOT_CREATE_A_CACHE_IN_AN_ADMINONLY_VM
                 .toLocalizedString());
@@ -957,9 +970,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       SystemFailure.signalCacheCreate();
 
-      this.diskMonitor = new DiskStoreMonitor();
+      this.diskMonitor = new DiskStoreMonitor(system.getConfig().getLogFile());
 
       addRegionEntrySynchronizationListener(new GatewaySenderQueueEntrySynchronizationListener());
+      backupService = new BackupService(this);
     } // synchronized
   }
 
@@ -1007,12 +1021,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private ConfigurationResponse requestSharedConfiguration() {
     final DistributionConfig config = this.system.getConfig();
 
-    if (!(this.dm instanceof DistributionManager)) {
+    if (!(this.dm instanceof ClusterDistributionManager)) {
       return null;
     }
 
     // do nothing if this vm is/has locator or this is a client
-    if (this.dm.getDMType() == DistributionManager.LOCATOR_DM_TYPE || this.isClient
+    if (this.dm.getDMType() == ClusterDistributionManager.LOCATOR_DM_TYPE || this.isClient
         || Locator.getLocator() != null) {
       return null;
     }
@@ -1136,12 +1150,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * May return null (even on a client).
    */
   @Override
-  public Pool getDefaultPool() {
+  public synchronized Pool getDefaultPool() {
+    if (this.defaultPool == null) {
+      determineDefaultPool();
+    }
     return this.defaultPool;
-  }
-
-  private void setDefaultPool(Pool value) {
-    this.defaultPool = value;
   }
 
   /**
@@ -1149,13 +1162,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * references to this instance in this method (vs. the constructor).
    */
   private void initialize() {
-    if (GemFireCacheImpl.instance != null) {
-      Assert.assertTrue(GemFireCacheImpl.instance == null,
-          "Cache instance already in place: " + instance);
-    }
-    GemFireCacheImpl.instance = this;
-    GemFireCacheImpl.pdxInstance = this;
-
     for (CacheLifecycleListener listener : cacheLifecycleListeners) {
       listener.cacheCreated(this);
     }
@@ -1218,8 +1224,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
 
-    this.poolFactory = null;
-
     startColocatedJmxManagerLocator();
 
     startMemcachedServer();
@@ -1250,14 +1254,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   private boolean isServerNode() {
-    return this.system.getDistributedMember().getVmKind() != DistributionManager.LOCATOR_DM_TYPE
-        && this.system.getDistributedMember().getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE
+    return this.system.getDistributedMember()
+        .getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE
+        && this.system.getDistributedMember()
+            .getVmKind() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
         && !isClient();
   }
 
   private void startRestAgentServer(GemFireCacheImpl cache) {
     if (this.system.getConfig().getStartDevRestApi() && isNotJmxManager() && isServerNode()) {
-      this.restAgent = new RestAgent(this.system.getConfig());
+      this.restAgent = new RestAgent(this.system.getConfig(), this.securityService);
       this.restAgent.start(cache);
     } else {
       this.restAgent = null;
@@ -1307,7 +1313,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public URL getCacheXmlURL() {
-    if (this.getMyId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+    if (this.getMyId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
       return null;
     }
     File xmlFile = testCacheXml;
@@ -1379,7 +1385,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     String cacheXmlDescription = this.cacheConfig.getCacheXMLDescription();
     if (url == null && cacheXmlDescription == null) {
       if (isClient()) {
-        determineDefaultPool();
         initializeClientRegionShortcuts(this);
       } else {
         initializeRegionShortcuts(this);
@@ -1456,7 +1461,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public synchronized void initializePdxRegistry() {
     if (this.pdxRegistry == null) {
       // The member with locator is initialized with a NullTypePdxRegistration
-      if (this.getMyId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+      if (this.getMyId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
         this.pdxRegistry = new TypeRegistry(this, true);
       } else {
         this.pdxRegistry = new TypeRegistry(this, false);
@@ -1567,6 +1572,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /** return a CacheClosedException with the given reason */
   @Override
+  public CacheClosedException getCacheClosedException(String reason) {
+    return getCacheClosedException(reason, null);
+  }
+
+  /** return a CacheClosedException with the given reason and cause */
+  @Override
   public CacheClosedException getCacheClosedException(String reason, Throwable cause) {
     CacheClosedException result;
     if (cause != null) {
@@ -1629,7 +1640,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public static void emergencyClose() {
     final boolean DEBUG = SystemFailure.TRACE_CLOSE;
 
-    GemFireCacheImpl cache = GemFireCacheImpl.instance;
+    GemFireCacheImpl cache = getInstance();
     if (cache == null) {
       if (DEBUG) {
         System.err.println("GemFireCache#emergencyClose: no instance");
@@ -1637,8 +1648,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       return;
     }
 
-    GemFireCacheImpl.instance = null;
-    GemFireCacheImpl.pdxInstance = null;
     // leave the PdxSerializer set if we have one to prevent 43412
 
     // Shut down messaging first
@@ -2128,12 +2137,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.isClosing = true;
       logger.info(LocalizedMessage.create(LocalizedStrings.GemFireCache_0_NOW_CLOSING, this));
 
-      // Before anything else...make sure that this instance is not
-      // available to anyone "fishing" for a cache...
-      if (GemFireCacheImpl.instance == this) {
-        GemFireCacheImpl.instance = null;
-      }
-
       // we don't clear the prID map if there is a system failure. Other
       // threads may be hung trying to communicate with the map locked
       if (systemFailureCause == null) {
@@ -2211,11 +2214,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           }
 
           prepareDiskStoresForClose();
-          if (GemFireCacheImpl.pdxInstance == this) {
-            GemFireCacheImpl.pdxInstance = null;
-          }
 
-          List<LocalRegion> rootRegionValues;
+          List<InternalRegion> rootRegionValues;
           synchronized (this.rootRegions) {
             rootRegionValues = new ArrayList<>(this.rootRegions.values());
           }
@@ -2229,9 +2229,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
               op = Operation.CACHE_CLOSE;
             }
 
-            LocalRegion prRoot = null;
+            InternalRegion prRoot = null;
 
-            for (LocalRegion lr : rootRegionValues) {
+            for (InternalRegion lr : rootRegionValues) {
               if (isDebugEnabled) {
                 logger.debug("{}: processing region {}", this, lr.getFullPath());
               }
@@ -2306,7 +2306,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           this.tombstoneService.stop();
 
           // NOTICE: the CloseCache message is the *last* message you can send!
-          DM distributionManager = null;
+          DistributionManager distributionManager = null;
           try {
             distributionManager = this.system.getDistributionManager();
             distributionManager.removeMembershipListener(this.transactionManager);
@@ -2521,6 +2521,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @Override
   public void closeDiskStores() {
     Iterator<DiskStoreImpl> it = this.diskStores.values().iterator();
     while (it.hasNext()) {
@@ -2842,32 +2843,51 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return defaultPoolFactory;
   }
 
+  private Pool findFirstCompatiblePool(Map<String, Pool> pools) {
+    // act as if the default pool was configured
+    // and see if we can find an existing one that is compatible
+    PoolFactoryImpl pfi = (PoolFactoryImpl) createDefaultPF();
+    for (Pool p : pools.values()) {
+      if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
+        return p;
+      }
+    }
+    return null;
+  }
+
+  private void addLocalHostAsServer(PoolFactory poolFactory) {
+    PoolFactoryImpl poolFactoryImpl = (PoolFactoryImpl) poolFactory;
+    if (poolFactoryImpl.getPoolAttributes().locators.isEmpty()
+        && poolFactoryImpl.getPoolAttributes().servers.isEmpty()) {
+      try {
+        String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
+        poolFactoryImpl.addServer(localHostName, CacheServer.DEFAULT_PORT);
+      } catch (UnknownHostException ex) {
+        throw new IllegalStateException("Could not determine local host name", ex);
+      }
+    }
+  }
+
   /**
    * Used to set the default pool on a new GemFireCache.
    */
-  public void determineDefaultPool() {
+  public synchronized void determineDefaultPool() {
     if (!isClient()) {
       throw new UnsupportedOperationException();
     }
+    PoolFactory defaultPoolFactory = this.poolFactory;
+
     Pool pool = null;
     // create the pool if it does not already exist
-    if (this.poolFactory == null) {
+    if (defaultPoolFactory == null) {
       Map<String, Pool> pools = PoolManager.getAll();
       if (pools.isEmpty()) {
-        this.poolFactory = createDefaultPF();
+        defaultPoolFactory = createDefaultPF();
       } else if (pools.size() == 1) {
         // otherwise use a singleton.
         pool = pools.values().iterator().next();
       } else {
-        // act as if the default pool was configured
-        // and see if we can find an existing one that is compatible
-        PoolFactoryImpl pfi = (PoolFactoryImpl) createDefaultPF();
-        for (Pool p : pools.values()) {
-          if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
-            pool = p;
-            break;
-          }
-        }
+        pool = findFirstCompatiblePool(pools);
         if (pool == null) {
           // if pool is still null then we will not have a default pool for this ClientCache
           this.defaultPool = null;
@@ -2875,21 +2895,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         }
       }
     } else {
-      PoolFactoryImpl pfi = (PoolFactoryImpl) this.poolFactory;
-      if (pfi.getPoolAttributes().locators.isEmpty() && pfi.getPoolAttributes().servers.isEmpty()) {
-        try {
-          String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
-          pfi.addServer(localHostName, CacheServer.DEFAULT_PORT);
-        } catch (UnknownHostException ex) {
-          throw new IllegalStateException("Could not determine local host name", ex);
-        }
-      }
+      addLocalHostAsServer(defaultPoolFactory);
+
       // look for a pool that already exists that is compatible with
       // our PoolFactory.
       // If we don't find one we will create a new one that meets our needs.
       Map<String, Pool> pools = PoolManager.getAll();
       for (Pool p : pools.values()) {
-        if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
+        if (((PoolImpl) p)
+            .isCompatible(((PoolFactoryImpl) defaultPoolFactory).getPoolAttributes())) {
           pool = p;
           break;
         }
@@ -2897,75 +2911,29 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
     if (pool == null) {
       // create our pool with a unique name
-      String poolName = "DEFAULT";
+      String poolName = DEFAULT_POOL_NAME;
       int count = 1;
       Map<String, Pool> pools = PoolManager.getAll();
       while (pools.containsKey(poolName)) {
-        poolName = "DEFAULT" + count;
+        poolName = DEFAULT_POOL_NAME + count;
         count++;
       }
-      pool = this.poolFactory.create(poolName);
+      pool = defaultPoolFactory.create(poolName);
     }
     this.defaultPool = pool;
   }
 
   /**
-   * Used to see if a existing cache's pool is compatible with us.
+   * Determine whether the specified pool factory matches the pool factory used by this cache.
    *
-   * @return the default pool that is right for us
+   * @param poolFactory Prospective pool factory.
+   * @throws IllegalStateException When the specified pool factory does not match.
    */
-  public Pool determineDefaultPool(PoolFactory poolFactory) {
-    Pool pool;
-    // create the pool if it does not already exist
-    if (poolFactory == null) {
-      Map<String, Pool> pools = PoolManager.getAll();
-      if (pools.isEmpty()) {
-        throw new IllegalStateException("Since a cache already existed a pool should also exist.");
-      } else if (pools.size() == 1) {
-        // otherwise use a singleton.
-        pool = pools.values().iterator().next();
-        if (getDefaultPool() != pool) {
-          throw new IllegalStateException(
-              "Existing cache's default pool was not the same as the only existing pool");
-        }
-      } else {
-        // just use the current default pool if one exists
-        pool = getDefaultPool();
-        if (pool == null) {
-          // act as if the default pool was configured
-          // and see if we can find an existing one that is compatible
-          PoolFactoryImpl pfi = (PoolFactoryImpl) createDefaultPF();
-          for (Pool p : pools.values()) {
-            if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
-              pool = p;
-              break;
-            }
-          }
-          if (pool == null) {
-            // if pool is still null then we will not have a default pool for this ClientCache
-            return null;
-          }
-        }
-      }
-    } else {
-      PoolFactoryImpl poolFactoryImpl = (PoolFactoryImpl) poolFactory;
-      if (poolFactoryImpl.getPoolAttributes().locators.isEmpty()
-          && poolFactoryImpl.getPoolAttributes().servers.isEmpty()) {
-        try {
-          String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
-          poolFactoryImpl.addServer(localHostName, CacheServer.DEFAULT_PORT);
-        } catch (UnknownHostException ex) {
-          throw new IllegalStateException("Could not determine local host name", ex);
-        }
-      }
-      PoolImpl defaultPool = (PoolImpl) getDefaultPool();
-      if (defaultPool != null && defaultPool.isCompatible(poolFactoryImpl.getPoolAttributes())) {
-        pool = defaultPool;
-      } else {
-        throw new IllegalStateException("Existing cache's default pool was not compatible");
-      }
+  public void validatePoolFactory(PoolFactory poolFactory) {
+    // If the specified pool factory is null, by definition there is no pool factory to validate.
+    if (poolFactory != null && !Objects.equals(this.poolFactory, poolFactory)) {
+      throw new IllegalStateException("Existing cache's default pool was not compatible");
     }
-    return pool;
   }
 
   @Override
@@ -3000,7 +2968,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       InternalRegionArguments internalRegionArgs)
       throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
 
-    if (getMyId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+    if (getMyId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
       if (!internalRegionArgs.isUsedForMetaRegion()
           && internalRegionArgs.getInternalMetaRegion() == null) {
         throw new IllegalStateException("Regions can not be created in a locator.");
@@ -3015,7 +2983,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           LocalizedStrings.GemFireCache_ATTRIBUTES_MUST_NOT_BE_NULL.toLocalizedString());
     }
 
-    LocalRegion region;
+    InternalRegion region;
     final InputStream snapshotInputStream = internalRegionArgs.getSnapshotInputStream();
     InternalDistributedMember imageTarget = internalRegionArgs.getImageTarget();
     final boolean recreate = internalRegionArgs.getRecreateFlag();
@@ -3027,7 +2995,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       for (;;) {
         getCancelCriterion().checkCancelInProgress(null);
 
-        Future future = null;
+        Future<InternalRegion> future = null;
         synchronized (this.rootRegions) {
           region = this.rootRegions.get(name);
           if (region != null) {
@@ -3047,6 +3015,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             } else if (isPartitionedRegion) {
               region = new PartitionedRegion(name, attrs, null, this, internalRegionArgs);
             } else {
+              // Abstract region depends on the default pool existing so lazily initialize it
+              // if necessary.
+              if (Objects.equals(attrs.getPoolName(), DEFAULT_POOL_NAME)) {
+                determineDefaultPool();
+              }
               if (attrs.getScope().isLocal()) {
                 region = new LocalRegion(name, attrs, null, this, internalRegionArgs);
               } else {
@@ -3064,8 +3037,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
         boolean interrupted = Thread.interrupted();
         try { // future != null
-          LocalRegion localRegion = (LocalRegion) future.get(); // wait on Future
-          throw new RegionExistsException(localRegion);
+          throw new RegionExistsException(future.get());
         } catch (InterruptedException ignore) {
           interrupted = true;
         } catch (ExecutionException e) {
@@ -3130,8 +3102,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       region.postCreateRegion();
     } catch (RegionExistsException ex) {
       // outside of sync make sure region is initialized to fix bug 37563
-      LocalRegion localRegion = (LocalRegion) ex.getRegion();
-      localRegion.waitOnInitialization(); // don't give out ref until initialized
+      InternalRegion internalRegion = (InternalRegion) ex.getRegion();
+      internalRegion.waitOnInitialization(); // don't give out ref until initialized
       throw ex;
     }
 
@@ -3146,7 +3118,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public <K, V> RegionAttributes<K, V> invokeRegionBefore(LocalRegion parent, String name,
+  public <K, V> RegionAttributes<K, V> invokeRegionBefore(InternalRegion parent, String name,
       RegionAttributes<K, V> attrs, InternalRegionArguments internalRegionArgs) {
     for (RegionListener listener : this.regionListeners) {
       attrs =
@@ -3156,21 +3128,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public void invokeRegionAfter(LocalRegion region) {
+  public void invokeRegionAfter(InternalRegion region) {
     for (RegionListener listener : this.regionListeners) {
       listener.afterCreate(region);
     }
   }
 
   @Override
-  public void invokeBeforeDestroyed(LocalRegion region) {
+  public void invokeBeforeDestroyed(InternalRegion region) {
     for (RegionListener listener : this.regionListeners) {
       listener.beforeDestroyed(region);
     }
   }
 
   @Override
-  public void invokeCleanupFailedInitialization(LocalRegion region) {
+  public void invokeCleanupFailedInitialization(InternalRegion region) {
     for (RegionListener listener : this.regionListeners) {
       listener.cleanupFailedInitialization(region);
     }
@@ -3186,8 +3158,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    *
    * @since GemFire 6.0
    */
-  public Set<LocalRegion> getAllRegions() {
-    Set<LocalRegion> result = new HashSet<>();
+  public Set<InternalRegion> getAllRegions() {
+    Set<InternalRegion> result = new HashSet<>();
     synchronized (this.rootRegions) {
       for (Region region : this.rootRegions.values()) {
         if (region instanceof PartitionedRegion) {
@@ -3197,13 +3169,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             Set<Entry<Integer, BucketRegion>> bucketEntries =
                 partitionedRegion.getDataStore().getAllLocalBuckets();
             for (Entry entry : bucketEntries) {
-              result.add((LocalRegion) entry.getValue());
+              result.add((InternalRegion) entry.getValue());
             }
           }
-        } else if (region instanceof LocalRegion) {
-          LocalRegion localRegion = (LocalRegion) region;
-          result.add(localRegion);
-          result.addAll(localRegion.basicSubregions(true));
+        } else if (region instanceof InternalRegion) {
+          InternalRegion internalRegion = (InternalRegion) region;
+          result.add(internalRegion);
+          result.addAll(internalRegion.basicSubregions(true));
         }
       }
     }
@@ -3211,18 +3183,19 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public Set<LocalRegion> getApplicationRegions() {
-    Set<LocalRegion> result = new HashSet<>();
+  public Set<InternalRegion> getApplicationRegions() {
+    Set<InternalRegion> result = new HashSet<>();
     synchronized (this.rootRegions) {
       for (Object region : this.rootRegions.values()) {
-        LocalRegion localRegion = (LocalRegion) region;
-        if (localRegion.isSecret() || localRegion.isUsedForMetaRegion()
-            || localRegion instanceof HARegion || localRegion.isUsedForPartitionedRegionAdmin()
-            || localRegion.isInternalRegion()/* localRegion.isUsedForPartitionedRegionBucket() */) {
+        InternalRegion internalRegion = (InternalRegion) region;
+        if (internalRegion.isSecret() || internalRegion.isUsedForMetaRegion()
+            || internalRegion instanceof HARegion
+            || internalRegion.isUsedForPartitionedRegionAdmin() || internalRegion
+                .isInternalRegion()/* internalRegion.isUsedForPartitionedRegionBucket() */) {
           continue; // Skip administrative PartitionedRegions
         }
-        result.add(localRegion);
-        result.addAll(localRegion.basicSubregions(true));
+        result.add(internalRegion);
+        result.addAll(internalRegion.basicSubregions(true));
       }
     }
     return result;
@@ -3232,11 +3205,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public boolean hasPersistentRegion() {
     synchronized (this.rootRegions) {
-      for (LocalRegion region : this.rootRegions.values()) {
+      for (InternalRegion region : this.rootRegions.values()) {
         if (region.getDataPolicy().withPersistence()) {
           return true;
         }
-        for (LocalRegion subRegion : (Set<LocalRegion>) region.basicSubregions(true)) {
+        for (InternalRegion subRegion : (Set<InternalRegion>) region.basicSubregions(true)) {
           if (subRegion.getDataPolicy().withPersistence()) {
             return true;
           }
@@ -3247,7 +3220,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public void setRegionByPath(String path, LocalRegion r) {
+  public void setRegionByPath(String path, InternalRegion r) {
     if (r == null) {
       this.pathToRegion.remove(path);
     } else {
@@ -3274,27 +3247,27 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public LocalRegion getRegionByPath(String path) {
+  public InternalRegion getRegionByPath(String path) {
     validatePath(path); // fix for bug 34892
 
     // do this before checking the pathToRegion map
-    LocalRegion result = getReinitializingRegion(path);
+    InternalRegion result = getReinitializingRegion(path);
     if (result != null) {
       return result;
     }
-    return (LocalRegion) this.pathToRegion.get(path);
+    return this.pathToRegion.get(path);
   }
 
   @Override
-  public LocalRegion getRegionByPathForProcessing(String path) {
-    LocalRegion result = getRegionByPath(path);
+  public InternalRegion getRegionByPathForProcessing(String path) {
+    InternalRegion result = getRegionByPath(path);
     if (result == null) {
       this.stopper.checkCancelInProgress(null);
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT); // go through
       // initialization latches
       try {
         String[] pathParts = parsePath(path);
-        LocalRegion rootRegion;
+        InternalRegion rootRegion;
         synchronized (this.rootRegions) {
           rootRegion = this.rootRegions.get(pathParts[0]);
           if (rootRegion == null)
@@ -3304,7 +3277,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           logger.debug("GemFireCache.getRegion, calling getSubregion on rootRegion({}): {}",
               pathParts[0], pathParts[1]);
         }
-        result = (LocalRegion) rootRegion.getSubregion(pathParts[1], true);
+        result = (InternalRegion) rootRegion.getSubregion(pathParts[1], true);
       } finally {
         LocalRegion.setThreadInitLevelRequirement(oldLevel);
       }
@@ -3319,7 +3292,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public Region getRegion(String path, boolean returnDestroyedRegion) {
     this.stopper.checkCancelInProgress(null);
 
-    LocalRegion result = getRegionByPath(path);
+    InternalRegion result = getRegionByPath(path);
     // Do not waitOnInitialization() for PR
     if (result != null) {
       result.waitOnInitialization();
@@ -3332,7 +3305,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     String[] pathParts = parsePath(path);
-    LocalRegion rootRegion;
+    InternalRegion rootRegion;
     synchronized (this.rootRegions) {
       rootRegion = this.rootRegions.get(pathParts[0]);
       if (rootRegion == null) {
@@ -3361,15 +3334,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT); // go through
     // initialization latches
     try {
-      return isGlobalRegionInitializing((LocalRegion) getRegion(fullPath));
+      return isGlobalRegionInitializing((InternalRegion) getRegion(fullPath));
     } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
     }
   }
 
   /** Return true if this region is initializing */
-  private boolean isGlobalRegionInitializing(LocalRegion region) {
-    boolean result = region != null && region.scope.isGlobal() && !region.isInitialized();
+  private boolean isGlobalRegionInitializing(InternalRegion region) {
+    boolean result = region != null && region.getScope().isGlobal() && !region.isInitialized();
     if (result) {
       if (logger.isDebugEnabled()) {
         logger.debug("GemFireCache.isGlobalRegionInitializing ({})", region.getFullPath());
@@ -3391,7 +3364,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.stopper.checkCancelInProgress(null);
     Set<Region<?, ?>> regions = new HashSet<>();
     synchronized (this.rootRegions) {
-      for (LocalRegion region : this.rootRegions.values()) {
+      for (InternalRegion region : this.rootRegions.values()) {
         // If this is an internal meta-region, don't return it to end user
         if (region.isSecret() || region.isUsedForMetaRegion() || region instanceof HARegion
             || !includePRAdminRegions && (region.isUsedForPartitionedRegionAdmin()
@@ -3403,7 +3376,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
     if (waitForInit) {
       for (Iterator<Region<?, ?>> iterator = regions.iterator(); iterator.hasNext();) {
-        LocalRegion region = (LocalRegion) iterator.next();
+        InternalRegion region = (InternalRegion) iterator.next();
         if (!region.checkForInitialization()) {
           iterator.remove();
         }
@@ -3424,8 +3397,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         return;
       }
       for (Object region : rootRegions(false, false)) {
-        LocalRegion localRegion = (LocalRegion) region;
-        localRegion.cleanupForClient(ccn, client);
+        InternalRegion internalRegion = (InternalRegion) region;
+        internalRegion.cleanupForClient(ccn, client);
       }
     } catch (DistributedSystemDisconnectedException ignore) {
     }
@@ -3507,13 +3480,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * method blocks until reinitialization is complete and then returns the region.
    */
   @Override
-  public LocalRegion getReinitializingRegion(String fullPath) {
+  public InternalRegion getReinitializingRegion(String fullPath) {
     Future future = (Future) this.reinitializingRegions.get(fullPath);
     if (future == null) {
       return null;
     }
     try {
-      LocalRegion region = (LocalRegion) future.get();
+      InternalRegion region = (InternalRegion) future.get();
       region.waitOnInitialization();
       if (logger.isDebugEnabled()) {
         logger.debug("Returning manifested future for: {}", fullPath);
@@ -3612,12 +3585,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * @return true if root region was removed, false if not found
    */
   @Override
-  public boolean removeRoot(LocalRegion rootRgn) {
+  public boolean removeRoot(InternalRegion rootRgn) {
     synchronized (this.rootRegions) {
       String regionName = rootRgn.getName();
-      LocalRegion found = this.rootRegions.get(regionName);
+      InternalRegion found = this.rootRegions.get(regionName);
       if (found == rootRgn) {
-        LocalRegion previous = this.rootRegions.remove(regionName);
+        InternalRegion previous = this.rootRegions.remove(regionName);
         Assert.assertTrue(previous == rootRgn);
         return true;
       } else
@@ -3764,9 +3737,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /**
-   * @see LocalRegion
-   */
   private final ExpirationScheduler expirationScheduler;
 
   /**
@@ -3814,6 +3784,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return cacheServer;
   }
 
+  public boolean removeCacheServer(CacheServer cacheServer) {
+    boolean removed = this.allCacheServers.remove(cacheServer);
+    sendRemoveCacheServerProfileMessage();
+    return removed;
+  }
+
   @Override
   public void addGatewaySender(GatewaySender sender) {
     if (isClient()) {
@@ -3839,8 +3815,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     synchronized (this.rootRegions) {
-      Set<LocalRegion> applicationRegions = getApplicationRegions();
-      for (LocalRegion region : applicationRegions) {
+      Set<InternalRegion> applicationRegions = getApplicationRegions();
+      for (InternalRegion region : applicationRegions) {
         Set<String> senders = region.getAllGatewaySenderIds();
         if (senders.contains(sender.getId()) && !sender.isParallel()) {
           region.senderCreated();
@@ -3882,6 +3858,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         this.allGatewaySenders = Collections.unmodifiableSet(newSenders);
       }
     }
+    if (!(sender.getRemoteDSId() < 0)) {
+      this.system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_REMOVE, sender);
+    }
   }
 
   @Override
@@ -3896,6 +3875,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         newReceivers.addAll(this.allGatewayReceivers);
       }
       newReceivers.add(receiver);
+      this.allGatewayReceivers = Collections.unmodifiableSet(newReceivers);
+    }
+  }
+
+  public void removeGatewayReceiver(GatewayReceiver receiver) {
+    if (isClient()) {
+      throw new UnsupportedOperationException("operation is not supported on a client cache");
+    }
+    this.stopper.checkCancelInProgress(null);
+    synchronized (this.allGatewayReceiversLock) {
+      Set<GatewayReceiver> newReceivers = new HashSet<>(this.allGatewayReceivers.size() + 1);
+      if (!this.allGatewayReceivers.isEmpty()) {
+        newReceivers.addAll(this.allGatewayReceivers);
+      }
+      newReceivers.remove(receiver);
       this.allGatewayReceivers = Collections.unmodifiableSet(newReceivers);
     }
   }
@@ -4089,9 +4083,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private SortedMap<String, PartitionedRegion> getPartitionedRegionMap() {
     SortedMap<String, PartitionedRegion> prMap = new TreeMap<>();
-    for (Entry<String, Region<?, ?>> entry : this.pathToRegion.entrySet()) {
+    for (Entry<String, InternalRegion> entry : this.pathToRegion.entrySet()) {
       String regionName = entry.getKey();
-      Region<?, ?> region = entry.getValue();
+      InternalRegion region = entry.getValue();
 
       // Don't wait for non partitioned regions
       if (!(region instanceof PartitionedRegion)) {
@@ -4240,7 +4234,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   @Override
   public FilterProfile getFilterProfile(String regionName) {
-    LocalRegion r = (LocalRegion) getRegion(regionName, true);
+    InternalRegion r = (InternalRegion) getRegion(regionName, true);
     if (r != null) {
       return r.getFilterProfile();
     }
@@ -4333,6 +4327,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void readyForEvents() {
+    if (isClient()) {
+      // If a durable client has been configured...
+      if (Objects.nonNull(system) && Objects.nonNull(system.getConfig())
+          && !Objects.equals(DistributionConfig.DEFAULT_DURABLE_CLIENT_ID,
+              Objects.toString(system.getConfig().getDurableClientId(),
+                  DistributionConfig.DEFAULT_DURABLE_CLIENT_ID))) {
+        // Ensure that there is a pool to use for readyForEvents().
+        if (Objects.isNull(defaultPool)) {
+          determineDefaultPool();
+        }
+      }
+    }
     PoolManagerImpl.readyForEvents(this.system, false);
   }
 
@@ -4365,22 +4371,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return Collections.unmodifiableList(this.backupFiles);
   }
 
-  public BackupManager startBackup(InternalDistributedMember sender) throws IOException {
-    BackupManager manager = new BackupManager(sender, this);
-    if (!this.backupManager.compareAndSet(null, manager)) {
-      throw new IOException("Backup already in progress");
-    }
-    manager.validateRequestingAdmin();
-    return manager;
-  }
-
   @Override
-  public void clearBackupManager() {
-    this.backupManager.set(null);
-  }
-
-  public BackupManager getBackupManager() {
-    return this.backupManager.get();
+  public BackupService getBackupService() {
+    return backupService;
   }
 
   // TODO make this a simple int guarded by riWaiters and get rid of the double-check
@@ -4483,7 +4476,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     boolean monitorRequired =
         !this.queryMonitorDisabledForLowMem && queryMonitorRequiredForResourceManager;
     // Added for DUnit test purpose, which turns-on and off the this.testMaxQueryExecutionTime.
-    if (!(MAX_QUERY_EXECUTION_TIME > 0 || this.testMaxQueryExecutionTime > 0 || monitorRequired)) {
+    if (!(MAX_QUERY_EXECUTION_TIME > 0 || monitorRequired)) {
       // if this.testMaxQueryExecutionTime is set, send the QueryMonitor.
       // Else send null, so that the QueryMonitor is turned-off.
       return null;
@@ -4491,13 +4484,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     // Return the QueryMonitor service if MAX_QUERY_EXECUTION_TIME is set or it is required by the
     // ResourceManager and not overridden by system property.
-    boolean needQueryMonitor =
-        MAX_QUERY_EXECUTION_TIME > 0 || this.testMaxQueryExecutionTime > 0 || monitorRequired;
+    boolean needQueryMonitor = MAX_QUERY_EXECUTION_TIME > 0 || monitorRequired;
     if (needQueryMonitor && this.queryMonitor == null) {
       synchronized (this.queryMonitorLock) {
         if (this.queryMonitor == null) {
-          int maxTime = MAX_QUERY_EXECUTION_TIME > this.testMaxQueryExecutionTime
-              ? MAX_QUERY_EXECUTION_TIME : this.testMaxQueryExecutionTime;
+          int maxTime = MAX_QUERY_EXECUTION_TIME;
 
           if (monitorRequired && maxTime < 0) {
             // this means that the resource manager is being used and we need to monitor query
@@ -4506,7 +4497,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             maxTime = FIVE_HOURS;
           }
 
-          this.queryMonitor = new QueryMonitor(maxTime);
+          this.queryMonitor = new QueryMonitor(this, maxTime);
           final LoggingThreadGroup group =
               LoggingThreadGroup.createThreadGroup("QueryMonitor Thread Group", logger);
           Thread qmThread = new Thread(group, this.queryMonitor, "QueryMonitor Thread");
@@ -4562,6 +4553,41 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     Set otherMembers = this.dm.getOtherDistributionManagerIds();
     AddCacheServerProfileMessage message = new AddCacheServerProfileMessage();
     message.operateOnLocalCache(this);
+    if (!otherMembers.isEmpty()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Sending add cache server profile message to other members.");
+      }
+      ReplyProcessor21 replyProcessor = new ReplyProcessor21(this.dm, otherMembers);
+      message.setRecipients(otherMembers);
+      message.processorId = replyProcessor.getProcessorId();
+      this.dm.putOutgoing(message);
+
+      // Wait for replies.
+      try {
+        replyProcessor.waitForReplies();
+      } catch (InterruptedException ignore) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+
+
+  private void sendRemoveCacheServerProfileMessage() {
+    Set otherMembers = this.dm.getOtherDistributionManagerIds();
+    RemoveCacheServerProfileMessage message = new RemoveCacheServerProfileMessage();
+    message.operateOnLocalCache(this);
+
+    // Remove this while loop when we release GEODE 2.0
+    // This block prevents sending a message to old members that do not know about
+    // the RemoveCacheServerProfileMessage
+    Iterator memberIterator = otherMembers.iterator();
+    while (memberIterator.hasNext()) {
+      InternalDistributedMember member = (InternalDistributedMember) memberIterator.next();
+      if (Version.GEODE_150.compareTo(member.getVersionObject()) > 0) {
+        memberIterator.remove();
+      }
+    }
+
     if (!otherMembers.isEmpty()) {
       if (logger.isDebugEnabled()) {
         logger.debug("Sending add cache server profile message to other members.");
@@ -5041,7 +5067,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     return this.dm;
   }
 
@@ -5200,12 +5226,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public PdxInstanceFactory createPdxInstanceFactory(String className) {
-    return PdxInstanceFactoryImpl.newCreator(className, true);
+    return PdxInstanceFactoryImpl.newCreator(className, true, this);
   }
 
   @Override
   public PdxInstanceFactory createPdxInstanceFactory(String className, boolean expectDomainClass) {
-    return PdxInstanceFactoryImpl.newCreator(className, expectDomainClass);
+    return PdxInstanceFactoryImpl.newCreator(className, expectDomainClass, this);
   }
 
   @Override
@@ -5262,8 +5288,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.synchronizationListeners.remove(listener);
   }
 
+  @Override
   public void invokeRegionEntrySynchronizationListenersAfterSynchronization(
-      InternalDistributedMember sender, LocalRegion region,
+      InternalDistributedMember sender, InternalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize) {
     for (RegionEntrySynchronizationListener listener : this.synchronizationListeners) {
       try {
@@ -5274,5 +5301,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             new Object[] {sender, region.getFullPath(), entriesToSynchronize}), t);
       }
     }
+  }
+
+  @Override
+  public Object convertPdxInstanceIfNeeded(Object obj) {
+    Object result = obj;
+    if (!this.getPdxReadSerialized() && obj instanceof PdxInstance) {
+      result = ((PdxInstance) obj).getObject();
+    }
+    return result;
   }
 }

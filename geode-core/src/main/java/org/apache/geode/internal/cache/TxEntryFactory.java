@@ -24,9 +24,9 @@ public interface TxEntryFactory {
    *
    * @return the created entry
    */
-  public TXEntry createEntry(LocalRegion localRegion, KeyInfo key, TXStateInterface tx);
+  TXEntry createEntry(LocalRegion localRegion, KeyInfo key, TXStateInterface tx);
 
-  public TXEntry createEntry(LocalRegion localRegion, KeyInfo key, TXStateInterface tx,
+  TXEntry createEntry(LocalRegion localRegion, KeyInfo key, TXStateInterface tx,
       boolean rememberReads);
 
 }

@@ -17,21 +17,19 @@ package org.apache.geode.internal.protocol.protobuf.v1.utilities;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
 /**
  * This class contains helper functions for assistance in creating protobuf objects. This class is
  * mainly focused on helper functions which can be used in building BasicTypes for use in other
  * messages or those used to create the top level Message objects.
  * <p>
- * Helper functions specific to creating ClientProtocol.Responses can be found at
- * {@link ProtobufResponseUtilities} Helper functions specific to creating ClientProtocol.Requests
- * can be found at {@link ProtobufRequestUtilities}
+ * Helper functions specific to creating ClientProtocol.Messages can be found at
+ * {@link ProtobufRequestUtilities}
  */
 @Experimental
 public abstract class ProtobufUtilities {
@@ -72,44 +70,14 @@ public abstract class ProtobufUtilities {
   }
 
   /**
-   * This creates a protobuf message containing a ClientProtocol.Response
-   *
-   * @param response - The response for the message
-   * @return a protobuf Message containing the above parameters
-   */
-  public static ClientProtocol.Message createProtobufResponse(ClientProtocol.Response response) {
-    return ClientProtocol.Message.newBuilder().setResponse(response).build();
-  }
-
-  /**
-   * This creates a protobuf message containing a ClientProtocol.Request
-   *
-   * @param request - The request for the message
-   * @return a protobuf Message containing the above parameters
-   */
-  public static ClientProtocol.Message createProtobufMessage(ClientProtocol.Request request) {
-    return ClientProtocol.Message.newBuilder().setRequest(request).build();
-  }
-
-  /**
-   * This creates a protobuf message containing a ClientProtocol.Request
+   * This creates a protobuf message containing a ClientProtocol.Message
    *
    * @param getAllRequest - The request for the message
    * @return a protobuf Message containing the above parameters
    */
-  public static ClientProtocol.Request createProtobufRequestWithGetAllRequest(
+  public static ClientProtocol.Message createProtobufRequestWithGetAllRequest(
       RegionAPI.GetAllRequest getAllRequest) {
-    return ClientProtocol.Request.newBuilder().setGetAllRequest(getAllRequest).build();
-  }
-
-  /**
-   * This will convert a ProtocolErrorCode to a BasicTypes.ErrorCode for protobuf
-   *
-   * @param errorCode - incoming ProtocolErrorCode
-   * @return matching protobuf error code
-   */
-  public static BasicTypes.ErrorCode getProtobufErrorCode(ProtocolErrorCode errorCode) {
-    return BasicTypes.ErrorCode.forNumber(errorCode.codeValue);
+    return ClientProtocol.Message.newBuilder().setGetAllRequest(getAllRequest).build();
   }
 
   /**
@@ -136,7 +104,4 @@ public abstract class ProtobufUtilities {
     return protoRegionBuilder.build();
   }
 
-  public static ClientProtocol.Request.Builder createProtobufRequestBuilder() {
-    return ClientProtocol.Request.newBuilder();
-  }
 }

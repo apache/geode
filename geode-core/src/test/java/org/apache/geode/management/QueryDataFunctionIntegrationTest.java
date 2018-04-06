@@ -43,6 +43,7 @@ import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.beans.QueryDataFunction;
 import org.apache.geode.management.internal.cli.json.TypedJson;
@@ -82,6 +83,7 @@ public class QueryDataFunctionIntegrationTest {
   private InternalDistributedSystem system;
   private Region<Object, Object> replicatedRegion;
   private DistributedMember member;
+  private Cache cache;
 
   @Before
   public void setUp() throws Exception {
@@ -264,7 +266,8 @@ public class QueryDataFunctionIntegrationTest {
 
   @Test
   public void testNestedPDXObject() throws Exception {
-    PdxInstanceFactory factory = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    PdxInstanceFactory factory = PdxInstanceFactoryImpl.newCreator("Portfolio", false,
+        (InternalCache) replicatedRegion.getCache());
 
     factory.writeInt("ID", 111);
     factory.writeString("status", "active");

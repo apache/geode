@@ -28,7 +28,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionId;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -47,6 +48,7 @@ import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 
 /**
  * Internal implementation of {@link RegionMap}for regions whose DataPolicy is proxy. Proxy maps are
@@ -80,11 +82,6 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public void setOwner(Object r) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public void changeOwner(LocalRegion r) {
     throw new UnsupportedOperationException();
   }
@@ -101,7 +98,7 @@ class ProxyRegionMap implements RegionMap {
 
   @Override
   public Set keySet() {
-    return Collections.EMPTY_SET;
+    return Collections.emptySet();
   }
 
   @Override
@@ -131,7 +128,7 @@ class ProxyRegionMap implements RegionMap {
 
   @Override
   @SuppressWarnings({"rawtypes", "unchecked"})
-  public Set<VersionSource> clear(RegionVersionVector rvv) {
+  public Set<VersionSource> clear(RegionVersionVector rvv, BucketRegion bucketRegion) {
     // nothing needs to be done
     RegionVersionVector v = this.owner.getVersionVector();
     if (v != null) {
@@ -537,7 +534,7 @@ class ProxyRegionMap implements RegionMap {
 
     @Override
     public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
-        DM distributionManager, final Version version) {
+        DistributionManager distributionManager, final Version version) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
@@ -874,7 +871,7 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public void close() {
+  public void close(BucketRegion bucketRegion) {
     // nothing
   }
 
@@ -891,5 +888,42 @@ class ProxyRegionMap implements RegionMap {
   @Override
   public void incRecentlyUsed() {
     // nothing
+  }
+
+  @Override
+  public EvictionController getEvictionController() {
+    return null;
+  }
+
+  @Override
+  public int getEntryOverhead() {
+    return 0;
+  }
+
+  @Override
+  public boolean beginChangeValueForm(EvictableEntry le,
+      CachedDeserializable vmCachedDeserializable, Object v) {
+    return false;
+  }
+
+  @Override
+  public void finishChangeValueForm() {}
+
+  @Override
+  public int centralizedLruUpdateCallback() {
+    return 0;
+  }
+
+  @Override
+  public void updateEvictionCounter() {}
+
+  @Override
+  public ConcurrentMapWithReusableEntries<Object, Object> getCustomEntryConcurrentHashMap() {
+    return null;
+  }
+
+  @Override
+  public void setEntryMap(ConcurrentMapWithReusableEntries<Object, Object> map) {
+
   }
 }

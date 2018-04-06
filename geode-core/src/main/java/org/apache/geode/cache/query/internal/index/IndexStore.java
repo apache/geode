@@ -31,7 +31,7 @@ public interface IndexStore {
    * @param indexKey
    * @param re
    */
-  public void addMapping(Object indexKey, RegionEntry re) throws IMQException;
+  void addMapping(Object indexKey, RegionEntry re) throws IMQException;
 
   /**
    * Remove a mapping from the index store If entry at indexKey is not found, we must crawl the
@@ -40,7 +40,7 @@ public interface IndexStore {
    * @param indexKey
    * @param re
    */
-  public void removeMapping(Object indexKey, RegionEntry re) throws IMQException;
+  void removeMapping(Object indexKey, RegionEntry re) throws IMQException;
 
   /**
    * Update a mapping in the index store. This method adds a new mapping and removes the old mapping
@@ -49,61 +49,61 @@ public interface IndexStore {
    * @param oldKey
    * @param re
    */
-  public void updateMapping(Object indexKey, Object oldKey, RegionEntry re, Object oldValue)
+  void updateMapping(Object indexKey, Object oldKey, RegionEntry re, Object oldValue)
       throws IMQException;
 
-  public String printAll();
+  String printAll();
 
   /**
    * Return all of the IndexStoreEntries that map to a given region key.
    */
-  public CloseableIterator<IndexStoreEntry> get(Object indexKey);
+  CloseableIterator<IndexStoreEntry> get(Object indexKey);
 
   /**
    * Return all of the IndexStoreEntries in the range between start and end.
    */
-  public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
-      Object end, boolean endInclusive, Collection keysToRemove);
+  CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive, Object end,
+      boolean endInclusive, Collection keysToRemove);
 
   /**
    * Return all of the IndexStorageEntries that from start to the tail of the map.
    */
-  public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
+  CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
       Collection keysToRemove);
 
   /**
    * Return all of the IndexStorageEntries in the map.
    */
-  public CloseableIterator<IndexStoreEntry> iterator(Collection keysToRemove);
+  CloseableIterator<IndexStoreEntry> iterator(Collection keysToRemove);
 
   /**
    * Return all of the IndexStoreEntries from the end to the head of the map.
    */
-  public CloseableIterator<IndexStoreEntry> descendingIterator(Object end, boolean endInclusive,
+  CloseableIterator<IndexStoreEntry> descendingIterator(Object end, boolean endInclusive,
       Collection keysToRemove);
 
   /**
    * Return all of the IndexStoreEntries in the map in descending order.
    */
-  public CloseableIterator<IndexStoreEntry> descendingIterator(Collection keysToRemove);
+  CloseableIterator<IndexStoreEntry> descendingIterator(Collection keysToRemove);
 
   /**
    * Return all of the IndexStoreEntries in the range between end and start.
    */
-  public CloseableIterator<IndexStoreEntry> descendingIterator(Object start, boolean startInclusive,
+  CloseableIterator<IndexStoreEntry> descendingIterator(Object start, boolean startInclusive,
       Object end, boolean endInclusive, Collection keysToRemove);
 
   /**
    * Return the number of IndexStoreEntries that map to a given Index key.
    */
-  public int size(Object key);
+  int size(Object key);
 
   /**
    * Return the total keys in the Index store
    */
-  public int size();
+  int size();
 
-  public boolean clear();
+  boolean clear();
 
   interface IndexStoreEntry {
     /**
@@ -130,15 +130,15 @@ public interface IndexStore {
     boolean isUpdateInProgress();
   }
 
-  public boolean isIndexOnRegionKeys();
+  boolean isIndexOnRegionKeys();
 
-  public void setIndexOnRegionKeys(boolean indexOnRegionKeys);
+  void setIndexOnRegionKeys(boolean indexOnRegionKeys);
 
-  public boolean isIndexOnValues();
+  boolean isIndexOnValues();
 
-  public void setIndexOnValues(boolean indexOnValues);
+  void setIndexOnValues(boolean indexOnValues);
 
-  public Object getTargetObject(RegionEntry entry);
+  Object getTargetObject(RegionEntry entry);
 
-  public Object getTargetObjectInVM(RegionEntry entry);
+  Object getTargetObjectInVM(RegionEntry entry);
 }

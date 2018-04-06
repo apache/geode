@@ -15,8 +15,12 @@
 
 package org.apache.geode.internal.cache.eviction;
 
+
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.Properties;
@@ -27,6 +31,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.*;
+import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.VMLRURegionMap;
+import org.apache.geode.pdx.PdxInitializationException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -64,6 +71,47 @@ public class TransactionsWithOverflowTest {
     mgr.begin();
     pr.destroy(1);
     mgr.commit();
+  }
+
+  @Test
+  public void verifyThatTransactionalDestroysRemoveFromTheEvictionList() throws Exception {
+    Cache cache = getCache();
+    RegionFactory<?, ?> rf = cache.createRegionFactory();
+    rf.setDataPolicy(DataPolicy.REPLICATE);
+    rf.setEvictionAttributes(
+        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.DEFAULT_EVICTION_ACTION));
+    rf.setConcurrencyChecksEnabled(false);
+    InternalRegion r = (InternalRegion) rf.create(name.getMethodName());
+    CacheTransactionManager mgr = cache.getCacheTransactionManager();
+    for (int i = 0; i < 2; i++) {
+      r.put(i, "value" + i);
+      mgr.begin();
+      r.destroy(i);
+      mgr.commit();
+    }
+
+    VMLRURegionMap regionMap = (VMLRURegionMap) r.getRegionMap();
+    assertThat(regionMap.getEvictionList().size()).isEqualTo(0);
+  }
+
+  @Test
+  public void verifyThatTransactionalDestroysRemoveFromExpiration() throws Exception {
+    Cache cache = getCache();
+    RegionFactory<?, ?> rf = cache.createRegionFactory();
+    rf.setDataPolicy(DataPolicy.REPLICATE);
+    rf.setEntryTimeToLive(new ExpirationAttributes(11, ExpirationAction.DESTROY));
+    rf.setConcurrencyChecksEnabled(false);
+    InternalRegion r = (InternalRegion) rf.create(name.getMethodName());
+    CacheTransactionManager mgr = cache.getCacheTransactionManager();
+    for (int i = 0; i < 1; i++) {
+      r.put(i, "value" + i);
+      mgr.begin();
+      r.destroy(i);
+      mgr.commit();
+    }
+
+    catchException(r).getEntryExpiryTask(0);
+    assertThat((Exception) caughtException()).isExactlyInstanceOf(EntryNotFoundException.class);
   }
 
   private Cache getCache() {

@@ -638,6 +638,11 @@ public class AutoConnectionSourceImplJUnitTest {
       return 0;
     }
 
+    @Override
+    public int getSubscriptionTimeoutMultiplier() {
+      return 0;
+    }
+
     public RegionService createAuthenticatedCacheView(Properties properties) {
       return null;
     }

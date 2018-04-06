@@ -25,8 +25,8 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.cache.InternalCache;
@@ -43,7 +43,8 @@ public class RootRegionResponse extends AdminResponse {
    * Returns a {@code RootRegionResponse} that will be returned to the specified recipient. The
    * message will contains a copy of the local manager's system config.
    */
-  public static RootRegionResponse create(DM dm, InternalDistributedMember recipient) {
+  public static RootRegionResponse create(DistributionManager dm,
+      InternalDistributedMember recipient) {
     RootRegionResponse m = new RootRegionResponse();
     try {
       InternalCache cache = (InternalCache) CacheFactory.getInstance(dm.getSystem());

@@ -112,7 +112,6 @@ import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
-import org.apache.geode.internal.cache.eviction.CountLRUEviction;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -400,6 +399,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     stack.push(name);
     stack.push(f);
     String v;
+    v = atts.getValue(SUBSCRIPTION_TIMEOUT_MULTIPLIER);
+    if (v != null) {
+      f.setSubscriptionTimeoutMultiplier(parseInt(v));
+    }
     v = atts.getValue(SOCKET_CONNECT_TIMEOUT);
     if (v != null) {
       f.setSocketConnectTimeout(parseInt(v));
@@ -1943,13 +1946,17 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     String className = (String) top;
     logger.trace(LogMarker.CACHE_XML_PARSER, LocalizedMessage.create(
         LocalizedStrings.CacheXmlParser_XML_PARSER_CREATEDECLARABLE_CLASS_NAME_0, className));
+    Class c;
+    try {
+      c = InternalDataSerializer.getCachedClass(className);
+    } catch (Exception ex) {
+      throw new CacheXmlException("Could not find the class: " + className, ex);
+    }
     Object o;
     try {
-      Class c = InternalDataSerializer.getCachedClass(className);
       o = c.newInstance();
     } catch (Exception ex) {
-      throw new CacheXmlException(
-          LocalizedStrings.CacheXmlParser_WHILE_INSTANTIATING_A_0.toLocalizedString(className), ex);
+      throw new CacheXmlException("Could not create an instance of " + className, ex);
     }
     if (!(o instanceof Declarable)) {
       throw new CacheXmlException(
@@ -1957,8 +1964,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
               .toLocalizedString(className));
     }
     Declarable d = (Declarable) o;
-    d.init(props);
-
+    // init call done later in GemFireCacheImpl.addDeclarableProperties
     cache.addDeclarableProperties(d, props);
 
     return d;
@@ -2109,7 +2115,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    */
   private void startLRUEntryCount(Attributes atts) {
     final String maximum = atts.getValue(MAXIMUM);
-    int max = CountLRUEviction.DEFAULT_MAXIMUM_ENTRIES;
+    int max = EvictionAttributes.DEFAULT_ENTRIES_MAXIMUM;
     if (maximum != null) {
       max = parseInt(maximum);
     }
@@ -2418,7 +2424,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
               .toLocalizedString());
     }
     FunctionServiceCreation fsc = (FunctionServiceCreation) top;
-    fsc.create();
+    this.cache.setFunctionServiceCreation(fsc);
   }
 
   /**

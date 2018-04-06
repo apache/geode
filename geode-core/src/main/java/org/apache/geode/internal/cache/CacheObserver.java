@@ -53,19 +53,19 @@ public interface CacheObserver {
    * ByteBuffer to the pool.
    *
    */
-  public void afterWritingBytes();
+  void afterWritingBytes();
 
   /**
    *
    * Compacting is about to compact
    */
-  public void beforeGoingToCompact();
+  void beforeGoingToCompact();
 
   /**
    * Just finished Compacting
    *
    */
-  public void afterHavingCompacted();
+  void afterHavingCompacted();
 
   /**
    * Callback just after calculating the conflated byte buffer. This function can get called only in
@@ -74,7 +74,7 @@ public interface CacheObserver {
    * @param origBB Original ByteBuffer object for the operation without considering conflation
    * @param conflatedBB Resultant ByteBuffer object after conflation
    */
-  public void afterConflation(ByteBuffer origBB, ByteBuffer conflatedBB);
+  void afterConflation(ByteBuffer origBB, ByteBuffer conflatedBB);
 
   /**
    * Callback just after setting oplog offset . The Oplog Offset will be set to non negative number
@@ -87,7 +87,7 @@ public interface CacheObserver {
    *        in the Oplog for the operation & -1 for asynch mode of operation
    *
    */
-  public void afterSettingOplogOffSet(long offset);
+  void afterSettingOplogOffSet(long offset);
 
   /**
    * Callback given by the thread performing the operation which causes the switching of the Oplog.
@@ -95,7 +95,7 @@ public interface CacheObserver {
    * function will get called before the compacter thread gets notified
    *
    */
-  public void beforeSwitchingOplog();
+  void beforeSwitchingOplog();
 
   /**
    * Callback given by the thread performing the operation which causes the switching of the Oplog.
@@ -105,12 +105,12 @@ public interface CacheObserver {
    *
    *
    */
-  public void afterSwitchingOplog();
+  void afterSwitchingOplog();
 
   /**
    * Callback given by the thread which creates krfs.
    */
-  public void afterKrfCreated();
+  void afterKrfCreated();
 
   /**
    * Callback given immediately before any thread invokes ComplexDiskRegion.OplogCompactor's
@@ -118,7 +118,7 @@ public interface CacheObserver {
    * region.
    *
    */
-  public void beforeStoppingCompactor();
+  void beforeStoppingCompactor();
 
   /**
    * Callback given immediately after any thread invokes ComplexDiskRegion.OplogCompactor's
@@ -126,54 +126,54 @@ public interface CacheObserver {
    * region.
    *
    */
-  public void afterStoppingCompactor();
+  void afterStoppingCompactor();
 
   /**
    * Callback given immediately after the ComplexDiskRegion.OplogCompactor's stopCompactor method
    * signals the compactor to stop.
    *
    */
-  public void afterSignallingCompactor();
+  void afterSignallingCompactor();
 
   /**
    * Called when GII begins
    */
-  public void afterMarkingGIIStarted();
+  void afterMarkingGIIStarted();
 
   /**
    * Called when GII ends
    */
-  public void afterMarkingGIICompleted();
+  void afterMarkingGIICompleted();
 
   /**
    * Called after the Oplog.WriterThread (asynch writer thread) swaps the pendingFlushMap and
    * pendingWriteMap for flushing.
    */
-  public void afterSwitchingWriteAndFlushMaps();
+  void afterSwitchingWriteAndFlushMaps();
 
   /**
    * Invoked just before setting the LBHTree reference in the thread local.
    */
-  public void beforeSettingDiskRef();
+  void beforeSettingDiskRef();
 
   /**
    * Invoked just after setting the LBHTree reference in the thread local.
    */
-  public void afterSettingDiskRef();
+  void afterSettingDiskRef();
 
   /**
    * Invoked by the compactor thread just before deleting a compacted oplog
    *
    * @param compactedOplog
    */
-  public void beforeDeletingCompactedOplog(Oplog compactedOplog);
+  void beforeDeletingCompactedOplog(Oplog compactedOplog);
 
   /**
    * Invoked just before deleting an empty oplog
    *
    * @param emptyOplog
    */
-  public void beforeDeletingEmptyOplog(Oplog emptyOplog);
+  void beforeDeletingEmptyOplog(Oplog emptyOplog);
 
   /**
    * Invoked just before ShutdownAll operation

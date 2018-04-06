@@ -31,6 +31,6 @@ public interface Declarable2 extends Declarable {
   /**
    * Returns the current configuration of this {@link Declarable}
    */
-  public Properties getConfig();
+  Properties getConfig();
 
 }

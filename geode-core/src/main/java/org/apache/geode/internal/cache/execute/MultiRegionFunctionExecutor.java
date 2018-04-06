@@ -30,7 +30,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -195,7 +195,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       throw new IllegalStateException(
           LocalizedStrings.ExecuteFunction_DS_NOT_CREATED_OR_NOT_READY.toLocalizedString());
     }
-    final DM dm = ds.getDistributionManager();
+    final DistributionManager dm = ds.getDistributionManager();
     final Map<InternalDistributedMember, Set<String>> memberToRegionMap =
         calculateMemberToRegionMap();
     final Set<InternalDistributedMember> dest =

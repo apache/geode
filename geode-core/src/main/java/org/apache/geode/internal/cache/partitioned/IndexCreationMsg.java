@@ -33,12 +33,11 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexCreationException;
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.internal.index.IndexCreationData;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -104,7 +103,7 @@ public class IndexCreationMsg extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException, ForceReattemptException {
     // region exists
     ReplyException replyEx = null;
@@ -179,7 +178,7 @@ public class IndexCreationMsg extends PartitionMessage {
    * Process this index creation message on the receiver.
    */
   @Override
-  public void process(final DistributionManager dm) {
+  public void process(final ClusterDistributionManager dm) {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -375,6 +374,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
     IndexCreationMsg indMsg =
         new IndexCreationMsg(recipients, pr.getPRId(), processor, indexDefinitions);
+    indMsg.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
     if (logger.isDebugEnabled()) {
       logger.debug("Sending index creation message: {}, to member(s) {}.", indMsg, recipients);
     }
@@ -403,8 +403,9 @@ public class IndexCreationMsg extends PartitionMessage {
    * @param indexBucketsMap Map of indexes created and number of buckets indexed
    * @param numTotalBuckets Number of total buckets in this vm
    */
-  void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      boolean result, Map<String, Integer> indexBucketsMap, int numTotalBuckets) {
+  void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, boolean result, Map<String, Integer> indexBucketsMap,
+      int numTotalBuckets) {
     IndexCreationReplyMsg.send(member, procId, dm, ex, result, indexBucketsMap, numTotalBuckets);
   }
 
@@ -619,9 +620,9 @@ public class IndexCreationMsg extends PartitionMessage {
      * @param indexBucketsMap Map of indexes created and number of buckets indexed
      * @param numTotalBuckets Number of total buckets in this vm
      */
-    public static void send(InternalDistributedMember recipient, int processorId, DM dm,
-        ReplyException ex, boolean result, Map<String, Integer> indexBucketsMap,
-        int numTotalBuckets) {
+    public static void send(InternalDistributedMember recipient, int processorId,
+        DistributionManager dm, ReplyException ex, boolean result,
+        Map<String, Integer> indexBucketsMap, int numTotalBuckets) {
       IndexCreationReplyMsg indMsg = new IndexCreationReplyMsg(processorId, ex, result, result,
           indexBucketsMap, numTotalBuckets);
       indMsg.setRecipient(recipient);
@@ -634,7 +635,7 @@ public class IndexCreationMsg extends PartitionMessage {
      * @param dm distribution manager
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 p) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 p) {
       if (logger.isDebugEnabled()) {
         logger.debug("Processor id is : {}", this.processorId);
       }

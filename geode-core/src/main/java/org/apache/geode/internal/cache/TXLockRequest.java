@@ -18,6 +18,7 @@ package org.apache.geode.internal.cache;
 import java.util.*;
 
 import org.apache.geode.cache.*;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.locks.*;
 
 /**
@@ -74,13 +75,13 @@ public class TXLockRequest {
     this.distLocks.add(req);
   }
 
-  public void obtain() throws CommitConflictException {
+  public void obtain(InternalDistributedSystem system) throws CommitConflictException {
     if (this.localLocks != null && !this.localLocks.isEmpty()) {
       txLocalLock(this.localLocks);
       this.localLockHeld = true;
     }
     if (this.distLocks != null && !this.distLocks.isEmpty()) {
-      this.distLockId = TXLockService.createDTLS().txLock(this.distLocks, this.otherMembers);
+      this.distLockId = TXLockService.createDTLS(system).txLock(this.distLocks, this.otherMembers);
     }
   }
 
@@ -97,10 +98,10 @@ public class TXLockRequest {
   /**
    * Release any distributed locks obtained by this request
    */
-  public void releaseDistributed() {
+  public void releaseDistributed(InternalDistributedSystem system) {
     if (this.distLockId != null) {
       try {
-        TXLockService txls = TXLockService.createDTLS();
+        TXLockService txls = TXLockService.createDTLS(system);
         txls.release(this.distLockId);
       } catch (IllegalStateException ignore) {
         // IllegalStateException: TXLockService cannot be created
@@ -132,9 +133,9 @@ public class TXLockRequest {
     return sb.toString();
   }
 
-  public void cleanup() {
+  public void cleanup(InternalDistributedSystem system) {
     releaseLocal();
-    releaseDistributed();
+    releaseDistributed(system);
   }
 
   private static final TXReservationMgr resMgr = new TXReservationMgr(true);

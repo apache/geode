@@ -176,6 +176,13 @@ public class ClusterConfigurationService {
     return sharedConfigDls;
   }
 
+  public String generateDefaultXml() {
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    CacheXmlGenerator.generateDefault(pw);
+    return sw.toString();
+  }
+
   /**
    * Adds/replaces the xml entity in the shared configuration we don't need to trigger the change
    * listener for this modification, so it's ok to operate on the original configuration object
@@ -194,10 +201,7 @@ public class ClusterConfigurationService {
         }
         String xmlContent = configuration.getCacheXmlContent();
         if (xmlContent == null || xmlContent.isEmpty()) {
-          StringWriter sw = new StringWriter();
-          PrintWriter pw = new PrintWriter(sw);
-          CacheXmlGenerator.generateDefault(pw);
-          xmlContent = sw.toString();
+          xmlContent = generateDefaultXml();
         }
         try {
           final Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
@@ -387,7 +391,7 @@ public class ClusterConfigurationService {
   public void downloadJarFromOtherLocators(String groupName, String jarName)
       throws IllegalStateException, IOException {
     logger.info("Getting Jar files from other locators");
-    DM dm = this.cache.getDistributionManager();
+    DistributionManager dm = this.cache.getDistributionManager();
     DistributedMember me = this.cache.getMyId();
     List<DistributedMember> locators =
         new ArrayList<>(dm.getAllHostedLocatorsWithSharedConfiguration().keySet());

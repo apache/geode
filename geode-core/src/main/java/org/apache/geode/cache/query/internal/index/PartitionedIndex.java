@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
@@ -38,6 +39,7 @@ import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -77,7 +79,7 @@ public class PartitionedIndex extends AbstractIndex {
    */
   private String imports;
 
-  private HashSet mapIndexKeys = new HashSet();
+  protected Set mapIndexKeys = Collections.newSetFromMap(new ConcurrentHashMap());
 
   // Flag indicating that the populationg of this index is in progress
   private volatile boolean populateInProgress;
@@ -86,10 +88,10 @@ public class PartitionedIndex extends AbstractIndex {
    * Constructor for partitioned indexed. Creates the partitioned index on given a partitioned
    * region. An index can be created programmatically or through cache.xml during initialization.
    */
-  public PartitionedIndex(IndexType iType, String indexName, Region r, String indexedExpression,
-      String fromClause, String imports) {
-    super(indexName, r, fromClause, indexedExpression, null, fromClause, indexedExpression, null,
-        null);
+  public PartitionedIndex(InternalCache cache, IndexType iType, String indexName, Region r,
+      String indexedExpression, String fromClause, String imports) {
+    super(cache, indexName, r, fromClause, indexedExpression, null, fromClause, indexedExpression,
+        null, null);
     this.type = iType;
     this.imports = imports;
 
@@ -250,7 +252,7 @@ public class PartitionedIndex extends AbstractIndex {
       if (bukRegion == null) {
         throw new QueryInvocationTargetException("Bucket not found for the id :" + bId);
       }
-      IndexManager im = IndexUtils.getIndexManager(bukRegion, true);
+      IndexManager im = IndexUtils.getIndexManager(cache, bukRegion, true);
       if (im != null && im.getIndex(indexName) == null) {
         try {
           if (pr.getCache().getLogger().fineEnabled()) {

@@ -46,7 +46,6 @@ public class AckReaderThreadJUnitTest {
   private void createCache() {
     // Mock cache
     this.cache = Fakes.cache();
-    GemFireCacheImpl.setInstanceForTests(this.cache);
   }
 
   private void createSender() {
@@ -57,11 +56,6 @@ public class AckReaderThreadJUnitTest {
 
   private void createDispatcher() {
     this.dispatcher = mock(GatewaySenderEventRemoteDispatcher.class);
-  }
-
-  @After
-  public void tearDownGemFire() {
-    GemFireCacheImpl.setInstanceForTests(null);
   }
 
   @Test

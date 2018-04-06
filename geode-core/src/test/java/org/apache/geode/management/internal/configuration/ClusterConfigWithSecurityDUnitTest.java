@@ -62,10 +62,8 @@ public class ClusterConfigWithSecurityDUnitTest {
   @Before
   public void before() throws Exception {
     clusterConfigZipPath = buildSecureClusterConfigZip();
-
-    locatorProps = new Properties();
-    locatorProps.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
-    locator0 = lsRule.startLocatorVM(0, locatorProps);
+    locator0 =
+        lsRule.startLocatorVM(0, x -> x.withSecurityManager(SimpleTestSecurityManager.class));
   }
 
   @Test

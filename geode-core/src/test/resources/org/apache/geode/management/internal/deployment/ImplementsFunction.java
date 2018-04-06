@@ -14,11 +14,28 @@
  */
 package org.apache.geode.management.internal.deployment;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 public class ImplementsFunction implements Function {
+  public static String ID = "myTestFunction";
+
   public void execute(FunctionContext context) {
     context.getResultSender().lastResult("ImplementsFunctionResult");
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.DATA_MANAGE);
+  }
+
+  @Override
+  public String getId() {
+    return ID;
   }
 }

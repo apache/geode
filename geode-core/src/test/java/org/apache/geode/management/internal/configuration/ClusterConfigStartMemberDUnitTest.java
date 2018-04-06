@@ -19,7 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFI
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 import java.io.File;
 import java.util.Properties;
@@ -44,9 +43,7 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
 
   @Test
   public void testStartLocator() throws Exception {
-    locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
-    MemberVM secondLocator = lsRule.startLocatorVM(1, locatorProps);
-
+    MemberVM secondLocator = lsRule.startLocatorVM(1, locator.getPort());
     REPLICATED_CONFIG_FROM_ZIP.verify(secondLocator);
   }
 

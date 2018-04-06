@@ -17,17 +17,12 @@
 
 
 apply plugin: 'antlr'
+apply plugin: 'me.champeau.gradle.jmh'
 
 sourceSets {
   jca {
     compileClasspath += configurations.compile
     runtimeClasspath += configurations.runtime
-  }
-  jpfTest {
-    compileClasspath += configurations.compile
-    compileClasspath += main.output
-    runtimeClasspath += configurations.runtime
-    runtimeClasspath += main.output
   }
 }
 
@@ -72,10 +67,10 @@ dependencies {
   compile ('mx4j:mx4j:' + project.'mx4j.version') {
     ext.optional = true;
   }
-  compile ('mx4j:mx4j-remote:' + project.'mx4j.version') {
+  compile ('mx4j:mx4j-remote:' + project.'mx4j-remote.version') {
     ext.optional = true;
   }
-  compile ('mx4j:mx4j-tools:' + project.'mx4j.version') {
+  compile ('mx4j:mx4j-tools:' + project.'mx4j-tools.version') {
     ext.optional = true;
   }
   compile ('net.java.dev.jna:jna:' + project.'jna.version')
@@ -124,10 +119,6 @@ dependencies {
   }
 
   compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
-  // This is only added since shiro is using an old version of beanutils and we want
-  // to use a standard version. Once shiro deps are updated, remove this explicit dependency
-  // in favor of a transitive dependency on beanutils.
-  compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
 
   // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
   compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
@@ -162,7 +153,7 @@ dependencies {
   testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
 
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
-  jpfTestCompile project(':geode-concurrency-test')
+  testCompile project(':geode-concurrency-test')
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -174,6 +165,11 @@ sourceSets {
   test {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
   }
+}
+
+jmh {
+  include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
+  duplicateClassesStrategy = 'warn'
 }
 
 // Creates the version properties file and writes it to the classes dir
@@ -230,11 +226,6 @@ task jcaJar (type: Jar, dependsOn: raJar) {
   extension 'rar'
   metaInf { from 'src/jca/ra.xml' }
   from raJar.archivePath
-}
-
-task jpfTest(type: Test) {
-  classpath = sourceSets.jpfTest.runtimeClasspath
-  testClassesDir = sourceSets.jpfTest.output.classesDir
 }
 
 configurations {

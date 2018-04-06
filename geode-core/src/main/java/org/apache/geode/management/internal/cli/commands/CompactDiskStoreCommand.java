@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -121,7 +122,7 @@ public class CompactDiskStoreCommand implements GfshCommand {
             }
             String notExecutedMembers = CompactRequest.getNotExecutedMembers();
             if (notExecutedMembers != null && !notExecutedMembers.isEmpty()) {
-              LogWrapper.getInstance()
+              LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
                   .info("compact disk-store \"" + diskStoreName
                       + "\" message was scheduled to be sent to but was not send to "
                       + notExecutedMembers);
@@ -158,7 +159,7 @@ public class CompactDiskStoreCommand implements GfshCommand {
         } // all members' if
       } // disk store exists' if
     } catch (RuntimeException e) {
-      LogWrapper.getInstance().info(e.getMessage(), e);
+      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).info(e.getMessage(), e);
       result = ResultBuilder.createGemFireErrorResult(
           CliStrings.format(CliStrings.COMPACT_DISK_STORE__ERROR_WHILE_COMPACTING_REASON_0,
               new Object[] {e.getMessage()}));
@@ -176,7 +177,7 @@ public class CompactDiskStoreCommand implements GfshCommand {
 
     for (Map.Entry<String, String[]> entry : entrySet) {
       String[] value = entry.getValue();
-      if (CliUtil.contains(value, diskStoreName)) {
+      if (diskStoreName != null && ArrayUtils.contains(value, diskStoreName)) {
         return true;
       }
     }

@@ -15,7 +15,16 @@
 
 package org.apache.geode.internal.cache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -34,8 +43,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -46,9 +55,28 @@ import org.apache.geode.internal.OneTaskOnlyExecutor;
 import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore.CreateBucketResult;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.cache.partitioned.*;
+import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.BucketBackupMessage;
+import org.apache.geode.internal.cache.partitioned.CreateBucketMessage;
+import org.apache.geode.internal.cache.partitioned.CreateMissingBucketsTask;
+import org.apache.geode.internal.cache.partitioned.EndBucketCreationMessage;
+import org.apache.geode.internal.cache.partitioned.FetchPartitionDetailsMessage;
 import org.apache.geode.internal.cache.partitioned.FetchPartitionDetailsMessage.FetchPartitionDetailsResponse;
+import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
+import org.apache.geode.internal.cache.partitioned.InternalPartitionDetails;
+import org.apache.geode.internal.cache.partitioned.LoadProbe;
+import org.apache.geode.internal.cache.partitioned.ManageBackupBucketMessage;
+import org.apache.geode.internal.cache.partitioned.ManageBucketMessage;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage.NodeResponse;
+import org.apache.geode.internal.cache.partitioned.OfflineMemberDetails;
+import org.apache.geode.internal.cache.partitioned.OfflineMemberDetailsImpl;
+import org.apache.geode.internal.cache.partitioned.PRLoad;
+import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
+import org.apache.geode.internal.cache.partitioned.PartitionRegionInfoImpl;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
+import org.apache.geode.internal.cache.partitioned.RecoveryRunnable;
+import org.apache.geode.internal.cache.partitioned.RedundancyLogger;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.FPRDirector;
@@ -508,7 +536,7 @@ public class PRHARedundancyProvider {
 
     synchronized (this) {
       if (this.prRegion.getCache().isCacheAtShutdownAll()) {
-        throw new CacheClosedException("Cache is shutting down");
+        throw prRegion.getCache().getCacheClosedException("Cache is shutting down");
       }
 
       if (isDebugEnabled) {
@@ -551,7 +579,7 @@ public class PRHARedundancyProvider {
             if (isDebugEnabled) {
               logger.debug("Aborted createBucketAtomically due to ShutdownAll");
             }
-            throw new CacheClosedException("Cache is shutting down");
+            throw prRegion.getCache().getCacheClosedException("Cache is shutting down");
           }
           // this.prRegion.getCache().getLogger().config(
           // "DEBUG createBucketAtomically: "
@@ -810,11 +838,11 @@ public class PRHARedundancyProvider {
   /**
    * Test observer to help reproduce #42429.
    */
-  public static interface EndBucketCreationObserver {
+  public interface EndBucketCreationObserver {
 
-    public void afterEndBucketCreationMessageSend(PartitionedRegion pr, int bucketId);
+    void afterEndBucketCreationMessageSend(PartitionedRegion pr, int bucketId);
 
-    public void afterEndBucketCreation(PartitionedRegion pr, int bucketId);
+    void afterEndBucketCreation(PartitionedRegion pr, int bucketId);
   }
 
   public void endBucketCreationLocally(int bucketId, InternalDistributedMember newPrimary) {
@@ -900,7 +928,7 @@ public class PRHARedundancyProvider {
       final Set<InternalDistributedMember> allStores) {
     HashSet<InternalDistributedMember> allMembersOnSystem =
         new HashSet<InternalDistributedMember>();
-    DM dm = this.prRegion.getDistributionManager();
+    DistributionManager dm = this.prRegion.getDistributionManager();
     Set<InternalDistributedMember> buddies = dm.getMembersInSameZone(acceptedMember);
     // TODO Dan - I'm not sure this retain all is necessary, but there may have been a reason we
     // were
@@ -1298,7 +1326,7 @@ public class PRHARedundancyProvider {
     ArrayList<DataStoreBuckets> stores = this.prRegion.getRegionAdvisor()
         .adviseFilteredDataStores(new HashSet<InternalDistributedMember>(candidates));
 
-    final DM dm = this.prRegion.getDistributionManager();
+    final DistributionManager dm = this.prRegion.getDistributionManager();
     // Add ourself as a candidate, if appropriate
     InternalDistributedMember moi = dm.getId();
     PartitionedRegionDataStore myDS = this.prRegion.getDataStore();
@@ -2103,7 +2131,8 @@ public class PRHARedundancyProvider {
       this.bucketToMonitor.getBucketAdvisor().removeMembershipListener(this);
     }
 
-    public void memberJoined(InternalDistributedMember id) {
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
       if (logger.isDebugEnabled()) {
         logger.debug("Observer for bucket {} member joined {}", this.bucketToMonitor, id);
       }
@@ -2114,10 +2143,11 @@ public class PRHARedundancyProvider {
       }
     }
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       if (logger.isDebugEnabled()) {
         logger.debug("Observer for bucket {} member departed {}", this.bucketToMonitor, id);
       }
@@ -2203,8 +2233,8 @@ public class PRHARedundancyProvider {
     }
 
     @Override
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
   }
 
   /**
@@ -2212,7 +2242,8 @@ public class PRHARedundancyProvider {
    *
    */
   protected class PRMembershipListener implements MembershipListener {
-    public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        final InternalDistributedMember id, final boolean crashed) {
       try {
         DistributedMember dmem = prRegion.getSystem().getDistributedMember();
         if (logger.isDebugEnabled()) {
@@ -2243,15 +2274,16 @@ public class PRHARedundancyProvider {
       }
     }
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
-    public void memberJoined(InternalDistributedMember id) {
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
       // no action required
     }
 
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
   }
 
   /**

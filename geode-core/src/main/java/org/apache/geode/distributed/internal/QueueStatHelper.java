@@ -27,15 +27,15 @@ public interface QueueStatHelper {
   /**
    * Called when an item is added to the queue.
    */
-  public void add();
+  void add();
 
   /**
    * Called when an item is removed from the queue.
    */
-  public void remove();
+  void remove();
 
   /**
    * Called when count items are removed from the queue.
    */
-  public void remove(int count);
+  void remove(int count);
 }

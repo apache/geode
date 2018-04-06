@@ -22,13 +22,13 @@ import java.util.List;
  */
 public interface GatewaySenderEventDispatcher {
 
-  public boolean dispatchBatch(List events, boolean removeFromQueueOnException, boolean isRetry);
+  boolean dispatchBatch(List events, boolean removeFromQueueOnException, boolean isRetry);
 
-  public boolean isRemoteDispatcher();
+  boolean isRemoteDispatcher();
 
-  public boolean isConnectedToRemote();
+  boolean isConnectedToRemote();
 
-  public void stop();
+  void stop();
 
-  public void shutDownAckReaderConnection();
+  void shutDownAckReaderConnection();
 }

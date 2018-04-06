@@ -22,7 +22,7 @@ import java.util.*;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.*;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 
@@ -73,7 +73,7 @@ public class InvalidateRegionOperation extends DistributedCacheOperation {
     }
 
     @Override
-    protected boolean operateOnRegion(CacheEvent event, DistributionManager dm)
+    protected boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
         throws EntryNotFoundException {
       RegionEventImpl ev = (RegionEventImpl) event;
       DistributedRegion rgn = (DistributedRegion) ev.region;

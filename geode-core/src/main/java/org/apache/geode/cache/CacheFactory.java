@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
+
 import java.util.Properties;
 
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -204,7 +206,7 @@ public class CacheFactory {
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
     synchronized (CacheFactory.class) {
       DistributedSystem ds = null;
-      if (this.dsProps.isEmpty()) {
+      if (this.dsProps.isEmpty() && !ALLOW_MULTIPLE_SYSTEMS) {
         // any ds will do
         ds = InternalDistributedSystem.getConnectedInstance();
         validateUsabilityOfSecurityCallbacks(ds);
@@ -295,7 +297,7 @@ public class CacheFactory {
             LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
       }
       if (!instance.getDistributedSystem().equals(system)) {
-        throw new CacheClosedException(
+        throw instance.getCacheClosedException(
             LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED_FOR_THE_GIVEN_DISTRIBUTED_SYSTEM
                 .toLocalizedString());
       }
@@ -306,6 +308,14 @@ public class CacheFactory {
   /**
    * Gets an arbitrary open instance of {@link Cache} produced by an earlier call to
    * {@link #create()}.
+   *
+   * <p>
+   * WARNING: To avoid risk of deadlock, do not invoke getAnyInstance() from within any
+   * CacheCallback including CacheListener, CacheLoader, CacheWriter, TransactionListener,
+   * TransactionWriter. Instead use EntryEvent.getRegion().getCache(),
+   * RegionEvent.getRegion().getCache(), LoaderHelper.getRegion().getCache(), or
+   * TransactionEvent.getCache().
+   * </p>
    *
    * @throws CacheClosedException if a cache has not been created or the only created one is
    *         {@link Cache#isClosed closed}

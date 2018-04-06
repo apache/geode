@@ -21,7 +21,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,7 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.InternalCache;
@@ -42,12 +41,10 @@ public class FinishBackupRequestTest {
 
   private FinishBackupRequest finishBackupRequest;
 
-  private DM dm;
+  private DistributionManager dm;
   private InternalCache cache;
-  private BackupManager backupManager;
+  private BackupService backupService;
   private int processorId = 79;
-  private File targetDir;
-  private File baselineDir;
   private boolean abort;
   private FinishBackupFactory finishBackupFactory;
   private InternalDistributedMember sender;
@@ -58,16 +55,14 @@ public class FinishBackupRequestTest {
   @Before
   public void setUp() throws Exception {
     // mocks here
-    dm = mock(DM.class);
+    dm = mock(DistributionManager.class);
     cache = mock(InternalCache.class);
-    backupManager = mock(BackupManager.class);
-    targetDir = mock(File.class);
-    baselineDir = mock(File.class);
+    backupService = mock(BackupService.class);
     abort = false;
 
     when(dm.getCache()).thenReturn(cache);
     when(dm.getDistributionManagerId()).thenReturn(sender);
-    when(cache.getBackupManager()).thenReturn(backupManager);
+    when(cache.getBackupService()).thenReturn(backupService);
 
     sender = mock(InternalDistributedMember.class);
 
@@ -78,22 +73,20 @@ public class FinishBackupRequestTest {
     when(finishBackup.run()).thenReturn(persistentIds);
 
     finishBackupFactory = mock(FinishBackupFactory.class);
-    when(finishBackupFactory.createFinishBackup(eq(cache), eq(targetDir), eq(baselineDir),
-        eq(abort))).thenReturn(finishBackup);
+    when(finishBackupFactory.createFinishBackup(eq(cache))).thenReturn(finishBackup);
     when(finishBackupFactory.createBackupResponse(eq(sender), eq(persistentIds)))
         .thenReturn(mock(BackupResponse.class));
 
 
-    finishBackupRequest = new FinishBackupRequest(sender, recipients, processorId, targetDir,
-        baselineDir, false, finishBackupFactory);
+    finishBackupRequest =
+        new FinishBackupRequest(sender, recipients, processorId, finishBackupFactory);
   }
 
   @Test
   public void usesFactoryToCreateFinishBackup() throws Exception {
     finishBackupRequest.createResponse(dm);
 
-    verify(finishBackupFactory, times(1)).createFinishBackup(eq(cache), eq(targetDir),
-        eq(baselineDir), eq(abort));
+    verify(finishBackupFactory, times(1)).createFinishBackup(eq(cache));
   }
 
   @Test

@@ -30,24 +30,24 @@ public interface SystemMemberCache {
   /**
    * The name of the cache.
    */
-  public String getName();
+  String getName();
 
   /**
    * Value that uniquely identifies an instance of a cache for a given member.
    */
-  public int getId();
+  int getId();
 
   /**
    * Indicates if this cache has been closed.
    *
    * @return true, if this cache is closed; false, otherwise
    */
-  public boolean isClosed();
+  boolean isClosed();
 
   /**
    * Gets the number of seconds a cache operation will wait to obtain a distributed lock lease.
    */
-  public int getLockTimeout();
+  int getLockTimeout();
 
   /**
    * Sets the number of seconds a cache operation may wait to obtain a distributed lock lease before
@@ -57,12 +57,12 @@ public interface SystemMemberCache {
    *
    * @see org.apache.geode.cache.Cache#setLockTimeout
    */
-  public void setLockTimeout(int seconds) throws AdminException;
+  void setLockTimeout(int seconds) throws AdminException;
 
   /**
    * Gets the length, in seconds, of distributed lock leases obtained by this cache.
    */
-  public int getLockLease();
+  int getLockLease();
 
   /**
    * Sets the length, in seconds, of distributed lock leases obtained by this cache.
@@ -71,7 +71,7 @@ public interface SystemMemberCache {
    *
    * @see org.apache.geode.cache.Cache#setLockLease
    */
-  public void setLockLease(int seconds) throws AdminException;
+  void setLockLease(int seconds) throws AdminException;
 
   /**
    * Gets the number of seconds a cache {@link org.apache.geode.cache.Region#get(Object) get}
@@ -79,7 +79,7 @@ public interface SystemMemberCache {
    * spent loading the object. When the search times out it causes the get to fail by throwing an
    * exception.
    */
-  public int getSearchTimeout();
+  int getSearchTimeout();
 
   /**
    * Sets the number of seconds a cache get operation can spend searching for a value.
@@ -88,25 +88,25 @@ public interface SystemMemberCache {
    *
    * @see org.apache.geode.cache.Cache#setSearchTimeout
    */
-  public void setSearchTimeout(int seconds) throws AdminException;
+  void setSearchTimeout(int seconds) throws AdminException;
 
   /**
    * Returns number of seconds since this member's cache has been created. Returns <code>-1</code>
    * if this member does not have a cache or its cache has been closed.
    */
-  public int getUpTime();
+  int getUpTime();
 
   /**
    * Returns the names of all the root regions currently in this cache.
    */
-  public java.util.Set getRootRegionNames();
+  java.util.Set getRootRegionNames();
 
   // operations
 
   /**
    * Returns statistics related to this cache's performance.
    */
-  public Statistic[] getStatistics();
+  Statistic[] getStatistics();
 
   /**
    * Return the existing region (or subregion) with the specified path that already exists in the
@@ -117,7 +117,7 @@ public interface SystemMemberCache {
    * @return the Region or null if not found
    * @throws IllegalArgumentException if path is null, the empty string, or "/"
    */
-  public SystemMemberRegion getRegion(String path) throws AdminException;
+  SystemMemberRegion getRegion(String path) throws AdminException;
 
   /**
    * Creates a VM root <code>Region</code> in this cache.
@@ -131,8 +131,7 @@ public interface SystemMemberCache {
    * @deprecated as of GemFire 5.0, use {@link #createRegion} instead
    */
   @Deprecated
-  public SystemMemberRegion createVMRegion(String name, RegionAttributes attrs)
-      throws AdminException;
+  SystemMemberRegion createVMRegion(String name, RegionAttributes attrs) throws AdminException;
 
   /**
    * Creates a root <code>Region</code> in this cache.
@@ -144,13 +143,13 @@ public interface SystemMemberCache {
    *
    * @since GemFire 5.0
    */
-  public SystemMemberRegion createRegion(String name, RegionAttributes attrs) throws AdminException;
+  SystemMemberRegion createRegion(String name, RegionAttributes attrs) throws AdminException;
 
   /**
    * Updates the state of this cache instance. Note that once a cache instance is closed refresh
    * will never change the state of that instance.
    */
-  public void refresh();
+  void refresh();
 
   /**
    * Adds a new, unstarted cache server that will serve the contents of this cache to clients.
@@ -159,7 +158,7 @@ public interface SystemMemberCache {
    *
    * @since GemFire 5.7
    */
-  public SystemMemberCacheServer addCacheServer() throws AdminException;
+  SystemMemberCacheServer addCacheServer() throws AdminException;
 
   /**
    * Returns the cache servers that run in this member's VM. Note that this list will not be updated
@@ -169,7 +168,7 @@ public interface SystemMemberCache {
    *
    * @since GemFire 5.7
    */
-  public SystemMemberCacheServer[] getCacheServers() throws AdminException;
+  SystemMemberCacheServer[] getCacheServers() throws AdminException;
 
   /**
    * Returns whether or not this cache acts as a server. This method will always return
@@ -178,5 +177,5 @@ public interface SystemMemberCache {
    *
    * @since GemFire 4.0
    */
-  public boolean isServer() throws AdminException;
+  boolean isServer() throws AdminException;
 }

@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
@@ -71,7 +71,7 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
    * Used both for the reciept of a FlushMessage and the reply to a Flushmessage
    */
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     if (this.bucketId != Integer.MIN_VALUE) {
       if (logger.isDebugEnabled()) {
         logger.debug("Received sent FlushMessage {}", this);

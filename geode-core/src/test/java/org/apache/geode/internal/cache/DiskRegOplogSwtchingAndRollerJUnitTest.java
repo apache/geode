@@ -27,7 +27,7 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -617,8 +617,8 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     // region.close();
   }// end of testEntryDeletedinCurrentOplog
 
-  private EvictionStatistics getLRUStats(Region region) {
-    return ((LocalRegion) region).getEvictionController().getStatistics();
+  private EvictionCounters getLRUStats(Region region) {
+    return ((LocalRegion) region).getEvictionController().getCounters();
   }
 
   /**

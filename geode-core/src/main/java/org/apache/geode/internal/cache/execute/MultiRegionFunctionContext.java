@@ -29,7 +29,7 @@ import org.apache.geode.cache.execute.FunctionContext;
  */
 public interface MultiRegionFunctionContext extends FunctionContext {
 
-  public Set<Region> getRegions();
+  Set<Region> getRegions();
 
   /**
    * Returns a boolean to identify whether this is a re-execute. Returns true if it is a re-execute
@@ -40,6 +40,6 @@ public interface MultiRegionFunctionContext extends FunctionContext {
    * @since GemFire 6.5
    * @see Function#isHA()
    */
-  public boolean isPossibleDuplicate();
+  boolean isPossibleDuplicate();
 
 }

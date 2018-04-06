@@ -15,11 +15,12 @@
 package org.apache.geode.internal.cache.backup;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -33,14 +34,17 @@ class PrepareBackupOperation extends BackupOperation {
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
   private final PrepareBackupFactory prepareBackupFactory;
+  private final Properties properties;
 
-  PrepareBackupOperation(DM dm, InternalDistributedMember member, InternalCache cache,
-      Set<InternalDistributedMember> recipients, PrepareBackupFactory prepareBackupFactory) {
+  PrepareBackupOperation(DistributionManager dm, InternalDistributedMember member,
+      InternalCache cache, Set<InternalDistributedMember> recipients,
+      PrepareBackupFactory prepareBackupFactory, Properties properties) {
     super(dm);
     this.member = member;
     this.cache = cache;
     this.recipients = recipients;
     this.prepareBackupFactory = prepareBackupFactory;
+    this.properties = properties;
   }
 
   @Override
@@ -50,14 +54,16 @@ class PrepareBackupOperation extends BackupOperation {
 
   @Override
   DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
-    return prepareBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId());
+    return prepareBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId(),
+        properties);
   }
 
   @Override
   void processLocally() {
     try {
-      addToResults(member, prepareBackupFactory.createPrepareBackup(member, cache).run());
-    } catch (IOException e) {
+      addToResults(member,
+          prepareBackupFactory.createPrepareBackup(member, cache, properties).run());
+    } catch (IOException | InterruptedException e) {
       logger.fatal("Failed to PrepareBackup in " + member, e);
     }
   }

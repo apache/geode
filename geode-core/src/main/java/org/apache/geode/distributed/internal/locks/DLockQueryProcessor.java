@@ -25,7 +25,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -59,7 +59,8 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
    * @return the query reply or null if there was no reply due to membership change
    */
   static DLockQueryReplyMessage query(final InternalDistributedMember grantor,
-      final String serviceName, final Object objectName, final boolean lockBatch, final DM dm) {
+      final String serviceName, final Object objectName, final boolean lockBatch,
+      final DistributionManager dm) {
     DLockQueryProcessor processor = new DLockQueryProcessor(dm, grantor, serviceName);
 
     DLockQueryMessage msg = new DLockQueryMessage();
@@ -81,7 +82,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
     try {
       processor.waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     }
 
     if (processor.reply == null) {
@@ -98,7 +99,8 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
    * @param grantor the member to query for lock leasing info
    * @param serviceName the name of the lock service
    */
-  private DLockQueryProcessor(DM dm, InternalDistributedMember grantor, String serviceName) {
+  private DLockQueryProcessor(DistributionManager dm, InternalDistributedMember grantor,
+      String serviceName) {
     super(dm, grantor);
   }
 
@@ -152,7 +154,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
      * Processes this message - invoked on the node that is the lock grantor.
      */
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       boolean failed = true;
       ReplyException replyException = null;
       try {
@@ -197,7 +199,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
     }
 
     /** Process locally without using messaging or executor */
-    protected void processLocally(final DM dm) {
+    protected void processLocally(final DistributionManager dm) {
       this.svc = DLockService.getInternalServiceNamed(this.serviceName);
       basicProcess(dm, true); // don't use executor
     }
@@ -208,7 +210,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
      * <p>
      * this.svc and this.grantor must be set before calling this method.
      */
-    private void executeBasicProcess(final DM dm) {
+    private void executeBasicProcess(final DistributionManager dm) {
       final DLockQueryMessage msg = this;
       dm.getWaitingThreadPool().execute(new Runnable() {
         public void run() {
@@ -225,7 +227,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
      * <p>
      * this.svc and this.grantor must be set before calling this method.
      */
-    protected void basicProcess(final DM dm, final boolean waitForGrantor) {
+    protected void basicProcess(final DistributionManager dm, final boolean waitForGrantor) {
       final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
       if (isDebugEnabled_DLS) {
         logger.trace(LogMarker.DLS, "[basicProcess] {}", this);

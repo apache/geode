@@ -19,11 +19,11 @@ package org.apache.geode.internal.admin;
  * The root of our little client side administration object model
  */
 public interface GfObject {
-  public int getID();
+  int getID();
 
-  public String getName();
+  String getName();
 
-  public String getType();
+  String getType();
 
-  public String getDescription();
+  String getDescription();
 }

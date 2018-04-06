@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface Retry {
 
-  public static int DEFAULT = 1;
+  int DEFAULT = 1;
 
   int value() default DEFAULT;
 

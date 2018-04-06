@@ -17,12 +17,14 @@
 package org.apache.geode.management.internal.cli.util;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -40,7 +42,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class MergeLogsDUnitTest {
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
   private MemberVM locator;
 
   private static final String MESSAGE_1 = "MergeLogsMessage1";
@@ -56,11 +58,8 @@ public class MergeLogsDUnitTest {
     properties.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
     locator = lsRule.startLocatorVM(0, properties);
 
-    properties.setProperty(DistributionConfig.LOCATORS_NAME,
-        "localhost[" + locator.getPort() + "]");
-
-    MemberVM server = lsRule.startServerVM(1, properties);
-    MemberVM server2 = lsRule.startServerVM(2, properties);
+    MemberVM server = lsRule.startServerVM(1, properties, locator.getPort());
+    MemberVM server2 = lsRule.startServerVM(2, properties, locator.getPort());
 
     locator.invoke(() -> LogService.getLogger().info(MESSAGE_1));
     server.invoke(() -> LogService.getLogger().info(MESSAGE_2));
@@ -73,18 +72,26 @@ public class MergeLogsDUnitTest {
 
   @Test
   public void testExportInProcess() throws Exception {
-    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(3);
+    List<File> actualFiles = MergeLogs.findLogFilesToMerge(lsRule.getWorkingDirRoot());
+    // remove pulse.log if present
+    actualFiles =
+        actualFiles.stream().filter(x -> !x.getName().endsWith("pulse.log")).collect(toList());
+    assertThat(actualFiles).hasSize(5);
 
-    File result = MergeLogs.mergeLogFile(lsRule.getTempWorkingDir().getRoot().getCanonicalPath());
+    File result = MergeLogs.mergeLogFile(lsRule.getWorkingDirRoot().getCanonicalPath());
     assertOnLogContents(result);
   }
 
   @Test
   public void testExportInNewProcess() throws Throwable {
-    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(3);
+    List<File> actualFiles = MergeLogs.findLogFilesToMerge(lsRule.getWorkingDirRoot());
+    // remove pulse.log if present
+    actualFiles =
+        actualFiles.stream().filter(x -> !x.getName().endsWith("pulse.log")).collect(toList());
+    assertThat(actualFiles).hasSize(5);
 
-    MergeLogs.mergeLogsInNewProcess(lsRule.getTempWorkingDir().getRoot().toPath());
-    File result = Arrays.stream(lsRule.getTempWorkingDir().getRoot().listFiles())
+    MergeLogs.mergeLogsInNewProcess(lsRule.getWorkingDirRoot().toPath());
+    File result = Arrays.stream(lsRule.getWorkingDirRoot().listFiles())
         .filter((File f) -> f.getName().startsWith("merge")).findFirst().orElseThrow(() -> {
           throw new AssertionError("No merged log file found");
         });

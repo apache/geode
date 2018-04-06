@@ -15,7 +15,8 @@
 
 package org.apache.geode.distributed.internal.locks;
 
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.QueueStatHelper;
 
 /**
  * Defines the interface used to access and modify distributed lock statistics.
@@ -29,241 +30,241 @@ public interface DistributedLockStats {
   /**
    * Returns the number of threads currently waiting for a distributed lock
    */
-  public int getLockWaitsInProgress();
+  int getLockWaitsInProgress();
 
   /**
    * Returns the total number of waits for a distributed lock
    */
-  public int getLockWaitsCompleted();
+  int getLockWaitsCompleted();
 
-  public int getLockWaitsFailed();
+  int getLockWaitsFailed();
 
   /**
    * Returns the total number of nanoseconds spent waiting for a distributed lock.
    */
-  public long getLockWaitTime();
+  long getLockWaitTime();
 
-  public long getLockWaitFailedTime();
+  long getLockWaitFailedTime();
 
   /**
    * @return the timestamp that marks the start of the operation
    */
-  public long startLockWait();
+  long startLockWait();
 
   /**
    * @param start the timestamp taken when the operation started
    */
-  public void endLockWait(long start, boolean success);
+  void endLockWait(long start, boolean success);
 
   // incSerialQueueSize everytime getWaitingQueueHelper add/remove called
-  public int getWaitingQueueSize();
+  int getWaitingQueueSize();
 
-  public void incWaitingQueueSize(int messages);
+  void incWaitingQueueSize(int messages);
 
   // incSerialQueueSize everytime getSerialQueueHelper add/remove called
-  public int getSerialQueueSize();
+  int getSerialQueueSize();
 
-  public void incSerialQueueSize(int messages);
+  void incSerialQueueSize(int messages);
 
   // incNumSerialThreads everytime we execute with dlock getSerialExecutor()
-  public int getNumSerialThreads();
+  int getNumSerialThreads();
 
-  public void incNumSerialThreads(int threads);
+  void incNumSerialThreads(int threads);
 
   // incWaitingThreads for every invoke of getWaitingPoolHelper startJob/endJob
-  public int getWaitingThreads();
+  int getWaitingThreads();
 
-  public void incWaitingThreads(int threads);
+  void incWaitingThreads(int threads);
 
   // current number of lock services used by this system member
-  public int getServices();
+  int getServices();
 
-  public void incServices(int val);
+  void incServices(int val);
 
   // current number of lock grantors hosted by this system member
-  public int getGrantors();
+  int getGrantors();
 
-  public void incGrantors(int val);
+  void incGrantors(int val);
 
   // time spent granting of lock requests to completion
-  public int getGrantWaitsInProgress();
+  int getGrantWaitsInProgress();
 
-  public int getGrantWaitsCompleted();
+  int getGrantWaitsCompleted();
 
-  public int getGrantWaitsFailed();
+  int getGrantWaitsFailed();
 
-  public long getGrantWaitTime();
+  long getGrantWaitTime();
 
-  public long getGrantWaitFailedTime();
+  long getGrantWaitFailedTime();
 
-  public long startGrantWait();
+  long startGrantWait();
 
-  public void endGrantWait(long start);
+  void endGrantWait(long start);
 
-  public void endGrantWaitNotGrantor(long start);
+  void endGrantWaitNotGrantor(long start);
 
-  public void endGrantWaitTimeout(long start);
+  void endGrantWaitTimeout(long start);
 
-  public void endGrantWaitNotHolder(long start);
+  void endGrantWaitNotHolder(long start);
 
-  public void endGrantWaitFailed(long start);
+  void endGrantWaitFailed(long start);
 
-  public void endGrantWaitDestroyed(long start);
+  void endGrantWaitDestroyed(long start);
 
-  public void endGrantWaitSuspended(long start);
+  void endGrantWaitSuspended(long start);
 
   // time spent creating initial grantor for lock service
-  public int getCreateGrantorsInProgress();
+  int getCreateGrantorsInProgress();
 
-  public int getCreateGrantorsCompleted();
+  int getCreateGrantorsCompleted();
 
-  public long getCreateGrantorTime();
+  long getCreateGrantorTime();
 
-  public long startCreateGrantor();
+  long startCreateGrantor();
 
-  public void endCreateGrantor(long start);
+  void endCreateGrantor(long start);
 
   // time spent creating each lock service
-  public int getServiceCreatesInProgress();
+  int getServiceCreatesInProgress();
 
-  public int getServiceCreatesCompleted();
+  int getServiceCreatesCompleted();
 
-  public long startServiceCreate();
+  long startServiceCreate();
 
-  public void serviceCreateLatchReleased(long start);
+  void serviceCreateLatchReleased(long start);
 
-  public void serviceInitLatchReleased(long start);
+  void serviceInitLatchReleased(long start);
 
-  public long getServiceCreateLatchTime();
+  long getServiceCreateLatchTime();
 
-  public long getServiceInitLatchTime();
+  long getServiceInitLatchTime();
 
   // time spent waiting for grantor latches to open
-  public int getGrantorWaitsInProgress();
+  int getGrantorWaitsInProgress();
 
-  public int getGrantorWaitsCompleted();
+  int getGrantorWaitsCompleted();
 
-  public int getGrantorWaitsFailed();
+  int getGrantorWaitsFailed();
 
-  public long getGrantorWaitTime();
+  long getGrantorWaitTime();
 
-  public long getGrantorWaitFailedTime();
+  long getGrantorWaitFailedTime();
 
-  public long startGrantorWait();
+  long startGrantorWait();
 
-  public void endGrantorWait(long start, boolean success);
+  void endGrantorWait(long start, boolean success);
 
   // helpers for executor usage
-  public QueueStatHelper getSerialQueueHelper();
+  QueueStatHelper getSerialQueueHelper();
 
-  public PoolStatHelper getWaitingPoolHelper();
+  PoolStatHelper getWaitingPoolHelper();
 
-  public QueueStatHelper getWaitingQueueHelper();
+  QueueStatHelper getWaitingQueueHelper();
 
   // time spent by grantor threads
-  public int getGrantorThreadsInProgress();
+  int getGrantorThreadsInProgress();
 
-  public int getGrantorThreadsCompleted();
+  int getGrantorThreadsCompleted();
 
-  public long getGrantorThreadTime();
+  long getGrantorThreadTime();
 
-  public long getGrantorThreadExpireAndGrantLocksTime();
+  long getGrantorThreadExpireAndGrantLocksTime();
 
-  public long getGrantorThreadHandleRequestTimeoutsTime();
+  long getGrantorThreadHandleRequestTimeoutsTime();
 
-  public long getGrantorThreadRemoveUnusedTokensTime();
+  long getGrantorThreadRemoveUnusedTokensTime();
 
-  public long startGrantorThread();
+  long startGrantorThread();
 
-  public long endGrantorThreadExpireAndGrantLocks(long start);
+  long endGrantorThreadExpireAndGrantLocks(long start);
 
-  public long endGrantorThreadHandleRequestTimeouts(long timing);
+  long endGrantorThreadHandleRequestTimeouts(long timing);
 
-  public void endGrantorThreadRemoveUnusedTokens(long timing);
+  void endGrantorThreadRemoveUnusedTokens(long timing);
 
-  public void endGrantorThread(long start);
+  void endGrantorThread(long start);
 
   // current number of lock grantors hosted by this system member
-  public int getPendingRequests();
+  int getPendingRequests();
 
-  public void incPendingRequests(int val);
+  void incPendingRequests(int val);
 
   // acquisition of destroyReadLock in DLockService
-  public int getDestroyReadWaitsInProgress();
+  int getDestroyReadWaitsInProgress();
 
-  public int getDestroyReadWaitsCompleted();
+  int getDestroyReadWaitsCompleted();
 
-  public int getDestroyReadWaitsFailed();
+  int getDestroyReadWaitsFailed();
 
-  public long getDestroyReadWaitTime();
+  long getDestroyReadWaitTime();
 
-  public long getDestroyReadWaitFailedTime();
+  long getDestroyReadWaitFailedTime();
 
-  public long startDestroyReadWait();
+  long startDestroyReadWait();
 
-  public void endDestroyReadWait(long start, boolean success);
+  void endDestroyReadWait(long start, boolean success);
 
   // acquisition of destroyWriteLock in DLockService
-  public int getDestroyWriteWaitsInProgress();
+  int getDestroyWriteWaitsInProgress();
 
-  public int getDestroyWriteWaitsCompleted();
+  int getDestroyWriteWaitsCompleted();
 
-  public int getDestroyWriteWaitsFailed();
+  int getDestroyWriteWaitsFailed();
 
-  public long getDestroyWriteWaitTime();
+  long getDestroyWriteWaitTime();
 
-  public long getDestroyWriteWaitFailedTime();
+  long getDestroyWriteWaitFailedTime();
 
-  public long startDestroyWriteWait();
+  long startDestroyWriteWait();
 
-  public void endDestroyWriteWait(long start, boolean success);
+  void endDestroyWriteWait(long start, boolean success);
 
   // current number of DLockService destroy read locks held by this process
-  public int getDestroyReads();
+  int getDestroyReads();
 
-  public void incDestroyReads(int val);
+  void incDestroyReads(int val);
 
   // current number of DLockService destroy write locks held by this process
-  public int getDestroyWrites();
+  int getDestroyWrites();
 
-  public void incDestroyWrites(int val);
+  void incDestroyWrites(int val);
 
   // time for call to unlock() to complete
-  public int getLockReleasesInProgress();
+  int getLockReleasesInProgress();
 
-  public int getLockReleasesCompleted();
+  int getLockReleasesCompleted();
 
-  public long getLockReleaseTime();
+  long getLockReleaseTime();
 
-  public long startLockRelease();
+  long startLockRelease();
 
-  public void endLockRelease(long start);
+  void endLockRelease(long start);
 
   // total number of times this member has requested to become grantor
-  public int getBecomeGrantorRequests();
+  int getBecomeGrantorRequests();
 
-  public void incBecomeGrantorRequests();
+  void incBecomeGrantorRequests();
 
   // current number of lock tokens used by this system member
-  public int getTokens();
+  int getTokens();
 
-  public void incTokens(int val);
+  void incTokens(int val);
 
   // current number of grant tokens used by local grantors
-  public int getGrantTokens();
+  int getGrantTokens();
 
-  public void incGrantTokens(int val);
+  void incGrantTokens(int val);
 
   // current number of lock request queues used by this system member
-  public int getRequestQueues();
+  int getRequestQueues();
 
-  public void incRequestQueues(int val);
+  void incRequestQueues(int val);
 
-  public int getFreeResourcesCompleted();
+  int getFreeResourcesCompleted();
 
-  public void incFreeResourcesCompleted();
+  void incFreeResourcesCompleted();
 
-  public int getFreeResourcesFailed();
+  int getFreeResourcesFailed();
 
-  public void incFreeResourcesFailed();
+  void incFreeResourcesFailed();
 }

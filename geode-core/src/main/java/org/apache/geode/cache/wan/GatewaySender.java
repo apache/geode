@@ -31,23 +31,23 @@ public interface GatewaySender {
    * @deprecated - Manual start of senders is deprecated and will be removed in a later release.
    */
   @Deprecated
-  public static final boolean DEFAULT_MANUAL_START = false;
+  boolean DEFAULT_MANUAL_START = false;
 
   /**
    * The default value ( true) for writing to disk synchronously in case of persistence.
    */
-  public static final boolean DEFAULT_DISK_SYNCHRONOUS = true;
+  boolean DEFAULT_DISK_SYNCHRONOUS = true;
   /**
    * The default buffer size for socket buffers from a sending GatewaySender to its receiving
    * <code>GatewayReceiver</code>.
    */
-  public static final int DEFAULT_SOCKET_BUFFER_SIZE = 524288;
+  int DEFAULT_SOCKET_BUFFER_SIZE = 524288;
 
   /**
    * The default amount of time in milliseconds that a socket read between a sending
    * <code>Gateway</code> and its receiving <code>Gateway</code> will block.
    */
-  public static final int DEFAULT_SOCKET_READ_TIMEOUT = Integer
+  int DEFAULT_SOCKET_READ_TIMEOUT = Integer
       .getInteger(
           DistributionConfig.GEMFIRE_PREFIX + "cache.gatewaySender.default-socket-read-timeout", 0)
       .intValue();
@@ -55,12 +55,12 @@ public interface GatewaySender {
   /**
    * The default minimum socket read timeout.
    */
-  public static final int MINIMUM_SOCKET_READ_TIMEOUT = 30000;
+  int MINIMUM_SOCKET_READ_TIMEOUT = 30000;
 
   /**
    * Size of the oplog file used for the persistent queue in bytes
    */
-  public static final int QUEUE_OPLOG_SIZE =
+  int QUEUE_OPLOG_SIZE =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "cache.gatewaySender.queueOpLogSize",
           1024 * 1024 * 100).intValue();
 
@@ -68,51 +68,50 @@ public interface GatewaySender {
   /**
    * The default value (false)of whether to persist queue data to disk or not.
    */
-  public static final boolean DEFAULT_PERSISTENCE_ENABLED = false;
+  boolean DEFAULT_PERSISTENCE_ENABLED = false;
 
 
   /**
    * The default batch conflation
    */
-  public static final boolean DEFAULT_BATCH_CONFLATION = false;
+  boolean DEFAULT_BATCH_CONFLATION = false;
 
   /**
    * The default batch size
    */
-  public static final int DEFAULT_BATCH_SIZE = 100;
+  int DEFAULT_BATCH_SIZE = 100;
 
   /**
    * The default batch time interval in milliseconds
    */
-  public static final int DEFAULT_BATCH_TIME_INTERVAL = 1000;
+  int DEFAULT_BATCH_TIME_INTERVAL = 1000;
 
   /**
    * The default alert threshold in milliseconds
    */
-  public static final int DEFAULT_ALERT_THRESHOLD = 0;
+  int DEFAULT_ALERT_THRESHOLD = 0;
 
-  public static final int DEFAULT_PARALLELISM_REPLICATED_REGION =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX
-          + "cache.gatewaySender.defaultParallelismForReplicatedRegion", 113).intValue();
+  int DEFAULT_PARALLELISM_REPLICATED_REGION = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX
+      + "cache.gatewaySender.defaultParallelismForReplicatedRegion", 113).intValue();
 
-  public static final int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
+  int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
 
-  public static final int DEFAULT_DISPATCHER_THREADS = 5;
+  int DEFAULT_DISPATCHER_THREADS = 5;
 
-  public static final boolean DEFAULT_FORWARD_EXPIRATION_DESTROY = false;
+  boolean DEFAULT_FORWARD_EXPIRATION_DESTROY = false;
 
-  public static final OrderPolicy DEFAULT_ORDER_POLICY = OrderPolicy.KEY;
+  OrderPolicy DEFAULT_ORDER_POLICY = OrderPolicy.KEY;
   /**
    * The default maximum amount of memory (MB) to allow in the queue before overflowing entries to
    * disk
    */
-  public static final int DEFAULT_MAXIMUM_QUEUE_MEMORY = 100;
+  int DEFAULT_MAXIMUM_QUEUE_MEMORY = 100;
 
   /**
    * Time, in seconds, that we allow before a <code>GatewaySender is considered dead and should be
    * aborted
    */
-  public static final long GATEWAY_SENDER_TIMEOUT = Integer
+  long GATEWAY_SENDER_TIMEOUT = Integer
       .getInteger(DistributionConfig.GEMFIRE_PREFIX + "GATEWAY_SENDER_TIMEOUT", 30).intValue();
 
 
@@ -120,10 +119,10 @@ public interface GatewaySender {
    * The obsolete socket read timeout java system property. Since customers have been given this
    * property, it is used to log a warning.
    */
-  public static final String GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY =
+  String GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.GATEWAY_CONNECTION_READ_TIMEOUT";
 
-  public static final int GATEWAY_CONNECTION_IDLE_TIMEOUT = Integer
+  int GATEWAY_CONNECTION_IDLE_TIMEOUT = Integer
       .getInteger(
           DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.GATEWAY_CONNECTION_IDLE_TIMEOUT", -1)
       .intValue();
@@ -131,24 +130,24 @@ public interface GatewaySender {
   /**
    * If the System property is set, use it. Otherwise, set default to 'true'.
    */
-  public static final boolean REMOVE_FROM_QUEUE_ON_EXCEPTION = (System.getProperty(
+  boolean REMOVE_FROM_QUEUE_ON_EXCEPTION = (System.getProperty(
       DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION") != null)
           ? Boolean.getBoolean(
               DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION")
           : true;
 
-  public static final boolean EARLY_ACK =
+  boolean EARLY_ACK =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.EARLY_ACK");
 
-  public static final boolean DEFAULT_IS_PARALLEL = false;
+  boolean DEFAULT_IS_PARALLEL = false;
 
-  public static final boolean DEFAULT_IS_FOR_INTERNAL_USE = false;
+  boolean DEFAULT_IS_FOR_INTERNAL_USE = false;
 
   /**
    * Retry a connection from sender to receiver after specified time interval (in milliseconds) in
    * case receiver is not up and running. Default is set to 1000 milliseconds i.e. 1 second.
    */
-  public static final int CONNECTION_RETRY_INTERVAL = Integer
+  int CONNECTION_RETRY_INTERVAL = Integer
       .getInteger(DistributionConfig.GEMFIRE_PREFIX + "gateway-connection-retry-interval", 1000)
       .intValue();
 
@@ -157,7 +156,7 @@ public interface GatewaySender {
    *
    * @since GemFire 6.5.1
    */
-  public enum OrderPolicy {
+  enum OrderPolicy {
     /**
      * Indicates that events will be parallelized based on the event's originating member and thread
      */
@@ -178,7 +177,7 @@ public interface GatewaySender {
    * Starts this GatewaySender. Once the GatewaySender is running, its configuration cannot be
    * changed.
    */
-  public void start();
+  void start();
 
   /**
    * Stops this GatewaySender. The scope of this operation is the VM on which it is invoked. In case
@@ -192,7 +191,7 @@ public interface GatewaySender {
    *
    * @see GatewaySender#isParallel()
    */
-  public void stop();
+  void stop();
 
   /**
    * Pauses the dispatching of the events from the underlying queue. It should be kept in mind that
@@ -211,63 +210,63 @@ public interface GatewaySender {
    * @see GatewaySender#getBatchSize()
    * @see GatewaySender#resume()
    */
-  public void pause();
+  void pause();
 
   /**
    * Resumes this paused GatewaySender.
    */
-  public void resume();
+  void resume();
 
   /**
    * Rebalances this GatewaySender.
    */
-  public void rebalance();
+  void rebalance();
 
   /**
    * Returns whether or not this GatewaySender is running.
    */
-  public boolean isRunning();
+  boolean isRunning();
 
   /**
    * Returns whether or not this GatewaySender is paused.
    *
    */
-  public boolean isPaused();
+  boolean isPaused();
 
   /**
    * Adds the provided <code>GatewayEventFilter</code> to this GatewaySender.
    *
    * @param filter
    */
-  public void addGatewayEventFilter(GatewayEventFilter filter);
+  void addGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Removes the provided <code>GatewayEventFilter</code> from this GatewaySender.
    *
    * @param filter
    */
-  public void removeGatewayEventFilter(GatewayEventFilter filter);
+  void removeGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Returns this <code>GatewaySender's</code> <code>GatewayEventSubstitutionFilter</code>.
    *
    * @return this <code>GatewaySender's</code> <code>GatewayEventSubstitutionFilter</code>
    */
-  public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter();
+  GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter();
 
   /**
    * Returns the id of this GatewaySender.
    *
    * @return the id of this GatewaySender.
    */
-  public String getId();
+  String getId();
 
   /**
    * Returns the id of the remote <code>GatewayReceiver</code>'s DistributedSystem.
    *
    * @return the id of the remote <code>GatewayReceiver</code>'s DistributedSystem.
    */
-  public int getRemoteDSId();
+  int getRemoteDSId();
 
   /**
    * Returns the configured buffer size of the socket connection between this GatewaySender and its
@@ -276,7 +275,7 @@ public interface GatewaySender {
    * @return the configured buffer size of the socket connection between this GatewaySender and its
    *         receiving <code>GatewayReceiver</code>
    */
-  public int getSocketBufferSize();
+  int getSocketBufferSize();
 
   /**
    * Returns the amount of time in milliseconds that a socket read between a sending GatewaySender
@@ -286,28 +285,28 @@ public interface GatewaySender {
    * @return the amount of time in milliseconds that a socket read between a sending GatewaySender
    *         and its receiving <code>GatewayReceiver</code> will block
    */
-  public int getSocketReadTimeout();
+  int getSocketReadTimeout();
 
   /**
    * Gets the disk store name for overflow or persistence.
    *
    * @return disk store name
    */
-  public String getDiskStoreName();
+  String getDiskStoreName();
 
   /**
    * Returns the maximum amount of memory (in MB) for a GatewaySender's queue. The default is 100.
    *
    * @return maximum amount of memory (in MB) for a GatewaySender's queue
    */
-  public int getMaximumQueueMemory();
+  int getMaximumQueueMemory();
 
   /**
    * Returns the batch size for this GatewaySender. Default batchSize is 100.
    *
    * @return the batch size for this GatewaySender.
    */
-  public int getBatchSize();
+  int getBatchSize();
 
   /**
    * Returns the batch time interval for this GatewaySender. Default value of batchTimeInterval is
@@ -315,7 +314,7 @@ public interface GatewaySender {
    *
    * @return the batch time interval for this GatewaySender
    */
-  public int getBatchTimeInterval();
+  int getBatchTimeInterval();
 
   /**
    * Answers whether to enable batch conflation for a GatewaySender 's queue. The default value is
@@ -324,7 +323,7 @@ public interface GatewaySender {
    * @return whether to enable batch conflation for batches sent from a GatewaySender to its
    *         corresponding <code>GatewayReceiver</code>.
    */
-  public boolean isBatchConflationEnabled();
+  boolean isBatchConflationEnabled();
 
   /**
    * Returns true if persistence is enabled for this GatewaySender, otherwise returns false. Default
@@ -332,7 +331,7 @@ public interface GatewaySender {
    *
    * @return true if persistence is enabled for this GatewaySender
    */
-  public boolean isPersistenceEnabled();
+  boolean isPersistenceEnabled();
 
   /**
    * Returns the alert threshold in milliseconds for entries in a GatewaySender's queue. Default
@@ -341,14 +340,14 @@ public interface GatewaySender {
    * @return the alert threshold for entries in a GatewaySender's queue
    *
    */
-  public int getAlertThreshold();
+  int getAlertThreshold();
 
   /**
    * Returns the list of <code>GatewayEventFilter</code> added to this GatewaySender.
    *
    * @return the list of <code>GatewayEventFilter</code> added to this GatewaySender.
    */
-  public List<GatewayEventFilter> getGatewayEventFilters();
+  List<GatewayEventFilter> getGatewayEventFilters();
 
   /**
    * Returns the list of <code>GatewayTransportFilter</code> added to this GatewaySender.
@@ -356,7 +355,7 @@ public interface GatewaySender {
    * @return the list of <code>GatewayTransportFilter</code> added to this GatewaySender.
    */
 
-  public List<GatewayTransportFilter> getGatewayTransportFilters();
+  List<GatewayTransportFilter> getGatewayTransportFilters();
 
   /**
    * Returns isDiskSynchronous boolean property for this GatewaySender. Default value is true.
@@ -364,7 +363,7 @@ public interface GatewaySender {
    * @return isDiskSynchronous boolean property for this GatewaySender
    *
    */
-  public boolean isDiskSynchronous();
+  boolean isDiskSynchronous();
 
   /**
    * Returns the manual start boolean property for this GatewaySender. Default is false i.e. the
@@ -375,7 +374,7 @@ public interface GatewaySender {
    * @deprecated - Manual start of senders is deprecated and will be removed in a later release.
    */
   @Deprecated
-  public boolean isManualStart();
+  boolean isManualStart();
 
   /**
    * Returns isParallel boolean property for this GatewaySender.
@@ -383,7 +382,7 @@ public interface GatewaySender {
    * @return isParallel boolean property for this GatewaySender
    *
    */
-  public boolean isParallel();
+  boolean isParallel();
 
 
   /**
@@ -392,7 +391,7 @@ public interface GatewaySender {
    *
    * @return the number of dispatcher threads working for this <code>GatewaySender</code>
    */
-  public int getDispatcherThreads();
+  int getDispatcherThreads();
 
   /**
    * Returns the order policy followed while dispatching the events to remote ds. Order policy is
@@ -401,9 +400,9 @@ public interface GatewaySender {
    * @return the order policy followed while dispatching the events to remote ds.
    */
 
-  public OrderPolicy getOrderPolicy();
+  OrderPolicy getOrderPolicy();
 
-  public int getMaxParallelismForReplicatedRegion();
+  int getMaxParallelismForReplicatedRegion();
 
 
   /**

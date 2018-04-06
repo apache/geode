@@ -27,7 +27,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemAdmin;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -86,7 +86,7 @@ public class SystemAdminDUnitTest extends JUnit4DistributedTestCase {
 
     } finally {
       // SystemAdmin calls methods that set these static variables
-      DistributionManager.setIsDedicatedAdminVM(false);
+      ClusterDistributionManager.setIsDedicatedAdminVM(false);
       SystemAdmin.setDistributedSystemProperties(null);
     }
   }

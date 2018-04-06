@@ -39,7 +39,8 @@ public class IndexUtils {
     IndexUtils.testHook = testHook;
   }
 
-  public static IndexManager getIndexManager(Region region, boolean createIfNotAvailable) {
+  public static IndexManager getIndexManager(InternalCache cache, Region region,
+      boolean createIfNotAvailable) {
     if (region == null || region.isDestroyed()) {
       return null;
     }
@@ -55,7 +56,7 @@ public class IndexUtils {
       synchronized (imSync) {
         // Double checked locking
         if (lRegion.getIndexManager() == null) {
-          idxMgr = new IndexManager(region);
+          idxMgr = new IndexManager(cache, region);
           lRegion.setIndexManager(idxMgr);
         } else {
           idxMgr = lRegion.getIndexManager();

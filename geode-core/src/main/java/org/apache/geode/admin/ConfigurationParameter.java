@@ -27,37 +27,37 @@ package org.apache.geode.admin;
 public interface ConfigurationParameter {
 
   /** Gets the identifying name of this configuration parameter. */
-  public String getName();
+  String getName();
 
   /** Gets the full description of this configuration parameter */
-  public String getDescription();
+  String getDescription();
 
   /** Gets the current value */
-  public Object getValue();
+  Object getValue();
 
   /** Gets the current value as a string */
-  public String getValueAsString();
+  String getValueAsString();
 
   /** Gets the class type of the value */
-  public Class getValueType();
+  Class getValueType();
 
   /** True if this is modifiable; false if read-only */
-  public boolean isModifiable();
+  boolean isModifiable();
 
   /** Returns true if this config parameter uses a string array for value. */
-  public boolean isArray();
+  boolean isArray();
 
   /** Returns true if this config parameter represents an InetAddress value. */
-  public boolean isInetAddress();
+  boolean isInetAddress();
 
   /** Returns true if this config parameter represents a File value. */
-  public boolean isFile();
+  boolean isFile();
 
   /** Returns true if this config parameter represents an octal value. */
-  public boolean isOctal();
+  boolean isOctal();
 
   /** Returns true if this config parameter represents a string value. */
-  public boolean isString();
+  boolean isString();
 
   /**
    * Sets a new value for this configuration parameter.
@@ -67,5 +67,5 @@ public interface ConfigurationParameter {
    * @throws UnmodifiableConfigurationException if attempting to set value when isModifiable is
    *         false
    */
-  public void setValue(Object value) throws UnmodifiableConfigurationException;
+  void setValue(Object value) throws UnmodifiableConfigurationException;
 }

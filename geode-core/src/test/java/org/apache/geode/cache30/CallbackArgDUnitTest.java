@@ -36,13 +36,10 @@ import org.apache.geode.cache.TransactionEvent;
 import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.TransactionListenerAdapter;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -53,8 +50,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
 
-  // private transient Region r;
-  // private transient DistributedMember otherId;
   protected transient int invokeCount;
   protected static String callbackArg;
 
@@ -65,16 +60,6 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
   private VM getOtherVm() {
     Host host = Host.getHost(0);
     return host.getVM(0);
-  }
-
-  private void initOtherId() {
-    VM vm = getOtherVm();
-    vm.invoke(new CacheSerializableRunnable("Connect") {
-      public void run2() throws CacheException {
-        getCache();
-      }
-    });
-    vm.invoke(() -> CallbackArgDUnitTest.getVMDistributedMember());
   }
 
   private void doCommitOtherVm() {
@@ -117,10 +102,6 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  public static DistributedMember getVMDistributedMember() {
-    return InternalDistributedSystem.getAnyInstance().getDistributedMember();
-  }
-
   ////////////////////// Test Methods //////////////////////
 
   List expectedKeys;
@@ -153,7 +134,6 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void doTest() throws CacheException {
-    initOtherId();
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(DataPolicy.REPLICATE);
     af.setScope(Scope.DISTRIBUTED_ACK);

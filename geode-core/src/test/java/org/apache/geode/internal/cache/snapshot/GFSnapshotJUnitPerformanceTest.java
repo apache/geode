@@ -24,7 +24,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.snapshot.SnapshotIterator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotExporter;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
@@ -39,10 +41,12 @@ public class GFSnapshotJUnitPerformanceTest {
       "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
   private File f;
+  private InternalCache cache;
 
   @Before
   public void setUp() throws Exception {
     f = new File("test.snapshot");
+    cache = (InternalCache) new CacheFactory().create();
   }
 
   @After
@@ -50,6 +54,7 @@ public class GFSnapshotJUnitPerformanceTest {
     if (f.exists()) {
       f.delete();
     }
+    cache.close();
   }
 
   @Test
@@ -76,7 +81,7 @@ public class GFSnapshotJUnitPerformanceTest {
       int count = 100000;
 
       String s = val;
-      SnapshotWriter ss = GFSnapshot.create(f, "test");
+      SnapshotWriter ss = GFSnapshot.create(f, "test", cache);
       try {
         for (int i = 0; i < count; i++) {
           ss.snapshotEntry(new SnapshotRecord(i, s));
@@ -101,7 +106,7 @@ public class GFSnapshotJUnitPerformanceTest {
       long start = System.currentTimeMillis();
       int count = 0;
 
-      GFSnapshotImporter in = new GFSnapshotImporter(f);
+      GFSnapshotImporter in = new GFSnapshotImporter(f, null);
 
       SnapshotRecord entry;
       while ((entry = in.readSnapshotRecord()) != null) {
@@ -125,10 +130,10 @@ public class GFSnapshotJUnitPerformanceTest {
       File tmp = File.createTempFile("snapshot-copy", null);
       tmp.deleteOnExit();
 
-      final SnapshotWriter writer = GFSnapshot.create(tmp, "test");
+      final SnapshotWriter writer = GFSnapshot.create(tmp, "test", cache);
 
       long start = System.currentTimeMillis();
-      SnapshotIterator<Integer, String> iter = GFSnapshot.read(f);
+      SnapshotIterator<Integer, String> iter = GFSnapshot.read(f, null);
       try {
         while (iter.hasNext()) {
           Entry<Integer, String> entry = iter.next();
@@ -147,7 +152,7 @@ public class GFSnapshotJUnitPerformanceTest {
   }
 
   private void writeFile(int count, String s) throws IOException {
-    GFSnapshotExporter out = new GFSnapshotExporter(f, "test");
+    GFSnapshotExporter out = new GFSnapshotExporter(f, "test", cache);
 
     try {
       for (int i = 0; i < count; i++) {

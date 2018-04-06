@@ -51,6 +51,7 @@ import org.apache.geode.cache.query.internal.index.IndexStore.IndexStoreEntry;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -95,11 +96,11 @@ public class RangeIndex extends AbstractIndex {
    * @param projectionAttributes expression that transforms each element in the result set of a
    *        query Return the newly created Index
    */
-  public RangeIndex(String indexName, Region region, String fromClause, String indexedExpression,
-      String projectionAttributes, String origFromClause, String origIndexExpr,
-      String[] definitions, IndexStatistics stats) {
-    super(indexName, region, fromClause, indexedExpression, projectionAttributes, origFromClause,
-        origIndexExpr, definitions, stats);
+  public RangeIndex(InternalCache cache, String indexName, Region region, String fromClause,
+      String indexedExpression, String projectionAttributes, String origFromClause,
+      String origIndexExpr, String[] definitions, IndexStatistics stats) {
+    super(cache, indexName, region, fromClause, indexedExpression, projectionAttributes,
+        origFromClause, origIndexExpr, definitions, stats);
 
     RegionAttributes ra = region.getAttributes();
     this.entryToValuesMap = new RegionEntryToValuesMap(

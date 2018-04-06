@@ -150,7 +150,7 @@ public class OneTaskOnlyExecutor {
     }
   }
 
-  public static interface ConflatedTaskListener {
+  public interface ConflatedTaskListener {
     void taskDropped();
   }
 

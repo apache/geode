@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
@@ -65,14 +64,6 @@ public class RegionCommandsUtils {
                 new Object[] {String.valueOf(groupsList)}));
       }
     }
-  }
-
-  static boolean isClassNameValid(String fqcn) {
-    if (fqcn.isEmpty()) {
-      return true;
-    }
-    String regex = "([\\p{L}_$][\\p{L}\\p{N}_$]*\\.)*[\\p{L}_$][\\p{L}\\p{N}_$]*";
-    return Pattern.matches(regex, fqcn);
   }
 
 }

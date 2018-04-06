@@ -105,12 +105,12 @@ public class PdxInstanceJUnitTest {
 
   @Test
   public void testEquals() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testEquals", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testEquals", false, this.c);
     c.writeInt("intField", 37);
     PdxInstance pi = c.create();
     assertEquals(false, pi.equals(null));
     assertEquals(false, pi.equals(new Date(37)));
-    c = PdxInstanceFactoryImpl.newCreator("testEquals", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEquals", false, this.c);
     c.writeInt("intField", 37);
     c.writeInt("intField2", 38);
     PdxInstance pi2 = c.create();
@@ -119,10 +119,10 @@ public class PdxInstanceJUnitTest {
     assertEquals(false, pi.equals(pi2));
     assertEquals(false, pi2.equals(pi));
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new Date());
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", null);
     pi2 = c.create();
     pi.hashCode();
@@ -130,10 +130,10 @@ public class PdxInstanceJUnitTest {
     assertEquals(false, pi.equals(pi2));
     assertEquals(false, pi2.equals(pi));
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new int[] {1});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new byte[] {(byte) 1});
     pi2 = c.create();
     pi.hashCode();
@@ -141,10 +141,10 @@ public class PdxInstanceJUnitTest {
     assertEquals(false, pi.equals(pi2));
     assertEquals(false, pi2.equals(pi));
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new int[] {1});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new int[] {2});
     pi2 = c.create();
     pi.hashCode();
@@ -152,20 +152,20 @@ public class PdxInstanceJUnitTest {
     assertEquals(false, pi.equals(pi2));
     assertEquals(false, pi2.equals(pi));
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new int[] {1});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new int[] {1});
     pi2 = c.create();
     assertEquals(pi.hashCode(), pi2.hashCode());
     assertEquals(true, pi.equals(pi2));
     assertEquals(true, pi2.equals(pi));
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new int[] {1});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new Date());
     pi2 = c.create();
     pi.hashCode();
@@ -173,10 +173,10 @@ public class PdxInstanceJUnitTest {
     assertEquals(false, pi.equals(pi2));
     assertEquals(false, pi2.equals(pi));
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new Date[] {new Date(1)});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new Date[] {new Date(2)});
     pi2 = c.create();
     pi.hashCode();
@@ -184,20 +184,20 @@ public class PdxInstanceJUnitTest {
     assertEquals(false, pi.equals(pi2));
     assertEquals(false, pi2.equals(pi));
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new Date[] {new Date(1)});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", new Date[] {new Date(1)});
     pi2 = c.create();
     assertEquals(pi.hashCode(), pi2.hashCode());
     assertEquals(true, pi.equals(pi2));
     assertEquals(true, pi2.equals(pi));
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", MyEnum.ONE);
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
     c.writeObject("objField", MyEnum.ONE);
     pi2 = c.create();
     assertEquals(pi.hashCode(), pi2.hashCode());
@@ -216,7 +216,7 @@ public class PdxInstanceJUnitTest {
   };
 
   public void testPdxComplexEnum() {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testPdxEnum", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testPdxEnum", false, this.c);
     c.writeObject("enumField", MyComplexEnum.ONE);
     PdxInstance pi = c.create();
     Object f = pi.getField("enumField");
@@ -233,7 +233,7 @@ public class PdxInstanceJUnitTest {
   }
 
   public void testPdxSimpleEnum() {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testPdxEnum", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testPdxEnum", false, this.c);
     c.writeObject("enumField", MyEnum.ONE);
     PdxInstance pi = c.create();
     Object f = pi.getField("enumField");

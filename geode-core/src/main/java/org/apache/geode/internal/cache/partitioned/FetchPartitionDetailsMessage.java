@@ -24,7 +24,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -80,6 +80,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
         new FetchPartitionDetailsResponse(region.getSystem(), recipients, region);
     FetchPartitionDetailsMessage msg = new FetchPartitionDetailsMessage(recipients,
         region.getPRId(), response, internal, fetchOfflineMembers, probe);
+    msg.setTransactionDistributed(region.getCache().getTxManager().isDistributed());
 
     /* Set<InternalDistributedMember> failures = */
     region.getDistributionManager().putOutgoing(msg);
@@ -99,8 +100,8 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion region,
-      long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm,
+      PartitionedRegion region, long startTime) throws ForceReattemptException {
 
     PartitionMemberInfoImpl details = (PartitionMemberInfoImpl) region.getRedundancyProvider()
         .buildPartitionMemberDetails(this.internal, this.loadProbe);
@@ -190,8 +191,8 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
      * @param offlineDetails
      */
     public static void send(InternalDistributedMember recipient, int processorId,
-        PartitionMemberInfoImpl details, DM dm, OfflineMemberDetails offlineDetails,
-        ReplyException re) {
+        PartitionMemberInfoImpl details, DistributionManager dm,
+        OfflineMemberDetails offlineDetails, ReplyException re) {
       Assert.assertTrue(recipient != null, "FetchPartitionDetailsReplyMessage NULL recipient");
       FetchPartitionDetailsReplyMessage m =
           new FetchPartitionDetailsReplyMessage(processorId, details, offlineDetails, re);
@@ -200,7 +201,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     }
 
     @Override
-    public void process(final DM dm, final ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,

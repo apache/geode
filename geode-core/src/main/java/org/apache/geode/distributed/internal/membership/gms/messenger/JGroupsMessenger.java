@@ -72,9 +72,9 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
@@ -196,8 +196,6 @@ public class JGroupsMessenger implements Messenger {
 
     String properties;
     try {
-      // PlainConfigurator config = PlainConfigurator.getInstance(is);
-      // properties = config.getProtocolStackString();
       StringBuilder sb = new StringBuilder(3000);
       BufferedReader br;
       br = new BufferedReader(new InputStreamReader(is, "US-ASCII"));
@@ -485,29 +483,15 @@ public class JGroupsMessenger implements Messenger {
         logger
             .info("Unable to find getPhysicallAddress method in UDP - parsing its address instead");
       }
-
-      // if (this.jgAddress == null) {
-      // String addr = udp.getLocalPhysicalAddress();
-      // int cidx = addr.lastIndexOf(':'); // IPv6 literals might have colons
-      // String host = addr.substring(0, cidx);
-      // int jgport = Integer.parseInt(addr.substring(cidx+1, addr.length()));
-      // try {
-      // this.jgAddress = new JGAddress(logicalAddress, new IpAddress(InetAddress.getByName(host),
-      // jgport));
-      // } catch (UnknownHostException e) {
-      // myChannel.disconnect();
-      // throw new SystemConnectException("unable to initialize jgroups address", e);
-      // }
-      // }
     }
 
     // install the address in the JGroups channel protocols
     myChannel.down(new Event(Event.SET_LOCAL_ADDRESS, this.jgAddress));
 
     DistributionConfig config = services.getConfig().getDistributionConfig();
-    boolean isLocator =
-        (services.getConfig().getTransport().getVmKind() == DistributionManager.LOCATOR_DM_TYPE)
-            || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty();
+    boolean isLocator = (services.getConfig().getTransport()
+        .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE)
+        || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty();
 
     // establish the DistributedSystem's address
     DurableClientAttributes dca = null;
@@ -715,7 +699,6 @@ public class JGroupsMessenger implements Messenger {
         }
         final String channelClosed =
             LocalizedStrings.GroupMembershipService_CHANNEL_CLOSED.toLocalizedString();
-        // services.getManager().membershipFailure(channelClosed, problem);
         throw new DistributedSystemDisconnectedException(channelClosed, problem);
       }
     } // useMcast
@@ -793,7 +776,6 @@ public class JGroupsMessenger implements Messenger {
           }
           final String channelClosed =
               LocalizedStrings.GroupMembershipService_CHANNEL_CLOSED.toLocalizedString();
-          // services.getManager().membershipFailure(channelClosed, problem);
           throw new DistributedSystemDisconnectedException(channelClosed, problem);
         }
       } // send individually
@@ -950,7 +932,7 @@ public class JGroupsMessenger implements Messenger {
     // which is fairly rare
     msg.setFlag(Flag.DONT_BUNDLE);
 
-    if (gfmsg.getProcessorType() == DistributionManager.HIGH_PRIORITY_EXECUTOR
+    if (gfmsg.getProcessorType() == ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR
         || gfmsg instanceof HighPriorityDistributionMessage || AlertAppender.isThreadAlerting()) {
       msg.setFlag(Flag.OOB);
       msg.setFlag(Flag.NO_FC);
@@ -993,9 +975,6 @@ public class JGroupsMessenger implements Messenger {
           new DataInputStream(new ByteArrayInputStream(buf, jgmsg.getOffset(), jgmsg.getLength()));
 
       short ordinal = Version.readOrdinal(dis);
-
-      // logger.info("JGroupsMessenger read ordinal {} version is {}. My version is {}",
-      // ordinal, Version.fromOrdinalOrCurrent(ordinal), Version.CURRENT);
 
       if (ordinal < Version.CURRENT_ORDINAL) {
         dis = new VersionedDataInputStream(dis, Version.fromOrdinalNoThrow(ordinal, true));
@@ -1075,7 +1054,6 @@ public class JGroupsMessenger implements Messenger {
       if (readPK) {
         // need to read PK
         pk = InternalDataSerializer.readByteArray(dis);
-        // encrypt.setPublicKey(publickey, mbr);
         data = InternalDataSerializer.readByteArray(dis);
         // using prefixed pk from sender
         data = encryptLocal.decryptData(data, pk);
@@ -1289,7 +1267,7 @@ public class JGroupsMessenger implements Messenger {
         // multicast to them, avoiding deserialization cost and classpath
         // problems
         if ((services.getConfig().getTransport()
-            .getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE)
+            .getVmKind() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE)
             && (msg instanceof DistributedCacheOperation.CacheOperationMessage)) {
           return;
         }

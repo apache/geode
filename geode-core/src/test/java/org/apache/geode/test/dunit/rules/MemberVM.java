@@ -29,16 +29,10 @@ import org.apache.geode.test.junit.rules.VMProvider;
 public class MemberVM extends VMProvider implements Member {
   protected Member member;
   protected VM vm;
-  protected boolean tempWorkingDir;
 
   public MemberVM(Member member, VM vm) {
-    this(member, vm, false);
-  }
-
-  public MemberVM(Member member, VM vm, boolean tempWorkingDir) {
     this.member = member;
     this.vm = vm;
-    this.tempWorkingDir = tempWorkingDir;
   }
 
   public boolean isLocator() {
@@ -55,8 +49,6 @@ public class MemberVM extends VMProvider implements Member {
 
   @Override
   public File getWorkingDir() {
-    if (tempWorkingDir)
-      return member.getWorkingDir();
     return vm.getWorkingDirectory();
   }
 
@@ -87,6 +79,7 @@ public class MemberVM extends VMProvider implements Member {
     return ((Server) member).getEmbeddedLocatorPort();
   }
 
+  @Override
   public void stopVM(boolean cleanWorkingDir) {
     super.stopVM(cleanWorkingDir);
 
@@ -94,19 +87,9 @@ public class MemberVM extends VMProvider implements Member {
       return;
     }
 
-    if (tempWorkingDir) {
-      /*
-       * this temporary workingDir will dynamically change the "user.dir". system property to point
-       * to a temporary folder. The Path API caches the first value of "user.dir" that it sees, and
-       * this can result in a stale cached value of "user.dir" which points to a directory that no
-       * longer exists.
-       */
-      vm.bounce();
-    } else
-      // if using the dunit/vm dir as the preset working dir, need to cleanup dir except
-      // the locator0view* file, so that regions/indexes won't get persisted across tests
-      Arrays.stream(getWorkingDir().listFiles((dir, name) -> !name.startsWith("locator0view")))
-          .forEach(FileUtils::deleteQuietly);
+    // if using the dunit/vm dir as the preset working dir, need to cleanup dir
+    // so that regions/indexes won't get persisted across tests
+    Arrays.stream(getWorkingDir().listFiles()).forEach(FileUtils::deleteQuietly);
   }
 
   /**

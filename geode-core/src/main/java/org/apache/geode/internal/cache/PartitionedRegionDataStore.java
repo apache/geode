@@ -67,7 +67,7 @@ import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.query.internal.index.IndexCreationData;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -77,7 +77,7 @@ import org.apache.geode.internal.cache.BucketRegion.RawValue;
 import org.apache.geode.internal.cache.LocalRegion.RegionPerfStats;
 import org.apache.geode.internal.cache.PartitionedRegion.BucketLock;
 import org.apache.geode.internal.cache.PartitionedRegion.SizeEntry;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultSender;
@@ -140,7 +140,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <p>
    * Keys are instances of {@link Integer}. Values are instances of (@link BucketRegion}.
    */
-  final ConcurrentMap<Integer, BucketRegion> localBucket2RegionMap;
+  private final ConcurrentMap<Integer, BucketRegion> localBucket2RegionMap;
 
   /**
    * A counter of the number of concurrent bucket creates in progress on this node
@@ -225,30 +225,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     return prd;
   }
 
-  // /**
-  // * Checks whether there is room in this Map to accommodate more data without
-  // * pushing the Map over its rebalance threshold.
-  // *
-  // * @param bytes
-  // * the size to check in bytes
-  // */
-  // boolean canAccommodateMoreBytesSafely(long bytes)
-  // {
-  //
-  // if (this.partitionedRegion.getLocalMaxMemory() == 0) {
-  // return false;
-  // }
-  // long allocatedMemory = currentAllocatedMemory();
-  // // precision coercion from int to long on bytes
-  // long newAllocatedSize = allocatedMemory + bytes;
-  // if (newAllocatedSize < (this.partitionedRegion.getLocalMaxMemory()
-  // * PartitionedRegionHelper.BYTES_PER_MB * this.partitionedRegion.rebalanceThreshold)) {
-  // return true;
-  // }
-  // else {
-  // return false;
-  // }
-  // }
+  ConcurrentMap<Integer, BucketRegion> getLocalBucket2RegionMap() {
+    return this.localBucket2RegionMap;
+  }
 
   /**
    * Test to determine if this data store is managing a bucket
@@ -695,7 +674,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     } else {
       factory.setScope(Scope.DISTRIBUTED_ACK);
     }
-    factory.setConcurrencyChecksEnabled(this.partitionedRegion.concurrencyChecksEnabled);
+    factory.setConcurrencyChecksEnabled(this.partitionedRegion.getConcurrencyChecksEnabled());
     factory.setIndexMaintenanceSynchronous(this.partitionedRegion.getIndexMaintenanceSynchronous());
 
     if (this.partitionedRegion.getValueConstraint() != null) {
@@ -1637,7 +1616,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       InternalDistributedMember primary = bucketAdvisor.getPrimary();
       if (!myId.equals(primary)) {
         StateFlushOperation flush = new StateFlushOperation(bucketRegion);
-        int executor = DistributionManager.WAITING_POOL_EXECUTOR;
+        int executor = ClusterDistributionManager.WAITING_POOL_EXECUTOR;
         try {
           flush.flush(Collections.singleton(primary), myId, executor, false);
         } catch (InterruptedException e) {
@@ -1676,9 +1655,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * target member.
    */
   private void waitForInProgressBackup() {
-    BackupManager backupManager = getPartitionedRegion().getGemFireCache().getBackupManager();
-    if (getPartitionedRegion().getDataPolicy().withPersistence() && backupManager != null) {
-      backupManager.waitForBackup();
+    BackupService backupService = getPartitionedRegion().getGemFireCache().getBackupService();
+    if (getPartitionedRegion().getDataPolicy().withPersistence()) {
+      backupService.waitForBackup();
     }
 
   }
@@ -1834,8 +1813,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    */
   public int getPerEntryLRUOverhead() {
     BucketRegion br = (localBucket2RegionMap.values().iterator().next());
-    AbstractLRURegionMap map = (AbstractLRURegionMap) br.getRegionMap();
-    return map.getEntryOverHead();
+    return br.getRegionMap().getEntryOverhead();
   }
 
   /**
@@ -3014,7 +2992,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       throw new BucketMovedException(
           LocalizedStrings.FunctionService_BUCKET_MIGRATED_TO_ANOTHER_NODE.toLocalizedString());
     }
-    final DM dm = this.partitionedRegion.getDistributionManager();
+    final DistributionManager dm = this.partitionedRegion.getDistributionManager();
 
     ResultSender resultSender = new PartitionedRegionFunctionResultSender(dm,
         this.partitionedRegion, time, msg, function, bucketSet);

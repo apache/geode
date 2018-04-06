@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,11 +23,19 @@ import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
@@ -46,8 +55,11 @@ import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.domain.ClassName;
+import org.apache.geode.management.internal.cli.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction;
+import org.apache.geode.management.internal.cli.functions.RegionAttributesWrapper;
 import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -58,7 +70,6 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class CreateRegionCommand implements GfshCommand {
-
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
       interceptor = "org.apache.geode.management.internal.cli.commands.CreateRegionCommand$Interceptor")
@@ -76,20 +87,22 @@ public class CreateRegionCommand implements GfshCommand {
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_REGION__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.CREATE_REGION__SKIPIFEXISTS, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
-          help = CliStrings.CREATE_REGION__SKIPIFEXISTS__HELP) boolean skipIfExists,
+      @CliOption(key = {CliStrings.IFNOTEXISTS, CliStrings.CREATE_REGION__SKIPIFEXISTS},
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.CREATE_REGION__IFNOTEXISTS__HELP) boolean ifNotExists,
 
       // the following should all be in alphabetical order according to
       // their key string
       @CliOption(key = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
           help = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
       @CliOption(key = CliStrings.CREATE_REGION__CACHELISTENER,
-          help = CliStrings.CREATE_REGION__CACHELISTENER__HELP) String[] cacheListener,
+          // split the input only with "," outside of json string
+          optionContext = "splittingRegex=,(?![^{]*\\})",
+          help = CliStrings.CREATE_REGION__CACHELISTENER__HELP) ClassName<CacheListener>[] cacheListener,
       @CliOption(key = CliStrings.CREATE_REGION__CACHELOADER,
-          help = CliStrings.CREATE_REGION__CACHELOADER__HELP) String cacheLoader,
+          help = CliStrings.CREATE_REGION__CACHELOADER__HELP) ClassName<CacheLoader> cacheLoader,
       @CliOption(key = CliStrings.CREATE_REGION__CACHEWRITER,
-          help = CliStrings.CREATE_REGION__CACHEWRITER__HELP) String cacheWriter,
+          help = CliStrings.CREATE_REGION__CACHEWRITER__HELP) ClassName<CacheWriter> cacheWriter,
       @CliOption(key = CliStrings.CREATE_REGION__COLOCATEDWITH,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_REGION__COLOCATEDWITH__HELP) String prColocatedWith,
@@ -119,11 +132,15 @@ public class CreateRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME__HELP) Integer entryExpirationIdleTime,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
-          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) String entryExpirationIdleTimeAction,
+          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) ExpirationAction entryExpirationIdleTimeAction,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
-          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) String entryExpirationTTLAction,
+          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) ExpirationAction entryExpirationTTLAction,
+      @CliOption(key = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY,
+          help = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryIdleTimeCustomExpiry,
+      @CliOption(key = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY,
+          help = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryTTLCustomExpiry,
       @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ACTION,
           help = CliStrings.CREATE_REGION__EVICTION_ACTION__HELP) String evictionAction,
       @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT,
@@ -145,11 +162,11 @@ public class CreateRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION,
-          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) String regionExpirationIdleTimeAction,
+          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) ExpirationAction regionExpirationIdleTimeAction,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL__HELP) Integer regionExpirationTTL,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION,
-          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP) String regionExpirationTTLAction,
+          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP) ExpirationAction regionExpirationTTLAction,
       @CliOption(key = CliStrings.CREATE_REGION__RECOVERYDELAY,
           help = CliStrings.CREATE_REGION__RECOVERYDELAY__HELP) Long prRecoveryDelay,
       @CliOption(key = CliStrings.CREATE_REGION__REDUNDANTCOPIES,
@@ -178,7 +195,52 @@ public class CreateRegionCommand implements GfshCommand {
 
     InternalCache cache = getCache();
 
-    // validating the region path
+    /*
+     * Adding name collision check for regions created with regionShortcut only.
+     * Regions can be categories as Proxy(replicate/partition), replicate/partition, and local
+     * For concise purpose: we call existing region (E) and region to be created (C)
+     */
+    DistributedRegionMXBean regionBean =
+        getManagementService().getDistributedRegionMXBean(regionPath);
+
+    if (regionBean != null && regionShortcut != null) {
+      String existingDataPolicy = regionBean.getRegionType();
+      // either C is local, or E is local or E and C are both non-proxy regions. this is to make
+      // sure local, replicate or partition regions have unique names across the entire cluster
+      if (regionShortcut.isLocal() || existingDataPolicy.equals("NORMAL")
+          || !regionShortcut.isProxy()
+              && (regionBean.getMemberCount() > regionBean.getEmptyNodes())) {
+        throw new EntityExistsException(
+            String.format("Region %s already exists on the cluster.", regionPath), ifNotExists);
+      }
+
+      // after this, one of E and C is proxy region or both are proxy regions.
+
+      // we first make sure E and C have the compatible data policy
+      if (regionShortcut.isPartition() && !existingDataPolicy.contains("PARTITION")) {
+        throw new EntityExistsException("The existing region is not a partitioned region",
+            ifNotExists);
+      }
+      if (regionShortcut.isReplicate()
+          && !(existingDataPolicy.equals("EMPTY") || existingDataPolicy.contains("REPLICATE")
+              || existingDataPolicy.contains("PRELOADED"))) {
+        throw new EntityExistsException("The existing region is not a replicate region",
+            ifNotExists);
+      }
+      // then we make sure E and C are on different members
+      Set<String> membersWithThisRegion =
+          Arrays.stream(regionBean.getMembers()).collect(Collectors.toSet());
+      Set<String> membersWithinGroup = findMembers(groups, null).stream()
+          .map(DistributedMember::getName).collect(Collectors.toSet());
+      if (!Collections.disjoint(membersWithinGroup, membersWithThisRegion)) {
+        throw new EntityExistsException(
+            String.format("Region %s already exists on these members: %s.", regionPath,
+                StringUtils.join(membersWithThisRegion, ",")),
+            ifNotExists);
+      }
+    }
+
+    // validating the parent region
     RegionPath regionPathData = new RegionPath(regionPath);
     String parentRegionPath = regionPathData.getParent();
     if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
@@ -192,15 +254,15 @@ public class CreateRegionCommand implements GfshCommand {
     // creating the RegionFunctionArgs
     RegionFunctionArgs functionArgs = new RegionFunctionArgs();
     functionArgs.setRegionPath(regionPath);
-    functionArgs.setSkipIfExists(skipIfExists);
-    functionArgs.setKeyConstraint(keyConstraint);
-    functionArgs.setValueConstraint(valueConstraint);
+    functionArgs.setIfNotExists(ifNotExists);
     functionArgs.setStatisticsEnabled(statisticsEnabled);
     functionArgs.setEntryExpirationIdleTime(entryExpirationIdleTime, entryExpirationIdleTimeAction);
     functionArgs.setEntryExpirationTTL(entryExpirationTTL, entryExpirationTTLAction);
     functionArgs.setRegionExpirationIdleTime(regionExpirationIdleTime,
         regionExpirationIdleTimeAction);
     functionArgs.setRegionExpirationTTL(regionExpirationTTL, regionExpirationTTLAction);
+    functionArgs.setEntryIdleTimeCustomExpiry(entryIdleTimeCustomExpiry);
+    functionArgs.setEntryTTLCustomExpiry(entryTTLCustomExpiry);
     functionArgs.setEvictionAttributes(evictionAction, evictionMaxMemory, evictionEntryCount,
         evictionObjectSizer);
     functionArgs.setDiskStore(diskStore);
@@ -228,22 +290,22 @@ public class CreateRegionCommand implements GfshCommand {
                 regionPath));
       }
       functionArgs.setRegionShortcut(regionShortcut);
-    } else if (templateRegion != null) {
+    } else { // templateRegion != null
       if (!regionExists(cache, templateRegion)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
             CliStrings.CREATE_REGION__USEATTRIBUTESFROM, templateRegion));
       }
 
-      regionAttributes = getRegionAttributes(cache, templateRegion);
+      RegionAttributesWrapper<?, ?> wrappedAttributes = getRegionAttributes(cache, templateRegion);
 
-      if (regionAttributes == null) {
+      if (wrappedAttributes == null) {
         return ResultBuilder.createGemFireErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_VERIFY_REGION_EXISTS,
             templateRegion));
       }
 
-      if (regionAttributes.getPartitionAttributes() == null
+      if (wrappedAttributes.getRegionAttributes().getPartitionAttributes() == null
           && functionArgs.hasPartitionAttributes()) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION,
@@ -252,13 +314,42 @@ public class CreateRegionCommand implements GfshCommand {
                 templateRegion));
       }
       functionArgs.setTemplateRegion(templateRegion);
-      functionArgs.setRegionAttributes(regionAttributes);
+
+      // These attributes will have the actual callback fields (if previously present) nulled out.
+      functionArgs.setRegionAttributes(wrappedAttributes.getRegionAttributes());
+
+      functionArgs
+          .setCacheListeners(wrappedAttributes.getCacheListenerClasses().toArray(new ClassName[0]));
+      functionArgs.setCacheWriter(wrappedAttributes.getCacheWriterClass());
+      functionArgs.setCacheLoader(wrappedAttributes.getCacheLoaderClass());
+      functionArgs.setCompressor(wrappedAttributes.getCompressorClass());
+      functionArgs.setKeyConstraint(wrappedAttributes.getKeyConstraintClass());
+      functionArgs.setValueConstraint(wrappedAttributes.getValueConstraintClass());
     }
 
-    functionArgs.setCacheListeners(cacheListener);
-    functionArgs.setCacheLoader(cacheLoader);
-    functionArgs.setCacheWriter(cacheWriter);
-    functionArgs.setCompressor(compressor);
+    if (cacheListener != null) {
+      functionArgs.setCacheListeners(cacheListener);
+    }
+
+    if (cacheLoader != null) {
+      functionArgs.setCacheLoader(cacheLoader);
+    }
+
+    if (cacheWriter != null) {
+      functionArgs.setCacheWriter(cacheWriter);
+    }
+
+    if (compressor != null) {
+      functionArgs.setCompressor(compressor);
+    }
+
+    if (keyConstraint != null) {
+      functionArgs.setKeyConstraint(keyConstraint);
+    }
+
+    if (valueConstraint != null) {
+      functionArgs.setValueConstraint(valueConstraint);
+    }
 
     DistributedSystemMXBean dsMBean = getDSMBean(cache);
     // validating colocation
@@ -323,7 +414,8 @@ public class CreateRegionCommand implements GfshCommand {
     }
 
     // additional authorization
-    if (isPersistentShortcut(functionArgs.getRegionShortcut())
+    if ((functionArgs.getRegionShortcut() != null
+        && functionArgs.getRegionShortcut().isPersistent())
         || isAttributePersistent(functionArgs.getRegionAttributes())) {
       getSecurityService().authorize(ResourcePermission.Resource.CLUSTER,
           ResourcePermission.Operation.WRITE, ResourcePermission.Target.DISK);
@@ -378,13 +470,13 @@ public class CreateRegionCommand implements GfshCommand {
     return false;
   }
 
-  RegionAttributes getRegionAttributes(InternalCache cache, String regionPath) {
+  RegionAttributesWrapper getRegionAttributes(InternalCache cache, String regionPath) {
     if (!isClusterWideSameConfig(cache, regionPath)) {
       throw new IllegalStateException(CliStrings.format(
           CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FORM_REGIONS_EXISTS_BUT_DIFFERENT_SCOPE_OR_DATAPOLICY_USE_DESCRIBE_REGION_FOR_0,
           regionPath));
     }
-    RegionAttributes attributes = null;
+    RegionAttributesWrapper attributes = null;
 
     // First check whether the region exists on a this manager, if yes then no
     // need to use FetchRegionAttributesFunction to fetch RegionAttributes
@@ -409,13 +501,13 @@ public class CreateRegionCommand implements GfshCommand {
               throw (IllegalArgumentException) object;
             } else if (object instanceof Throwable) {
               Throwable th = (Throwable) object;
-              LogWrapper.getInstance().info(CliUtil.stackTraceAsString((th)));
+              LogWrapper.getInstance(getCache()).info(ExceptionUtils.getStackTrace((th)));
               throw new IllegalArgumentException(CliStrings.format(
                   CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_REASON_1,
                   regionPath, th.getMessage()));
             } else { // has to be RegionAttributes
               @SuppressWarnings("unchecked") // to avoid warning :(
-              RegionAttributes regAttr = ((RegionAttributes) object);
+              RegionAttributesWrapper regAttr = ((RegionAttributesWrapper) object);
               if (attributes == null) {
                 attributes = regAttr;
                 break;
@@ -483,23 +575,12 @@ public class CreateRegionCommand implements GfshCommand {
 
     for (Map.Entry<String, String[]> entry : entrySet) {
       String[] value = entry.getValue();
-      if (CliUtil.contains(value, diskStoreName)) {
+      if (diskStoreName != null && ArrayUtils.contains(value, diskStoreName)) {
         return true;
       }
     }
 
     return false;
-  }
-
-  private boolean isPersistentShortcut(RegionShortcut shortcut) {
-    return shortcut == RegionShortcut.LOCAL_PERSISTENT
-        || shortcut == RegionShortcut.LOCAL_PERSISTENT_OVERFLOW
-        || shortcut == RegionShortcut.PARTITION_PERSISTENT
-        || shortcut == RegionShortcut.PARTITION_PERSISTENT_OVERFLOW
-        || shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT
-        || shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW
-        || shortcut == RegionShortcut.REPLICATE_PERSISTENT
-        || shortcut == RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW;
   }
 
   private boolean isAttributePersistent(RegionAttributes attributes) {
@@ -556,7 +637,7 @@ public class CreateRegionCommand implements GfshCommand {
 
       String keyConstraint =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__KEYCONSTRAINT);
-      if (keyConstraint != null && !RegionCommandsUtils.isClassNameValid(keyConstraint)) {
+      if (keyConstraint != null && !ClassName.isClassNameValid(keyConstraint)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_KEYCONSTRAINT_0_IS_INVALID,
             new Object[] {keyConstraint}));
@@ -564,41 +645,14 @@ public class CreateRegionCommand implements GfshCommand {
 
       String valueConstraint =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__VALUECONSTRAINT);
-      if (valueConstraint != null && !RegionCommandsUtils.isClassNameValid(valueConstraint)) {
+      if (valueConstraint != null && !ClassName.isClassNameValid(valueConstraint)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_VALUECONSTRAINT_0_IS_INVALID,
             new Object[] {valueConstraint}));
       }
 
-      String cacheListenerList =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CACHELISTENER);
-      if (cacheListenerList != null) {
-        String[] cacheListeners = cacheListenerList.split(",");
-        for (String cacheListener : cacheListeners) {
-          if (!RegionCommandsUtils.isClassNameValid(cacheListener)) {
-            return ResultBuilder.createUserErrorResult(CliStrings.format(
-                CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELISTENER_0_IS_INVALID,
-                new Object[] {cacheListener}));
-          }
-        }
-      }
-
-      String cacheLoader = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CACHELOADER);
-      if (cacheLoader != null && !RegionCommandsUtils.isClassNameValid(cacheLoader)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID,
-            new Object[] {cacheLoader}));
-      }
-
-      String cacheWriter = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CACHEWRITER);
-      if (cacheWriter != null && !RegionCommandsUtils.isClassNameValid(cacheWriter)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID,
-            new Object[] {cacheWriter}));
-      }
-
       String compressor = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__COMPRESSOR);
-      if (compressor != null && !RegionCommandsUtils.isClassNameValid(compressor)) {
+      if (compressor != null && !ClassName.isClassNameValid(compressor)) {
         return ResultBuilder.createUserErrorResult(CliStrings
             .format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR, new Object[] {compressor}));
       }
@@ -619,24 +673,40 @@ public class CreateRegionCommand implements GfshCommand {
         }
       }
 
-      String statisticsEnabled =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__STATISTICSENABLED);
-      if (!Boolean.parseBoolean(statisticsEnabled)) {
-        String entryIdle =
-            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME);
-        String entryTtl =
-            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE);
-        String regionIdle =
-            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME);
-        String regionTtl =
-            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL);
-        if (entryIdle != null || entryTtl != null || regionIdle != null || regionTtl != null) {
-          String message =
-              LocalizedStrings.AttributesFactory_STATISTICS_MUST_BE_ENABLED_FOR_EXPIRATION
-                  .toLocalizedString();
-          return ResultBuilder.createUserErrorResult(message + ".");
-        }
+      // if any expiration value is set, statistics must be enabled
+      Boolean statisticsEnabled =
+          (Boolean) parseResult.getParamValue(CliStrings.CREATE_REGION__STATISTICSENABLED);
+      Integer entryIdle =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME);
+      Integer entryTtl =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE);
+      Integer regionIdle =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME);
+      Integer regionTtl =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL);
+      ExpirationAction entryIdleAction = (ExpirationAction) parseResult
+          .getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION);
+      ExpirationAction entryTtlAction = (ExpirationAction) parseResult
+          .getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION);
+      ExpirationAction regionIdleAction = (ExpirationAction) parseResult
+          .getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION);
+      ExpirationAction regionTtlAction = (ExpirationAction) parseResult
+          .getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION);
+      ClassName entryIdleExpiry =
+          (ClassName) parseResult.getParamValue(CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY);
+      ClassName entryTTTLExpiry =
+          (ClassName) parseResult.getParamValue(CliStrings.ENTRY_TTL_CUSTOM_EXPIRY);
+
+      if ((entryIdle != null || entryTtl != null || regionIdle != null || regionTtl != null
+          || entryIdleAction != null || entryTtlAction != null || regionIdleAction != null
+          || regionTtlAction != null || entryIdleExpiry != null || entryTTTLExpiry != null)
+          && (statisticsEnabled == null || !statisticsEnabled)) {
+        String message =
+            LocalizedStrings.AttributesFactory_STATISTICS_MUST_BE_ENABLED_FOR_EXPIRATION
+                .toLocalizedString();
+        return ResultBuilder.createUserErrorResult(message + ".");
       }
+
 
       String maxMemory =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY);

@@ -47,9 +47,9 @@ import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -1819,7 +1819,7 @@ public class FilterProfile implements DataSerializableFixedID {
      * distributed.internal.DistributionManager)
      */
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       try {
         CacheDistributionAdvisee r = findRegion(dm);
         if (r == null) {
@@ -1927,12 +1927,12 @@ public class FilterProfile implements DataSerializableFixedID {
       }
     }
 
-    private CacheDistributionAdvisee findRegion(DistributionManager dm) {
+    private CacheDistributionAdvisee findRegion(ClusterDistributionManager dm) {
       CacheDistributionAdvisee result = null;
       try {
         InternalCache cache = dm.getCache();
         if (cache != null) {
-          LocalRegion lr = cache.getRegionByPathForProcessing(regionName);
+          LocalRegion lr = (LocalRegion) cache.getRegionByPathForProcessing(regionName);
           if (lr instanceof CacheDistributionAdvisee) {
             result = (CacheDistributionAdvisee) lr;
           }
@@ -2218,9 +2218,9 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /** Test Hook */
   public interface TestHook {
-    public void await();
+    void await();
 
-    public void release();
+    void release();
   }
 
   @Override

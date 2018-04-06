@@ -31,37 +31,37 @@ public interface SystemMemberBridgeServer {
   /**
    * Returns the port on which this bridge server listens for bridge clients to connect.
    */
-  public int getPort();
+  int getPort();
 
   /**
    * Sets the port on which this bridge server listens for bridge clients to connect.
    *
    * @throws AdminException If this bridge server is running
    */
-  public void setPort(int port) throws AdminException;
+  void setPort(int port) throws AdminException;
 
   /**
    * Starts this bridge server. Once the server is running, its configuration cannot be changed.
    *
    * @throws AdminException If an error occurs while starting the bridge server
    */
-  public void start() throws AdminException;
+  void start() throws AdminException;
 
   /**
    * Returns whether or not this bridge server is running
    */
-  public boolean isRunning();
+  boolean isRunning();
 
   /**
    * Stops this bridge server. Note that the <code>BridgeServer</code> can be reconfigured and
    * restarted if desired.
    */
-  public void stop() throws AdminException;
+  void stop() throws AdminException;
 
   /**
    * Updates the information about this bridge server.
    */
-  public void refresh();
+  void refresh();
 
   /**
    * Returns a string representing the ip address or host name that this server will listen on.
@@ -69,7 +69,7 @@ public interface SystemMemberBridgeServer {
    * @return the ip address or host name that this server is to listen on
    * @since GemFire 5.7
    */
-  public String getBindAddress();
+  String getBindAddress();
 
   /**
    * Sets the ip address or host name that this server is to listen on for client connections.
@@ -89,7 +89,7 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if this bridge server is running
    * @since GemFire 5.7
    */
-  public void setBindAddress(String address) throws AdminException;
+  void setBindAddress(String address) throws AdminException;
 
   /**
    * Returns a string representing the ip address or host name that server locators will tell
@@ -98,7 +98,7 @@ public interface SystemMemberBridgeServer {
    * @return the ip address or host name to give to clients so they can connect to this server
    * @since GemFire 5.7
    */
-  public String getHostnameForClients();
+  String getHostnameForClients();
 
   /**
    * Sets the ip address or host name that this server is to listen on for client connections.
@@ -115,7 +115,7 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if this bridge server is running
    * @since GemFire 5.7
    */
-  public void setHostnameForClients(String name) throws AdminException;
+  void setHostnameForClients(String name) throws AdminException;
 
   /**
    * Sets whether or not this bridge server should notify clients based on key subscription.
@@ -133,14 +133,14 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if this bridge server is running
    * @since GemFire 5.7
    */
-  public void setNotifyBySubscription(boolean b) throws AdminException;
+  void setNotifyBySubscription(boolean b) throws AdminException;
 
   /**
    * Answers whether or not this bridge server should notify clients based on key subscription.
    *
    * @since GemFire 5.7
    */
-  public boolean getNotifyBySubscription();
+  boolean getNotifyBySubscription();
 
   /**
    * Sets the buffer size in bytes of the socket connection for this <code>BridgeServer</code>. The
@@ -150,7 +150,7 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if this bridge server is running
    * @since GemFire 5.7
    */
-  public void setSocketBufferSize(int socketBufferSize) throws AdminException;
+  void setSocketBufferSize(int socketBufferSize) throws AdminException;
 
   /**
    * Returns the configured buffer size of the socket connection for this <code>BridgeServer</code>.
@@ -159,7 +159,7 @@ public interface SystemMemberBridgeServer {
    * @return the configured buffer size of the socket connection for this <code>BridgeServer</code>
    * @since GemFire 5.7
    */
-  public int getSocketBufferSize();
+  int getSocketBufferSize();
 
   /**
    * Sets the maximum amount of time between client pings. This value is used by the
@@ -170,7 +170,7 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if this bridge server is running
    * @since GemFire 5.7
    */
-  public void setMaximumTimeBetweenPings(int maximumTimeBetweenPings) throws AdminException;
+  void setMaximumTimeBetweenPings(int maximumTimeBetweenPings) throws AdminException;
 
   /**
    * Returns the maximum amount of time between client pings. This value is used by the
@@ -180,14 +180,14 @@ public interface SystemMemberBridgeServer {
    * @return the maximum amount of time between client pings.
    * @since GemFire 5.7
    */
-  public int getMaximumTimeBetweenPings();
+  int getMaximumTimeBetweenPings();
 
   /**
    * Returns the maximum allowed client connections
    *
    * @since GemFire 5.7
    */
-  public int getMaxConnections();
+  int getMaxConnections();
 
   /**
    * Sets the maxium number of client connections allowed. When the maximum is reached the server
@@ -196,7 +196,7 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if this bridge server is running
    * @since GemFire 5.7
    */
-  public void setMaxConnections(int maxCons) throws AdminException;
+  void setMaxConnections(int maxCons) throws AdminException;
 
   /**
    * Returns the maxium number of threads allowed in this server to service client requests. The
@@ -204,7 +204,7 @@ public interface SystemMemberBridgeServer {
    *
    * @since GemFire 5.7
    */
-  public int getMaxThreads();
+  int getMaxThreads();
 
   /**
    * Sets the maxium number of threads allowed in this server to service client requests. The
@@ -213,14 +213,14 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if this bridge server is running
    * @since GemFire 5.7
    */
-  public void setMaxThreads(int maxThreads) throws AdminException;
+  void setMaxThreads(int maxThreads) throws AdminException;
 
   /**
    * Returns the maximum number of messages that can be enqueued in a client-queue.
    *
    * @since GemFire 5.7
    */
-  public int getMaximumMessageCount();
+  int getMaximumMessageCount();
 
   /**
    * Sets maximum number of messages that can be enqueued in a client-queue.
@@ -228,14 +228,14 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if this bridge server is running
    * @since GemFire 5.7
    */
-  public void setMaximumMessageCount(int maxMessageCount) throws AdminException;
+  void setMaximumMessageCount(int maxMessageCount) throws AdminException;
 
   /**
    * Returns the time (in seconds ) after which a message in the client queue will expire.
    *
    * @since GemFire 5.7
    */
-  public int getMessageTimeToLive();
+  int getMessageTimeToLive();
 
   /**
    * Sets the time (in seconds ) after which a message in the client queue will expire.
@@ -243,7 +243,7 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if this bridge server is running
    * @since GemFire 5.7
    */
-  public void setMessageTimeToLive(int messageTimeToLive) throws AdminException;
+  void setMessageTimeToLive(int messageTimeToLive) throws AdminException;
 
   /**
    * Sets the list of server groups this bridge server will belong to. By default bridge servers
@@ -254,7 +254,7 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if this bridge server is running
    * @since GemFire 5.7
    */
-  public void setGroups(String[] groups) throws AdminException;
+  void setGroups(String[] groups) throws AdminException;
 
   /**
    * Returns the list of server groups that this bridge server belongs to.
@@ -264,7 +264,7 @@ public interface SystemMemberBridgeServer {
    *         to.
    * @since GemFire 5.7
    */
-  public String[] getGroups();
+  String[] getGroups();
 
   /**
    * Get a description of the load probe for this bridge server. {@link ServerLoadProbe} for details
@@ -273,7 +273,7 @@ public interface SystemMemberBridgeServer {
    * @return the load probe used by this bridge server.
    * @since GemFire 5.7
    */
-  public String getLoadProbe();
+  String getLoadProbe();
 
   /**
    * Set the load probe for this bridge server. See {@link ServerLoadProbe} for details on how to
@@ -286,14 +286,14 @@ public interface SystemMemberBridgeServer {
    * @throws AdminException if the bridge server is running
    * @since GemFire 5.7
    */
-  public void setLoadProbe(ServerLoadProbe loadProbe) throws AdminException;
+  void setLoadProbe(ServerLoadProbe loadProbe) throws AdminException;
 
   /**
    * Get the frequency in milliseconds to poll the load probe on this bridge server.
    *
    * @return the frequency in milliseconds that we will poll the load probe.
    */
-  public long getLoadPollInterval();
+  long getLoadPollInterval();
 
   /**
    * Set the frequency in milliseconds to poll the load probe on this bridge server
@@ -302,6 +302,6 @@ public interface SystemMemberBridgeServer {
    *        than 0.
    * @throws AdminException if the bridge server is running
    */
-  public void setLoadPollInterval(long loadPollInterval) throws AdminException;
+  void setLoadPollInterval(long loadPollInterval) throws AdminException;
 
 }

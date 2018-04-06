@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * <p>
@@ -53,7 +53,7 @@ public interface TransactionEvent {
    * Gets the <code>TransactionId</code> associated this TransactionEvent.
    *
    */
-  public TransactionId getTransactionId();
+  TransactionId getTransactionId();
 
   /**
    * Returns an ordered list of every {@link CacheEvent} for this transaction. The event order is
@@ -63,13 +63,13 @@ public interface TransactionEvent {
    *         operation performed by this transaction.
    * @since GemFire 5.0
    */
-  public List<CacheEvent<?, ?>> getEvents();
+  List<CacheEvent<?, ?>> getEvents();
 
   /**
    * Gets the Cache for this transaction event
    *
    * @return <code>Cache</code>
    */
-  public Cache getCache();
+  Cache getCache();
 
 }

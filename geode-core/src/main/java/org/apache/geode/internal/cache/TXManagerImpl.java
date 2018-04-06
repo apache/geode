@@ -52,7 +52,7 @@ import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.TXManagerCancelledException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
@@ -89,12 +89,14 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   // Thread specific context container
   private final ThreadLocal<TXStateProxy> txContext;
 
+  private final ThreadLocal<Boolean> pauseJTA;
+
   private static TXManagerImpl currentInstance = null;
 
   // The unique transaction ID for this Manager
   private final AtomicInteger uniqId;
 
-  private final DM dm;
+  private final DistributionManager dm;
   private final InternalCache cache;
 
   // The DistributionMemberID used to construct TXId's
@@ -186,6 +188,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     this.cachePerfStats = cachePerfStats;
     this.hostedTXStates = new HashMap<>();
     this.txContext = new ThreadLocal<>();
+    this.pauseJTA = new ThreadLocal<Boolean>();
     this.isTXDistributed = new ThreadLocal<>();
     this.transactionTimeToLive = Integer
         .getInteger(DistributionConfig.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
@@ -328,9 +331,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
     TXStateProxyImpl proxy = null;
     if (isDistributed()) {
-      proxy = new DistTXStateProxyImplOnCoordinator(this, id, null);
+      proxy = new DistTXStateProxyImplOnCoordinator(cache, this, id, null);
     } else {
-      proxy = new TXStateProxyImpl(this, id, null);
+      proxy = new TXStateProxyImpl(cache, this, id, null);
     }
     setTXState(proxy);
     this.localTxMap.put(id, proxy);
@@ -348,9 +351,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     TXStateProxy newState = null;
 
     if (isDistributed()) {
-      newState = new DistTXStateProxyImplOnCoordinator(this, id, true);
+      newState = new DistTXStateProxyImplOnCoordinator(cache, this, id, true);
     } else {
-      newState = new TXStateProxyImpl(this, id, true);
+      newState = new TXStateProxyImpl(cache, this, id, true);
     }
     setTXState(newState);
     return newState;
@@ -728,6 +731,11 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       } else {
         setTXState(null);
       }
+    } else {
+      if (needToResumeBySameThread) {
+        // pausedJTA is set to true when JTA is not yet bootstrapped.
+        pauseJTA.set(true);
+      }
     }
     return result;
   }
@@ -781,11 +789,23 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       setTXState(tx);
 
       tx.resume();
+    } else {
+      if (needToResumeBySameThread) {
+        pauseJTA.set(false);
+      }
     }
   }
 
   public boolean isTransactionPaused() {
     return txContext.get() == PAUSED;
+  }
+
+  public boolean isJTAPaused() {
+    Boolean jtaPaused = pauseJTA.get();
+    if (jtaPaused == null) {
+      return false;
+    }
+    return jtaPaused;
   }
 
   /**
@@ -807,7 +827,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  DM getDM() {
+  DistributionManager getDM() {
     return this.dm;
   }
 
@@ -877,10 +897,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         val = this.hostedTXStates.get(key);
         if (val == null && msg.canStartRemoteTransaction()) {
           if (msg.isTransactionDistributed()) {
-            val = new DistTXStateProxyImplOnDatanode(this, key, msg.getTXOriginatorClient());
+            val = new DistTXStateProxyImplOnDatanode(cache, this, key, msg.getTXOriginatorClient());
             val.setLocalTXState(new DistTXState(val, true));
           } else {
-            val = new TXStateProxyImpl(this, key, msg.getTXOriginatorClient());
+            val = new TXStateProxyImpl(cache, this, key, msg.getTXOriginatorClient());
             val.setLocalTXState(new TXState(val, true));
           }
           this.hostedTXStates.put(key, val);
@@ -942,10 +962,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
           // TODO: Conditionally create object based on distributed or non-distributed tx mode
           if (msg instanceof TransactionMessage
               && ((TransactionMessage) msg).isTransactionDistributed()) {
-            val = new DistTXStateProxyImplOnDatanode(this, key, memberId);
+            val = new DistTXStateProxyImplOnDatanode(cache, this, key, memberId);
             // val.setLocalTXState(new DistTXState(val,true));
           } else {
-            val = new TXStateProxyImpl(this, key, memberId);
+            val = new TXStateProxyImpl(cache, this, key, memberId);
             // val.setLocalTXState(new TXState(val,true));
           }
           this.hostedTXStates.put(key, val);
@@ -1062,7 +1082,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     return this.localTxMap.size();
   }
 
-  public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+  public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
+      boolean crashed) {
     synchronized (this.hostedTXStates) {
       Iterator<Map.Entry<TXId, TXStateProxy>> iterator = this.hostedTXStates.entrySet().iterator();
       while (iterator.hasNext()) {
@@ -1080,13 +1101,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     expireClientTransactionsSentFromDepartedProxy(id);
   }
 
-  public void memberJoined(InternalDistributedMember id) {}
+  public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {}
 
-  public void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining) {}
+  public void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-      String reason) {}
+  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {}
 
 
   /**
@@ -1146,9 +1167,11 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  private void saveTXStateForClientFailover(TXStateProxy tx) {
+  void saveTXStateForClientFailover(TXStateProxy tx) {
     if (tx.isOnBehalfOfClient() && tx.isRealDealLocal()) {
-      failoverMap.put(tx.getTxId(), tx.getCommitMessage());
+      TXCommitMessage commitMessage =
+          tx.getCommitMessage() == null ? TXCommitMessage.ROLLBACK_MSG : tx.getCommitMessage();
+      failoverMap.put(tx.getTxId(), commitMessage);
       if (logger.isDebugEnabled()) {
         logger.debug(
             "TX: storing client initiated transaction:{}; now there are {} entries in the failoverMap",
@@ -1270,7 +1293,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     /** for deserialization */
     public TXRemovalMessage() {}
 
-    static void send(DM dm, Set recipients, Set<TXId> txIds) {
+    static void send(DistributionManager dm, Set recipients, Set<TXId> txIds) {
       TXRemovalMessage msg = new TXRemovalMessage();
       msg.txIds = txIds;
       msg.setRecipients(recipients);
@@ -1292,7 +1315,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       InternalCache cache = dm.getCache();
       if (cache != null) {
         TXManagerImpl mgr = cache.getTXMgr();

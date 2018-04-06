@@ -29,10 +29,10 @@ import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -54,9 +54,9 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   // TODO - GEODE-1746, the handshake holds state. It seems like the code depends
   // on all of the handshake operations happening in a single thread. I don't think we
   // want that, need to refactor.
-  private final HandShake handshake;
+  private final ClientSideHandshakeImpl handshake;
   private final int socketBufferSize;
-  private final int handShakeTimeout;
+  private final int handshakeTimeout;
   private final boolean usedByGateway;
   private final ServerBlackList blackList;
   private final CancelCriterion cancelCriterion;
@@ -77,17 +77,17 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   public static boolean testFailedConnectionToServer = false;
 
   public ConnectionFactoryImpl(ConnectionSource source, EndpointManager endpointManager,
-      InternalDistributedSystem sys, int socketBufferSize, int handShakeTimeout, int readTimeout,
+      InternalDistributedSystem sys, int socketBufferSize, int handshakeTimeout, int readTimeout,
       ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion, boolean usedByGateway,
       GatewaySender sender, long pingInterval, boolean multiuserSecureMode, PoolImpl pool) {
-    this.handshake = new HandShake(proxyId, sys, sys.getSecurityService());
+    this.handshake =
+        new ClientSideHandshakeImpl(proxyId, sys, sys.getSecurityService(), multiuserSecureMode);
     this.handshake.setClientReadTimeout(readTimeout);
     this.source = source;
     this.endpointManager = endpointManager;
     this.ds = sys;
     this.socketBufferSize = socketBufferSize;
-    this.handShakeTimeout = handShakeTimeout;
-    this.handshake.setMultiuserSecureMode(multiuserSecureMode);
+    this.handshakeTimeout = handshakeTimeout;
     this.readTimeout = readTimeout;
     this.usedByGateway = usedByGateway;
     this.gatewaySender = sender;
@@ -133,12 +133,12 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     boolean initialized = false;
 
     try {
-      HandShake connHandShake = new HandShake(handshake);
+      ClientSideHandshake connHandShake = new ClientSideHandshakeImpl(handshake);
       connection.connect(endpointManager, location, connHandShake, socketBufferSize,
-          handShakeTimeout, readTimeout, getCommMode(forQueue), this.gatewaySender,
+          handshakeTimeout, readTimeout, getCommMode(forQueue), this.gatewaySender,
           this.socketCreator);
       failureTracker.reset();
-      connection.setHandShake(connHandShake);
+      connection.setHandshake(connHandShake);
       authenticateIfRequired(connection);
       initialized = true;
     } catch (GemFireConfigException e) {
@@ -227,7 +227,6 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     Set blackListedServers = blackList.getBadServers();
     excludedServers.addAll(blackListedServers);
     Connection conn = null;
-    // long startTime = System.currentTimeMillis();
     RuntimeException fatalException = null;
     boolean tryBlackList = true;
 
@@ -281,13 +280,6 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       excludedServers.add(server);
     } while (conn == null);
 
-    // if(conn == null) {
-    // logger.fine("Unable to create a connection in the allowed time.");
-    //
-    // if(fatalException!=null) {
-    // throw fatalException;
-    // }
-    // }
     return conn;
   }
 
@@ -300,8 +292,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     }
     // Launch the thread
     CacheClientUpdater updater = new CacheClientUpdater(clientUpdateName, endpoint.getLocation(),
-        isPrimary, ds, new HandShake(this.handshake), qManager, endpointManager, endpoint,
-        handShakeTimeout, this.socketCreator);
+        isPrimary, ds, new ClientSideHandshakeImpl(this.handshake), qManager, endpointManager,
+        endpoint, handshakeTimeout, this.socketCreator);
 
     if (!updater.isConnected()) {
       return null;
@@ -310,28 +302,6 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     updater.setFailedUpdater(failedUpdater);
     updater.start();
 
-    // Wait for the client update thread to be ready
-    // if (!updater.waitForInitialization()) {
-    // Yogesh : This doesn't wait for notify if the updater
-    // thread exits from the run in case of Exception in CCU thread
-    // Yogesh : fix for 36690
-    // because when CCU thread gets a ConnectException, it comes out of run method
-    // and when a thread is no more running it notifies all the waiting threads on the thread
-    // object.
-    // so above wait will come out irrelevant of notify from CCU thread, when CCU thread has got an
-    // exception
-    // To avoid this problem we check isAlive before returning from this method.
-    // if (logger != null && logger.infoEnabled()) {
-    // logger.info(LocalizedStrings.AutoConnectionSourceImpl_0_NOT_STARTED_1, new Object[] {this,
-    // clientUpdateName});
-    // }
-    // return null;
-    // }else {
-    // if (logger != null && logger.infoEnabled()) {
-    // logger.info(LocalizedStrings.AutoConnectionSourceImpl_0_STARTED_1, new Object[] {this,
-    // clientUpdateName});
-    // }
-    // }
     return updater;
   }
 }

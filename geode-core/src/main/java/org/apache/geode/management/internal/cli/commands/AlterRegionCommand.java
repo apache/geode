@@ -20,11 +20,17 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.RegionAlterFunction;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
@@ -47,28 +53,34 @@ public class AlterRegionCommand implements GfshCommand {
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME__HELP) Integer entryExpirationIdleTime,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
           specifiedDefaultValue = "INVALIDATE",
-          help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) String entryExpirationIdleTimeAction,
+          help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) ExpirationAction entryExpirationIdleTimeAction,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE,
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION,
           specifiedDefaultValue = "INVALIDATE",
-          help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION__HELP) String entryExpirationTTLAction,
+          help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION__HELP) ExpirationAction entryExpirationTTLAction,
+      @CliOption(key = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY, specifiedDefaultValue = "",
+          help = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryIdleTimeCustomExpiry,
+      @CliOption(key = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY, specifiedDefaultValue = "",
+          help = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryTTLCustomExpiry,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME,
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION,
           specifiedDefaultValue = "INVALIDATE",
-          help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) String regionExpirationIdleTimeAction,
+          help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) ExpirationAction regionExpirationIdleTimeAction,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL,
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL__HELP) Integer regionExpirationTTL,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION,
           specifiedDefaultValue = "INVALIDATE",
-          help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION__HELP) String regionExpirationTTLAction,
+          help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION__HELP) ExpirationAction regionExpirationTTLAction,
       @CliOption(key = CliStrings.ALTER_REGION__CACHELISTENER, specifiedDefaultValue = "",
-          help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) String[] cacheListeners,
+          // split the input only with comma outside of json string
+          optionContext = "splittingRegex=,(?![^{]*\\})",
+          help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) ClassName<CacheListener>[] cacheListeners,
       @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER, specifiedDefaultValue = "",
-          help = CliStrings.ALTER_REGION__CACHELOADER__HELP) String cacheLoader,
+          help = CliStrings.ALTER_REGION__CACHELOADER__HELP) ClassName<CacheLoader> cacheLoader,
       @CliOption(key = CliStrings.ALTER_REGION__CACHEWRITER, specifiedDefaultValue = "",
-          help = CliStrings.ALTER_REGION__CACHEWRITER__HELP) String cacheWriter,
+          help = CliStrings.ALTER_REGION__CACHEWRITER__HELP) ClassName<CacheWriter> cacheWriter,
       @CliOption(key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
       @CliOption(key = CliStrings.ALTER_REGION__GATEWAYSENDERID, specifiedDefaultValue = "",
@@ -92,6 +104,8 @@ public class AlterRegionCommand implements GfshCommand {
     regionFunctionArgs.setEntryExpirationIdleTime(entryExpirationIdleTime,
         entryExpirationIdleTimeAction);
     regionFunctionArgs.setEntryExpirationTTL(entryExpirationTTL, entryExpirationTTLAction);
+    regionFunctionArgs.setEntryIdleTimeCustomExpiry(entryIdleTimeCustomExpiry);
+    regionFunctionArgs.setEntryTTLCustomExpiry(entryTTLCustomExpiry);
     regionFunctionArgs.setRegionExpirationIdleTime(regionExpirationIdleTime,
         regionExpirationIdleTimeAction);
     regionFunctionArgs.setRegionExpirationTTL(regionExpirationTTL, regionExpirationTTLAction);
@@ -102,30 +116,6 @@ public class AlterRegionCommand implements GfshCommand {
     regionFunctionArgs.setGatewaySenderIds(gatewaySenderIds);
     regionFunctionArgs.setCloningEnabled(cloningEnabled);
     regionFunctionArgs.setEvictionMax(evictionMax);
-
-
-    Set<String> cacheListenersSet = regionFunctionArgs.getCacheListeners();
-    if (cacheListenersSet != null && !cacheListenersSet.isEmpty()) {
-      for (String cacheListener : cacheListenersSet) {
-        if (!RegionCommandsUtils.isClassNameValid(cacheListener)) {
-          throw new IllegalArgumentException(CliStrings.format(
-              CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELISTENER_0_IS_INVALID,
-              cacheListener));
-        }
-      }
-    }
-
-    if (cacheLoader != null && !RegionCommandsUtils.isClassNameValid(cacheLoader)) {
-      throw new IllegalArgumentException(CliStrings.format(
-          CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID,
-          cacheLoader));
-    }
-
-    if (cacheWriter != null && !RegionCommandsUtils.isClassNameValid(cacheWriter)) {
-      throw new IllegalArgumentException(CliStrings.format(
-          CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID,
-          cacheWriter));
-    }
 
     if (evictionMax != null && evictionMax < 0) {
       throw new IllegalArgumentException(CliStrings.format(

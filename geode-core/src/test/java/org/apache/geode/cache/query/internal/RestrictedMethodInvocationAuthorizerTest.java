@@ -425,11 +425,13 @@ public class RestrictedMethodInvocationAuthorizerTest {
 
   @Test
   public void mapMethodsForPartitionedRegionAreWhiteListed() throws Exception {
-    Class clazz = PartitionedRegion.class;
+    Class<PartitionedRegion> clazz = PartitionedRegion.class;
+    Method get = clazz.getMethod("get", Object.class);
     Method entrySet = clazz.getMethod("entrySet");
     Method keySet = clazz.getMethod("keySet");
     Method values = clazz.getMethod("values");
     Method containsKey = clazz.getMethod("containsKey", Object.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(get));
     assertTrue(methodInvocationAuthorizer.isWhitelisted(entrySet));
     assertTrue(methodInvocationAuthorizer.isWhitelisted(keySet));
     assertTrue(methodInvocationAuthorizer.isWhitelisted(values));
@@ -481,7 +483,7 @@ public class RestrictedMethodInvocationAuthorizerTest {
     testNumberMethods(AtomicLong.class);
   }
 
-  private void testNumberMethods(Class clazz) throws NoSuchMethodException {
+  private void testNumberMethods(Class<?> clazz) throws NoSuchMethodException {
     Method byteValue = clazz.getMethod("byteValue");
     Method doubleValue = clazz.getMethod("doubleValue");
     Method intValue = clazz.getMethod("intValue");
@@ -496,13 +498,15 @@ public class RestrictedMethodInvocationAuthorizerTest {
     assertTrue(methodInvocationAuthorizer.isWhitelisted(shortValue));
   }
 
-  private void testMapMethods(Class clazz) throws NoSuchMethodException {
+  private void testMapMethods(Class<?> clazz) throws NoSuchMethodException {
+    Method get = clazz.getMethod("get", Object.class);
     Method entrySet = clazz.getMethod("entrySet");
     Method keySet = clazz.getMethod("keySet");
     Method values = clazz.getMethod("values");
     Method getEntries = clazz.getMethod("getEntries");
     Method getValues = clazz.getMethod("getValues");
     Method containsKey = clazz.getMethod("containsKey", Object.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(get));
     assertTrue(methodInvocationAuthorizer.isWhitelisted(entrySet));
     assertTrue(methodInvocationAuthorizer.isWhitelisted(keySet));
     assertTrue(methodInvocationAuthorizer.isWhitelisted(values));

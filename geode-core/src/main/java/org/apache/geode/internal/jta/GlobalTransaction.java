@@ -32,7 +32,7 @@ import javax.transaction.xa.*;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -565,7 +565,7 @@ public class GlobalTransaction {
         return DMid;
       }
       IdsForId = ids;
-      DM dm = ids.getDistributionManager();
+      DistributionManager dm = ids.getDistributionManager();
       DMid = dm.getId().toString();
       return DMid;
     }

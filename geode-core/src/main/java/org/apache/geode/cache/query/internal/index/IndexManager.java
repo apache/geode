@@ -85,6 +85,7 @@ public class IndexManager {
   // Asif : This action is to rerun Index creation after
   // clear is called on the region
   public static final int RECREATE_INDEX = 4;
+  private final InternalCache cache;
   protected final Region region;
 
   private final boolean isOverFlowToDisk;
@@ -155,7 +156,8 @@ public class IndexManager {
   // @todo ericz
   // there should be a read/write lock PER INDEX in order to maximize
   // the concurrency of query execution.
-  public IndexManager(Region region) {
+  public IndexManager(InternalCache cache, Region region) {
+    this.cache = cache;
     this.region = region;
     // must be a SortedMap to ensure the indexes are iterated over in fixed
     // order
@@ -231,7 +233,7 @@ public class IndexManager {
 
   /** Test Hook */
   public interface TestHook {
-    public void hook(final int spot) throws RuntimeException;
+    void hook(final int spot) throws RuntimeException;
   }
 
   /**
@@ -360,7 +362,7 @@ public class IndexManager {
         }
       }
 
-      IndexTask indexTask = new IndexTask(indexName, indexType, origFromClause,
+      IndexTask indexTask = new IndexTask(cache, indexName, indexType, origFromClause,
           origIndexedExpression, helper, isCompactOrHash, prIndex, loadEntries);
       FutureTask<Index> indexFutureTask = new FutureTask<Index>(indexTask);
       Object oldIndex = this.indexes.putIfAbsent(indexTask, indexFutureTask);
@@ -429,11 +431,8 @@ public class IndexManager {
 
     } finally {
       DefaultQuery.setPdxReadSerialized(this.region.getCache(), oldReadSerialized);
+      ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).unpauseTransaction(tx);
 
-      if (tx != null) {
-        ((TXManagerImpl) this.region.getCache().getCacheTransactionManager())
-            .unpauseTransaction(tx);
-      }
     }
   }
 
@@ -502,7 +501,7 @@ public class IndexManager {
   }
 
   public Index getIndex(String indexName) {
-    IndexTask indexTask = new IndexTask(indexName);
+    IndexTask indexTask = new IndexTask(cache, indexName);
     Object ind = this.indexes.get(indexTask);
     // Check if the returned value is instance of Index (this means
     // the index is not in create phase, its created successfully).
@@ -513,7 +512,7 @@ public class IndexManager {
   }
 
   public void addIndex(String indexName, Index index) {
-    IndexTask indexTask = new IndexTask(indexName);
+    IndexTask indexTask = new IndexTask(cache, indexName);
     this.indexes.put(indexTask, index);
   }
 
@@ -839,7 +838,7 @@ public class IndexManager {
     // is OK as we are not clearing data maps . The destroy though marks
     // the index invalid , that is OK. Because of this flag a query
     // may or may not use the Index
-    IndexTask indexTask = new IndexTask(index.getName());
+    IndexTask indexTask = new IndexTask(cache, index.getName());
     if (this.indexes.remove(indexTask) != null) {
       AbstractIndex indexHandle = (AbstractIndex) index;
       indexHandle.destroy();
@@ -1149,10 +1148,8 @@ public class IndexManager {
       }
     } finally {
       DefaultQuery.setPdxReadSerialized(this.region.getCache(), false);
-      if (tx != null) {
-        ((TXManagerImpl) this.region.getCache().getCacheTransactionManager())
-            .unpauseTransaction(tx);
-      }
+      ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).unpauseTransaction(tx);
+
       getCachePerfStats().endIndexUpdate(startPA);
     }
   }
@@ -1541,9 +1538,12 @@ public class IndexManager {
 
     public boolean loadEntries;
 
-    IndexTask(String indexName, IndexType type, String origFromClause, String origIndexedExpression,
-        IndexCreationHelper helper, boolean isCompactOrHash, PartitionedIndex prIndex,
-        boolean loadEntries) {
+    private final InternalCache cache;
+
+    IndexTask(InternalCache cache, String indexName, IndexType type, String origFromClause,
+        String origIndexedExpression, IndexCreationHelper helper, boolean isCompactOrHash,
+        PartitionedIndex prIndex, boolean loadEntries) {
+      this.cache = cache;
       this.indexName = indexName;
       this.indexType = type;
       this.origFromClause = origFromClause;
@@ -1555,7 +1555,8 @@ public class IndexManager {
     }
 
     /* For name based index search */
-    IndexTask(String indexName) {
+    IndexTask(InternalCache cache, String indexName) {
+      this.cache = cache;
       this.indexName = indexName;
     }
 
@@ -1612,12 +1613,12 @@ public class IndexManager {
         stats = this.prIndex.getStatistics();
       }
       if (indexType == IndexType.PRIMARY_KEY) {
-        index = new PrimaryKeyIndex(indexName, region, fromClause, indexedExpression,
+        index = new PrimaryKeyIndex(cache, indexName, region, fromClause, indexedExpression,
             projectionAttributes, origFromClause, origIndexedExpression, definitions, stats);
         logger.info("Using Primary Key index implementation for '{}' on region {}", indexName,
             region.getFullPath());
       } else if (indexType == IndexType.HASH) {
-        index = new HashIndex(indexName, region, fromClause, indexedExpression,
+        index = new HashIndex(cache, indexName, region, fromClause, indexedExpression,
             projectionAttributes, origFromClause, origIndexedExpression, definitions, stats);
 
         logger.info("Using Hash index implementation for '{}' on region {}", indexName,
@@ -1627,28 +1628,28 @@ public class IndexManager {
         // shouldCreateCompactIndex((FunctionalIndexCreationHelper)helper);
         if (this.isCompactOrHash || this.isLDM) {
           if (indexType == IndexType.FUNCTIONAL && !helper.isMapTypeIndex()) {
-            index = new CompactRangeIndex(indexName, region, fromClause, indexedExpression,
+            index = new CompactRangeIndex(cache, indexName, region, fromClause, indexedExpression,
                 projectionAttributes, origFromClause, origIndexedExpression, definitions, stats);
             logger.info("Using Compact Range index implementation for '{}' on region {}", indexName,
                 region.getFullPath());
           } else {
             FunctionalIndexCreationHelper fich = (FunctionalIndexCreationHelper) helper;
-            index = new CompactMapRangeIndex(indexName, region, fromClause, indexedExpression,
-                projectionAttributes, origFromClause, origIndexedExpression, definitions,
-                fich.isAllKeys(), fich.multiIndexKeysPattern, fich.mapKeys, stats);
+            index = new CompactMapRangeIndex(cache, indexName, region, fromClause,
+                indexedExpression, projectionAttributes, origFromClause, origIndexedExpression,
+                definitions, fich.isAllKeys(), fich.multiIndexKeysPattern, fich.mapKeys, stats);
             logger.info("Using Compact Map Range index implementation for '{}' on region {}",
                 indexName, region.getFullPath());
           }
         } else {
           assert indexType == IndexType.FUNCTIONAL;
           if (!helper.isMapTypeIndex()) {
-            index = new RangeIndex(indexName, region, fromClause, indexedExpression,
+            index = new RangeIndex(cache, indexName, region, fromClause, indexedExpression,
                 projectionAttributes, origFromClause, origIndexedExpression, definitions, stats);
             logger.info("Using Non-Compact index implementation for '{}' on region {}", indexName,
                 region.getFullPath());
           } else {
             FunctionalIndexCreationHelper fich = (FunctionalIndexCreationHelper) helper;
-            index = new MapRangeIndex(indexName, region, fromClause, indexedExpression,
+            index = new MapRangeIndex(cache, indexName, region, fromClause, indexedExpression,
                 projectionAttributes, origFromClause, origIndexedExpression, definitions,
                 fich.isAllKeys(), fich.multiIndexKeysPattern, fich.mapKeys, stats);
             logger.info("Using Non-Compact Map index implementation for '{}' on region {}",

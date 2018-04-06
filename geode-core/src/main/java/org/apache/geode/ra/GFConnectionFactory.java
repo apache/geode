@@ -22,5 +22,5 @@ import javax.resource.ResourceException;
 
 
 public interface GFConnectionFactory extends Referenceable, Serializable {
-  public GFConnection getConnection() throws ResourceException;
+  GFConnection getConnection() throws ResourceException;
 }

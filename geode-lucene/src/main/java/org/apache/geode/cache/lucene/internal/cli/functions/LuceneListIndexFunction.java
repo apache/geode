@@ -28,6 +28,7 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 
 /**
  * The LuceneListIndexFunction class is a function used to collect the information on all lucene
@@ -42,7 +43,7 @@ import org.apache.geode.internal.InternalEntity;
  * @see LuceneIndexDetails
  */
 @SuppressWarnings("unused")
-public class LuceneListIndexFunction implements InternalEntity, Function {
+public class LuceneListIndexFunction implements InternalFunction {
 
   private static final long serialVersionUID = -2320432506763893879L;
 

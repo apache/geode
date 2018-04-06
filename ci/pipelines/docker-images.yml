@@ -33,6 +33,12 @@ resources:
     password: ((!docker-password))
     repository: gcr.io/apachegeode-ci/((!docker-image-name))
 
+- name: openjdk8-docker-image
+  type: docker-image
+  source:
+    repository: openjdk
+    tag: 8
+    skip_download: true
 jobs:
 # apachegeode-build-concourse
 - name: build-apachegeode-build-concourse-docker-image
@@ -40,10 +46,11 @@ jobs:
   serial: true
   plan:
   - aggregate:
+    - get: openjdk8-docker-image
+      trigger: true
     - get: apachegeode-build-concourse-dockerfile
       trigger: true
   - put: apachegeode-build-concourse-docker-image
     params:
       build: apachegeode-build-concourse-dockerfile/ci/docker
       tag_as_latest: true
-

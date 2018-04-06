@@ -43,7 +43,7 @@ public interface FunctionContext<T1> {
    * @return the arguments or null if there are no arguments
    * @since GemFire 6.0
    */
-  public T1 getArguments();
+  T1 getArguments();
 
   /**
    * Returns the identifier of the function.
@@ -52,7 +52,7 @@ public interface FunctionContext<T1> {
    * @see Function#getId()
    * @since GemFire 6.0
    */
-  public String getFunctionId();
+  String getFunctionId();
 
   /**
    * Returns the ResultSender which is used to add the ability for an execute method to send a
@@ -66,7 +66,7 @@ public interface FunctionContext<T1> {
    * @since GemFire 6.0
    */
 
-  public <T2> ResultSender<T2> getResultSender();
+  <T2> ResultSender<T2> getResultSender();
 
   /**
    * Returns a boolean to identify whether this is a re-execute. Returns true if it is a re-execute
@@ -77,9 +77,9 @@ public interface FunctionContext<T1> {
    * @since GemFire 6.5
    * @see Function#isHA()
    */
-  public boolean isPossibleDuplicate();
+  boolean isPossibleDuplicate();
 
-  public Cache getCache();
+  Cache getCache();
 
   /**
    * a convenience method to get the name of the member this function executes on. call this
@@ -87,7 +87,7 @@ public interface FunctionContext<T1> {
    *
    * @return member name or id if name is blank
    */
-  public default String getMemberName() {
+  default String getMemberName() {
     DistributedMember member = getCache().getDistributedSystem().getDistributedMember();
 
     // if this member has name, use it, otherwise, use the id

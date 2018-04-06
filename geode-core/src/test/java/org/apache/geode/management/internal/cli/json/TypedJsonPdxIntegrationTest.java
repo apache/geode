@@ -26,8 +26,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
@@ -54,8 +56,9 @@ public class TypedJsonPdxIntegrationTest {
     config.setProperty(MCAST_PORT, "0");
 
     system = DistributedSystem.connect(config);
-    new CacheFactory().create();
-    pdxInstanceFactory = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    Cache cache = new CacheFactory().create();
+    pdxInstanceFactory =
+        PdxInstanceFactoryImpl.newCreator("Portfolio", false, ((InternalCache) cache));
   }
 
   @After

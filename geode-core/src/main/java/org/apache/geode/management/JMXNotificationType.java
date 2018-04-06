@@ -30,28 +30,28 @@ public interface JMXNotificationType {
    * Notification type which indicates that a region has been created in the cache <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.region.created</CODE>.
    */
-  public static final String REGION_CREATED =
+  String REGION_CREATED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.created";
 
   /**
    * Notification type which indicates that a region has been closed/destroyed in the cache <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.region.closed</CODE>.
    */
-  public static final String REGION_CLOSED =
+  String REGION_CLOSED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.closed";
 
   /**
    * Notification type which indicates that a disk store has been created <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.disk.created</CODE>.
    */
-  public static final String DISK_STORE_CREATED =
+  String DISK_STORE_CREATED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.disk.created";
 
   /**
    * Notification type which indicates that a disk store has been closed. <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.disk.closed</CODE>.
    */
-  public static final String DISK_STORE_CLOSED =
+  String DISK_STORE_CLOSED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.disk.closed";
 
   /**
@@ -59,7 +59,7 @@ public interface JMXNotificationType {
    * The value of this type string is
    * <CODE>gemfire.distributedsystem.cache.lockservice.created</CODE>.
    */
-  public static final String LOCK_SERVICE_CREATED =
+  String LOCK_SERVICE_CREATED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.lockservice.created";
 
   /**
@@ -67,28 +67,28 @@ public interface JMXNotificationType {
    * The value of this type string is
    * <CODE>gemfire.distributedsystem.cache.lockservice.closed</CODE>.
    */
-  public static final String LOCK_SERVICE_CLOSED =
+  String LOCK_SERVICE_CLOSED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.lockservice.closed";
 
   /**
    * Notification type which indicates that a member has been added to the system. <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.created</CODE>.
    */
-  public static final String CACHE_MEMBER_JOINED =
+  String CACHE_MEMBER_JOINED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.member.joined";
 
   /**
    * Notification type which indicates that a member has departed from the system. <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.created</CODE>.
    */
-  public static final String CACHE_MEMBER_DEPARTED =
+  String CACHE_MEMBER_DEPARTED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.member.departed";
 
   /**
    * Notification type which indicates that a member is suspected. <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.created</CODE>.
    */
-  public static final String CACHE_MEMBER_SUSPECT =
+  String CACHE_MEMBER_SUSPECT =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.member.suspect";
 
   /**
@@ -96,7 +96,7 @@ public interface JMXNotificationType {
    * The value of this type string is
    * <CODE>gemfire.distributedsystem.cacheserver.client.joined</CODE>.
    */
-  public static final String CLIENT_JOINED =
+  String CLIENT_JOINED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cacheserver.client.joined";
 
   /**
@@ -104,7 +104,7 @@ public interface JMXNotificationType {
    * The value of this type string is
    * <CODE>gemfire.distributedsystem.cacheserver.client.left</CODE>.
    */
-  public static final String CLIENT_LEFT =
+  String CLIENT_LEFT =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cacheserver.client.left";
 
   /**
@@ -112,7 +112,7 @@ public interface JMXNotificationType {
    * The value of this type string is
    * <CODE>gemfire.distributedsystem.cacheserver.client.crashed</CODE>.
    */
-  public static final String CLIENT_CRASHED =
+  String CLIENT_CRASHED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cacheserver.client.crashed";
 
   /**
@@ -120,50 +120,57 @@ public interface JMXNotificationType {
    * The value of this type string is
    * <CODE>gemfire.distributedsystem.gateway.receiver.created</CODE>.
    */
-  public static final String GATEWAY_RECEIVER_CREATED =
+  String GATEWAY_RECEIVER_CREATED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.created";
 
   /**
    * Notification type which indicates that a gateway sender is created <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.created</CODE>.
    */
-  public static final String GATEWAY_SENDER_CREATED =
+  String GATEWAY_SENDER_CREATED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.created";
 
   /**
    * Notification type which indicates that a gateway sender is started <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.started</CODE>.
    */
-  public static final String GATEWAY_SENDER_STARTED =
+  String GATEWAY_SENDER_STARTED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.started";
 
   /**
    * Notification type which indicates that a gateway sender is stopped <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.stopped</CODE>.
    */
-  public static final String GATEWAY_SENDER_STOPPED =
+  String GATEWAY_SENDER_STOPPED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.stopped";
 
   /**
    * Notification type which indicates that a gateway sender is paused <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.paused</CODE>.
    */
-  public static final String GATEWAY_SENDER_PAUSED =
+  String GATEWAY_SENDER_PAUSED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.paused";
 
   /**
    * Notification type which indicates that a gateway sender is resumed <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.resumed</CODE>.
    */
-  public static final String GATEWAY_SENDER_RESUMED =
+  String GATEWAY_SENDER_RESUMED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.resumed";
+
+  /**
+   * Notification type which indicates that a gateway sender is removed <BR>
+   * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.removed</CODE>.
+   */
+  public static final String GATEWAY_SENDER_REMOVED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.removed";
 
   /**
    * Notification type which indicates that an async queue is created <BR>
    * The value of this type string is
    * <CODE>ggemfire.distributedsystem.asycn.event.queue.created</CODE>.
    */
-  public static final String ASYNC_EVENT_QUEUE_CREATED =
+  String ASYNC_EVENT_QUEUE_CREATED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.asycn.event.queue.created";
 
   /**
@@ -171,27 +178,27 @@ public interface JMXNotificationType {
    * The value of this type string is
    * <CODE>gemfire.distributedsystem.async.event.queue.closed</CODE>.
    */
-  public static final String ASYNC_EVENT_QUEUE_CLOSED =
+  String ASYNC_EVENT_QUEUE_CLOSED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.async.event.queue.closed";
 
   /**
    * Notification type which indicates a GemFire system generated alert <BR>
    * The value of this type string is <CODE>system.alert</CODE>.
    */
-  public static final String SYSTEM_ALERT = "system.alert";
+  String SYSTEM_ALERT = "system.alert";
 
   /**
    * Notification type which indicates that cache server is started <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.server.started</CODE>.
    */
-  public static final String CACHE_SERVER_STARTED =
+  String CACHE_SERVER_STARTED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.server.started";
 
   /**
    * Notification type which indicates that cache server is stopped <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.server.stopped</CODE>.
    */
-  public static final String CACHE_SERVER_STOPPED =
+  String CACHE_SERVER_STOPPED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.server.stopped";
 
   /**
@@ -199,7 +206,7 @@ public interface JMXNotificationType {
    * The value of this type string is
    * <CODE>gemfire.distributedsystem.gateway.receiver.started</CODE>.
    */
-  public static final String GATEWAY_RECEIVER_STARTED =
+  String GATEWAY_RECEIVER_STARTED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.started";
 
   /**
@@ -207,20 +214,28 @@ public interface JMXNotificationType {
    * The value of this type string is
    * <CODE>gemfire.distributedsystem.gateway.receiver.stopped</CODE>.
    */
-  public static final String GATEWAY_RECEIVER_STOPPED =
+  String GATEWAY_RECEIVER_STOPPED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.stopped";
+
+  /**
+   * Notification type which indicates that a gateway receiver is destroyed <BR>
+   * The value of this type string is
+   * <CODE>gemfire.distributedsystem.gateway.receiver.destroyed</CODE>.
+   */
+  public static final String GATEWAY_RECEIVER_DESTROYED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.destroyed";
+
 
   /**
    * Notification type which indicates that locator is started <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.locator.started</CODE>.
    */
-  public static final String LOCATOR_STARTED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.locator.started";
+  String LOCATOR_STARTED = DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.locator.started";
 
   /**
    * Notification type which indicates that a cache service is created <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.service.created</CODE>.
    */
-  public static final String CACHE_SERVICE_CREATED =
+  String CACHE_SERVICE_CREATED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.service.created";
 }

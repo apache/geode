@@ -35,6 +35,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -67,7 +68,7 @@ public class DeclarativeIndexCreationJUnitTest {
   @Test
   public void testAsynchronousIndexCreatedOnRoot_PortfoliosRegion() {
     Region root = cache.getRegion("/root/portfolios");
-    IndexManager im = IndexUtils.getIndexManager(root, true);
+    IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
       assertTrue(true);
@@ -82,7 +83,7 @@ public class DeclarativeIndexCreationJUnitTest {
   @Test
   public void testSynchronousIndexCreatedOnRoot_StringRegion() {
     Region root = cache.getRegion("/root/string");
-    IndexManager im = IndexUtils.getIndexManager(root, true);
+    IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
       assertTrue(true);
@@ -93,7 +94,7 @@ public class DeclarativeIndexCreationJUnitTest {
       fail(
           "DeclarativeIndexCreationJUnitTest::testSynchronousIndexCreatedOnRoot_StringRegion Region:No index found in the root region");
     root = cache.getRegion("/root/string1");
-    im = IndexUtils.getIndexManager(root, true);
+    im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     if (!im.isIndexMaintenanceTypeSynchronous())
       fail(
           "DeclarativeIndexCreationJUnitTest::testSynchronousIndexCreatedOnRoot_StringRegion: The index update type not synchronous if no index-update-type attribuet specified in cache.cml");
@@ -102,7 +103,7 @@ public class DeclarativeIndexCreationJUnitTest {
   @Test
   public void testSynchronousIndexCreatedOnRootRegion() {
     Region root = cache.getRegion("/root");
-    IndexManager im = IndexUtils.getIndexManager(root, true);
+    IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
       assertTrue(true);

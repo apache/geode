@@ -64,6 +64,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
@@ -118,11 +119,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   public LocatorDUnitTest() {
     super();
   }
-
-  private static final String WAIT2_MS_NAME = "LocatorDUnitTest.WAIT2_MS";
-  private static final int WAIT2_MS_DEFAULT = 5000; // 2000 -- see bug 36470
-  private static final int WAIT2_MS =
-      Integer.getInteger(WAIT2_MS_NAME, WAIT2_MS_DEFAULT).intValue();
 
   protected int port1;
   private int port2;
@@ -198,7 +194,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     addDSProps(properties);
     system = (InternalDistributedSystem) DistributedSystem.connect(properties);
     InternalDistributedMember mbr = system.getDistributedMember();
-    assertEquals("expected the VM to have NORMAL vmKind", DistributionManager.NORMAL_DM_TYPE,
+    assertEquals("expected the VM to have NORMAL vmKind", ClusterDistributionManager.NORMAL_DM_TYPE,
         system.getDistributedMember().getVmKind());
 
     properties.remove(START_LOCATOR);
@@ -831,8 +827,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           vm1.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       // ensure quorumLost is properly invoked
-      DistributionManager dm =
-          (DistributionManager) ((InternalDistributedSystem) sys).getDistributionManager();
+      ClusterDistributionManager dm =
+          (ClusterDistributionManager) ((InternalDistributedSystem) sys).getDistributionManager();
       MyMembershipListener listener = new MyMembershipListener();
       dm.addMembershipListener(listener);
       // ensure there is an unordered reader thread for the member
@@ -1870,7 +1866,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         .until(() -> {
           try {
             InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
-            return c.getVmKind() == DistributionManager.LOCATOR_DM_TYPE;
+            return c.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
           } catch (Exception e) {
             e.printStackTrace();
             org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
@@ -2177,17 +2173,19 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     boolean quorumLostInvoked;
     List<String> suspectReasons = new ArrayList<>(50);
 
-    public void memberJoined(InternalDistributedMember id) {}
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {}
 
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {}
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {}
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {
       suspectReasons.add(reason);
     }
 
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
       quorumLostInvoked = true;
       org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
           .info("quorumLost invoked in test code");

@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.persistence.RevokedPersistentDataException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -164,7 +164,7 @@ public class PersistentMemberManager {
    * @return true if this member is not currently running the chosen disk store. false if the revoke
    *         should be aborted because the disk store is already running.
    */
-  public boolean prepareRevoke(PersistentMemberPattern pattern, DM dm,
+  public boolean prepareRevoke(PersistentMemberPattern pattern, DistributionManager dm,
       InternalDistributedMember sender) {
     if (logger.isDebugEnabled()) {
       logger.debug("Preparing revoke if pattern {}", pattern);
@@ -207,47 +207,49 @@ public class PersistentMemberManager {
     }
   }
 
-  public static interface MemberRevocationListener {
-    public void revoked(PersistentMemberPattern pattern);
+  public interface MemberRevocationListener {
+    void revoked(PersistentMemberPattern pattern);
 
     /**
      * Add the persistent id(s) of this listener to the passed in set.
      */
-    public void addPersistentIDs(Set<PersistentMemberID> localData);
+    void addPersistentIDs(Set<PersistentMemberID> localData);
 
     /**
      * Return true if this is a listener for a resource that matches the persistent member pattern
      * in question.
      */
-    public boolean matches(PersistentMemberPattern pattern);
+    boolean matches(PersistentMemberPattern pattern);
 
     /**
      * Return the set of member ids which this resource knows are missing
      */
-    public Set<PersistentMemberID> getMissingMemberIds();
+    Set<PersistentMemberID> getMissingMemberIds();
 
-    public String getRegionPath();
+    String getRegionPath();
   }
 
   public class PendingRevokeListener implements MembershipListener {
     InternalDistributedMember sender;
     private PersistentMemberPattern pattern;
-    private DM dm;
+    private DistributionManager dm;
 
     public PendingRevokeListener(PersistentMemberPattern pattern, InternalDistributedMember sender,
-        DM dm) {
+        DistributionManager dm) {
       this.dm = dm;
       this.pattern = pattern;
       this.sender = sender;
     }
 
     @Override
-    public void memberJoined(InternalDistributedMember id) {
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
 
     }
 
     @Override
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       if (id.equals(sender)) {
         cancelRevoke(pattern);
       }
@@ -255,12 +257,12 @@ public class PersistentMemberManager {
     }
 
     @Override
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
     @Override
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
     public void remove() {
       dm.removeAllMembershipListener(this);

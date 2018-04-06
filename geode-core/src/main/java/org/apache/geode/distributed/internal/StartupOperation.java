@@ -30,11 +30,11 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 public class StartupOperation {
   private static final Logger logger = LogService.getLogger();
 
-  DistributionManager dm;
+  ClusterDistributionManager dm;
   RemoteTransportConfig transport;
   Set newlyDeparted;
 
-  StartupOperation(DistributionManager dm, RemoteTransportConfig transport) {
+  StartupOperation(ClusterDistributionManager dm, RemoteTransportConfig transport) {
     this.dm = dm;
     this.transport = transport;
   }
@@ -81,7 +81,7 @@ public class StartupOperation {
         InternalDistributedMember id = (InternalDistributedMember) it.next();
         this.dm.handleManagerDeparture(id, false,
             LocalizedStrings.StartupOperation_LEFT_THE_MEMBERSHIP_VIEW.toLocalizedString());
-        proc.memberDeparted(id, true);
+        proc.memberDeparted(this.dm, id, true);
       }
     }
 

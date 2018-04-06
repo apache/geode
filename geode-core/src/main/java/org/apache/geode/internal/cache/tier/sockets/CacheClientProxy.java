@@ -66,8 +66,8 @@ import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.SystemTimer;
@@ -241,7 +241,7 @@ public class CacheClientProxy implements ClientSession {
   private boolean isPrimary;
 
   /** @since GemFire 5.7 */
-  protected byte clientConflation = HandShake.CONFLATION_DEFAULT;
+  protected byte clientConflation = Handshake.CONFLATION_DEFAULT;
 
   /**
    * Flag to indicate whether to keep a durable client's queue alive
@@ -337,7 +337,7 @@ public class CacheClientProxy implements ClientSession {
   protected CacheClientProxy(CacheClientNotifier ccn, Socket socket,
       ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
       Version clientVersion, long acceptorId, boolean notifyBySubscription,
-      SecurityService securityService) throws CacheException {
+      SecurityService securityService, Subject subject) throws CacheException {
 
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
@@ -351,6 +351,7 @@ public class CacheClientProxy implements ClientSession {
     this._statistics =
         new CacheClientProxyStats(factory, "id_" + this.proxyID.getDistributedMember().getId()
             + "_at_" + this._remoteHostAddress + ":" + this._socket.getPort());
+    this.subject = subject;
 
     // Create the interest list
     this.cils[RegisterInterestTracker.interestListIndex] =
@@ -392,7 +393,7 @@ public class CacheClientProxy implements ClientSession {
     // TODO:hitesh synchronization
     synchronized (this.clientUserAuthsLock) {
       if (this.subject != null) {
-        subject.logout();
+        this.subject.logout();
       }
       this.subject = subject;
     }
@@ -1292,7 +1293,7 @@ public class CacheClientProxy implements ClientSession {
         recips.addAll(advice.getEmpties());
         recips.addAll(advice.getPreloaded());
         recips.addAll(advice.getOthers());
-        sfo.flush(recips, target, DistributionManager.HIGH_PRIORITY_EXECUTOR, true);
+        sfo.flush(recips, target, ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR, true);
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
         return;
@@ -2270,7 +2271,7 @@ public class CacheClientProxy implements ClientSession {
         boolean createDurableQueue = proxy.proxyID.isDurable();
         boolean canHandleDelta = (proxy.clientVersion.compareTo(Version.GFE_61) >= 0)
             && InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
-            && !(this._proxy.clientConflation == HandShake.CONFLATION_ON);
+            && !(this._proxy.clientConflation == Handshake.CONFLATION_ON);
         if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {
           logger.debug("Creating a durable HA queue");
         }
@@ -3018,7 +3019,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   public interface TestHook {
-    public void doTestHook(String spot);
+    void doTestHook(String spot);
   }
 
   public static TestHook testHook;

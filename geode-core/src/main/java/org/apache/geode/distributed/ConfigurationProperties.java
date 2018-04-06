@@ -1495,6 +1495,8 @@ public interface ConfigurationProperties {
   String SECURITY_CLIENT_AUTHENTICATOR = SECURITY_PREFIX + "client-authenticator";
   /**
    * The static String definition of the <i>"security-client-dhalgo"</i> property
+   *
+   * @deprecated since Geode 1.5. Use SSL instead. See {{@link #SSL_ENABLED_COMPONENTS}}
    */
   String SECURITY_CLIENT_DHALGO = SECURITY_PREFIX + "client-dhalgo";
   /**
@@ -1514,8 +1516,6 @@ public interface ConfigurationProperties {
   String SECURITY_LOG_LEVEL = SECURITY_PREFIX + "log-level";
   /**
    * The static String definition of the <i>"security-peer-auth-init"</i> property
-   *
-   * @deprecated since Geode 1.0. use security-username and security-password
    */
   String SECURITY_PEER_AUTH_INIT = SECURITY_PREFIX + "peer-auth-init";
   /**

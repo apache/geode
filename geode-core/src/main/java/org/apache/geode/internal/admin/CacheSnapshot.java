@@ -20,17 +20,17 @@ package org.apache.geode.internal.admin;
  * {@linkplain EntrySnapshot entry} in a cache.
  */
 public interface CacheSnapshot extends java.io.Serializable {
-  public Object getName();
+  Object getName();
 
-  public Object getUserAttribute();
+  Object getUserAttribute();
 
-  public long getLastModifiedTime();
+  long getLastModifiedTime();
 
-  public long getLastAccessTime();
+  long getLastAccessTime();
 
-  public long getNumberOfHits();
+  long getNumberOfHits();
 
-  public long getNumberOfMisses();
+  long getNumberOfMisses();
 
-  public float getHitRatio();
+  float getHitRatio();
 }

@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -98,6 +98,7 @@ public class FetchKeysMessage extends PartitionMessage {
         (FetchKeysResponse) tmp.createReplyProcessor(r, Collections.singleton(recipient));
     FetchKeysMessage m = new FetchKeysMessage(recipient, r.getPRId(), p, bucketId,
         InterestType.REGULAR_EXPRESSION, ".*", allowTombstones);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
@@ -127,6 +128,7 @@ public class FetchKeysMessage extends PartitionMessage {
         (FetchKeysResponse) tmp.createReplyProcessor(r, Collections.singleton(recipient));
     FetchKeysMessage m =
         new FetchKeysMessage(recipient, r.getPRId(), p, bucketId, itype, arg, allowTombstones);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
@@ -143,7 +145,7 @@ public class FetchKeysMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) throws CacheException, ForceReattemptException {
     if (logger.isDebugEnabled()) {
       logger.debug("FetchKeysMessage operateOnRegion: {} bucketId: {} type: {} {}", r.getFullPath(),
@@ -255,7 +257,7 @@ public class FetchKeysMessage extends PartitionMessage {
      * @throws ForceReattemptException if the peer is no longer available
      */
     public static void send(final InternalDistributedMember recipient, final int processorId,
-        final DM dm, Set keys) throws ForceReattemptException {
+        final DistributionManager dm, Set keys) throws ForceReattemptException {
 
       Assert.assertTrue(recipient != null, "FetchKeysReplyMessage NULL reply message");
 
@@ -308,9 +310,9 @@ public class FetchKeysMessage extends PartitionMessage {
     }
 
 
-    static boolean sendChunk(InternalDistributedMember recipient, int processorId, DM dm,
-        HeapDataOutputStream chunk, int seriesNum, int msgNum, int numSeries,
-        boolean lastInSeries) {
+    static boolean sendChunk(InternalDistributedMember recipient, int processorId,
+        DistributionManager dm, HeapDataOutputStream chunk, int seriesNum, int msgNum,
+        int numSeries, boolean lastInSeries) {
       FetchKeysReplyMessage reply = new FetchKeysReplyMessage(recipient, processorId, chunk,
           seriesNum, msgNum, numSeries, lastInSeries);
       Set failures = dm.putOutgoing(reply);
@@ -377,7 +379,7 @@ public class FetchKeysMessage extends PartitionMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 p) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 p) {
       final long startTime = getTimestamp();
       FetchKeysResponse processor = (FetchKeysResponse) p;
 
@@ -550,7 +552,7 @@ public class FetchKeysMessage extends PartitionMessage {
           throw new ForceReattemptException(
               LocalizedStrings.FetchKeysMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       if (!this.lastChunkReceived) {
         throw new ForceReattemptException(

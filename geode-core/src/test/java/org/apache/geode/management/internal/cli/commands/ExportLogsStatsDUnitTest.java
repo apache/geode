@@ -15,9 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.ONLY_DATE_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +39,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -53,28 +50,18 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 public class ExportLogsStatsDUnitTest {
   @ClassRule
-  public static ClusterStartupRule lsRule =
-      new ClusterStartupRule().withTempWorkingDir().withLogFile();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
 
   @ClassRule
   public static GfshCommandRule connector = new GfshCommandRule();
 
-  protected static int jmxPort, httpPort;
   protected static Set<String> expectedZipEntries = new HashSet<>();
   protected static MemberVM locator;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    httpPort = ports[0];
-    jmxPort = ports[1];
-    Properties locatorProperties = new Properties();
-    locatorProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-    locatorProperties.setProperty(HTTP_SERVICE_PORT, httpPort + "");
-    locatorProperties.setProperty(JMX_MANAGER_PORT, jmxPort + "");
-
+  public static void beforeClass() {
     // start the locator in vm0 and then connect to it over http
-    locator = lsRule.startLocatorVM(0, locatorProperties);
+    locator = lsRule.startLocatorVM(0);
 
     Properties serverProperties = new Properties();
     serverProperties.setProperty(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
@@ -100,7 +87,11 @@ public class ExportLogsStatsDUnitTest {
 
     Set<String> expectedFiles = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log",
         "server-1/statistics.gfs");
-    assertThat(actualZipEnries).isEqualTo(expectedFiles);
+    assertThat(actualZipEnries).containsAll(expectedFiles);
+    // remove pulse.log if present
+    actualZipEnries =
+        actualZipEnries.stream().filter(x -> !x.endsWith("pulse.log")).collect(toSet());
+    assertThat(actualZipEnries).hasSize(3);
   }
 
   @Test
@@ -111,7 +102,11 @@ public class ExportLogsStatsDUnitTest {
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
     Set<String> expectedFiles = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log");
-    assertThat(actualZipEnries).isEqualTo(expectedFiles);
+    assertThat(actualZipEnries).containsAll(expectedFiles);
+    // remove pulse.log if present
+    actualZipEnries =
+        actualZipEnries.stream().filter(x -> !x.endsWith("pulse.log")).collect(toSet());
+    assertThat(actualZipEnries).hasSize(2);
   }
 
   @Test
@@ -153,6 +148,7 @@ public class ExportLogsStatsDUnitTest {
   }
 
   private static Set<String> getZipEntries(String zipFilePath) throws IOException {
-    return new ZipFile(zipFilePath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
+    return new ZipFile(zipFilePath).stream().map(ZipEntry::getName)
+        .filter(x -> !x.endsWith("views.log")).collect(Collectors.toSet());
   }
 }

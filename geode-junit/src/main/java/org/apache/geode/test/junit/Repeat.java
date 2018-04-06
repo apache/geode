@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
 @SuppressWarnings("unused")
 public @interface Repeat {
 
-  public static int DEFAULT = 1;
+  int DEFAULT = 1;
 
   int value() default DEFAULT;
 

@@ -26,7 +26,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.QueryException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 
@@ -52,6 +52,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
     ReplyProcessor21 response = new ReplyProcessor21(r.getSystem(), recipients);
     InvalidatePartitionedRegionMessage msg = new InvalidatePartitionedRegionMessage(recipients,
         event.getCallbackArgument(), r, response);
+    msg.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     r.getSystem().getDistributionManager().putOutgoing(msg);
     return response;
   }
@@ -65,7 +66,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
    * org.apache.geode.internal.cache.PartitionedRegion, long)
    */
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime)
       throws CacheException, QueryException, ForceReattemptException, InterruptedException {
 

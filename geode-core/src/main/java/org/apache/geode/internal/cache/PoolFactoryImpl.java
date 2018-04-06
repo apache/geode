@@ -22,21 +22,22 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
+import java.util.Objects;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -220,6 +221,12 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
+  public PoolFactory setSubscriptionTimeoutMultiplier(int multiplier) {
+    this.attributes.subscriptionTimeoutMultipler = multiplier;
+    return this;
+  }
+
   private InetSocketAddress getInetSocketAddress(String host, int port) {
     if (port == 0) {
       throw new IllegalArgumentException("port must be greater than 0 but was " + port);
@@ -328,6 +335,7 @@ public class PoolFactoryImpl implements PoolFactory {
    * @since GemFire 5.7
    */
   public Pool create(String name) throws CacheException {
+    InternalDistributedSystem distributedSystem = InternalDistributedSystem.getAnyInstance();
     InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       TypeRegistry registry = cache.getPdxRegistry();
@@ -335,7 +343,8 @@ public class PoolFactoryImpl implements PoolFactory {
         registry.creatingPool();
       }
     }
-    return PoolImpl.create(this.pm, name, this.attributes, this.locatorAddresses);
+    return PoolImpl.create(this.pm, name, this.attributes, this.locatorAddresses, distributedSystem,
+        cache);
   }
 
   /**
@@ -343,6 +352,19 @@ public class PoolFactoryImpl implements PoolFactory {
    */
   public PoolAttributes getPoolAttributes() {
     return this.attributes;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PoolFactoryImpl)) {
+      return false;
+    }
+    PoolFactoryImpl that = (PoolFactoryImpl) o;
+    return Objects.equals(attributes, that.attributes)
+        && Objects.equals(new HashSet(locatorAddresses), new HashSet(that.locatorAddresses));
   }
 
   /**
@@ -369,6 +391,7 @@ public class PoolFactoryImpl implements PoolFactory {
     public int queueRedundancyLevel = DEFAULT_SUBSCRIPTION_REDUNDANCY;
     public int queueMessageTrackingTimeout = DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT;
     public int queueAckInterval = DEFAULT_SUBSCRIPTION_ACK_INTERVAL;
+    public int subscriptionTimeoutMultipler = DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
     public String serverGroup = DEFAULT_SERVER_GROUP;
     public boolean multiuserSecureModeEnabled = DEFAULT_MULTIUSER_AUTHENTICATION;
     public ArrayList/* <InetSocketAddress> */ locators = new ArrayList();
@@ -381,74 +404,92 @@ public class PoolFactoryImpl implements PoolFactory {
      */
     public boolean gateway = false;
 
+    @Override
     public int getSocketConnectTimeout() {
       return this.socketConnectTimeout;
     }
 
+    @Override
     public int getFreeConnectionTimeout() {
       return this.connectionTimeout;
     }
 
+    @Override
     public int getLoadConditioningInterval() {
       return this.connectionLifetime;
     }
 
+    @Override
     public int getSocketBufferSize() {
       return this.socketBufferSize;
     }
 
+    @Override
     public int getMinConnections() {
       return minConnections;
     }
 
+    @Override
     public int getMaxConnections() {
       return maxConnections;
     }
 
+    @Override
     public long getIdleTimeout() {
       return idleTimeout;
     }
 
+    @Override
     public int getRetryAttempts() {
       return retryAttempts;
     }
 
+    @Override
     public long getPingInterval() {
       return pingInterval;
     }
 
+    @Override
     public int getStatisticInterval() {
       return statisticInterval;
     }
 
+    @Override
     public boolean getThreadLocalConnections() {
       return this.threadLocalConnections;
     }
 
+    @Override
     public int getReadTimeout() {
       return this.readTimeout;
     }
 
+    @Override
     public boolean getSubscriptionEnabled() {
       return this.queueEnabled;
     }
 
+    @Override
     public boolean getPRSingleHopEnabled() {
       return this.prSingleHopEnabled;
     }
 
+    @Override
     public int getSubscriptionRedundancy() {
       return this.queueRedundancyLevel;
     }
 
+    @Override
     public int getSubscriptionMessageTrackingTimeout() {
       return this.queueMessageTrackingTimeout;
     }
 
+    @Override
     public int getSubscriptionAckInterval() {
       return queueAckInterval;
     }
 
+    @Override
     public String getServerGroup() {
       return this.serverGroup;
     }
@@ -469,12 +510,18 @@ public class PoolFactoryImpl implements PoolFactory {
       return this.gatewaySender;
     }
 
+    @Override
     public boolean getMultiuserAuthentication() {
       return this.multiuserSecureModeEnabled;
     }
 
     public void setMultiuserSecureModeEnabled(boolean v) {
       this.multiuserSecureModeEnabled = v;
+    }
+
+    @Override
+    public int getSubscriptionTimeoutMultiplier() {
+      return this.subscriptionTimeoutMultipler;
     }
 
     public List/* <InetSocketAddress> */ getLocators() {
@@ -528,10 +575,8 @@ public class PoolFactoryImpl implements PoolFactory {
       throw new UnsupportedOperationException();
     }
 
-    public RegionService createAuthenticatedCacheView(Properties properties) {
-      throw new UnsupportedOperationException();
-    }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writePrimitiveInt(this.connectionTimeout, out);
       DataSerializer.writePrimitiveInt(this.connectionLifetime, out);
@@ -554,6 +599,7 @@ public class PoolFactoryImpl implements PoolFactory {
       DataSerializer.writePrimitiveInt(this.socketConnectTimeout, out);
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.connectionTimeout = DataSerializer.readPrimitiveInt(in);
       this.connectionLifetime = DataSerializer.readPrimitiveInt(in);
@@ -574,6 +620,37 @@ public class PoolFactoryImpl implements PoolFactory {
       this.statisticInterval = DataSerializer.readPrimitiveInt(in);
       this.multiuserSecureModeEnabled = DataSerializer.readPrimitiveBoolean(in);
       this.socketConnectTimeout = DataSerializer.readPrimitiveInt(in);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof PoolAttributes)) {
+        return false;
+      }
+      PoolAttributes that = (PoolAttributes) o;
+      return socketConnectTimeout == that.socketConnectTimeout
+          && connectionTimeout == that.connectionTimeout
+          && connectionLifetime == that.connectionLifetime
+          && socketBufferSize == that.socketBufferSize
+          && threadLocalConnections == that.threadLocalConnections
+          && readTimeout == that.readTimeout && minConnections == that.minConnections
+          && maxConnections == that.maxConnections && idleTimeout == that.idleTimeout
+          && retryAttempts == that.retryAttempts && pingInterval == that.pingInterval
+          && statisticInterval == that.statisticInterval && queueEnabled == that.queueEnabled
+          && prSingleHopEnabled == that.prSingleHopEnabled
+          && queueRedundancyLevel == that.queueRedundancyLevel
+          && queueMessageTrackingTimeout == that.queueMessageTrackingTimeout
+          && queueAckInterval == that.queueAckInterval
+          && multiuserSecureModeEnabled == that.multiuserSecureModeEnabled
+          && startDisabled == that.startDisabled && gateway == that.gateway
+          && Objects.equals(serverGroup, that.serverGroup)
+          && Objects.equals(new HashSet(locators), new HashSet(that.locators))
+          && Objects.equals(new HashSet(servers), new HashSet(that.servers))
+          && Objects.equals(locatorCallback, that.locatorCallback)
+          && Objects.equals(gatewaySender, that.gatewaySender);
     }
   }
 }

@@ -31,7 +31,7 @@ public interface Ordered {
    *
    * @return an integer value indicating the order of this instance relative to it's peers.
    */
-  public int getIndex();
+  int getIndex();
 
   /**
    * Sets the order of this instance relative to it's peers.
@@ -39,6 +39,6 @@ public interface Ordered {
    *
    * @param index an integer value specifying the the order of this instance relative to it's peers.
    */
-  public void setIndex(int index);
+  void setIndex(int index);
 
 }

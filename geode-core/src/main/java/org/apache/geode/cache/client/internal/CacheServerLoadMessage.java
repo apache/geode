@@ -23,7 +23,7 @@ import java.util.List;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -55,7 +55,7 @@ public class CacheServerLoadMessage extends SerialDistributionMessage {
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     updateLocalLocators();
   }
 

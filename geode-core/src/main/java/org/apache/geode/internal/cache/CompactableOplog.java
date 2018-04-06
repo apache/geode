@@ -26,12 +26,11 @@ import org.apache.geode.internal.cache.persistence.DiskRegionView;
  */
 
 public interface CompactableOplog {
-  public void prepareForCompact();
+  void prepareForCompact();
 
-  public int compact(OplogCompactor compactor);
+  int compact(OplogCompactor compactor);
 
-  public BytesAndBits getBytesAndBits(DiskRegionView dr, DiskId id, boolean faultIn,
-      boolean bitOnly);
+  BytesAndBits getBytesAndBits(DiskRegionView dr, DiskId id, boolean faultIn, boolean bitOnly);
 
-  public BytesAndBits getNoBuffer(DiskRegion dr, DiskId id);
+  BytesAndBits getNoBuffer(DiskRegion dr, DiskId id);
 }

@@ -67,8 +67,8 @@ import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -87,7 +87,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -149,22 +149,22 @@ public class HARegionQueue implements RegionQueue {
    */
   protected volatile Map indexes = Collections.unmodifiableMap(new HashMap());
 
-  private final StoppableReentrantReadWriteLock rwLock;
+  private StoppableReentrantReadWriteLock rwLock;
 
-  private final StoppableReentrantReadWriteLock.StoppableReadLock readLock;
+  private StoppableReentrantReadWriteLock.StoppableReadLock readLock;
 
-  private final StoppableWriteLock writeLock;
+  private StoppableWriteLock writeLock;
 
   /** The name of the {@code Region} backing this queue */
-  private final String regionName;
+  private String regionName;
 
   /** The ClientProxyMembershipID associated with the ha queue */
-  private final ClientProxyMembershipID clientProxyID;
+  private ClientProxyMembershipID clientProxyID;
 
   /**
    * The statistics for this queue
    */
-  public final HARegionQueueStats stats;
+  public HARegionQueueStats stats;
 
   /**
    * Accesses to this set must be protected via the rwLock.
@@ -181,7 +181,7 @@ public class HARegionQueue implements RegionQueue {
    * A MapWrapper object whose underlying map contains ThreadIdentifier as key & value as the last
    * dispatched sequence ID
    */
-  protected final MapWrapper threadIdToSeqId;
+  protected MapWrapper threadIdToSeqId;
 
   /**
    * A sequence violation can occur , if an HARegionQueue receives events thru GII & the same event
@@ -209,7 +209,7 @@ public class HARegionQueue implements RegionQueue {
   private static QueueRemovalThread qrmThread;
 
   /** protects from modification during GII chunking */
-  private final StoppableReentrantReadWriteLock giiLock;
+  private StoppableReentrantReadWriteLock giiLock;
 
   /** the number of concurrent GII requests being served */
   private volatile int giiCount;
@@ -273,10 +273,10 @@ public class HARegionQueue implements RegionQueue {
   /** Boolean to indicate whether destruction of queue is in progress. */
   protected volatile boolean destroyInProgress = false;
 
-  private final CancelCriterion stopper;
+  private CancelCriterion stopper;
 
   /** @since GemFire 5.7 */
-  protected byte clientConflation = HandShake.CONFLATION_DEFAULT;
+  protected byte clientConflation = Handshake.CONFLATION_DEFAULT;
 
   /**
    * Boolean to indicate whether client is a slow receiver
@@ -323,38 +323,65 @@ public class HARegionQueue implements RegionQueue {
     return regionName.replace('/', '#');
   }
 
-  /**
-   * @param isPrimary whether this is the primary queue for a client
-   */
-  protected HARegionQueue(String regionName, InternalCache cache,
-      HARegionQueueAttributes haAttributes, Map haContainer, ClientProxyMembershipID clientProxyId,
-      final byte clientConflation, boolean isPrimary)
+  HARegionQueue(String regionName, HARegion haRegion, InternalCache cache, Map haContainer,
+      ClientProxyMembershipID clientProxyId, final byte clientConflation, boolean isPrimary,
+      HARegionQueueStats stats, StoppableReentrantReadWriteLock giiLock,
+      StoppableReentrantReadWriteLock rwLock, CancelCriterion cancelCriterion,
+      boolean puttingGIIDataInQueue)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
+    initializeHARegionQueue(regionName, haRegion, haContainer, clientProxyId, clientConflation,
+        isPrimary, stats, giiLock, rwLock, cancelCriterion, puttingGIIDataInQueue);
+  }
 
-    String processedRegionName = createRegionName(regionName);
+  private void initializeHARegionQueue(String regionName, HARegion haRegion, Map haContainer,
+      ClientProxyMembershipID clientProxyId, byte clientConflation, boolean isPrimary,
+      HARegionQueueStats stats, StoppableReentrantReadWriteLock giiLock,
+      StoppableReentrantReadWriteLock rwLock, CancelCriterion cancelCriterion,
+      boolean putGIIDataInQueue) throws InterruptedException {
+    this.regionName = regionName;
+    this.region = haRegion;
     this.threadIdToSeqId = new MapWrapper();
     this.idsAvailable = new LinkedHashSet();
-    this.regionName = processedRegionName;
     setClientConflation(clientConflation);
     this.isPrimary = isPrimary;
     // Initialize the statistics
-    StatisticsFactory factory = cache.getDistributedSystem();
-    this.stats = new HARegionQueueStats(factory, processedRegionName);
+    this.stats = stats;
     this.haContainer = haContainer;
-    this.giiLock = new StoppableReentrantReadWriteLock(cache.getCancelCriterion());
+    this.giiLock = giiLock;
     this.clientProxyID = clientProxyId;
 
-    createHARegion(processedRegionName, cache);
-
-    this.stopper = this.region.getCancelCriterion();
-    this.rwLock = new StoppableReentrantReadWriteLock(this.stopper);
+    this.stopper = cancelCriterion;
+    this.rwLock = rwLock;
     this.readLock = this.rwLock.readLock();
     this.writeLock = this.rwLock.writeLock();
 
-    putGIIDataInRegion();
+    // false specifically set in tests only
+    if (putGIIDataInQueue) {
+      putGIIDataInRegion();
+    }
     if (this.getClass() == HARegionQueue.class) {
       initialized.set(true);
     }
+  }
+
+  /**
+   * @param isPrimary whether this is the primary queue for a client
+   */
+  protected HARegionQueue(String regionName, InternalCache cache, Map haContainer,
+      ClientProxyMembershipID clientProxyId, final byte clientConflation, boolean isPrimary)
+      throws IOException, ClassNotFoundException, CacheException, InterruptedException {
+
+    String processedRegionName = createRegionName(regionName);
+
+    // Initialize the statistics
+    StatisticsFactory factory = cache.getDistributedSystem();
+    createHARegion(processedRegionName, cache);
+
+    initializeHARegionQueue(processedRegionName, this.region, haContainer, clientProxyId,
+        clientConflation, isPrimary, new HARegionQueueStats(factory, processedRegionName),
+        new StoppableReentrantReadWriteLock(cache.getCancelCriterion()),
+        new StoppableReentrantReadWriteLock(region.getCancelCriterion()),
+        this.region.getCancelCriterion(), true);
   }
 
   private void createHARegion(String processedRegionName, InternalCache cache)
@@ -540,9 +567,9 @@ public class HARegionQueue implements RegionQueue {
       return retVal;
     }
     switch (this.clientConflation) {
-      case HandShake.CONFLATION_OFF:
+      case Handshake.CONFLATION_OFF:
         return false; // always disable
-      case HandShake.CONFLATION_ON:
+      case Handshake.CONFLATION_ON:
         if (event instanceof HAEventWrapper) {
           ClientUpdateMessage cum = (ClientUpdateMessage) this.haContainer.get(event);
           if (cum != null) {
@@ -557,7 +584,7 @@ public class HARegionQueue implements RegionQueue {
         }
         // Oddness
         break;
-      case HandShake.CONFLATION_DEFAULT:
+      case Handshake.CONFLATION_DEFAULT:
         return retVal;
       default:
         throw new InternalGemFireError("Invalid clientConflation");
@@ -1922,7 +1949,7 @@ public class HARegionQueue implements RegionQueue {
 
     return getHARegionQueueInstance(regionName, cache,
         HARegionQueueAttributes.DEFAULT_HARQ_ATTRIBUTES, haRgnQType, isDurable, container, null,
-        HandShake.CONFLATION_DEFAULT, false, Boolean.FALSE);
+        Handshake.CONFLATION_DEFAULT, false, Boolean.FALSE);
   }
 
   /**
@@ -1955,8 +1982,8 @@ public class HARegionQueue implements RegionQueue {
         }
         break;
       case NON_BLOCKING_HA_QUEUE:
-        hrq = new HARegionQueue(regionName, cache, hrqa, haContainer, clientProxyId,
-            clientConflation, isPrimary);
+        hrq = new HARegionQueue(regionName, cache, haContainer, clientProxyId, clientConflation,
+            isPrimary);
         break;
       default:
         throw new IllegalArgumentException(
@@ -1992,7 +2019,7 @@ public class HARegionQueue implements RegionQueue {
     }
 
     return getHARegionQueueInstance(regionName, cache, hrqa, haRgnQType, isDurable, container, null,
-        HandShake.CONFLATION_DEFAULT, false, Boolean.FALSE);
+        Handshake.CONFLATION_DEFAULT, false, Boolean.FALSE);
   }
 
   public boolean isEmptyAckList() {
@@ -2097,7 +2124,7 @@ public class HARegionQueue implements RegionQueue {
         HARegionQueueAttributes hrqa, Map haContainer, ClientProxyMembershipID clientProxyId,
         final byte clientConflation, boolean isPrimary)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-      super(regionName, cache, hrqa, haContainer, clientProxyId, clientConflation, isPrimary);
+      super(regionName, cache, haContainer, clientProxyId, clientConflation, isPrimary);
       this.capacity = hrqa.getBlockingQueueCapacity();
       this.putPermits = this.capacity;
       this.lock = new StoppableReentrantLock(this.region.getCancelCriterion());
@@ -2566,20 +2593,20 @@ public class HARegionQueue implements RegionQueue {
     TestOnlyHARegionQueue(String regionName, InternalCache cache, Map haContainer)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
       this(regionName, cache, HARegionQueueAttributes.DEFAULT_HARQ_ATTRIBUTES, haContainer,
-          HandShake.CONFLATION_DEFAULT, false);
+          Handshake.CONFLATION_DEFAULT, false);
       this.initialized.set(true);
     }
 
     TestOnlyHARegionQueue(String regionName, InternalCache cache)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
       this(regionName, cache, HARegionQueueAttributes.DEFAULT_HARQ_ATTRIBUTES, new HashMap(),
-          HandShake.CONFLATION_DEFAULT, false);
+          Handshake.CONFLATION_DEFAULT, false);
     }
 
     TestOnlyHARegionQueue(String regionName, InternalCache cache, HARegionQueueAttributes hrqa,
         Map haContainer, final byte clientConflation, boolean isPrimary)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-      super(regionName, cache, hrqa, haContainer, null, clientConflation, isPrimary);
+      super(regionName, cache, haContainer, null, clientConflation, isPrimary);
       ExpirationAttributes ea =
           new ExpirationAttributes(hrqa.getExpiryTime(), ExpirationAction.LOCAL_INVALIDATE);
       this.region.setOwner(this);
@@ -2594,7 +2621,7 @@ public class HARegionQueue implements RegionQueue {
      */
     TestOnlyHARegionQueue(String regionName, InternalCache cache, HARegionQueueAttributes hrqa)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-      this(regionName, cache, hrqa, new HashMap(), HandShake.CONFLATION_DEFAULT, false);
+      this(regionName, cache, hrqa, new HashMap(), Handshake.CONFLATION_DEFAULT, false);
     }
   }
 
@@ -2637,7 +2664,7 @@ public class HARegionQueue implements RegionQueue {
     @Override
     public void run() {
       InternalDistributedSystem ids = cache.getInternalDistributedSystem();
-      DM dm = ids.getDistributionManager();
+      DistributionManager dm = ids.getDistributionManager();
 
       try { // ensure exit message is printed
         // Long waitTime = Long.getLong(QUEUE_REMOVAL_WAIT_TIME, 1000);
@@ -3672,8 +3699,8 @@ public class HARegionQueue implements RegionQueue {
    * @since GemFire 5.7
    */
   public void setClientConflation(byte value) {
-    if (value != HandShake.CONFLATION_OFF && value != HandShake.CONFLATION_ON
-        && value != HandShake.CONFLATION_DEFAULT) {
+    if (value != Handshake.CONFLATION_OFF && value != Handshake.CONFLATION_ON
+        && value != Handshake.CONFLATION_DEFAULT) {
       throw new IllegalArgumentException("illegal conflation value");
     }
     this.clientConflation = value;

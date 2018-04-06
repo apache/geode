@@ -53,7 +53,7 @@ public class CacheConfigRequest extends AdminRequest {
    * Must return a proper response to this request.
    */
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return CacheConfigResponse.create(dm, this.getSender(), this.cacheId, this.attributeCode,
         this.newValue);
   }

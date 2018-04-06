@@ -18,11 +18,10 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
@@ -32,7 +31,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 /**
  * @since GemFire 8.0
  */
-public class ContinuousQueryFunction implements Function, InternalEntity {
+public class ContinuousQueryFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
   public static final String ID = ContinuousQueryFunction.class.getName();

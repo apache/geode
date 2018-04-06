@@ -99,7 +99,7 @@ public class OffHeapRegionEntryHelper {
           if (chunk.isSerialized()) {
             // return a VMCachedDeserializable with the decompressed serialized bytes since chunk is
             // serialized
-            result = CachedDeserializableFactory.create(decompressedBytes);
+            result = CachedDeserializableFactory.create(decompressedBytes, context.getCache());
           } else {
             // return a byte[] since chunk is not serialized
             result = decompressedBytes;
@@ -122,7 +122,7 @@ public class OffHeapRegionEntryHelper {
         if (daa.isSerialized()) {
           // return a VMCachedDeserializable with the decompressed serialized bytes since daa is
           // serialized
-          result = CachedDeserializableFactory.create(decompressedBytes);
+          result = CachedDeserializableFactory.create(decompressedBytes, context.getCache());
         } else {
           // return a byte[] since daa is not serialized
           result = decompressedBytes;

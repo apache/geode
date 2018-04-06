@@ -35,8 +35,8 @@ public class AddHealthListenerResponse extends AdminResponse {
    * Returns a <code>AddHealthListenerResponse</code> that will be returned to the specified
    * recipient.
    */
-  public static AddHealthListenerResponse create(DM dm, InternalDistributedMember recipient,
-      GemFireHealthConfig cfg) {
+  public static AddHealthListenerResponse create(DistributionManager dm,
+      InternalDistributedMember recipient, GemFireHealthConfig cfg) {
     AddHealthListenerResponse m = new AddHealthListenerResponse();
     m.setRecipient(recipient);
     dm.createHealthMonitor(recipient, cfg);

@@ -62,7 +62,6 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLServerSocket;
@@ -475,27 +474,14 @@ public class SocketCreator {
   private TrustManager[] getTrustManagers()
       throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
     TrustManager[] trustManagers = null;
-    GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
 
     String trustStoreType = sslConfig.getTruststoreType();
     if (StringUtils.isEmpty(trustStoreType)) {
-      // read from console, default on empty
-      if (consoleReader.isSupported()) {
-        trustStoreType = consoleReader
-            .readLine("Please enter the trustStoreType (javax.net.ssl.trustStoreType) : ");
-      } else {
-        trustStoreType = KeyStore.getDefaultType();
-      }
+      trustStoreType = KeyStore.getDefaultType();
     }
 
     KeyStore ts = KeyStore.getInstance(trustStoreType);
     String trustStorePath = sslConfig.getTruststore();
-    if (StringUtils.isEmpty(trustStorePath)) {
-      if (consoleReader.isSupported()) {
-        trustStorePath = consoleReader
-            .readLine("Please enter the trustStore location (javax.net.ssl.trustStore) : ");
-      }
-    }
     FileInputStream fis = new FileInputStream(trustStorePath);
     String passwordString = sslConfig.getTruststorePassword();
     char[] password = null;
@@ -505,11 +491,6 @@ public class SocketCreator {
           String toDecrypt = "encrypted(" + passwordString + ")";
           passwordString = PasswordUtil.decrypt(toDecrypt);
           password = passwordString.toCharArray();
-        }
-        // read from the console
-        if (StringUtils.isEmpty(passwordString) && consoleReader.isSupported()) {
-          password = consoleReader.readPassword(
-              "Please enter password for trustStore (javax.net.ssl.trustStorePassword) : ");
         }
       } else {
         password = passwordString.toCharArray();
@@ -533,8 +514,6 @@ public class SocketCreator {
 
   private KeyManager[] getKeyManagers() throws KeyStoreException, IOException,
       NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
-    GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
-
     if (sslConfig.getKeystore() == null) {
       return null;
     }
@@ -542,24 +521,13 @@ public class SocketCreator {
     KeyManager[] keyManagers = null;
     String keyStoreType = sslConfig.getKeystoreType();
     if (StringUtils.isEmpty(keyStoreType)) {
-      // read from console, default on empty
-      if (consoleReader.isSupported()) {
-        keyStoreType =
-            consoleReader.readLine("Please enter the keyStoreType (javax.net.ssl.keyStoreType) : ");
-      } else {
-        keyStoreType = KeyStore.getDefaultType();
-      }
+      keyStoreType = KeyStore.getDefaultType();
     }
     KeyStore keyStore = KeyStore.getInstance(keyStoreType);
     String keyStoreFilePath = sslConfig.getKeystore();
     if (StringUtils.isEmpty(keyStoreFilePath)) {
-      if (consoleReader.isSupported()) {
-        keyStoreFilePath = consoleReader
-            .readLine("Please enter the keyStore location (javax.net.ssl.keyStore) : ");
-      } else {
-        keyStoreFilePath =
-            System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
-      }
+      keyStoreFilePath =
+          System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
     }
 
     FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath);
@@ -572,11 +540,6 @@ public class SocketCreator {
           String toDecrypt = "encrypted(" + encryptedPass + ")";
           passwordString = PasswordUtil.decrypt(toDecrypt);
           password = passwordString.toCharArray();
-        }
-        // read from the console
-        if (StringUtils.isEmpty(passwordString) && consoleReader != null) {
-          password = consoleReader.readPassword(
-              "Please enter password for keyStore (javax.net.ssl.keyStorePassword) : ");
         }
       } else {
         password = passwordString.toCharArray();
@@ -1122,8 +1085,9 @@ public class SocketCreator {
       // add other options here....
       for (String key : System.getProperties().stringPropertyNames()) { // fix for 46822
         if (key.startsWith("javax.net.ssl")) {
-          String redactedString = ArgumentRedactor.redact(key, System.getProperty(key));
-          sb.append("  ").append(key).append(" = ").append(redactedString).append("\n");
+          String possiblyRedactedValue =
+              ArgumentRedactor.redactValueIfNecessary(key, System.getProperty(key));
+          sb.append("  ").append(key).append(" = ").append(possiblyRedactedValue).append("\n");
         }
       }
       logger.debug(sb.toString());

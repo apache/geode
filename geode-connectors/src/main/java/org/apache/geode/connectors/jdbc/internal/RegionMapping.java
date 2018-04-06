@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.annotations.Experimental;
@@ -28,6 +29,7 @@ public class RegionMapping implements Serializable {
   private final String connectionConfigName;
   private final Boolean primaryKeyInValue;
   private final Map<String, String> fieldToColumnMap;
+  private final Map<String, String> columnToFieldMap;
 
   public RegionMapping(String regionName, String pdxClassName, String tableName,
       String connectionConfigName, Boolean primaryKeyInValue,
@@ -39,6 +41,24 @@ public class RegionMapping implements Serializable {
     this.primaryKeyInValue = primaryKeyInValue;
     this.fieldToColumnMap =
         fieldToColumnMap == null ? null : Collections.unmodifiableMap(fieldToColumnMap);
+    this.columnToFieldMap = createReverseMap(fieldToColumnMap);
+  }
+
+  private static Map<String, String> createReverseMap(Map<String, String> fieldToColumnMap) {
+    if (fieldToColumnMap == null) {
+      return null;
+    }
+    Map<String, String> reverseMap = new HashMap<>();
+    for (Map.Entry<String, String> entry : fieldToColumnMap.entrySet()) {
+      String reverseMapKey = entry.getValue().toLowerCase();
+      String reverseMapValue = entry.getKey();
+      if (reverseMap.containsKey(reverseMapKey)) {
+        throw new IllegalArgumentException(
+            "The field " + reverseMapValue + " can not be mapped to more than one column.");
+      }
+      reverseMap.put(reverseMapKey, reverseMapValue);
+    }
+    return Collections.unmodifiableMap(reverseMap);
   }
 
   public String getConnectionConfigName() {
@@ -76,8 +96,24 @@ public class RegionMapping implements Serializable {
     return columnName != null ? columnName : fieldName;
   }
 
+  public String getFieldNameForColumn(String columnName) {
+    String canonicalColumnName = columnName.toLowerCase();
+    String fieldName = null;
+    if (this.columnToFieldMap != null) {
+      fieldName = columnToFieldMap.get(canonicalColumnName);
+    }
+    return fieldName != null ? fieldName : canonicalColumnName;
+  }
+
   public Map<String, String> getFieldToColumnMap() {
     return fieldToColumnMap;
+  }
+
+  /**
+   * For unit tests
+   */
+  Map<String, String> getColumnToFieldMap() {
+    return this.columnToFieldMap;
   }
 
   @Override

@@ -28,11 +28,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -97,11 +96,11 @@ public class StateFlushOperation {
 
   private DistributedRegion region;
 
-  private DM dm;
+  private DistributionManager dm;
 
   /** flush current ops to the given members for the given region */
   public static void flushTo(Set<InternalDistributedMember> targets, DistributedRegion region) {
-    DM dm = region.getDistributionManager();
+    DistributionManager dm = region.getDistributionManager();
     boolean initialized = region.isInitialized();
     if (initialized) {
       // force a new "view" so we can track current ops
@@ -163,7 +162,7 @@ public class StateFlushOperation {
    *
    * @param dm the distribution manager to use in distributing the operation
    */
-  public StateFlushOperation(DM dm) {
+  public StateFlushOperation(DistributionManager dm) {
     this.dm = dm;
   }
 
@@ -307,7 +306,7 @@ public class StateFlushOperation {
       return processorType;
     }
 
-    private DistributedRegion getRegion(DistributionManager dm) {
+    private DistributedRegion getRegion(ClusterDistributionManager dm) {
       if (region != null) {
         return region;
       }
@@ -325,15 +324,15 @@ public class StateFlushOperation {
     }
 
     /** returns a set of all DistributedRegions for allRegions processing */
-    private Set<DistributedRegion> getAllRegions(DistributionManager dm) {
+    private Set<DistributedRegion> getAllRegions(ClusterDistributionManager dm) {
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
         InternalCache cache = dm.getExistingCache();
         Set<DistributedRegion> result = new HashSet();
-        for (LocalRegion r : cache.getAllRegions()) {
+        for (InternalRegion r : cache.getAllRegions()) {
           // it's important not to check if the cache is closing, so access
           // the isDestroyed boolean directly
-          if (r instanceof DistributedRegion && !r.isDestroyed) {
+          if (r instanceof DistributedRegion && !((LocalRegion) r).isDestroyed) {
             result.add((DistributedRegion) r);
           }
         }
@@ -344,7 +343,7 @@ public class StateFlushOperation {
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       logger.trace(LogMarker.STATE_FLUSH_OP, "Processing {}", this);
       if (dm.getDistributionManagerId().equals(relayRecipient)) {
         try {
@@ -453,7 +452,7 @@ public class StateFlushOperation {
       }
     }
 
-    private Set<DistributedRegion> getRegions(final DistributionManager dm) {
+    private Set<DistributedRegion> getRegions(final ClusterDistributionManager dm) {
       Set<DistributedRegion> regions;
       if (this.allRegions) {
         regions = getAllRegions(dm);
@@ -551,7 +550,7 @@ public class StateFlushOperation {
     }
 
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       // though this message must be transmitted on an ordered connection to
       // ensure that datagram channnels are flushed, we need to execute
       // in the waiting pool to avoid blocking those connections
@@ -679,7 +678,7 @@ public class StateFlushOperation {
     }
 
     @Override
-    public void process(final DM dm, final ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
         logger.trace(LogMarker.STATE_FLUSH_OP, "Processing {}", this);
       }
@@ -743,7 +742,8 @@ public class StateFlushOperation {
     /** whether the target member has left the distributed system */
     boolean targetMemberHasLeft;
 
-    public StateFlushReplyProcessor(DM manager, Set initMembers, DistributedMember target) {
+    public StateFlushReplyProcessor(DistributionManager manager, Set initMembers,
+        DistributedMember target) {
       super(manager, initMembers);
       this.targetMember = (InternalDistributedMember) target;
       this.originalCount = initMembers.size();
@@ -755,13 +755,14 @@ public class StateFlushOperation {
     /** process the failure set from sending the message */
     public void messageNotSentTo(Set failures) {
       for (Iterator it = failures.iterator(); it.hasNext();) {
-        this.memberDeparted((InternalDistributedMember) it.next(), true);
+        this.memberDeparted(null, (InternalDistributedMember) it.next(), true);
       }
     }
 
     @Override
-    public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
-      super.memberDeparted(id, crashed);
+    public void memberDeparted(DistributionManager distributionManager,
+        final InternalDistributedMember id, final boolean crashed) {
+      super.memberDeparted(distributionManager, id, crashed);
     }
 
     @Override

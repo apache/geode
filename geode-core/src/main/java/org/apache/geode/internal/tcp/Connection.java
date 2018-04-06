@@ -52,8 +52,8 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ConflationKey;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -915,7 +915,7 @@ public class Connection implements Runnable {
     // }
     // connectHandshake.writeUTF("["+name+"] "+Thread.currentThread().getName());
     // }
-    connectHandshake.setMessageHeader(NORMAL_MSG_TYPE, DistributionManager.STANDARD_EXECUTOR,
+    connectHandshake.setMessageHeader(NORMAL_MSG_TYPE, ClusterDistributionManager.STANDARD_EXECUTOR,
         MsgIdGenerator.NO_MSG_ID);
     nioWriteFully(getSocket().getChannel(), connectHandshake.getContentBuffer(), false, null);
   }
@@ -1113,8 +1113,6 @@ public class Connection implements Runnable {
             } else {
               success = true;
             }
-          } catch (DistributedSystemDisconnectedException e) {
-            throw e;
           } catch (ConnectionException e) {
             if (giveUpOnMember(mgr, remoteAddr)) {
               IOException ioe =
@@ -1583,8 +1581,8 @@ public class Connection implements Runnable {
       // we can't wait for the reader thread when running in an IBM JRE. See
       // bug 41889
       if (this.conduit.config.getEnableNetworkPartitionDetection()
-          || this.conduit.getMemberId().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE
-          || this.conduit.getMemberId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+          || this.conduit.getMemberId().getVmKind() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
+          || this.conduit.getMemberId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
         isIBM = "IBM Corporation".equals(System.getProperty("java.vm.vendor"));
       }
       {
@@ -2301,12 +2299,12 @@ public class Connection implements Runnable {
                     LocalizedStrings.Connection_DETECTED_OLD_VERSION_PRE_5_0_1_OF_GEMFIRE_OR_NONGEMFIRE_DURING_HANDSHAKE_DUE_TO_INITIAL_BYTE_BEING_0
                         .toLocalizedString(new Byte(b)));
               }
-              byte handShakeByte = dis.readByte();
-              if (handShakeByte != HANDSHAKE_VERSION) {
+              byte handshakeByte = dis.readByte();
+              if (handshakeByte != HANDSHAKE_VERSION) {
                 throw new IllegalStateException(
                     LocalizedStrings.Connection_DETECTED_WRONG_VERSION_OF_GEMFIRE_PRODUCT_DURING_HANDSHAKE_EXPECTED_0_BUT_FOUND_1
                         .toLocalizedString(
-                            new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handShakeByte)}));
+                            new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handshakeByte)}));
               }
               InternalDistributedMember remote = DSFIDFactory.readInternalDistributedMember(dis);
               setRemoteAddr(remote);
@@ -2942,7 +2940,7 @@ public class Connection implements Runnable {
       }
       this.disconnectRequested = true;
     }
-    DM dm = this.owner.getDM();
+    DistributionManager dm = this.owner.getDM();
     if (dm == null) {
       this.owner.removeEndpoint(this.remoteAddr,
           LocalizedStrings.Connection_NO_DISTRIBUTION_MANAGER.toLocalizedString());
@@ -3422,7 +3420,7 @@ public class Connection implements Runnable {
       // about performance, we'll skip those checks. Skipping them
       // should be legit, because we just sent a message so we know
       // the member is already in our view, etc.
-      DistributionManager dm = (DistributionManager) owner.getDM();
+      ClusterDistributionManager dm = (ClusterDistributionManager) owner.getDM();
       msg.setBytesRead(len);
       msg.setSender(remoteAddr);
       stats.incReceivedMessages(1L);
@@ -3796,12 +3794,12 @@ public class Connection implements Runnable {
                       LocalizedStrings.Connection_DETECTED_OLD_VERSION_PRE_501_OF_GEMFIRE_OR_NONGEMFIRE_DURING_HANDSHAKE_DUE_TO_INITIAL_BYTE_BEING_0
                           .toLocalizedString(new Byte(b)));
                 }
-                byte handShakeByte = dis.readByte();
-                if (handShakeByte != HANDSHAKE_VERSION) {
+                byte handshakeByte = dis.readByte();
+                if (handshakeByte != HANDSHAKE_VERSION) {
                   throw new IllegalStateException(
                       LocalizedStrings.Connection_DETECTED_WRONG_VERSION_OF_GEMFIRE_PRODUCT_DURING_HANDSHAKE_EXPECTED_0_BUT_FOUND_1
                           .toLocalizedString(
-                              new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handShakeByte)}));
+                              new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handshakeByte)}));
                 }
                 InternalDistributedMember remote = DSFIDFactory.readInternalDistributedMember(dis);
                 setRemoteAddr(remote);

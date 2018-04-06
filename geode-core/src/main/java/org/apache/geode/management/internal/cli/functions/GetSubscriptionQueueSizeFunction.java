@@ -15,13 +15,12 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.internal.CqQueryVsdStats;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -32,13 +31,13 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  * Function to get subscription-queue-size
  *
  */
-public class GetSubscriptionQueueSizeFunction extends FunctionAdapter implements InternalEntity {
+public class GetSubscriptionQueueSizeFunction implements InternalFunction {
 
   private static final long serialVersionUID = 1L;
 
   @Override
   public void execute(FunctionContext context) {
-    final Cache cache = CliUtil.getCacheIfExists();
+    final Cache cache = context.getCache();
     final String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
     String args[] = (String[]) context.getArguments();

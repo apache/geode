@@ -25,7 +25,6 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.AbstractLRURegionMap;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
@@ -55,7 +54,7 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };
@@ -109,8 +108,7 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
         WaitCriterion wc = new WaitCriterion() {
           public boolean done() {
             // we have a primary
-            final long currentEvictions = ((AbstractLRURegionMap) region.entries).getEvictionList()
-                .getStatistics().getEvictions();
+            final long currentEvictions = region.getTotalEvictions();
             if (Math.abs(currentEvictions - noOfExpectedEvictions) <= 1) { // Margin of error is 1
               return true;
             } else if (currentEvictions > noOfExpectedEvictions) {
@@ -121,8 +119,7 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
 
           public String description() {
             return "expected " + noOfExpectedEvictions + " evictions, but got "
-                + ((AbstractLRURegionMap) region.entries).getEvictionList().getStatistics()
-                    .getEvictions();
+                + region.getTotalEvictions();
           }
         };
         Wait.waitForCriterion(wc, 60000, 1000, true);

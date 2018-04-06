@@ -32,10 +32,10 @@ import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 public @interface CliMetaData {
 
   /** Represents a default value to an option of a command. **/
-  public static final String ANNOTATION_DEFAULT_VALUE = "__DEFAULT__";
+  String ANNOTATION_DEFAULT_VALUE = "__DEFAULT__";
 
   /** Represents a null value to an option of a command. **/
-  public static final String ANNOTATION_NULL_VALUE = "__NULL__";
+  String ANNOTATION_NULL_VALUE = "__NULL__";
 
   /**
    * Indicates that the command will only run in the gfsh shell Gfsh ExecutionStrategy will use this
@@ -90,7 +90,7 @@ public @interface CliMetaData {
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.METHOD})
-  public @interface AvailabilityMetadata {
+  @interface AvailabilityMetadata {
     /**
      * String describing the availability condition.
      */

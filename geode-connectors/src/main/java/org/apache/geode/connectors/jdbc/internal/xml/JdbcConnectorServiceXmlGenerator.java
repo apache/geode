@@ -131,16 +131,17 @@ public class JdbcConnectorServiceXmlGenerator implements XmlGenerator<Cache> {
           Boolean.toString(mapping.isPrimaryKeyInValue()));
     }
 
-    if (mapping.getFieldToColumnMap() != null) {
-      XmlGeneratorUtils.startElement(handler, PREFIX, ElementType.REGION_MAPPING.getTypeName(),
-          attributes);
-      addFieldMappings(handler, mapping.getFieldToColumnMap());
-      XmlGeneratorUtils.endElement(handler, PREFIX, ElementType.REGION_MAPPING.getTypeName());
-    }
+    XmlGeneratorUtils.startElement(handler, PREFIX, ElementType.REGION_MAPPING.getTypeName(),
+        attributes);
+    addFieldMappings(handler, mapping.getFieldToColumnMap());
+    XmlGeneratorUtils.endElement(handler, PREFIX, ElementType.REGION_MAPPING.getTypeName());
   }
 
   private void addFieldMappings(ContentHandler handler, Map<String, String> fieldMappings)
       throws SAXException {
+    if (fieldMappings == null) {
+      return;
+    }
     for (Map.Entry<String, String> fieldMapping : fieldMappings.entrySet()) {
       AttributesImpl fieldAttributes = new AttributesImpl();
       XmlGeneratorUtils.addAttribute(fieldAttributes, FIELD_NAME, fieldMapping.getKey());

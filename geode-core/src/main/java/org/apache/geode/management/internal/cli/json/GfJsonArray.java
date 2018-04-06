@@ -17,10 +17,11 @@ package org.apache.geode.management.internal.cli.json;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Wrapper over JSONArray.
@@ -29,6 +30,8 @@ import org.apache.geode.management.internal.cli.LogWrapper;
  * @since GemFire 7.0
  */
 public class GfJsonArray {
+  private static final Logger logger = LogService.getLogger();
+
   private JSONArray jsonArray;
 
   public GfJsonArray() {
@@ -36,8 +39,6 @@ public class GfJsonArray {
   }
 
   /**
-   *
-   * @param array
    * @throws GfJsonException If not an array.
    */
   public GfJsonArray(Object array) throws GfJsonException {
@@ -53,8 +54,6 @@ public class GfJsonArray {
   }
 
   /**
-   *
-   * @param source
    * @throws GfJsonException If there is a syntax error.
    */
   public GfJsonArray(String source) throws GfJsonException {
@@ -68,7 +67,6 @@ public class GfJsonArray {
   /**
    * Get the object value associated with an index.
    *
-   * @param index
    * @return An object value.
    * @throws GfJsonException If there is no value for the index.
    */
@@ -95,9 +93,6 @@ public class GfJsonArray {
   }
 
   /**
-   *
-   * @param index
-   * @param value
    * @return this GfJsonArray
    * @throws GfJsonException If the index is negative or if the the value is an invalid number.
    */
@@ -116,9 +111,6 @@ public class GfJsonArray {
   }
 
   /**
-   *
-   * @param index
-   * @param value
    * @return this GfJsonArray
    * @throws GfJsonException If the index is negative or if the value is not finite.
    */
@@ -137,9 +129,6 @@ public class GfJsonArray {
   }
 
   /**
-   *
-   * @param index
-   * @param value
    * @return this GfJsonArray
    * @throws GfJsonException If the index is negative or if the the value is an invalid number.
    */
@@ -162,8 +151,6 @@ public class GfJsonArray {
   }
 
   /**
-   *
-   * @param indentFactor
    * @return this GfJsonArray
    * @throws GfJsonException If the object contains an invalid number.
    */
@@ -184,8 +171,6 @@ public class GfJsonArray {
       for (int i = 0; i < length; i++) {
         try {
           byteArray[i] = Byte.valueOf(String.valueOf(jsonArray.get(i)));
-        } catch (NumberFormatException e) {
-          throw e;
         } catch (GfJsonException e) {
           throw new GfJsonException(e.getMessage());
         }
@@ -204,7 +189,7 @@ public class GfJsonArray {
         try {
           stringArray[i] = String.valueOf(jsonArray.get(i));
         } catch (GfJsonException e) {
-          LogWrapper.getInstance().info("", e);
+          logger.info("", e);
           stringArray = null;
         }
       }

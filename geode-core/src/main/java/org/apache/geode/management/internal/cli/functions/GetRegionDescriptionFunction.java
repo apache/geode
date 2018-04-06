@@ -17,12 +17,11 @@ package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.domain.RegionDescriptionPerMember;
 
-public class GetRegionDescriptionFunction implements Function, InternalEntity {
+public class GetRegionDescriptionFunction implements InternalFunction {
 
 
   private static final long serialVersionUID = 1L;
@@ -46,11 +45,4 @@ public class GetRegionDescriptionFunction implements Function, InternalEntity {
       context.getResultSender().sendException(e);
     }
   }
-
-  @Override
-  public String getId() {
-    // TODO Auto-generated method stub
-    return GetRegionDescriptionFunction.class.toString();
-  }
-
 }

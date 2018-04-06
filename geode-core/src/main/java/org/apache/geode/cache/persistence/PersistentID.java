@@ -39,17 +39,17 @@ public interface PersistentID extends DataSerializable {
   /**
    * The host on which the persistent data was last residing
    */
-  public abstract InetAddress getHost();
+  InetAddress getHost();
 
   /**
    * The directory which the persistent data was last residing in.
    */
-  public abstract String getDirectory();
+  String getDirectory();
 
   /**
    * The unique identifier for the persistent data.
    *
    * @since GemFire 7.0
    */
-  public abstract UUID getUUID();
+  UUID getUUID();
 }

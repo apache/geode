@@ -39,11 +39,6 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
  * connection pools. The class also implements the Serializable interface. The pool maintain a list
  * for keeping the available connections(not assigned to user) and the active connections(assigned
  * to user) This is a thread safe class.
- *
- * Second Version .Modified the synchronization code & objects on which locks were being taken.
- * Changed the logic of retrieval of connection & returning of connection. The beahviour of cleaner
- * thread has been modified such that it waits on activeCache if it is empty. Prevention of
- * deadlocks & optmization of code.
  */
 public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializable {
 
@@ -56,11 +51,9 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
   protected EventListener connEventListner;
   // private String error = "";
   protected ConfiguredDataSourceProperties configProps;
-  // Asif:expirationTime is for the available
-  // connection which are expired in milliseconds
+  // expirationTime is for the available connection which are expired in milliseconds
   protected int expirationTime;
-  // Asif:timeOut is for the Active connection which are time out in
-  // milliseconds
+  // timeOut is for the Active connection which are time out in milliseconds
   protected int timeOut;
   // Client Timeout in milliseconds
   protected int loginTimeOut;

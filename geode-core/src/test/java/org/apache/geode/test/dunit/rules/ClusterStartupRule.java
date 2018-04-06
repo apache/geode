@@ -17,34 +17,30 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.dunit.Host.getHost;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import java.util.function.UnaryOperator;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.rules.ExternalResource;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
 import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
@@ -53,7 +49,6 @@ import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
-import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 
 /**
@@ -84,7 +79,6 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   private DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
 
-  private TemporaryFolder tempWorkingDir;
   private Map<Integer, VMProvider> occupiedVMs;
 
   private boolean logFile = false;
@@ -98,24 +92,6 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   /**
-   * This will use a temporary folder to hold all the vm directories instead of using dunit folder.
-   * It will set each VM's working dir to its respective sub-directories.
-   *
-   * use this if you want to examine each member's file system without worrying about it's being
-   * contaminated with DUnitLauncher's log files that exists in each dunit/vm folder such as
-   * locator0View.dat and locator0views.log and other random log files. This will cause the VMs to
-   * be bounced after test is done, because it dynamically changes the user.dir system property.
-   */
-  public ClusterStartupRule withTempWorkingDir() {
-    tempWorkingDir = new SerializableTemporaryFolder();
-    return this;
-  }
-
-  public boolean useTempWorkingDir() {
-    return tempWorkingDir != null;
-  }
-
-  /**
    * this will allow all the logs go into log files instead of going into the console output
    */
   public ClusterStartupRule withLogFile() {
@@ -126,9 +102,6 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   @Override
   protected void before() throws Throwable {
     restoreSystemProperties.before();
-    if (useTempWorkingDir()) {
-      tempWorkingDir.create();
-    }
     occupiedVMs = new HashMap<>();
   }
 
@@ -140,161 +113,133 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
       MemberStarterRule.disconnectDSIfAny();
 
       // stop all the clientsVM before stop all the memberVM
-      occupiedVMs.values().stream().forEach(x -> x.stopVM(true));
+      occupiedVMs.values().forEach(x -> x.stopVM(true));
 
-      if (useTempWorkingDir()) {
-        tempWorkingDir.delete();
-      }
+      // delete any file under root dir
+      Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)
+          .forEach(FileUtils::deleteQuietly);
+
       restoreSystemProperties.after();
     }
   }
 
-  public MemberVM startLocatorVM(int index) throws Exception {
-    return startLocatorVM(index, new Properties());
+  public MemberVM startLocatorVM(int index, int... locatorPort) {
+    return startLocatorVM(index, x -> x.withConnectionToLocator(locatorPort));
   }
 
-  public MemberVM startLocatorVM(int index, int... locatorPort) throws Exception {
-    Properties properties = new Properties();
-    String locators = Arrays.stream(locatorPort).mapToObj(i -> "localhost[" + i + "]")
-        .collect(Collectors.joining(","));
-    properties.setProperty(LOCATORS, locators);
-    return startLocatorVM(index, properties);
+  public MemberVM startLocatorVM(int index, Properties properties, int... locatorPort) {
+    return startLocatorVM(index,
+        x -> x.withProperties(properties).withConnectionToLocator(locatorPort));
   }
 
-  /**
-   * Starts a locator instance with the given configuration properties inside
-   * {@code getHost(0).getVM(index)}.
-   *
-   * @return VM locator vm
-   */
-  public MemberVM startLocatorVM(int index, Properties specifiedProperties) throws Exception {
-    Properties properties = new Properties();
-    properties.putAll(specifiedProperties);
+  public MemberVM startLocatorVM(int index, String version) {
+    return startLocatorVM(index, version, x -> x);
+  }
 
-    String defaultName = "locator-" + index;
-    properties.putIfAbsent(NAME, defaultName);
-    String name = properties.getProperty(NAME);
+  public MemberVM startLocatorVM(int index,
+      SerializableFunction1<LocatorStarterRule> ruleOperator) {
+    return startLocatorVM(index, VersionManager.CURRENT_VERSION, ruleOperator);
+  }
 
-    VM locatorVM = getVM(index);
-    Locator locator = locatorVM.invoke(() -> {
+  public MemberVM startLocatorVM(int index, String version,
+      SerializableFunction1<LocatorStarterRule> ruleOperator) {
+    final String defaultName = "locator-" + index;
+    VM locatorVM = getVM(index, version);
+    Locator server = locatorVM.invoke(() -> {
       memberStarter = new LocatorStarterRule();
       LocatorStarterRule locatorStarter = (LocatorStarterRule) memberStarter;
-      if (useTempWorkingDir()) {
-        File workingDirFile = createWorkingDirForMember(name);
-        locatorStarter.withWorkingDir(workingDirFile);
-      }
       if (logFile) {
         locatorStarter.withLogFile();
       }
-      locatorStarter.withProperties(properties).withAutoStart();
+      ruleOperator.apply(locatorStarter);
+      locatorStarter.withName(defaultName);
+      locatorStarter.withAutoStart();
       locatorStarter.before();
       return locatorStarter;
     });
-    MemberVM memberVM = new MemberVM(locator, locatorVM, useTempWorkingDir());
+
+    MemberVM memberVM = new MemberVM(server, locatorVM);
     occupiedVMs.put(index, memberVM);
     return memberVM;
   }
 
-  public MemberVM startServerVM(int index) throws IOException {
-    return startServerVM(index, new Properties(), -1);
+  public MemberVM startServerVM(int index, int... locatorPort) {
+    return startServerVM(index, x -> x.withConnectionToLocator(locatorPort));
   }
 
-  public MemberVM startServerVM(int index, int locatorPort) throws IOException {
-    return startServerVM(index, new Properties(), locatorPort);
+  public MemberVM startServerVM(int index, String group, int... locatorPort) {
+    return startServerVM(index,
+        x -> x.withConnectionToLocator(locatorPort).withProperty(GROUPS, group));
   }
 
-  public MemberVM startServerVM(int index, String group, int locatorPort) throws IOException {
-    Properties properties = new Properties();
-    properties.put(GROUPS, group);
-    return startServerVM(index, properties, locatorPort);
+  public MemberVM startServerVM(int index, Properties properties, int... locatorPort) {
+    return startServerVM(index,
+        x -> x.withProperties(properties).withConnectionToLocator(locatorPort));
   }
 
-  public MemberVM startServerVM(int index, Properties properties) throws IOException {
-    return startServerVM(index, properties, -1);
+  public MemberVM startServerVM(int index, SerializableFunction1<ServerStarterRule> ruleOperator) {
+    return startServerVM(index, VersionManager.CURRENT_VERSION, ruleOperator);
+  }
+
+  public MemberVM startServerVM(int index, String version,
+      SerializableFunction1<ServerStarterRule> ruleOperator) {
+    final String defaultName = "server-" + index;
+    VM serverVM = getVM(index, version);
+    Server server = serverVM.invoke(() -> {
+      memberStarter = new ServerStarterRule();
+      ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
+      if (logFile) {
+        serverStarter.withLogFile();
+      }
+      ruleOperator.apply(serverStarter);
+      serverStarter.withName(defaultName);
+      serverStarter.withAutoStart();
+      serverStarter.before();
+      return serverStarter;
+    });
+
+    MemberVM memberVM = new MemberVM(server, serverVM);
+    occupiedVMs.put(index, memberVM);
+    return memberVM;
   }
 
   /**
-   * Starts a cache server with given properties
+   * Starts a client with the given properties, configuring the cacheFactory with the provided
+   * Consumer
    */
-  public MemberVM startServerVM(int index, Properties specifiedProperties, int locatorPort)
-      throws IOException {
-    Properties properties = new Properties();
-    properties.putAll(specifiedProperties);
+  public ClientVM startClientVM(int index, Properties properties,
+      Consumer<ClientCacheFactory> cacheFactorySetup, String clientVersion) throws Exception {
+    return startClientVM(index, properties, cacheFactorySetup, clientVersion,
+        (Runnable & Serializable) () -> {
+        });
+  }
 
-    String defaultName = "server-" + index;
-    properties.putIfAbsent(NAME, defaultName);
-    String name = properties.getProperty(NAME);
-
-    VM serverVM = getVM(index);
-    Server server = serverVM.invoke(() -> {
-      memberStarter = new ServerStarterRule();
-      ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
-      if (useTempWorkingDir()) {
-        File workingDirFile = createWorkingDirForMember(name);
-        serverStarter.withWorkingDir(workingDirFile);
+  public ClientVM startClientVM(int index, Properties properties,
+      Consumer<ClientCacheFactory> cacheFactorySetup, String clientVersion,
+      Runnable clientCacheHook) throws Exception {
+    VM client = getVM(index, clientVersion);
+    Exception error = client.invoke(() -> {
+      clientCacheRule =
+          new ClientCacheRule().withProperties(properties).withCacheSetup(cacheFactorySetup);
+      try {
+        clientCacheRule.before();
+        clientCacheHook.run();
+        return null;
+      } catch (Exception e) {
+        return e;
       }
-      if (logFile) {
-        serverStarter.withLogFile();
-      }
-      serverStarter.withProperties(properties).withConnectionToLocator(locatorPort).withAutoStart();
-      serverStarter.before();
-      return serverStarter;
     });
-
-    MemberVM memberVM = new MemberVM(server, serverVM, useTempWorkingDir());
-    occupiedVMs.put(index, memberVM);
-    return memberVM;
+    if (error != null) {
+      throw error;
+    }
+    ClientVM clientVM = new ClientVM(client);
+    occupiedVMs.put(index, clientVM);
+    return clientVM;
   }
 
-  public MemberVM startServerAsJmxManager(int index) throws IOException {
-    return startServerAsJmxManager(index, new Properties());
-  }
-
-  public MemberVM startServerAsJmxManager(int index, Properties properties) throws IOException {
-    properties.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
-    return startServerVM(index, properties, -1);
-  }
-
-  public MemberVM startServerAsEmbededLocator(int index) throws IOException {
-    return startServerAsEmbededLocator(index, new Properties());
-  }
-
-  public MemberVM startServerAsEmbededLocator(int index, Properties properties) throws IOException {
-    String name = "server-" + index;
-
-    VM serverVM = getVM(index);
-    Server server = serverVM.invoke(() -> {
-      memberStarter = new ServerStarterRule();
-      ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
-      if (useTempWorkingDir()) {
-        File workingDirFile = createWorkingDirForMember(name);
-        serverStarter.withWorkingDir(workingDirFile);
-      }
-      if (logFile) {
-        serverStarter.withLogFile();
-      }
-      serverStarter.withEmbeddedLocator().withProperties(properties).withName(name).withJMXManager()
-          .withAutoStart();
-      serverStarter.before();
-      return serverStarter;
-    });
-
-    MemberVM memberVM = new MemberVM(server, serverVM, useTempWorkingDir());
-    occupiedVMs.put(index, memberVM);
-    return memberVM;
-  }
-
-  public void stopVM(int index) {
-    stopVM(index, true);
-  }
-
-  public void stopVM(int index, boolean cleanWorkingDir) {
-    VMProvider member = occupiedVMs.get(index);
-
-    if (member == null)
-      return;
-
-    member.stopVM(cleanWorkingDir);
+  public ClientVM startClientVM(int index, Properties properties,
+      Consumer<ClientCacheFactory> cacheFactorySetup) throws Exception {
+    return startClientVM(index, properties, cacheFactorySetup, VersionManager.CURRENT_VERSION);
   }
 
   public ClientVM startClientVM(int index, String username, String password,
@@ -314,25 +259,19 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return startClientVM(index, props, consumer);
   }
 
-  public ClientVM startClientVM(int index, Properties properties,
-      Consumer<ClientCacheFactory> cacheFactorySetup) throws Exception {
-    VM client = getVM(index);
-    Exception error = client.invoke(() -> {
-      clientCacheRule =
-          new ClientCacheRule().withProperties(properties).withCacheSetup(cacheFactorySetup);
-      try {
-        clientCacheRule.before();
-        return null;
-      } catch (Exception e) {
-        return e;
-      }
-    });
-    if (error != null) {
-      throw error;
-    }
-    ClientVM clientVM = new ClientVM(client);
-    occupiedVMs.put(index, clientVM);
-    return clientVM;
+  public ClientVM startClientVM(int index, String username, String password,
+      boolean subscriptionEnabled, int serverPort, Runnable clientCacheHook) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(UserPasswordAuthInit.USER_NAME, username);
+    props.setProperty(UserPasswordAuthInit.PASSWORD, password);
+    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
+
+    Consumer<ClientCacheFactory> consumer =
+        (Serializable & Consumer<ClientCacheFactory>) ((cacheFactory) -> {
+          cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
+          cacheFactory.addPoolServer("localhost", serverPort);
+        });
+    return startClientVM(index, props, consumer, VersionManager.CURRENT_VERSION, clientCacheHook);
   }
 
   /**
@@ -342,18 +281,28 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return (MemberVM) occupiedVMs.get(index);
   }
 
+  public VM getVM(int index, String version) {
+    return getHost(0).getVM(version, index);
+  }
+
   public VM getVM(int index) {
     return getHost(0).getVM(index);
   }
 
-  public TemporaryFolder getTempWorkingDir() {
-    return tempWorkingDir;
+  public void stopVM(int index) {
+    stopVM(index, true);
+  }
+
+  public void stopVM(int index, boolean cleanWorkingDir) {
+    VMProvider member = occupiedVMs.get(index);
+
+    if (member == null)
+      return;
+
+    member.stopVM(cleanWorkingDir);
   }
 
   public File getWorkingDirRoot() {
-    if (useTempWorkingDir())
-      return tempWorkingDir.getRoot();
-
     // return the dunit folder
     return new File(DUnitLauncher.DUNIT_DIR);
   }
@@ -369,12 +318,6 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     }
   }
 
-  private File createWorkingDirForMember(String dirName) throws IOException {
-    File workingDir = new File(tempWorkingDir.getRoot(), dirName).getAbsoluteFile();
-    if (!workingDir.exists()) {
-      tempWorkingDir.newFolder(dirName);
-    }
-
-    return workingDir;
+  public interface SerializableFunction1<T> extends UnaryOperator<T>, Serializable {
   }
 }

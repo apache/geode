@@ -15,18 +15,24 @@
 
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyIndexFinishFlushing;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -94,8 +100,8 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
     region.put("key1", new TestObject());
     verifyIndexFinishFlushing(cache, INDEX_NAME, REGION_NAME);
     assertEquals(analyzers, index.getFieldAnalyzers());
-    assertEquals(Arrays.asList("field1"), field1Analyzer.analyzedfields);
-    assertEquals(Arrays.asList("field2"), field2Analyzer.analyzedfields);
+    assertEquals(new HashSet(Arrays.asList("field1")), field1Analyzer.analyzedfields);
+    assertEquals(new HashSet(Arrays.asList("field2")), field2Analyzer.analyzedfields);
   }
 
   @Test
@@ -171,8 +177,8 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
       region.put("key1", new TestObject());
       verifyIndexFinishFlushing(cache, INDEX_NAME, REGION_NAME);
       assertEquals(analyzers, index.getFieldAnalyzers());
-      assertEquals(Arrays.asList("field1"), field1Analyzer.analyzedfields);
-      assertEquals(Arrays.asList("field2"), field2Analyzer.analyzedfields);
+      assertEquals(new HashSet(Arrays.asList("field1")), field1Analyzer.analyzedfields);
+      assertEquals(new HashSet(Arrays.asList("field2")), field2Analyzer.analyzedfields);
     } finally {
       LuceneServiceImpl.luceneIndexFactory = new LuceneIndexImplFactory();
     }
@@ -316,7 +322,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
 
   private static class RecordingAnalyzer extends Analyzer {
 
-    private List<String> analyzedfields = new ArrayList<String>();
+    private Set<String> analyzedfields = new HashSet<String>();
 
     @Override
     protected TokenStreamComponents createComponents(final String fieldName) {

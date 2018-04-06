@@ -60,15 +60,14 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
@@ -173,7 +172,7 @@ public class CacheConnectionJUnitTest {
     InternalDistributedSystem distributedSystem =
         (InternalDistributedSystem) cache.getDistributedSystem();
     Statistics[] protobufStats = distributedSystem.findStatisticsByType(
-        distributedSystem.findType(ProtobufClientStatisticsImpl.PROTOBUF_CLIENT_STATISTICS));
+        distributedSystem.findType(ProtobufClientStatistics.PROTOBUF_CLIENT_STATISTICS));
     assertEquals(1, protobufStats.length);
     Statistics statistics = protobufStats[0];
     assertEquals(1, statistics.get("currentClientConnections"));
@@ -212,31 +211,28 @@ public class CacheConnectionJUnitTest {
 
   private void validatePutResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
-    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
-    assertEquals(ClientProtocol.Response.ResponseAPICase.PUTRESPONSE,
-        response.getResponseAPICase());
+    ClientProtocol.Message response = deserializeResponse(socket, protobufProtocolSerializer);
+    assertEquals(ClientProtocol.Message.MessageTypeCase.PUTRESPONSE, response.getMessageTypeCase());
   }
 
   private void validateGetResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer, Object expectedValue)
       throws InvalidProtocolMessageException, IOException {
-    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
+    ClientProtocol.Message response = deserializeResponse(socket, protobufProtocolSerializer);
 
-    assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
-        response.getResponseAPICase());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.GETRESPONSE, response.getMessageTypeCase());
     RegionAPI.GetResponse getResponse = response.getGetResponse();
     BasicTypes.EncodedValue result = getResponse.getResult();
     assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT, result.getValueCase());
     assertEquals(expectedValue, result.getStringResult());
   }
 
-  private ClientProtocol.Response deserializeResponse(Socket socket,
+  private ClientProtocol.Message deserializeResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer)
       throws InvalidProtocolMessageException, IOException {
     ClientProtocol.Message message =
         protobufProtocolSerializer.deserialize(socket.getInputStream());
-    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
-    return message.getResponse();
+    return message;
   }
 
   private void updatePropertiesForSSLCache(Properties properties) {

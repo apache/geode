@@ -42,7 +42,7 @@ public abstract class DistributionMessageObserver {
    * @param dm the distribution manager that received the message
    * @param message The message itself
    */
-  public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+  public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
     // override as needed
   }
 
@@ -52,7 +52,7 @@ public abstract class DistributionMessageObserver {
    * @param dm the distribution manager that received the message
    * @param message The message itself
    */
-  public void afterProcessMessage(DistributionManager dm, DistributionMessage message) {
+  public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
     // override as needed
   }
 
@@ -62,7 +62,7 @@ public abstract class DistributionMessageObserver {
    * @param dm the distribution manager that's sending the message
    * @param message the message itself
    */
-  public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
+  public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
     // override as needed
   }
 }

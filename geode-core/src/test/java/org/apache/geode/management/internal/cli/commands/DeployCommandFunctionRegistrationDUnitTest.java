@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -41,7 +40,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(DistributedTest.class)
-public class DeployCommandFunctionRegistrationDUnitTest implements Serializable {
+public class DeployCommandFunctionRegistrationDUnitTest {
   private MemberVM locator;
   private MemberVM server;
 
@@ -75,9 +74,7 @@ public class DeployCommandFunctionRegistrationDUnitTest implements Serializable 
         .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(
         "org.apache.geode.management.internal.deployment.ImplementsFunction"));
-    server.invoke(() -> assertThatFunctionHasVersion(
-        "org.apache.geode.management.internal.deployment.ImplementsFunction",
-        "ImplementsFunctionResult"));
+    server.invoke(() -> assertThatFunctionHasVersion("myTestFunction", "ImplementsFunctionResult"));
   }
 
   @Test
@@ -106,7 +103,7 @@ public class DeployCommandFunctionRegistrationDUnitTest implements Serializable 
     return new File(resourceUri);
   }
 
-  private void assertThatFunctionHasVersion(String functionId, String version) {
+  private static void assertThatFunctionHasVersion(String functionId, String version) {
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
     DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
     Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
@@ -114,7 +111,7 @@ public class DeployCommandFunctionRegistrationDUnitTest implements Serializable 
     assertThat(result.get(0)).isEqualTo(version);
   }
 
-  private void assertThatCanLoad(String className) throws ClassNotFoundException {
+  private static void assertThatCanLoad(String className) throws ClassNotFoundException {
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }
 }

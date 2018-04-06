@@ -23,7 +23,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.transaction.Synchronization;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.TransactionId;
@@ -34,35 +33,34 @@ import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOpe
 
 /**
  * An entity that tracks transactions must implement this interface.
- *
  */
 public interface TXStateInterface extends Synchronization, InternalDataView {
 
-  public TransactionId getTransactionId();
+  TransactionId getTransactionId();
 
   /**
    * Used by transaction operations that are doing a read operation on the specified region.
    *
    * @return the TXRegionState for the given LocalRegion or null if no state exists
    */
-  public TXRegionState readRegion(LocalRegion r);
+  TXRegionState readRegion(LocalRegion r);
 
   /**
    * Used by transaction operations that are doing a write operation on the specified region.
    *
    * @return the TXRegionState for the given LocalRegion
    */
-  public TXRegionState writeRegion(LocalRegion r);
+  TXRegionState writeRegion(LocalRegion r);
 
   /**
    * Returns a nanotimer timestamp that marks when begin was called on this transaction.
    */
-  public long getBeginTime();
+  long getBeginTime();
 
   /**
    * Returns the number of changes this transaction would have made if it successfully committed.
    */
-  public int getChanges();
+  int getChanges();
 
   /**
    * Determines if a transaction is in progress. Transactions are in progress until they commit or
@@ -70,41 +68,40 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    *
    * @return true if this transaction has completed.
    */
-  public boolean isInProgress();
+  boolean isInProgress();
 
   /**
    * Returns the next modification serial number. Note this method is not thread safe but does not
    * need to be since a single thread owns a transaction.
    */
-  public int nextModSerialNum();
+  int nextModSerialNum();
 
   /**
    * Return true if mod counts for this transaction can not be represented by a byte
    *
    * @since GemFire 5.0
    */
-  public boolean needsLargeModCount();
+  boolean needsLargeModCount();
 
   /*
    * Only applicable for Distributed transaction.
    */
-  public void precommit()
-      throws CommitConflictException, UnsupportedOperationInTransactionException;
+  void precommit() throws CommitConflictException, UnsupportedOperationInTransactionException;
 
-  public void commit() throws CommitConflictException;
+  void commit() throws CommitConflictException;
 
-  public void rollback();
+  void rollback();
 
-  public List getEvents();
+  List getEvents();
 
 
 
   /** Implement TransactionEvent's getCache */
-  public Cache getCache();
+  InternalCache getCache();
 
-  public Collection<LocalRegion> getRegions();
+  Collection<LocalRegion> getRegions();
 
-  public void invalidateExistingEntry(final EntryEventImpl event, boolean invokeCallbacks,
+  void invalidateExistingEntry(final EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry);
 
   /**
@@ -114,24 +111,24 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * @return a Region.Entry if it exists either in committed state or in transactional state,
    *         otherwise returns null
    */
-  public Entry getEntry(final KeyInfo keyInfo, final LocalRegion region, boolean allowTombstones);
+  Entry getEntry(final KeyInfo keyInfo, final LocalRegion region, boolean allowTombstones);
 
   /**
    * @param keyInfo
    * @param localRegion
    * @param updateStats TODO
    */
-  public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
+  Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
       boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
       boolean returnTombstones, boolean retainResult);
 
-  public TXEvent getEvent();
+  TXEvent getEvent();
 
-  public TXRegionState txWriteRegion(final LocalRegion localRegion, final KeyInfo entryKey);
+  TXRegionState txWriteRegion(final LocalRegion localRegion, final KeyInfo entryKey);
 
-  public TXRegionState txReadRegion(LocalRegion localRegion);
+  TXRegionState txReadRegion(LocalRegion localRegion);
 
-  public boolean txPutEntry(final EntryEventImpl event, boolean ifNew, boolean requireOldValue,
+  boolean txPutEntry(final EntryEventImpl event, boolean ifNew, boolean requireOldValue,
       boolean checkResources, Object expectedOldValue);
 
   /**
@@ -143,10 +140,10 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * @return a txEntryState or null if the entry doesn't exist in the transaction and/or committed
    *         state.
    */
-  public TXEntryState txReadEntry(KeyInfo entryKey, LocalRegion localRegion, boolean rememberRead,
+  TXEntryState txReadEntry(KeyInfo entryKey, LocalRegion localRegion, boolean rememberRead,
       boolean createTxEntryIfAbsent);
 
-  public void rmRegion(LocalRegion r);
+  void rmRegion(LocalRegion r);
 
   /**
    *
@@ -154,13 +151,13 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * @return true if transaction is in progress and the given state has the same identity as this
    *         instance
    */
-  public boolean isInProgressAndSameAs(TXStateInterface state);
+  boolean isInProgressAndSameAs(TXStateInterface state);
 
   /**
    *
    * @return true if callbacks should be fired for this TXState
    */
-  public boolean isFireCallbacks();
+  boolean isFireCallbacks();
 
   /**
    * On the remote node, the tx can potentially be accessed by multiple threads, specially with
@@ -168,58 +165,58 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    *
    * @return the lock to be used
    */
-  public ReentrantLock getLock();
+  ReentrantLock getLock();
 
-  public boolean isRealDealLocal();
+  boolean isRealDealLocal();
 
-  public boolean isMemberIdForwardingRequired();
+  boolean isMemberIdForwardingRequired();
 
-  public InternalDistributedMember getOriginatingMember();
+  InternalDistributedMember getOriginatingMember();
 
-  public TXCommitMessage getCommitMessage();
+  TXCommitMessage getCommitMessage();
 
   /**
    * perform additional tasks to suspend a transaction
    */
-  public void suspend();
+  void suspend();
 
   /**
    * perform additional tasks to resume a suspended transaction
    */
-  public void resume();
+  void resume();
 
   /**
    * record a transactional operation for possible later replay
    */
-  public void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key,
+  void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key,
       Object arguments[]);
 
-  public void close();
+  void close();
 
   /*
    * Determine if its TxState or not
    */
-  public boolean isTxState();
+  boolean isTxState();
 
   /*
    * Determine if is TxStateStub or not
    */
-  public boolean isTxStateStub();
+  boolean isTxStateStub();
 
   /*
    * Determine if is TxStateProxy or not
    */
-  public boolean isTxStateProxy();
+  boolean isTxStateProxy();
 
   /*
    * Is class related to Distributed Transaction, and not colocated transaction
    */
-  public boolean isDistTx();
+  boolean isDistTx();
 
   /*
    * Is class meant for Coordinator for Distributed Transaction
    *
    * Will be true for DistTXCoordinatorInterface
    */
-  public boolean isCreatedOnDistTxCoordinator();
+  boolean isCreatedOnDistTxCoordinator();
 }

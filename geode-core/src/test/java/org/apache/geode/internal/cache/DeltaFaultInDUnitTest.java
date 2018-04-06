@@ -123,8 +123,7 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
         // I want to make sure the other object is the one evicted.
         region.get(new Integer(113));
 
-        long entriesEvicted = ((AbstractLRURegionMap) ((PartitionedRegion) region).entries)
-            .getEvictionList().getStatistics().getEvictions();
+        long entriesEvicted = ((InternalRegion) region).getTotalEvictions();
         // assertIndexDetailsEquals(1, entriesEvicted);
 
         TestDelta result = region.get(new Integer(0));

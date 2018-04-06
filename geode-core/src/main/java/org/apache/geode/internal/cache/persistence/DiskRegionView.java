@@ -17,10 +17,10 @@ package org.apache.geode.internal.cache.persistence;
 import java.util.EnumSet;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.EvictableRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.RegionMap;
@@ -29,136 +29,134 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 /**
  * Contract DiskInitFile needs a DiskRegion to provide.
  */
-public interface DiskRegionView extends PersistentMemberView, RegionEntryContext {
-  public DiskStoreImpl getDiskStore();
+public interface DiskRegionView extends PersistentMemberView, RegionEntryContext, EvictableRegion {
+  DiskStoreImpl getDiskStore();
 
-  public String getName();
+  String getName();
 
-  public long getId();
+  long getId();
 
-  public long getClearOplogEntryId();
+  long getClearOplogEntryId();
 
-  public void setClearOplogEntryId(long v);
+  void setClearOplogEntryId(long v);
 
-  public RegionVersionVector getClearRVV();
+  RegionVersionVector getClearRVV();
 
-  public void setClearRVV(RegionVersionVector clearRVV);
+  void setClearRVV(RegionVersionVector clearRVV);
 
-  public PersistentMemberID addMyInitializingPMID(PersistentMemberID pmid);
+  PersistentMemberID addMyInitializingPMID(PersistentMemberID pmid);
 
-  public void markInitialized();
+  void markInitialized();
 
-  public boolean addOnlineMember(PersistentMemberID pmid);
+  boolean addOnlineMember(PersistentMemberID pmid);
 
-  public boolean addOfflineMember(PersistentMemberID pmid);
+  boolean addOfflineMember(PersistentMemberID pmid);
 
-  public boolean addOfflineAndEqualMember(PersistentMemberID pmid);
+  boolean addOfflineAndEqualMember(PersistentMemberID pmid);
 
-  public boolean rmOnlineMember(PersistentMemberID pmid);
+  boolean rmOnlineMember(PersistentMemberID pmid);
 
-  public boolean rmEqualMember(PersistentMemberID pmid);
+  boolean rmEqualMember(PersistentMemberID pmid);
 
-  public boolean rmOfflineMember(PersistentMemberID pmid);
+  boolean rmOfflineMember(PersistentMemberID pmid);
 
-  public void markBeginDestroyRegion();
+  void markBeginDestroyRegion();
 
-  public void markBeginDestroyDataStorage();
+  void markBeginDestroyDataStorage();
 
-  public void markEndDestroyDataStorage();
+  void markEndDestroyDataStorage();
 
-  public void markEndDestroyRegion();
+  void markEndDestroyRegion();
 
-  public boolean isBackup();
+  boolean isBackup();
 
-  public boolean hasConfigChanged();
+  boolean hasConfigChanged();
 
-  public void setConfigChanged(boolean v);
+  void setConfigChanged(boolean v);
 
-  public void setConfig(byte lruAlgorithm, byte lruAction, int lruLimit, int concurrencyLevel,
+  void setConfig(byte lruAlgorithm, byte lruAction, int lruLimit, int concurrencyLevel,
       int initialCapacity, float loadFactor, boolean statisticsEnabled, boolean isBucket,
       EnumSet<DiskRegionFlag> flags, String partitionName, int startingBucketId,
       String compressorClassName, boolean offHeap);
 
-  public byte getLruAlgorithm();
+  byte getLruAlgorithm();
 
-  public byte getLruAction();
+  byte getLruAction();
 
-  public int getLruLimit();
+  int getLruLimit();
 
-  public int getConcurrencyLevel();
+  int getConcurrencyLevel();
 
-  public int getInitialCapacity();
+  int getInitialCapacity();
 
-  public float getLoadFactor();
+  float getLoadFactor();
 
-  public boolean getStatisticsEnabled();
+  boolean getStatisticsEnabled();
 
-  public boolean isBucket();
+  boolean isBucket();
 
-  public EnumSet<DiskRegionFlag> getFlags();
+  EnumSet<DiskRegionFlag> getFlags();
 
-  public String getPartitionName();
+  String getPartitionName();
 
-  public int getStartingBucketId();
+  int getStartingBucketId();
 
   /**
    * Return true if this region has data in disk to allow it be be recovered. Return false if it is
    * a brand new region that has not yet written data to disk.
    */
-  public boolean isRecreated();
+  boolean isRecreated();
 
-  public void prepareForRecovery();
+  void prepareForRecovery();
 
-  public RegionMap getRecoveredEntryMap();
+  RegionMap getRecoveredEntryMap();
 
-  public boolean isReadyForRecovery();
+  boolean isReadyForRecovery();
 
-  public int getRecoveredEntryCount();
+  int getRecoveredEntryCount();
 
-  public void incRecoveredEntryCount();
+  void incRecoveredEntryCount();
 
-  public void initRecoveredEntryCount();
+  void initRecoveredEntryCount();
 
-  public void copyExistingRegionMap(LocalRegion drs);
+  void copyExistingRegionMap(LocalRegion drs);
 
-  public void incNumOverflowOnDisk(long delta);
+  void incNumOverflowOnDisk(long delta);
 
-  public void incNumEntriesInVM(long delta);
+  void incNumEntriesInVM(long delta);
 
-  public long getNumOverflowOnDisk();
+  long getNumOverflowOnDisk();
 
-  public long getNumOverflowBytesOnDisk();
+  long getNumOverflowBytesOnDisk();
 
-  public long getNumEntriesInVM();
+  long getNumEntriesInVM();
 
-  public void acquireReadLock();
+  void acquireReadLock();
 
-  public Object getRaw(DiskId did);
+  Object getRaw(DiskId did);
 
-  public void releaseReadLock();
+  void releaseReadLock();
 
-  public boolean didClearCountChange();
+  boolean didClearCountChange();
 
-  public CancelCriterion getCancelCriterion();
+  CancelCriterion getCancelCriterion();
 
-  public boolean isSync();
+  boolean isSync();
 
   /** Update stats */
-  public void endRead(long start, long end, long bytesRead);
+  void endRead(long start, long end, long bytesRead);
 
-  public boolean isRegionClosed();
+  boolean isRegionClosed();
 
-  public void incNumOverflowBytesOnDisk(long overflowBytesOnDiskDelta);
+  void incNumOverflowBytesOnDisk(long overflowBytesOnDiskDelta);
 
-  public RegionVersionVector getRegionVersionVector();
+  RegionVersionVector getRegionVersionVector();
 
-  public boolean isEntriesMapIncompatible();
+  boolean isEntriesMapIncompatible();
 
-  public String getCompressorClassName();
+  String getCompressorClassName();
 
-  public void oplogRecovered(long oplogId);
+  void oplogRecovered(long oplogId);
 
-  public boolean getOffHeap();
-
-  public void close();
+  void close();
 }

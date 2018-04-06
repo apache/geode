@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -45,20 +45,20 @@ public class NetViewJUnitTest {
       members.add(new InternalDistributedMember(SocketCreator.getLocalHost(), 1000 + i));
     }
     // view creator is a locator
-    members.get(0).setVmKind(DistributionManager.LOCATOR_DM_TYPE);
+    members.get(0).setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     members.get(0).setVmViewId(0);
     members.get(0).getNetMember().setPreferredForCoordinator(true);
 
     // members who joined in view #1
     for (int i = 1; i < (numMembers - 1); i++) {
       members.get(i).setVmViewId(1);
-      members.get(i).setVmKind(DistributionManager.NORMAL_DM_TYPE);
+      members.get(i).setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
       members.get(i).getNetMember().setPreferredForCoordinator(false);
     }
 
     // member joining in this view
     members.get(numMembers - 1).setVmViewId(2);
-    members.get(numMembers - 1).setVmKind(DistributionManager.NORMAL_DM_TYPE);
+    members.get(numMembers - 1).setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
   }
 
   private void setFailureDetectionPorts(NetView view) {
@@ -179,7 +179,7 @@ public class NetViewJUnitTest {
     for (int i = 0; i < 100; i++) {
       InternalDistributedMember mbr =
           new InternalDistributedMember(SocketCreator.getLocalHost(), 2000 + i);
-      mbr.setVmKind(DistributionManager.NORMAL_DM_TYPE);
+      mbr.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
       mbr.setVmViewId(2);
       view.add(mbr);
       view.setFailureDetectionPort(mbr, 2000 + i);
@@ -226,22 +226,22 @@ public class NetViewJUnitTest {
             new InternalDistributedMember("localhost", 6)};
     int i = 0;
     // weight 3
-    members[i].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
+    members[i].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     members[i++].getNetMember().setPreferredForCoordinator(true);
     // weight 3
-    members[i].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
+    members[i].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     members[i++].getNetMember().setPreferredForCoordinator(true);
     // weight 15 (cache+leader)
-    members[i].setVmKind(DistributionManager.NORMAL_DM_TYPE);
+    members[i].setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
     members[i++].getNetMember().setPreferredForCoordinator(false);
     // weight 0
-    members[i].setVmKind(DistributionManager.ADMIN_ONLY_DM_TYPE);
+    members[i].setVmKind(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
     members[i++].getNetMember().setPreferredForCoordinator(false);
     // weight 0
-    members[i].setVmKind(DistributionManager.ADMIN_ONLY_DM_TYPE);
+    members[i].setVmKind(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
     members[i++].getNetMember().setPreferredForCoordinator(false);
     // weight 10
-    members[i].setVmKind(DistributionManager.NORMAL_DM_TYPE);
+    members[i].setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
     members[i++].getNetMember().setPreferredForCoordinator(false);
 
     List<InternalDistributedMember> vmbrs = new ArrayList<>(members.length);
@@ -253,7 +253,7 @@ public class NetViewJUnitTest {
     assertTrue(!leader.getNetMember().preferredForCoordinator());
 
     InternalDistributedMember joiningMember = new InternalDistributedMember("localhost", 7);
-    joiningMember.setVmKind(DistributionManager.NORMAL_DM_TYPE);
+    joiningMember.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
     joiningMember.getNetMember().setPreferredForCoordinator(false);
 
     // have the joining member and another cache process (weight 10) in the failed members

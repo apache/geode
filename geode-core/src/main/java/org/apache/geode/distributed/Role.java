@@ -30,7 +30,7 @@ public interface Role extends Comparable<Role> {
    *
    * @return user-defined string name of this role
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns true if this role is currently present in distributed system. If true, then at least
@@ -39,7 +39,7 @@ public interface Role extends Comparable<Role> {
    *
    * @return true if this role is currently present in distributed system
    */
-  public boolean isPresent();
+  boolean isPresent();
 
   /**
    * Returns the count of members currently filling this role. These members may or may not have a
@@ -47,5 +47,5 @@ public interface Role extends Comparable<Role> {
    *
    * @return number of members in system currently filling this role
    */
-  public int getCount();
+  int getCount();
 }

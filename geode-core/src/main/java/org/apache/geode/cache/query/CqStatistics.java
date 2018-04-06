@@ -28,27 +28,27 @@ public interface CqStatistics {
    *
    * @return long number of inserts.
    */
-  public long numInserts();
+  long numInserts();
 
   /**
    * Get number of Delete events qualified by this CQ.
    *
    * @return long number of deletes.
    */
-  public long numDeletes();
+  long numDeletes();
 
   /**
    * Get number of Update events qualified by this CQ.
    *
    * @return long number of updates.
    */
-  public long numUpdates();
+  long numUpdates();
 
   /**
    * Get total of all the events qualified by this CQ.
    *
    * @return long total number of events.
    */
-  public long numEvents();
+  long numEvents();
 
 }

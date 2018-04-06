@@ -34,8 +34,8 @@ public class RegionStatisticsResponse extends AdminResponse {
    * Returns a <code>RegionStatisticsResponse</code> that will be returned to the specified
    * recipient. The message will contains a copy of the local manager's system config.
    */
-  public static RegionStatisticsResponse create(DM dm, InternalDistributedMember recipient,
-      Region r) {
+  public static RegionStatisticsResponse create(DistributionManager dm,
+      InternalDistributedMember recipient, Region r) {
     RegionStatisticsResponse m = new RegionStatisticsResponse();
     m.setRecipient(recipient);
     m.regionStatistics = new RemoteCacheStatistics(r.getStatistics());

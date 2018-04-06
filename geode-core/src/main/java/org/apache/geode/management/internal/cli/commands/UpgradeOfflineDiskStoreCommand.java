@@ -28,6 +28,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -51,11 +52,10 @@ public class UpgradeOfflineDiskStoreCommand implements GfshCommand {
           unspecifiedDefaultValue = "-1",
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE__HELP) long maxOplogSize,
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J,
-          help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps)
-      throws InterruptedException {
+          help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps) {
 
     Result result;
-    LogWrapper logWrapper = LogWrapper.getInstance();
+    LogWrapper logWrapper = LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache));
 
     StringBuilder output = new StringBuilder();
     StringBuilder error = new StringBuilder();
@@ -139,7 +139,7 @@ public class UpgradeOfflineDiskStoreCommand implements GfshCommand {
       }
       String fieldsMessage = (maxOplogSize != -1
           ? CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE + "=" + maxOplogSize + "," : "");
-      fieldsMessage += CliUtil.arrayToString(diskDirs);
+      fieldsMessage += StringUtils.arrayToString(diskDirs);
       String errorString = CliStrings.format(
           CliStrings.UPGRADE_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_DISKSTORE_0_WITH_1_REASON_2,
           diskStoreName, fieldsMessage);

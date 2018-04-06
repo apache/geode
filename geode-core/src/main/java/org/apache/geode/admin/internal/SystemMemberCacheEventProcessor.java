@@ -30,7 +30,7 @@ import org.apache.geode.admin.SystemMemberRegionEvent;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LogService;
@@ -79,7 +79,7 @@ public class SystemMemberCacheEventProcessor {
     protected Operation op;
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       AdminDistributedSystemImpl admin = AdminDistributedSystemImpl.getConnectedInstance();
       if (admin == null) {
         if (logger.isDebugEnabled()) {

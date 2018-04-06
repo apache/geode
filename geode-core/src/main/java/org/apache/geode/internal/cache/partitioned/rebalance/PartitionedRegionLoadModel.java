@@ -1528,15 +1528,14 @@ public class PartitionedRegionLoadModel {
     }
   }
 
-  public static interface AddressComparor {
+  public interface AddressComparor {
 
-    public boolean enforceUniqueZones();
+    boolean enforceUniqueZones();
 
     /**
      * Return true if the two addresses are equivalent
      */
-    public boolean areSameZone(InternalDistributedMember member1,
-        InternalDistributedMember member2);
+    boolean areSameZone(InternalDistributedMember member1, InternalDistributedMember member2);
   }
 
   public static enum RefusalReason {

@@ -23,9 +23,9 @@ import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ConflationKey;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -77,10 +77,10 @@ public class DestroyOperation extends DistributedCacheOperation {
     }
 
     @Override
-    protected boolean operateOnRegion(CacheEvent event, DistributionManager dm)
+    protected boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
         throws EntryNotFoundException {
       EntryEventImpl ev = (EntryEventImpl) event;
-      DistributedRegion rgn = (DistributedRegion) ev.region;
+      DistributedRegion rgn = (DistributedRegion) ev.getRegion();
 
       try {
         if (!rgn.isCacheContentProxy()) {
@@ -207,7 +207,7 @@ public class DestroyOperation extends DistributedCacheOperation {
     }
 
     @Override
-    protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+    protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
       return _mayAddToMultipleSerialGateways(dm);
     }
   }

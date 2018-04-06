@@ -25,13 +25,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;

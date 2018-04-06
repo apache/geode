@@ -130,8 +130,7 @@ public abstract class AbstractOp implements Op {
       try {
         hdos.writeLong(cnx.getConnectionID());
         hdos.writeLong(userId);
-        getMessage()
-            .setSecurePart(((ConnectionImpl) cnx).getHandShake().encryptBytes(hdos.toByteArray()));
+        getMessage().setSecurePart(((ConnectionImpl) cnx).encryptBytes(hdos.toByteArray()));
       } finally {
         hdos.close();
       }
@@ -162,7 +161,7 @@ public abstract class AbstractOp implements Op {
         }
         return;
       }
-      byte[] bytes = ((ConnectionImpl) cnx).getHandShake().decryptBytes(partBytes);
+      byte[] bytes = ((ConnectionImpl) cnx).decryptBytes(partBytes);
       DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
       cnx.setConnectionID(dis.readLong());
     }
@@ -205,7 +204,7 @@ public abstract class AbstractOp implements Op {
         }
       } else {
         try {
-          msg.recv();
+          msg.receive();
         } finally {
           msg.unsetComms();
           processSecureBytes(cnx, msg);
@@ -266,7 +265,6 @@ public abstract class AbstractOp implements Op {
         }
         // Get the exception toString part.
         // This was added for c++ thin client and not used in java
-        // Part exceptionToStringPart = msg.getPart(1);
       } else if (isErrorResponse(msgType)) {
         throw new ServerOperationException(part.getString());
       } else {
@@ -295,7 +293,6 @@ public abstract class AbstractOp implements Op {
         throw new ServerOperationException(s, (Throwable) part.getObject());
         // Get the exception toString part.
         // This was added for c++ thin client and not used in java
-        // Part exceptionToStringPart = msg.getPart(1);
       } else if (isErrorResponse(msgType)) {
         throw new ServerOperationException(part.getString());
       } else {
@@ -321,7 +318,7 @@ public abstract class AbstractOp implements Op {
      *
      * @param msg the current chunk to handle
      */
-    public void handle(ChunkedMessage msg) throws Exception;
+    void handle(ChunkedMessage msg) throws Exception;
   }
 
   /**
@@ -350,7 +347,6 @@ public abstract class AbstractOp implements Op {
         throw new ServerOperationException(s, (Throwable) part.getObject());
         // Get the exception toString part.
         // This was added for c++ thin client and not used in java
-        // Part exceptionToStringPart = msg.getPart(1);
       } else if (isErrorResponse(msgType)) {
         msg.receiveChunk();
         Part part = msg.getPart(0);

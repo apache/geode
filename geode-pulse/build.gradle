@@ -30,6 +30,8 @@ sourceSets {
 dependencies {
   compile 'org.springframework:spring-beans:' + project.'springframework.version'
 
+  // Needed to fully use log4j instead of commons-logging.
+  compile 'org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
 

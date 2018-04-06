@@ -33,14 +33,9 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -55,24 +50,16 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @Category(UnitTest.class)
 public class RegionVersionVectorTest {
 
-  private ExecutorService executorService;
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
-
-  @Before
-  public void setUp() throws Exception {
-    executorService = Executors.newSingleThreadExecutor();
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    assertThat(executorService.shutdownNow()).isEmpty();
-  }
 
   @Test
   public void testExceptionsWithContains() {
@@ -228,8 +215,8 @@ public class RegionVersionVectorTest {
     rv1.recordVersion(server3, 1);
     rv1.recordVersion(server4, 1);
     rv1.recordVersion(server5, 1);
-    rv1.memberDeparted(server2, false);
-    rv1.memberDeparted(server4, true);
+    rv1.memberDeparted(null, server2, false);
+    rv1.memberDeparted(null, server4, true);
     assertTrue(rv1.containsMember(server2));
     assertTrue(rv1.containsMember(server3));
     assertTrue(rv1.containsMember(server4));
@@ -241,7 +228,7 @@ public class RegionVersionVectorTest {
     rv1.removeOldMembers(retain);
     assertFalse(rv1.containsMember(server4));
 
-    rv1.memberDeparted(server3, false); // {server2, server3(departed), server5}
+    rv1.memberDeparted(null, server3, false); // {server2, server3(departed), server5}
 
     // Now test that departed members are transferred with GII. We simulate
     // a new server, server6, doing a GII from server1
@@ -627,8 +614,7 @@ public class RegionVersionVectorTest {
     long newVersion = 2;
 
     RegionVersionVector rvv = new VersionRaceConditionRegionVersionVector(ownerId, oldVersion);
-    Future<Void> result =
-        CompletableFuture.runAsync(() -> rvv.updateLocalVersion(newVersion), executorService);
+    Future<Void> result = executorServiceRule.runAsync(() -> rvv.updateLocalVersion(newVersion));
 
     assertThatCode(() -> result.get(2, SECONDS)).doesNotThrowAnyException();
     assertThat(rvv.getVersionForMember(ownerId)).isEqualTo(newVersion);

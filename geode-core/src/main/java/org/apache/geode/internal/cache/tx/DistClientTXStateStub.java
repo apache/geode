@@ -16,34 +16,25 @@ package org.apache.geode.internal.cache.tx;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.DistTXCommitMessage;
 import org.apache.geode.internal.cache.DistTXCoordinatorInterface;
 import org.apache.geode.internal.cache.DistTXPrecommitMessage;
 import org.apache.geode.internal.cache.DistTXRollbackMessage;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- *
- */
 public class DistClientTXStateStub extends ClientTXStateStub implements DistTXCoordinatorInterface {
 
-  /**
-   * @param stateProxy
-   * @param target
-   * @param firstRegion
-   */
-  public DistClientTXStateStub(TXStateProxy stateProxy, DistributedMember target,
-      LocalRegion firstRegion) {
-    super(stateProxy, target, firstRegion);
-    // TODO Auto-generated constructor stub
+  public DistClientTXStateStub(InternalCache cache, DistributionManager dm, TXStateProxy stateProxy,
+      DistributedMember target, LocalRegion firstRegion) {
+    super(cache, dm, stateProxy, target, firstRegion);
   }
 
   @Override
@@ -77,7 +68,7 @@ public class DistClientTXStateStub extends ClientTXStateStub implements DistTXCo
   }
 
   @Override
-  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DM dm)
+  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
@@ -85,7 +76,7 @@ public class DistClientTXStateStub extends ClientTXStateStub implements DistTXCo
   }
 
   @Override
-  public void setCommitMessage(DistTXCommitMessage commitMsg, DM dm)
+  public void setCommitMessage(DistTXCommitMessage commitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
@@ -93,7 +84,7 @@ public class DistClientTXStateStub extends ClientTXStateStub implements DistTXCo
   }
 
   @Override
-  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DM dm)
+  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_ROLLBACK_NOT_SUPPORTED_IN_A_TRANSACTION

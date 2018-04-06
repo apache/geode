@@ -23,16 +23,16 @@ public interface Slab {
   /**
    * Return the address of the memory of this slab.
    */
-  public long getMemoryAddress();
+  long getMemoryAddress();
 
   /**
    * Returns the size of this memory chunk in bytes.
    */
-  public int getSize();
+  int getSize();
 
   /**
    * Returns any memory allocated for this slab. Note that after free is called the address of this
    * slab should no longer be used.
    */
-  public void free();
+  void free();
 }

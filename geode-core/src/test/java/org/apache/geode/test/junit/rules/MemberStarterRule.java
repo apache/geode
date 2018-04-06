@@ -28,9 +28,11 @@ import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.rules.TemporaryFolder;
@@ -159,14 +161,17 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   public T withName(String name) {
     this.name = name;
-    properties.setProperty(NAME, name);
+    properties.putIfAbsent(NAME, name);
     return (T) this;
   }
 
-  public T withConnectionToLocator(int locatorPort) {
-    if (locatorPort > 0) {
-      properties.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
+  public T withConnectionToLocator(int... locatorPorts) {
+    if (locatorPorts.length == 0) {
+      return (T) this;
     }
+    String locators = Arrays.stream(locatorPorts).mapToObj(i -> "localhost[" + i + "]")
+        .collect(Collectors.joining(","));
+    properties.setProperty(LOCATORS, locators);
     return (T) this;
   }
 

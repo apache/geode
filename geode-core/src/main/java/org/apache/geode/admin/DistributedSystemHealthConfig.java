@@ -52,7 +52,7 @@ public interface DistributedSystemHealthConfig {
    * The default maximum number of application members that can unexceptedly leave a healthy the
    * distributed system.
    */
-  public static final long DEFAULT_MAX_DEPARTED_APPLICATIONS = 10;
+  long DEFAULT_MAX_DEPARTED_APPLICATIONS = 10;
 
   /////////////////////// Instance Methods ///////////////////////
 
@@ -62,7 +62,7 @@ public interface DistributedSystemHealthConfig {
    *
    * @see #DEFAULT_MAX_DEPARTED_APPLICATIONS
    */
-  public long getMaxDepartedApplications();
+  long getMaxDepartedApplications();
 
   /**
    * Sets the maximum number of application members that can unexceptedly leave a healthy the
@@ -70,5 +70,5 @@ public interface DistributedSystemHealthConfig {
    *
    * @see #getMaxDepartedApplications
    */
-  public void setMaxDepartedApplications(long maxDepartedApplications);
+  void setMaxDepartedApplications(long maxDepartedApplications);
 }

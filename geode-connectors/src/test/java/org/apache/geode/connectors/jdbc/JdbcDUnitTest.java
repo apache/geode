@@ -32,7 +32,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -84,7 +83,6 @@ public class JdbcDUnitTest implements Serializable {
   @After
   public void tearDown() throws Exception {
     server.invoke(() -> {
-      CacheFactory.getAnyInstance().close();
       closeDB();
     });
   }
@@ -112,9 +110,9 @@ public class JdbcDUnitTest implements Serializable {
 
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
-          CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
-      Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
+      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
           .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
               "JDBC mapping for region employees not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
@@ -129,12 +127,12 @@ public class JdbcDUnitTest implements Serializable {
 
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
-          CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
-      Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
+      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.put("key1", pdxEmployee1);
 
-      JdbcAsyncWriter asyncWriter = (JdbcAsyncWriter) CacheFactory.getAnyInstance()
+      JdbcAsyncWriter asyncWriter = (JdbcAsyncWriter) ClusterStartupRule.getCache()
           .getAsyncEventQueue("JAW").getAsyncEventListener();
       Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
         assertThat(asyncWriter.getFailedEvents()).isEqualTo(1);
@@ -151,9 +149,9 @@ public class JdbcDUnitTest implements Serializable {
 
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
-          CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
-      Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
+      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
           .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
               "JDBC mapping for region employees not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
@@ -167,9 +165,9 @@ public class JdbcDUnitTest implements Serializable {
 
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
-          CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
-      Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
+      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
           .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
               "JDBC connection with name TestConnection not found. Create the connection with the gfsh command 'create jdbc-connection'");
@@ -183,11 +181,11 @@ public class JdbcDUnitTest implements Serializable {
     createMapping(REGION_NAME, CONNECTION_NAME);
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
-          CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("id", "key1").writeString("name", "Emp1").writeInt("age", 55).create();
 
       String key = "emp1";
-      CacheFactory.getAnyInstance().getRegion(REGION_NAME).put(key, pdxEmployee1);
+      ClusterStartupRule.getCache().getRegion(REGION_NAME).put(key, pdxEmployee1);
       assertTableHasEmployeeData(1, pdxEmployee1, key);
     });
   }
@@ -199,11 +197,11 @@ public class JdbcDUnitTest implements Serializable {
     createMapping(REGION_NAME, CONNECTION_NAME);
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
-          CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("id", "key1").writeString("name", "Emp1").writeInt("age", 55).create();
 
       String key = "emp1";
-      CacheFactory.getAnyInstance().getRegion(REGION_NAME).put(key, pdxEmployee1);
+      ClusterStartupRule.getCache().getRegion(REGION_NAME).put(key, pdxEmployee1);
       assertTableHasEmployeeData(1, pdxEmployee1, key);
     });
   }
@@ -215,7 +213,7 @@ public class JdbcDUnitTest implements Serializable {
     createMapping(REGION_NAME, CONNECTION_NAME);
     server.invoke(() -> {
       String key = "emp1";
-      Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
+      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.get(key);
       assertThat(region.size()).isEqualTo(0);
     });
@@ -228,11 +226,11 @@ public class JdbcDUnitTest implements Serializable {
     createMapping(REGION_NAME, CONNECTION_NAME);
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
-          CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
 
       String key = "id1";
-      Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
+      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.put(key, pdxEmployee1);
       region.invalidate(key);
 
@@ -274,8 +272,8 @@ public class JdbcDUnitTest implements Serializable {
   }
 
   private void createMapping(String regionName, String connectionName) {
-    final String commandStr =
-        "create jdbc-mapping --region=" + regionName + " --connection=" + connectionName;
+    final String commandStr = "create jdbc-mapping --region=" + regionName + " --connection="
+        + connectionName + " --value-contains-primary-key";
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 

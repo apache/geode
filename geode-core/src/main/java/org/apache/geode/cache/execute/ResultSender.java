@@ -55,7 +55,7 @@ public interface ResultSender<T> {
    *
    * @param oneResult
    */
-  public void sendResult(T oneResult);
+  void sendResult(T oneResult);
 
   /**
    * Sends a result back to the FunctionService calling thread and invokes
@@ -68,7 +68,7 @@ public interface ResultSender<T> {
    *
    * @see ResultCollector#endResults()
    */
-  public void lastResult(T lastResult);
+  void lastResult(T lastResult);
 
   /**
    * Sends an Exception back to the FunctionService calling thread. sendException adds exception to
@@ -81,5 +81,5 @@ public interface ResultSender<T> {
    * @see #lastResult(Object)
    * @since GemFire 6.3
    */
-  public void sendException(Throwable t);
+  void sendException(Throwable t);
 }

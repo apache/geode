@@ -28,7 +28,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.apache.geode.internal.ByteBufferWriter;
-import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.offheap.AddressableMemoryManager;
 import org.apache.geode.internal.offheap.StoredObject;
 
@@ -53,7 +52,7 @@ public class ByteBufferInputStream extends InputStream
    *
    *
    */
-  public static interface ByteSource {
+  public interface ByteSource {
     int position();
 
     int limit();

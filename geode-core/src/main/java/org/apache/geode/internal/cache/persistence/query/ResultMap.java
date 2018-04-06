@@ -61,7 +61,7 @@ public interface ResultMap {
   /**
    * return true if this map contains the given key
    */
-  public boolean containsKey(Object e);
+  boolean containsKey(Object e);
 
   /**
    * Return all of the IndexEntries in the range between start and end. If end < start, this will

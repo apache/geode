@@ -112,7 +112,7 @@ public interface CacheTransactionManager {
    *
    * @since GemFire 4.0
    */
-  public void begin();
+  void begin();
 
   /**
    * Commit the transaction associated with the current thread. If the commit operation fails due to
@@ -136,7 +136,7 @@ public interface CacheTransactionManager {
    *         transaction and which have not. This only occurs if nodes fail mid-commit, and only
    *         then in very rare circumstances.
    */
-  public void commit() throws CommitConflictException;
+  void commit() throws CommitConflictException;
 
   /**
    * Roll back the transaction associated with the current thread. When this method completes, the
@@ -146,7 +146,7 @@ public interface CacheTransactionManager {
    *
    * @throws IllegalStateException if the thread is not associated with a transaction
    */
-  public void rollback();
+  void rollback();
 
   /**
    * Suspends the transaction on the current thread. All subsequent operations performed by this
@@ -157,7 +157,7 @@ public interface CacheTransactionManager {
    *         associated with a transaction
    * @since GemFire 6.6.2
    */
-  public TransactionId suspend();
+  TransactionId suspend();
 
   /**
    * On the current thread, resumes a transaction that was previously suspended using
@@ -169,7 +169,7 @@ public interface CacheTransactionManager {
    * @since GemFire 6.6.2
    * @see #tryResume(TransactionId)
    */
-  public void resume(TransactionId transactionId);
+  void resume(TransactionId transactionId);
 
   /**
    * This method can be used to determine if a transaction with the given transaction identifier is
@@ -180,7 +180,7 @@ public interface CacheTransactionManager {
    * @since GemFire 6.6.2
    * @see #exists(TransactionId)
    */
-  public boolean isSuspended(TransactionId transactionId);
+  boolean isSuspended(TransactionId transactionId);
 
   /**
    * On the current thread, resumes a transaction that was previously suspended using
@@ -200,7 +200,7 @@ public interface CacheTransactionManager {
    * @return true if the transaction was resumed, false otherwise
    * @since GemFire 6.6.2
    */
-  public boolean tryResume(TransactionId transactionId);
+  boolean tryResume(TransactionId transactionId);
 
   /**
    * On the current thread, resumes a transaction that was previously suspended using
@@ -221,7 +221,7 @@ public interface CacheTransactionManager {
    * @since GemFire 6.6.2
    * @see #tryResume(TransactionId)
    */
-  public boolean tryResume(TransactionId transactionId, long time, TimeUnit unit);
+  boolean tryResume(TransactionId transactionId, long time, TimeUnit unit);
 
   /**
    * Reports the existence of a transaction for the given transactionId. This method can be used to
@@ -233,7 +233,7 @@ public interface CacheTransactionManager {
    * @since GemFire 6.6.2
    * @see #isSuspended(TransactionId)
    */
-  public boolean exists(TransactionId transactionId);
+  boolean exists(TransactionId transactionId);
 
   /**
    * Reports the existence of a Transaction for this thread
@@ -242,7 +242,7 @@ public interface CacheTransactionManager {
    *
    * @since GemFire 4.0
    */
-  public boolean exists();
+  boolean exists();
 
   /**
    * Returns the transaction identifier for the current thread
@@ -251,7 +251,7 @@ public interface CacheTransactionManager {
    *
    * @since GemFire 4.0
    */
-  public TransactionId getTransactionId();
+  TransactionId getTransactionId();
 
   /**
    * Gets the transaction listener for this Cache.
@@ -261,7 +261,7 @@ public interface CacheTransactionManager {
    * @deprecated as of GemFire 5.0, use {@link #getListeners} instead
    */
   @Deprecated
-  public TransactionListener getListener();
+  TransactionListener getListener();
 
   /**
    * Returns an array of all the transaction listeners on this cache. Modifications to the returned
@@ -270,7 +270,7 @@ public interface CacheTransactionManager {
    * @return the cache's <code>TransactionListener</code>s; an empty array if no listeners
    * @since GemFire 5.0
    */
-  public TransactionListener[] getListeners();
+  TransactionListener[] getListeners();
 
   /**
    * Sets the transaction listener for this Cache.
@@ -282,7 +282,7 @@ public interface CacheTransactionManager {
    * @deprecated as of GemFire 5.0, use {@link #addListener} or {@link #initListeners} instead.
    */
   @Deprecated
-  public TransactionListener setListener(TransactionListener newListener);
+  TransactionListener setListener(TransactionListener newListener);
 
   /**
    * Adds a transaction listener to the end of the list of transaction listeners on this cache.
@@ -291,7 +291,7 @@ public interface CacheTransactionManager {
    * @throws IllegalArgumentException if <code>aListener</code> is null
    * @since GemFire 5.0
    */
-  public void addListener(TransactionListener aListener);
+  void addListener(TransactionListener aListener);
 
   /**
    * Removes a transaction listener from the list of transaction listeners on this cache. Does
@@ -302,7 +302,7 @@ public interface CacheTransactionManager {
    * @throws IllegalArgumentException if <code>aListener</code> is null
    * @since GemFire 5.0
    */
-  public void removeListener(TransactionListener aListener);
+  void removeListener(TransactionListener aListener);
 
   /**
    * Removes all transaction listeners, calling {@link CacheCallback#close} on each of them, and
@@ -312,7 +312,7 @@ public interface CacheTransactionManager {
    * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
    * @since GemFire 5.0
    */
-  public void initListeners(TransactionListener[] newListeners);
+  void initListeners(TransactionListener[] newListeners);
 
   /**
    * Set the TransactionWriter for the cache
@@ -321,7 +321,7 @@ public interface CacheTransactionManager {
    * @see TransactionWriter
    * @since GemFire 6.5
    */
-  public void setWriter(TransactionWriter writer);
+  void setWriter(TransactionWriter writer);
 
   /**
    * Returns the current {@link TransactionWriter}
@@ -330,7 +330,7 @@ public interface CacheTransactionManager {
    * @return the current {@link TransactionWriter}
    * @since GemFire 6.5
    */
-  public TransactionWriter getWriter();
+  TransactionWriter getWriter();
 
   /**
    * Sets whether transactions should be executed in distributed or non-distributed mode. Once set
@@ -340,7 +340,7 @@ public interface CacheTransactionManager {
    *         distributed mode to a different value.
    * @since Geode 1.0
    */
-  public void setDistributed(boolean distributed);
+  void setDistributed(boolean distributed);
 
   /**
    * Returns the execution mode of transactions
@@ -348,5 +348,5 @@ public interface CacheTransactionManager {
    * @return true if distributed, false otherwise.
    * @since Geode 1.0
    */
-  public boolean isDistributed();
+  boolean isDistributed();
 }

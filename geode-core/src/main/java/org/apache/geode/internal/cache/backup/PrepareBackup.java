@@ -25,18 +25,20 @@ class PrepareBackup {
 
   private final InternalDistributedMember member;
   private final InternalCache cache;
+  private final BackupWriter backupWriter;
 
-  PrepareBackup(InternalDistributedMember member, InternalCache cache) {
+  PrepareBackup(InternalDistributedMember member, InternalCache cache, BackupWriter backupWriter) {
     this.member = member;
     this.cache = cache;
+    this.backupWriter = backupWriter;
   }
 
-  HashSet<PersistentID> run() throws IOException {
+  HashSet<PersistentID> run() throws IOException, InterruptedException {
     HashSet<PersistentID> persistentIds;
     if (cache == null) {
       persistentIds = new HashSet<>();
     } else {
-      persistentIds = cache.startBackup(member).prepareForBackup();
+      persistentIds = cache.getBackupService().prepareBackup(member, backupWriter);
     }
     return persistentIds;
   }

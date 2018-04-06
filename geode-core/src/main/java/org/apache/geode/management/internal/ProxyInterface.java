@@ -26,14 +26,14 @@ public interface ProxyInterface {
    *
    * @return last refreshed time
    */
-  public long getLastRefreshedTime();
+  long getLastRefreshedTime();
 
   /**
    * Sets the last refreshed time for the proxy
    *
    * @param lastRefreshedTime
    */
-  public void setLastRefreshedTime(long lastRefreshedTime);
+  void setLastRefreshedTime(long lastRefreshedTime);
 
 
 }

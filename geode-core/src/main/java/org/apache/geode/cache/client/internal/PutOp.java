@@ -334,9 +334,6 @@ public class PutOp {
             DataInputStream din = new DataInputStream(in);
             oldValue = DataSerializer.readObject(din);
           }
-          // if (lw.fineEnabled()) {
-          // lw.fine("read old value from server response: " + oldValue);
-          // }
         }
         // if the server has versioning we will attach it to the client's event
         // here so it can be applied to the cache
@@ -388,7 +385,6 @@ public class PutOp {
           throw new ServerOperationException(s, (Throwable) part.getObject());
           // Get the exception toString part.
           // This was added for c++ thin client and not used in java
-          // Part exceptionToStringPart = msg.getPart(1);
         } else if (isErrorResponse(msgType)) {
           throw new ServerOperationException(part.getString());
         } else {
@@ -466,7 +462,7 @@ public class PutOp {
           }
         } else {
           try {
-            msg.recv();
+            msg.receive();
           } finally {
             msg.unsetComms();
             processSecureBytes(cnx, msg);

@@ -22,9 +22,9 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
  *
  */
 public interface ResourceEvent {
-  public ResourceType getType();
+  ResourceType getType();
 
-  public boolean isLocal();
+  boolean isLocal();
 
-  public DistributedMember getMember();
+  DistributedMember getMember();
 }

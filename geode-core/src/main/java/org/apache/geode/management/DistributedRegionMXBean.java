@@ -35,170 +35,171 @@ public interface DistributedRegionMXBean {
   /**
    * Returns the name of the Region.
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns the number of members hosting/using the Region.
    */
-  public int getMemberCount();
+  int getMemberCount();
 
   /**
    * Returns a list of names/IDs of the members hosting the Region.
    */
-  public String[] getMembers();
+  String[] getMembers();
 
   /**
    * Returns the type (data policy) of the Region.
+   * CreateRegionCommand will use this attribute
    */
-  public String getRegionType();
+  String getRegionType();
 
   /**
    * Returns the full path of the Region.
    */
-  public String getFullPath();
+  String getFullPath();
 
   /**
    * Returns the name of the parent Region.
    */
-  public String getParentRegion();
+  String getParentRegion();
 
   /**
    * Returns a list of the names of the subregions.
    *
    * @param recursive <code>true</code> to recursively traverse and find sub-regions.
    */
-  public String[] listSubRegionPaths(boolean recursive);
+  String[] listSubRegionPaths(boolean recursive);
 
   /**
    * Returns the attributes of the Region.
    */
-  public RegionAttributesData listRegionAttributes();
+  RegionAttributesData listRegionAttributes();
 
   /**
    * Returns the partition attributes of the Region.
    */
-  public PartitionAttributesData listPartitionAttributes();
+  PartitionAttributesData listPartitionAttributes();
 
   /**
    * Returns the fixed partition attributes of the Region.
    */
-  public FixedPartitionAttributesData[] listFixedPartitionAttributesData();
+  FixedPartitionAttributesData[] listFixedPartitionAttributesData();
 
   /**
    * Returns the eviction attributes of the Region.
    */
-  public EvictionAttributesData listEvictionAttributes();
+  EvictionAttributesData listEvictionAttributes();
 
   /**
    * Returns the membership attributes of the Region.
    *
    * @deprecated this API is scheduled to be removed
    */
-  public MembershipAttributesData listMembershipAttributes();
+  MembershipAttributesData listMembershipAttributes();
 
   /**
    * Returns the time of the most recent modification. For partitioned region it will be -1. This
    * feature is not supported for partitioned regions.
    */
-  public long getLastModifiedTime();
+  long getLastModifiedTime();
 
   /**
    * Returns the time of the most recent access. For partitioned region it will be -1. This feature
    * is not supported for partitioned regions.
    */
-  public long getLastAccessedTime();
+  long getLastAccessedTime();
 
   /**
    * Returns the number of times that a cache miss occurred. For partitioned region it will be -1.
    * This feature is not supported for partitioned regions.
    */
-  public long getMissCount();
+  long getMissCount();
 
   /**
    * Returns the number of times that a hit occurred. For partitioned region it will be -1. This
    * feature is not supported for partitioned regions.
    */
-  public long getHitCount();
+  long getHitCount();
 
   /**
    * Returns the hit to miss ratio. For partitioned region it will be -1. This feature is not
    * supported for partitioned regions.
    */
-  public float getHitRatio();
+  float getHitRatio();
 
 
   /**
    * Returns the number of entries in the Region.
    *
    */
-  public long getSystemRegionEntryCount();
+  long getSystemRegionEntryCount();
 
   /**
    * Returns the number of gets per second.
    */
-  public float getGetsRate();
+  float getGetsRate();
 
   /**
    * Returns the number of puts per second.
    */
-  public float getPutsRate();
+  float getPutsRate();
 
   /**
    * Returns the number of creates per second.
    */
-  public float getCreatesRate();
+  float getCreatesRate();
 
   /**
    * Returns the number of destroys per second.
    */
-  public float getDestroyRate();
+  float getDestroyRate();
 
   /**
    * Returns the number of putAlls per second.
    */
-  public float getPutAllRate();
+  float getPutAllRate();
 
   /**
    * Returns the number of local puts per second.
    */
-  public float getPutLocalRate();
+  float getPutLocalRate();
 
   /**
    * Returns the number of remote puts per second.
    */
-  public float getPutRemoteRate();
+  float getPutRemoteRate();
 
   /**
    * Returns the latency for the most recent remote put.
    */
-  public long getPutRemoteLatency();
+  long getPutRemoteLatency();
 
   /**
    * Returns the average latency for remote puts.
    */
-  public long getPutRemoteAvgLatency();
+  long getPutRemoteAvgLatency();
 
   /**
    * Returns the current number of entries whose values are only on disk (not in memory). Entries
    * may not exist in memory if they have been overflowed to disk or not yet been faulted in after a
    * recovery.
    */
-  public long getTotalEntriesOnlyOnDisk();
+  long getTotalEntriesOnlyOnDisk();
 
   /**
    * Returns the current number of entries held in memory.
    */
-  public long getTotalDiskEntriesInVM();
+  long getTotalDiskEntriesInVM();
 
   /**
    * Returns the number of entries per second for all disks.
    */
-  public float getDiskReadsRate();
+  float getDiskReadsRate();
 
   /**
    * Returns the number of entries per second for all disks.
    */
-  public float getDiskWritesRate();
+  float getDiskWritesRate();
 
   /**
    * Returns the current number of disk tasks (op-log compaction, asynchronous recoveries, etc) that
@@ -206,96 +207,96 @@ public interface DistributedRegionMXBean {
    *
    * @deprecated
    */
-  public long getDiskTaskWaiting();
+  long getDiskTaskWaiting();
 
   /**
    * Returns the current number of disk writes in progress.
    */
-  public long getTotalDiskWritesProgress();
+  long getTotalDiskWritesProgress();
 
   /**
    * Returns the average latency of a call to a {@link CacheWriter}.
    */
-  public long getCacheWriterCallsAvgLatency();
+  long getCacheWriterCallsAvgLatency();
 
   /**
    * Returns the average latency of a call to a {@link CacheListener}.
    */
-  public long getCacheListenerCallsAvgLatency();
+  long getCacheListenerCallsAvgLatency();
 
   /**
    * Returns the entry eviction rate as triggered by the LRU policy.
    */
 
-  public float getLruEvictionRate();
+  float getLruEvictionRate();
 
   /**
    * Returns the rate of entries destroyed either by destroy cache operations or eviction.
    */
-  public float getLruDestroyRate();
+  float getLruDestroyRate();
 
   /**
    * Returns the number of buckets on this member. Only applicable for partitioned regions.
    */
-  public int getBucketCount();
+  int getBucketCount();
 
   /**
    * Returns the number of primary buckets on this member. Only applicable for partitioned regions.
    */
-  public int getPrimaryBucketCount();
+  int getPrimaryBucketCount();
 
   /**
    * Returns the number of buckets without full redundancy. Only applicable for partitioned regions.
    */
-  public int getNumBucketsWithoutRedundancy();
+  int getNumBucketsWithoutRedundancy();
 
   /**
    * Returns the total number of entries in all buckets. Only applicable for partitioned regions.
    */
-  public int getTotalBucketSize();
+  int getTotalBucketSize();
 
   /**
    * Returns the average number of entries in bucket. Only applicable for partitioned regions.
    */
-  public int getAvgBucketSize();
+  int getAvgBucketSize();
 
   /**
    * Returns the total number of bytes used by all disks.
    */
-  public long getDiskUsage();
+  long getDiskUsage();
 
   /**
    * Returns the average number of read requests per second.
    */
-  public float getAverageReads();
+  float getAverageReads();
 
   /**
    * Returns the average number of write requests per second.
    */
-  public float getAverageWrites();
+  float getAverageWrites();
 
   /**
    * Returns whether the Region sends data to a {@link GatewaySender}.
    *
    * @return True if the Region sends data, false otherwise.
    */
-  public boolean isGatewayEnabled();
+  boolean isGatewayEnabled();
 
   /**
    * Returns whether persistence is enabled.
    *
    * @return True if persistence is enabled, false otherwise.
    */
-  public boolean isPersistentEnabled();
+  boolean isPersistentEnabled();
 
   /**
    * Returns the aggregate entry size (in megabytes) of all entries. This will provide a correct
    * value only if the eviction algorithm has been set to {@link EvictionAlgorithm#LRU_MEMORY}.
    */
-  public long getEntrySize();
+  long getEntrySize();
 
   /**
    * Returns the number of members whose entry count is 0.
    */
-  public int getEmptyNodes();
+  int getEmptyNodes();
 }

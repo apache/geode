@@ -41,6 +41,6 @@ public interface LuceneQueryProvider extends Serializable {
    *         propagated to callers of the {@link LuceneQuery} find methods.
    */
 
-  public Query getQuery(LuceneIndex index) throws LuceneQueryException;
+  Query getQuery(LuceneIndex index) throws LuceneQueryException;
 
 }

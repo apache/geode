@@ -36,7 +36,7 @@ public interface PdxInstanceFactory {
    * @return the created instance
    * @throws IllegalStateException if called more than once
    */
-  public PdxInstance create();
+  PdxInstance create();
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -50,7 +50,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeChar(String fieldName, char value);
+  PdxInstanceFactory writeChar(String fieldName, char value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -64,7 +64,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeBoolean(String fieldName, boolean value);
+  PdxInstanceFactory writeBoolean(String fieldName, boolean value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -78,7 +78,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeByte(String fieldName, byte value);
+  PdxInstanceFactory writeByte(String fieldName, byte value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -92,7 +92,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeShort(String fieldName, short value);
+  PdxInstanceFactory writeShort(String fieldName, short value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -106,7 +106,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeInt(String fieldName, int value);
+  PdxInstanceFactory writeInt(String fieldName, int value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -120,7 +120,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeLong(String fieldName, long value);
+  PdxInstanceFactory writeLong(String fieldName, long value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -134,7 +134,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeFloat(String fieldName, float value);
+  PdxInstanceFactory writeFloat(String fieldName, float value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -148,7 +148,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeDouble(String fieldName, double value);
+  PdxInstanceFactory writeDouble(String fieldName, double value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -162,7 +162,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeDate(String fieldName, Date value);
+  PdxInstanceFactory writeDate(String fieldName, Date value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -176,7 +176,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeString(String fieldName, String value);
+  PdxInstanceFactory writeString(String fieldName, String value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -196,7 +196,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeObject(String fieldName, Object value);
+  PdxInstanceFactory writeObject(String fieldName, Object value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -254,7 +254,7 @@ public interface PdxInstanceFactory {
    * @throws PdxSerializationException if serialization of the field fails.
    * @since GemFire 6.6.2
    */
-  public PdxInstanceFactory writeObject(String fieldName, Object value, boolean checkPortability);
+  PdxInstanceFactory writeObject(String fieldName, Object value, boolean checkPortability);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -268,7 +268,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeBooleanArray(String fieldName, boolean[] value);
+  PdxInstanceFactory writeBooleanArray(String fieldName, boolean[] value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -282,7 +282,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeCharArray(String fieldName, char[] value);
+  PdxInstanceFactory writeCharArray(String fieldName, char[] value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -296,7 +296,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeByteArray(String fieldName, byte[] value);
+  PdxInstanceFactory writeByteArray(String fieldName, byte[] value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -310,7 +310,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeShortArray(String fieldName, short[] value);
+  PdxInstanceFactory writeShortArray(String fieldName, short[] value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -324,7 +324,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeIntArray(String fieldName, int[] value);
+  PdxInstanceFactory writeIntArray(String fieldName, int[] value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -338,7 +338,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeLongArray(String fieldName, long[] value);
+  PdxInstanceFactory writeLongArray(String fieldName, long[] value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -352,7 +352,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeFloatArray(String fieldName, float[] value);
+  PdxInstanceFactory writeFloatArray(String fieldName, float[] value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -366,7 +366,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeDoubleArray(String fieldName, double[] value);
+  PdxInstanceFactory writeDoubleArray(String fieldName, double[] value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -380,7 +380,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeStringArray(String fieldName, String[] value);
+  PdxInstanceFactory writeStringArray(String fieldName, String[] value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -398,7 +398,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeObjectArray(String fieldName, Object[] value);
+  PdxInstanceFactory writeObjectArray(String fieldName, Object[] value);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -421,8 +421,7 @@ public interface PdxInstanceFactory {
    * @throws PdxSerializationException if serialization of the field fails.
    * @since GemFire 6.6.2
    */
-  public PdxInstanceFactory writeObjectArray(String fieldName, Object[] value,
-      boolean checkPortability);
+  PdxInstanceFactory writeObjectArray(String fieldName, Object[] value, boolean checkPortability);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is
@@ -436,7 +435,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public PdxInstanceFactory writeArrayOfByteArrays(String fieldName, byte[][] value);
+  PdxInstanceFactory writeArrayOfByteArrays(String fieldName, byte[][] value);
 
   /**
    * Writes the named field with the given value and type to the serialized form. This method uses
@@ -481,7 +480,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  public <CT, VT extends CT> PdxInstanceFactory writeField(String fieldName, VT fieldValue,
+  <CT, VT extends CT> PdxInstanceFactory writeField(String fieldName, VT fieldValue,
       Class<CT> fieldType);
 
   /**
@@ -531,7 +530,7 @@ public interface PdxInstanceFactory {
    * @throws PdxSerializationException if serialization of the field fails.
    * @since GemFire 6.6.2
    */
-  public <CT, VT extends CT> PdxInstanceFactory writeField(String fieldName, VT fieldValue,
+  <CT, VT extends CT> PdxInstanceFactory writeField(String fieldName, VT fieldValue,
       Class<CT> fieldType, boolean checkPortability);
 
   /**
@@ -552,5 +551,5 @@ public interface PdxInstanceFactory {
    * @return this PdxInstanceFactory
    * @throws PdxFieldDoesNotExistException if the named field has not already been written.
    */
-  public PdxInstanceFactory markIdentityField(String fieldName);
+  PdxInstanceFactory markIdentityField(String fieldName);
 }

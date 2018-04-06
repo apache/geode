@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.tx;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -37,6 +36,7 @@ import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -47,7 +47,6 @@ import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.PutAllPartialResultException.PutAllPartialResult;
 import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
-import org.apache.geode.internal.cache.partitioned.RemoteSizeMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
@@ -76,7 +75,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
-    PartitionedRegion pr = (PartitionedRegion) event.getLocalRegion();
+    PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     try {
       pr.destroyRemotely(state.getTarget(), event.getKeyInfo().getBucketId(), event,
           expectedOldValue);
@@ -209,7 +208,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
-    PartitionedRegion pr = (PartitionedRegion) event.getLocalRegion();
+    PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     try {
       pr.invalidateRemotely(state.getTarget(), event.getKeyInfo().getBucketId(), event);
     } catch (TransactionException e) {
@@ -360,7 +359,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
     boolean retVal = false;
-    final LocalRegion r = event.getLocalRegion();
+    final LocalRegion r = event.getRegion();
     PartitionedRegion pr = (PartitionedRegion) r;
     try {
       retVal =
@@ -383,17 +382,6 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     return retVal;
   }
 
-
-  public int entryCount() {
-    try {
-      RemoteSizeMessage.SizeResponse response =
-          RemoteSizeMessage.send(Collections.singleton(state.getTarget()), region);
-      return response.waitForSize();
-    } catch (Exception e) {
-      throw getTransactionException(null, e);
-    }
-  }
-
   /**
    * Create PutAllPRMsgs for each bucket, and send them.
    *
@@ -402,7 +390,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   public void postPutAll(DistributedPutAllOperation putallO, VersionedObjectList successfulPuts,
       LocalRegion r) throws TransactionException {
     if (r.getCache().isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw r.getCache().getCacheClosedException("Cache is shutting down");
     }
 
     PartitionedRegion pr = (PartitionedRegion) r;
@@ -462,7 +450,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
       LocalRegion r) {
     if (r.getCache().isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw r.getCache().getCacheClosedException("Cache is shutting down");
     }
 
     PartitionedRegion pr = (PartitionedRegion) r;
@@ -595,5 +583,10 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   @Override
   public void cleanup() {}
+
+  @Override
+  protected InternalRegion getRegion() {
+    return this.region;
+  }
 
 }

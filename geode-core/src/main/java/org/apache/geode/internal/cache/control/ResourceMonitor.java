@@ -32,17 +32,17 @@ interface ResourceMonitor {
    * @param listeners Set of listeners of notify.
    * @param event Event to send to the listeners.
    */
-  public void notifyListeners(final Set<ResourceListener> listeners, final ResourceEvent event);
+  void notifyListeners(final Set<ResourceListener> listeners, final ResourceEvent event);
 
   /**
    * Ask the monitor to stop monitoring.
    */
-  public void stopMonitoring();
+  void stopMonitoring();
 
   /**
    * Populate the fields in the profile that are appropriate for this monitor.
    *
    * @param profile The profile to populate.
    */
-  public void fillInProfile(final ResourceManagerProfile profile);
+  void fillInProfile(final ResourceManagerProfile profile);
 }

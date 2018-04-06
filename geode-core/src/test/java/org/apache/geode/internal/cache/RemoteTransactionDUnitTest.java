@@ -93,6 +93,19 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.ExpiryTask;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.TXEntryState;
+import org.apache.geode.internal.cache.TXId;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXRegionState;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.execute.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.execute.InternalFunctionService;
 import org.apache.geode.internal.cache.execute.data.CustId;
@@ -3204,8 +3217,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        Region cust = getGemfireCache().getRegion(CUSTOMER);
-        TXManagerImpl mgr = getGemfireCache().getTxManager();
+        Region cust = getCache().getRegion(CUSTOMER);
+        TXManagerImpl mgr = getCache().getTxManager();
         mgr.begin();
         cust.put(new CustId(6), new Customer("customer6", "address6"));
         return null;
@@ -3214,14 +3227,14 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     final InternalDistributedMember member =
         (InternalDistributedMember) accessor.invoke(new SerializableCallable() {
           public Object call() throws Exception {
-            return getGemfireCache().getMyId();
+            return getCache().getMyId();
           }
         });
     datastore.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        TXManagerImpl mgr = getGemfireCache().getTxManager();
+        TXManagerImpl mgr = getCache().getTxManager();
         assertEquals(1, mgr.hostedTransactionsInProgressForTest());
-        mgr.memberDeparted(member, true);
+        mgr.memberDeparted(getCache().getDistributionManager(), member, true);
         assertEquals(0, mgr.hostedTransactionsInProgressForTest());
         return null;
       }

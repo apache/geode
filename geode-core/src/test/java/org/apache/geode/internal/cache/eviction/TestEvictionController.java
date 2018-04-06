@@ -14,45 +14,17 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.StatisticsTypeFactory;
+import static org.mockito.Mockito.mock;
+
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 class TestEvictionController implements EvictionController {
 
-  private final StatisticsType statType;
-
-  {
-    // create the stats type for MemLRU.
-    StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
-
-    final String bytesAllowedDesc = "Number of total bytes allowed in this region.";
-    final String byteCountDesc = "Number of bytes in region.";
-    final String lruEvictionsDesc = "Number of total entry evictions triggered by LRU.";
-    final String lruEvaluationsDesc = "Number of entries evaluated during LRU operations.";
-    final String lruGreedyReturnsDesc = "Number of non-LRU entries evicted during LRU operations";
-    final String lruDestroysDesc = "Number of entry destroys triggered by LRU.";
-    final String lruDestroysLimitDesc =
-        "Maximum number of entry destroys triggered by LRU before scan occurs.";
-
-    statType = f.createType("TestLRUStatistics",
-        "Statistics about byte based Least Recently Used region entry disposal",
-        new StatisticDescriptor[] {f.createLongGauge("bytesAllowed", bytesAllowedDesc, "bytes"),
-            f.createLongGauge("byteCount", byteCountDesc, "bytes"),
-            f.createLongCounter("lruEvictions", lruEvictionsDesc, "entries"),
-            f.createLongCounter("lruEvaluations", lruEvaluationsDesc, "entries"),
-            f.createLongCounter("lruGreedyReturns", lruGreedyReturnsDesc, "entries"),
-            f.createLongCounter("lruDestroys", lruDestroysDesc, "entries"),
-            f.createLongCounter("lruDestroysLimit", lruDestroysLimitDesc, "entries"),});
-  }
+  private final EvictionCounters evictionCounters = mock(EvictionCounters.class);
 
   @Override
   public int entrySize(Object key, Object value) throws IllegalArgumentException {
@@ -74,8 +46,8 @@ class TestEvictionController implements EvictionController {
   }
 
   @Override
-  public EvictionStatistics getStatistics() {
-    return null;
+  public EvictionCounters getCounters() {
+    return this.evictionCounters;
   }
 
   @Override
@@ -84,79 +56,12 @@ class TestEvictionController implements EvictionController {
   }
 
   @Override
-  public StatisticsType getStatisticsType() {
-    return statType;
-  }
-
-  @Override
-  public String getStatisticsName() {
-    return "TestLRUStatistics";
-  }
-
-  @Override
-  public int getLimitStatId() {
-    return statType.nameToId("bytesAllowed");
-  }
-
-  @Override
-  public int getCountStatId() {
-    return statType.nameToId("byteCount");
-  }
-
-  @Override
-  public int getEvictionsStatId() {
-    return statType.nameToId("lruEvictions");
-  }
-
-  @Override
-  public int getDestroysStatId() {
-    return statType.nameToId("lruDestroys");
-  }
-
-  @Override
-  public int getDestroysLimitStatId() {
-    return statType.nameToId("lruDestroysLimit");
-  }
-
-  @Override
-  public int getEvaluationsStatId() {
-    return statType.nameToId("lruEvaluations");
-  }
-
-  @Override
-  public int getGreedyReturnsStatId() {
-    return statType.nameToId("lruGreedyReturns");
-  }
-
-  @Override
-  public boolean mustEvict(EvictionStatistics stats, InternalRegion region, int delta) {
+  public boolean mustEvict(EvictionCounters stats, InternalRegion region, int delta) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
   @Override
-  public EvictionStatistics initStats(Object region, StatisticsFactory statsFactory) {
-    String regionName;
-    if (region instanceof Region) {
-      regionName = ((Region) region).getName();
-    } else if (region instanceof PlaceHolderDiskRegion) {
-      regionName = ((PlaceHolderDiskRegion) region).getName();
-      // @todo make it shorter (I think it is the fullPath
-    } else {
-      throw new IllegalStateException("expected Region or PlaceHolderDiskRegion");
-    }
-    final InternalEvictionStatistics stats =
-        new EvictionStatisticsImpl(statsFactory, "TestLRUStatistics" + regionName, this);
-    stats.setLimit(limit());
-    return stats;
-  }
-
-  @Override
-  public boolean lruLimitExceeded(EvictionStatistics stats, DiskRegionView diskRegionView) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  @Override
-  public void setBucketRegion(Region region) {
+  public boolean lruLimitExceeded(EvictionCounters stats, DiskRegionView diskRegionView) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -174,4 +79,15 @@ class TestEvictionController implements EvictionController {
   public void close() {
     throw new UnsupportedOperationException("Not implemented");
   }
+
+  @Override
+  public void closeBucket(BucketRegion bucketRegion) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  @Override
+  public void setPerEntryOverhead(int entryOverhead) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
 }

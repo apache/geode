@@ -161,21 +161,41 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
+  public void ifNotExistsIsIdempotent() throws Exception {
+    gfsh.executeAndAssertThat(
+        "create region --if-not-exists --type=PARTITION --name=/FOO --local-max-memory=0")
+        .statusIsSuccess().containsOutput("Region \"/FOO\" created");
+
+    gfsh.executeAndAssertThat(
+        "create region --skip-if-exists --type=PARTITION --name=/FOO --local-max-memory=0")
+        .statusIsSuccess().containsOutput("Region /FOO already exists on these members: server.");
+
+    gfsh.executeAndAssertThat(
+        "create region --if-not-exists --type=PARTITION --name=/FOO --local-max-memory=0")
+        .statusIsSuccess().containsOutput("Region /FOO already exists on these members: server.");
+
+    gfsh.executeAndAssertThat("destroy region --name=/FOO").statusIsSuccess();
+  }
+
+  @Test
   public void invalidCacheListener() throws Exception {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --cache-listener=abc-def")
-        .statusIsError().containsOutput("Specify a valid class name for cache-listener");
+        .statusIsError().containsOutput(
+            "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName");
   }
 
   @Test
   public void invalidCacheLoader() throws Exception {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --cache-loader=abc-def")
-        .statusIsError().containsOutput("Specify a valid class name for cache-loader");
+        .statusIsError().containsOutput(
+            "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName");
   }
 
   @Test
   public void invalidCacheWriter() throws Exception {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --cache-writer=abc-def")
-        .statusIsError().containsOutput("Specify a valid class name for cache-writer");
+        .statusIsError().containsOutput(
+            "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName");
   }
 
   @Test
@@ -584,5 +604,11 @@ public class CreateRegionCommandIntegrationTest {
             + TestObjectSizerNotDeclarable.class.getName())
         .statusIsError().containsOutput(
             "eviction-object-sizer must implement both ObjectSizer and Declarable interfaces");
+  }
+
+  @Test
+  public void createRegionWithCacheListenerWithInvalidJson() {
+    gfsh.executeAndAssertThat("create region --name=FOO --type=REPLICATE --cache-listener=abc{abc}")
+        .statusIsError().containsOutput("Invalid JSON: {abc}");
   }
 }

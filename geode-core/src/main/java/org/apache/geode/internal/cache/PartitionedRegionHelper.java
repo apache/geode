@@ -47,10 +47,8 @@ import org.apache.geode.cache.partition.PartitionNotAvailableException;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -271,7 +269,7 @@ public class PartitionedRegionHelper {
         root = (DistributedRegion) cache.createVMRegion(PR_ROOT_REGION_NAME, ra,
             new InternalRegionArguments().setIsUsedForPartitionedRegionAdmin(true)
                 .setInternalRegion(true).setCachePerfStatsHolder(prMetaStatsHolder));
-        root.getDistributionAdvisor().addMembershipListener(new MemberFailureListener());
+        root.getDistributionAdvisor().addMembershipListener(new MemberFailureListener(cache));
       } catch (RegionExistsException ignore) {
         // we avoid this before hand, but yet we have to catch it
         root = (DistributedRegion) cache.getRegion(PR_ROOT_REGION_NAME, true);
@@ -305,14 +303,12 @@ public class PartitionedRegionHelper {
    * Clean the config meta data for a DistributedMember which has left the DistributedSystem, one
    * PartitionedRegion at a time.
    */
-  public static void cleanUpMetaDataOnNodeFailure(DistributedMember failedMemId) {
+  public static void cleanUpMetaDataOnNodeFailure(InternalCache cache,
+      DistributedMember failedMemId) {
     try {
-      final InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache == null || cache.getCancelCriterion().isCancelInProgress()) {
         return;
       }
-
-      DM dm = cache.getInternalDistributedSystem().getDistributionManager();
 
       if (logger.isDebugEnabled()) {
         logger.debug("Cleaning PartitionedRegion meta data for memberId={}", failedMemId);
@@ -741,11 +737,8 @@ public class PartitionedRegionHelper {
       return bucketFullPath.substring(idxEndRoot);
     }
 
-    DistributedSystem ids = InternalDistributedSystem.getAnyInstance();
-    if (ids != null) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("getBucketString no match fullPath={}", bucketFullPath);
-      }
+    if (logger.isDebugEnabled()) {
+      logger.debug("getBucketString no match fullPath={}", bucketFullPath);
     }
     return null;
   }
@@ -932,19 +925,27 @@ public class PartitionedRegionHelper {
 
   private static class MemberFailureListener implements MembershipListener {
 
-    public void memberJoined(InternalDistributedMember id) {
+    InternalCache cache = null;
+
+    MemberFailureListener(InternalCache cache) {
+      this.cache = cache;
+    }
+
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
 
     }
 
-    public void memberDeparted(final InternalDistributedMember id, boolean crashed) {
-      PartitionedRegionHelper.cleanUpMetaDataOnNodeFailure(id);
+    public void memberDeparted(DistributionManager distributionManager,
+        final InternalDistributedMember id, boolean crashed) {
+      PartitionedRegionHelper.cleanUpMetaDataOnNodeFailure(cache, id);
     }
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
   }
 

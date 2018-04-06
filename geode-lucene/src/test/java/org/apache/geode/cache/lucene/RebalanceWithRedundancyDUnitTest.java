@@ -14,10 +14,13 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.IndexRepositorySpy.*;
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.lucene.test.IndexRepositorySpy.doAfterN;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
@@ -39,7 +42,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InitialImageOperation.GIITestHook;
 import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
-import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -129,6 +132,8 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
     putEntryInEachBucket();
 
     dataStore2.invoke(() -> {
+      TestResourceObserver observer = new TestResourceObserver(4);
+      InternalResourceManager.setResourceObserver(observer);
       InitialImageOperation.setGIITestHook(
           new GIITestHook(GIITestHookType.AfterSentRequestImage, "Do puts during request") {
             @Override
@@ -145,24 +150,23 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
             public void run() {
               dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
               waitForFlushBeforeExecuteTextSearch(dataStore1, 30000);
+              ((TestResourceObserver) InternalResourceManager.getResourceObserver())
+                  .recoveryFinished();
             }
           });
     });
 
 
-    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
-
-    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 30000));
-
     dataStore2.invoke(() -> {
-      PartitionedRegion region = (PartitionedRegion) getCache().getRegion(REGION_NAME);
-      Awaitility.await().atMost(1, TimeUnit.MINUTES)
-          .until(() -> assertEquals(0, region.getPrStats().getLowRedundancyBucketCount()));
+      initDataStore(createIndex, regionTestType);
+      ((TestResourceObserver) InternalResourceManager.getResourceObserver()).await();
     });
 
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 30000));
     dataStore1.invoke(() -> getCache().close());
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, 30000));
+
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 
@@ -174,19 +178,42 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
     accessor.invoke(() -> initAccessor(createIndex, regionTestType));
+
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     accessor.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
 
     putEntryInEachBucket();
 
-    dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
-    dataStore2.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
-    accessor.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
+    dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(basicGetCache()));
+    dataStore2.invoke(() -> LuceneTestUtilities.resumeSender(basicGetCache()));
+    accessor.invoke(() -> LuceneTestUtilities.resumeSender(basicGetCache()));
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, 60000));
 
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
+  }
+
+  private class TestResourceObserver extends InternalResourceManager.ResourceObserverAdapter
+      implements Serializable {
+    CountDownLatch recoveryDone;
+
+    public TestResourceObserver(int numToWait) {
+      recoveryDone = new CountDownLatch(numToWait);
+    }
+
+    @Override
+    public void recoveryFinished(Region region) {
+      recoveryDone.countDown();
+    }
+
+    public void recoveryFinished() {
+      recoveryDone.countDown();
+    }
+
+    public void await() throws InterruptedException {
+      recoveryDone.await();
+    }
   }
 
 }

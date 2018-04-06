@@ -26,7 +26,7 @@ public interface AsyncEvent<K, V> extends GatewayQueueEvent<K, V> {
   /**
    * Returns whether possibleDuplicate is set for this event.
    */
-  public boolean getPossibleDuplicate();
+  boolean getPossibleDuplicate();
 
   /**
    * Returns the wrapper over the DistributedMembershipID, ThreadID, SequenceID which are used to
@@ -34,5 +34,5 @@ public interface AsyncEvent<K, V> extends GatewayQueueEvent<K, V> {
    * events belonging to a unique producer. e.g. The EventID can be used to track events received by
    * <code>AsyncEventListener</code> to avoid processing duplicates.
    */
-  public EventSequenceID getEventSequenceID();
+  EventSequenceID getEventSequenceID();
 }

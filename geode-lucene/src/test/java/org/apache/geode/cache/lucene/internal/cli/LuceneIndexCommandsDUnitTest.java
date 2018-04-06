@@ -52,6 +52,7 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -83,7 +84,11 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   @Before
   public void before() throws Exception {
     Properties props = new Properties();
-    serverVM = startupRule.startServerAsJmxManager(0, props);
+    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommandsWithReindexAllowedDUnitTest"
+            + ";org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommandsDUnitTest*"
+            + ";org.apache.geode.test.**");
+    serverVM = startupRule.startServerVM(0, x -> x.withProperties(props).withJMXManager());
     connect(serverVM);
   }
 
@@ -98,7 +103,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Documents", 0)
+        .tableHasColumnWithExactValuesInAnyOrder("Documents", "0")
         .tableHasColumnWithExactValuesInAnyOrder("Index Name", "index");
   }
 
@@ -145,10 +150,8 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
         .tableHasColumnWithExactValuesInAnyOrder("Index Name", INDEX_NAME)
         .tableHasColumnWithExactValuesInAnyOrder("Status", "Initialized")
         .tableHasColumnWithExactValuesInAnyOrder("Region Path", "/region")
-        .tableHasColumnWithExactValuesInAnyOrder("Query Executions", 1)
-        .tableHasColumnWithExactValuesInAnyOrder("Commits", 2)
-        .tableHasColumnWithExactValuesInAnyOrder("Updates", 2)
-        .tableHasColumnWithExactValuesInAnyOrder("Documents", 2);
+        .tableHasColumnWithExactValuesInAnyOrder("Query Executions", "1")
+        .tableHasColumnWithExactValuesInAnyOrder("Documents", "2");
 
   }
 
@@ -706,8 +709,8 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
       region.putAll(entries);
       luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
       LuceneIndexImpl index = (LuceneIndexImpl) luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      Awaitility.await().atMost(65, TimeUnit.SECONDS)
-          .until(() -> assertEquals(countOfDocuments, index.getIndexStats().getDocuments()));
+      Awaitility.await().atMost(65, TimeUnit.SECONDS).until(
+          () -> assertEquals(true, countOfDocuments <= index.getIndexStats().getDocuments()));
 
     });
   }
@@ -731,7 +734,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     return ClusterStartupRule.getCache();
   }
 
-  protected class TestObject implements Serializable {
+  protected static class TestObject implements Serializable {
     private String field1;
     private String field2;
     private String field3;

@@ -28,7 +28,6 @@ import org.json.JSONArray;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -47,10 +46,10 @@ import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.internal.Undefined;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
@@ -65,7 +64,7 @@ import org.apache.geode.pdx.PdxInstance;
 /**
  * @since GemFire 7.0
  */
-public class DataCommandFunction implements Function, InternalEntity {
+public class DataCommandFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
@@ -132,7 +131,6 @@ public class DataCommandFunction implements Function, InternalEntity {
       functionContext.getResultSender().sendException(e);
     }
   }
-
 
   public DataCommandResult remove(DataCommandRequest request, InternalCache cache) {
     String key = request.getKey();

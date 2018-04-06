@@ -17,35 +17,66 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs.ExpirationAttrs;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ExpirationAttrsTest {
 
-  private static ExpirationAttrs.ExpirationFor expirationFor =
-      ExpirationAttrs.ExpirationFor.ENTRY_IDLE;
+  private ExpirationAttrs attrs;
+  private ExpirationAttributes existing;
+
+  @Before
+  public void setUp() throws Exception {
+    existing = new ExpirationAttributes(5, ExpirationAction.DESTROY);
+  }
 
   @Test
-  public void constructor() throws Exception {
-    ExpirationAttrs attrs = new ExpirationAttrs(expirationFor, null, null);
-    assertThat(attrs.getTime()).isEqualTo(0);
-    assertThat(attrs.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
+  public void emptyConstructor() {
+    attrs = new ExpirationAttrs(null, null);
+    assertThat(attrs.getTime()).isNull();
+    assertThat(attrs.getAction()).isNull();
 
-    attrs = new ExpirationAttrs(expirationFor, -1, null);
-    assertThat(attrs.getTime()).isEqualTo(0);
-    assertThat(attrs.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
+    assertThat(attrs.isTimeSet()).isFalse();
+    assertThat(attrs.isTimeOrActionSet()).isFalse();
 
-    attrs = new ExpirationAttrs(expirationFor, 0, null);
-    assertThat(attrs.getTime()).isEqualTo(0);
-    assertThat(attrs.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
+    assertThat(attrs.getExpirationAttributes()).isEqualTo(new ExpirationAttributes());
+    assertThat(attrs.getExpirationAttributes(existing)).isEqualTo(existing);
+  }
 
-    attrs = new ExpirationAttrs(expirationFor, 2, "destroy");
-    assertThat(attrs.getTime()).isEqualTo(2);
-    assertThat(attrs.getAction()).isEqualTo(ExpirationAction.DESTROY);
+  @Test
+  public void constructorWithAction() {
+    attrs = new ExpirationAttrs(null, ExpirationAction.LOCAL_DESTROY);
+    assertThat(attrs.getTime()).isNull();
+    assertThat(attrs.getAction()).isEqualTo(ExpirationAction.LOCAL_DESTROY);
+
+    assertThat(attrs.isTimeSet()).isFalse();
+    assertThat(attrs.isTimeOrActionSet()).isTrue();
+
+    assertThat(attrs.getExpirationAttributes())
+        .isEqualTo(new ExpirationAttributes(0, ExpirationAction.LOCAL_DESTROY));
+    assertThat(attrs.getExpirationAttributes(existing))
+        .isEqualTo(new ExpirationAttributes(5, ExpirationAction.LOCAL_DESTROY));
+  }
+
+  @Test
+  public void constructorWithTime() {
+    attrs = new ExpirationAttrs(10, null);
+    assertThat(attrs.getTime()).isEqualTo(10);
+    assertThat(attrs.getAction()).isNull();
+
+    assertThat(attrs.isTimeSet()).isTrue();
+    assertThat(attrs.isTimeOrActionSet()).isTrue();
+
+    assertThat(attrs.getExpirationAttributes())
+        .isEqualTo(new ExpirationAttributes(10, ExpirationAction.INVALIDATE));
+    assertThat(attrs.getExpirationAttributes(existing))
+        .isEqualTo(new ExpirationAttributes(10, ExpirationAction.DESTROY));
   }
 }

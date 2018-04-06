@@ -52,6 +52,10 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
     initializeReceiverStats();
   }
 
+  protected void destroyServer() {
+    removeServer();
+  }
+
   protected void startServer() {
     CacheServer server = rcv.getServer();
     addServer(server);

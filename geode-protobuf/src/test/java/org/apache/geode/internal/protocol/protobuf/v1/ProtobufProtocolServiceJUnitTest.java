@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
+import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -29,9 +29,9 @@ public class ProtobufProtocolServiceJUnitTest {
   public void initializeStatistics() {
     ProtobufProtocolService service = new ProtobufProtocolService();
     service.initializeStatistics("first", new DummyStatisticsFactory());
-    ProtocolClientStatistics firstStatistics = service.getStatistics();
+    ClientStatistics firstStatistics = service.getStatistics();
     service.initializeStatistics("second", new DummyStatisticsFactory());
-    ProtocolClientStatistics secondStatistics = service.getStatistics();
+    ClientStatistics secondStatistics = service.getStatistics();
     assertEquals(firstStatistics, secondStatistics);
   }
 }

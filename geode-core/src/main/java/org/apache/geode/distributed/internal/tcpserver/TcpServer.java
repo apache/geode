@@ -27,7 +27,6 @@ import java.net.SocketAddress;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.SynchronousQueue;
@@ -65,7 +64,7 @@ import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoad
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -382,7 +381,7 @@ public class TcpServer {
         } else if (firstByte == CommunicationMode.ProtobufClientServerProtocol.getModeNumber()) {
           handleProtobufConnection(socket, input);
         } else if (CommunicationMode.isValidMode(firstByte)) {
-          socket.getOutputStream().write(HandShake.REPLY_SERVER_IS_LOCATOR);
+          socket.getOutputStream().write(Handshake.REPLY_SERVER_IS_LOCATOR);
           throw new Exception("Improperly configured client detected - use addPoolLocator to "
               + "configure its locators instead of addPoolServer.");
 

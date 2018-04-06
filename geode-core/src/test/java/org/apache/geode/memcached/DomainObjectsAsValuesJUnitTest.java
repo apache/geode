@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.concurrent.Future;
 
 import net.spy.memcached.MemcachedClient;
@@ -109,8 +110,8 @@ public class DomainObjectsAsValuesJUnitTest {
 
   @Test
   public void testGetPutDomainObject() throws Exception {
-    MemcachedClient client =
-        new MemcachedClient(new InetSocketAddress(InetAddress.getLocalHost(), PORT));
+    MemcachedClient client = new MemcachedClient(new ConnectionWithOneMinuteTimeoutFactory(),
+        Collections.singletonList(new InetSocketAddress(InetAddress.getLocalHost(), PORT)));
     Customer c = new Customer("name0", "addr0");
     Customer c1 = new Customer("name1", "addr1");
     Future<Boolean> f = client.add("keyObj", 10, c);

@@ -29,10 +29,10 @@ public interface CqStatusListener extends CqListener {
   /**
    * Called when the cq loses connection with all servers
    */
-  public void onCqDisconnected();
+  void onCqDisconnected();
 
   /**
    * Called when the cq establishes a connection with a server
    */
-  public void onCqConnected();
+  void onCqConnected();
 }

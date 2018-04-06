@@ -1,6 +1,7 @@
 activation
 antlr
 aopalliance
+byte-buddy
 classmate
 commons-beanutils
 commons-codec
@@ -24,6 +25,7 @@ jackson-databind
 jackson-module-paranamer
 jackson-module-scala
 jansi
+javassist
 javax.mail-api
 javax.resource-api
 javax.servlet-api
@@ -58,10 +60,19 @@ netty-all
 paranamer
 protobuf-java
 ra.jar
+reflections
 rmiio
 scala-library
 scala-reflect
+shiro-cache
 shiro-core
+shiro-config-core
+shiro-config-ogdl
+shiro-crypto-cipher
+shiro-crypto-core
+shiro-crypto-hash
+shiro-event
+shiro-lang
 slf4j-api
 snappy
 spring-aop

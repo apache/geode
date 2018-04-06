@@ -19,6 +19,8 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Set;
 
+import javax.transaction.TransactionManager;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +35,8 @@ import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -54,6 +58,55 @@ public class IndexHintJUnitTest {
   @Test
   public void testSingleIndexHint() throws Exception {
     createRegion();
+    verifyQueryIndexHint();
+  }
+
+  @Test
+  public void testSingleIndexHintWithTx() throws Exception {
+    createRegion();
+    populateData(10);
+    TXManagerImpl txManager = CacheUtils.getCache().getTxManager();
+    try {
+      txManager.begin();
+      verifyQueryIndexHint();
+    } finally {
+      txManager.commit();
+    }
+  }
+
+
+  @Test
+  public void testSingleIndexHintWithJTANotStarted() throws Exception {
+    createRegion();
+    populateData(10);
+    InternalCache cache = CacheUtils.getCache();
+    TransactionManager jtaManager =
+        (TransactionManager) cache.getJNDIContext().lookup("java:/TransactionManager");
+    try {
+      jtaManager.begin();
+      verifyQueryIndexHint();
+    } finally {
+      jtaManager.commit();
+    }
+  }
+
+  @Test
+  public void testSingleIndexHintWithJTAStarted() throws Exception {
+    createRegion();
+    populateData(1);
+    InternalCache cache = CacheUtils.getCache();
+    TransactionManager jtaManager =
+        (TransactionManager) cache.getJNDIContext().lookup("java:/TransactionManager");
+    try {
+      jtaManager.begin();
+      region.get("1");
+      verifyQueryIndexHint();
+    } finally {
+      jtaManager.commit();
+    }
+  }
+
+  private void verifyQueryIndexHint() throws Exception {
     QueryService qs = CacheUtils.getQueryService();
     DefaultQuery query = (DefaultQuery) qs
         .newQuery("<hint 'FirstIndex'> select * from /Portfolios p where p.ID > 10");

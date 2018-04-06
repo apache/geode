@@ -24,9 +24,9 @@ import java.net.Socket;
 import com.google.protobuf.MessageLite;
 
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 public class MessageUtil {
 
@@ -53,16 +53,13 @@ public class MessageUtil {
   }
 
   public static ClientProtocol.Message makeGetRegionRequestMessage(String requestRegion) {
-    ClientProtocol.Request request = ClientProtocol.Request.newBuilder()
+    return ClientProtocol.Message.newBuilder()
         .setGetRegionRequest(makeGetRegionRequest(requestRegion)).build();
-    return ClientProtocol.Message.newBuilder().setRequest(request).build();
   }
 
   public static ClientProtocol.Message createGetRequestMessage() {
     ClientProtocol.Message.Builder messageBuilder = ClientProtocol.Message.newBuilder();
-    ClientProtocol.Request.Builder requestBuilder = getRequestBuilder();
-    requestBuilder.setGetRequest(getGetRequestBuilder());
-    messageBuilder.setRequest(requestBuilder);
+    messageBuilder.setGetRequest(getGetRequestBuilder());
     return messageBuilder.build();
   }
 
@@ -71,22 +68,14 @@ public class MessageUtil {
       String requestRegion) throws EncodingException {
     BasicTypes.Entry entry = ProtobufUtilities.createEntry(serializationService.encode(requestKey),
         serializationService.encode(requestValue));
-
-    ClientProtocol.Request request =
-        ProtobufRequestUtilities.createPutRequest(requestRegion, entry);
-    return ProtobufUtilities.createProtobufMessage(request);
+    return ProtobufRequestUtilities.createPutRequest(requestRegion, entry);
   }
 
   public static ClientProtocol.Message makeGetRequestMessage(
       ProtobufSerializationService serializationService, Object requestKey, String requestRegion)
       throws Exception {
-    ClientProtocol.Request request = ProtobufRequestUtilities.createGetRequest(requestRegion,
+    return ProtobufRequestUtilities.createGetRequest(requestRegion,
         serializationService.encode(requestKey));
-    return ProtobufUtilities.createProtobufMessage(request);
-  }
-
-  private static ClientProtocol.Request.Builder getRequestBuilder() {
-    return ClientProtocol.Request.newBuilder();
   }
 
   private static RegionAPI.GetRequest.Builder getGetRequestBuilder() {

@@ -48,18 +48,21 @@ public class LRUListWithAsyncSortingTest {
   public ExpectedException thrown = ExpectedException.none();
 
   private BucketRegion bucketRegion;
-  private InternalEvictionStatistics stats;
+  private EvictionCounters stats;
+  private EvictionController controller;
   private ExecutorService executor = mock(ExecutorService.class);
 
   @Before
   public void setup() {
     bucketRegion = mock(BucketRegion.class);
-    stats = mock(InternalEvictionStatistics.class);
+    stats = mock(EvictionCounters.class);
+    controller = mock(EvictionController.class);
+    when(controller.getCounters()).thenReturn(stats);
   }
 
   @Test
   public void scansOnlyWhenOverThreshold() throws Exception {
-    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, executor);
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, executor, 1);
     for (int i = 0; i < 5; i++) {
       list.appendEntry(mock(EvictionNode.class));
     }
@@ -73,17 +76,17 @@ public class LRUListWithAsyncSortingTest {
 
   @Test
   public void clearResetsRecentlyUsedCounter() throws Exception {
-    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, executor);
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, executor, 1);
     list.incrementRecentlyUsed();
     assertThat(list.getRecentlyUsedCount()).isEqualTo(1);
 
-    list.clear(null);
+    list.clear(null, null);
     assertThat(list.getRecentlyUsedCount()).isZero();
   }
 
   @Test
   public void doesNotRunScanOnEmptyList() throws Exception {
-    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, executor);
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, executor, 1);
     list.incrementRecentlyUsed();
     verifyNoMoreInteractions(executor);
   }
@@ -92,7 +95,7 @@ public class LRUListWithAsyncSortingTest {
   public void usesSystemPropertyThresholdIfSpecified() throws Exception {
     System.setProperty("geode." + SystemPropertyHelper.EVICTION_SCAN_THRESHOLD_PERCENT, "55");
     try {
-      LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, executor);
+      LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, executor, 1);
 
       list.appendEntry(mock(EvictionNode.class));
       list.appendEntry(mock(EvictionNode.class));
@@ -108,14 +111,14 @@ public class LRUListWithAsyncSortingTest {
 
   @Test
   public void evictingFromEmptyListTest() throws Exception {
-    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, executor);
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, executor, 1);
     assertThat(list.getEvictableEntry()).isNull();
     assertThat(list.size()).isZero();
   }
 
   @Test
   public void evictingFromNonEmptyListTest() throws Exception {
-    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, executor);
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, executor, 1);
     EvictionNode node = mock(EvictableEntry.class);
     list.appendEntry(node);
     assertThat(list.size()).isEqualTo(1);
@@ -128,7 +131,7 @@ public class LRUListWithAsyncSortingTest {
 
   @Test
   public void doesNotEvictNodeInTransaction() throws Exception {
-    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, executor);
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, executor, 1);
     EvictionNode nodeInTransaction = mock(EvictableEntry.class, "nodeInTransaction");
     when(nodeInTransaction.isInUseByTransaction()).thenReturn(true);
     EvictionNode nodeNotInTransaction = mock(EvictableEntry.class, "nodeNotInTransaction");
@@ -146,7 +149,7 @@ public class LRUListWithAsyncSortingTest {
 
   @Test
   public void doesNotEvictNodeThatIsEvicted() throws Exception {
-    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, executor);
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, executor, 1);
 
     EvictionNode evictedNode = mock(EvictableEntry.class);
     when(evictedNode.isEvicted()).thenReturn(true);
@@ -167,7 +170,7 @@ public class LRUListWithAsyncSortingTest {
   @Test
   public void scanUnsetsRecentlyUsedOnNode() throws Exception {
     ExecutorService realExecutor = Executors.newSingleThreadExecutor();
-    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, realExecutor);
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, realExecutor, 1);
 
     EvictionNode recentlyUsedNode = mock(EvictableEntry.class);
     when(recentlyUsedNode.previous()).thenReturn(list.head);
@@ -186,7 +189,7 @@ public class LRUListWithAsyncSortingTest {
   @Test
   public void scanEndsOnlyUpToSize() throws Exception {
     ExecutorService realExecutor = Executors.newSingleThreadExecutor();
-    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, realExecutor);
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, realExecutor, 1);
 
     EvictionNode recentlyUsedNode = mock(EvictableEntry.class);
     when(recentlyUsedNode.previous()).thenReturn(list.head);
@@ -205,7 +208,7 @@ public class LRUListWithAsyncSortingTest {
   @Test
   public void scanMovesRecentlyUsedNodeToTail() throws Exception {
     ExecutorService realExecutor = Executors.newSingleThreadExecutor();
-    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, realExecutor);
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, realExecutor, 1);
 
     EvictionNode recentlyUsedNode = mock(EvictableEntry.class, "first");
     EvictionNode secondNode = mock(EvictableEntry.class, "second");
@@ -236,8 +239,7 @@ public class LRUListWithAsyncSortingTest {
   @Test
   public void startScanIfEvictableEntryIsRecentlyUsed() throws Exception {
     List<EvictionNode> nodes = new ArrayList<>();
-    LRUListWithAsyncSorting lruEvictionList =
-        new LRUListWithAsyncSorting(stats, bucketRegion, executor);
+    LRUListWithAsyncSorting lruEvictionList = new LRUListWithAsyncSorting(controller, executor, 1);
     IntStream.range(0, 11).forEach(i -> {
       EvictionNode node = new LRUTestEntry(i);
       nodes.add(node);
@@ -246,6 +248,22 @@ public class LRUListWithAsyncSortingTest {
     });
 
     assertThat(lruEvictionList.getEvictableEntry().isRecentlyUsed()).isTrue();
+    verify(executor).submit(any(Runnable.class));
+  }
+
+  @Test
+  public void scanNotStartedIfSizeBelowMaxEvictionAttempts() {
+    LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(controller, executor, 2);
+
+    EvictionNode recentlyUsedNode = mock(EvictableEntry.class, "first");
+    EvictionNode secondNode = mock(EvictableEntry.class, "second");
+
+    list.appendEntry(recentlyUsedNode);
+    list.incrementRecentlyUsed();
+    verifyNoMoreInteractions(executor);
+
+    list.appendEntry(secondNode);
+    list.incrementRecentlyUsed();
     verify(executor).submit(any(Runnable.class));
   }
 }

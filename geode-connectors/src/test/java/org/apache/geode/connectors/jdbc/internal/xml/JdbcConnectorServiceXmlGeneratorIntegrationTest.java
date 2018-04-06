@@ -161,6 +161,36 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
   }
 
   @Test
+  public void generatesXmlContainingRegionMappingWithoutFieldMap() throws Exception {
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
+    RegionMappingBuilder regionMappingBuilder =
+        new RegionMappingBuilder().withRegionName("regionName").withPdxClassName("pdxClassName")
+            .withTableName("tableName").withConnectionConfigName("connectionConfigName")
+            .withPrimaryKeyInValue("true").withFieldToColumnMappings(null);
+    RegionMapping regionMapping = regionMappingBuilder.build();
+    service.createRegionMapping(regionMapping);
+
+    generateXml();
+
+    Document document = getCacheXmlDocument();
+    NodeList serviceElements = getElementsByName(document, ElementType.CONNECTION_SERVICE);
+    assertThat(serviceElements.getLength()).isEqualTo(1);
+
+    NodeList mappingElements = getElementsByName(document, ElementType.REGION_MAPPING);
+    assertThat(mappingElements.getLength()).isEqualTo(1);
+
+    Element mappingElement = (Element) mappingElements.item(0);
+    assertThat(mappingElement.getAttribute(REGION)).isEqualTo("regionName");
+    assertThat(mappingElement.getAttribute(PDX_CLASS)).isEqualTo("pdxClassName");
+    assertThat(mappingElement.getAttribute(TABLE)).isEqualTo("tableName");
+    assertThat(mappingElement.getAttribute(CONNECTION_NAME)).isEqualTo("connectionConfigName");
+    assertThat(mappingElement.getAttribute(PRIMARY_KEY_IN_VALUE)).isEqualTo("true");
+
+    NodeList fieldMappingElements = getElementsByName(mappingElement, ElementType.FIELD_MAPPING);
+    assertThat(fieldMappingElements.getLength()).isEqualTo(0);
+  }
+
+  @Test
   public void generatedXmlWithConnectionConfigurationCanBeParsed() throws Exception {
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     ConnectionConfiguration config = new ConnectionConfigBuilder().withName("name").withUrl("url")

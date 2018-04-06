@@ -14,7 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,8 +29,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
 import org.apache.commons.io.FileUtils;
@@ -51,7 +58,6 @@ import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.entries.AbstractDiskLRURegionEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -367,7 +373,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
         }
       }
       val = (byte[]) DiskStoreImpl.convertBytesAndBitsIntoObject(
-          dr.getBytesAndBitsWithoutLock(entry.getDiskId(), true, false));
+          dr.getBytesAndBitsWithoutLock(entry.getDiskId(), true, false), (InternalCache) cache);
       for (int i = 0; i < val.length; ++i) {
         if (val[i] != (byte) i) {
           fail("Test for fault in from disk failed");
@@ -414,7 +420,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     region.put(2, val);
     Oplog switched = dr.testHook_getChild();
     assertTrue(old != switched);
-    assertEquals(dr.getDiskStore().persistentOplogs.getChild(2), switched);
+    assertEquals(dr.getDiskStore().getPersistentOplogs().getChild(2), switched);
     assertEquals(oldWriteBuf, switched.getWriteBuf());
     assertEquals(null, old.getWriteBuf());
     closeDown();
@@ -1571,8 +1577,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   /**
    * Tests reduction in size of disk stats when the oplog is rolled.
    */
-  @Category(FlakyTest.class) // GEODE-527: jvm sizing sensitive, non-thread-safe test hooks, time
-                             // sensitive
   @Test
   public void testStatsSizeReductionOnRolling() throws Exception {
     final int MAX_OPLOG_SIZE = 500 * 2;
@@ -1586,10 +1590,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     final byte[] val = new byte[333];
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
     final DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    final Object lock = new Object();
-    final boolean[] exceptionOccurred = new boolean[] {true};
-    final boolean[] okToExit = new boolean[] {false};
-    final boolean[] switchExpected = new boolean[] {false};
 
     // calculate sizes
     final int extra_byte_num_per_entry =
@@ -1601,63 +1601,12 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     final int tombstone_key2 =
         DiskOfflineCompactionJUnitTest.getSize4TombstoneWithKey(extra_byte_num_per_entry, "key2");
 
+    CountDownLatch putsCompleted = new CountDownLatch(1);
     // TODO: move static methods from DiskOfflineCompactionJUnitTest to shared util class
+    StatSizeTestCacheObserverAdapter testObserver = new StatSizeTestCacheObserverAdapter(dr,
+        key3_size, tombstone_key1, tombstone_key2, putsCompleted);
+    CacheObserver old = CacheObserverHolder.setInstance(testObserver);
 
-    CacheObserver old = CacheObserverHolder.setInstance(new CacheObserverAdapter() {
-      private long before = -1;
-      private DirectoryHolder dh = null;
-      private long oplogsSize = 0;
-
-      @Override
-      public void beforeSwitchingOplog() {
-        cache.getLogger().info("beforeSwitchingOplog");
-        if (!switchExpected[0]) {
-          fail("unexpected oplog switch");
-        }
-        if (before == -1) {
-          // only want to call this once; before the 1st oplog destroy
-          this.dh = dr.getNextDir();
-          this.before = this.dh.getDirStatsDiskSpaceUsage();
-        }
-      }
-
-      @Override
-      public void beforeDeletingCompactedOplog(Oplog oplog) {
-        cache.getLogger().info("beforeDeletingCompactedOplog");
-        oplogsSize += oplog.getOplogSize();
-      }
-
-      @Override
-      public void afterHavingCompacted() {
-        cache.getLogger().info("afterHavingCompacted");
-        if (before > -1) {
-          synchronized (lock) {
-            okToExit[0] = true;
-            long after = this.dh.getDirStatsDiskSpaceUsage();
-            // after compaction, in _2.crf, key3 is an create-entry,
-            // key1 and key2 are tombstones.
-            // _2.drf contained a rvvgc with drMap.size()==1
-            int expected_drf_size = Oplog.OPLOG_DISK_STORE_REC_SIZE + Oplog.OPLOG_MAGIC_SEQ_REC_SIZE
-                + Oplog.OPLOG_GEMFIRE_VERSION_REC_SIZE
-                + DiskOfflineCompactionJUnitTest.getRVVSize(1, new int[] {0}, true);
-            int expected_crf_size = Oplog.OPLOG_DISK_STORE_REC_SIZE + Oplog.OPLOG_MAGIC_SEQ_REC_SIZE
-                + Oplog.OPLOG_GEMFIRE_VERSION_REC_SIZE
-                + DiskOfflineCompactionJUnitTest.getRVVSize(1, new int[] {1}, false)
-                + Oplog.OPLOG_NEW_ENTRY_BASE_REC_SIZE + key3_size + tombstone_key1 + tombstone_key2;
-            int oplog_2_size = expected_drf_size + expected_crf_size;
-            if (after != oplog_2_size) {
-              cache.getLogger().info(
-                  "test failed before=" + before + " after=" + after + " oplogsSize=" + oplogsSize);
-              exceptionOccurred[0] = true;
-            } else {
-              exceptionOccurred[0] = false;
-            }
-            LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
-            lock.notify();
-          }
-        }
-      }
-    });
     try {
 
       LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
@@ -1674,17 +1623,13 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       region.remove("key2");
 
       // This put will cause a switch as max-oplog size (900) will be exceeded (999)
-      switchExpected[0] = true;
+      testObserver.setSwitchExpected();
       cache.getLogger().info("putting key3");
       region.put("key3", val);
+      putsCompleted.countDown();
       cache.getLogger().info("waiting for compaction");
-      synchronized (lock) {
-        if (!okToExit[0]) {
-          lock.wait(9000);
-          assertTrue(okToExit[0]);
-        }
-        assertFalse(exceptionOccurred[0]);
-      }
+      Awaitility.await().atMost(9, TimeUnit.SECONDS).until(() -> testObserver.hasCompacted());
+      assertFalse(testObserver.exceptionOccured());
 
       region.close();
     } finally {
@@ -1980,7 +1925,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   private long oplogSize() {
     long size = ((LocalRegion) region).getDiskRegion().getDiskStore().undeletedOplogSize.get();
     Oplog[] opArray =
-        ((LocalRegion) region).getDiskRegion().getDiskStore().persistentOplogs.getAllOplogs();
+        ((LocalRegion) region).getDiskRegion().getDiskStore().getPersistentOplogs().getAllOplogs();
     if (opArray != null) {
       for (Oplog log : opArray) {
         size += log.getOplogSize();
@@ -1991,5 +1936,93 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 
   private int getDSID(LocalRegion lr) {
     return lr.getDistributionManager().getDistributedSystemId();
+  }
+
+  private class StatSizeTestCacheObserverAdapter extends CacheObserverAdapter {
+    private final AtomicBoolean switchExpected = new AtomicBoolean(false);
+    private final DiskRegion dr;
+    private final AtomicBoolean hasCompacted = new AtomicBoolean(false);
+    private final int key3Size;
+    private final int tombstoneKey1;
+    private final int tombstoneKey2;
+    private final AtomicBoolean exceptionOccurred = new AtomicBoolean(true);
+    private volatile long spaceUsageBefore = -1;
+    private DirectoryHolder dh;
+    private final AtomicLong oplogsSize = new AtomicLong();
+    private final CountDownLatch putsCompleted;
+
+    StatSizeTestCacheObserverAdapter(DiskRegion dr, int key3Size, int tombstoneKey1,
+        int tombstoneKey2, CountDownLatch putsCompleted) {
+      this.dr = dr;
+      this.key3Size = key3Size;
+      this.tombstoneKey1 = tombstoneKey1;
+      this.tombstoneKey2 = tombstoneKey2;
+      this.putsCompleted = putsCompleted;
+    }
+
+    @Override
+    public void beforeSwitchingOplog() {
+      cache.getLogger().info("beforeSwitchingOplog");
+      if (!switchExpected.get()) {
+        fail("unexpected oplog switch");
+      }
+      if (spaceUsageBefore == -1) {
+        // only want to call this once; before the 1st oplog destroy
+        this.dh = dr.getNextDir();
+        this.spaceUsageBefore = this.dh.getDirStatsDiskSpaceUsage();
+      }
+    }
+
+    @Override
+    public void beforeDeletingCompactedOplog(Oplog oplog) {
+      cache.getLogger().info("beforeDeletingCompactedOplog");
+      oplogsSize.addAndGet(oplog.getOplogSize());
+    }
+
+    @Override
+    public void afterHavingCompacted() {
+      try {
+        putsCompleted.await(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        exceptionOccurred.set(true);
+        throw new RuntimeException(e);
+      }
+      cache.getLogger().info("afterHavingCompacted");
+      if (spaceUsageBefore > -1) {
+        hasCompacted.set(true);
+        long after = this.dh.getDirStatsDiskSpaceUsage();
+        // after compaction, in _2.crf, key3 is an create-entry,
+        // key1 and key2 are tombstones.
+        // _2.drf contained a rvvgc with drMap.size()==1
+        int expectedDrfSize = Oplog.OPLOG_DISK_STORE_REC_SIZE + Oplog.OPLOG_MAGIC_SEQ_REC_SIZE
+            + Oplog.OPLOG_GEMFIRE_VERSION_REC_SIZE
+            + DiskOfflineCompactionJUnitTest.getRVVSize(1, new int[] {0}, true);
+        int expectedCrfSize = Oplog.OPLOG_DISK_STORE_REC_SIZE + Oplog.OPLOG_MAGIC_SEQ_REC_SIZE
+            + Oplog.OPLOG_GEMFIRE_VERSION_REC_SIZE
+            + DiskOfflineCompactionJUnitTest.getRVVSize(1, new int[] {1}, false)
+            + Oplog.OPLOG_NEW_ENTRY_BASE_REC_SIZE + key3Size + tombstoneKey1 + tombstoneKey2;
+        int oplog2Size = expectedDrfSize + expectedCrfSize;
+        if (after != oplog2Size) {
+          cache.getLogger().info("test failed before=" + spaceUsageBefore + " after=" + after
+              + " expected=" + oplog2Size);
+          exceptionOccurred.set(true);
+        } else {
+          exceptionOccurred.set(false);
+        }
+        LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
+      }
+    }
+
+    boolean hasCompacted() {
+      return hasCompacted.get();
+    }
+
+    boolean exceptionOccured() {
+      return exceptionOccurred.get();
+    }
+
+    void setSwitchExpected() {
+      switchExpected.set(true);
+    }
   }
 }

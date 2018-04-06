@@ -14,24 +14,70 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM centos:7
-MAINTAINER Apache Geode Community <dev@geode.apache.org>
+FROM openjdk:8-jre-alpine
 
-LABEL Vendor="Apache Geode"
-LABEL version=1.4.0
-ENV GEODE_VERSION 1.4.0
+# runtime dependencies
+RUN apk add --no-cache \
+		bash \
+		ncurses
 
-RUN	yum install -y wget which tar java-1.8.0-openjdk-devel \
-	&& wget https://dist.apache.org/repos/dist/release/geode/$GEODE_VERSION/apache-geode-$GEODE_VERSION.tgz \
-        && tar -xvzf apache-geode-$GEODE_VERSION.tgz \
-        && rm -rf apache-geode-$GEODE_VERSION.tgz \
-	&& cd apache-geode-$GEODE_VERSION \
-	&& rm -rf /usr/share/locale/* \
-	&& yum remove -y perl \
-	&& yum clean all
+# pub   rsa4096 2016-04-07 [SC] [expires: 2020-04-07]
+#       E1B1 ABE3 4753 E7BA 8097  4285 8F8F 2BCC 18F9 02DB
+# uid           [ unknown] Swapnil Bawaskar <sbawaskar@apache.org>
+# sub   rsa4096 2016-04-07 [E] [expires: 2020-04-07]
+ENV GEODE_GPG E1B1ABE34753E7BA809742858F8F2BCC18F902DB
+# TODO does this change per-release like other Apache projects? (and thus needs to be a list of full fingerprints from a KEYS file instead?)
 
-ENV GEODE_HOME /apache-geode-$GEODE_VERSION
+ENV GEODE_HOME /geode
 ENV PATH $PATH:$GEODE_HOME/bin
+
+# https://geode.apache.org/releases/
+ENV GEODE_VERSION 1.5.0
+# Binaries TGZ SHA-256
+# https://dist.apache.org/repos/dist/release/geode/VERSION/apache-geode-VERSION.tgz.sha256
+ENV GEODE_SHA256 7f880bed678c44e86e028a0d6e3465cfc8a2979a08c7c708a836425f6e6f6b98
+
+# http://apache.org/dyn/closer.cgi/geode/1.3.0/apache-geode-1.3.0.tgz
+
+RUN set -eux; \
+	apk add --no-cache --virtual .fetch-deps \
+		libressl \
+		gnupg \
+	; \
+	for file in \
+		"geode/$GEODE_VERSION/apache-geode-$GEODE_VERSION.tgz" \
+		"geode/$GEODE_VERSION/apache-geode-$GEODE_VERSION.tgz.asc" \
+	; do \
+		target="$(basename "$file")"; \
+		for url in \
+# https://issues.apache.org/jira/browse/INFRA-8753?focusedCommentId=14735394#comment-14735394
+			"https://www.apache.org/dyn/closer.cgi?action=download&filename=$file" \
+			"https://www-us.apache.org/dist/$file" \
+			"https://www.apache.org/dist/$file" \
+			"https://archive.apache.org/dist/$file" \
+		; do \
+			if wget -O "$target" "$url"; then \
+				break; \
+			fi; \
+		done; \
+	done; \
+	[ -s "apache-geode-$GEODE_VERSION.tgz" ]; \
+	[ -s "apache-geode-$GEODE_VERSION.tgz.asc" ]; \
+	echo "$GEODE_SHA256 *apache-geode-$GEODE_VERSION.tgz" | sha256sum -c -; \
+	export GNUPGHOME="$(mktemp -d)"; \
+	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GEODE_GPG"; \
+	gpg --batch --verify "apache-geode-$GEODE_VERSION.tgz.asc" "apache-geode-$GEODE_VERSION.tgz"; \
+	rm -rf "$GNUPGHOME"; \
+	mkdir /geode; \
+	tar --extract \
+		--file "apache-geode-$GEODE_VERSION.tgz" \
+		--directory /geode \
+		--strip-components 1 \
+	; \
+	rm -rf /geode/javadoc "apache-geode-$GEODE_VERSION.tgz" "apache-geode-$GEODE_VERSION.tgz.asc"; \
+	apk del .fetch-deps; \
+# smoke test to ensure the shell can still run properly after removing temporary deps
+	gfsh version
 
 # Default ports:
 # RMI/JMX 1099
@@ -40,5 +86,5 @@ ENV PATH $PATH:$GEODE_HOME/bin
 # LOCATOR 10334
 # CACHESERVER 40404
 EXPOSE  8080 10334 40404 1099 7070
-VOLUME ["/data/"]
+VOLUME ["/data"]
 CMD ["gfsh"]

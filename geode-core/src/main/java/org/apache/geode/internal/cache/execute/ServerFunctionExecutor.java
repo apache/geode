@@ -90,7 +90,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
     try {
       if (proxyCache != null) {
         if (this.proxyCache.isClosed()) {
-          throw new CacheClosedException("Cache is closed for this user.");
+          throw proxyCache.getCacheClosedException("Cache is closed for this user.");
         }
         UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
       }
@@ -119,7 +119,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
     try {
       if (proxyCache != null) {
         if (this.proxyCache.isClosed()) {
-          throw new CacheClosedException("Cache is closed for this user.");
+          throw proxyCache.getCacheClosedException("Cache is closed for this user.");
         }
         UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
       }

@@ -17,15 +17,11 @@ package org.apache.geode.distributed.internal.membership.gms.messages;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.internal.InternalDataSerializer;
 
 public class InstallViewMessage extends HighPriorityDistributionMessage {
   enum messageType {
@@ -81,7 +77,7 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void process(DistributionManager dm) {
+  public void process(ClusterDistributionManager dm) {
     throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 

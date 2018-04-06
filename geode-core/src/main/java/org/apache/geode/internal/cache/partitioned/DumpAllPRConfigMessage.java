@@ -19,7 +19,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.LogService;
@@ -44,6 +44,7 @@ public class DumpAllPRConfigMessage extends PartitionMessage {
   public static PartitionResponse send(Set recipients, PartitionedRegion r) {
     PartitionResponse p = new PartitionResponse(r.getSystem(), recipients);
     DumpAllPRConfigMessage m = new DumpAllPRConfigMessage(recipients, r.getPRId(), p);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     /* Set failures = */r.getDistributionManager().putOutgoing(m);
     // if (failures != null && failures.size() > 0) {
@@ -53,7 +54,7 @@ public class DumpAllPRConfigMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "DumpAllPRConfigMessage operateOnRegion: {}", pr.getFullPath());

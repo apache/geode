@@ -25,5 +25,5 @@ public interface AdminBridgeServer extends CacheServer {
   /**
    * Returns the VM-unique id of this cache server
    */
-  public int getId();
+  int getId();
 }

@@ -29,8 +29,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -439,7 +439,7 @@ public class PartitionedRegionRebalanceOp {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    final DM dm = leaderRegion.getDistributionManager();
+    final DistributionManager dm = leaderRegion.getDistributionManager();
     AddressComparor comparor = new AddressComparor() {
 
       public boolean areSameZone(InternalDistributedMember member1,
@@ -610,7 +610,8 @@ public class PartitionedRegionRebalanceOp {
 
   private class MembershipChangeListener implements MembershipListener {
 
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "PartitionedRegionRebalanceOP - membership changed, restarting rebalancing for region {}",
@@ -619,7 +620,8 @@ public class PartitionedRegionRebalanceOp {
       membershipChange = true;
     }
 
-    public void memberJoined(InternalDistributedMember id) {
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "PartitionedRegionRebalanceOP - membership changed, restarting rebalancing for region {}",
@@ -628,12 +630,12 @@ public class PartitionedRegionRebalanceOp {
       membershipChange = true;
     }
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {
       // do nothing.
     }
 
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
   }
 }

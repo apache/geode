@@ -68,8 +68,8 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.OplogCancelledException;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -81,7 +81,7 @@ import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.Flushable;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
@@ -1215,46 +1215,8 @@ public class Oplog implements CompactableOplog, Flushable {
     return matchingFiles;
   }
 
-  /**
-   * Returns a map of baseline oplog files to copy that match this oplog's files for a currently
-   * running backup.
-   *
-   * @param baselineOplogFiles a List of files to match this oplog's filenames against.
-   * @return a map of baslineline oplog files to copy. May be empty if total current set for this
-   *         oplog does not match the baseline.
-   */
-  public Map<File, File> mapBaseline(Collection<File> baselineOplogFiles) {
-    // Map of baseline oplog file name to oplog file
-    Map<String, File> baselineOplogMap =
-        TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
-
-    // Returned Map of baseline file to current oplog file
-    Map<File, File> baselineToOplogMap = new HashMap<>();
-
-    // Check for crf existence
-    if ((null != this.crf.f) && this.crf.f.exists()
-        && baselineOplogMap.containsKey(this.crf.f.getName())) {
-      baselineToOplogMap.put(baselineOplogMap.get(this.crf.f.getName()),
-          IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(this.crf.f));
-    }
-
-    // Check for drf existence
-    if ((null != this.drf.f) && this.drf.f.exists()
-        && baselineOplogMap.containsKey(this.drf.f.getName())) {
-      baselineToOplogMap.put(baselineOplogMap.get(this.drf.f.getName()),
-          IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(this.drf.f));
-    }
-
-    // Check for krf existence
-    if (getParent().getDiskInitFile().hasKrf(this.oplogId)) {
-      File krfFile = getKrfFile();
-      if (krfFile.exists() && baselineOplogMap.containsKey(krfFile.getName())) {
-        baselineToOplogMap.put(baselineOplogMap.get(krfFile.getName()),
-            IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(krfFile));
-      }
-    }
-
-    return baselineToOplogMap;
+  public boolean hasKrf() {
+    return getParent().getDiskInitFile().hasKrf(this.oplogId);
   }
 
   /** the oplog identifier * */
@@ -1624,8 +1586,6 @@ public class Oplog implements CompactableOplog, Flushable {
         if (logger.isDebugEnabled()) {
           logger.debug("Oplog::readOplog:Error in recovery as Region was destroyed", e);
         }
-      } catch (IllegalStateException e) {
-        throw e;
       }
       // Add the Oplog size to the Directory Holder which owns this oplog,
       // so that available space is correctly calculated & stats updated.
@@ -2027,8 +1987,6 @@ public class Oplog implements CompactableOplog, Flushable {
       if (logger.isDebugEnabled()) {
         logger.debug("Oplog::readOplog:Error in recovery as Region was destroyed", e);
       }
-    } catch (IllegalStateException e) {
-      throw e;
     }
 
     // Add the Oplog size to the Directory Holder which owns this oplog,
@@ -2360,7 +2318,8 @@ public class Oplog implements CompactableOplog, Flushable {
         value = Token.INVALID;
         valueLength = 0;
       } else if (EntryBits.isSerialized(userBits)) {
-        value = DiskEntry.Helper.readSerializedValue(valueBytes, version, in, false);
+        value = DiskEntry.Helper.readSerializedValue(valueBytes, version, in, false,
+            getParent().getCache());
       } else if (EntryBits.isTombstone(userBits)) {
         value = Token.TOMBSTONE;
       } else {
@@ -2862,7 +2821,8 @@ public class Oplog implements CompactableOplog, Flushable {
         // make sure values are deserializable
         if (!PdxWriterImpl.isPdx(valueBytes)) { // fix bug 43011
           try {
-            DiskEntry.Helper.readSerializedValue(valueBytes, version, in, true);
+            DiskEntry.Helper.readSerializedValue(valueBytes, version, in, true,
+                getParent().getCache());
           } catch (SerializationException ex) {
             if (logger.isDebugEnabled()) {
               logger.debug("Could not deserialize recovered value: {}", ex.getCause(), ex);
@@ -3601,7 +3561,8 @@ public class Oplog implements CompactableOplog, Flushable {
           useNextOplog = true;
         } else {
           if (this.lockedForKRFcreate) {
-            CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+            CacheClosedException cce =
+                getParent().getCache().getCacheClosedException("The disk store is closed.");
             dr.getCancelCriterion().checkCancelInProgress(cce);
             throw cce;
           }
@@ -4631,7 +4592,8 @@ public class Oplog implements CompactableOplog, Flushable {
             useNextOplog = true;
           } else {
             if (this.lockedForKRFcreate) {
-              CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+              CacheClosedException cce =
+                  getParent().getCache().getCacheClosedException("The disk store is closed.");
               dr.getCancelCriterion().checkCancelInProgress(cce);
               throw cce;
             }
@@ -4758,7 +4720,8 @@ public class Oplog implements CompactableOplog, Flushable {
             useNextOplog = true;
           } else {
             if (this.lockedForKRFcreate) {
-              CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+              CacheClosedException cce =
+                  getParent().getCache().getCacheClosedException("The disk store is closed.");
               dr.getCancelCriterion().checkCancelInProgress(cce);
               throw cce;
             }
@@ -5076,7 +5039,8 @@ public class Oplog implements CompactableOplog, Flushable {
           useNextOplog = true;
         } else {
           if (this.lockedForKRFcreate) {
-            CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+            CacheClosedException cce =
+                parent.getCache().getCacheClosedException("The disk store is closed.");
             dr.getCancelCriterion().checkCancelInProgress(cce);
             throw cce;
           }
@@ -5717,9 +5681,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   public void deleteCRF() {
     oplogSet.crfDelete(this.oplogId);
-    BackupManager backupManager = getInternalCache().getBackupManager();
-    DiskStoreBackup inProgressBackup = getParent().getInProgressBackup();
-    if (inProgressBackup == null || !inProgressBackup.deferCrfDelete(this)) {
+    if (!getInternalCache().getBackupService().deferCrfDelete(getParent(), this)) {
       deleteCRFFileOnly();
     }
   }
@@ -5752,8 +5714,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   public void deleteDRF() {
     getOplogSet().drfDelete(this.oplogId);
-    DiskStoreBackup inProgressBackup = getParent().getInProgressBackup();
-    if (inProgressBackup == null || !inProgressBackup.deferDrfDelete(this)) {
+    if (!getInternalCache().getBackupService().deferDrfDelete(getParent(), this)) {
       deleteDRFFileOnly();
     }
   }
@@ -7202,7 +7163,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
     @Override
     public boolean fillInValue(InternalRegion region, InitialImageOperation.Entry entry,
-        ByteArrayDataInput in, DM distributionManager, final Version version) {
+        ByteArrayDataInput in, DistributionManager distributionManager, final Version version) {
       return false;
     }
 
@@ -7389,40 +7350,40 @@ public class Oplog implements CompactableOplog, Flushable {
    * Used as the value in the regionMap. Tracks information about what the region has in this oplog.
    */
   public interface DiskRegionInfo {
-    public DiskRegionView getDiskRegion();
+    DiskRegionView getDiskRegion();
 
-    public int addLiveEntriesToList(KRFEntry[] liveEntries, int idx);
+    int addLiveEntriesToList(KRFEntry[] liveEntries, int idx);
 
-    public void addLive(DiskEntry de);
+    void addLive(DiskEntry de);
 
-    public void update(DiskEntry entry);
+    void update(DiskEntry entry);
 
-    public void replaceLive(DiskEntry old, DiskEntry de);
+    void replaceLive(DiskEntry old, DiskEntry de);
 
-    public boolean rmLive(DiskEntry de, Oplog oplog);
+    boolean rmLive(DiskEntry de, Oplog oplog);
 
-    public DiskEntry getNextLiveEntry();
+    DiskEntry getNextLiveEntry();
 
-    public void setDiskRegion(DiskRegionView dr);
+    void setDiskRegion(DiskRegionView dr);
 
-    public long clear(RegionVersionVector rvv);
+    long clear(RegionVersionVector rvv);
 
     /**
      * Return true if we are the first guy to set it to true
      */
-    public boolean testAndSetUnrecovered();
+    boolean testAndSetUnrecovered();
 
-    public boolean getUnrecovered();
+    boolean getUnrecovered();
 
     /**
      * Return true if we are the first guy to set it to false
      */
-    public boolean testAndSetRecovered(DiskRegionView dr);
+    boolean testAndSetRecovered(DiskRegionView dr);
 
     /**
      * Callback to indicate that this oplog has created a krf.
      */
-    public void afterKrfCreated();
+    void afterKrfCreated();
   }
 
   public abstract static class AbstractDiskRegionInfo implements DiskRegionInfo {

@@ -150,7 +150,8 @@ public class PutAll extends BaseCommand {
         // byte[] value = valuePart.getSerializedForm();
         Object value;
         if (valuePart.isObject()) {
-          value = CachedDeserializableFactory.create(valuePart.getSerializedForm());
+          value =
+              CachedDeserializableFactory.create(valuePart.getSerializedForm(), region.getCache());
         } else {
           value = valuePart.getSerializedForm();
         }

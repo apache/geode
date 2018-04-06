@@ -46,10 +46,10 @@ public interface SequenceLogger {
    * @param source the source, for example ("member 1, region 1");
    * @param dest the destination, for example ("member 2, region 1");
    */
-  public void logTransition(GraphType type, Object graphName, Object edgeName, Object state,
-      Object source, Object dest);
+  void logTransition(GraphType type, Object graphName, Object edgeName, Object state, Object source,
+      Object dest);
 
-  public boolean isEnabled(GraphType type);
+  boolean isEnabled(GraphType type);
 
-  public void flush() throws InterruptedException;
+  void flush() throws InterruptedException;
 }

@@ -160,7 +160,7 @@ public class CacheWriterGetOldValueIntegrationTest {
   }
 
   private String getEvictedKey(Region<String, String> r) {
-    InternalRegion<String, String> ir = (InternalRegion<String, String>) r;
+    InternalRegion ir = (InternalRegion) r;
     String evictedKey = null;
     RegionEntry re = ir.getRegionEntry("k1");
     if (re.getValueAsToken() == null) {
@@ -175,7 +175,7 @@ public class CacheWriterGetOldValueIntegrationTest {
   }
 
   private String getUnevictedKey(Region<String, String> r) {
-    InternalRegion<String, String> ir = (InternalRegion<String, String>) r;
+    InternalRegion ir = (InternalRegion) r;
     String unevictedKey = null;
     RegionEntry re = ir.getRegionEntry("k1");
     if (re.getValueAsToken() != null) {

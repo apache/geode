@@ -38,7 +38,7 @@ class RegionMapFactory {
     if (owner.isProxy() /* || owner instanceof PartitionedRegion */) { // TODO enabling this causes
                                                                        // eviction tests to fail
       return new ProxyRegionMap(owner, attrs, internalRegionArgs);
-    } else if (owner.getEvictionController() != null) {
+    } else if (owner.isEntryEvictionPossible()) {
       return new VMLRURegionMap(owner, attrs, internalRegionArgs);
     } else {
       return new VMRegionMap(owner, attrs, internalRegionArgs);

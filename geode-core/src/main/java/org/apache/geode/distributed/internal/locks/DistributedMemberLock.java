@@ -20,7 +20,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.locks.DLockService.ThreadRequestState;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -244,7 +244,7 @@ public class DistributedMemberLock implements Lock {
     }
   }
 
-  private DM getDM() {
+  private DistributionManager getDM() {
     return this.dls.getDistributionManager();
   }
 
@@ -267,7 +267,7 @@ public class DistributedMemberLock implements Lock {
   }
 
   private interface Operation {
-    public boolean operate() throws InterruptedException;
+    boolean operate() throws InterruptedException;
   }
 
   public Condition newCondition() {

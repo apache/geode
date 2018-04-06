@@ -17,15 +17,14 @@ package org.apache.geode.internal.cache;
 import java.util.Iterator;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 
 /**
  *
  */
-public class PRContainsValueFunction extends FunctionAdapter implements InternalEntity {
+public class PRContainsValueFunction implements InternalFunction {
 
   @Override
   public void execute(FunctionContext context) {

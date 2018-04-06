@@ -87,7 +87,8 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.execute.FunctionStats;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -137,6 +138,12 @@ public class InternalDistributedSystem extends DistributedSystem
       DistributionConfig.GEMFIRE_PREFIX + "disableManagement";
 
   /**
+   * Feature flag to enable multiple caches within a JVM.
+   */
+  public static boolean ALLOW_MULTIPLE_SYSTEMS =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ALLOW_MULTIPLE_SYSTEMS");
+
+  /**
    * If auto-reconnect is going on this will hold a reference to it
    */
   public static volatile DistributedSystem systemAttemptingReconnect;
@@ -156,7 +163,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * The distribution manager that is used to communicate with the distributed system.
    */
-  protected DM dm;
+  protected DistributionManager dm;
 
   private final GrantorRequestProcessor.GrantorRequestContext grc;
 
@@ -349,7 +356,8 @@ public class InternalDistributedSystem extends DistributedSystem
    *
    * @param nonDefault - non-default distributed system properties
    */
-  public static InternalDistributedSystem newInstanceForTesting(DM dm, Properties nonDefault) {
+  public static InternalDistributedSystem newInstanceForTesting(DistributionManager dm,
+      Properties nonDefault) {
     InternalDistributedSystem sys = new InternalDistributedSystem(nonDefault);
     sys.config = new RuntimeDistributionConfigImpl(sys);
     sys.dm = dm;
@@ -684,9 +692,9 @@ public class InternalDistributedSystem extends DistributedSystem
 
       // Initialize the Diffie-Hellman and public/private keys
       try {
-        HandShake.initCertsMap(this.config.getSecurityProps());
-        HandShake.initPrivateKey(this.config.getSecurityProps());
-        HandShake.initDHKeys(this.config);
+        EncryptorImpl.initCertsMap(this.config.getSecurityProps());
+        EncryptorImpl.initPrivateKey(this.config.getSecurityProps());
+        EncryptorImpl.initDHKeys(this.config);
       } catch (Exception ex) {
         throw new GemFireSecurityException(
             LocalizedStrings.InternalDistributedSystem_PROBLEM_IN_INITIALIZING_KEYS_FOR_CLIENT_AUTHENTICATION
@@ -737,7 +745,7 @@ public class InternalDistributedSystem extends DistributedSystem
           if (this.quorumChecker != null) {
             this.quorumChecker.suspend();
           }
-          this.dm = DistributionManager.create(this);
+          this.dm = ClusterDistributionManager.create(this);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
             InternalLocator locator = InternalLocator.getLocator();
@@ -885,7 +893,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Used by DistributionManager to fix bug 33362
    */
-  void setDM(DM dm) {
+  void setDM(DistributionManager dm) {
     this.dm = dm;
   }
 
@@ -977,12 +985,6 @@ public class InternalDistributedSystem extends DistributedSystem
   public LogWriter getSecurityLogWriter() {
     return this.securityLogWriter;
   }
-
-  /*
-   * public Cache myCache;
-   *
-   * public void setCache(Cache cache){ myCache=cache; } public Cache getCache(){ return myCache; }
-   */
 
   /**
    * Returns the stat sampler
@@ -1347,7 +1349,7 @@ public class InternalDistributedSystem extends DistributedSystem
           //
           // However, make sure cache is completely closed before starting
           // the distributed system close.
-          InternalCache currentCache = GemFireCacheImpl.getInstance();
+          InternalCache currentCache = getCache();
           if (currentCache != null && !currentCache.isClosed()) {
             disconnectListenerThread.set(Boolean.TRUE); // bug #42663 - this must be set while
                                                         // closing the cache
@@ -1487,7 +1489,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Returns the distribution manager for accessing this distributed system.
    */
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     checkConnected();
     return this.dm;
   }
@@ -1495,7 +1497,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Returns the distribution manager without checking for connected or not so can also return null.
    */
-  public DM getDM() {
+  public DistributionManager getDM() {
     return this.dm;
   }
 
@@ -2646,9 +2648,16 @@ public class InternalDistributedSystem extends DistributedSystem
                   "Stopping the checkrequiredrole thread because reconnect : {} reached the max number of reconnect tries : {}",
                   reconnectAttemptCounter, maxTries);
             }
-            throw new CacheClosedException(
-                LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
-                    .toLocalizedString());
+            InternalCache internalCache = dm.getCache();
+            if (internalCache == null) {
+              throw new CacheClosedException(
+                  LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
+                      .toLocalizedString());
+            } else {
+              throw internalCache.getCacheClosedException(
+                  LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
+                      .toLocalizedString());
+            }
           }
         }
 
@@ -2762,11 +2771,11 @@ public class InternalDistributedSystem extends DistributedSystem
         }
 
 
-        DM newDM = this.reconnectDS.getDistributionManager();
-        if (newDM instanceof DistributionManager) {
+        DistributionManager newDM = this.reconnectDS.getDistributionManager();
+        if (newDM instanceof ClusterDistributionManager) {
           // Admin systems don't carry a cache, but for others we can now create
           // a cache
-          if (newDM.getDMType() != DistributionManager.ADMIN_ONLY_DM_TYPE) {
+          if (newDM.getDMType() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE) {
             try {
               CacheConfig config = new CacheConfig();
               if (cacheXML != null) {
@@ -3082,5 +3091,9 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public void setCache(InternalCache instance) {
     this.dm.setCache(instance);
+  }
+
+  public InternalCache getCache() {
+    return this.dm == null ? null : this.dm.getCache();
   }
 }

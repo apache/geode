@@ -25,9 +25,6 @@ import org.apache.geode.cache.Scope;
 
 public class RegionDescriptionPerMember implements Serializable {
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
 
   private int size = 0;
@@ -53,22 +50,6 @@ public class RegionDescriptionPerMember implements Serializable {
         && this.regionAttributesInfo.getPartitionAttributesInfo().getLocalMaxMemory() == 0) {
       setAccessor(true);
     }
-  }
-
-  public boolean equals(Object obj) {
-    if (obj instanceof RegionDescriptionPerMember) {
-      RegionDescriptionPerMember regionDesc = (RegionDescriptionPerMember) obj;
-
-      return this.name.equals(regionDesc.getName()) && this.getScope().equals(regionDesc.getScope())
-          && this.getDataPolicy().equals(regionDesc.getDataPolicy())
-          && this.isAccessor == regionDesc.isAccessor;
-    }
-    return true;
-  }
-
-  public int hashCode() {
-    return 42; // any arbitrary constant will do
-
   }
 
   public String getHostingMember() {

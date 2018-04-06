@@ -36,8 +36,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -295,7 +295,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    *
    * @param regionPath
    */
-  public long lockForClear(String regionPath, DM dm, InternalDistributedMember locker) {
+  public long lockForClear(String regionPath, DistributionManager dm,
+      InternalDistributedMember locker) {
     lockVersionGeneration(regionPath, dm, locker);
     return this.localVersion.get();
   }
@@ -303,13 +304,12 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /** unlocks version generation for clear() operations */
   public void unlockForClear(InternalDistributedMember locker) {
     synchronized (this.clearLockSync) {
-      InternalDistributedSystem instance = InternalDistributedSystem.getAnyInstance();
-      if (instance != null && logger.isDebugEnabled()) {
+      if (logger.isDebugEnabled()) {
         logger.debug("Unlocking for clear, from member {} RVV {}", locker,
             System.identityHashCode(this));
       }
       if (this.lockOwner != null && !locker.equals(this.lockOwner)) {
-        if (instance != null && logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
           logger.debug("current clear lock owner was {} not unlocking", lockOwner);
         }
         // this method is invoked by memberDeparted events and may not be for the current lock owner
@@ -327,7 +327,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * @param dm the distribution manager - used to obtain an executor to hold the thread
    * @param locker the member requesting the lock (currently not used)
    */
-  private void lockVersionGeneration(final String regionPath, final DM dm,
+  private void lockVersionGeneration(final String regionPath, final DistributionManager dm,
       final InternalDistributedMember locker) {
     final CountDownLatch acquiredLock = new CountDownLatch(1);
     if (logger.isDebugEnabled()) {
@@ -1416,13 +1416,13 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   }
 
 
-  public void memberJoined(InternalDistributedMember id) {}
+  public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {}
 
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-      String reason) {}
+  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {}
 
-  public void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining) {}
+  public void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
   /*
    * (non-Javadoc) this ensures that the version generation lock is released
@@ -1430,12 +1430,12 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * @see org.apache.geode.distributed.internal.MembershipListener#memberDeparted(org.apache.geode.
    * distributed.internal.membership.InternalDistributedMember, boolean)
    */
-  public void memberDeparted(final InternalDistributedMember id, boolean crashed) {
+  public void memberDeparted(DistributionManager distributionManager,
+      final InternalDistributedMember id, boolean crashed) {
     // since unlockForClear uses synchronization we need to try to execute it in another
     // thread so that membership events aren't blocked
-    InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
-    if (system != null) {
-      system.getDistributionManager().getWaitingThreadPool().execute(new Runnable() {
+    if (distributionManager != null) {
+      distributionManager.getWaitingThreadPool().execute(new Runnable() {
         public void run() {
           unlockForClear(id);
         }

@@ -24,7 +24,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
@@ -32,8 +31,8 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.AlreadyRunningException;
 import org.apache.geode.management.ManagementService;
@@ -196,7 +195,7 @@ public class JmxManagerLocator implements TcpHandler {
     }
   }
 
-  public static class StartJmxManagerFunction implements Function, InternalEntity {
+  public static class StartJmxManagerFunction implements InternalFunction {
     private static final long serialVersionUID = -2860286061903069789L;
 
     public static final String ID = StartJmxManagerFunction.class.getName();

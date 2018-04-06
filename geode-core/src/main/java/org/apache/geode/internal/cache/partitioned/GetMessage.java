@@ -25,15 +25,23 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.BucketRegion.RawValue;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.DataLocationException;
@@ -117,7 +125,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         // processed in the p2p msg reader.
         if (pr.getAttributes().getDataPolicy().withPersistence()
             || !pr.getAttributes().getEvictionAttributes().getAlgorithm().isNone()) {
-          return DistributionManager.PARTITIONED_REGION_EXECUTOR;
+          return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
         }
       } catch (PRLocallyDestroyedException ignore) {
       } catch (RuntimeException ignore) {
@@ -129,13 +137,13 @@ public class GetMessage extends PartitionMessageWithDirectReply {
       }
     }
     if (forceUseOfPRExecutor) {
-      return DistributionManager.PARTITIONED_REGION_EXECUTOR;
+      return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
     } else if (ORDER_PR_GETS) {
-      return DistributionManager.PARTITIONED_REGION_EXECUTOR;
+      return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
     } else {
       // Make this guy serial so that it will be processed in the p2p msg reader
       // which gives it better performance.
-      return DistributionManager.SERIAL_EXECUTOR;
+      return ClusterDistributionManager.SERIAL_EXECUTOR;
     }
   }
 
@@ -146,8 +154,8 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(final DistributionManager dm, PartitionedRegion r,
-      long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(final ClusterDistributionManager dm,
+      PartitionedRegion r, long startTime) throws ForceReattemptException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "GetMessage operateOnRegion: {}", r.getFullPath());
     }
@@ -280,6 +288,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
     GetResponse p = new GetResponse(r.getSystem(), Collections.singleton(recipient), key);
     GetMessage m = new GetMessage(recipient, r.getPRId(), p, key, aCallbackArgument,
         requestingClient, returnTombstones);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
@@ -386,7 +395,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, ReplyProcessor21 processor) {
       final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
       final long startTime = getTimestamp();
       if (isDebugEnabled) {
@@ -538,7 +547,8 @@ public class GetMessage extends PartitionMessageWithDirectReply {
             default:
               if (reply.valueInBytes != null) {
                 if (preferCD) {
-                  return CachedDeserializableFactory.create(reply.valueInBytes);
+                  return CachedDeserializableFactory.create(reply.valueInBytes,
+                      getDistributionManager().getCache());
                 } else {
                   return BlobHelper.deserializeBlob(reply.valueInBytes, reply.remoteVersion, null);
                 }
@@ -575,26 +585,14 @@ public class GetMessage extends PartitionMessageWithDirectReply {
      */
     public Object waitForResponse(boolean preferCD) throws ForceReattemptException {
       try {
-        // waitForRepliesUninterruptibly();
         waitForCacheException();
         if (DistributionStats.enableClockStats) {
           getDistributionManager().getStats().incReplyHandOffTime(this.start);
         }
-      }
-      // Neeraj: Adding separate catch block for ENFE because there should not be a reattempt due
-      // to this exception from the sender node. ENFE is a type of CacheException(caught below)
-      // which wraps all CacheException in ForcedReattemptException(which is not correct). Filing
-      // a separate bug for this.(#41717)
-      catch (EntryNotFoundException enfe) {
-        // rethrow this
-        throw enfe;
       } catch (ForceReattemptException e) {
         e.checkKey(key);
         final String msg = "GetResponse got ForceReattemptException; rethrowing";
         logger.debug(msg, e);
-        throw e;
-      } catch (TransactionDataNotColocatedException e) {
-        // Throw this up to user!
         throw e;
       }
       if (!this.returnValueReceived) {

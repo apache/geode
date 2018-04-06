@@ -14,18 +14,14 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.admin.remote.AdminResponse;
@@ -43,32 +39,23 @@ public class FinishBackupRequest extends CliLegacyMessage {
 
   private final transient FinishBackupFactory finishBackupFactory;
 
-  private File targetDir;
-  private File baselineDir;
-  private boolean abort;
-
   public FinishBackupRequest() {
     this.finishBackupFactory = new FinishBackupFactory();
   }
 
   FinishBackupRequest(InternalDistributedMember sender, Set<InternalDistributedMember> recipients,
-      int processorId, File targetDir, File baselineDir, boolean abort,
-      FinishBackupFactory finishBackupFactory) {
+      int processorId, FinishBackupFactory finishBackupFactory) {
     setSender(sender);
     setRecipients(recipients);
     this.msgId = processorId;
     this.finishBackupFactory = finishBackupFactory;
-    this.targetDir = targetDir;
-    this.baselineDir = baselineDir;
-    this.abort = abort;
   }
 
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     HashSet<PersistentID> persistentIds;
     try {
-      persistentIds = finishBackupFactory
-          .createFinishBackup(dm.getCache(), this.targetDir, this.baselineDir, this.abort).run();
+      persistentIds = finishBackupFactory.createFinishBackup(dm.getCache()).run();
     } catch (IOException e) {
       logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, getClass()), e);
       return AdminFailureResponse.create(getSender(), e);
@@ -80,21 +67,4 @@ public class FinishBackupRequest extends CliLegacyMessage {
   public int getDSFID() {
     return FINISH_BACKUP_REQUEST;
   }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    targetDir = DataSerializer.readFile(in);
-    baselineDir = DataSerializer.readFile(in);
-    abort = DataSerializer.readBoolean(in);
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
-    DataSerializer.writeFile(targetDir, out);
-    DataSerializer.writeFile(baselineDir, out);
-    DataSerializer.writeBoolean(abort, out);
-  }
-
 }

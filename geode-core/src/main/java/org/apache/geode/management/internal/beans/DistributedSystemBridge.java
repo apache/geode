@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,12 +25,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
@@ -46,7 +45,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -54,14 +53,12 @@ import org.apache.geode.internal.admin.remote.MissingPersistentIDsRequest;
 import org.apache.geode.internal.admin.remote.PrepareRevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.backup.BackupDataStoreHelper;
-import org.apache.geode.internal.cache.backup.BackupDataStoreResult;
+import org.apache.geode.internal.cache.backup.BackupUtil;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DiskBackupStatus;
 import org.apache.geode.management.DiskMetrics;
@@ -147,11 +144,6 @@ public class DistributedSystemBridge {
   private volatile int gatewayReceiverSetSize;
 
   /**
-   * Member MBean for current member
-   */
-  private MemberMXBean thisMember;
-
-  /**
    * Cache instance
    */
   private InternalCache cache;
@@ -174,7 +166,7 @@ public class DistributedSystemBridge {
   /**
    * Distribution manager
    */
-  private DM dm;
+  private DistributionManager dm;
 
   private String alertLevel;
 
@@ -240,7 +232,7 @@ public class DistributedSystemBridge {
    *
    * @param service Management service
    */
-  public DistributedSystemBridge(SystemManagementService service) {
+  public DistributedSystemBridge(SystemManagementService service, InternalCache cache) {
     this.distrLockServiceMap = new ConcurrentHashMap<>();
     this.distrRegionMap = new ConcurrentHashMap<>();
     this.mapOfMembers = new ConcurrentHashMap<>();
@@ -248,7 +240,7 @@ public class DistributedSystemBridge {
     this.mapOfGatewayReceivers = new ConcurrentHashMap<>();
     this.mapOfGatewaySenders = new ConcurrentHashMap<>();
     this.service = service;
-    this.cache = GemFireCacheImpl.getInstance();
+    this.cache = cache;
     this.system = cache.getInternalDistributedSystem();
     this.dm = system.getDistributionManager();
     this.alertLevel = ManagementConstants.DEFAULT_ALERT_LEVEL;
@@ -264,6 +256,10 @@ public class DistributedSystemBridge {
     this.serverMBeanMonitor = new ServerClusterStatsMonitor();
     this.senderMonitor = new GatewaySenderClusterStatsMonitor();
     this.receiverMonitor = new GatewayReceiverClusterStatsMonitor();
+  }
+
+  public InternalCache getCache() {
+    return cache;
   }
 
   /**
@@ -482,57 +478,20 @@ public class DistributedSystemBridge {
    * @param baselineDirPath path of the directory for baseline backup.
    * @return open type DiskBackupStatus containing each member wise disk back up status
    */
-  public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath)
-      throws Exception {
-    if (BackupDataStoreHelper.obtainLock(dm)) {
-      try {
-
-        if (targetDirPath == null || targetDirPath.isEmpty()) {
-          throw new Exception(
-              ManagementStrings.TARGET_DIR_CANT_BE_NULL_OR_EMPTY.toLocalizedString());
-        }
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-        File targetDir = new File(targetDirPath);
-        targetDir = new File(targetDir, format.format(new Date()));
-
-        File baselineDir = null;
-        if (baselineDirPath != null) {
-          baselineDir = new File(baselineDirPath);
-        }
-
-        DM dm = cache.getDistributionManager();
-        Set recipients = dm.getOtherDistributionManagerIds();
-
-        BackupDataStoreResult result =
-            BackupDataStoreHelper.backupAllMembers(dm, recipients, targetDir, baselineDir);
-
-
-        DiskBackupStatusImpl diskBackupStatus = new DiskBackupStatusImpl();
-        Map<DistributedMember, Set<PersistentID>> successfulMembers = result.getSuccessfulMembers();
-        diskBackupStatus.generateBackedUpDiskStores(successfulMembers);
-
-        // It's possible that when calling getMissingPersistentMembers, some
-        // members
-        // are
-        // still creating/recovering regions, and at FinishBackupRequest.send, the
-        // regions at the members are ready. Logically, since the members in
-        // successfulMembers
-        // should override the previous missingMembers
-        Set<PersistentID> successfulIds = result.getSuccessfulMembers().values().stream()
-            .flatMap(Set::stream).collect(Collectors.toSet());
-        Set<PersistentID> missingIds =
-            result.getExistingDataStores().values().stream().flatMap(Set::stream)
-                .filter((v) -> !successfulIds.contains(v)).collect(Collectors.toSet());
-
-        diskBackupStatus.generateOfflineDiskStores(missingIds);
-        return diskBackupStatus;
-      } finally {
-        BackupDataStoreHelper.releaseLock(dm);
-      }
-    } else {
-      throw new Exception(
-          LocalizedStrings.DistributedSystem_BACKUP_ALREADY_IN_PROGRESS.toLocalizedString());
+  public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath) {
+    Properties properties = new Properties();
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+    properties.setProperty("TIMESTAMP", format.format(new Date()));
+    properties.setProperty("TYPE", "FileSystem");
+    properties.setProperty("TARGET_DIRECTORY", targetDirPath);
+    if (baselineDirPath != null) {
+      properties.setProperty("BASELINE_DIRECTORY", baselineDirPath);
     }
+    BackupStatus result = BackupUtil.backupAllMembers(dm, properties);
+    DiskBackupStatusImpl diskBackupStatus = new DiskBackupStatusImpl();
+    diskBackupStatus.generateBackedUpDiskStores(result.getBackedUpDiskStores());
+    diskBackupStatus.generateOfflineDiskStores(result.getOfflineDiskStores());
+    return diskBackupStatus;
   }
 
   /**
@@ -804,7 +763,7 @@ public class DistributedSystemBridge {
     if (!members.isEmpty()) {
       Set<String> locatorMemberSet = new TreeSet<>();
       for (DistributedMember member : members) {
-        if (DistributionManager.LOCATOR_DM_TYPE == ((InternalDistributedMember) member)
+        if (ClusterDistributionManager.LOCATOR_DM_TYPE == ((InternalDistributedMember) member)
             .getVmKind()) {
           String name = member.getName();
           name = StringUtils.isNotBlank(name) ? name : member.getId();
@@ -904,7 +863,7 @@ public class DistributedSystemBridge {
   @SuppressWarnings("unchecked")
   public String[] shutDownAllMembers() throws Exception {
     try {
-      DM dm = cache.getDistributionManager();
+      DistributionManager dm = cache.getDistributionManager();
       Set<InternalDistributedMember> members = ShutdownAllRequest.send(dm, 0);
       String[] shutDownMembers = new String[members.size()];
       int j = 0;

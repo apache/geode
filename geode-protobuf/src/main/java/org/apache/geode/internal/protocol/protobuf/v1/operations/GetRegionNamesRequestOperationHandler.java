@@ -19,26 +19,29 @@ import java.util.Set;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.Result;
-import org.apache.geode.internal.protocol.Success;
-import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.Success;
 
 @Experimental
 public class GetRegionNamesRequestOperationHandler implements
     ProtobufOperationHandler<RegionAPI.GetRegionNamesRequest, RegionAPI.GetRegionNamesResponse> {
 
   @Override
-  public Result<RegionAPI.GetRegionNamesResponse, ClientProtocol.ErrorResponse> process(
+  public Result<RegionAPI.GetRegionNamesResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.GetRegionNamesRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     Set<Region<?, ?>> regions = messageExecutionContext.getCache().rootRegions();
-    return Success.of(ProtobufResponseUtilities.createGetRegionNamesResponse(regions));
+
+    RegionAPI.GetRegionNamesResponse.Builder builder =
+        RegionAPI.GetRegionNamesResponse.newBuilder();
+    for (Region region : regions) {
+      builder.addRegions(region.getName());
+    }
+
+    return Success.of(builder.build());
   }
 }

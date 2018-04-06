@@ -19,7 +19,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.locks.DLockRecoverGrantorProcessor;
@@ -40,7 +40,7 @@ public class TXRecoverGrantorMessageProcessor
 
   private static final Logger logger = LogService.getLogger();
 
-  public void process(final DM dm,
+  public void process(final DistributionManager dm,
       final DLockRecoverGrantorProcessor.DLockRecoverGrantorMessage msg) {
 
     try {
@@ -54,7 +54,7 @@ public class TXRecoverGrantorMessageProcessor
     }
   }
 
-  protected void processDLockRecoverGrantorMessage(final DM dm,
+  protected void processDLockRecoverGrantorMessage(final DistributionManager dm,
       final DLockRecoverGrantorProcessor.DLockRecoverGrantorMessage msg) {
 
     ReplyException replyException = null;
@@ -139,7 +139,7 @@ public class TXRecoverGrantorMessageProcessor
           logger.debug("[TXRecoverGrantorMessageProcessor.process] locally process reply");
         }
         replyMsg.setSender(dm.getId());
-        replyMsg.dmProcess((DistributionManager) dm);
+        replyMsg.dmProcess((ClusterDistributionManager) dm);
       } else {
         if (logger.isDebugEnabled()) {
           logger.debug("[TXRecoverGrantorMessageProcessor.process] send reply");

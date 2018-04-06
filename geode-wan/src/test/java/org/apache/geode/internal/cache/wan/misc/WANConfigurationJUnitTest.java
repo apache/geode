@@ -418,16 +418,12 @@ public class WANConfigurationJUnitTest {
   }
 
   /**
-   * This test takes a minimum of 120s to execute. It is known to hang on Mac OS X Yosemite do to
-   * changes in the the message string checked in GatewayReceiverImpl around line 167. Expects
-   * "Cannot assign requested address" but gets "Can't assign requested address". Timeout after 150s
-   * to safeguard against hanging on other platforms that may differ.
+   * This test takes a minimum of 120s to execute. Based on the experiences of the Yosemite release
+   * of macOS, timeout after 150s to safeguard against hanging on other platforms that may have
+   * different error messages.
    */
   @Test(timeout = 150000)
   public void test_ValidateGatewayReceiverAttributes_WrongBindAddress() {
-    if (System.getProperty("os.name").equals("Mac OS X")) {
-      fail("Failing to avoid known hang on Mac OS X.");
-    }
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setStartPort(50504);

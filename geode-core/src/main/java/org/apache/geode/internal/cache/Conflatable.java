@@ -31,40 +31,40 @@ public interface Conflatable extends Serializable {
    *
    * @return whether the object should be conflated
    */
-  public boolean shouldBeConflated();
+  boolean shouldBeConflated();
 
   /**
    * Returns the name of the region for this <code>Conflatable</code>
    *
    * @return the name of the region for this <code>Conflatable</code>
    */
-  public String getRegionToConflate();
+  String getRegionToConflate();
 
   /**
    * Returns the key for this <code>Conflatable</code>
    *
    * @return the key for this <code>Conflatable</code>
    */
-  public Object getKeyToConflate();
+  Object getKeyToConflate();
 
   /**
    * Returns the value for this <code>Conflatable</code>
    *
    * @return the value for this <code>Conflatable</code>
    */
-  public Object getValueToConflate();
+  Object getValueToConflate();
 
   /**
    * Sets the latest value for this <code>Conflatable</code>
    *
    * @param value The latest value
    */
-  public void setLatestValue(Object value);
+  void setLatestValue(Object value);
 
   /**
    * Return this event's identifier
    *
    * @return EventID object uniquely identifying the Event
    */
-  public EventID getEventId();
+  EventID getEventId();
 }

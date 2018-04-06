@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static java.util.concurrent.TimeUnit.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.*;
-import static org.junit.Assert.*;
+import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -72,7 +75,7 @@ import org.apache.geode.cache.persistence.RevokedPersistentDataException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -111,10 +114,6 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   // tests. The command line is setting the ack-wait-threshold to be
   // 60 seconds.
   private static final int MAX_WAIT = 65 * 1000;
-
-  public PersistentPartitionedRegionDUnitTest() {
-    super();
-  }
 
   /**
    * A simple test case that we are actually persisting with a PR.
@@ -1525,7 +1524,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
           @Override
-          public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
+          public void beforeSendMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof ManageBucketReplyMessage) {
               Cache cache = getCache();
               disconnectFromDS();
@@ -1742,7 +1742,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
           @Override
-          public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+          public void beforeProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof RequestImageMessage) {
               RequestImageMessage rim = (RequestImageMessage) message;
               // Don't disconnect until we see a bucket
@@ -1754,7 +1755,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
           }
 
           @Override
-          public void afterProcessMessage(DistributionManager dm, DistributionMessage message) {
+          public void afterProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
 
           }
         });
@@ -1943,7 +1945,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
       public void run() {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
           @Override
-          public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+          public void beforeProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof RequestImageMessage) {
               RequestImageMessage rim = (RequestImageMessage) message;
               if (rim.regionPath.contains("_0")) {
@@ -1996,7 +1999,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
       public void run() {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
           @Override
-          public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+          public void beforeProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof RequestImageMessage) {
               RequestImageMessage rim = (RequestImageMessage) message;
               if (rim.regionPath.contains("_0")) {
@@ -2045,6 +2049,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   }
 
   @Test
+  @Category(FlakyTest.class)
   public void testCleanupAfterConflict() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -2431,7 +2436,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     CountDownLatch cdl = new CountDownLatch(1);
 
     @Override
-    public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
+    public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof RequestImageMessage) {
         RequestImageMessage rim = (RequestImageMessage) message;
         // make sure this is a bucket region doing a GII

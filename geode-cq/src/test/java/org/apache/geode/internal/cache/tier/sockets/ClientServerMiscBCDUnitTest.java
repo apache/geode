@@ -43,6 +43,7 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Host;
@@ -72,6 +73,15 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
   public ClientServerMiscBCDUnitTest(String version) {
     super();
     testVersion = version;
+  }
+
+  @Override
+  void createClientCacheAndVerifyPingIntervalIsSet(String host, int port) throws Exception {
+    // this functionality was introduced in 1.5. If we let the test run in older
+    // clients it will throw a NoSuchMethodError
+    if (Version.CURRENT_ORDINAL >= 80 /* GEODE_150 */) {
+      super.createClientCacheAndVerifyPingIntervalIsSet(host, port);
+    }
   }
 
   @Test

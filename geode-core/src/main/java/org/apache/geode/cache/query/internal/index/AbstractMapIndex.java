@@ -41,6 +41,7 @@ import org.apache.geode.cache.query.internal.MapIndexable;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionEntry;
 
 public abstract class AbstractMapIndex extends AbstractIndex {
@@ -52,12 +53,12 @@ public abstract class AbstractMapIndex extends AbstractIndex {
 
   protected final Object[] mapKeys;
 
-  AbstractMapIndex(String indexName, Region region, String fromClause, String indexedExpression,
-      String projectionAttributes, String origFromClause, String origIndxExpr, String[] defintions,
-      boolean isAllKeys, String[] multiIndexingKeysPattern, Object[] mapKeys,
-      IndexStatistics stats) {
-    super(indexName, region, fromClause, indexedExpression, projectionAttributes, origFromClause,
-        origIndxExpr, defintions, stats);
+  AbstractMapIndex(InternalCache cache, String indexName, Region region, String fromClause,
+      String indexedExpression, String projectionAttributes, String origFromClause,
+      String origIndxExpr, String[] defintions, boolean isAllKeys,
+      String[] multiIndexingKeysPattern, Object[] mapKeys, IndexStatistics stats) {
+    super(cache, indexName, region, fromClause, indexedExpression, projectionAttributes,
+        origFromClause, origIndxExpr, defintions, stats);
     this.mapKeyToValueIndex = new ConcurrentHashMap<Object, AbstractIndex>(2, 0.75f, 1);
     RegionAttributes ra = region.getAttributes();
     this.isAllKeys = isAllKeys;

@@ -29,11 +29,11 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
  */
 public interface LocatorMembershipListener {
 
-  public Object handleRequest(Object request);
+  Object handleRequest(Object request);
 
-  public void setPort(int port);
+  void setPort(int port);
 
-  public void setConfig(DistributionConfig config);
+  void setConfig(DistributionConfig config);
 
   /**
    * When the new locator is added to remote locator metadata, inform all other locators in remote
@@ -41,14 +41,14 @@ public interface LocatorMembershipListener {
    *
    * @param locator
    */
-  public void locatorJoined(int distributedSystemId, DistributionLocatorId locator,
+  void locatorJoined(int distributedSystemId, DistributionLocatorId locator,
       DistributionLocatorId sourceLocator);
 
-  public Set<String> getRemoteLocatorInfo(int dsId);
+  Set<String> getRemoteLocatorInfo(int dsId);
 
-  public ConcurrentMap<Integer, Set<DistributionLocatorId>> getAllLocatorsInfo();
+  ConcurrentMap<Integer, Set<DistributionLocatorId>> getAllLocatorsInfo();
 
-  public ConcurrentMap<Integer, Set<String>> getAllServerLocatorsInfo();
+  ConcurrentMap<Integer, Set<String>> getAllServerLocatorsInfo();
 
-  public void clearLocatorInfo();
+  void clearLocatorInfo();
 }

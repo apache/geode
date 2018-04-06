@@ -85,6 +85,14 @@ public class GfshParserJUnitTest {
   }
 
   @Test
+  public void splitWithWhiteSpacesExceptQuoted() {
+    input = "create region --cache-writer=\"my.abc{'k1' : 'v   1', 'k2' : 'v2'}\"";
+    tokens = GfshParser.splitUserInput(input);
+    assertThat(tokens.size()).isEqualTo(4);
+    assertThat(tokens.get(3)).isEqualTo("\"my.abc{'k1' : 'v   1', 'k2' : 'v2'}\"");
+  }
+
+  @Test
   public void testSplitUserInputWithJNoQuotes() {
     input =
         "start server --name=server1  --J=-Dgemfire.start-dev-rest-api=true --J=-Dgemfire.http-service-port=8080";
@@ -144,5 +152,14 @@ public class GfshParserJUnitTest {
     assertThat(GfshParser.getSimpleParserInputFromTokens(tokens))
         .isEqualTo("command --option 'test value' --J \"-Dkey=value"
             + GfshParser.J_ARGUMENT_DELIMITER + "-Dkey2=value2\"");
+  }
+
+  @Test
+  public void spaceOrEmptyStringIsParsedCorrectly() {
+    input = "alter region --name=/Person --cache-writer='' --cache-loader=' '";
+    tokens = GfshParser.splitUserInput(input);
+    assertThat(tokens.size()).isEqualTo(8);
+    assertThat(tokens.get(7)).isEqualTo("' '");
+    assertThat(tokens.get(5)).isEqualTo("''");
   }
 }

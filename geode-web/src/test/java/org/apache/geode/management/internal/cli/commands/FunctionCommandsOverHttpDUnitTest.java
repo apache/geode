@@ -17,14 +17,13 @@ package org.apache.geode.management.internal.cli.commands;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class FunctionCommandsOverHttpDUnitTest extends FunctionCommandsDUnitTest {
   @Override
-  public void connectGfsh(MemberVM vm) throws Exception {
-    gfsh.connectAndVerify(vm.getHttpPort(), GfshCommandRule.PortType.http);
+  public void connectGfsh() throws Exception {
+    gfsh.connectAndVerify(getLocator().getHttpPort(), GfshCommandRule.PortType.http);
   }
 }

@@ -36,7 +36,7 @@ public class AppCacheSnapshotMessage extends RegionAdminMessage {
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     Region r = getRegion(dm.getSystem());
     if (r != null) {
       try {

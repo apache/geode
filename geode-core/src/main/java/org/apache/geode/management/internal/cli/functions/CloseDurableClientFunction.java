@@ -15,10 +15,8 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -29,14 +27,14 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  * Function to close a durable client
  *
  */
-public class CloseDurableClientFunction extends FunctionAdapter implements InternalEntity {
+public class CloseDurableClientFunction implements InternalFunction {
 
   private static final long serialVersionUID = 1L;
 
   @Override
   public void execute(FunctionContext context) {
     String durableClientId = (String) context.getArguments();
-    final Cache cache = CliUtil.getCacheIfExists();
+    final Cache cache = context.getCache();
     final String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
     MemberResult memberResult = new MemberResult(memberNameOrId);

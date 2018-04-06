@@ -51,7 +51,7 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.locks.DLockService;
@@ -156,7 +156,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void verifyServerState(String name, int numIterations) {
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = getCache();
     DistributedRegion region = (DistributedRegion) cache.getRegion(name);
     CachePerfStats stats = region.getCachePerfStats();
     assertEquals(0, stats.getConflatedEventsCount());
@@ -167,7 +167,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void doOps(String name, int numIterations, String clientGateName) {
-    ClientCache cache = ClientCacheFactory.getAnyInstance();
+    ClientCache cache = (ClientCache) getCache();
     Region region = cache.getRegion(name);
     getBlackboard().signalGate(clientGateName);
     try {
@@ -429,7 +429,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     public String thName;
 
     @Override
-    public void afterProcessMessage(DistributionManager dm, DistributionMessage message) {
+    public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       thName = Thread.currentThread().getName();
 
       if (message instanceof TombstoneMessage) {

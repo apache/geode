@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -86,7 +86,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.WAITING_POOL_EXECUTOR;
+    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   /**
@@ -110,6 +110,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
     NodeResponse p = new NodeResponse(r.getSystem(), recipient);
     ManageBackupBucketMessage m = new ManageBackupBucketMessage(recipient, r.getPRId(), p, bucketId,
         isRebalance, replaceOfflineData, moveSource, forceCreation);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     p.enableSevereAlertProcessing();
 
@@ -128,7 +129,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
    * indefinitely for the acknowledgement
    */
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "ManageBucketMessage operateOnRegion: {}", r.getFullPath());
@@ -246,7 +247,8 @@ public class ManageBackupBucketMessage extends PartitionMessage {
      * @param processorId the identity of the processor the requesting node is waiting on
      * @param dm the distribution manager used to send the refusal
      */
-    public static void sendRefusal(InternalDistributedMember recipient, int processorId, DM dm) {
+    public static void sendRefusal(InternalDistributedMember recipient, int processorId,
+        DistributionManager dm) {
       Assert.assertTrue(recipient != null, "ManageBackupBucketReplyMessage NULL reply message");
       ManageBackupBucketReplyMessage m =
           new ManageBackupBucketReplyMessage(processorId, false, false);
@@ -262,7 +264,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
      * @param dm the distribution manager used to send the acceptance message
      */
     public static void sendStillInitializing(InternalDistributedMember recipient, int processorId,
-        DM dm) {
+        DistributionManager dm) {
       ManageBackupBucketReplyMessage m =
           new ManageBackupBucketReplyMessage(processorId, false, true);
       m.setRecipient(recipient);
@@ -276,7 +278,8 @@ public class ManageBackupBucketMessage extends PartitionMessage {
      * @param processorId the identity of the processor the requesting node is waiting on
      * @param dm the distribution manager used to send the acceptance message
      */
-    public static void sendAcceptance(InternalDistributedMember recipient, int processorId, DM dm) {
+    public static void sendAcceptance(InternalDistributedMember recipient, int processorId,
+        DistributionManager dm) {
       Assert.assertTrue(recipient != null, "ManageBackupBucketReplyMessage NULL reply message");
       ManageBackupBucketReplyMessage m =
           new ManageBackupBucketReplyMessage(processorId, true, false);
@@ -290,7 +293,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,
@@ -411,7 +414,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
           logger.debug(m, t);
           throw (ForceReattemptException) t;
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       return (this.msg != null) && this.msg.acceptedBucket;
     }

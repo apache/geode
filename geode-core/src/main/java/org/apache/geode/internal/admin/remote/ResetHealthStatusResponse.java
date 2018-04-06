@@ -33,8 +33,8 @@ public class ResetHealthStatusResponse extends AdminResponse {
    * Returns a <code>ResetHealthStatusResponse</code> that will be returned to the specified
    * recipient.
    */
-  public static ResetHealthStatusResponse create(DM dm, InternalDistributedMember recipient,
-      int id) {
+  public static ResetHealthStatusResponse create(DistributionManager dm,
+      InternalDistributedMember recipient, int id) {
     ResetHealthStatusResponse m = new ResetHealthStatusResponse();
     m.setRecipient(recipient);
     {

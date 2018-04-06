@@ -27,13 +27,13 @@ public interface MembershipListener {
   /**
    * Invoked when a member has joined the distributed system
    */
-  public void memberJoined(MembershipEvent event);
+  void memberJoined(MembershipEvent event);
 
   /**
    * Invoked when a member has gracefully left the distributed system. This occurs when the member
    * took action to remove itself from the distributed system.
    */
-  public void memberLeft(MembershipEvent event);
+  void memberLeft(MembershipEvent event);
 
   /**
    * Invoked when a member has unexpectedly left the distributed system. This occurs when a member
@@ -42,6 +42,6 @@ public interface MembershipListener {
    * detection</a>, or <a href=../distributed/DistributedSystem.html#enable-network
    * -partition-detection> network partition detection</a> processing.
    */
-  public void memberCrashed(MembershipEvent event);
+  void memberCrashed(MembershipEvent event);
 
 }

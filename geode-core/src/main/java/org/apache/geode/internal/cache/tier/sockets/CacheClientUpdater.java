@@ -41,7 +41,6 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Operation;
@@ -55,8 +54,8 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.QueueManager;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
@@ -75,6 +74,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -131,6 +131,15 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    * The input stream of the socket
    */
   private final InputStream in;
+
+  public ServerQueueStatus getServerQueueStatus() {
+    return serverQueueStatus;
+  }
+
+  /**
+   * server-side queue status at the time we connected to it
+   */
+  private ServerQueueStatus serverQueueStatus;
 
   /**
    * Failed updater from the endpoint previously known as the primary
@@ -264,15 +273,15 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    *         exception while reading handshake/verifying credentials
    */
   public CacheClientUpdater(String name, ServerLocation location, boolean primary,
-      DistributedSystem ids, HandShake handshake, QueueManager qManager, EndpointManager eManager,
-      Endpoint endpoint, int handshakeTimeout, SocketCreator socketCreator)
-      throws AuthenticationRequiredException, AuthenticationFailedException,
-      ServerRefusedConnectionException {
+      DistributedSystem ids, ClientSideHandshake handshake, QueueManager qManager,
+      EndpointManager eManager, Endpoint endpoint, int handshakeTimeout,
+      SocketCreator socketCreator) throws AuthenticationRequiredException,
+      AuthenticationFailedException, ServerRefusedConnectionException {
 
     super(LoggingThreadGroup.createThreadGroup("Client update thread"), name);
     this.setDaemon(true);
     this.system = (InternalDistributedSystem) ids;
-    this.isDurableClient = handshake.getMembership().isDurable();
+    this.isDurableClient = handshake.getMembershipId().isDurable();
     this.isPrimary = primary;
     this.location = location;
     this.qManager = qManager;
@@ -324,11 +333,11 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
             mySock.getInetAddress().getHostAddress(), mySock.getLocalPort(), mySock.getPort());
       }
 
-      ServerQueueStatus sqs = handshake.handshakeWithSubscriptionFeed(mySock, this.isPrimary);
-      if (sqs.isPrimary() || sqs.isNonRedundant()) {
+      this.serverQueueStatus = handshake.handshakeWithSubscriptionFeed(mySock, this.isPrimary);
+      if (serverQueueStatus.isPrimary() || serverQueueStatus.isNonRedundant()) {
         PoolImpl pool = (PoolImpl) this.qManager.getPool();
         if (!pool.getReadyForEventsCalled()) {
-          pool.setPendingEventCount(sqs.getServerQueueSize());
+          pool.setPendingEventCount(serverQueueStatus.getServerQueueSize());
         }
       }
 
@@ -346,8 +355,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       // Would be nice for it to send us its member id
       // TODO: change the serverId to use the endpoint's getMemberId() which returns a
       // DistributedMember (once gfecq branch is merged to trunk).
-      MemberAttributes ma =
-          new MemberAttributes(0, -1, DistributionManager.NORMAL_DM_TYPE, -1, null, null, null);
+      MemberAttributes ma = new MemberAttributes(0, -1, ClusterDistributionManager.NORMAL_DM_TYPE,
+          -1, null, null, null);
       sid =
           new InternalDistributedMember(mySock.getInetAddress(), mySock.getPort(), false, true, ma);
 
@@ -408,14 +417,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
         this.in = tmpIn;
         this.serverId = sid;
         this.commBuffer = cb;
-
-        // Don't want the timeout after handshake
-        if (mySock != null) {
-          try {
-            mySock.setSoTimeout(0);
-          } catch (SocketException ignore) {
-          }
-        }
 
       } else {
         this.socket = null;
@@ -1565,6 +1566,10 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    */
   private void processMessages() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
+
+    final int headerReadTimeout = (int) Math.round(serverQueueStatus.getPingInterval()
+        * qManager.getPool().getSubscriptionTimeoutMultiplier() * 1.25);
+
     try {
       Message clientMessage = initializeMessage();
 
@@ -1599,7 +1604,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
         try {
           // Read the message
-          clientMessage.recv();
+          clientMessage.receiveWithHeaderReadTimeout(headerReadTimeout);
 
           // Wait for the previously failed cache client updater
           // to finish. This will avoid out of order messages.

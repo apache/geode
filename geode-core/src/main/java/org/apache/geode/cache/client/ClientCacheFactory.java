@@ -250,12 +250,7 @@ public class ClientCacheFactory {
         }
 
         // check if pool is compatible
-        Pool pool = instance.determineDefaultPool(this.pf);
-        if (pool == null) {
-          if (instance.getDefaultPool() != null) {
-            throw new IllegalStateException("Existing cache's default pool was not compatible");
-          }
-        }
+        instance.validatePoolFactory(this.pf);
 
         // Check if cache configuration matches.
         cacheConfig.validateCacheConfig(instance);

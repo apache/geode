@@ -296,12 +296,12 @@ public class DSClock implements CacheTime {
     }
   }
 
-  public static interface DSClockTestHook {
-    public void suspendAtBreakPoint(int breakPoint);
+  public interface DSClockTestHook {
+    void suspendAtBreakPoint(int breakPoint);
 
-    public void addInformation(Object key, Object value);
+    void addInformation(Object key, Object value);
 
-    public Object getInformation(Object key);
+    Object getInformation(Object key);
   }
 
   public DSClockTestHook getTestHook() {

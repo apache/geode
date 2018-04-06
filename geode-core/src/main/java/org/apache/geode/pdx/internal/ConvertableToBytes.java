@@ -17,5 +17,5 @@ package org.apache.geode.pdx.internal;
 import java.io.IOException;
 
 public interface ConvertableToBytes {
-  public byte[] toBytes() throws IOException;
+  byte[] toBytes() throws IOException;
 }
