@@ -57,6 +57,7 @@ import org.apache.geode.cache.lucene.internal.repository.serializer.Heterogeneou
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
@@ -314,7 +315,8 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
 
   @Test
   @Parameters({"PARTITION", "PARTITION_REDUNDANT"})
-  public void creatingIndexAfterRegionInTwoMembersSucceed(RegionTestableType regionType) {
+  public void creatingIndexAfterRegionInTwoMembersSucceed(RegionTestableType regionType)
+      throws Exception {
     dataStore1.invoke(() -> {
       regionType.createDataStore(getCache(), REGION_NAME);
     });
@@ -323,13 +325,19 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       regionType.createDataStore(getCache(), REGION_NAME);
     });
 
-    dataStore1.invoke(() -> {
+    AsyncInvocation createIndex1 = dataStore1.invokeAsync(() -> {
       createIndexAfterRegion("field1");
     });
 
-    dataStore2.invoke(() -> {
+    AsyncInvocation createIndex2 = dataStore2.invokeAsync(() -> {
       createIndexAfterRegion("field1");
     });
+
+    createIndex1.join();
+    createIndex2.join();
+
+    createIndex1.checkException();
+    createIndex2.checkException();
 
     dataStore1.invoke(() -> {
       putEntryAndQuery();

@@ -89,6 +89,10 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
 
   private ArrayList<String> partitionListenerClassNames = new ArrayList<String>();
 
+  public void setGatewaySenderIds(Set<String> gatewaySenderIds) {
+    this.gatewaySenderIds = Collections.unmodifiableSet(gatewaySenderIds);
+  }
+
   private Set<String> gatewaySenderIds = Collections.emptySet();
 
   /**
