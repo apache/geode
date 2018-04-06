@@ -161,7 +161,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       PdxWriterImpl writer = convertToTypeWithNoDeletedFields(ur);
       writer.sendTo(out);
     } else {
-      out.write(DSCODE.PDX);
+      out.write(DSCODE.PDX.toByte());
       out.writeInt(ur.basicSize());
       out.writeInt(ur.getPdxType().getTypeId());
       ur.basicSendTo(out);
@@ -177,7 +177,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     } else {
       byte[] result = new byte[PdxWriterImpl.HEADER_SIZE + ur.basicSize()];
       ByteBuffer bb = ByteBuffer.wrap(result);
-      bb.put(DSCODE.PDX);
+      bb.put(DSCODE.PDX.toByte());
       bb.putInt(ur.basicSize());
       bb.putInt(ur.getPdxType().getTypeId());
       ur.basicSendTo(bb);

@@ -245,7 +245,7 @@ public class OffHeapRegionEntryHelper {
     } else if (isSerialized && !isCompressed) {
       // Check for some special types that take more than 7 bytes to serialize
       // but that might be able to be inlined with less than 8 bytes.
-      if (v[0] == DSCODE.LONG) {
+      if (v[0] == DSCODE.LONG.toByte()) {
         // A long is currently always serialized as 8 bytes (9 if you include the dscode).
         // But many long values will actually be small enough for is to encode in 7 bytes.
         if ((v[1] == 0 && (v[2] & 0x80) == 0) || (v[1] == -1 && (v[2] & 0x80) != 0)) {
@@ -306,7 +306,7 @@ public class OffHeapRegionEntryHelper {
     byte[] bytes;
     if (isLong) {
       bytes = new byte[9];
-      bytes[0] = DSCODE.LONG;
+      bytes[0] = DSCODE.LONG.toByte();
       for (int i = 8; i >= 2; i--) {
         addr >>= 8;
         bytes[i] = (byte) (addr & 0x00ff);

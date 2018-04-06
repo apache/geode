@@ -81,7 +81,7 @@ public class BlobHelper {
       throws IOException, ClassNotFoundException {
     Object result;
     final long start = startDeserialization();
-    if (blob.length > 0 && blob[0] == DSCODE.PDX) {
+    if (blob.length > 0 && blob[0] == DSCODE.PDX.toByte()) {
       // If the first byte of blob indicates a pdx then wrap
       // blob in a PdxInputStream instead.
       // This will prevent us from making a copy of the byte[]

@@ -331,7 +331,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
               CqNameToOp value;
               {
                 byte typeByte = in.readByte();
-                if (typeByte == DSCODE.HASH_MAP) {
+                if (typeByte == DSCODE.HASH_MAP.toByte()) {
                   int cqNamesSize = InternalDataSerializer.readArrayLength(in);
                   if (cqNamesSize == -1) {
                     throw new IllegalStateException(
@@ -350,7 +350,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
                       value.add(cqNamesKey, cqNamesValue);
                     }
                   }
-                } else if (typeByte == DSCODE.NULL) {
+                } else if (typeByte == DSCODE.NULL.toByte()) {
                   throw new IllegalStateException(
                       "The value of a ConcurrentHashMap is not allowed to be null.");
                 } else {

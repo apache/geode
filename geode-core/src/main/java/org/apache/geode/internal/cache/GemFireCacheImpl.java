@@ -5376,7 +5376,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public void registerPdxMetaData(Object instance) {
     try {
       byte[] blob = BlobHelper.serializeToBlob(instance);
-      if (blob.length == 0 || blob[0] != DSCODE.PDX) {
+      if (blob.length == 0 || blob[0] != DSCODE.PDX.toByte()) {
         throw new SerializationException("The instance is not PDX serializable");
       }
     } catch (IOException e) {

@@ -150,7 +150,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
   @Test
   public void encodeDataAsAddressShouldReturnZeroIfValueIsLargerThanEightBytesAndNotLong() {
     byte[] someValue = new byte[8];
-    someValue[0] = DSCODE.CLASS;
+    someValue[0] = DSCODE.CLASS.toByte();
 
     boolean isSerialized = true;
     boolean isCompressed = false;

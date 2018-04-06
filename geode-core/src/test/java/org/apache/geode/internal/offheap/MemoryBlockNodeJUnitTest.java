@@ -324,7 +324,7 @@ public class MemoryBlockNodeJUnitTest {
   public void getDataValueWithIllegalDataTypeCatchesIOException() {
     Object obj = getValue();
     storedObject = createValueAsSerializedStoredObject(obj);
-    storedObject.writeDataByte(0, DSCODE.ILLEGAL);
+    storedObject.writeDataByte(0, DSCODE.ILLEGAL.toByte());
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
