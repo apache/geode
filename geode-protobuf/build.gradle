@@ -27,4 +27,5 @@ dependencies {
     testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
 
     compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
+    testCompile files(project(':geode-old-versions').sourceSets.main.output)
 }

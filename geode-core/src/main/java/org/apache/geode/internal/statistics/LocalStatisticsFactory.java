@@ -24,10 +24,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.statistics.AbstractStatisticsFactory;
-import org.apache.geode.internal.statistics.DummyStatisticsImpl;
-import org.apache.geode.internal.statistics.SimpleStatSampler;
-import org.apache.geode.internal.statistics.StatisticsManager;
 
 /**
  * A standalone implementation of {@link StatisticsFactory}. It can be used in contexts that do not
@@ -51,7 +47,7 @@ public class LocalStatisticsFactory extends AbstractStatisticsFactory
     this.statsDisabled = Boolean.getBoolean(STATS_DISABLE_NAME_PROPERTY);
     if (statsDisabled) {
       this.sampler = null;
-      logger.info(LogMarker.STATISTICS, LocalizedMessage.create(
+      logger.info(LogMarker.STATISTICS_MARKER, LocalizedMessage.create(
           LocalizedStrings.LocalStatisticsFactory_STATISTIC_COLLECTION_IS_DISABLED_USE_DSTATSDISABLEFALSE_TO_TURN_ON_STATISTICS));
     } else if (stopper != null) {
       this.sampler = new SimpleStatSampler(stopper, this);

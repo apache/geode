@@ -20,6 +20,10 @@ disableMavenPublishing()
 
 project.ext.installs = new Properties();
 
+dependencies {
+  testCompile project(":geode-junit")
+}
+
 def addOldVersion(def source, def geodeVersion, def downloadInstall) {
   sourceSets.create(source, {
     compileClasspath += configurations.provided

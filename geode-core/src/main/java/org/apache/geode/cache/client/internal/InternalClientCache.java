@@ -21,6 +21,8 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.CachePerfStats;
 
 public interface InternalClientCache extends ClientCache {
 
@@ -34,4 +36,8 @@ public interface InternalClientCache extends ClientCache {
       throws RegionExistsException, TimeoutException;
 
   Pool getDefaultPool();
+
+  InternalDistributedSystem getInternalDistributedSystem();
+
+  CachePerfStats getCachePerfStats();
 }

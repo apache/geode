@@ -239,7 +239,9 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
+import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.redis.GeodeRedisServer;
 
@@ -846,16 +848,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.system = system;
       this.dm = this.system.getDistributionManager();
 
-      this.configurationResponse = requestSharedConfiguration();
+      if (!isClient) {
+        this.configurationResponse = requestSharedConfiguration();
 
-      // apply the cluster's properties configuration and initialize security using that
-      // configuration
-      ccLoader.applyClusterPropertiesConfiguration(this.configurationResponse,
-          this.system.getConfig());
+        // apply the cluster's properties configuration and initialize security using that
+        // configuration
+        ccLoader.applyClusterPropertiesConfiguration(this.configurationResponse,
+            this.system.getConfig());
 
-      this.securityService =
-          SecurityServiceFactory.create(this.system.getConfig().getSecurityProps(), cacheConfig);
-      this.system.setSecurityService(this.securityService);
+        this.securityService =
+            SecurityServiceFactory.create(this.system.getConfig().getSecurityProps(), cacheConfig);
+        this.system.setSecurityService(this.securityService);
+      } else {
+        // create a no-op security service for client
+        this.securityService = SecurityServiceFactory.create();
+      }
 
       if (!this.isClient && PoolManager.getAll().isEmpty()) {
         // We only support management on members of a distributed system
@@ -1032,7 +1039,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Request the shared configuration from the locator(s) which have the Cluster config service
    * running
    */
-  private ConfigurationResponse requestSharedConfiguration() {
+  ConfigurationResponse requestSharedConfiguration() {
     final DistributionConfig config = this.system.getConfig();
 
     if (!(this.dm instanceof ClusterDistributionManager)) {
@@ -1214,12 +1221,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     boolean completedCacheXml = false;
     try {
-      if (this.configurationResponse == null) {
-        // Deploy all the jars from the deploy working dir.
-        ClassPathLoader.getLatest().getJarDeployer().loadPreviouslyDeployedJarsFromDisk();
+      if (!isClient) {
+        applyJarAndXmlFromClusterConfig();
       }
-      ccLoader.applyClusterXmlConfiguration(this, this.configurationResponse,
-          this.system.getConfig().getGroups());
       initializeDeclarativeCache();
       completedCacheXml = true;
     } catch (RuntimeException e) {
@@ -1247,6 +1251,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     startRestAgentServer(this);
 
     this.isInitialized = true;
+  }
+
+  void applyJarAndXmlFromClusterConfig() {
+    if (this.configurationResponse == null) {
+      // Deploy all the jars from the deploy working dir.
+      ClassPathLoader.getLatest().getJarDeployer().loadPreviouslyDeployedJarsFromDisk();
+    }
+    ccLoader.applyClusterXmlConfiguration(this, this.configurationResponse,
+        this.system.getConfig().getGroups());
   }
 
   /**
@@ -2112,7 +2125,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   public void close(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS) {
-    this.securityService.close();
+    securityService.close();
 
     if (isClosed()) {
       return;
@@ -5078,7 +5091,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     return (getPdxReadSerialized() || pdxReadSerializedOverriden)
-        && TypeRegistry.getPdxReadSerialized();
+        && PdxInstanceImpl.getPdxReadSerialized();
   }
 
   @Override
@@ -5170,7 +5183,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void setReadSerializedForCurrentThread(boolean value) {
-    TypeRegistry.setPdxReadSerialized(value);
+    PdxInstanceImpl.setPdxReadSerialized(value);
     this.setPdxReadSerializedOverride(value);
   }
 
@@ -5324,10 +5337,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public Object convertPdxInstanceIfNeeded(Object obj) {
+  public Object convertPdxInstanceIfNeeded(Object obj, boolean preferCD) {
     Object result = obj;
-    if (!this.getPdxReadSerialized() && obj instanceof PdxInstance) {
-      result = ((PdxInstance) obj).getObject();
+    if (obj instanceof InternalPdxInstance) {
+      InternalPdxInstance pdxInstance = (InternalPdxInstance) obj;
+      if (preferCD) {
+        try {
+          result = new PreferBytesCachedDeserializable(pdxInstance.toBytes());
+        } catch (IOException ignore) {
+          // Could not convert pdx to bytes here; it will be tried again later
+          // and an exception will be thrown there.
+        }
+      } else if (!this.getPdxReadSerialized()) {
+        result = pdxInstance.getObject();
+      }
     }
     return result;
   }

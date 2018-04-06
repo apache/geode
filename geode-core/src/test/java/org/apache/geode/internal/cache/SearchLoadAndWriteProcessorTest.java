@@ -159,7 +159,7 @@ public class SearchLoadAndWriteProcessorTest {
     t3.start();
 
     processor.initialize(lr, key, null);
-    processor.doSearchAndLoad(event, null, null);
+    processor.doSearchAndLoad(event, null, null, false);
 
     assertTrue(Arrays.equals((byte[]) event.getNewValue(), v2));
   }

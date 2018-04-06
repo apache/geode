@@ -44,7 +44,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -59,7 +58,6 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
  *
@@ -131,8 +129,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException, ForceReattemptException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.debug("FetchBulkEntriesMessage operateOnRegion: {}", pr.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "FetchBulkEntriesMessage operateOnRegion: {}",
+          pr.getFullPath());
     }
 
     FetchBulkEntriesReplyMessage.sendReply(pr, getSender(), getProcessorId(), dm, this.bucketKeys,
@@ -155,13 +154,11 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.keys = DataSerializer.readByte(in);
-    InternalDataSerializer.doWithPdxReadSerialized(() -> {
-      if (this.keys == KEY_LIST) {
-        this.bucketKeys = DataSerializer.readHashMap(in);
-      } else if (this.keys == ALL_KEYS) {
-        this.bucketIds = DataSerializer.readHashSet(in);
-      }
-    });
+    if (this.keys == KEY_LIST) {
+      this.bucketKeys = DataSerializer.readHashMap(in);
+    } else if (this.keys == ALL_KEYS) {
+      this.bucketIds = DataSerializer.readHashSet(in);
+    }
     this.regex = DataSerializer.readString(in);
     this.allowTombstones = DataSerializer.readPrimitiveBoolean(in);
   }
@@ -414,15 +411,15 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
       FetchBulkEntriesResponse processor = (FetchBulkEntriesResponse) p;
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "FetchBulkEntriesReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "FetchBulkEntriesReplyMessage processor not found");
         }
         return;
       }
       processor.processChunkResponse(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
 
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
@@ -525,7 +522,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
           Object key;
           int currentId;
 
-          final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
+          final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM_VERBOSE);
           while (in.available() > 0) {
             currentId = DataSerializer.readPrimitiveInt(in);
             if (currentId == -1) {
@@ -592,8 +589,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
             }
 
             if (isDebugEnabled) {
-              logger.trace(LogMarker.DM, "{} chunksProcessed={}, lastChunkReceived={},done={}",
-                  this, this.chunksProcessed, this.lastChunkReceived, doneProcessing);
+              logger.trace(LogMarker.DM_VERBOSE,
+                  "{} chunksProcessed={}, lastChunkReceived={},done={}", this, this.chunksProcessed,
+                  this.lastChunkReceived, doneProcessing);
             }
           }
         } catch (Exception e) {

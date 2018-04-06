@@ -304,9 +304,9 @@ public class IndexCreationMsg extends PartitionMessage {
       // log the exception at fine level if there is no reply to the message
       if (this.processorId == 0) {
         logger.debug("{} exception while processing message:{}", this, t.getMessage(), t);
-      } else if (logger.isDebugEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
-        logger.debug(LogMarker.DM, "Exception caught while processing message: {}", t.getMessage(),
-            t);
+      } else if (logger.isDebugEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {
+        logger.debug(LogMarker.DM_VERBOSE, "Exception caught while processing message: {}",
+            t.getMessage(), t);
       }
       if (t instanceof RegionDestroyedException && pr != null) {
         if (pr.isClosed) {

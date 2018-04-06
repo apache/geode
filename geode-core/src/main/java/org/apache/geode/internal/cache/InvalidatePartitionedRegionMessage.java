@@ -28,7 +28,6 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 
 /**
@@ -94,7 +93,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.callbackArg = InternalDataSerializer.readUserObject(in);
+    this.callbackArg = DataSerializer.readObject(in);
   }
 
   /*

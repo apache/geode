@@ -208,8 +208,8 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   }
 
   private void writeHeader(long initialDate, StatArchiveDescriptor archiveDescriptor) {
-    if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-      logger.trace(LogMarker.STATISTICS,
+    if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
           "StatArchiveWriter#writeHeader initialDate={} archiveDescriptor={}", initialDate,
           archiveDescriptor);
     }
@@ -258,9 +258,9 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   }
 
   public void allocatedResourceType(ResourceType resourceType) {
-    if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-      logger.trace(LogMarker.STATISTICS, "StatArchiveWriter#allocatedResourceType resourceType={}",
-          resourceType);
+    if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
+          "StatArchiveWriter#allocatedResourceType resourceType={}", resourceType);
     }
     if (resourceType.getStatisticDescriptors().length >= ILLEGAL_STAT_OFFSET) {
       throw new InternalGemFireException(
@@ -326,8 +326,8 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
       justification = "This is only for debugging and there is never more than one instance being traced because there is only one stat sampler.")
   public void allocatedResourceInstance(ResourceInstance statResource) {
-    if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-      logger.trace(LogMarker.STATISTICS,
+    if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
           "StatArchiveWriter#allocatedResourceInstance statResource={}", statResource);
     }
     if (statResource.getResourceType().getStatisticDescriptors().length >= ILLEGAL_STAT_OFFSET) {
@@ -378,8 +378,8 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   }
 
   public void destroyedResourceInstance(ResourceInstance resourceInstance) {
-    if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-      logger.trace(LogMarker.STATISTICS,
+    if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
           "StatArchiveWriter#destroyedResourceInstance resourceInstance={}", resourceInstance);
     }
     if (!this.addedResources.contains(resourceInstance)) { // Fix for bug #45377
@@ -425,8 +425,8 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   private void writeTimeStamp(long nanosTimeStamp) throws IOException {
     final long millisTimeStamp = NanoTimer.nanosToMillis(nanosTimeStamp);
     final long delta = calcDelta(this.previousMillisTimeStamp, millisTimeStamp);
-    if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-      logger.trace(LogMarker.STATISTICS,
+    if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
           "StatArchiveWriter#writeTimeStamp millisTimeStamp={}, delta={}", millisTimeStamp,
           (int) delta);
     }
@@ -457,8 +457,9 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
    * Writes the resource instance id to the <code>dataOut</code> stream.
    */
   private void writeResourceInst(int instId) throws IOException {
-    if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-      logger.trace(LogMarker.STATISTICS, "StatArchiveWriter#writeResourceInst instId={}", instId);
+    if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+      logger.trace(LogMarker.STATISTICS_VERBOSE, "StatArchiveWriter#writeResourceInst instId={}",
+          instId);
     }
     if (instId > MAX_BYTE_RESOURCE_INST_ID) {
       if (instId > MAX_SHORT_RESOURCE_INST_ID) {
@@ -502,8 +503,8 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   }
 
   public void sampled(long nanosTimeStamp, List<ResourceInstance> resourceInstances) {
-    if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-      logger.trace(LogMarker.STATISTICS,
+    if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
           "StatArchiveWriter#sampled nanosTimeStamp={}, resourceInstances={}", nanosTimeStamp,
           resourceInstances);
     }
@@ -535,9 +536,9 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   }
 
   private void writeSample(ResourceInstance ri) throws IOException {
-    final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS);
+    final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE);
     if (isDebugEnabled_STATISTICS) {
-      logger.trace(LogMarker.STATISTICS, "StatArchiveWriter#writeSample ri={}", ri);
+      logger.trace(LogMarker.STATISTICS_VERBOSE, "StatArchiveWriter#writeSample ri={}", ri);
     }
     if (this.trace
         && (traceStatisticsName == null
@@ -565,7 +566,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
 
     long[] previousStatValues = ri.getPreviousStatValues();
     if (isDebugEnabled_STATISTICS) {
-      logger.trace(LogMarker.STATISTICS,
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
           "StatArchiveWriter#writeSample checkForChange={}, previousStatValues={}, stats.length={}",
           checkForChange, Arrays.toString(previousStatValues), stats.length);
     }
@@ -593,7 +594,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
             this.traceDataOut.println("writeSample#writeByte i: " + i);
           }
           if (isDebugEnabled_STATISTICS) {
-            logger.trace(LogMarker.STATISTICS,
+            logger.trace(LogMarker.STATISTICS_VERBOSE,
                 "StatArchiveWriter#writeStatValue stats[{}]={}, delta={}", i, stats[i], delta);
           }
           writeStatValue(stats[i], delta, this.dataOut);
@@ -640,7 +641,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
     }
     if (isDebugEnabled_STATISTICS) {
-      logger.trace(LogMarker.STATISTICS, "StatArchiveWriter#writeSample statsWritten={}",
+      logger.trace(LogMarker.STATISTICS_VERBOSE, "StatArchiveWriter#writeSample statsWritten={}",
           statsWritten);
     }
   }
@@ -667,11 +668,6 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
           while (buffer[idx - 1] == -1) {
             idx--;
           }
-          // System.out.print("DEBUG: originalValue=" + originalValue);
-          // for (int dbx=0; dbx<idx; dbx++) {
-          // System.out.print(" " + buffer[dbx]);
-          // }
-          // System.out.println();
         }
         if ((buffer[idx - 1] & 0x80) == 0) {
           /*

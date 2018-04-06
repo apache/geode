@@ -390,9 +390,6 @@ public class PersistentOplogSet implements OplogSet {
           if (parent.isValidating()) {
             if (drs instanceof ValidatingDiskRegion) {
               ValidatingDiskRegion vdr = ((ValidatingDiskRegion) drs);
-              if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-                vdr.dump(System.out);
-              }
               if (vdr.isBucket()) {
                 String prName = vdr.getPrName();
                 if (prSizes.containsKey(prName)) {

@@ -563,8 +563,8 @@ public class TCPConduit implements Runnable {
       stopped = true;
       shutdownCause = cause;
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "Shutting down conduit");
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Shutting down conduit");
       }
       try {
         // set timeout endpoint here since interrupt() has been known
@@ -652,8 +652,8 @@ public class TCPConduit implements Runnable {
    */
   public void run() {
     ConnectionTable.threadWantsSharedResources();
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "Starting P2P Listener on  {}", id);
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "Starting P2P Listener on  {}", id);
     }
     for (;;) {
       SystemFailure.checkFailure();
@@ -768,8 +768,8 @@ public class TCPConduit implements Runnable {
       }
     } // for
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.debug("Stopped P2P Listener on  {}", id);
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace("Stopped P2P Listener on  {}", id);
     }
   }
 

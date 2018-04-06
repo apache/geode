@@ -45,19 +45,22 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
   /**
    * String that uniquely identifies the region.
    */
-  final String name;
+  private final String name;
 
-  final ProtobufChannel protobufChannel;
+  private final ProtobufChannel protobufChannel;
+  private final ValueEncoder valueEncoder;
 
   /**
    * Creates a region implementation for the region <code>name</code> that communicates via
    * <code>socket</code> to a GemFire server.
    *
    * @param name String that uniquely identifies the region.
+   * @param valueEncoder
    */
-  ProtobufRegion(String name, ProtobufChannel channel) {
+  ProtobufRegion(String name, ProtobufChannel channel, ValueEncoder valueEncoder) {
     this.name = name;
     this.protobufChannel = channel;
+    this.valueEncoder = valueEncoder;
   }
 
   @Override
@@ -72,11 +75,11 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
   public V get(K key) throws IOException {
     Message request = Message.newBuilder()
         .setGetRequest(
-            GetRequest.newBuilder().setRegionName(name).setKey(ValueEncoder.encodeValue(key)))
+            GetRequest.newBuilder().setRegionName(name).setKey(valueEncoder.encodeValue(key)))
         .build();
     final Message response = protobufChannel.sendRequest(request, MessageTypeCase.GETRESPONSE);
 
-    return (V) ValueEncoder.decodeValue(response.getGetResponse().getResult());
+    return (V) valueEncoder.decodeValue(response.getGetResponse().getResult());
   }
 
   @Override
@@ -86,7 +89,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     RegionAPI.GetAllRequest.Builder getAllRequest = RegionAPI.GetAllRequest.newBuilder();
     getAllRequest.setRegionName(name);
     for (K key : keys) {
-      getAllRequest.addKey(ValueEncoder.encodeValue(key));
+      getAllRequest.addKey(valueEncoder.encodeValue(key));
     }
     Message request = Message.newBuilder().setGetAllRequest(getAllRequest).build();
 
@@ -96,14 +99,14 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     Map<Object, String> failures = new HashMap<>();
     if (getAllResponse.getFailuresCount() > 0) {
       for (BasicTypes.KeyedError keyedError : getAllResponse.getFailuresList()) {
-        failures.put(ValueEncoder.decodeValue(keyedError.getKey()),
+        failures.put(valueEncoder.decodeValue(keyedError.getKey()),
             keyedError.getError().getMessage());
       }
       throw new IOException("Unable to process the following keys: " + failures);
     }
     for (BasicTypes.Entry entry : getAllResponse.getEntriesList()) {
-      values.put((K) ValueEncoder.decodeValue(entry.getKey()),
-          (V) ValueEncoder.decodeValue(entry.getValue()));
+      values.put((K) valueEncoder.decodeValue(entry.getKey()),
+          (V) valueEncoder.decodeValue(entry.getValue()));
     }
 
     return values;
@@ -112,7 +115,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
   @Override
   public void put(K key, V value) throws IOException {
     final Message request = Message.newBuilder().setPutRequest(
-        PutRequest.newBuilder().setRegionName(name).setEntry(ValueEncoder.encodeEntry(key, value)))
+        PutRequest.newBuilder().setRegionName(name).setEntry(valueEncoder.encodeEntry(key, value)))
         .build();
 
     protobufChannel.sendRequest(request, MessageTypeCase.PUTRESPONSE);
@@ -123,7 +126,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     RegionAPI.PutAllRequest.Builder putAllRequest = RegionAPI.PutAllRequest.newBuilder();
     putAllRequest.setRegionName(name);
     for (K key : values.keySet()) {
-      putAllRequest.addEntry(ValueEncoder.encodeEntry(key, values.get(key)));
+      putAllRequest.addEntry(valueEncoder.encodeEntry(key, values.get(key)));
     }
     final Message request = Message.newBuilder().setPutAllRequest(putAllRequest).build();
 
@@ -132,7 +135,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     if (0 < putAllResponse.getFailedKeysCount()) {
       Map<Object, String> failures = new HashMap<>();
       for (BasicTypes.KeyedError keyedError : putAllResponse.getFailedKeysList()) {
-        failures.put(ValueEncoder.decodeValue(keyedError.getKey()),
+        failures.put(valueEncoder.decodeValue(keyedError.getKey()),
             keyedError.getError().getMessage());
       }
       throw new IOException("Unable to put the following keys: " + failures);
@@ -150,7 +153,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
   @Override
   public V putIfAbsent(K key, V value) throws IOException {
     final RegionAPI.PutIfAbsentRequest.Builder putIfAbsentRequest = RegionAPI.PutIfAbsentRequest
-        .newBuilder().setRegionName(name).setEntry(ValueEncoder.encodeEntry(key, value));
+        .newBuilder().setRegionName(name).setEntry(valueEncoder.encodeEntry(key, value));
 
     final Message request = Message.newBuilder().setPutIfAbsentRequest(putIfAbsentRequest).build();
 
@@ -158,14 +161,14 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
         .sendRequest(request, MessageTypeCase.PUTIFABSENTRESPONSE).getPutIfAbsentResponse();
 
 
-    return (V) ValueEncoder.decodeValue(putIfAbsentResponse.getOldValue());
+    return (V) valueEncoder.decodeValue(putIfAbsentResponse.getOldValue());
   }
 
   @Override
   public void remove(K key) throws IOException {
     final Message request = Message.newBuilder()
         .setRemoveRequest(
-            RemoveRequest.newBuilder().setRegionName(name).setKey(ValueEncoder.encodeValue(key)))
+            RemoveRequest.newBuilder().setRegionName(name).setKey(valueEncoder.encodeValue(key)))
         .build();
 
     protobufChannel.sendRequest(request, MessageTypeCase.REMOVERESPONSE);
@@ -180,7 +183,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
 
     Set<K> keys = new HashSet<>(keySetResponse.getKeysCount());
     for (BasicTypes.EncodedValue value : keySetResponse.getKeysList()) {
-      keys.add((K) ValueEncoder.decodeValue(value));
+      keys.add((K) valueEncoder.decodeValue(value));
     }
     return keys;
   }

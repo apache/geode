@@ -121,13 +121,13 @@ public class StateFlushOperation {
       ReplyProcessor21 processor = new ReplyProcessor21(dm, target);
       gr.processorId = processor.getProcessorId();
       gr.channelState = dm.getMembershipManager().getMessageState(target, false);
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)
+      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)
           && ((gr.channelState != null) && (gr.channelState.size() > 0))) {
-        logger.trace(LogMarker.STATE_FLUSH_OP, "channel states: {}",
+        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "channel states: {}",
             gr.channelStateDescription(gr.channelState));
       }
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-        logger.trace(LogMarker.STATE_FLUSH_OP, "Sending {}", gr);
+      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {}", gr);
       }
       dm.putOutgoing(gr);
       processors.add(processor);
@@ -219,14 +219,15 @@ public class StateFlushOperation {
       smm.severeAlertEnabled = true;
       gfprocessor.enableSevereAlertProcessing();
     }
-    if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-      logger.trace(LogMarker.STATE_FLUSH_OP, "Sending {} with processor {}", smm, gfprocessor);
+    if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+      logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {} with processor {}", smm,
+          gfprocessor);
     }
     Set failures = this.dm.putOutgoing(smm);
     if (failures != null) {
       if (failures.contains(target)) {
-        if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-          logger.trace(LogMarker.STATE_FLUSH_OP,
+        if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+          logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
               "failed to send StateMarkerMessage to target {}; returning from flush without waiting for replies",
               target);
         }
@@ -236,12 +237,9 @@ public class StateFlushOperation {
     }
 
     try {
-      // try { Thread.sleep(100); } catch (InterruptedException e) {
-      // Thread.currentThread().interrupt(); } // DEBUGGING - stall before getting membership to
-      // increase odds that target has left
       gfprocessor.waitForReplies();
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-        logger.trace(LogMarker.STATE_FLUSH_OP, "Finished processing {}", smm);
+      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Finished processing {}", smm);
       }
     } catch (ReplyException re) {
       logger.warn(LocalizedMessage
@@ -344,7 +342,7 @@ public class StateFlushOperation {
 
     @Override
     protected void process(ClusterDistributionManager dm) {
-      logger.trace(LogMarker.STATE_FLUSH_OP, "Processing {}", this);
+      logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Processing {}", this);
       if (dm.getDistributionManagerId().equals(relayRecipient)) {
         try {
           // wait for inflight operations to the aeqs even if the recipient is the primary
@@ -372,8 +370,8 @@ public class StateFlushOperation {
           ga.sendingMember = relayRecipient;
           ga.setRecipient(this.getSender());
           ga.setProcessorId(processorId);
-          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-            logger.trace(LogMarker.STATE_FLUSH_OP, "Sending {}", ga);
+          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+            logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {}", ga);
           }
           dm.putOutgoing(ga);
         }
@@ -392,8 +390,9 @@ public class StateFlushOperation {
           Set<DistributedRegion> regions = getRegions(dm);
           for (DistributedRegion r : regions) {
             if (r == null) {
-              if (logger.isTraceEnabled(LogMarker.DM)) {
-                logger.trace(LogMarker.DM, "Region not found - skipping channel state assessment");
+              if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+                logger.trace(LogMarker.DM_VERBOSE,
+                    "Region not found - skipping channel state assessment");
               }
             }
             if (r != null) {
@@ -413,9 +412,9 @@ public class StateFlushOperation {
                 } else {
                   gr.channelState = channelStates;
                 }
-                if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)
+                if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)
                     && ((gr.channelState != null) && (gr.channelState.size() > 0))) {
-                  logger.trace(LogMarker.STATE_FLUSH_OP, "channel states: {}",
+                  logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "channel states: {}",
                       gr.channelStateDescription(gr.channelState));
                 }
               }
@@ -429,8 +428,8 @@ public class StateFlushOperation {
               LocalizedStrings.StateFlushOperation_0__EXCEPTION_CAUGHT_WHILE_DETERMINING_CHANNEL_STATE,
               this), e);
         } finally {
-          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-            logger.trace(LogMarker.STATE_FLUSH_OP, "Sending {}", gr);
+          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+            logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {}", gr);
           }
           dm.putOutgoing(gr);
         }
@@ -556,14 +555,14 @@ public class StateFlushOperation {
       // in the waiting pool to avoid blocking those connections
       dm.getWaitingThreadPool().execute(new Runnable() {
         public void run() {
-          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-            logger.trace(LogMarker.STATE_FLUSH_OP, "Processing {}", this);
+          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+            logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Processing {}", this);
           }
           try {
             if (channelState != null) {
-              if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)
+              if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)
                   && ((channelState != null) && (channelState.size() > 0))) {
-                logger.trace(LogMarker.STATE_FLUSH_OP, "Waiting for channel states:  {}",
+                logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Waiting for channel states:  {}",
                     channelStateDescription(channelState));
               }
               for (;;) {
@@ -609,8 +608,8 @@ public class StateFlushOperation {
               ga.sendingMember = getSender();
             }
             ga.setProcessorId(processorId);
-            if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-              logger.trace(LogMarker.STATE_FLUSH_OP, "Sending {}", ga);
+            if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+              logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {}", ga);
             }
             if (requestingMember.equals(dm.getDistributionManagerId())) {
               ga.dmProcess(dm);
@@ -679,8 +678,8 @@ public class StateFlushOperation {
 
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-        logger.trace(LogMarker.STATE_FLUSH_OP, "Processing {}", this);
+      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Processing {}", this);
       }
       super.process(dm, processor);
     }

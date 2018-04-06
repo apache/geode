@@ -123,8 +123,8 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
         successful = true; // not a cancel-exception, so don't complain any more about it
 
       } catch (RegionDestroyedException | RemoteOperationException e) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
               "RemoteInvalidateMessage caught an exception during distribution; retrying to another member",
               e);
         }
@@ -207,8 +207,8 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
         r.checkReadiness();
         r.checkForLimitedOrNoAccess();
         r.basicInvalidate(event);
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "remoteInvalidated key: {}", key);
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "remoteInvalidated key: {}", key);
         }
         sendReply(getSender(), this.processorId, dm, /* ex */null, event.getRegion(),
             event.getVersionTag(), startTime);
@@ -280,15 +280,15 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "InvalidateReplyMessage process invoking reply processor with processorId:{}",
             this.processorId);
       }
 
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "InvalidateReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "InvalidateReplyMessage processor not found");
         }
         return;
       }
@@ -301,8 +301,8 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", rp, this);
       }
 
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);

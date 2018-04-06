@@ -1497,8 +1497,8 @@ public class CacheClientProxy implements ClientSession {
         // again need to check as there may be no CQ available
         if (!clientMessage.hasCqs(this.proxyID)) {
           this._statistics.incMessagesNotQueuedNotInterested();
-          if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-            logger.debug(
+          if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+            logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE,
                 "{}: Not adding message to queue. It is not interested in this region and key: {}",
                 clientMessage);
           }
@@ -2706,8 +2706,8 @@ public class CacheClientProxy implements ClientSession {
      */
     protected boolean dispatchMessage(ClientMessage clientMessage) throws IOException {
       boolean isDispatched = false;
-      if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-        logger.trace(LogMarker.BRIDGE_SERVER, "Dispatching {}", clientMessage);
+      if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+        logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "Dispatching {}", clientMessage);
       }
       Message message = null;
 
@@ -2738,36 +2738,8 @@ public class CacheClientProxy implements ClientSession {
         message = clientMessage.getMessage(getProxy(), true /* notify */);
       }
 
-      // //////////////////////////////
-      // TEST CODE BEGIN (Throws exception to test closing proxy)
-      // if (true) throw new IOException("test");
-      // TEST CODE END
-      // //////////////////////////////
-      // Message message = ((ClientUpdateMessageImpl)clientMessage).getMessage(getProxy().proxyID,
-      // latestValue);
-      // Message message = clientMessage.getMessage(); removed during merge.
-      // BugFix for BUG#38206 and BUG#37791
       if (!this._proxy.isPaused()) {
         sendMessage(message);
-
-        // //////////////////////////////
-        // TEST CODE BEGIN (Throws exception to test closing proxy)
-        // if (true) throw new IOException("test");
-        // TEST CODE END
-        // //////////////////////////////
-        // Message message = ((ClientUpdateMessageImpl)clientMessage).getMessage(getProxy().proxyID,
-        // latestValue);
-        // Message message = clientMessage.getMessage(); removed during merge.
-        // message.setComms(getSocket(), getCommBuffer(), getStatistics());
-        // message.send();
-
-        // //////////////////////////////
-        // TEST CODE BEGIN (Introduces random wait in client)
-        // Sleep a random number of ms
-        // java.util.Random rand = new java.util.Random();
-        // try {Thread.sleep(rand.nextInt(5));} catch (InterruptedException e) {}
-        // TEST CODE END
-        // //////////////////////////////
 
         if (logger.isTraceEnabled()) {
           logger.trace("{}: Dispatched {}", this, clientMessage);
@@ -2814,12 +2786,6 @@ public class CacheClientProxy implements ClientSession {
           if (logger.isDebugEnabled()) {
             logger.debug("{}: Queued message while Durable Client is away {}", this, clientMessage);
           }
-        } else {
-          // [bruce] we don't really know that it was added, so don't log this
-          // if (logger.isDebugEnabled() || BridgeServerImpl.VERBOSE) {
-          // logger.debug(LocalizedStrings.DEBUG, this + " added message to queue: " +
-          // clientMessage);
-          // }
         }
       } catch (CancelException e) {
         throw e;

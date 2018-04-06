@@ -40,7 +40,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -206,8 +205,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       }
       if (this.processorId == 0) {
         logger.debug("{} exception while processing message: {}", this, t.getMessage(), t);
-      } else if (logger.isTraceEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
-        logger.trace(LogMarker.DM, "Exception caught while processing message", t);
+      } else if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message", t);
       }
     } finally {
       cleanupTransaction(tx);
@@ -246,8 +245,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     }
 
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "FunctionMessage operateOnRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "FunctionMessage operateOnRegion: {}", r.getFullPath());
     }
     try {
       r.executeOnRegion(this, this.functionObject, this.args, this.processorId, this.filter,
@@ -333,7 +332,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       this.functionObject = (Function) object;
       this.isFnSerializationReqd = true;
     }
-    this.args = (Serializable) InternalDataSerializer.readUserObject(in);
+    this.args = (Serializable) DataSerializer.readObject(in);
     this.filter = (HashSet) DataSerializer.readHashSet(in);
     this.regionPath = DataSerializer.readString(in);
     this.isReExecute = (flags & IS_REEXECUTE) != 0;

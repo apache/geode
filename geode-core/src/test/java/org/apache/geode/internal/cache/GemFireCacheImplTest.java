@@ -16,8 +16,13 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.NotSerializableException;
 import java.util.Properties;
@@ -321,5 +326,22 @@ public class GemFireCacheImplTest {
     clusterProps.setProperty("key", "value1");
     serverProps.setProperty("key", "");
     assertFalse(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+  }
+
+  @Test
+  public void clientCacheWouldNotRequestClusterConfig() {
+    // we will need to set the value to true so that we can use a mock cache
+    boolean oldValue = InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
+    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = true;
+
+    cache = mock(GemFireCacheImpl.class);
+    when(distributedSystem.getCache()).thenReturn(cache);
+    GemFireCacheImpl.createClient(distributedSystem, null, cacheConfig);
+
+    verify(cache, times(0)).requestSharedConfiguration();
+    verify(cache, times(0)).applyJarAndXmlFromClusterConfig();
+
+    // reset it back to the old value
+    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = oldValue;
   }
 }

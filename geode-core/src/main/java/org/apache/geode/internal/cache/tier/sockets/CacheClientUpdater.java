@@ -1650,8 +1650,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
             }
           }
 
-          if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-            logger.trace(LogMarker.BRIDGE_SERVER, "Processing event with id {}",
+          if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+            logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "Processing event with id {}",
                 eventId.expensiveToString());
           }
 

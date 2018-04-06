@@ -297,13 +297,12 @@ public class ExecuteFunctionOnGroupIntegrationTest {
 
   private void authenticateWithServer() throws IOException {
     ClientProtocol.Message.Builder request = ClientProtocol.Message.newBuilder()
-        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+        .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
             .putCredentials(ResourceConstants.USER_NAME, "someuser")
             .putCredentials(ResourceConstants.PASSWORD, "somepassword"));
 
     ClientProtocol.Message response = writeMessage(request.build());
-    assertEquals(response.toString(), true,
-        response.getAuthenticationResponse().getAuthenticated());
+    assertEquals(response.toString(), true, response.getHandshakeResponse().getAuthenticated());
   }
 
 

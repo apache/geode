@@ -26,11 +26,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.Releasable;
 
@@ -116,10 +114,6 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
 
 
   public void addAll(ObjectPartList other) {
-    if (logger.isTraceEnabled(LogMarker.OBJECT_PART_LIST)) {
-      logger.trace(LogMarker.OBJECT_PART_LIST, "OPL.addAll: other={}\nthis={}", other, this);
-    }
-
     if (this.hasKeys) {
       if (other.keys != null) {
         if (this.keys == null) {
@@ -225,7 +219,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     if (numObjects > 0) {
       for (int index = 0; index < numObjects; ++index) {
         if (this.hasKeys) {
-          Object key = InternalDataSerializer.readUserObject(in);
+          Object key = DataSerializer.readObject(in);
           this.keys.add(key);
         }
         boolean isException = in.readBoolean();
@@ -236,7 +230,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
           // ignore the exception string meant for native clients
           DataSerializer.readString(in);
         } else {
-          value = InternalDataSerializer.readUserObject(in);
+          value = DataSerializer.readObject(in);
         }
         this.objects.add(value);
       }
@@ -258,5 +252,4 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
       OffHeapHelper.release(v);
     }
   }
-
 }

@@ -23,7 +23,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 
 public class DisconnectClientRequestOperationHandler implements
     ProtobufOperationHandler<ConnectionAPI.DisconnectClientRequest, ConnectionAPI.DisconnectClientResponse> {
@@ -35,8 +35,7 @@ public class DisconnectClientRequestOperationHandler implements
       ConnectionAPI.DisconnectClientRequest request,
       MessageExecutionContext messageExecutionContext) {
     logger.info("Client disconnecting due to {}", request.getReason());
-    messageExecutionContext
-        .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
+    messageExecutionContext.setState(new TerminateConnection());
 
     return Success.of(ConnectionAPI.DisconnectClientResponse.newBuilder().build());
   }
