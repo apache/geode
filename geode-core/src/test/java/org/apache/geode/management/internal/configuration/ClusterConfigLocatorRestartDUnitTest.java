@@ -46,6 +46,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
 
   @Test
   public void serverRestartsAfterLocatorReconnects() throws Exception {
+    IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
+
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "5000");
     MemberVM locator0 = rule.startLocatorVM(0, props);
