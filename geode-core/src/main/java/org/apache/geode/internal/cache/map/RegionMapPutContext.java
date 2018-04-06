@@ -32,7 +32,7 @@ import org.apache.geode.internal.cache.RegionEntry;
  * It also has a few mutable items updates while a "put"
  * operation is being done.
  */
-public class RegionMapPutInfo {
+public class RegionMapPutContext {
   private final EntryEventImpl event;
   private final boolean ifNew;
   private final boolean ifOld;
@@ -51,7 +51,7 @@ public class RegionMapPutInfo {
   private RegionEntry result;
   private boolean entryExisted;
 
-  public RegionMapPutInfo(LocalRegion owner, EntryEventImpl event, boolean ifNew, boolean ifOld,
+  public RegionMapPutContext(LocalRegion owner, EntryEventImpl event, boolean ifNew, boolean ifOld,
       boolean overwriteDestroyed, boolean requireOldValue,
 
       Object expectedOldValue) {

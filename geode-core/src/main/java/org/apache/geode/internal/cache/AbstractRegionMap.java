@@ -59,7 +59,7 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.map.CacheModificationLock;
 import org.apache.geode.internal.cache.map.FocusedRegionMap;
 import org.apache.geode.internal.cache.map.RegionMapDestroy;
-import org.apache.geode.internal.cache.map.RegionMapPutInfo;
+import org.apache.geode.internal.cache.map.RegionMapPutContext;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.region.entry.RegionEntryFactoryBuilder;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -2185,7 +2185,7 @@ public abstract class AbstractRegionMap
       throws CacheWriterException, TimeoutException {
 
     final LocalRegion owner = _getOwner();
-    final RegionMapPutInfo putInfo = new RegionMapPutInfo(owner, event, ifNew, ifOld,
+    final RegionMapPutContext putInfo = new RegionMapPutContext(owner, event, ifNew, ifOld,
         overwriteDestroyed, requireOldValue, expectedOldValue);
 
     entryEventSerialization.serializeNewValueIfNeeded(owner, event);
@@ -2200,7 +2200,7 @@ public abstract class AbstractRegionMap
   }
 
   private void doBasicPut(EntryEventImpl event, final LocalRegion owner,
-      final RegionMapPutInfo putInfo) {
+      final RegionMapPutContext putInfo) {
     final IndexManager oqlIndexManager = getInitializedIndexManager();
     try {
       RegionEntry re;
@@ -2221,7 +2221,7 @@ public abstract class AbstractRegionMap
   }
 
   private RegionEntry getExistingEntryOrCreateNewOne(final LocalRegion owner,
-      final RegionMapPutInfo putInfo) {
+      final RegionMapPutContext putInfo) {
     final Object key = putInfo.getEvent().getKey();
     RegionEntry re = getEntry(key);
     putInfo.setEntryExisted(re != null);
@@ -2237,7 +2237,7 @@ public abstract class AbstractRegionMap
     return re;
   }
 
-  private boolean addRegionEntryToMapAndDoPut(final RegionMapPutInfo putInfo, RegionEntry re) {
+  private boolean addRegionEntryToMapAndDoPut(final RegionMapPutContext putInfo, RegionEntry re) {
     synchronized (re) {
       if (!putInfo.getEntryExisted()) {
         re = createEntryInMap(putInfo.getEvent().getKey(), re);
@@ -2258,7 +2258,7 @@ public abstract class AbstractRegionMap
     return oqlIndexManager;
   }
 
-  private void doAfterPut(RegionMapPutInfo putInfo, IndexManager oqlIndexManager) {
+  private void doAfterPut(RegionMapPutContext putInfo, IndexManager oqlIndexManager) {
     final LocalRegion owner = _getOwner();
     if (oqlIndexManager != null) {
       oqlIndexManager.countDownIndexUpdaters();
@@ -2285,7 +2285,7 @@ public abstract class AbstractRegionMap
     }
   }
 
-  private boolean doPutOnRegionEntry(final RegionMapPutInfo putInfo, final RegionEntry re) {
+  private boolean doPutOnRegionEntry(final RegionMapPutContext putInfo, final RegionEntry re) {
     final LocalRegion owner = _getOwner();
     final EntryEventImpl event = putInfo.getEvent();
 
@@ -2317,7 +2317,7 @@ public abstract class AbstractRegionMap
    * @return true if an early out check indicated that
    *         the put should not be done.
    */
-  private boolean checkEarlyOuts(final RegionMapPutInfo putInfo, final RegionEntry re) {
+  private boolean checkEarlyOuts(final RegionMapPutContext putInfo, final RegionEntry re) {
     if (!continueUpdate(putInfo, re) || !continueOverwriteDestroyed(putInfo, re)
         || !satisfiesExpectedOldValue(putInfo, re)) {
       putInfo.setResult(null);
@@ -2326,7 +2326,7 @@ public abstract class AbstractRegionMap
     return false;
   }
 
-  private void doCreateOrUpdate(final RegionMapPutInfo putInfo, final RegionEntry re,
+  private void doCreateOrUpdate(final RegionMapPutContext putInfo, final RegionEntry re,
       final Object oldValueForDelta) {
     invokeCacheWriter(re, putInfo);
 
@@ -2348,7 +2348,7 @@ public abstract class AbstractRegionMap
     }
   }
 
-  private void createOrUpdateEntry(RegionMapPutInfo putInfo, RegionEntry re,
+  private void createOrUpdateEntry(RegionMapPutContext putInfo, RegionEntry re,
       final LocalRegion owner, final Object oldValueForDelta) {
     final EntryEventImpl event = putInfo.getEvent();
     try {
@@ -2372,7 +2372,7 @@ public abstract class AbstractRegionMap
     }
   }
 
-  private Object getOldValueForDelta(RegionMapPutInfo putInfo, RegionEntry re) {
+  private Object getOldValueForDelta(RegionMapPutContext putInfo, RegionEntry re) {
     if (putInfo.isRetrieveOldValueForDelta()) {
       // defer the lruUpdateCallback to prevent a deadlock (see bug 51121).
       final boolean disabled = disableLruUpdateCallback();
@@ -2411,7 +2411,8 @@ public abstract class AbstractRegionMap
     return true;
   }
 
-  private boolean satisfiesExpectedOldValue(final RegionMapPutInfo putInfo, final RegionEntry re) {
+  private boolean satisfiesExpectedOldValue(final RegionMapPutContext putInfo,
+      final RegionEntry re) {
     // replace is propagated to server, so no need to check
     // satisfiesOldValue on client
     final EntryEventImpl event = putInfo.getEvent();
@@ -2432,7 +2433,7 @@ public abstract class AbstractRegionMap
   }
 
   // PRECONDITION: caller must be synced on re
-  private void setOldValueInEvent(final RegionMapPutInfo putInfo, final RegionEntry re) {
+  private void setOldValueInEvent(final RegionMapPutContext putInfo, final RegionEntry re) {
     final EntryEventImpl event = putInfo.getEvent();
     event.setRegionEntry(re);
     boolean needToSetOldValue = putInfo.isCacheWrite() || putInfo.isRequireOldValue()
@@ -2531,7 +2532,7 @@ public abstract class AbstractRegionMap
     }
   }
 
-  private void invokeCacheWriter(RegionEntry re, RegionMapPutInfo putInfo) {
+  private void invokeCacheWriter(RegionEntry re, RegionMapPutContext putInfo) {
     final EntryEventImpl event = putInfo.getEvent();
     // invoke listeners only if region is initialized
     if (_getOwner().isInitialized() && putInfo.isCacheWrite()) {
@@ -2555,7 +2556,8 @@ public abstract class AbstractRegionMap
     }
   }
 
-  private boolean continueOverwriteDestroyed(final RegionMapPutInfo putInfo, final RegionEntry re) {
+  private boolean continueOverwriteDestroyed(final RegionMapPutContext putInfo,
+      final RegionEntry re) {
     Token oldValueInVM = re.getValueAsToken();
     // if region is under GII, check if token is destroyed
     if (!putInfo.isOverwriteDestroyed()) {
@@ -2571,7 +2573,7 @@ public abstract class AbstractRegionMap
     return true;
   }
 
-  private boolean continueUpdate(final RegionMapPutInfo putInfo, final RegionEntry re) {
+  private boolean continueUpdate(final RegionMapPutContext putInfo, final RegionEntry re) {
     if (putInfo.isIfOld()) {
       final EntryEventImpl event = putInfo.getEvent();
       // only update, so just do tombstone maintainence and exit
