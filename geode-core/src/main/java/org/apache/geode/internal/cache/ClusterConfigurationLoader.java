@@ -83,7 +83,7 @@ public class ClusterConfigurationLoader {
    */
   public void deployJarsReceivedFromClusterConfiguration(ConfigurationResponse response)
       throws IOException, ClassNotFoundException {
-    logger.info("Requesting cluster configuration");
+    logger.info("deploying jars received from cluster configuration");
     if (response == null) {
       return;
     }

@@ -848,16 +848,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.system = system;
       this.dm = this.system.getDistributionManager();
 
-      this.configurationResponse = requestSharedConfiguration();
+      if (!isClient) {
+        this.configurationResponse = requestSharedConfiguration();
 
-      // apply the cluster's properties configuration and initialize security using that
-      // configuration
-      ccLoader.applyClusterPropertiesConfiguration(this.configurationResponse,
-          this.system.getConfig());
+        // apply the cluster's properties configuration and initialize security using that
+        // configuration
+        ccLoader.applyClusterPropertiesConfiguration(this.configurationResponse,
+            this.system.getConfig());
 
-      this.securityService =
-          SecurityServiceFactory.create(this.system.getConfig().getSecurityProps(), cacheConfig);
-      this.system.setSecurityService(this.securityService);
+        this.securityService =
+            SecurityServiceFactory.create(this.system.getConfig().getSecurityProps(), cacheConfig);
+        this.system.setSecurityService(this.securityService);
+      } else {
+        // create a no-op security service for client
+        this.securityService = SecurityServiceFactory.create();
+      }
 
       if (!this.isClient && PoolManager.getAll().isEmpty()) {
         // We only support management on members of a distributed system
@@ -1034,7 +1039,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Request the shared configuration from the locator(s) which have the Cluster config service
    * running
    */
-  private ConfigurationResponse requestSharedConfiguration() {
+  ConfigurationResponse requestSharedConfiguration() {
     final DistributionConfig config = this.system.getConfig();
 
     if (!(this.dm instanceof ClusterDistributionManager)) {
@@ -1216,12 +1221,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     boolean completedCacheXml = false;
     try {
-      if (this.configurationResponse == null) {
-        // Deploy all the jars from the deploy working dir.
-        ClassPathLoader.getLatest().getJarDeployer().loadPreviouslyDeployedJarsFromDisk();
+      if (!isClient) {
+        applyJarAndXmlFromClusterConfig();
       }
-      ccLoader.applyClusterXmlConfiguration(this, this.configurationResponse,
-          this.system.getConfig().getGroups());
       initializeDeclarativeCache();
       completedCacheXml = true;
     } catch (RuntimeException e) {
@@ -1249,6 +1251,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     startRestAgentServer(this);
 
     this.isInitialized = true;
+  }
+
+  void applyJarAndXmlFromClusterConfig() {
+    if (this.configurationResponse == null) {
+      // Deploy all the jars from the deploy working dir.
+      ClassPathLoader.getLatest().getJarDeployer().loadPreviouslyDeployedJarsFromDisk();
+    }
+    ccLoader.applyClusterXmlConfiguration(this, this.configurationResponse,
+        this.system.getConfig().getGroups());
   }
 
   /**
@@ -2114,7 +2125,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   public void close(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS) {
-    this.securityService.close();
+    securityService.close();
 
     if (isClosed()) {
       return;
