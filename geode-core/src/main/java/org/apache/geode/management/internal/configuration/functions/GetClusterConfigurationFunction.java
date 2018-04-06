@@ -39,26 +39,27 @@ public class GetClusterConfigurationFunction implements InternalFunction {
       String errorMessage = "The cluster configuration service is not enabled on this member.";
       logger.warn(errorMessage);
       context.getResultSender().lastResult(new IllegalStateException(errorMessage));
-    } else {
-      // Shared configuration enabled.
-      if (internalLocator.isSharedConfigurationRunning()) {
-        // Cluster configuration is up and running already.
-        InternalClusterConfigurationService clusterConfigurationService =
-            internalLocator.getSharedConfiguration();
+      return;
+    }
 
-        try {
-          ConfigurationResponse response =
-              clusterConfigurationService.createConfigurationResponse(groups);
-          context.getResultSender().lastResult(response);
-        } catch (Exception exception) {
-          logger.error("Unable to retrieve the cluster configuration", exception);
-          context.getResultSender().lastResult(exception);
-        }
-      } else {
-        // Cluster configuration service is starting up. Return null so callers can decide whether
-        // to fail fast, or wait and retry later.
-        context.getResultSender().lastResult(null);
+    // Shared configuration enabled.
+    if (internalLocator.isSharedConfigurationRunning()) {
+      // Cluster configuration is up and running already.
+      InternalClusterConfigurationService clusterConfigurationService =
+          internalLocator.getSharedConfiguration();
+
+      try {
+        ConfigurationResponse response =
+            clusterConfigurationService.createConfigurationResponse(groups);
+        context.getResultSender().lastResult(response);
+      } catch (Exception exception) {
+        logger.error("Unable to retrieve the cluster configuration", exception);
+        context.getResultSender().lastResult(exception);
       }
+    } else {
+      // Cluster configuration service is starting up. Return null so callers can decide whether
+      // to fail fast, or wait and retry later.
+      context.getResultSender().lastResult(null);
     }
   }
 }

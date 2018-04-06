@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import org.junit.Before;
@@ -101,7 +100,7 @@ public class ClusterConfigurationLoaderIntegrationTest {
   @Test
   public void requestConfigurationFromLocatorsShouldCorrectlyLoadTheClusterConfigurationEvenAfterSeveralRetries()
       throws Exception {
-    int mockLimit = new Random().nextInt(6) + 1;
+    int mockLimit = 6;
     CustomAnswer customAnswer = new CustomAnswer(mockLimit);
     Mockito.doAnswer(customAnswer).when(loader).requestConfigurationFromOneLocator(Mockito.any(),
         Mockito.anySet());
