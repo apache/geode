@@ -30,34 +30,37 @@ import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundExcepti
 
 @Experimental
 public interface ClusterConfigurationService {
+  void registerBindClassWithSchema(Class clazz, String nameSpaceAndLocation);
+
+  default void registerBindClass(Class clazz) {
+    registerBindClassWithSchema(clazz, null);
+  }
 
   /**
    * retrieves the configuration object of a member group
    *
    * @param group the member group name, if null, then "cluster" is assumed
-   * @param additionalBindClass custom element classes if needed
    * @return the configuration object
    */
-  CacheConfig getCacheConfig(String group, Class<? extends CacheElement>... additionalBindClass);
+  CacheConfig getCacheConfig(String group);
 
   /**
    * update the cluster configuration of a member group
    *
    * @param group the member group name, if null, then "cluster" is assumed
    * @param mutator the change you want to apply to the configuration
-   * @param additionalBindClass custom element classes if needed
    */
-  void updateCacheConfig(String group, UnaryOperator<CacheConfig> mutator,
-      Class<? extends CacheElement>... additionalBindClass);
+  void updateCacheConfig(String group, UnaryOperator<CacheConfig> mutator);
 
 
   default <T extends CacheElement> T getCustomCacheElement(String group, String id,
       Class<T> classT) {
-    CacheConfig cacheConfig = getCacheConfig(group, classT);
+    CacheConfig cacheConfig = getCacheConfig(group);
     return findCustomCacheElement(cacheConfig, id, classT);
   }
 
   default void saveCustomCacheElement(String group, CacheElement element) {
+    registerBindClass(element.getClass());
     updateCacheConfig(group, cacheConfig -> {
       CacheElement foundElement =
           findCustomCacheElement(cacheConfig, element.getId(), element.getClass());
@@ -66,11 +69,12 @@ public interface ClusterConfigurationService {
       }
       cacheConfig.getCustomCacheElements().add(element);
       return cacheConfig;
-    }, element.getClass());
+    });
   }
 
   default void deleteCustomCacheElement(String group, String id,
       Class<? extends CacheElement> classT) {
+    registerBindClass(classT);
     updateCacheConfig(group, config -> {
       CacheElement cacheElement = findCustomCacheElement(config, id, classT);
       if (cacheElement == null) {
@@ -78,16 +82,18 @@ public interface ClusterConfigurationService {
       }
       config.getCustomCacheElements().remove(cacheElement);
       return config;
-    }, classT);
+    });
   }
 
   default <T extends CacheElement> T getCustomRegionElement(String group, String regionPath,
       String id, Class<T> classT) {
-    CacheConfig cacheConfig = getCacheConfig(group, classT);
+    registerBindClass(classT);
+    CacheConfig cacheConfig = getCacheConfig(group);
     return findCustomRegionElement(cacheConfig, regionPath, id, classT);
   }
 
   default void saveCustomRegionElement(String group, String regionPath, CacheElement element) {
+    registerBindClass(element.getClass());
     updateCacheConfig(group, cacheConfig -> {
       RegionConfig regionConfig = findRegionConfiguration(cacheConfig, regionPath);
       if (regionConfig == null) {
@@ -103,11 +109,12 @@ public interface ClusterConfigurationService {
       }
       regionConfig.getCustomRegionElements().add(element);
       return cacheConfig;
-    }, element.getClass());
+    });
   }
 
   default void deleteCustomRegionElement(String group, String regionPath, String id,
       Class<? extends CacheElement> classT) {
+    registerBindClass(classT);
     updateCacheConfig(group, cacheConfig -> {
       RegionConfig regionConfig = findRegionConfiguration(cacheConfig, regionPath);
       if (regionConfig == null) {
@@ -120,7 +127,7 @@ public interface ClusterConfigurationService {
       }
       regionConfig.getCustomRegionElements().remove(element);
       return cacheConfig;
-    }, classT);
+    });
   }
 
 
