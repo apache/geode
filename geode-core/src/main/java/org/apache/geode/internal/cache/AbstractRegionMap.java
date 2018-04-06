@@ -2391,7 +2391,7 @@ public abstract class AbstractRegionMap
 
   /**
    * If the re goes into removed2 state, it will be removed from the map.
-   * 
+   *
    * @return true if re was remove phase 2 and handled
    */
   private boolean handleRemovePhase2(final Object key, RegionEntry re) {
