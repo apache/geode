@@ -327,6 +327,7 @@ public class CommandInitializer {
     ALL_COMMANDS.put(Version.GEODE_130, commands);
     ALL_COMMANDS.put(Version.GEODE_140, commands);
     ALL_COMMANDS.put(Version.GEODE_150, commands);
+    ALL_COMMANDS.put(Version.GEODE_160, commands);
 
   }
 

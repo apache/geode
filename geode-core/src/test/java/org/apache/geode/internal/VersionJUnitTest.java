@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -62,13 +63,16 @@ public class VersionJUnitTest {
   }
 
   @Test
-  public void testCommandMapContainsAllVersionsButCurrent() {
+  public void testCommandMapContainsAllVersions() {
     for (Version version : Version.getAllVersions()) {
-      if (version != Version.CURRENT) {
-        org.junit.Assert.assertNotNull(
-            "Please add a commnd set for " + version + " of Geode to CommandInitializer",
-            CommandInitializer.getCommands(version));
-      }
+      org.junit.Assert.assertNotNull(
+          "Please add a commnd set for " + version + " of Geode to CommandInitializer",
+          CommandInitializer.getCommands(version));
     }
+  }
+
+  @Test
+  public void testFromOrdinalForCurrentVersionSucceeds() throws UnsupportedVersionException {
+    Version.fromOrdinal(Version.CURRENT_ORDINAL, true);
   }
 }
