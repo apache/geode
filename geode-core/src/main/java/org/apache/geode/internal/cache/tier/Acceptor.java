@@ -28,13 +28,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 public interface Acceptor {
 
   /**
-   * The GFE version of the server.
-   *
-   * @since GemFire 5.7
-   */
-  Version VERSION = Version.CURRENT.getGemFireVersion();
-
-  /**
    * Listens for a client to connect and establishes a connection to that client.
    */
   void accept() throws Exception;

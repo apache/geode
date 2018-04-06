@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -58,5 +59,12 @@ public class VersionJUnitTest {
     assertTrue(Version.GFE_61.isPre65());
     assertFalse(Version.GFE_65.isPre65());
     assertFalse(Version.GFE_70.isPre65());
+  }
+
+  @Test
+  public void testCommandMapContainsCurrentVersion() {
+    org.junit.Assert.assertNotNull(
+        "Please add a commnd set for the new version of Geode to CommandInitializer",
+        CommandInitializer.getCommands(Version.CURRENT));
   }
 }

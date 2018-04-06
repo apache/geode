@@ -51,15 +51,10 @@ public class Version implements Comparable<Version> {
   private final byte release;
   private final byte patch;
 
-  /**
-   * Set to non-null if the underlying GemFire version is different from product version
-   */
-  private Version gemfireVersion;
-
   /** byte used as ordinal to represent this <code>Version</code> */
   private final short ordinal;
 
-  public static final int HIGHEST_VERSION = 80;
+  public static final int HIGHEST_VERSION = 85;
 
   private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
 
@@ -218,6 +213,8 @@ public class Version implements Comparable<Version> {
   public static final Version GEODE_160 =
       new Version("GEODE", "1.6.0", (byte) 1, (byte) 6, (byte) 0, (byte) 0, GEODE_160_ORDINAL);
 
+  /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
+
   /**
    * This constant must be set to the most current version of the product. !!! NOTE: update
    * HIGHEST_VERSION when changing CURRENT !!!
@@ -249,19 +246,9 @@ public class Version implements Comparable<Version> {
     this.ordinal = ordinal;
     this.methodSuffix = this.productName + "_" + this.majorVersion + "_" + this.minorVersion + "_"
         + this.release + "_" + this.patch;
-    this.gemfireVersion = null;
     if (ordinal != TOKEN_ORDINAL) {
       VALUES[this.ordinal] = this;
     }
-  }
-
-  /**
-   * Creates a new instance of <code>Version</code> with a different underlying GemFire version
-   */
-  private Version(String product, String name, byte major, byte minor, byte release, byte patch,
-      byte ordinal, Version gemfireVersion) {
-    this(product, name, major, minor, release, patch, ordinal);
-    this.gemfireVersion = gemfireVersion;
   }
 
   /** Return the <code>Version</code> represented by specified ordinal */
@@ -341,26 +328,6 @@ public class Version implements Comparable<Version> {
   }
 
   /**
-   * Fixed number of bytes required for serializing this version when "compressed" flag is false in
-   * {@link #writeOrdinal(DataOutput, boolean)}.
-   */
-  public static int uncompressedSize() {
-    return 3;
-  }
-
-  /**
-   * Fixed number of bytes required for serializing this version when "compressed" flag is true in
-   * {@link #writeOrdinal(DataOutput, boolean)}.
-   */
-  public int compressedSize() {
-    if (ordinal <= Byte.MAX_VALUE) {
-      return 1;
-    } else {
-      return 3;
-    }
-  }
-
-  /**
    * Write the given ordinal (result of {@link #ordinal()}) to given {@link ByteBuffer}. This keeps
    * the serialization of ordinal compatible with previous versions writing a single byte to
    * DataOutput when possible, and a token with 2 bytes if it is large.
@@ -370,8 +337,7 @@ public class Version implements Comparable<Version> {
    * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
    *        that, else always use three bytes where the first byte is {@link #TOKEN_ORDINAL}
    */
-  public static void writeOrdinal(ByteBuffer buffer, short ordinal, boolean compressed)
-      throws IOException {
+  public static void writeOrdinal(ByteBuffer buffer, short ordinal, boolean compressed) {
     if (compressed && ordinal <= Byte.MAX_VALUE) {
       buffer.put((byte) ordinal);
     } else {
@@ -452,16 +418,8 @@ public class Version implements Comparable<Version> {
     }
   }
 
-  public Version getGemFireVersion() {
-    return this.gemfireVersion != null ? this.gemfireVersion : this;
-  }
-
   public String getMethodSuffix() {
     return this.methodSuffix;
-  }
-
-  public String getProductName() {
-    return this.productName;
   }
 
   public String getName() {
@@ -487,6 +445,7 @@ public class Version implements Comparable<Version> {
   public short ordinal() {
     return this.ordinal;
   }
+
 
   /**
    * Returns whether this <code>Version</code> is compatible with the input <code>Version</code>
@@ -538,11 +497,7 @@ public class Version implements Comparable<Version> {
    */
   @Override
   public String toString() {
-    if (this.gemfireVersion == null) {
-      return this.productName + " " + this.name;
-    } else {
-      return this.productName + " " + this.name + '[' + this.gemfireVersion.toString() + ']';
-    }
+    return this.productName + " " + this.name;
   }
 
   public static String toString(short ordinal) {
