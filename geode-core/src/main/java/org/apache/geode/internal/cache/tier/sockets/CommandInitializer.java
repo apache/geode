@@ -157,6 +157,8 @@ public class CommandInitializer {
   private static void initializeAllCommands() {
     ALL_COMMANDS = new LinkedHashMap<Version, Map<Integer, Command>>();
 
+    ALL_COMMANDS.put(Version.GFE_56, new HashMap<>());
+
     // Initialize the GFE 5.7 commands
     Map<Integer, Command> gfe57Commands = new HashMap<Integer, Command>();
     ALL_COMMANDS.put(Version.GFE_57, gfe57Commands);
@@ -293,6 +295,7 @@ public class CommandInitializer {
     gfe70Commands.put(MessageType.EXECUTE_FUNCTION, ExecuteFunction70.getCommand());
 
     ALL_COMMANDS.put(Version.GFE_701, gfe70Commands);
+    ALL_COMMANDS.put(Version.GFE_7099, gfe70Commands);
     ALL_COMMANDS.put(Version.GFE_71, gfe70Commands);
 
     Map<Integer, Command> gfe80Commands = new HashMap<Integer, Command>();

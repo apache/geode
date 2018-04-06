@@ -20,6 +20,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
@@ -543,5 +545,10 @@ public class Version implements Comparable<Version> {
 
   public boolean isPre65() {
     return compareTo(Version.GFE_65) < 0;
+  }
+
+  public static Iterable<? extends Version> getAllVersions() {
+    return Arrays.asList(VALUES).stream().filter(x -> x != null && x != TEST_VERSION)
+        .collect(Collectors.toList());
   }
 }

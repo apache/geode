@@ -62,9 +62,13 @@ public class VersionJUnitTest {
   }
 
   @Test
-  public void testCommandMapContainsCurrentVersion() {
-    org.junit.Assert.assertNotNull(
-        "Please add a commnd set for the new version of Geode to CommandInitializer",
-        CommandInitializer.getCommands(Version.CURRENT));
+  public void testCommandMapContainsAllVersionsButCurrent() {
+    for (Version version : Version.getAllVersions()) {
+      if (version != Version.CURRENT) {
+        org.junit.Assert.assertNotNull(
+            "Please add a commnd set for " + version + " of Geode to CommandInitializer",
+            CommandInitializer.getCommands(version));
+      }
+    }
   }
 }
