@@ -212,11 +212,17 @@ public class Version implements Comparable<Version> {
 
   public static final Version GEODE_150 =
       new Version("GEODE", "1.5.0", (byte) 1, (byte) 5, (byte) 0, (byte) 0, GEODE_150_ORDINAL);
+
+  private static final byte GEODE_160_ORDINAL = 85;
+
+  public static final Version GEODE_160 =
+      new Version("GEODE", "1.6.0", (byte) 1, (byte) 6, (byte) 0, (byte) 0, GEODE_160_ORDINAL);
+
   /**
    * This constant must be set to the most current version of the product. !!! NOTE: update
    * HIGHEST_VERSION when changing CURRENT !!!
    */
-  public static final Version CURRENT = GEODE_150;
+  public static final Version CURRENT = GEODE_160;
 
   /**
    * A lot of versioning code needs access to the current version's ordinal
