@@ -54,7 +54,6 @@ def configureTcServerAssembly = {
     from getJarArtifact(':extensions/geode-modules')
     from getJarArtifact(':extensions/geode-modules-tomcat7')
     from getJarArtifact(':extensions/geode-modules-tomcat8')
-    from getJarArtifact(':extensions/geode-modules-tomcat85')
     from configurations.slf4jDeps
   }
   into('geode-cs/bin') {
@@ -88,7 +87,6 @@ def configureTcServerAssembly = {
     from getJarArtifact(':extensions/geode-modules')
     from getJarArtifact(':extensions/geode-modules-tomcat7')
     from getJarArtifact(':extensions/geode-modules-tomcat8')
-    from getJarArtifact(':extensions/geode-modules-tomcat85')
     from configurations.slf4jDeps
   }
   into('geode-p2p/bin') {
@@ -130,20 +128,8 @@ def configureTcServer30Assembly = {
     }
   }
 
-  into('geode-cs-tomcat-85/conf') {
-    from('release/tcserver/geode-cs-tomcat-85') {
-      include 'context-fragment.xml'
-    }
-  }
-
   into('geode-p2p-tomcat-8/conf') {
     from('release/tcserver/geode-p2p-tomcat-8') {
-      include 'context-fragment.xml'
-    }
-  }
-
-  into('geode-p2p-tomcat-85/conf') {
-    from('release/tcserver/geode-p2p-tomcat-85') {
       include 'context-fragment.xml'
     }
   }
@@ -158,7 +144,6 @@ task distTomcat(type: Zip, dependsOn: ':extensions/geode-modules:assemble') {
     from getJarArtifact(':extensions/geode-modules')
     from getJarArtifact(':extensions/geode-modules-tomcat7')
     from getJarArtifact(':extensions/geode-modules-tomcat8')
-    from getJarArtifact(':extensions/geode-modules-tomcat85')
     from configurations.slf4jDeps
   }
   into('bin') {
@@ -207,11 +192,11 @@ task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:asse
   }
 }
 
-task distTcServer(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble', ':extensions/geode-modules-tomcat8:assemble', ':extensions/geode-modules-tomcat85:assemble'] ) {
+task distTcServer(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble', ':extensions/geode-modules-tomcat8:assemble'] ) {
   configure(configureTcServerAssembly)
 }
 
-task distTcServer30(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble', ':extensions/geode-modules-tomcat8:assemble', ':extensions/geode-modules-tomcat85:assemble']) {
+task distTcServer30(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble', ':extensions/geode-modules-tomcat8:assemble']) {
   configure(configureTcServerAssembly)
   configure(configureTcServer30Assembly)
 }
