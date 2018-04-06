@@ -40,7 +40,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
@@ -302,7 +301,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.key = InternalDataSerializer.readUserObject(in);
+      this.key = DataSerializer.readObject(in);
       this.entryVersion = DataSerializer.readObject(in);
     }
 

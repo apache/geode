@@ -827,7 +827,7 @@ public abstract class AbstractRegionMap
       CachedDeserializable newValueCd = (CachedDeserializable) newValue;
       try {
         actualVal = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
-            sender.getVersionObject(), null, true);
+            sender.getVersionObject(), null);
         newValue = new VMCachedDeserializable(actualVal, newValueCd.getSizeInBytes());
       } catch (IOException | ClassNotFoundException e) {
         throw new RuntimeException("Unable to deserialize HA event for region " + owner);
@@ -3298,23 +3298,23 @@ public abstract class AbstractRegionMap
       synchronized (re) {
         int entryVersion = re.getVersionStamp().getEntryVersion();
         if (!re.isTombstone() || entryVersion > destroyedVersion) {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-            logger.trace(LogMarker.TOMBSTONE_COUNT,
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE)) {
+            logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                 "tombstone for {} was resurrected with v{}; destroyed version was v{}; count is {}; entryMap size is {}",
                 re.getKey(), re.getVersionStamp().getEntryVersion(), destroyedVersion,
                 this._getOwner().getTombstoneCount(), size());
           }
         } else {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE)) {
             if (entryVersion == destroyedVersion) {
               // logging this can put tremendous pressure on the log writer in tests
               // that "wait for silence"
-              logger.trace(LogMarker.TOMBSTONE_COUNT,
+              logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                   "removing tombstone for {} with v{} rv{}; count is {}", re.getKey(),
                   destroyedVersion, version.getRegionVersion(),
                   (this._getOwner().getTombstoneCount() - 1));
             } else {
-              logger.trace(LogMarker.TOMBSTONE_COUNT,
+              logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                   "removing entry (v{}) that is older than an expiring tombstone (v{} rv{}) for {}",
                   entryVersion, destroyedVersion, version.getRegionVersion(), re.getKey());
             }

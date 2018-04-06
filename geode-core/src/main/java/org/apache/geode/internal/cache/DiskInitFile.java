@@ -55,7 +55,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
@@ -446,8 +445,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
         this.gotEOF = parser.gotEOF();
         this.nextSeekPosition = dis.getCount();
-        if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-          logger.trace(LogMarker.PERSIST_RECOVERY, "liveRecordCount={} totalRecordCount={}",
+        if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+          logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "liveRecordCount={} totalRecordCount={}",
               this.ifLiveRecordCount, this.ifTotalRecordCount);
         }
       } finally {
@@ -583,8 +582,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       this.ifLiveRecordCount++;
       this.ifTotalRecordCount++;
     } else {
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-        logger.trace(LogMarker.PERSIST_RECOVERY, "bad disk region id!");
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+        logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "bad disk region id!");
       } else {
         throw new IllegalStateException("bad disk region id");
       }
@@ -637,8 +636,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       this.ifLiveRecordCount--;
       this.ifTotalRecordCount++;
     } else {
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-        logger.trace(LogMarker.PERSIST_RECOVERY, "bad disk region id!");
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+        logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "bad disk region id!");
       } else {
         throw new IllegalStateException("bad disk region id");
       }
@@ -655,8 +654,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       this.ifLiveRecordCount++;
       this.ifTotalRecordCount++;
     } else {
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-        logger.trace(LogMarker.PERSIST_RECOVERY, "bad disk region id!");
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+        logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "bad disk region id!");
       } else {
         throw new IllegalStateException("bad disk region id");
       }
@@ -681,8 +680,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       this.ifLiveRecordCount++;
       this.ifTotalRecordCount++;
     } else {
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-        logger.trace(LogMarker.PERSIST_RECOVERY, "bad disk region id!");
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+        logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "bad disk region id!");
       } else {
         throw new IllegalStateException("bad disk region id");
       }
@@ -699,8 +698,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       this.ifLiveRecordCount++;
       this.ifTotalRecordCount++;
     } else {
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-        logger.trace(LogMarker.PERSIST_RECOVERY, "bad disk region id!");
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+        logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "bad disk region id!");
       } else {
         throw new IllegalStateException("bad disk region id");
       }
@@ -1146,8 +1145,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
       this.ifTotalRecordCount++;
     } else {
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-        logger.trace(LogMarker.PERSIST_RECOVERY, "bad disk region id!");
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+        logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "bad disk region id!");
       } else {
         throw new IllegalStateException("bad disk region id");
       }
@@ -1162,8 +1161,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     if (dr != null) {
       dr.markInitialized();
     } else {
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-        logger.trace(LogMarker.PERSIST_RECOVERY, "bad disk region id!");
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+        logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "bad disk region id!");
       } else {
         throw new IllegalStateException("bad disk region id");
       }
@@ -1176,8 +1175,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     if (dr != null) {
       dr.markBeginDestroyRegion();
     } else {
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-        logger.trace(LogMarker.PERSIST_RECOVERY, "bad disk region id!");
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+        logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "bad disk region id!");
       } else {
         throw new IllegalStateException("bad disk region id");
       }
@@ -1216,8 +1215,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
       dr.markEndDestroyRegion();
     } else {
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-        logger.trace(LogMarker.PERSIST_RECOVERY, "bad disk region id!");
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+        logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "bad disk region id!");
       } else {
         throw new IllegalStateException("bad disk region id");
       }
@@ -1375,18 +1374,13 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
   private void writeIFRecord(ByteBuffer bb, boolean doStats) throws IOException {
     assert lock.isHeldByCurrentThread();
-    // TODO soplog - this behavior isn't right.
-    // it should throw an exception or something.
     if (this.closed) {
       throw new DiskAccessException("The disk store is closed", parent);
     }
-    // if (this.closed) {
-    // throw new DiskAccessException("Init file is closed!", parent);
-    // }
 
     this.ifRAF.write(bb.array(), 0, bb.position());
-    if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES)) {
-      logger.trace(LogMarker.PERSIST_WRITES, "DiskInitFile writeIFRecord bb[0] = {}",
+    if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
+      logger.trace(LogMarker.PERSIST_WRITES_VERBOSE, "DiskInitFile writeIFRecord bb[0] = {}",
           bb.array()[0]);
     }
     if (doStats) {
@@ -1402,8 +1396,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       throw new DiskAccessException("The disk store is closed", parent);
     }
     hdos.sendTo(this.ifRAF);
-    if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES)) {
-      logger.trace(LogMarker.PERSIST_WRITES, "DiskInitFile writeIFRecord HDOS");
+    if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
+      logger.trace(LogMarker.PERSIST_WRITES_VERBOSE, "DiskInitFile writeIFRecord HDOS");
     }
     if (doStats) {
       this.ifLiveRecordCount++;
@@ -2048,8 +2042,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         cmnEndDestroyRegion(dr);
         writeIFRecord(IFREC_END_DESTROY_REGION_ID, dr);
         if (logger.isDebugEnabled()) {
-          logger.trace(LogMarker.PERSIST_WRITES, "DiskInitFile IFREC_END_DESTROY_REGION_ID drId={}",
-              dr.getId());
+          logger.trace(LogMarker.PERSIST_WRITES_VERBOSE,
+              "DiskInitFile IFREC_END_DESTROY_REGION_ID drId={}", dr.getId());
         }
       }
     } finally {
@@ -2431,8 +2425,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
   @Override
   public void cmnDiskStoreID(DiskStoreID diskStoreID) {
-    if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-      logger.trace(LogMarker.PERSIST_RECOVERY, "diskStoreId={}", diskStoreID);
+    if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+      logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "diskStoreId={}", diskStoreID);
     }
     this.parent.setDiskStoreID(diskStoreID);
   }
@@ -2450,7 +2444,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   public void dump() {
-    if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
+    if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
       System.out.println("expectedCrfs=" + Arrays.toString(this.crfIds.toArray()));
       System.out.println("expectedDrfs=" + Arrays.toString(this.drfIds.toArray()));
       System.out.println("dataSerializerIds=" + Arrays.toString(this.dsIds.toArray()));
@@ -2460,8 +2454,6 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
   /**
    * Returns a map of region_name->(pr_buckets|replicated_region)
-   *
-   * @param regName
    */
   private Map<String, List<PlaceHolderDiskRegion>> getRegionsToDump(String regName) {
     if (regName == null) {
@@ -2515,7 +2507,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         .entrySet()) {
       printStream.print("  ");
       List<PlaceHolderDiskRegion> regions = regionEntry.getValue();
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
         for (PlaceHolderDiskRegion region : regions) {
           region.dump(printStream);
         }

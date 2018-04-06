@@ -349,8 +349,8 @@ public abstract class VersionTag<T extends VersionSource>
         flags |= DUPLICATE_MEMBER_IDS;
       }
     }
-    if (logger.isTraceEnabled(LogMarker.VERSION_TAG)) {
-      logger.info(LogMarker.VERSION_TAG, "serializing {} with flags 0x{}", this.getClass(),
+    if (logger.isTraceEnabled(LogMarker.VERSION_TAG_VERBOSE)) {
+      logger.trace(LogMarker.VERSION_TAG_VERBOSE, "serializing {} with flags 0x{}", this.getClass(),
           Integer.toHexString(flags));
     }
     out.writeShort(flags);
@@ -377,9 +377,9 @@ public abstract class VersionTag<T extends VersionSource>
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int flags = in.readUnsignedShort();
-    if (logger.isTraceEnabled(LogMarker.VERSION_TAG)) {
-      logger.info(LogMarker.VERSION_TAG, "deserializing {} with flags 0x{}", this.getClass(),
-          Integer.toHexString(flags));
+    if (logger.isTraceEnabled(LogMarker.VERSION_TAG_VERBOSE)) {
+      logger.trace(LogMarker.VERSION_TAG_VERBOSE, "deserializing {} with flags 0x{}",
+          this.getClass(), Integer.toHexString(flags));
     }
     bitsUpdater.set(this, in.readUnsignedShort());
     this.distributedSystemId = in.readByte();

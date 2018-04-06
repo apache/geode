@@ -1384,7 +1384,6 @@ public class TXCommitMessage extends PooledDistributionMessage
         for (int i = 0; i < size; i++) {
           FarSideEntryOp entryOp = new FarSideEntryOp();
           // shadowkey is not being sent to clients
-          // TODO: this fromData invocation is not backward-compatible
           entryOp.fromData(in, largeModCount, hasShadowKey(regionPath, parentRegionPath));
           if (entryOp.versionTag != null && this.memberId != null) {
             entryOp.versionTag.setMemberID(this.memberId);
@@ -1527,14 +1526,14 @@ public class TXCommitMessage extends PooledDistributionMessage
        */
       public void fromData(DataInput in, boolean largeModCount, boolean readShadowKey)
           throws IOException, ClassNotFoundException {
-        this.key = InternalDataSerializer.readUserObject(in);
+        this.key = DataSerializer.readObject(in);
         this.op = Operation.fromOrdinal(in.readByte());
         if (largeModCount) {
           this.modSerialNum = in.readInt();
         } else {
           this.modSerialNum = in.readByte();
         }
-        this.callbackArg = InternalDataSerializer.readUserObject(in);
+        this.callbackArg = DataSerializer.readObject(in);
         this.filterRoutingInfo = DataSerializer.readObject(in);
         this.versionTag = DataSerializer.readObject(in);
         if (readShadowKey) {
@@ -1550,10 +1549,8 @@ public class TXCommitMessage extends PooledDistributionMessage
               this.value = DataSerializer.readObject(in);
             } else {
               // CachedDeserializable, Object, or PDX
-              InternalDataSerializer.doWithPdxReadSerialized(() -> {
-                this.value = CachedDeserializableFactory.create(DataSerializer.readByteArray(in),
-                    GemFireCacheImpl.getInstance());
-              });
+              this.value = CachedDeserializableFactory.create(DataSerializer.readByteArray(in),
+                  GemFireCacheImpl.getInstance());
             }
           }
         }

@@ -1734,7 +1734,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
 
         if (stampDsId != 0 && stampDsId != tagDsId && stampDsId != -1) {
           StringBuilder verbose = null;
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
             verbose = new StringBuilder();
             verbose.append("processing tag for key ").append(getKey()).append(", stamp=")
                 .append(stamp.asVersionTag()).append(", tag=").append(tag);
@@ -1745,7 +1745,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
               && tag.getDistributedSystemId() >= stamp.getDistributedSystemId()))) {
             if (verbose != null) {
               verbose.append(" - allowing event");
-              logger.trace(LogMarker.TOMBSTONE, verbose);
+              logger.trace(LogMarker.TOMBSTONE_VERBOSE, verbose);
             }
             // Update the stamp with event's version information.
             applyVersionTag(r, stamp, tag, originator);
@@ -1755,7 +1755,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
           if (stampTime > 0) {
             if (verbose != null) {
               verbose.append(" - disallowing event");
-              logger.trace(LogMarker.TOMBSTONE, verbose);
+              logger.trace(LogMarker.TOMBSTONE_VERBOSE, verbose);
             }
             r.getCachePerfStats().incConflatedEventsCount();
             persistConflictingTag(r, tag);
@@ -1810,7 +1810,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       VersionStamp stamp = getVersionStamp();
 
       StringBuilder verbose = null;
-      if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
+      if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
         VersionTag stampTag = stamp.asVersionTag();
         if (stampTag.hasValidVersion() && checkForConflict) {
           // only be verbose here if there's a possibility we might reject the operation
@@ -1850,7 +1850,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
         throw e;
       } finally {
         if (verbose != null) {
-          logger.trace(LogMarker.TOMBSTONE, verbose);
+          logger.trace(LogMarker.TOMBSTONE_VERBOSE, verbose);
         }
       }
 

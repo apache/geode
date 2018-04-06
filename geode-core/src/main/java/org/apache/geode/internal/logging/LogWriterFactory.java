@@ -84,16 +84,14 @@ public class LogWriterFactory {
                                                                        // during auto-reconnect
         && !isSecure // && !isLoner /* do this on a loner to fix bug 35602 */
         && logConfig) {
-      // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, Banner.getString(null));
+      logger.info(LogMarker.CONFIG_MARKER, Banner.getString(null));
     } else {
       logger.debug("skipping banner - " + InternalLocator.INHIBIT_DM_BANNER + " is set to true");
     }
 
     // log the config
     if (logConfig && !isLoner) {
-      // LOG:CONFIG: changed from config to info
-      logger.info(LogMarker.CONFIG,
+      logger.info(LogMarker.CONFIG_MARKER,
           LocalizedMessage.create(
               LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATION_0,
               config.toLoggerString()));

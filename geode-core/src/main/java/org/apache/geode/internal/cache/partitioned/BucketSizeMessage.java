@@ -170,8 +170,8 @@ public class BucketSizeMessage extends PartitionMessage {
     @Override
     protected void process(final ClusterDistributionManager dm) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "PRDistributedBucketSizeReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
@@ -179,15 +179,15 @@ public class BucketSizeMessage extends PartitionMessage {
       ReplyProcessor21 processor = ReplyProcessor21.getProcessor(this.processorId);
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
           logger.debug("PRDistributedBucketSizeReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} Processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} Processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
@@ -242,8 +242,9 @@ public class BucketSizeMessage extends PartitionMessage {
         if (msg instanceof BucketSizeReplyMessage) {
           BucketSizeReplyMessage reply = (BucketSizeReplyMessage) msg;
           this.returnValue = reply.getSize();
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "BucketSizeResponse return value is {}", this.returnValue);
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "BucketSizeResponse return value is {}",
+                this.returnValue);
           }
         }
       } finally {

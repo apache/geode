@@ -89,8 +89,9 @@ public class BucketBackupMessage extends PartitionMessage {
       return false;
     }
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "BucketBackupMessage operateOnRegion: {}", pr.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "BucketBackupMessage operateOnRegion: {}",
+          pr.getFullPath());
     }
     PartitionedRegionDataStore ds = pr.getDataStore();
     if (ds != null) {

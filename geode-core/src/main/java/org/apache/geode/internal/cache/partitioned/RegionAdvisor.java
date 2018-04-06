@@ -153,9 +153,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
           Object o = pi.next();
           QueuedBucketProfile qbp = (QueuedBucketProfile) o;
           if (!qbp.isRemoval) {
-            if (logger.isTraceEnabled(LogMarker.DA)) {
-              logger.trace(LogMarker.DA, "applying queued profile addition for bucket {}",
-                  qbp.bucketId);
+            if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+              logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+                  "applying queued profile addition for bucket {}", qbp.bucketId);
             }
             getBucket(qbp.bucketId).getBucketAdvisor().putProfile(qbp.bucketProfile);
           } else if (qbp.memberDeparted
@@ -167,18 +167,18 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
               // TODO not necessarily accurate, but how important is this?
               crashed = !stillInView(qbp.memberId);
             }
-            if (logger.isTraceEnabled(LogMarker.DA)) {
-              logger.trace(LogMarker.DA, "applying queued member departure for all buckets for {}",
-                  qbp.memberId);
+            if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+              logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+                  "applying queued member departure for all buckets for {}", qbp.memberId);
             }
             for (int i = 0; i < this.buckets.length; i++) {
               BucketAdvisor ba = this.buckets[i].getBucketAdvisor();
               ba.removeId(qbp.memberId, crashed, qbp.destroyed, qbp.fromMembershipListener);
             } // for
           } else { // apply removal for member still in the view
-            if (logger.isTraceEnabled(LogMarker.DA)) {
-              logger.trace(LogMarker.DA, "applying queued profile removal for all buckets for {}",
-                  qbp.memberId);
+            if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+              logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+                  "applying queued profile removal for all buckets for {}", qbp.memberId);
             }
             for (int i = 0; i < this.buckets.length; i++) {
               BucketAdvisor ba = this.buckets[i].getBucketAdvisor();
@@ -389,8 +389,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
     boolean removedId = false;
     removedId = super.removeId(memberId, crashed, regionDestroyed, fromMembershipListener);
-    if (logger.isTraceEnabled(LogMarker.DA)) {
-      logger.trace(LogMarker.DA,
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
           "RegionAdvisor#removeId: removing member from region {}: {}; removed = {}; crashed = {}",
           this.getPartitionedRegion().getName(), memberId, removedId, crashed);
     }
@@ -409,8 +409,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    */
   public void removeIdAndBuckets(InternalDistributedMember memberId, int prSerial, int serials[],
       boolean regionDestroyed) {
-    if (logger.isTraceEnabled(LogMarker.DA)) {
-      logger.trace(LogMarker.DA,
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
           "RegionAdvisor#removeIdAndBuckets: removing member from region {}: {}; buckets = ({}) serials",
           this.getPartitionedRegion().getName(), memberId,
           (serials == null ? "null" : serials.length));
@@ -427,15 +427,15 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
     // OK, apply the update NOW
     if (this.buckets != null) {
-      if (logger.isTraceEnabled(LogMarker.DA)) {
-        logger.trace(LogMarker.DA,
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+        logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
             "RegionAdvisor#removeIdAndBuckets: removing buckets for member{};{}", memberId, this);
       }
       for (int i = 0; i < this.buckets.length; i++) {
         int s = serials[i];
         if (s != ILLEGAL_SERIAL) {
-          if (logger.isTraceEnabled(LogMarker.DA)) {
-            logger.trace(LogMarker.DA,
+          if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+            logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
                 "RegionAdvisor#removeIdAndBuckets: removing bucket #{} serial {}", i, s);
           }
           this.buckets[i].getBucketAdvisor().removeIdWithSerial(memberId, s, regionDestroyed);
@@ -443,7 +443,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       } // for
 
       super.removeIdWithSerial(memberId, prSerial, regionDestroyed);
-      // super.removeId(memberId);
     }
   }
 
@@ -474,7 +473,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     if (profileRemoved) {
       this.buckets[bucketId].setBucketSick(member, false);
 
-      // getClientBucketProfiles(bucketId).remove();
     } else {
       ResourceAdvisor advisor = getPartitionedRegion().getCache().getResourceAdvisor();
       boolean sick = advisor.adviseCritialMembers().contains(member);
@@ -738,8 +736,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       }
     }
 
-    if (logger.isTraceEnabled(LogMarker.DA)) {
-      logger.trace(LogMarker.DA, "adviseDataStore returning {} from {}", s, toStringWithProfiles());
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE, "adviseDataStore returning {} from {}",
+          s, toStringWithProfiles());
     }
     return s;
   }
@@ -772,9 +771,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       s = new HashSet<InternalDistributedMember>();
     }
 
-    if (logger.isTraceEnabled(LogMarker.DA)) {
-      logger.trace(LogMarker.DA, "adviseFixedPartitionDataStore returning {} from {}", s,
-          toStringWithProfiles());
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+          "adviseFixedPartitionDataStore returning {} from {}", s, toStringWithProfiles());
     }
     return s;
   }
@@ -803,9 +802,10 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       }
     });
 
-    if (logger.isTraceEnabled(LogMarker.DA)) {
-      logger.trace(LogMarker.DA, "adviseFixedPartitionDataStore returning {} from {}",
-          fixedPartitionDataStore, toStringWithProfiles());
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+          "adviseFixedPartitionDataStore returning {} from {}", fixedPartitionDataStore,
+          toStringWithProfiles());
     }
     if (fixedPartitionDataStore.isEmpty()) {
       return null;

@@ -431,9 +431,17 @@ public class DeployedJar {
     sb.append('@').append(System.identityHashCode(this)).append('{');
     sb.append("jarName=").append(this.jarName);
     sb.append(",file=").append(this.file.getAbsolutePath());
-    sb.append(",md5hash=").append(Arrays.toString(this.md5hash));
+    sb.append(",md5hash=").append(toHex(this.md5hash));
     sb.append(",version=").append(this.getVersion());
     sb.append('}');
     return sb.toString();
+  }
+
+  private String toHex(byte[] data) {
+    StringBuilder result = new StringBuilder();
+    for (byte b : data) {
+      result.append(String.format("%02x", b));
+    }
+    return result.toString();
   }
 }

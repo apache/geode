@@ -121,9 +121,9 @@ public class RegionMapDestroy {
         invokeTestHookForConcurrentOperation();
 
         try {
-          if (logger.isTraceEnabled(LogMarker.LRU_TOMBSTONE_COUNT)
+          if (logger.isTraceEnabled(LogMarker.LRU_TOMBSTONE_COUNT_VERBOSE)
               && !(internalRegion instanceof HARegion)) {
-            logger.trace(LogMarker.LRU_TOMBSTONE_COUNT,
+            logger.trace(LogMarker.LRU_TOMBSTONE_COUNT_VERBOSE,
                 "ARM.destroy() inTokenMode={}; duringRI={}; riLocalDestroy={}; withRepl={}; fromServer={}; concurrencyEnabled={}; isOriginRemote={}; isEviction={}; operation={}; re={}",
                 inTokenMode, duringRI, event.isFromRILocalDestroy(),
                 internalRegion.getDataPolicy().withReplication(), event.isFromServer(),

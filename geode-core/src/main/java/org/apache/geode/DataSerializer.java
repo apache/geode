@@ -186,11 +186,15 @@ public abstract class DataSerializer {
   /** The originator of this <code>DataSerializer</code> */
   private ClientProxyMembershipID context;
 
+  /**
+   * @deprecated Use Boolean.getBoolean("DataSerializer.TRACE_SERIALIZABLE") instead.
+   */
+  @Deprecated
   protected static final boolean TRACE_SERIALIZABLE =
       Boolean.getBoolean("DataSerializer.TRACE_SERIALIZABLE");
 
   /* Used to prevent standard Java serialization when sending data to a non-Java client */
-  protected static final ThreadLocal<Boolean> disallowJavaSerializationForThread =
+  protected static final ThreadLocal<Boolean> DISALLOW_JAVA_SERIALIZATION =
       new ThreadLocal<Boolean>();
 
   /**
@@ -205,8 +209,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Class {}", c);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Class {}", c);
     }
 
     if (c == null || c.isPrimitive()) {
@@ -236,8 +240,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Class name {}", className);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Class name {}", className);
     }
 
     writeString(InternalDataSerializer.processOutgoingClassName(className, out), out);
@@ -334,8 +338,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Date {}", date);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Date {}", date);
     }
 
     long v;
@@ -366,8 +370,8 @@ public abstract class DataSerializer {
       date = new Date(time);
     }
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Date {}", date);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Date {}", date);
     }
 
     return date;
@@ -390,8 +394,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing File {}", file);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing File {}", file);
     }
 
     writeString((file != null) ? file.getCanonicalPath() : null, out);
@@ -411,8 +415,8 @@ public abstract class DataSerializer {
     if (s != null) {
       file = new File(s);
     }
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read File {}", file);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read File {}", file);
     }
 
     return file;
@@ -438,8 +442,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing InetAddress {}", address);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing InetAddress {}", address);
     }
 
     writeByteArray((address != null) ? address.getAddress() : null, out);
@@ -465,8 +469,8 @@ public abstract class DataSerializer {
 
     try {
       InetAddress addr = InetAddress.getByAddress(address);
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read InetAddress {}", addr);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read InetAddress {}", addr);
       }
       return addr;
     } catch (UnknownHostException ex) {
@@ -492,14 +496,14 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.SERIALIZER);
-    if (isDebugEnabled) {
-      logger.trace(LogMarker.SERIALIZER, "Writing String \"{}\"", value);
+    final boolean isTraceSerialzerVerbose = logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE);
+    if (isTraceSerialzerVerbose) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing String \"{}\"", value);
     }
 
     if (value == null) {
-      if (isDebugEnabled) {
-        logger.trace(LogMarker.SERIALIZER, "Writing NULL_STRING");
+      if (isTraceSerialzerVerbose) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing NULL_STRING");
       }
       out.writeByte(DSCODE.NULL_STRING);
 
@@ -531,30 +535,30 @@ public abstract class DataSerializer {
       boolean writeUTF = utfLen > len;
       if (writeUTF) {
         if (utfLen > 0xFFFF) {
-          if (isDebugEnabled) {
-            logger.trace(LogMarker.SERIALIZER, "Writing utf HUGE_STRING of len={}", len);
+          if (isTraceSerialzerVerbose) {
+            logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing utf HUGE_STRING of len={}", len);
           }
           out.writeByte(DSCODE.HUGE_STRING);
           out.writeInt(len);
           out.writeChars(value);
         } else {
-          if (isDebugEnabled) {
-            logger.trace(LogMarker.SERIALIZER, "Writing utf STRING of len={}", len);
+          if (isTraceSerialzerVerbose) {
+            logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing utf STRING of len={}", len);
           }
           out.writeByte(DSCODE.STRING);
           out.writeUTF(value);
         }
       } else {
         if (len > 0xFFFF) {
-          if (isDebugEnabled) {
-            logger.trace(LogMarker.SERIALIZER, "Writing HUGE_STRING_BYTES of len={}", len);
+          if (isTraceSerialzerVerbose) {
+            logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing HUGE_STRING_BYTES of len={}", len);
           }
           out.writeByte(DSCODE.HUGE_STRING_BYTES);
           out.writeInt(len);
           out.writeBytes(value);
         } else {
-          if (isDebugEnabled) {
-            logger.trace(LogMarker.SERIALIZER, "Writing STRING_BYTES of len={}", len);
+          if (isTraceSerialzerVerbose) {
+            logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing STRING_BYTES of len={}", len);
           }
           out.writeByte(DSCODE.STRING_BYTES);
           out.writeShort(len);
@@ -588,8 +592,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Boolean {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Boolean {}", value);
     }
 
     out.writeBoolean(value.booleanValue());
@@ -604,8 +608,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     Boolean value = Boolean.valueOf(in.readBoolean());
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Boolean {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Boolean {}", value);
     }
     return value;
   }
@@ -622,8 +626,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Character {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Character {}", value);
     }
 
     out.writeChar(value.charValue());
@@ -639,8 +643,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     Character value = Character.valueOf(in.readChar());
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Character {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Character {}", value);
     }
     return value;
   }
@@ -657,8 +661,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Byte {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Byte {}", value);
     }
 
     out.writeByte(value.byteValue());
@@ -673,8 +677,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     Byte value = Byte.valueOf(in.readByte());
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Byte {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Byte {}", value);
     }
     return value;
   }
@@ -691,8 +695,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Short {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Short {}", value);
     }
 
     out.writeShort(value.shortValue());
@@ -707,8 +711,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     Short value = Short.valueOf(in.readShort());
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Short {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Short {}", value);
     }
     return value;
   }
@@ -725,8 +729,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Integer {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Integer {}", value);
     }
 
     out.writeInt(value.intValue());
@@ -741,8 +745,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     Integer value = Integer.valueOf(in.readInt());
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Integer {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Integer {}", value);
     }
     return value;
   }
@@ -759,8 +763,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Long {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Long {}", value);
     }
 
     out.writeLong(value.longValue());
@@ -775,8 +779,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     Long value = Long.valueOf(in.readLong());
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Long {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Long {}", value);
     }
     return value;
   }
@@ -793,8 +797,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Float {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Float {}", value);
     }
 
     out.writeFloat(value.floatValue());
@@ -809,8 +813,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     Float value = Float.valueOf(in.readFloat());
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Float {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Float {}", value);
     }
     return value;
   }
@@ -827,8 +831,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Double {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Double {}", value);
     }
 
     out.writeDouble(value.doubleValue());
@@ -843,8 +847,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     Double value = Double.valueOf(in.readDouble());
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Double {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Double {}", value);
     }
     return value;
   }
@@ -861,8 +865,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Boolean {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Boolean {}", value);
     }
 
     out.writeBoolean(value);
@@ -879,8 +883,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     boolean value = in.readBoolean();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Boolean {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Boolean {}", value);
     }
     return value;
   }
@@ -897,8 +901,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Byte {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Byte {}", value);
     }
 
     out.writeByte(value);
@@ -915,8 +919,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     byte value = in.readByte();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Byte {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Byte {}", value);
     }
     return value;
   }
@@ -933,8 +937,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Char {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Char {}", value);
     }
 
     out.writeChar(value);
@@ -951,8 +955,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     char value = in.readChar();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Char {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Char {}", value);
     }
     return value;
   }
@@ -969,8 +973,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Short {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Short {}", value);
     }
 
     out.writeShort(value);
@@ -987,8 +991,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     short value = in.readShort();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Short {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Short {}", value);
     }
     return value;
   }
@@ -1006,8 +1010,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Unsigned Byte {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Unsigned Byte {}", value);
     }
 
     out.writeByte(value);
@@ -1024,8 +1028,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     int value = in.readUnsignedByte();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Unsigned Byte {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Unsigned Byte {}", value);
     }
     return value;
   }
@@ -1043,8 +1047,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Unsigned Short {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Unsigned Short {}", value);
     }
 
     out.writeShort(value);
@@ -1061,8 +1065,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     int value = in.readUnsignedShort();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Unsigned Short {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Unsigned Short {}", value);
     }
     return value;
   }
@@ -1078,8 +1082,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Integer {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Integer {}", value);
     }
 
     out.writeInt(value);
@@ -1096,8 +1100,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     int value = in.readInt();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Integer {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Integer {}", value);
     }
     return value;
   }
@@ -1114,8 +1118,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Long {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Long {}", value);
     }
 
     out.writeLong(value);
@@ -1132,8 +1136,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     long value = in.readLong();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Long {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Long {}", value);
     }
     return value;
   }
@@ -1150,8 +1154,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Float {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Float {}", value);
     }
 
     out.writeFloat(value);
@@ -1168,8 +1172,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     float value = in.readFloat();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Float {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Float {}", value);
     }
     return value;
   }
@@ -1186,8 +1190,8 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Double {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Double {}", value);
     }
 
     out.writeDouble(value);
@@ -1204,8 +1208,8 @@ public abstract class DataSerializer {
     InternalDataSerializer.checkIn(in);
 
     double value = in.readDouble();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Double {}", value);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Double {}", value);
     }
     return value;
   }
@@ -1251,8 +1255,8 @@ public abstract class DataSerializer {
       }
     }
     InternalDataSerializer.writeArrayLength(length, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing byte array of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing byte array of length {}", length);
     }
     if (length > 0) {
       out.write(array, 0, length);
@@ -1279,8 +1283,8 @@ public abstract class DataSerializer {
     if (obj instanceof CachedDeserializable) {
       if (obj instanceof StoredObject) {
         StoredObject so = (StoredObject) obj;
-        if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-          logger.trace(LogMarker.SERIALIZER, "writeObjectAsByteArray StoredObject");
+        if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+          logger.trace(LogMarker.SERIALIZER_VERBOSE, "writeObjectAsByteArray StoredObject");
         }
         so.sendAsByteArray(out);
         return;
@@ -1288,11 +1292,11 @@ public abstract class DataSerializer {
         object = ((CachedDeserializable) obj).getSerializedValue();
       }
     }
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       if (object == null) {
-        logger.trace(LogMarker.SERIALIZER, "writeObjectAsByteArray null");
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "writeObjectAsByteArray null");
       } else {
-        logger.trace(LogMarker.SERIALIZER, "writeObjectAsByteArray obj.getClass={}",
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "writeObjectAsByteArray obj.getClass={}",
             object.getClass());
       }
     }
@@ -1345,8 +1349,8 @@ public abstract class DataSerializer {
       byte[] array = new byte[length];
       in.readFully(array, 0, length);
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read byte array of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read byte array of length {}", length);
       }
 
       return array;
@@ -1373,8 +1377,8 @@ public abstract class DataSerializer {
       length = array.length;
     }
     InternalDataSerializer.writeArrayLength(length, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing String array of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing String array of length {}", length);
     }
     if (length > 0) {
       for (int i = 0; i < length; i++) {
@@ -1403,8 +1407,8 @@ public abstract class DataSerializer {
         array[i] = readString(in);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read String array of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read String array of length {}", length);
       }
 
       return array;
@@ -1430,8 +1434,8 @@ public abstract class DataSerializer {
       length = array.length;
     }
     InternalDataSerializer.writeArrayLength(length, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing short array of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing short array of length {}", length);
     }
     if (length > 0) {
       for (int i = 0; i < length; i++) {
@@ -1460,8 +1464,8 @@ public abstract class DataSerializer {
         array[i] = in.readShort();
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read short array of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read short array of length {}", length);
       }
 
       return array;
@@ -1502,8 +1506,8 @@ public abstract class DataSerializer {
         array[i] = in.readChar();
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read char array of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read char array of length {}", length);
       }
 
       return array;
@@ -1529,8 +1533,8 @@ public abstract class DataSerializer {
       length = array.length;
     }
     InternalDataSerializer.writeArrayLength(length, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing boolean array of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing boolean array of length {}", length);
     }
     if (length > 0) {
       for (int i = 0; i < length; i++) {
@@ -1560,8 +1564,8 @@ public abstract class DataSerializer {
         array[i] = in.readBoolean();
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read boolean array of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read boolean array of length {}", length);
       }
 
       return array;
@@ -1588,8 +1592,8 @@ public abstract class DataSerializer {
     }
     InternalDataSerializer.writeArrayLength(length, out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing int array of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing int array of length {}", length);
     }
     if (length > 0) {
       for (int i = 0; i < length; i++) {
@@ -1618,8 +1622,8 @@ public abstract class DataSerializer {
         array[i] = in.readInt();
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read int array of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read int array of length {}", length);
       }
 
       return array;
@@ -1645,8 +1649,8 @@ public abstract class DataSerializer {
       length = array.length;
     }
     InternalDataSerializer.writeArrayLength(length, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing long array of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing long array of length {}", length);
     }
     if (length > 0) {
       for (int i = 0; i < length; i++) {
@@ -1675,8 +1679,8 @@ public abstract class DataSerializer {
         array[i] = in.readLong();
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read long array of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read long array of length {}", length);
       }
 
       return array;
@@ -1702,8 +1706,8 @@ public abstract class DataSerializer {
       length = array.length;
     }
     InternalDataSerializer.writeArrayLength(length, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing float array of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing float array of length {}", length);
     }
     if (length > 0) {
       for (int i = 0; i < length; i++) {
@@ -1732,8 +1736,8 @@ public abstract class DataSerializer {
         array[i] = in.readFloat();
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read float array of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read float array of length {}", length);
       }
 
       return array;
@@ -1759,8 +1763,8 @@ public abstract class DataSerializer {
       length = array.length;
     }
     InternalDataSerializer.writeArrayLength(length, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing double array of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing double array of length {}", length);
     }
     if (length > 0) {
       for (int i = 0; i < length; i++) {
@@ -1789,8 +1793,8 @@ public abstract class DataSerializer {
         array[i] = in.readDouble();
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read double array of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read double array of length {}", length);
       }
 
       return array;
@@ -1886,8 +1890,8 @@ public abstract class DataSerializer {
         throw cnfEx;
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read Object array of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Object array of length {}", length);
       }
 
       return array;
@@ -1910,8 +1914,8 @@ public abstract class DataSerializer {
       length = array.length;
     }
     InternalDataSerializer.writeArrayLength(length, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing byte[][] of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing byte[][] of length {}", length);
     }
     if (length >= 0) {
       for (int i = 0; i < length; i++) {
@@ -1939,8 +1943,8 @@ public abstract class DataSerializer {
         array[i] = readByteArray(in);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read byte[][] of length {}", length);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read byte[][] of length {}", length);
       }
 
       return array;
@@ -1971,8 +1975,9 @@ public abstract class DataSerializer {
       size = list.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing ArrayList with {} elements: {}", size, list);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing ArrayList with {} elements: {}", size,
+          list);
     }
     if (size > 0) {
       for (int i = 0; i < size; i++) {
@@ -2007,8 +2012,9 @@ public abstract class DataSerializer {
         list.add(element);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read ArrayList with {} elements: {}", size, list);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read ArrayList with {} elements: {}", size,
+            list);
       }
 
       return list;
@@ -2038,8 +2044,8 @@ public abstract class DataSerializer {
       size = list.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Vector with {} elements: {}", size, list);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Vector with {} elements: {}", size, list);
     }
     if (size > 0) {
       for (int i = 0; i < size; i++) {
@@ -2072,8 +2078,8 @@ public abstract class DataSerializer {
         list.add(element);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read Vector with {} elements: {}", size, list);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Vector with {} elements: {}", size, list);
       }
 
       return list;
@@ -2103,8 +2109,8 @@ public abstract class DataSerializer {
       size = list.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Stack with {} elements: {}", size, list);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Stack with {} elements: {}", size, list);
     }
     if (size > 0) {
       for (int i = 0; i < size; i++) {
@@ -2137,8 +2143,8 @@ public abstract class DataSerializer {
         list.add(element);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read Stack with {} elements: {}", size, list);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Stack with {} elements: {}", size, list);
       }
 
       return list;
@@ -2168,8 +2174,9 @@ public abstract class DataSerializer {
       size = list.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing LinkedList with {} elements: {}", size, list);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing LinkedList with {} elements: {}", size,
+          list);
     }
     if (size > 0) {
       for (Object e : list) {
@@ -2202,8 +2209,9 @@ public abstract class DataSerializer {
         list.add(element);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read LinkedList with {} elements: {}", size, list);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read LinkedList with {} elements: {}", size,
+            list);
       }
 
       return list;
@@ -2250,8 +2258,8 @@ public abstract class DataSerializer {
         set.add(element);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read HashSet with {} elements: {}", size, set);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read HashSet with {} elements: {}", size, set);
       }
 
       return set;
@@ -2299,8 +2307,9 @@ public abstract class DataSerializer {
         set.add(element);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read LinkedHashSet with {} elements: {}", size, set);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read LinkedHashSet with {} elements: {}", size,
+            set);
       }
 
       return set;
@@ -2330,8 +2339,8 @@ public abstract class DataSerializer {
       size = map.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing HashMap with {} elements: {}", size, map);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing HashMap with {} elements: {}", size, map);
     }
     if (size > 0) {
       for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -2366,8 +2375,8 @@ public abstract class DataSerializer {
         map.put(key, value);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read HashMap with {} elements: {}", size, map);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read HashMap with {} elements: {}", size, map);
       }
 
       return map;
@@ -2398,8 +2407,9 @@ public abstract class DataSerializer {
       size = map.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing IdentityHashMap with {} elements: {}", size, map);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing IdentityHashMap with {} elements: {}",
+          size, map);
     }
     if (size > 0) {
       for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -2435,8 +2445,9 @@ public abstract class DataSerializer {
         map.put(key, value);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read IdentityHashMap with {} elements: {}", size, map);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read IdentityHashMap with {} elements: {}",
+            size, map);
       }
 
       return map;
@@ -2476,9 +2487,9 @@ public abstract class DataSerializer {
       size = entrySnapshot.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing ConcurrentHashMap with {} elements: {}", size,
-          entrySnapshot);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing ConcurrentHashMap with {} elements: {}",
+          size, entrySnapshot);
     }
     if (size > 0) {
       for (Map.Entry<?, ?> entry : entrySnapshot) {
@@ -2514,9 +2525,9 @@ public abstract class DataSerializer {
         map.put(key, value);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read ConcurrentHashMap with {} elements: {}", size,
-            map);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read ConcurrentHashMap with {} elements: {}",
+            size, map);
       }
 
       return map;
@@ -2546,8 +2557,9 @@ public abstract class DataSerializer {
       size = map.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Hashtable with {} elements: {}", size, map);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Hashtable with {} elements: {}", size,
+          map);
     }
     if (size > 0) {
       for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -2583,8 +2595,9 @@ public abstract class DataSerializer {
         map.put(key, value);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read Hashtable with {} elements: {}", size, map);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Hashtable with {} elements: {}", size,
+            map);
       }
 
       return map;
@@ -2616,8 +2629,8 @@ public abstract class DataSerializer {
       size = map.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing TreeMap with {} elements: {}", size, map);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing TreeMap with {} elements: {}", size, map);
     }
     if (size >= 0) {
       writeObject(map.comparator(), out);
@@ -2648,7 +2661,7 @@ public abstract class DataSerializer {
       return null;
     } else {
       Comparator<? super K> c =
-          InternalDataSerializer.<Comparator<? super K>>readDeserializedObject(in);
+          InternalDataSerializer.<Comparator<? super K>>readNonPdxInstanceObject(in);
       TreeMap<K, V> map = new TreeMap<K, V>(c);
       for (int i = 0; i < size; i++) {
         K key = DataSerializer.<K>readObject(in);
@@ -2656,8 +2669,8 @@ public abstract class DataSerializer {
         map.put(key, value);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read TreeMap with {} elements: {}", size, map);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read TreeMap with {} elements: {}", size, map);
       }
 
       return map;
@@ -2687,8 +2700,9 @@ public abstract class DataSerializer {
       size = map.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing LinkedHashMap with {} elements: {}", size, map);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing LinkedHashMap with {} elements: {}", size,
+          map);
     }
     if (size > 0) {
       for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -2722,8 +2736,9 @@ public abstract class DataSerializer {
         map.put(key, value);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read LinkedHashMap with {} elements: {}", size, map);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read LinkedHashMap with {} elements: {}", size,
+            map);
       }
 
       return map;
@@ -2756,8 +2771,8 @@ public abstract class DataSerializer {
       size = set.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing TreeSet with {} elements: {}", size, set);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing TreeSet with {} elements: {}", size, set);
     }
     if (size >= 0) {
       writeObject(set.comparator(), out);
@@ -2786,15 +2801,15 @@ public abstract class DataSerializer {
       return null;
     } else {
       Comparator<? super E> c =
-          InternalDataSerializer.<Comparator<? super E>>readDeserializedObject(in);
+          InternalDataSerializer.<Comparator<? super E>>readNonPdxInstanceObject(in);
       TreeSet<E> set = new TreeSet<E>(c);
       for (int i = 0; i < size; i++) {
         E element = DataSerializer.<E>readObject(in);
         set.add(element);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read TreeSet with {} elements: {}", size, set);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read TreeSet with {} elements: {}", size, set);
       }
 
       return set;
@@ -2829,8 +2844,9 @@ public abstract class DataSerializer {
       size = s.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Properties with {} elements: {}", size, props);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Properties with {} elements: {}", size,
+          props);
     }
     if (size > 0) {
       for (Map.Entry<Object, Object> entry : s) {
@@ -2869,8 +2885,9 @@ public abstract class DataSerializer {
         Object value = readObject(in);
         props.put(key, value);
       }
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read Properties with {} elements: {}", size, props);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Properties with {} elements: {}", size,
+            props);
       }
       return props;
     }
@@ -2906,12 +2923,12 @@ public abstract class DataSerializer {
       return;
     }
 
-    disallowJavaSerializationForThread.set(Boolean.TRUE);
+    DISALLOW_JAVA_SERIALIZATION.set(Boolean.TRUE);
     try {
       writeObject(o, out);
     } finally {
-      disallowJavaSerializationForThread.set(Boolean.FALSE); // with JDK 1.5 this can be changed to
-      // remove()
+      DISALLOW_JAVA_SERIALIZATION.set(Boolean.FALSE); // with JDK 1.5 this can be changed to
+                                                      // remove()
     }
   }
 
@@ -3142,8 +3159,6 @@ public abstract class DataSerializer {
    * gets the enum constants for the given class. {@link Class#getEnumConstants()} uses reflection,
    * so we keep around the class to enumConstants mapping in the {@link #knownEnums} map
    *
-   * @param <E>
-   * @param clazz
    * @return enum constants for the given class
    */
   private static <E extends Enum> E[] getEnumConstantsForClass(Class<E> clazz) {
@@ -3175,8 +3190,8 @@ public abstract class DataSerializer {
           LocalizedStrings.DataSerializer_ENUM_TO_SERIALIZE_IS_NULL.toLocalizedString());
     }
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing enum {}", e);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing enum {}", e);
     }
     InternalDataSerializer.writeArrayLength(e.ordinal(), out);
   }

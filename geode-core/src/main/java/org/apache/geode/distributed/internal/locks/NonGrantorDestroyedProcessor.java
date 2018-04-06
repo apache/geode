@@ -117,8 +117,9 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
       msg.processorId = proc.getProcessorId();
       msg.setRecipient(grantor);
 
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "NonGrantorDestroyedMessage sending {} to {}", msg, grantor);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "NonGrantorDestroyedMessage sending {} to {}", msg,
+            grantor);
       }
 
       if (grantor.equals(dm.getId())) {
@@ -165,19 +166,19 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
         }
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        if (logger.isTraceEnabled(LogMarker.DLS)) {
-          logger.trace(LogMarker.DLS,
+        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+          logger.trace(LogMarker.DLS_VERBOSE,
               "Processing of NonGrantorDestroyedMessage resulted in InterruptedException", e);
         }
       } catch (LockServiceDestroyedException e) {
-        if (logger.isTraceEnabled(LogMarker.DLS)) {
-          logger.trace(LogMarker.DLS,
+        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+          logger.trace(LogMarker.DLS_VERBOSE,
               "Processing of NonGrantorDestroyedMessage resulted in LockServiceDestroyedException",
               e);
         }
       } catch (LockGrantorDestroyedException e) {
-        if (logger.isTraceEnabled(LogMarker.DLS)) {
-          logger.trace(LogMarker.DLS,
+        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+          logger.trace(LogMarker.DLS_VERBOSE,
               "Processing of NonGrantorDestroyedMessage resulted in LockGrantorDestroyedException",
               e);
         }

@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
@@ -45,14 +45,14 @@ import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 
-@Category(IntegrationTest.class)
-public class JdbcLoaderIntegrationTest {
+@Category(AcceptanceTest.class)
+public abstract class JdbcLoaderIntegrationTest {
 
-  private static final String DB_NAME = "DerbyDB";
+  static final String DB_NAME = "test";
+
   private static final String REGION_TABLE_NAME = "employees";
-  private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
 
   private InternalCache cache;
   private Connection connection;
@@ -69,7 +69,7 @@ public class JdbcLoaderIntegrationTest {
         .setPdxSerializer(
             new ReflectionBasedAutoSerializer(ClassWithSupportedPdxFields.class.getName()))
         .create();
-    connection = DriverManager.getConnection(CONNECTION_URL);
+    connection = getConnection();
     statement = connection.createStatement();
   }
 
@@ -79,17 +79,16 @@ public class JdbcLoaderIntegrationTest {
     closeDB();
   }
 
+  public abstract Connection getConnection() throws SQLException;
+
+  public abstract String getConnectionUrl();
+
+  protected abstract void createClassWithSupportedPdxFieldsTable(Statement statement,
+      String tableName) throws SQLException;
+
   private void createEmployeeTable() throws Exception {
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
-  }
-
-  private void createClassWithSupportedPdxFieldsTable() throws Exception {
-    statement.execute("Create Table " + REGION_TABLE_NAME
-        + " (id varchar(10) primary key not null, " + "aboolean smallint, " + "abyte smallint, "
-        + "ashort smallint, " + "anint int, " + "along bigint, " + "afloat float, "
-        + "adouble float, " + "astring varchar(10), " + "adate timestamp, "
-        + "anobject varchar(20), " + "abytearray blob(100), " + "achar char(1))");
   }
 
   private void closeDB() throws Exception {
@@ -148,7 +147,7 @@ public class JdbcLoaderIntegrationTest {
 
   @Test
   public void verifyGetWithSupportedFieldsWithPdxClassName() throws Exception {
-    createClassWithSupportedPdxFieldsTable();
+    createClassWithSupportedPdxFieldsTable(statement, REGION_TABLE_NAME);
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
         createClassWithSupportedPdxFieldsForInsert();
     insertIntoClassWithSupportedPdxFieldsTable("1", classWithSupportedPdxFields);
@@ -182,7 +181,7 @@ public class JdbcLoaderIntegrationTest {
       throws ConnectionConfigExistsException, RegionMappingExistsException {
     return new SqlHandler(new TestableConnectionManager(), new TableMetaDataManager(),
         TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName,
-            primaryKeyInValue));
+            primaryKeyInValue, getConnectionUrl()));
   }
 
   private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
@@ -198,7 +197,7 @@ public class JdbcLoaderIntegrationTest {
   private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert() {
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
         new ClassWithSupportedPdxFields(true, (byte) 1, (short) 2, 3, 4, 5.5f, 6.0, "BigEmp",
-            new Date(100000), "BigEmpObject", new byte[] {1, 2}, 'c');
+            new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
 
     return classWithSupportedPdxFields;
   }

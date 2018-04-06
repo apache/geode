@@ -514,8 +514,9 @@ public class InitialImageOperation {
               if (re == null) {
                 continue;
               }
-              if (logger.isTraceEnabled(LogMarker.GII)) {
-                logger.trace(LogMarker.GII, "Processing unfinished operation:entry={}", re);
+              if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE)) {
+                logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
+                    "Processing unfinished operation:entry={}", re);
               }
               DiskEntry de = (DiskEntry) re;
               synchronized (de) {
@@ -1083,8 +1084,8 @@ public class InitialImageOperation {
           remoteRVV.recordVersion(id, stamp.getRegionVersion());
 
           if (count < 10) {
-            if (logger.isTraceEnabled(LogMarker.GII)) {
-              logger.trace(LogMarker.GII,
+            if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE)) {
+              logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                   "Region:{} found unfinished operation key={},member={},region version={}",
                   region.getFullPath(), mapEntry.getKey(), stamp.getMemberID(),
                   stamp.getRegionVersion());
@@ -1094,8 +1095,8 @@ public class InitialImageOperation {
         }
       }
       if (!keys.isEmpty()) {
-        if (logger.isTraceEnabled(LogMarker.GII)) {
-          logger.trace(LogMarker.GII, "Region:{} found {} unfinished operations",
+        if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE)) {
+          logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE, "Region:{} found {} unfinished operations",
               region.getFullPath(), keys.size());
         }
       }
@@ -1111,9 +1112,9 @@ public class InitialImageOperation {
     // concurrent clear() doesn't prevent the new region's RVV from being
     // initialized and that any vector entries that are no longer represented
     // by stamps in the region are not lost
-    if (logger.isTraceEnabled(LogMarker.GII)) {
-      logger.trace(LogMarker.GII, "Applying received version vector {} to {}", rvv.fullToString(),
-          region.getName());
+    if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE)) {
+      logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE, "Applying received version vector {} to {}",
+          rvv.fullToString(), region.getName());
     }
     // TODO - RVV - Our current RVV might reflect some operations
     // that are concurrent updates. We want to keep those updates. However
@@ -1124,8 +1125,8 @@ public class InitialImageOperation {
       region.getDiskRegion().writeRVV(region, false);
       region.getDiskRegion().writeRVVGC(region);
     }
-    if (logger.isTraceEnabled(LogMarker.GII)) {
-      logger.trace(LogMarker.GII, "version vector is now {}",
+    if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE)) {
+      logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE, "version vector is now {}",
           region.getVersionVector().fullToString());
     }
   }
@@ -1606,7 +1607,7 @@ public class InitialImageOperation {
 
     @Override
     protected void process(final ClusterDistributionManager dm) {
-      final boolean isGiiDebugEnabled = logger.isTraceEnabled(LogMarker.GII);
+      final boolean isGiiDebugEnabled = logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE);
 
       Throwable thr = null;
       final boolean lclAbortTest = abortTest;
@@ -1631,7 +1632,7 @@ public class InitialImageOperation {
         if (this.versionVector != null) {
           if (this.versionVector.isForSynchronization() && !rgn.getConcurrencyChecksEnabled()) {
             if (isGiiDebugEnabled) {
-              logger.trace(LogMarker.GII,
+              logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                   "ignoring synchronization request as this region has no version vector");
             }
             replyNoData(dm, true, Collections.EMPTY_MAP);
@@ -1651,7 +1652,7 @@ public class InitialImageOperation {
             // vector doesn't have anything that the other region needs
             if (this.unfinishedKeys == null || this.unfinishedKeys.isEmpty()) {
               if (isGiiDebugEnabled) {
-                logger.trace(LogMarker.GII,
+                logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                     "version vector reports that I have nothing that the requester hasn't already seen");
               }
               replyNoData(dm, true, rgn.getVersionVector().getMemberToGCVersion());
@@ -1660,7 +1661,7 @@ public class InitialImageOperation {
             }
           } else {
             if (isGiiDebugEnabled) {
-              logger.trace(LogMarker.GII,
+              logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                   "version vector reports that I have updates the requester hasn't seen, remote rvv is {}",
                   this.versionVector);
             }
@@ -1672,8 +1673,8 @@ public class InitialImageOperation {
 
         // chunkEntries returns false if didn't finish
         if (isGiiDebugEnabled) {
-          logger.trace(LogMarker.GII, "RequestImageMessage: Starting chunkEntries for {}",
-              rgn.getFullPath());
+          logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
+              "RequestImageMessage: Starting chunkEntries for {}", rgn.getFullPath());
         }
 
         final InitialImageFlowControl flowControl =
@@ -1700,14 +1701,14 @@ public class InitialImageOperation {
                 RegionVersionHolder holderOfRequest =
                     this.versionVector.getHolderForMember(this.lostMemberVersionID);
                 if (holderToSync.isNewerThanOrCanFillExceptionsFor(holderOfRequest)) {
-                  logger.trace(LogMarker.GII,
+                  logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                       "synchronizeWith detected mismatch region version holder for lost member {}. Old is {}, new is {}",
                       lostMemberVersionID, holderOfRequest, holderToSync);
                 }
               }
             } catch (TimeoutException e) {
               if (isGiiDebugEnabled) {
-                logger.trace(LogMarker.GII,
+                logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                     "timed out waiting for the departure of {} before processing delta GII request",
                     this.lostMemberID);
               }
@@ -1733,7 +1734,7 @@ public class InitialImageOperation {
             synchronized (rgn.getCache().getTombstoneService().getBlockGCLock()) {
               if (goWithFullGII(rgn, this.versionVector)) {
                 if (isGiiDebugEnabled) {
-                  logger.trace(LogMarker.GII, "have to do fullGII");
+                  logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE, "have to do fullGII");
                 }
                 this.versionVector = null; // full GII
               } else {
@@ -1741,7 +1742,8 @@ public class InitialImageOperation {
                 int count = rgn.getCache().getTombstoneService().incrementGCBlockCount();
                 markedOngoingGII = true;
                 if (isGiiDebugEnabled) {
-                  logger.trace(LogMarker.GII, "There're {} Delta GII on going", count);
+                  logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE, "There're {} Delta GII on going",
+                      count);
                 }
               }
             }
@@ -1792,7 +1794,7 @@ public class InitialImageOperation {
 
 
           if (isGiiDebugEnabled) {
-            logger.trace(LogMarker.GII,
+            logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                 "RequestImageMessage: ended chunkEntries for {}; finished = {}", rgn.getFullPath(),
                 finished);
           }
@@ -1813,7 +1815,7 @@ public class InitialImageOperation {
             if (count == 0) {
               markedOngoingGII = false;
               if (isGiiDebugEnabled) {
-                logger.trace(LogMarker.GII, "Delta GII count is reset");
+                logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE, "Delta GII count is reset");
               }
             }
           }
@@ -1832,15 +1834,18 @@ public class InitialImageOperation {
       } catch (RegionDestroyedException e) {
         // thr = e; Don't marshal an exception here; just return null
         if (isGiiDebugEnabled) {
-          logger.trace(LogMarker.GII, "{}; Region destroyed: aborting image provision", this);
+          logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
+              "{}; Region destroyed: aborting image provision", this);
         }
       } catch (IllegalStateException e) {
         // thr = e; Don't marshal an exception here; just return null
-        logger.trace(LogMarker.GII, "{}; disk region deleted? aborting image provision", this, e);
+        logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
+            "{}; disk region deleted? aborting image provision", this, e);
       } catch (CancelException e) {
         // thr = e; Don't marshal an exception here; just return null
         if (isGiiDebugEnabled) {
-          logger.trace(LogMarker.GII, "{}; Cache Closed: aborting image provision", this);
+          logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
+              "{}; Cache Closed: aborting image provision", this);
         }
       } catch (VirtualMachineError err) {
         sendFailureMessage = false; // Don't try to respond!
@@ -1971,8 +1976,9 @@ public class InitialImageOperation {
                     fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager(),
                         sender.getVersionObject());
                     if (versionVector != null) {
-                      if (logger.isTraceEnabled(LogMarker.GII)) {
-                        logger.trace(LogMarker.GII, "chunkEntries:entry={},stamp={}", entry, stamp);
+                      if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE)) {
+                        logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
+                            "chunkEntries:entry={},stamp={}", entry, stamp);
                       }
                     }
                   }
@@ -2342,7 +2348,7 @@ public class InitialImageOperation {
 
     @Override
     public void process(DistributionMessage msg) {
-      final boolean isGiiDebugEnabled = logger.isTraceEnabled(LogMarker.GII);
+      final boolean isGiiDebugEnabled = logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE);
 
       ReplyMessage reply = (ReplyMessage) msg;
       try {
@@ -2350,7 +2356,7 @@ public class InitialImageOperation {
         if (reply == null) {
           // if remote member is shutting down, the reply will be null
           if (isGiiDebugEnabled) {
-            logger.trace(LogMarker.GII,
+            logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                 "Did not received RVVReply from {}. Remote member might be down.",
                 Arrays.toString(getMembers()));
           }
@@ -2358,8 +2364,8 @@ public class InitialImageOperation {
         }
         if (reply.getException() != null) {
           if (isGiiDebugEnabled) {
-            logger.trace(LogMarker.GII, "Failed to get RVV from {} due to {}", reply.getSender(),
-                reply.getException());
+            logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE, "Failed to get RVV from {} due to {}",
+                reply.getSender(), reply.getException());
           }
           return;
         }
@@ -2370,7 +2376,7 @@ public class InitialImageOperation {
       } finally {
         if (received_rvv == null) {
           if (isGiiDebugEnabled) {
-            logger.trace(LogMarker.GII,
+            logger.trace(LogMarker.INITIAL_IMAGE_VERBOSE,
                 "{} did not send back rvv. Maybe it's non-persistent proxy region or remote region {} not found or not initialized. Nothing to do.",
                 reply.getSender(), region.getFullPath());
           }
@@ -3024,7 +3030,7 @@ public class InitialImageOperation {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.entryBits = in.readByte();
       byte flags = in.readByte();
-      this.key = InternalDataSerializer.readUserObject(in);
+      this.key = DataSerializer.readObject(in);
 
       if (EntryBits.isTombstone(this.entryBits)) {
         this.value = Token.TOMBSTONE;
@@ -3234,9 +3240,9 @@ public class InitialImageOperation {
         flags |= 0x08;
       }
 
-      if (logger.isTraceEnabled(LogMarker.GII_VERSIONED_ENTRY)) {
-        logger.trace(LogMarker.GII_VERSIONED_ENTRY, "serializing {} with flags 0x{}", this,
-            Integer.toHexString(flags));
+      if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE)) {
+        logger.trace(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE, "serializing {} with flags 0x{}",
+            this, Integer.toHexString(flags));
       }
 
       out.writeByte(flags);
@@ -3281,7 +3287,7 @@ public class InitialImageOperation {
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       final boolean isGiiVersionEntryDebugEnabled =
-          logger.isTraceEnabled(LogMarker.GII_VERSIONED_ENTRY);
+          logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE);
 
       int flags = in.readByte();
       boolean hasEntries = (flags & 0x02) == 0x02;
@@ -3290,14 +3296,14 @@ public class InitialImageOperation {
       boolean persistent = (flags & 0x20) == 0x20;
 
       if (isGiiVersionEntryDebugEnabled) {
-        logger.trace(LogMarker.GII_VERSIONED_ENTRY,
+        logger.trace(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE,
             "deserializing a InitialImageVersionedObjectList with flags 0x{}",
             Integer.toHexString(flags));
       }
       if (hasEntries) {
         int size = (int) InternalDataSerializer.readUnsignedVL(in);
         if (isGiiVersionEntryDebugEnabled) {
-          logger.trace(LogMarker.GII_VERSIONED_ENTRY, "reading {} keys", size);
+          logger.trace(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE, "reading {} keys", size);
         }
         for (int i = 0; i < size; i++) {
           super.add((Entry) DataSerializer.readObject(in));
@@ -3307,7 +3313,7 @@ public class InitialImageOperation {
       if (hasTags) {
         int size = (int) InternalDataSerializer.readUnsignedVL(in);
         if (isGiiVersionEntryDebugEnabled) {
-          logger.trace(LogMarker.GII_VERSIONED_ENTRY, "reading {} version tags", size);
+          logger.trace(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE, "reading {} version tags", size);
         }
         this.versionTags = new ArrayList<VersionTag>(size);
         List<VersionSource> ids = new ArrayList<VersionSource>(size);

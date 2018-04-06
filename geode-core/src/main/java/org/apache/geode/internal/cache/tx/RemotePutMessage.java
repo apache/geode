@@ -312,8 +312,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
         successful = true; // not a cancel-exception, so don't complain any more about it
 
       } catch (RemoteOperationException e) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
               "RemotePutMessage caught an unexpected exception during distribution", e);
         }
       }
@@ -448,12 +448,12 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    setKey(InternalDataSerializer.readUserObject(in));
+    setKey(DataSerializer.readObject(in));
 
     final int extraFlags = in.readUnsignedByte();
     this.deserializationPolicy =
         (byte) (extraFlags & DistributedCacheOperation.DESERIALIZATION_POLICY_MASK);
-    this.cbArg = InternalDataSerializer.readUserObject(in);
+    this.cbArg = DataSerializer.readObject(in);
     this.lastModified = in.readLong();
     this.op = Operation.fromOrdinal(in.readByte());
     if ((extraFlags & HAS_BRIDGE_CONTEXT) != 0) {
@@ -466,7 +466,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     InternalDataSerializer.invokeFromData(this.eventId, in);
 
     if ((flags & HAS_EXPECTED_OLD_VAL) != 0) {
-      this.expectedOldValue = InternalDataSerializer.readUserObject(in);
+      this.expectedOldValue = DataSerializer.readObject(in);
     }
 
     if (this.hasOldValue) {
@@ -809,8 +809,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
@@ -838,7 +838,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       byte flags = (byte) (in.readByte() & 0xff);
       this.result = (flags & FLAG_RESULT) != 0;
       this.op = Operation.fromOrdinal(in.readByte());
-      this.oldValue = InternalDataSerializer.readUserObject(in);
+      this.oldValue = DataSerializer.readObject(in);
       if ((flags & FLAG_HASVERSION) != 0) {
         boolean persistentTag = (flags & FLAG_PERSISTENT) != 0;
         this.versionTag = VersionTag.create(persistentTag, in);

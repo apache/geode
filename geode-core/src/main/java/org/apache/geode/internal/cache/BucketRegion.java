@@ -17,14 +17,37 @@ package org.apache.geode.internal.cache;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
+import org.apache.geode.CancelException;
+import org.apache.geode.CopyHelper;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.DeltaSerializationException;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -518,9 +541,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       // to members with bucket copies that may not have seen the event. Their
       // EventTrackers will keep them from applying the event a second time if
       // they've already seen it.
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "BR.virtualPut: this cache has already seen this event {}",
-            event);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
+            "BR.virtualPut: this cache has already seen this event {}", event);
       }
       if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
         distributeUpdateOperation(event, lastModified);
@@ -909,8 +932,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         }
         return;
       } else {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
               "LR.basicInvalidate: this cache has already seen this event {}", event);
         }
         if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
@@ -1196,9 +1219,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     DestroyOperation op = null;
 
     try {
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "BR.basicDestroy: this cache has already seen this event {}",
-            event);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
+            "BR.basicDestroy: this cache has already seen this event {}", event);
       }
       if (!event.isOriginRemote() && getBucketAdvisor().isPrimary()) {
         if (event.isBulkOpInProgress()) {
@@ -1324,8 +1347,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         if (!hasSeenEvent(event)) {
           this.entries.updateEntryVersion(event);
         } else {
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM,
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE,
                 "BR.basicUpdateEntryVersion: this cache has already seen this event {}", event);
           }
         }

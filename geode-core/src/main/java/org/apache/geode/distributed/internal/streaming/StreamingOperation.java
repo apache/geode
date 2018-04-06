@@ -554,7 +554,7 @@ public abstract class StreamingOperation {
               lowMemoryDetected = true;
               break;
             }
-            Object o = InternalDataSerializer.readUserObject(in);
+            Object o = DataSerializer.readObject(in);
             if (isQueryMessageProcessor && elementType != null && elementType.isStructType()) {
               boolean convertToStruct = isSenderAbove_8_1;
               if (convertToStruct && i == 0) {

@@ -248,12 +248,12 @@ public class GemFireStatSampler extends HostStatSampler {
   protected void initProcessStats(long id) {
     if (PureJavaMode.osStatsAreAvailable()) {
       if (osStatsDisabled()) {
-        logger.info(LogMarker.STATISTICS, LocalizedMessage.create(
+        logger.info(LogMarker.STATISTICS_MARKER, LocalizedMessage.create(
             LocalizedStrings.GemFireStatSampler_OS_STATISTIC_COLLECTION_DISABLED_BY_OSSTATSDISABLED_SYSTEM_PROPERTY));
       } else {
         int retVal = HostStatHelper.initOSStats();
         if (retVal != 0) {
-          logger.error(LogMarker.STATISTICS, LocalizedMessage.create(
+          logger.error(LogMarker.STATISTICS_MARKER, LocalizedMessage.create(
               LocalizedStrings.GemFireStatSampler_OS_STATISTICS_FAILED_TO_INITIALIZE_PROPERLY_SOME_STATS_MAY_BE_MISSING_SEE_BUGNOTE_37160));
         }
         HostStatHelper.newSystem(getOsStatisticsFactory());
