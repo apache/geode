@@ -59,6 +59,7 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.map.CacheModificationLock;
 import org.apache.geode.internal.cache.map.FocusedRegionMap;
 import org.apache.geode.internal.cache.map.RegionMapDestroy;
+import org.apache.geode.internal.cache.map.RegionMapPutInfo;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.region.entry.RegionEntryFactoryBuilder;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -2165,278 +2166,256 @@ public abstract class AbstractRegionMap
     }
   }
 
-  private RegionEntry getOrCreateRegionEntry(Object ownerRegion, EntryEventImpl event, Object value,
-      MapCallbackAdapter<Object, Object, Object, Object> valueCreator, boolean onlyExisting,
-      boolean returnTombstone) {
-    Object key = event.getKey();
-    RegionEntry retVal = null;
-    retVal = getEntry(event);
-    if (onlyExisting) {
-      if (!returnTombstone && (retVal != null && retVal.isTombstone())) {
-        return null;
-      }
-      return retVal;
-    }
-    if (retVal != null) {
-      return retVal;
-    }
-    if (valueCreator != null) {
-      value = valueCreator.newValue(key, ownerRegion, value, null);
-    }
-    retVal = getEntryFactory().createEntry((RegionEntryContext) ownerRegion, key, value);
-    RegionEntry oldRe = putEntryIfAbsent(key, retVal);
+  private RegionEntry createEntryInMap(Object key, RegionEntry myNewRegionEntry) {
+    RegionEntry oldRe = putEntryIfAbsent(key, myNewRegionEntry);
     if (oldRe != null) {
-      if (retVal instanceof OffHeapRegionEntry) {
-        ((OffHeapRegionEntry) retVal).release();
-      }
       return oldRe;
+    } else {
+      return myNewRegionEntry;
     }
-    return retVal;
   }
 
   /*
    * returns null if the operation fails
    */
   @Override
-  public RegionEntry basicPut(EntryEventImpl event, final long lastModified, final boolean ifNew,
-      final boolean ifOld, Object expectedOldValue, // only non-null if ifOld
-      boolean requireOldValue, final boolean overwriteDestroyed)
+  public RegionEntry basicPut(EntryEventImpl event, final long unused, final boolean ifNew,
+      final boolean ifOld, final Object expectedOldValue, // only non-null if ifOld
+      final boolean requireOldValue, final boolean overwriteDestroyed)
       throws CacheWriterException, TimeoutException {
 
     final LocalRegion owner = _getOwner();
+    final RegionMapPutInfo putInfo = new RegionMapPutInfo(owner, event, ifNew, ifOld,
+        overwriteDestroyed, requireOldValue, expectedOldValue);
 
     entryEventSerialization.serializeNewValueIfNeeded(owner, event);
 
-    boolean clearOccured = false;
-    if (owner == null) {
-      // "fix" for bug 32440
-      Assert.assertTrue(false, "The owner for RegionMap " + this + " is null for event " + event);
-    }
-    if (logger.isTraceEnabled(LogMarker.LRU_TOMBSTONE_COUNT) && !(owner instanceof HARegion)) {
-      logger.trace(LogMarker.LRU_TOMBSTONE_COUNT,
-          "ARM.basicPut called for {} expectedOldValue={} requireOldValue={} ifNew={} ifOld={} initialized={} overwriteDestroyed={}",
-          event, expectedOldValue, requireOldValue, ifNew, ifOld, owner.isInitialized(),
-          overwriteDestroyed);
-    }
-
-    RegionEntry result = null;
-    long lastModifiedTime = 0;
-    // copy into local var to prevent race condition with setter
-    final CacheWriter cacheWriter = owner.basicGetWriter();
-    final boolean cacheWrite =
-        !event.isOriginRemote() && !event.isNetSearch() && event.isGenerateCallbacks()
-            && (cacheWriter != null || owner.hasServerProxy() || owner.scope.isDistributed());
-    /*
-     * For performance reason, we try to minimize object creation and do as much work as we can
-     * outside of synchronization, especially getting distribution advice.
-     */
-    final Set netWriteRecipients;
-    if (cacheWrite) {
-      if (cacheWriter == null && owner.scope.isDistributed()) {
-        netWriteRecipients =
-            ((DistributedRegion) owner).getCacheDistributionAdvisor().adviseNetWrite();
-      } else {
-        netWriteRecipients = null;
-      }
-    } else {
-      netWriteRecipients = null;
-    }
-
-    // mbid: this has been added to maintain consistency between the disk region
-    // and the region map after clear() has been called. This will set the
-    // reference of the diskSegmentRegion as a ThreadLocal so that if the diskRegionSegment
-    // is later changed by another thread, we can do the necessary.
-    boolean uninitialized = !owner.isInitialized();
-    boolean retrieveOldValueForDelta =
-        event.getDeltaBytes() != null && event.getRawNewValue() == null;
-    IndexManager oqlIndexManager = null;
     lockForCacheModification(owner, event);
     try {
-      try {
-        // Fix for Bug #44431. We do NOT want to update the region and wait
-        // later for index INIT as region.clear() can cause inconsistency if
-        // happened in parallel as it also does index INIT.
-        oqlIndexManager = owner.getIndexManager();
-        if (oqlIndexManager != null) {
-          oqlIndexManager.waitForIndexInit();
-        }
-
-        // fix for bug #42169, replace must go to server if entry not on client
-        boolean replaceOnClient =
-            event.getOperation() == Operation.REPLACE && owner.getServerProxy() != null;
-        // Rather than having two different blocks for synchronizing oldRe
-        // and newRe, have only one block and synchronize re
-        RegionEntry re = null;
-        boolean eventRecorded = false;
-        boolean onlyExisting = ifOld && !replaceOnClient;
-
-        re = getOrCreateRegionEntry(owner, event,
-
-            Token.REMOVED_PHASE1, null, onlyExisting, false);
-        if (re == null) {
-          return null;
-        }
-        while (true) {
-          synchronized (re) {
-            // if the re goes into removed2 state, it will be removed
-            // from the map. otherwise we can append an event to it
-            // and change its state
-            if (re.isRemovedPhase2()) {
-              _getOwner().getCachePerfStats().incRetries();
-              getEntryMap().remove(event.getKey(), re);
-              re = getOrCreateRegionEntry(owner, event, Token.REMOVED_PHASE1, null, onlyExisting,
-                  false);
-              if (re == null) {
-                // this will happen when onlyExisting is true
-                return null;
-              }
-              continue;
-            } else {
-              @Released
-              Object oldValueForDelta = null;
-              if (retrieveOldValueForDelta) {
-                // defer the lruUpdateCallback to prevent a deadlock (see bug 51121).
-                final boolean disabled = disableLruUpdateCallback();
-                try {
-                  // Old value is faulted in from disk if not found in memory.
-                  oldValueForDelta = re.getValue(owner); // OFFHEAP: if we are synced on oldRe no
-                                                         // issue since we can use ARE's ref
-                } finally {
-                  if (disabled) {
-                    enableLruUpdateCallback();
-                  }
-                }
-              }
-
-              try {
-
-                event.setRegionEntry(re);
-                // set old value in event
-                setOldValueInEvent(event, re, cacheWrite, requireOldValue);
-                if (!continueUpdate(re, event, ifOld, replaceOnClient)) {
-                  return null;
-                }
-                // overwrite destroyed?
-                if (!continueOverwriteDestroyed(re, event, overwriteDestroyed, ifNew)) {
-                  return null;
-                }
-                // check expectedOldValue
-                if (!satisfiesExpectedOldValue(event, re, expectedOldValue, replaceOnClient)) {
-                  return null;
-                }
-                // invoke cacheWriter
-                invokeCacheWriter(re, event, cacheWrite, cacheWriter, netWriteRecipients,
-                    requireOldValue, expectedOldValue, replaceOnClient);
-
-                // notify index of an update
-                notifyIndex(re, true);
-                try {
-                  try {
-                    if ((cacheWrite && event.getOperation().isUpdate()) // if there is a
-                                                                        // cacheWriter, type of
-                                                                        // event has already been
-                                                                        // set
-                        || !re.isRemoved() || replaceOnClient) {
-                      // update
-                      updateEntry(event, requireOldValue, oldValueForDelta, re);
-                    } else {
-                      // create
-                      createEntry(event, owner, re);
-                    }
-                    owner.recordEvent(event);
-                    eventRecorded = true;
-                  } catch (RegionClearedException rce) {
-                    clearOccured = true;
-                    owner.recordEvent(event);
-                  } catch (ConcurrentCacheModificationException ccme) {
-                    VersionTag tag = event.getVersionTag();
-                    if (tag != null && tag.isTimeStampUpdated()) {
-                      // Notify gateways of new time-stamp.
-                      owner.notifyTimestampsToGateways(event);
-                    }
-                    throw ccme;
-                  }
-                  if (uninitialized) {
-                    event.inhibitCacheListenerNotification(true);
-                  }
-                  updateLru(clearOccured, re, event);
-
-                  lastModifiedTime = owner.basicPutPart2(event, re, !uninitialized,
-                      lastModifiedTime, clearOccured);
-                } finally {
-                  notifyIndex(re, false);
-                }
-                result = re;
-                break;
-              } finally {
-                OffHeapHelper.release(oldValueForDelta);
-                if (re != null && !onlyExisting && !isOpComplete(re, event)) {
-                  owner.cleanUpOnIncompleteOp(event, re);
-                } else if (re != null && owner.isUsedForPartitionedRegionBucket()) {
-                  BucketRegion br = (BucketRegion) owner;
-                  CachePerfStats stats = br.getPartitionedRegion().getCachePerfStats();
-                }
-              } // try
-            }
-          } // sync re
-        } // end while
-      } catch (DiskAccessException dae) {
-        // Asif:Feel that it is safe to destroy the region here as there appears
-        // to be no chance of deadlock during region destruction
-        result = null;
-        this._getOwner().handleDiskAccessException(dae);
-        throw dae;
-      } finally {
-        if (oqlIndexManager != null) {
-          oqlIndexManager.countDownIndexUpdaters();
-        }
-        if (result != null) {
-          try {
-            // Note we do distribution after releasing all sync to avoid deadlock
-            final boolean invokeListeners = event.basicGetNewValue() != Token.TOMBSTONE;
-            owner.basicPutPart3(event, result, !uninitialized, lastModifiedTime, invokeListeners,
-                ifNew, ifOld, expectedOldValue, requireOldValue);
-          } finally {
-            // bug 32589, post update may throw an exception if exception occurs
-            // for any recipients
-            if (!clearOccured) {
-              try {
-                lruUpdateCallback();
-              } catch (DiskAccessException dae) {
-                // Asif:Feel that it is safe to destroy the region here as there appears
-                // to be no chance of deadlock during region destruction
-                result = null;
-                this._getOwner().handleDiskAccessException(dae);
-                throw dae;
-              }
-            }
-          } // finally
-        } else {
-          resetThreadLocals();
-        }
-      }
+      doBasicPut(event, owner, putInfo);
     } finally {
       releaseCacheModificationLock(owner, event);
     }
-    return result;
+    return putInfo.getResult();
+  }
+
+  private void doBasicPut(EntryEventImpl event, final LocalRegion owner,
+      final RegionMapPutInfo putInfo) {
+    final IndexManager oqlIndexManager = getInitializedIndexManager();
+    try {
+      RegionEntry re;
+      do {
+        re = getExistingEntryOrCreateNewOne(owner, putInfo);
+        if (re == null) {
+          putInfo.setResult(null);
+          return;
+        }
+      } while (!addRegionEntryToMapAndDoPut(putInfo, re));
+    } catch (DiskAccessException dae) {
+      putInfo.setResult(null);
+      owner.handleDiskAccessException(dae);
+      throw dae;
+    } finally {
+      doAfterPut(putInfo, oqlIndexManager);
+    }
+  }
+
+  private RegionEntry getExistingEntryOrCreateNewOne(final LocalRegion owner,
+      final RegionMapPutInfo putInfo) {
+    final Object key = putInfo.getEvent().getKey();
+    RegionEntry re = getEntry(key);
+    putInfo.setEntryExisted(re != null);
+    if (putInfo.isOnlyExisting()) {
+      if (re == null || re.isTombstone()) {
+        return null;
+      }
+    }
+
+    if (!putInfo.getEntryExisted()) {
+      re = getEntryFactory().createEntry(owner, key, Token.REMOVED_PHASE1);
+    }
+    return re;
+  }
+
+  private boolean addRegionEntryToMapAndDoPut(final RegionMapPutInfo putInfo, RegionEntry re) {
+    synchronized (re) {
+      if (!putInfo.getEntryExisted()) {
+        re = createEntryInMap(putInfo.getEvent().getKey(), re);
+      }
+      return doPutOnRegionEntry(putInfo, re);
+    }
+  }
+
+  private IndexManager getInitializedIndexManager() {
+    IndexManager oqlIndexManager;
+    // Fix for Bug #44431. We do NOT want to update the region and wait
+    // later for index INIT as region.clear() can cause inconsistency if
+    // happened in parallel as it also does index INIT.
+    oqlIndexManager = _getOwner().getIndexManager();
+    if (oqlIndexManager != null) {
+      oqlIndexManager.waitForIndexInit();
+    }
+    return oqlIndexManager;
+  }
+
+  private void doAfterPut(RegionMapPutInfo putInfo, IndexManager oqlIndexManager) {
+    final LocalRegion owner = _getOwner();
+    if (oqlIndexManager != null) {
+      oqlIndexManager.countDownIndexUpdaters();
+    }
+    if (putInfo.getResult() != null) {
+      try {
+        final boolean invokeListeners = putInfo.getEvent().basicGetNewValue() != Token.TOMBSTONE;
+        owner.basicPutPart3(putInfo.getEvent(), putInfo.getResult(), !putInfo.isUninitialized(),
+            putInfo.getLastModifiedTime(), invokeListeners, putInfo.isIfNew(), putInfo.isIfOld(),
+            putInfo.getExpectedOldValue(), putInfo.isRequireOldValue());
+      } finally {
+        if (!putInfo.getClearOccured()) {
+          try {
+            lruUpdateCallback();
+          } catch (DiskAccessException dae) {
+            putInfo.setResult(null);
+            owner.handleDiskAccessException(dae);
+            throw dae;
+          }
+        }
+      }
+    } else {
+      resetThreadLocals();
+    }
+  }
+
+  private boolean doPutOnRegionEntry(final RegionMapPutInfo putInfo, final RegionEntry re) {
+    final LocalRegion owner = _getOwner();
+    final EntryEventImpl event = putInfo.getEvent();
+
+    synchronized (re) {
+      if (handleRemovePhase2(event.getKey(), re)) {
+        return false;
+      }
+      @Released
+      final Object oldValueForDelta = getOldValueForDelta(putInfo, re);
+
+      try {
+        setOldValueInEvent(putInfo, re);
+        if (!checkEarlyOuts(putInfo, re)) {
+          doCreateOrUpdate(putInfo, re, oldValueForDelta);
+        }
+        return true;
+      } finally {
+        OffHeapHelper.release(oldValueForDelta);
+        // TODO: I see no reason for the isOnlyExisting check.
+        // If the re is REMOVE_PHASE1 then we should always clean it up.
+        if (!putInfo.isOnlyExisting() && !isOpComplete(re)) {
+          owner.cleanUpOnIncompleteOp(event, re);
+        }
+      }
+    }
   }
 
   /**
-   * If the value in the VM is still REMOVED_PHASE1 Token, then the operation was not completed (due
-   * to cacheWriter exception, concurrentMap operation) etc.
+   * @return true if an early out check indicated that
+   *         the put should not be done.
    */
-  private boolean isOpComplete(RegionEntry re, EntryEventImpl event) {
-    if (re.getValueAsToken() == Token.REMOVED_PHASE1) {
+  private boolean checkEarlyOuts(final RegionMapPutInfo putInfo, final RegionEntry re) {
+    if (!continueUpdate(putInfo, re) || !continueOverwriteDestroyed(putInfo, re)
+        || !satisfiesExpectedOldValue(putInfo, re)) {
+      putInfo.setResult(null);
+      return true;
+    }
+    return false;
+  }
+
+  private void doCreateOrUpdate(final RegionMapPutInfo putInfo, final RegionEntry re,
+      final Object oldValueForDelta) {
+    invokeCacheWriter(re, putInfo);
+
+    notifyIndex(re, true);
+    try {
+      final EntryEventImpl event = putInfo.getEvent();
+      createOrUpdateEntry(putInfo, re, _getOwner(), oldValueForDelta);
+      if (putInfo.isUninitialized()) {
+        event.inhibitCacheListenerNotification(true);
+      }
+      updateLru(putInfo.getClearOccured(), re, event);
+
+      long lastModTime = _getOwner().basicPutPart2(event, re, !putInfo.isUninitialized(),
+          putInfo.getLastModifiedTime(), putInfo.getClearOccured());
+      putInfo.setLastModifiedTime(lastModTime);
+      putInfo.setResult(re);
+    } finally {
+      notifyIndex(re, false);
+    }
+  }
+
+  private void createOrUpdateEntry(RegionMapPutInfo putInfo, RegionEntry re,
+      final LocalRegion owner, final Object oldValueForDelta) {
+    final EntryEventImpl event = putInfo.getEvent();
+    try {
+      // if there is a cacheWriter, type of event has already been set
+      if ((putInfo.isCacheWrite() && event.getOperation().isUpdate()) || !re.isRemoved()
+          || putInfo.isReplaceOnClient()) {
+        updateEntry(event, putInfo.isRequireOldValue(), oldValueForDelta, re);
+      } else {
+        createEntry(event, owner, re);
+      }
+      owner.recordEvent(event);
+    } catch (RegionClearedException rce) {
+      putInfo.setClearOccured(true);
+      owner.recordEvent(event);
+    } catch (ConcurrentCacheModificationException ccme) {
+      VersionTag tag = event.getVersionTag();
+      if (tag != null && tag.isTimeStampUpdated()) {
+        owner.notifyTimestampsToGateways(event);
+      }
+      throw ccme;
+    }
+  }
+
+  private Object getOldValueForDelta(RegionMapPutInfo putInfo, RegionEntry re) {
+    if (putInfo.isRetrieveOldValueForDelta()) {
+      // defer the lruUpdateCallback to prevent a deadlock (see bug 51121).
+      final boolean disabled = disableLruUpdateCallback();
+      try {
+        // Old value is faulted in from disk if not found in memory.
+        return re.getValue(_getOwner());
+        // OFFHEAP: if we are synced on oldRe no issue since we can use ARE's ref
+      } finally {
+        if (disabled) {
+          enableLruUpdateCallback();
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * If the re goes into removed2 state, it will be removed from the map.
+   * 
+   * @return true if re was remove phase 2 and handled
+   */
+  private boolean handleRemovePhase2(final Object key, RegionEntry re) {
+    if (re.isRemovedPhase2()) {
+      _getOwner().getCachePerfStats().incRetries();
+      getEntryMap().remove(key, re);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private boolean isOpComplete(RegionEntry re) {
+    if (re != null && re.getValueAsToken() == Token.REMOVED_PHASE1) {
       return false;
     }
     return true;
   }
 
-  private boolean satisfiesExpectedOldValue(EntryEventImpl event, RegionEntry re,
-      Object expectedOldValue, boolean replaceOnClient) {
+  private boolean satisfiesExpectedOldValue(final RegionMapPutInfo putInfo, final RegionEntry re) {
     // replace is propagated to server, so no need to check
     // satisfiesOldValue on client
-    if (expectedOldValue != null && !replaceOnClient) {
+    final EntryEventImpl event = putInfo.getEvent();
+    if (putInfo.getExpectedOldValue() != null && !putInfo.isReplaceOnClient()) {
       assert event.getOperation().guaranteesOldValue();
       // We already called setOldValueInEvent so the event will have the old value.
       @Unretained
@@ -2444,7 +2423,8 @@ public abstract class AbstractRegionMap
       // Note that v will be null instead of INVALID because setOldValue
       // converts INVALID to null.
       // But checkExpectedOldValue handle this and says INVALID equals null.
-      if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, v, event.getRegion())) {
+      if (!AbstractRegionEntry.checkExpectedOldValue(putInfo.getExpectedOldValue(), v,
+          event.getRegion())) {
         return false;
       }
     }
@@ -2452,10 +2432,11 @@ public abstract class AbstractRegionMap
   }
 
   // PRECONDITION: caller must be synced on re
-  private void setOldValueInEvent(EntryEventImpl event, RegionEntry re, boolean cacheWrite,
-      boolean requireOldValue) {
-    boolean needToSetOldValue =
-        cacheWrite || requireOldValue || event.getOperation().guaranteesOldValue();
+  private void setOldValueInEvent(final RegionMapPutInfo putInfo, final RegionEntry re) {
+    final EntryEventImpl event = putInfo.getEvent();
+    event.setRegionEntry(re);
+    boolean needToSetOldValue = putInfo.isCacheWrite() || putInfo.isRequireOldValue()
+        || event.getOperation().guaranteesOldValue();
     if (needToSetOldValue) {
       if (event.getOperation().guaranteesOldValue()) {
         // In these cases we want to even get the old value from disk if it is not in memory
@@ -2550,52 +2531,49 @@ public abstract class AbstractRegionMap
     }
   }
 
-  private void invokeCacheWriter(RegionEntry re, EntryEventImpl event, boolean cacheWrite,
-      CacheWriter cacheWriter, Set netWriteRecipients, boolean requireOldValue,
-      Object expectedOldValue, boolean replaceOnClient) {
+  private void invokeCacheWriter(RegionEntry re, RegionMapPutInfo putInfo) {
+    final EntryEventImpl event = putInfo.getEvent();
     // invoke listeners only if region is initialized
-    if (_getOwner().isInitialized() && cacheWrite) {
+    if (_getOwner().isInitialized() && putInfo.isCacheWrite()) {
       // event.setOldValue already called in setOldValueInEvent
 
       // bug #42638 for replaceOnClient, do not make the event create
       // or update since replace must propagate to server
-      if (!replaceOnClient) {
+      if (!putInfo.isReplaceOnClient()) {
         if (re.isDestroyedOrRemoved()) {
           event.makeCreate();
         } else {
           event.makeUpdate();
         }
       }
-      _getOwner().cacheWriteBeforePut(event, netWriteRecipients, cacheWriter, requireOldValue,
-          expectedOldValue);
+      _getOwner().cacheWriteBeforePut(event, putInfo.getNetWriteRecipients(),
+          putInfo.getCacheWriter(), putInfo.isRequireOldValue(), putInfo.getExpectedOldValue());
     }
-    if (!_getOwner().isInitialized() && !cacheWrite) {
-      // block setting of old value in putNewValueNoSync, don't
-      // need it
+    if (!_getOwner().isInitialized() && !putInfo.isCacheWrite()) {
+      // block setting of old value in putNewValueNoSync, don't need it
       event.oldValueNotAvailable();
     }
   }
 
-  private boolean continueOverwriteDestroyed(RegionEntry re, EntryEventImpl event,
-      boolean overwriteDestroyed, boolean ifNew) {
+  private boolean continueOverwriteDestroyed(final RegionMapPutInfo putInfo, final RegionEntry re) {
     Token oldValueInVM = re.getValueAsToken();
     // if region is under GII, check if token is destroyed
-    if (!overwriteDestroyed) {
+    if (!putInfo.isOverwriteDestroyed()) {
       if (!_getOwner().isInitialized()
           && (oldValueInVM == Token.DESTROYED || oldValueInVM == Token.TOMBSTONE)) {
-        event.setOldValueDestroyedToken();
+        putInfo.getEvent().setOldValueDestroyedToken();
         return false;
       }
     }
-    if (ifNew && !Token.isRemoved(oldValueInVM)) {
+    if (putInfo.isIfNew() && !Token.isRemoved(oldValueInVM)) {
       return false;
     }
     return true;
   }
 
-  private boolean continueUpdate(RegionEntry re, EntryEventImpl event, boolean ifOld,
-      boolean replaceOnClient) {
-    if (ifOld) {
+  private boolean continueUpdate(final RegionMapPutInfo putInfo, final RegionEntry re) {
+    if (putInfo.isIfOld()) {
+      final EntryEventImpl event = putInfo.getEvent();
       // only update, so just do tombstone maintainence and exit
       if (re.isTombstone() && event.getVersionTag() != null) {
         // refresh the tombstone so it doesn't time out too soon
@@ -2609,7 +2587,7 @@ public abstract class AbstractRegionMap
         _getOwner().rescheduleTombstone(re, re.getVersionStamp().asVersionTag());
         return false;
       }
-      if (re.isRemoved() && !replaceOnClient) {
+      if (re.isRemoved() && !putInfo.isReplaceOnClient()) {
         return false;
       }
     }
