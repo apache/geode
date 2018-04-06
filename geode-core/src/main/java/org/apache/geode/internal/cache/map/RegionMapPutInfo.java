@@ -26,6 +26,12 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 
+/**
+ * This class is used to hold a bunch of immutable items
+ * used by AbstractRegionMap when doing a "put" operation.
+ * It also has a few mutable items updates while a "put"
+ * operation is being done.
+ */
 public class RegionMapPutInfo {
   private final EntryEventImpl event;
   private final boolean ifNew;
