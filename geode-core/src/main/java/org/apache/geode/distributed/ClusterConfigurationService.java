@@ -30,6 +30,14 @@ import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundExcepti
 
 @Experimental
 public interface ClusterConfigurationService {
+  /**
+   * if you want the output xml have schemaLocation correctly set for your namespace, use this
+   * instead of registerBindClass(Class)./
+   *
+   * @param clazz e.g. CacheConfig.class
+   * @param nameSpaceAndLocation e.g. "http://geode.apache.org/schema/cache
+   *        http://geode.apache.org/schema/cache/cache-1.0.xsd"
+   */
   void registerBindClassWithSchema(Class clazz, String nameSpaceAndLocation);
 
   default void registerBindClass(Class clazz) {

@@ -111,7 +111,7 @@ public class InternalClusterConfigurationServiceTest {
     service.saveCustomCacheElement("cluster", customOne);
     System.out.println(configuration.getCacheXmlContent());
     assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
-    assertThat(configuration.getCacheXmlContent()).contains("<customone:id>testOne</customone:id>");
+    assertThat(configuration.getCacheXmlContent()).containsPattern("<ns\\d:id>testOne</ns\\d:id>");
     assertThat(configuration.getCacheXmlContent()).doesNotContain("<value>");
 
     customOne = service.getCustomCacheElement("cluster", "testOne", ElementOne.class);
@@ -119,9 +119,9 @@ public class InternalClusterConfigurationServiceTest {
     service.saveCustomCacheElement("cluster", customOne);
     System.out.println(configuration.getCacheXmlContent());
     assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
-    assertThat(configuration.getCacheXmlContent()).contains("<customone:id>testOne</customone:id>");
+    assertThat(configuration.getCacheXmlContent()).containsPattern("<ns\\d:id>testOne</ns\\d:id>");
     assertThat(configuration.getCacheXmlContent())
-        .contains("<customone:value>valueOne</customone:value>");
+        .containsPattern("<ns\\d:value>valueOne</ns\\d:value>");
   }
 
   @Test
@@ -155,7 +155,7 @@ public class InternalClusterConfigurationServiceTest {
     System.out.println(configuration.getCacheXmlContent());
     assertThat(configuration.getCacheXmlContent()).contains("region name=\"testRegion\"");
     assertThat(configuration.getCacheXmlContent())
-        .contains("</customone:custom-one>\n" + "    </region>");
+        .containsPattern("</ns\\d:custom-one>\n" + "    </region>");
 
     ElementOne retrieved =
         service.getCustomRegionElement("cluster", "testRegion", "elementOne", ElementOne.class);

@@ -112,8 +112,8 @@ public class JAXBServiceTest {
     assertThat(xml).contains("custom-one>");
     assertThat(xml).contains("custom-two>");
     assertThat(xml).containsPattern("xmlns=\"http://geode.apache.org/schema/cache\"");
-    assertThat(xml).containsPattern("xmlns:customone=\"http://geode.apache.org/schema/CustomOne\"");
-    assertThat(xml).containsPattern("xmlns:customtwo=\"http://geode.apache.org/schema/CustomTwo\"");
+    assertThat(xml).containsPattern("xmlns:ns\\d=\"http://geode.apache.org/schema/CustomOne\"");
+    assertThat(xml).containsPattern("xmlns:ns\\d=\"http://geode.apache.org/schema/CustomTwo\"");
   }
 
   @Test

@@ -33,8 +33,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
-import org.apache.commons.lang.StringUtils;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -45,7 +43,6 @@ public class JAXBService {
       "http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd";
   Map<Class, String> classAndSchema = new HashMap<>();
 
-  // Set<Class> bindClasses = new HashSet<>();
   Marshaller marshaller;
   Unmarshaller unmarshaller;
 
@@ -70,6 +67,8 @@ public class JAXBService {
   }
 
   /**
+   * if you want the output xml have schemaLocation correctly set for your namespace, use this
+   * instead of registerBindClass(Class)
    *
    * @param c e.g CacheConfig.class
    * @param nameSpaceAndSchemaLocation e.g "http://geode.apache.org/schema/cache
@@ -86,8 +85,6 @@ public class JAXBService {
         marshaller = jaxbContext.createMarshaller();
         unmarshaller = jaxbContext.createUnmarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper",
-            new CacheNamespaceMapper());
         updateSchema();
       } catch (Exception e) {
         throw new RuntimeException(e.getMessage(), e);
@@ -137,32 +134,5 @@ public class JAXBService {
 
   public void registerBindClasses(Class clazz) {
     registerBindClassWithSchema(clazz, null);
-  }
-
-  private class CacheNamespaceMapper extends NamespacePrefixMapper {
-    private static final String CACHE_PREFIX = "";
-    private static final String CACHE_URI = "http://geode.apache.org/schema/cache";
-    private static final String XSI_URI = "http://www.w3.org/2001/XMLSchema-instance";
-
-    @Override
-    public String getPreferredPrefix(String namespaceUri, String suggestion,
-        boolean requirePrefix) {
-      if (CACHE_URI.equals(namespaceUri)) {
-        return CACHE_PREFIX;
-      }
-
-      if (StringUtils.isEmpty(namespaceUri) || XSI_URI.equals(namespaceUri)) {
-        return suggestion;
-      }
-      int lastSlash = namespaceUri.lastIndexOf("/");
-      if (lastSlash > 0) {
-        return namespaceUri.substring(lastSlash + 1).toLowerCase();
-      }
-      return suggestion;
-    }
-
-    public String[] getPreDeclaredNamespaceUris() {
-      return new String[] {CACHE_URI};
-    }
   }
 }
