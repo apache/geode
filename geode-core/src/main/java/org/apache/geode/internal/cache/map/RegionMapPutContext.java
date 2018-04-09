@@ -48,8 +48,8 @@ public class RegionMapPutContext {
   private final Object expectedOldValue;
   private boolean clearOccured;
   private long lastModifiedTime;
-  private RegionEntry result;
-  private boolean entryExisted;
+  private RegionEntry regionEntry;
+  private boolean createdNewEntry;
 
   public RegionMapPutContext(LocalRegion owner, EntryEventImpl event, boolean ifNew, boolean ifOld,
       boolean overwriteDestroyed, boolean requireOldValue,
@@ -150,20 +150,20 @@ public class RegionMapPutContext {
     this.lastModifiedTime = lastModifiedTime;
   }
 
-  public RegionEntry getResult() {
-    return result;
+  public RegionEntry getRegionEntry() {
+    return regionEntry;
   }
 
-  public void setResult(RegionEntry result) {
-    this.result = result;
+  public void setRegionEntry(RegionEntry regionEntry) {
+    this.regionEntry = regionEntry;
   }
 
-  public boolean getEntryExisted() {
-    return entryExisted;
+  public boolean getCreatedNewEntry() {
+    return createdNewEntry;
   }
 
-  public void setEntryExisted(boolean entryExisted) {
-    this.entryExisted = entryExisted;
+  public void setCreatedNewEntry(boolean v) {
+    this.createdNewEntry = v;
   }
 
   public EntryEventImpl getEvent() {
