@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -46,7 +47,9 @@ public class DeployCommandsSecurityTest {
       .withSecurityManager(SimpleTestSecurityManager.class).withJMXManager().withAutoStart();
 
   @ClassRule
-  public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public static TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
   private static String deployCommand = null;
   private static String zipFileName = "functions.jar";
 

@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -64,7 +65,9 @@ public class GeodeVerboseLogMarkerIntegrationTest {
   @Rule
   public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
   @Rule
   public TestName testName = new TestName();
 

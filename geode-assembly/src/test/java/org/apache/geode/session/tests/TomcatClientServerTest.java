@@ -16,6 +16,7 @@ package org.apache.geode.session.tests;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,7 +37,9 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   private String serverName;
 
   @Rule
-  public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public transient TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();

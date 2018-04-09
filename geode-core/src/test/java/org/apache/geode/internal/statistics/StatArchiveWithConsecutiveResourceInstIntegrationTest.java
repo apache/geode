@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.apache.geode.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.ARCHIVE_FILE_NAME;
+import static org.apache.geode.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.STATS_SPEC_STRING;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.net.URL;
@@ -24,6 +25,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -56,7 +58,9 @@ public class StatArchiveWithConsecutiveResourceInstIntegrationTest {
   private StatSpec statSpec;
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public TestName testName = new TestName();

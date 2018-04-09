@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.snapshot;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.File;
@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.examples.snapshot.MyObject;
+import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,7 +40,9 @@ public class SnapshotTestCase {
   DiskStore diskStore;
 
   @Rule
-  public TemporaryFolder baseDir = new TemporaryFolder();
+  public TemporaryFolder baseDir =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Before
   public void setUp() throws Exception {

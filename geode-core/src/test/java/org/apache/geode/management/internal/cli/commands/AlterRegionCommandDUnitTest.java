@@ -25,11 +25,11 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
@@ -57,7 +57,9 @@ public class AlterRegionCommandDUnitTest {
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @ClassRule
-  public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public static TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   private static MemberVM locator, server1, server2, server3;
 

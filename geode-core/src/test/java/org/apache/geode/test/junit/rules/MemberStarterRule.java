@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.DistributedSystem;
@@ -111,7 +112,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    * property that not approved by JDK
    */
   public T withWorkingDir() {
-    temporaryFolder = new TemporaryFolder();
+    temporaryFolder = new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir"))
+        ? null : new File(System.getProperty("java.io.tmpdir")));
     try {
       temporaryFolder.create();
     } catch (IOException e) {

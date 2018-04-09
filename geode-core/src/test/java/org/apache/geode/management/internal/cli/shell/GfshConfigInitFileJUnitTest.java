@@ -14,10 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,11 +40,17 @@ public class GfshConfigInitFileJUnitTest {
   private static String saveUserHome;
 
   @Rule
-  public TemporaryFolder temporaryFolder_HomeDirectory = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder_HomeDirectory =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
   @Rule
-  public TemporaryFolder temporaryFolder_CurrentDirectory = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder_CurrentDirectory =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
   @Rule
-  public TemporaryFolder temporaryFolder_AnotherDirectory = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder_AnotherDirectory =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {

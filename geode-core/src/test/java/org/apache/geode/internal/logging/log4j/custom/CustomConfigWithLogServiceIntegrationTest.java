@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.logging.log4j.custom;
 
-import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.CONFIG_LAYOUT_PREFIX;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.createConfigFileIn;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.defineLogStatementRegex;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
@@ -55,7 +58,9 @@ public class CustomConfigWithLogServiceIntegrationTest {
   public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Before
   public void setUp() throws Exception {

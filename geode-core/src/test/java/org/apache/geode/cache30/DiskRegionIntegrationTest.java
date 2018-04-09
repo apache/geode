@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -71,7 +72,9 @@ public class DiskRegionIntegrationTest {
   private static final int MAX_ENTRIES = 5;
 
   @Rule
-  public TemporaryFolder tempDir = new TemporaryFolder();
+  public TemporaryFolder tempDir =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   private Cache cache;
   private Region<Integer, String> region;

@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
@@ -44,7 +45,9 @@ public class GfshRule extends ExternalResource {
   private static final String DOUBLE_QUOTE = "\"";
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-  private TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
   private List<GfshExecution> gfshExecutions;
   private Path gfsh;
   private String version;

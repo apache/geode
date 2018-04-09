@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -50,7 +51,9 @@ public class DiskStoreImplIntegrationTest {
   private final int TIME_INTERVAL = 300000;
 
   @Rule
-  public TemporaryFolder temporaryDirectory = new TemporaryFolder();
+  public TemporaryFolder temporaryDirectory =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   private Cache cache;
   private Region aRegion;
