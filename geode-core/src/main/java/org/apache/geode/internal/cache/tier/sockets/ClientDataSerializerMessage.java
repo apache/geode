@@ -217,7 +217,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
 
   @Override
   public boolean isClientInterested(ClientProxyMembershipID clientId) {
-    return AcceptorImpl.VERSION.compareTo(Version.GFE_61) >= 0;
+    return true;
   }
 
   @Override

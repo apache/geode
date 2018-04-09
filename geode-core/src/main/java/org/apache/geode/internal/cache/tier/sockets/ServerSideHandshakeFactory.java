@@ -36,7 +36,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 class ServerSideHandshakeFactory {
   private static final Logger logger = LogService.getLogger();
-  static final Version currentServerVersion = Acceptor.VERSION;
+  static final Version currentServerVersion = Version.CURRENT;
 
   ServerSideHandshake readHandshake(Socket socket, int timeout, CommunicationMode communicationMode,
       DistributedSystem system, SecurityService securityService) throws Exception {
