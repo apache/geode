@@ -64,15 +64,12 @@ public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
   @Override
   protected void createSupportedFieldsTable(Statement statement, String tableName, String quote)
       throws SQLException {
-    statement.execute("CREATE TABLE " + quote + tableName + quote +
-        " (" + quote + "id" + quote + " varchar(10) primary key not null, "
-        + "aboolean boolean, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
-        + quote + "along" + quote + " bigint, "
-        + quote + "aFloat" + quote + " float, "
-        + quote + "ADOUBLE" + quote + " double, "
-        + "astring varchar(10), "
-        + "adate datetime, " + "anobject varchar(20), " + "abytearray blob(100), "
-        + "achar char(1))");
+    statement.execute("CREATE TABLE " + quote + tableName + quote + " (" + quote + "id" + quote
+        + " varchar(10) primary key not null, " + "aboolean boolean, " + "abyte smallint, "
+        + "ashort smallint, " + "anint int, " + quote + "along" + quote + " bigint, " + quote
+        + "aFloat" + quote + " float, " + quote + "ADOUBLE" + quote + " double, "
+        + "astring varchar(10), " + "adate datetime, " + "anobject varchar(20), "
+        + "abytearray blob(100), " + "achar char(1))");
   }
 
   @Override

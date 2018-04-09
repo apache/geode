@@ -71,10 +71,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
   protected void createTable() throws SQLException {
     DatabaseMetaData metaData = connection.getMetaData();
     String quote = metaData.getIdentifierQuoteString();
-    statement.execute("CREATE TABLE " + REGION_TABLE_NAME
-        + " (" + quote + "id" + quote + " VARCHAR(10) primary key not null,"
-        + quote + "name" + quote + " VARCHAR(10),"
-        + quote + "age" + quote + " int)");
+    statement.execute("CREATE TABLE " + REGION_TABLE_NAME + " (" + quote + "id" + quote
+        + " VARCHAR(10) primary key not null," + quote + "name" + quote + " VARCHAR(10)," + quote
+        + "age" + quote + " int)");
 
   }
 

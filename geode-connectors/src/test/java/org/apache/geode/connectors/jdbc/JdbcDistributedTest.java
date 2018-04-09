@@ -110,16 +110,16 @@ public abstract class JdbcDistributedTest implements Serializable {
     createSupportedFieldsTable(statement, TABLE_NAME, quote);
   }
 
-  protected abstract void createSupportedFieldsTable(Statement statement, String tableName, String quote)
-      throws SQLException;
+  protected abstract void createSupportedFieldsTable(Statement statement, String tableName,
+      String quote) throws SQLException;
 
   private void insertNullDataForAllSupportedFieldsTable(String key) throws SQLException {
     Connection connection = DriverManager.getConnection(connectionUrl);
     DatabaseMetaData metaData = connection.getMetaData();
     String quote = metaData.getIdentifierQuoteString();
 
-    String insertQuery = "Insert into " + quote + TABLE_NAME + quote
-        + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    String insertQuery =
+        "Insert into " + quote + TABLE_NAME + quote + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
     System.out.println("### Query is :" + insertQuery);
     PreparedStatement statement = connection.prepareStatement(insertQuery);
     createNullStatement(key, statement);
@@ -136,8 +136,8 @@ public abstract class JdbcDistributedTest implements Serializable {
     DatabaseMetaData metaData = connection.getMetaData();
     String quote = metaData.getIdentifierQuoteString();
 
-    String insertQuery = "Insert into " + quote + TABLE_NAME + quote
-        + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    String insertQuery =
+        "Insert into " + quote + TABLE_NAME + quote + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
     System.out.println("### Query is :" + insertQuery);
     PreparedStatement statement = connection.prepareStatement(insertQuery);
     statement.setObject(1, key);
