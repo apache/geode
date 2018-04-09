@@ -14,40 +14,25 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.sql.JDBCType;
+import java.util.Collections;
+import java.util.List;
 
-class ColumnValue {
-  private final boolean isKey;
-  private final String columnName;
-  private final Object value;
-  private final int dataType;
+class EntryColumnData {
+  private final ColumnData entryKeyColumnData;
+  private final List<ColumnData> entryValueColumnData;
 
-  ColumnValue(boolean isKey, String columnName, Object value, int dataType) {
-    this.isKey = isKey;
-    this.columnName = columnName;
-    this.value = value;
-    this.dataType = dataType;
+  EntryColumnData(ColumnData entryKeyColumnData, List<ColumnData> entryValueColumnData) {
+    this.entryKeyColumnData = entryKeyColumnData;
+    this.entryValueColumnData =
+        entryValueColumnData != null ? entryValueColumnData : Collections.emptyList();
   }
 
-  boolean isKey() {
-    return isKey;
+  public ColumnData getEntryKeyColumnData() {
+    return entryKeyColumnData;
   }
 
-  String getColumnName() {
-    return columnName;
+  public List<ColumnData> getEntryValueColumnData() {
+    return entryValueColumnData;
   }
 
-  Object getValue() {
-    return value;
-  }
-
-  int getDataType() {
-    return dataType;
-  }
-
-  @Override
-  public String toString() {
-    return "ColumnValue [isKey=" + isKey + ", columnName=" + columnName + ", value=" + value
-        + ", dataType=" + JDBCType.valueOf(dataType) + "]";
-  }
 }

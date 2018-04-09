@@ -14,8 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.util.List;
-
 class SqlStatementFactory {
   private final String quote;
 
@@ -23,64 +21,51 @@ class SqlStatementFactory {
     this.quote = identifierQuoteString;
   }
 
-  String createSelectQueryString(String tableName, List<ColumnValue> columnList) {
-    assert columnList.size() == 1;
-    ColumnValue keyCV = columnList.get(0);
-    assert keyCV.isKey();
+  String createSelectQueryString(String tableName, EntryColumnData entryColumnData) {
+    ColumnData keyCV = entryColumnData.getEntryKeyColumnData();
     return "SELECT * FROM " + quoteIdentifier(tableName) + " WHERE "
         + quoteIdentifier(keyCV.getColumnName()) + " = ?";
   }
 
-  String createDestroySqlString(String tableName, List<ColumnValue> columnList) {
-    assert columnList.size() == 1;
-    ColumnValue keyCV = columnList.get(0);
-    assert keyCV.isKey();
+  String createDestroySqlString(String tableName, EntryColumnData entryColumnData) {
+    ColumnData keyCV = entryColumnData.getEntryKeyColumnData();
     return "DELETE FROM " + quoteIdentifier(tableName) + " WHERE "
         + quoteIdentifier(keyCV.getColumnName()) + " = ?";
   }
 
-  String createUpdateSqlString(String tableName, List<ColumnValue> columnList) {
+  String createUpdateSqlString(String tableName, EntryColumnData entryColumnData) {
     StringBuilder query = new StringBuilder("UPDATE " + quoteIdentifier(tableName) + " SET ");
     int idx = 0;
-    for (ColumnValue column : columnList) {
-      if (!column.isKey()) {
-        idx++;
-        if (idx > 1) {
-          query.append(", ");
-        }
-        query.append(quoteIdentifier(column.getColumnName()));
-        query.append(" = ?");
+    for (ColumnData column : entryColumnData.getEntryValueColumnData()) {
+      idx++;
+      if (idx > 1) {
+        query.append(", ");
       }
+      query.append(quoteIdentifier(column.getColumnName()));
+      query.append(" = ?");
     }
-    for (ColumnValue column : columnList) {
-      if (column.isKey()) {
-        query.append(" WHERE ");
-        query.append(quoteIdentifier(column.getColumnName()));
-        query.append(" = ?");
-        // currently only support simple primary key with one column
-        break;
-      }
-    }
+
+    ColumnData keyColumnData = entryColumnData.getEntryKeyColumnData();
+    query.append(" WHERE ");
+    query.append(quoteIdentifier(keyColumnData.getColumnName()));
+    query.append(" = ?");
+
     return query.toString();
   }
 
-  String createInsertSqlString(String tableName, List<ColumnValue> columnList) {
+  String createInsertSqlString(String tableName, EntryColumnData entryColumnData) {
     StringBuilder columnNames =
         new StringBuilder("INSERT INTO " + quoteIdentifier(tableName) + " (");
     StringBuilder columnValues = new StringBuilder(" VALUES (");
-    int columnCount = columnList.size();
-    int idx = 0;
-    for (ColumnValue column : columnList) {
-      idx++;
-      columnNames.append(quoteIdentifier(column.getColumnName()));
-      columnValues.append('?');
-      if (idx != columnCount) {
-        columnNames.append(", ");
-        columnValues.append(",");
-      }
+
+    for (ColumnData column : entryColumnData.getEntryValueColumnData()) {
+      columnNames.append(quoteIdentifier(column.getColumnName())).append(", ");
+      columnValues.append("?,");
     }
-    columnNames.append(")");
-    columnValues.append(")");
+
+    ColumnData keyColumnData = entryColumnData.getEntryKeyColumnData();
+    columnNames.append(quoteIdentifier(keyColumnData.getColumnName())).append(")");
+    columnValues.append("?)");
     return columnNames.append(columnValues).toString();
   }
 
