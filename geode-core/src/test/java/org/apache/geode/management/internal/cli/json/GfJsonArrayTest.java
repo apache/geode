@@ -31,78 +31,125 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class GfJsonArrayTest {
 
-  private GfJsonArray array;
+  private GfJsonArray gfJsonArray;
+
+  public static class Simple {
+    private int key;
+    private String value;
+
+    public Simple(int key, String value) {
+      this.key = key;
+      this.value = value;
+    }
+
+    public int getKey() {
+      return key;
+    }
+
+    public String getValue() {
+      return value;
+    }
+  }
 
   @Before
   public void setup() {
-    array = new GfJsonArray();
+    gfJsonArray = new GfJsonArray();
   }
 
   @Test
   public void emptyArray() {
-    assertThat(array.size()).isEqualTo(0);
-    assertThat(array.toString()).isEqualTo("[]");
+    assertThat(gfJsonArray.size()).isEqualTo(0);
+    assertThat(gfJsonArray.toString()).isEqualTo("[]");
   }
 
   @Test
   public void arrayFromPrimitives() throws Exception {
-    array = new GfJsonArray(new String[] {"a", "b", "c"});
+    gfJsonArray = new GfJsonArray(new String[] {"a", "b", "c"});
 
-    assertThat(array.size()).isEqualTo(3);
-    assertThat(array.get(0)).isEqualTo("a");
-    assertThat(array.get(1)).isEqualTo("b");
-    assertThat(array.get(2)).isEqualTo("c");
+    assertThat(gfJsonArray.size()).isEqualTo(3);
+    assertThat(gfJsonArray.get(0)).isEqualTo("a");
+    assertThat(gfJsonArray.get(1)).isEqualTo("b");
+    assertThat(gfJsonArray.get(2)).isEqualTo("c");
   }
 
   @Test
   public void addSingleObject() throws Exception {
-    array.put("a");
-    assertThat(array.get(0)).isEqualTo("a");
-    assertThat(array.toString()).isEqualTo("[\"a\"]");
+    gfJsonArray.put("a");
+    assertThat(gfJsonArray.get(0)).isEqualTo("a");
+    assertThat(gfJsonArray.toString()).isEqualTo("[\"a\"]");
   }
 
   @Test
   public void addMultipleObjects() throws Exception {
-    array.put("a");
-    array.put("b");
-    array.put("c");
+    gfJsonArray.put("a");
+    gfJsonArray.put("b");
+    gfJsonArray.put("c");
 
-    assertThat(array.get(0)).isEqualTo("a");
-    assertThat(array.get(1)).isEqualTo("b");
-    assertThat(array.get(2)).isEqualTo("c");
-    assertThat(array.toString()).isEqualTo("[\"a\",\"b\",\"c\"]");
+    assertThat(gfJsonArray.get(0)).isEqualTo("a");
+    assertThat(gfJsonArray.get(1)).isEqualTo("b");
+    assertThat(gfJsonArray.get(2)).isEqualTo("c");
+    assertThat(gfJsonArray.toString()).isEqualTo("[\"a\",\"b\",\"c\"]");
   }
 
   @Test
-  public void addCollection() throws Exception {
+  public void putCollection() throws Exception {
     List<String> multiple = new ArrayList<>();
     multiple.add("a");
     multiple.add("b");
     multiple.add("c");
-    array.put(multiple);
+    gfJsonArray.put(multiple);
+    gfJsonArray.put(1, multiple);
 
-    assertThat(array.size()).isEqualTo(1);
-    assertThat(array.get(0).toString()).isEqualTo("[\"a\",\"b\",\"c\"]");
+    assertThat(gfJsonArray.size()).isEqualTo(2);
+    assertThat(gfJsonArray.get(0).toString()).isEqualTo("[\"a\",\"b\",\"c\"]");
+    assertThat(gfJsonArray.get(1).toString()).isEqualTo("[\"a\",\"b\",\"c\"]");
   }
 
   @Test
-  public void addMap() throws Exception {
+  public void putMap() throws Exception {
     Map<Integer, String> multiple = new HashMap<>();
     multiple.put(1, "a");
     multiple.put(2, "b");
     multiple.put(3, "c");
-    array.put(multiple);
+    gfJsonArray.put(multiple);
+    gfJsonArray.put(1, multiple);
 
-    assertThat(array.size()).isEqualTo(1);
-    assertThat(array.get(0).toString()).isEqualTo("{1=a, 2=b, 3=c}");
+    assertThat(gfJsonArray.size()).isEqualTo(2);
+    assertThat(gfJsonArray.get(0).toString()).isEqualTo("{1=a, 2=b, 3=c}");
+    assertThat(gfJsonArray.get(1).toString()).isEqualTo("{1=a, 2=b, 3=c}");
+  }
+
+  @Test
+  public void putObject() throws Exception {
+    GfJsonObject obj = new GfJsonObject(new Simple(1, "a"));
+    gfJsonArray.put(obj);
+    gfJsonArray.put(1, obj);
+
+    assertThat(gfJsonArray.getJSONObject(0).get("key")).isEqualTo(1);
+    assertThat(gfJsonArray.getJSONObject(0).get("value")).isEqualTo("a");
+    assertThat(gfJsonArray.getJSONObject(1).get("key")).isEqualTo(1);
+    assertThat(gfJsonArray.getJSONObject(1).get("value")).isEqualTo("a");
   }
 
   @Test
   public void putOutOfBoundsAddsNull() throws Exception {
-    array.put(1, "a");
+    gfJsonArray.put(1, "a");
 
-    assertThat(array.size()).isEqualTo(2);
-    assertThat(array.toString()).isEqualTo("[null,\"a\"]");
+    assertThat(gfJsonArray.size()).isEqualTo(2);
+    assertThat(gfJsonArray.toString()).isEqualTo("[null,\"a\"]");
+  }
+
+  @Test
+  public void stringifyArray() throws Exception {
+    List<String> multiple = new ArrayList<>();
+    multiple.add("a");
+    multiple.add("b");
+    gfJsonArray.put(multiple);
+    gfJsonArray.put(1, multiple);
+    gfJsonArray.put("c");
+
+    assertThat(GfJsonArray.toStringArray(gfJsonArray)).contains("[\"a\",\"b\"]", "[\"a\",\"b\"]",
+        "c");
   }
 
 }
