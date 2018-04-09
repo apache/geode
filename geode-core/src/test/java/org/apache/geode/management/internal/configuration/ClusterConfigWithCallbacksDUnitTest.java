@@ -23,6 +23,7 @@ import java.io.File;
 import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +48,9 @@ public class ClusterConfigWithCallbacksDUnitTest {
   public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public TemporaryFolder tempFolder = new TemporaryFolder();
+  public TemporaryFolder tempFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   private MemberVM locator, server;
   private File clusterConfigZip;

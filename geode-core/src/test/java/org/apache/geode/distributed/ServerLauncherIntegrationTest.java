@@ -31,6 +31,7 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -56,7 +57,9 @@ public class ServerLauncherIntegrationTest {
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Rule
-  public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public final TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public final TestName testName = new TestName();

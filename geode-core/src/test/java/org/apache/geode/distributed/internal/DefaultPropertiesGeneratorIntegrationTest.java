@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,7 +46,9 @@ public class DefaultPropertiesGeneratorIntegrationTest {
   private Cache cache;
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public TestName testName = new TestName();

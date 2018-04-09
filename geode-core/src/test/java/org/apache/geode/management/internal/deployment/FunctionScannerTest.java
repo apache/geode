@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -36,7 +37,9 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category({IntegrationTest.class, GfshTest.class})
 public class FunctionScannerTest {
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   private JarBuilder jarBuilder;
   private FunctionScanner functionScanner;

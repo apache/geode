@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,7 +44,9 @@ public class AbstractLauncherIntegrationTest {
   private Properties expectedProperties;
 
   @Rule
-  public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public final TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public final TestName testName = new TestName();

@@ -14,13 +14,18 @@
  */
 package org.apache.geode.internal.logging.log4j.custom;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.CONFIG_LAYOUT_PREFIX;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.createConfigFileIn;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.defineLogStatementRegex;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -61,7 +66,9 @@ public class CustomConfigWithCacheIntegrationTest {
   public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public TestName testName = new TestName();

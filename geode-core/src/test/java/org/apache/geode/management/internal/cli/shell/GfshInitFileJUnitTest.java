@@ -29,6 +29,7 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -70,10 +71,14 @@ public class GfshInitFileJUnitTest {
   private JUnitLoggerHandler junitLoggerHandler;
 
   @ClassRule
-  public static TemporaryFolder temporaryFolder_Config = new TemporaryFolder();
+  public static TemporaryFolder temporaryFolder_Config =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
-  public TemporaryFolder temporaryFolder_CurrentDirectory = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder_CurrentDirectory =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();

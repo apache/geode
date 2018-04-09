@@ -56,6 +56,7 @@ import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -153,7 +154,9 @@ public class ConnectCommandWithSSLTest {
   };
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();

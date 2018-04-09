@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
@@ -43,7 +44,9 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 @Category({IntegrationTest.class, LuceneTest.class})
 public class DumpDirectoryFilesIntegrationTest extends LuceneIntegrationTest {
   @Rule
-  public TemporaryFolder tempFolderRule = new TemporaryFolder();
+  public TemporaryFolder tempFolderRule =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Test
   public void shouldDumpReadableLuceneIndexFile() throws Exception {

@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -67,7 +68,9 @@ public class CreateRegionCommandDUnitTest {
   public TestName testName = new SerializableTestName();
 
   @Rule
-  public TemporaryFolder tmpDir = new TemporaryFolder();
+  public TemporaryFolder tmpDir =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @BeforeClass
   public static void before() throws Exception {

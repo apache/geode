@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,7 +51,9 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 public class LuceneQueriesPersistenceIntegrationTest extends LuceneIntegrationTest {
 
   @Rule
-  public TemporaryFolder tempFolderRule = new TemporaryFolder();
+  public TemporaryFolder tempFolderRule =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Override
   public void createCache() {

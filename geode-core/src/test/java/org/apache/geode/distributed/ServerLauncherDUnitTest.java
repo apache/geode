@@ -19,10 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
 import org.junit.Rule;
@@ -46,7 +48,9 @@ public class ServerLauncherDUnitTest {
   private static final Logger logger = LogService.getLogger();
 
   @Rule
-  public TemporaryFolder tempDir = new TemporaryFolder();
+  public TemporaryFolder tempDir =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();

@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.IntSupplier;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -83,7 +84,9 @@ public class LocatorJUnitTest {
   public IntSupplier portSupplier;
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Before
   public void setUp() throws IOException {

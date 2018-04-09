@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.lang.StringUtils;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -64,7 +65,9 @@ public class ShowDeadlockDUnitTest {
   public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

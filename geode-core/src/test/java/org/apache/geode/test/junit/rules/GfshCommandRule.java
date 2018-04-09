@@ -78,7 +78,9 @@ public class GfshCommandRule extends DescribedExternalResource {
   private int gfshTimeout = 2;
   private boolean connected = false;
   private IgnoredException ignoredException;
-  private TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
   private File workingDir;
   private CommandResult commandResult;
 

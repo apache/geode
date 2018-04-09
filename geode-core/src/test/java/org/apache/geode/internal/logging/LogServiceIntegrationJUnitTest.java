@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.LogServiceIntegrationTestSupport.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.logging.LogServiceIntegrationTestSupport.writeConfigFile;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.net.URL;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
@@ -55,7 +56,9 @@ public class LogServiceIntegrationJUnitTest {
   public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   @Rule
-  public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public final TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Rule
   public final ExternalResource externalResource = new ExternalResource() {

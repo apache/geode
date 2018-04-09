@@ -19,11 +19,13 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.IntStream;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -54,7 +56,9 @@ public class ImportDataIntegrationTest {
   public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public TemporaryFolder tempDir = new TemporaryFolder();
+  public TemporaryFolder tempDir =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   private Region<String, String> region;
   private Path snapshotFile;

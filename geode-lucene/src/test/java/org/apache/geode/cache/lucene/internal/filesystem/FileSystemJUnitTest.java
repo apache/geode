@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,7 +60,9 @@ public class FileSystemJUnitTest {
   private Random rand = new Random();
   private ConcurrentHashMap fileAndChunkRegion;
   @Rule
-  public TemporaryFolder tempFolderRule = new TemporaryFolder();
+  public TemporaryFolder tempFolderRule =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new java.io.File(System.getProperty("java.io.tmpdir")));
   private FileSystemStats fileSystemStats;
 
   @Before

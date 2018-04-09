@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.junit.runner.Description;
@@ -177,7 +178,9 @@ public class DiskDirRule extends DescribedExternalResource {
 
     private Builder fillIn() {
       if (temporaryFolder == null) {
-        temporaryFolder = new TemporaryFolder();
+        temporaryFolder =
+            new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+                : new File(System.getProperty("java.io.tmpdir")));
       }
       if (testName == null) {
         testName = new TestName();

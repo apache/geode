@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.ClassBuilder;
@@ -27,7 +28,9 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 
 public class JarFileRule extends SerializableExternalResource {
 
-  private transient TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private transient TemporaryFolder temporaryFolder =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
   private transient ClassBuilder classBuilder = new ClassBuilder();
 
   private String className;

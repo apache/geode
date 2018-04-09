@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,7 +38,9 @@ public class WindowsScriptGeneratorTest {
   private BufferedWriter writer;
 
   @Rule
-  public TemporaryFolder tempDir = new TemporaryFolder();
+  public TemporaryFolder tempDir =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   @Before
   public void setup() throws IOException {

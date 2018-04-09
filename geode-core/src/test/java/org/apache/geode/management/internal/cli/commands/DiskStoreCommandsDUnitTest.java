@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -57,7 +58,9 @@ public class DiskStoreCommandsDUnitTest {
   public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public TemporaryFolder tempDir = new TemporaryFolder();
+  public TemporaryFolder tempDir =
+      new TemporaryFolder(StringUtils.isBlank(System.getProperty("java.io.tmpdir")) ? null
+          : new File(System.getProperty("java.io.tmpdir")));
 
   private void createDiskStoreAndRegion(MemberVM jmxManager, int serverCount) {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=%s --dir=%s --group=%s",
