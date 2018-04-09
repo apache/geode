@@ -139,6 +139,7 @@ public class VersionManager {
         testVersions.add(parsedVersion.get());
       }
     });
+    Collections.sort(testVersions);
   }
 
   private void findInstalls(String fileName) {
