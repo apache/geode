@@ -25,17 +25,19 @@ This section includes advanced querying topics such as using query indexes, usin
 
     This topic covers considerations for improving query performance.
 
--   **[Monitoring Queries for Low Memory](../querying_basics/monitor_queries_for_low_memory.html)**
+-   **[Monitoring Low Memory When Querying](../querying_basics/monitor_queries_for_low_memory.html)**
 
     The query monitoring feature prevents out-of-memory exceptions from occurring when you execute queries or create indexes.
 
+-   **[Timeouts for Long-Running Queries](../query_additional/query_timeout.html)**
+
+    Configure a timeout value for long running queries, such that they do
+not complete, and <%=vars.product_name%> throws an exception when a 
+query runs for longer than the configured value.
+
 -   **[Using Query Bind Parameters](../query_additional/using_query_bind_parameters.html)**
 
-    Using query bind parameters in <%=vars.product_name%> queries is similar to using prepared statements in SQL where parameters can be set during query execution. This allows user to build a query once and execute it multiple times by passing the query conditions during run time.
-
--   **[Working with Indexes](../query_index/query_index.html)**
-
-    The <%=vars.product_name%> query engine supports indexing. An index can provide significant performance gains for query execution.
+    Using query bind parameters in <%=vars.product_name%> queries is similar to using prepared statements in SQL where parameters can be set during query execution. This allows you to build a query once and execute it multiple times by passing the query conditions during run time.
 
 -   **[Querying Partitioned Regions](../querying_basics/querying_partitioned_regions.html)**
 
