@@ -27,7 +27,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class TabularResultDataTest {
 
-  TabularResultData data;
+  private TabularResultData data;
 
   @Before
   public void before() throws Exception {
@@ -35,7 +35,50 @@ public class TabularResultDataTest {
   }
 
   @Test
-  public void rowColumnSize() throws Exception {
+  public void emptyTabularResultData() {
+    assertThat(data.getGfJsonObject().getString("content")).isEqualTo("{}");
+    assertThat(data.getType()).isEqualTo(ResultData.TYPE_TABULAR);
+  }
+
+  @Test
+  public void canAccumulate() {
+    data.accumulate("col1", "value1");
+    assertThat(data.getGfJsonObject().getJSONObject("content").getString("col1"))
+        .isEqualTo("[\"value1\"]");
+
+    data.accumulate("col1", "value2");
+    assertThat(data.getGfJsonObject().getJSONObject("content").getString("col1"))
+        .isEqualTo("[\"value1\",\"value2\"]");
+
+    data.accumulate("col2", "value3");
+    data.accumulate("col2", "value4");
+    assertThat(data.getGfJsonObject().getJSONObject("content").getString("col1"))
+        .isEqualTo("[\"value1\",\"value2\"]");
+    assertThat(data.getGfJsonObject().getJSONObject("content").getString("col2"))
+        .isEqualTo("[\"value3\",\"value4\"]");
+  }
+
+  @Test
+  public void canRetrieveAllValues() {
+    data.accumulate("col1", "value1");
+    data.accumulate("col1", "value2");
+    data.accumulate("col1", "value3");
+
+    assertThat(data.retrieveAllValues("col1")).containsExactly("value1", "value2", "value3");
+  }
+
+  @Test
+  public void hasHeaderAndFooter() {
+    String headerFooter = "header and footer";
+    data.setHeader(headerFooter);
+    data.setFooter(headerFooter);
+
+    assertThat(data.getGfJsonObject().getString("header")).isEqualTo(headerFooter);
+    assertThat(data.getGfJsonObject().getString("footer")).isEqualTo(headerFooter);
+  }
+
+  @Test
+  public void rowColumnSize() {
     data.accumulate("key", "value1");
     assertThat(data.rowSize("key")).isEqualTo(1);
     assertThat(data.columnSize()).isEqualTo(1);
