@@ -75,6 +75,7 @@ public class ClusterConfigLocatorRestartDUnitTest {
   public void serverRestartsAfterOneLocatorDies() throws Exception {
     IgnoredException.addIgnoredException("This member is no longer in the membership view");
     IgnoredException.addIgnoredException("This node is no longer in the membership view");
+    IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
 
     // Otherwise we get a graceful shutdown...
     Host.getHost(0).getVM(0).invoke(() -> {
