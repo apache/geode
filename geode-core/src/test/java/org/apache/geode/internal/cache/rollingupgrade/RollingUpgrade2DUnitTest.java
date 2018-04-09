@@ -87,6 +87,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
@@ -1387,6 +1388,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   public Properties getClientSystemProperties() {
     Properties p = new Properties();
     p.setProperty("mcast-port", "0");
+    p.setProperty(DistributionConfig.LOG_LEVEL_NAME, DUnitLauncher.logLevel);
     return p;
   }
 
@@ -1685,7 +1687,11 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
       cf.addPoolLocator(hosts[i], ports[i]);
     }
 
-    return cf.create();
+    ClientCache clientCache = cf.create();
+    // the pool is lazily created starting in 1.5.0. Here we ask for the pool so it
+    // will be instantiated
+    clientCache.getDefaultPool();
+    return clientCache;
   }
 
   public static boolean assertRegionExists(GemFireCache cache, String regionName) throws Exception {
@@ -1924,10 +1930,13 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   }
 
   private String getHARegionName() {
-    assertEquals(1, ((GemFireCacheImpl) cache).getCacheServers().size());
-    CacheServerImpl bs =
-        (CacheServerImpl) ((GemFireCacheImpl) cache).getCacheServers().iterator().next();
-    assertEquals(1, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
+    InternalCache internalCache = (InternalCache) cache;
+    Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
+      assertEquals(1, internalCache.getCacheServers().size());
+      CacheServerImpl bs = (CacheServerImpl) (internalCache.getCacheServers().iterator().next());
+      assertEquals(1, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
+    });
+    CacheServerImpl bs = (CacheServerImpl) internalCache.getCacheServers().iterator().next();
     CacheClientProxy ccp =
         bs.getAcceptor().getCacheClientNotifier().getClientProxies().iterator().next();
     return ccp.getHARegion().getName();
