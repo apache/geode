@@ -121,11 +121,6 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     return this.processors[0].getQueue().size();
   }
 
-  public String displayContent() {
-    ParallelGatewaySenderQueue pgsq = (ParallelGatewaySenderQueue) (processors[0].getQueue());
-    return pgsq.displayContent();
-  }
-
   public int localSize() {
     return localSize(false);
   }
@@ -193,10 +188,6 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   private ParallelGatewaySenderEventProcessor getPGSProcessor(int bucketId) {
     int index = bucketId % this.processors.length;
     return processors[index];
-  }
-
-  public RegionQueue getQueueByBucket(int bucketId) {
-    return getPGSProcessor(bucketId).getQueue();
   }
 
   public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(int bucketId) {

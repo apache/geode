@@ -20,8 +20,6 @@ import static org.apache.geode.internal.cache.tier.sockets.Message.MAX_MESSAGE_S
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -409,42 +407,18 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // SECOND RUN: start async puts on region
-    ArrayList<Integer> vm4List = null;
-    ArrayList<Integer> vm5List = null;
-    ArrayList<Integer> vm6List = null;
-    ArrayList<Integer> vm7List = null;
-    boolean foundDroppedAtYetStartedPrimarySender = false;
-    int count = 0;
+    AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getTestMethodName() + "_PR", 5000));
 
-    do {
-      stopSenders();
-      AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getTestMethodName() + "_PR", 5000));
+    // when puts are happening by another thread, start the senders
+    startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
 
-      // when puts are happening by another thread, start the senders
-      startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
-
-      async.join();
-      vm4List =
-          (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
-      vm5List =
-          (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
-      vm6List =
-          (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
-      vm7List =
-          (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
-      if (vm4List.get(0) + vm5List.get(0) + vm6List.get(0) + vm7List.get(0) > 0) {
-        foundDroppedAtYetStartedPrimarySender = true;
-      }
-      count++;
-    } while (foundDroppedAtYetStartedPrimarySender == false && count < 5);
-    assertThat(foundDroppedAtYetStartedPrimarySender);
+    async.join();
 
     // verify all the buckets on all the sender nodes are drained
     validateParallelSenderQueueAllBucketsDrained();
 
     // verify that the queue size ultimately becomes zero. That means all the events propagate to
     // remote site.
-
     vm4.invoke(() -> validateQueueContents("ln", 0));
   }
 

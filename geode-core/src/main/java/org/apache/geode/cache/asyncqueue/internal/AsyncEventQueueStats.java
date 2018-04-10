@@ -47,9 +47,6 @@ public class AsyncEventQueueStats extends GatewaySenderStats {
             f.createIntCounter(EVENTS_NOT_QUEUED_CONFLATED,
                 "Number of events received but not added to the event queue because the queue already contains an event with the event's key.",
                 "operations"),
-            f.createIntCounter(NOT_QUEUED_EVENTS, "Number of events not added to queue.", "events"),
-            f.createIntCounter(NOT_QUEUED_EVENTS_AT_YET_RUNNING_PRIMARY_SENDER,
-                "Number of events not added to primary queue due to sender yet runing.", "events"),
             f.createIntCounter(EVENTS_CONFLATED_FROM_BATCHES,
                 "Number of events conflated from batches.", "operations"),
             f.createIntCounter(EVENTS_DISTRIBUTED,
@@ -125,8 +122,6 @@ public class AsyncEventQueueStats extends GatewaySenderStats {
     unprocessedTokenMapSizeId = type.nameToId(UNPROCESSED_TOKEN_MAP_SIZE);
     conflationIndexesMapSizeId = type.nameToId(CONFLATION_INDEXES_MAP_SIZE);
     notQueuedEventsId = type.nameToId(NOT_QUEUED_EVENTS);
-    notQueuedEventsAtYetRunningPrimarySenderId =
-        type.nameToId(NOT_QUEUED_EVENTS_AT_YET_RUNNING_PRIMARY_SENDER);
     eventsFilteredId = type.nameToId(EVENTS_FILTERED);
     eventsConflatedFromBatchesId = type.nameToId(EVENTS_CONFLATED_FROM_BATCHES);
     loadBalancesCompletedId = type.nameToId(LOAD_BALANCES_COMPLETED);
