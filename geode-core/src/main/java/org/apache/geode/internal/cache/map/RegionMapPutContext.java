@@ -20,11 +20,13 @@ import java.util.Set;
 
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
  * This class is used to hold a bunch of immutable items
@@ -49,8 +51,11 @@ public class RegionMapPutContext {
   private boolean clearOccured;
   private long lastModifiedTime;
   private RegionEntry regionEntry;
-  private boolean createdNewEntry;
+  private boolean create;
   private boolean completed;
+  private IndexManager indexManager;
+  @Released
+  private Object oldValueForDelta;
 
   public RegionMapPutContext(LocalRegion owner, EntryEventImpl event, boolean ifNew, boolean ifOld,
       boolean overwriteDestroyed, boolean requireOldValue,
@@ -159,12 +164,15 @@ public class RegionMapPutContext {
     this.regionEntry = regionEntry;
   }
 
-  public boolean getCreatedNewEntry() {
-    return createdNewEntry;
+  /**
+   * @return true if put created a new entry; false if it updated an existing one.
+   */
+  public boolean isCreate() {
+    return create;
   }
 
-  public void setCreatedNewEntry(boolean v) {
-    this.createdNewEntry = v;
+  public void setCreate(boolean v) {
+    this.create = v;
   }
 
   public EntryEventImpl getEvent() {
@@ -177,5 +185,21 @@ public class RegionMapPutContext {
 
   public void setCompleted(boolean b) {
     this.completed = b;
+  }
+
+  public IndexManager getIndexManager() {
+    return this.indexManager;
+  }
+
+  public void setIndexManager(IndexManager indexManager) {
+    this.indexManager = indexManager;
+  }
+
+  public Object getOldValueForDelta() {
+    return this.oldValueForDelta;
+  }
+  
+  public void setOldValueForDelta(Object value) {
+    this.oldValueForDelta = value;
   }
 }
