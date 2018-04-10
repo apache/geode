@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
+import org.apache.geode.internal.util.Hex;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
@@ -464,8 +465,14 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       result.append(fieldType.getFieldName());
       result.append("=");
       try {
-        // TODO check to see if getField returned an array and if it did use Arrays.deepToString
-        result.append(ur.readField(fieldType.getFieldName()));
+        final Object value = ur.readField(fieldType.getFieldName());
+        if (value instanceof byte[]) {
+          result.append(Hex.toHex((byte[]) value));
+        } else if (value.getClass().isArray()) {
+          result.append(Arrays.deepToString((Object[]) value));
+        } else {
+          result.append(value);
+        }
       } catch (RuntimeException e) {
         result.append(e);
       }
