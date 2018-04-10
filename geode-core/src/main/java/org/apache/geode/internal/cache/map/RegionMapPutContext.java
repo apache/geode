@@ -50,6 +50,7 @@ public class RegionMapPutContext {
   private long lastModifiedTime;
   private RegionEntry regionEntry;
   private boolean createdNewEntry;
+  private boolean completed;
 
   public RegionMapPutContext(LocalRegion owner, EntryEventImpl event, boolean ifNew, boolean ifOld,
       boolean overwriteDestroyed, boolean requireOldValue,
@@ -168,5 +169,13 @@ public class RegionMapPutContext {
 
   public EntryEventImpl getEvent() {
     return event;
+  }
+
+  public boolean isCompleted() {
+    return this.completed;
+  }
+
+  public void setCompleted(boolean b) {
+    this.completed = b;
   }
 }

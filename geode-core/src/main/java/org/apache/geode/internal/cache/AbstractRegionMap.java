@@ -2304,7 +2304,7 @@ public abstract class AbstractRegionMap
     if (oqlIndexManager != null) {
       oqlIndexManager.countDownIndexUpdaters();
     }
-    if (putInfo.getRegionEntry() != null) {
+    if (putInfo.isCompleted()) {
       try {
         final boolean invokeListeners = putInfo.getEvent().basicGetNewValue() != Token.TOMBSTONE;
         owner.basicPutPart3(putInfo.getEvent(), putInfo.getRegionEntry(),
@@ -2355,6 +2355,7 @@ public abstract class AbstractRegionMap
       long lastModTime = _getOwner().basicPutPart2(event, re, !putInfo.isUninitialized(),
           putInfo.getLastModifiedTime(), putInfo.getClearOccured());
       putInfo.setLastModifiedTime(lastModTime);
+      putInfo.setCompleted(true);
     });
   }
 
