@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,7 +75,7 @@ public class OutputCapturingServerConnectionTest {
 
   private ProtobufServerConnection getServerConnection(Socket socketMock,
       ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
-      throws UnknownHostException {
+      throws IOException {
     ClientHealthMonitor clientHealthMonitorMock = mock(ClientHealthMonitor.class);
     when(acceptorStub.getClientHealthMonitor()).thenReturn(clientHealthMonitorMock);
     InetSocketAddress inetSocketAddressStub = InetSocketAddress.createUnresolved("localhost", 9071);
@@ -89,7 +88,7 @@ public class OutputCapturingServerConnectionTest {
     CachedRegionHelper cachedRegionHelper = mock(CachedRegionHelper.class);
     when(cachedRegionHelper.getCache()).thenReturn(cache);
     return new ProtobufServerConnection(socketMock, cache, cachedRegionHelper,
-        mock(CacheServerStats.class), 0, 0, "",
+        mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
         clientProtocolProcessorMock, mock(SecurityService.class));
   }

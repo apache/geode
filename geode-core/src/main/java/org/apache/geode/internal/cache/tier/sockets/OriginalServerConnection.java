@@ -47,6 +47,8 @@ public class OriginalServerConnection extends ServerConnection {
       SecurityService securityService) {
     super(socket, internalCache, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
         communicationMode, acceptor, securityService);
+
+    initStreams(socket, socketBufferSize, stats);
   }
 
   @Override
