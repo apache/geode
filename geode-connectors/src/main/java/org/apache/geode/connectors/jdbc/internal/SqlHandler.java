@@ -242,11 +242,10 @@ public class SqlHandler {
 
   private List<ColumnData> createColumnDataList(TableMetaDataView tableMetaData,
       RegionMapping regionMapping, PdxInstance value) {
-    final String keyColumnName = tableMetaData.getKeyColumnName();
     List<ColumnData> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
       String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);
-      if (columnName.equalsIgnoreCase(keyColumnName)) {
+      if (tableMetaData.getKeyColumnName().equals(columnName)) {
         continue;
       }
       ColumnData columnData = new ColumnData(columnName, value.getField(fieldName),
