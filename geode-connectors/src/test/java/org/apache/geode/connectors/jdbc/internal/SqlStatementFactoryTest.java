@@ -29,26 +29,28 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class SqlStatementFactoryTest {
 
   private static final String TABLE_NAME = "testTable";
-  private static final String KEY_COLUMN_NAME = "column1";
+  private static final String KEY_COLUMN_NAME = "keyColumn";
+  private static final String VALUE_COLUMN_1_NAME = "valueColumn1";
+  private static final String VALUE_COLUMN_2_NAME = "valueColumn2";
 
-  private List<ColumnValue> columnValues = new ArrayList<>();
-  private SqlStatementFactory factory = new SqlStatementFactory();
+  private EntryColumnData entryColumnData;
+  private SqlStatementFactory factory = new SqlStatementFactory("");
 
   @Before
   public void setup() {
-    columnValues.add(new ColumnValue(false, "column0", null, 0));
-    columnValues.add(new ColumnValue(true, KEY_COLUMN_NAME, null, 0));
-    columnValues.add(new ColumnValue(false, "column2", null, 0));
+    List<ColumnData> columnData = new ArrayList<>();
+    columnData.add(new ColumnData(VALUE_COLUMN_1_NAME, null, 0));
+    columnData.add(new ColumnData(VALUE_COLUMN_2_NAME, null, 0));
+    ColumnData keyColumnData = new ColumnData(KEY_COLUMN_NAME, null, 0);
+    entryColumnData = new EntryColumnData(keyColumnData, columnData);
   }
 
   @Test
   public void getSelectQueryString() throws Exception {
     String expectedStatement =
         String.format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, KEY_COLUMN_NAME);
-    List<ColumnValue> keyColumn = new ArrayList<>();
-    keyColumn.add(new ColumnValue(true, KEY_COLUMN_NAME, null, 0));
 
-    String statement = factory.createSelectQueryString(TABLE_NAME, keyColumn);
+    String statement = factory.createSelectQueryString(TABLE_NAME, entryColumnData);
 
     assertThat(statement).isEqualTo(expectedStatement);
   }
@@ -57,10 +59,8 @@ public class SqlStatementFactoryTest {
   public void getDestroySqlString() throws Exception {
     String expectedStatement =
         String.format("DELETE FROM %s WHERE %s = ?", TABLE_NAME, KEY_COLUMN_NAME);
-    List<ColumnValue> keyColumn = new ArrayList<>();
-    keyColumn.add(new ColumnValue(true, KEY_COLUMN_NAME, null, 0));
 
-    String statement = factory.createDestroySqlString(TABLE_NAME, keyColumn);
+    String statement = factory.createDestroySqlString(TABLE_NAME, entryColumnData);
 
     assertThat(statement).isEqualTo(expectedStatement);
   }
@@ -68,10 +68,9 @@ public class SqlStatementFactoryTest {
   @Test
   public void getUpdateSqlString() throws Exception {
     String expectedStatement = String.format("UPDATE %s SET %s = ?, %s = ? WHERE %s = ?",
-        TABLE_NAME, columnValues.get(0).getColumnName(), columnValues.get(2).getColumnName(),
-        KEY_COLUMN_NAME);
+        TABLE_NAME, VALUE_COLUMN_1_NAME, VALUE_COLUMN_2_NAME, KEY_COLUMN_NAME);
 
-    String statement = factory.createUpdateSqlString(TABLE_NAME, columnValues);
+    String statement = factory.createUpdateSqlString(TABLE_NAME, entryColumnData);
 
     assertThat(statement).isEqualTo(expectedStatement);
   }
@@ -79,10 +78,9 @@ public class SqlStatementFactoryTest {
   @Test
   public void getInsertSqlString() throws Exception {
     String expectedStatement = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?,?,?)",
-        TABLE_NAME, columnValues.get(0).getColumnName(), columnValues.get(1).getColumnName(),
-        columnValues.get(2).getColumnName());
+        TABLE_NAME, VALUE_COLUMN_1_NAME, VALUE_COLUMN_2_NAME, KEY_COLUMN_NAME);
 
-    String statement = factory.createInsertSqlString(TABLE_NAME, columnValues);
+    String statement = factory.createInsertSqlString(TABLE_NAME, entryColumnData);
 
     assertThat(statement).isEqualTo(expectedStatement);
   }

@@ -60,11 +60,12 @@ public class PostgresJdbcDistributedTest extends JdbcDistributedTest {
   }
 
   @Override
-  protected void createSupportedFieldsTable(Statement statement, String tableName)
+  protected void createSupportedFieldsTable(Statement statement, String tableName, String quote)
       throws SQLException {
-    statement.execute("CREATE TABLE " + tableName + " (id varchar(10) primary key not null, "
-        + "aboolean boolean, " + "abyte smallint, " + "ashort smallint, " + "anint int, "
-        + "along bigint, " + "aFloat float, " + "ADOUBLE double precision, "
+    statement.execute("CREATE TABLE " + quote + tableName + quote + " (" + quote + "id" + quote
+        + " varchar(10) primary key not null, " + "aboolean boolean, " + "abyte smallint, "
+        + "ashort smallint, " + "anint int, " + quote + "along" + quote + " bigint, " + quote
+        + "aFloat" + quote + " float, " + quote + "ADOUBLE" + quote + " double precision, "
         + "astring varchar(10), " + "adate timestamp, " + "anobject varchar(20), "
         + "abytearray bytea, " + "achar char(1))");
   }

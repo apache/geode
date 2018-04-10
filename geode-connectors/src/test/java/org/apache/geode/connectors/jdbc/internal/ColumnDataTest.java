@@ -25,22 +25,17 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class ColumnValueTest {
+public class ColumnDataTest {
 
   private static final String COLUMN_NAME = "columnName";
   private static final Object VALUE = new Object();
   private static final JDBCType DATA_TYPE = JDBCType.VARCHAR;
 
-  private ColumnValue value;
+  private ColumnData value;
 
   @Before
   public void setup() {
-    value = new ColumnValue(true, COLUMN_NAME, VALUE, DATA_TYPE.getVendorTypeNumber());
-  }
-
-  @Test
-  public void isKeyReturnsCorrectValue() {
-    assertThat(value.isKey()).isTrue();
+    value = new ColumnData(COLUMN_NAME, VALUE, DATA_TYPE.getVendorTypeNumber());
   }
 
   @Test
@@ -60,7 +55,7 @@ public class ColumnValueTest {
 
   @Test
   public void toStringContainsAllVariables() {
-    assertThat(value.toString()).contains(Boolean.toString(true)).contains(COLUMN_NAME)
-        .contains(VALUE.toString()).contains(DATA_TYPE.toString());
+    assertThat(value.toString()).contains(COLUMN_NAME).contains(VALUE.toString())
+        .contains(DATA_TYPE.toString());
   }
 }
