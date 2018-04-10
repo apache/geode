@@ -20,7 +20,6 @@ import java.util.Set;
 
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -53,7 +52,6 @@ public class RegionMapPutContext {
   private RegionEntry regionEntry;
   private boolean create;
   private boolean completed;
-  private IndexManager indexManager;
   @Released
   private Object oldValueForDelta;
 
@@ -187,18 +185,10 @@ public class RegionMapPutContext {
     this.completed = b;
   }
 
-  public IndexManager getIndexManager() {
-    return this.indexManager;
-  }
-
-  public void setIndexManager(IndexManager indexManager) {
-    this.indexManager = indexManager;
-  }
-
   public Object getOldValueForDelta() {
     return this.oldValueForDelta;
   }
-  
+
   public void setOldValueForDelta(Object value) {
     this.oldValueForDelta = value;
   }

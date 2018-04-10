@@ -2179,7 +2179,11 @@ public abstract class AbstractRegionMap
 
     entryEventSerialization.serializeNewValueIfNeeded(owner, event);
     runWhileLockedForCacheModification(event, () -> doBasicPut(putInfo));
-    return putInfo.getRegionEntry();
+    if (putInfo.isCompleted()) {
+      return putInfo.getRegionEntry();
+    } else {
+      return null;
+    }
   }
 
   private void runWhileLockedForCacheModification(EntryEventImpl event, Runnable r) {
@@ -2193,20 +2197,34 @@ public abstract class AbstractRegionMap
   }
 
   private void doBasicPut(final RegionMapPutContext putInfo) {
-    putInfo.setIndexManager(getInitializedIndexManager());
     try {
-      do {
-        if (!findExistingEntry(putInfo)) {
-          return;
-        }
-        createNewEntryIfNeeded(putInfo);
-      } while (!addRegionEntryToMapAndDoPut(putInfo));
+      doWithIndexInUpdateMode(() -> {
+        do {
+          putInfo.setRegionEntry(null);
+          if (!findExistingEntry(putInfo)) {
+            return;
+          }
+          createNewEntryIfNeeded(putInfo);
+        } while (!addRegionEntryToMapAndDoPut(putInfo));
+      });
     } catch (DiskAccessException dae) {
-      putInfo.setRegionEntry(null);
       _getOwner().handleDiskAccessException(dae);
       throw dae;
     } finally {
       doAfterPut(putInfo);
+    }
+  }
+
+  private void doWithIndexInUpdateMode(Runnable r) {
+    final IndexManager oqlIndexManager = getInitializedIndexManager();
+    if (oqlIndexManager != null) {
+      try {
+        r.run();
+      } finally {
+        oqlIndexManager.countDownIndexUpdaters();
+      }
+    } else {
+      r.run();
     }
   }
 
@@ -2221,7 +2239,6 @@ public abstract class AbstractRegionMap
     RegionEntry re = getEntry(key);
     if (putInfo.isOnlyExisting()) {
       if (re == null || re.isTombstone()) {
-        putInfo.setRegionEntry(null);
         return false;
       }
     }
@@ -2241,6 +2258,9 @@ public abstract class AbstractRegionMap
     }
   }
 
+  /**
+   * @return false if caller should retry
+   */
   private boolean addRegionEntryToMapAndDoPut(final RegionMapPutContext putInfo) {
     synchronized (putInfo.getRegionEntry()) {
       putIfAbsentNewEntry(putInfo);
@@ -2258,28 +2278,28 @@ public abstract class AbstractRegionMap
     }
   }
 
+  /**
+   * @return false if caller should retry
+   */
   private boolean doPutOnRegionEntry(final RegionMapPutContext putInfo) {
-    final LocalRegion owner = _getOwner();
     final RegionEntry re = putInfo.getRegionEntry();
 
     synchronized (re) {
-      if (handleRemovePhase2(putInfo)) {
+      if (isRegionEntryRemoved(putInfo)) {
         return false;
       }
-      setOldValueForDelta(putInfo);
 
+      setOldValueForDelta(putInfo);
       try {
         setOldValueInEvent(putInfo);
-        if (!checkEarlyOuts(putInfo)) {
-          doCreateOrUpdate(putInfo);
-        }
+        doCreateOrUpdate(putInfo);
         return true;
       } finally {
         OffHeapHelper.release(putInfo.getOldValueForDelta());
-        // TODO: I see no reason for the isOnlyExisting check.
-        // If the re is REMOVE_PHASE1 then we should always clean it up.
-        if (!putInfo.isOnlyExisting() && !isOpComplete(re)) {
-          owner.cleanUpOnIncompleteOp(putInfo.getEvent(), re);
+        putInfo.setOldValueForDelta(null);
+        if (!putInfo.isCompleted() && putInfo.isCreate()) {
+          // Region entry remove needs to be done while still synced on re.
+          removeEntry(putInfo.getEvent().getKey(), re, false);
         }
       }
     }
@@ -2298,12 +2318,6 @@ public abstract class AbstractRegionMap
   }
 
   private void doAfterPut(RegionMapPutContext putInfo) {
-    {
-      IndexManager oqlIndexManager = putInfo.getIndexManager();
-      if (oqlIndexManager != null) {
-        oqlIndexManager.countDownIndexUpdaters();
-      }
-    }
     if (putInfo.isCompleted()) {
       final LocalRegion owner = _getOwner();
       try {
@@ -2317,7 +2331,6 @@ public abstract class AbstractRegionMap
           try {
             lruUpdateCallback();
           } catch (DiskAccessException dae) {
-            putInfo.setRegionEntry(null);
             owner.handleDiskAccessException(dae);
             throw dae;
           }
@@ -2329,23 +2342,24 @@ public abstract class AbstractRegionMap
   }
 
   /**
-   * @return true if an early out check indicated that
+   * @return false if an early out check indicated that
    *         the put should not be done.
    */
-  private boolean checkEarlyOuts(final RegionMapPutContext putInfo) {
-    if (!continueUpdate(putInfo) || !continueOverwriteDestroyed(putInfo)
-        || !satisfiesExpectedOldValue(putInfo)) {
-      putInfo.setRegionEntry(null);
+  private boolean shouldPutContinue(final RegionMapPutContext putInfo) {
+    if (continueUpdate(putInfo) && continueOverwriteDestroyed(putInfo)
+        && satisfiesExpectedOldValue(putInfo)) {
       return true;
     }
     return false;
   }
 
   private void doCreateOrUpdate(final RegionMapPutContext putInfo) {
+    if (!shouldPutContinue(putInfo)) {
+      return;
+    }
     invokeCacheWriter(putInfo);
 
-    doWhileIndexUpdatingInProgress(putInfo, () -> {
-      final RegionEntry re = putInfo.getRegionEntry();
+    runWithIndexUpdatingInProgress(putInfo, () -> {
       final EntryEventImpl event = putInfo.getEvent();
       createOrUpdateEntry(putInfo);
       if (putInfo.isUninitialized()) {
@@ -2353,6 +2367,7 @@ public abstract class AbstractRegionMap
       }
       updateLru(putInfo);
 
+      final RegionEntry re = putInfo.getRegionEntry();
       long lastModTime = _getOwner().basicPutPart2(event, re, !putInfo.isUninitialized(),
           putInfo.getLastModifiedTime(), putInfo.getClearOccured());
       putInfo.setLastModifiedTime(lastModTime);
@@ -2360,7 +2375,7 @@ public abstract class AbstractRegionMap
     });
   }
 
-  private void doWhileIndexUpdatingInProgress(RegionMapPutContext putInfo, Runnable r) {
+  private void runWithIndexUpdatingInProgress(RegionMapPutContext putInfo, Runnable r) {
     final RegionEntry re = putInfo.getRegionEntry();
     notifyIndex(re, true);
     try {
@@ -2391,7 +2406,7 @@ public abstract class AbstractRegionMap
       throw ccme;
     }
   }
-  
+
   private boolean isUpdate(final RegionMapPutContext putInfo) {
     if (putInfo.isCacheWrite() && putInfo.getEvent().getOperation().isUpdate()) {
       // if there is a cacheWriter, type of event has already been set
@@ -2409,37 +2424,30 @@ public abstract class AbstractRegionMap
   private void setOldValueForDelta(final RegionMapPutContext putInfo) {
     if (putInfo.isRetrieveOldValueForDelta()) {
       runWhileEvictionDisabled(() -> {
-        putInfo.setOldValueForDelta(putInfo.getRegionEntry().getValue(_getOwner())););
-      try {
         // Old value is faulted in from disk if not found in memory.
-        
+        putInfo.setOldValueForDelta(putInfo.getRegionEntry().getValue(_getOwner()));
         // OFFHEAP: if we are synced on region entry no issue since we can use ARE's ref
-      } finally {
-        if (disabled) {
-          enableLruUpdateCallback();
-        }
-      }
+      });
     }
   }
-  
+
   private void runWhileEvictionDisabled(Runnable r) {
     final boolean disabled = disableLruUpdateCallback();
     try {
-      
+      r.run();
     } finally {
       if (disabled) {
         enableLruUpdateCallback();
       }
     }
-    
   }
 
   /**
    * If the re goes into removed2 state, it will be removed from the map.
    *
-   * @return true if re was remove phase 2 and handled
+   * @return true if re was remove phase 2
    */
-  private boolean handleRemovePhase2(final RegionMapPutContext putInfo) {
+  private boolean isRegionEntryRemoved(final RegionMapPutContext putInfo) {
     final RegionEntry re = putInfo.getRegionEntry();
     if (re.isRemovedPhase2()) {
       _getOwner().getCachePerfStats().incRetries();
@@ -2448,13 +2456,6 @@ public abstract class AbstractRegionMap
     } else {
       return false;
     }
-  }
-
-  private boolean isOpComplete(RegionEntry re) {
-    if (re != null && re.getValueAsToken() == Token.REMOVED_PHASE1) {
-      return false;
-    }
-    return true;
   }
 
   private boolean satisfiesExpectedOldValue(final RegionMapPutContext putInfo) {
@@ -2529,8 +2530,7 @@ public abstract class AbstractRegionMap
     }
   }
 
-  private void createEntry(final RegionMapPutContext putInfo)
-      throws RegionClearedException {
+  private void createEntry(final RegionMapPutContext putInfo) throws RegionClearedException {
     final LocalRegion owner = _getOwner();
     final EntryEventImpl event = putInfo.getEvent();
     final RegionEntry re = putInfo.getRegionEntry();
@@ -2542,14 +2542,15 @@ public abstract class AbstractRegionMap
       owner.getImageState().removeDestroyedEntry(event.getKey());
     }
   }
-  
+
   private void updateEntry(final RegionMapPutContext putInfo) throws RegionClearedException {
     final EntryEventImpl event = putInfo.getEvent();
     final RegionEntry re = putInfo.getRegionEntry();
     final boolean wasTombstone = re.isTombstone();
     final int oldSize = event.getRegion().calculateRegionEntryValueSize(re);
     processVersionTag(re, event);
-    event.putExistingEntry(event.getRegion(), re, putInfo.isRequireOldValue(), putInfo.getOldValueForDelta());
+    event.putExistingEntry(event.getRegion(), re, putInfo.isRequireOldValue(),
+        putInfo.getOldValueForDelta());
     EntryLogger.logPut(event);
     updateSize(event, oldSize, true/* isUpdate */, wasTombstone);
   }
