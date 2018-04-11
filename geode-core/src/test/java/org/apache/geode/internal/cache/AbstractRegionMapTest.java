@@ -777,6 +777,30 @@ public class AbstractRegionMapTest {
   }
 
   @Test
+  public void createOnEntryReturnedFromPutIfAbsentDoesNothing() {
+    CustomEntryConcurrentHashMap<String, RegionEntry> map =
+        mock(CustomEntryConcurrentHashMap.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.getValueAsToken()).thenReturn(Token.NOT_A_TOKEN);
+    when(map.get(KEY)).thenReturn(null);
+    when(map.putIfAbsent((String) eq(KEY), any())).thenReturn(entry);
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    final EntryEventImpl event = createEventForCreate(arm._getOwner(), "key");
+    final boolean ifNew = true;
+    final boolean ifOld = false;
+    final boolean requireOldValue = false;
+    final Object expectedOldValue = null;
+
+    RegionEntry result =
+        arm.basicPut(event, 0L, ifNew, ifOld, expectedOldValue, requireOldValue, false);
+    assertThat(result).isNull();
+    verify(arm._getOwner(), never()).basicPutPart2(eq(event), any(), anyBoolean(), anyLong(),
+        anyBoolean());
+    verify(arm._getOwner(), never()).basicPutPart3(eq(event), any(), anyBoolean(), anyLong(),
+        anyBoolean(), anyBoolean(), anyBoolean(), any(), anyBoolean());
+  }
+
+  @Test
   public void createOnExistingEntryWithRemovePhase2DoesCreate() throws RegionClearedException {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
     // do a create to get a region entry in the map
