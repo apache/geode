@@ -22,6 +22,7 @@ import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.get
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyGatewayReceiverProfile;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyGatewayReceiverServerLocations;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyReceiverCreationWithAttributes;
+import static org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction.A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_GATEWAYRECEIVER;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
 import static org.apache.geode.test.junit.rules.VMProvider.invokeInEveryMember;
@@ -90,8 +91,8 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"" + SERVER_1 + "\"");
     gfsh.executeAndAssertThat(command).statusIsError()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
-        .tableHasColumnWithValuesContaining("Status",
-            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.");
+        .tableHasColumnWithValuesContaining("Status", "ERROR: java.lang.IllegalStateException: "
+            + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
   }
 
   @Test
@@ -111,7 +112,8 @@ public class CreateGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(createOnBoth).statusIsError()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
         .tableHasColumnWithValuesContaining("Status",
-            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.",
+            "ERROR: java.lang.IllegalStateException: "
+                + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
             "GatewayReceiver created on member \"" + SERVER_2 + "\"");
   }
 
@@ -132,7 +134,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(createOnBoth).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
         .tableHasColumnWithValuesContaining("Status",
-            "SKIP: A Gateway Receiver already exists on this member.",
+            "SKIP: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
             "GatewayReceiver created on member \"" + SERVER_2 + "\"");
   }
 
@@ -170,9 +172,12 @@ public class CreateGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(command).statusIsError()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
         .tableHasColumnWithExactValuesInAnyOrder("Status",
-            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.",
-            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.",
-            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.");
+            "ERROR: java.lang.IllegalStateException: "
+                + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
+            "ERROR: java.lang.IllegalStateException: "
+                + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
+            "ERROR: java.lang.IllegalStateException: "
+                + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
   }
 
   /**
