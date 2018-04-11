@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -30,6 +31,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,10 +46,12 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
+import org.apache.geode.internal.cache.map.RegionMapPutContext;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -749,6 +759,8 @@ public class AbstractRegionMapTest {
       when(owner.getCachePerfStats()).thenReturn(cachePerfStats);
       when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
       when(owner.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+      when(owner.getScope()).thenReturn(Scope.LOCAL);
+      when(owner.isInitialized()).thenReturn(true);
       doThrow(EntryNotFoundException.class).when(owner).checkEntryNotFound(any());
       initialize(owner, new Attributes(), null, false);
       if (map != null) {
@@ -756,6 +768,90 @@ public class AbstractRegionMapTest {
       }
       if (factory != null) {
         setEntryFactory(factory);
+      }
+    }
+  }
+
+  @Test
+  public void verifyConcurrentCreateHasCorrectResult() throws Exception {
+    CountDownLatch removePhase1Completed = new CountDownLatch(1);
+    CountDownLatch secondCreateCompleted = new CountDownLatch(1);
+    TestableBasicPutMap arm = new TestableBasicPutMap(removePhase1Completed, secondCreateCompleted);
+    // The key needs to be long enough to not be stored inline on the region entry.
+    String key1 = "lonGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGkey";
+    String key2 = new String(key1);
+
+    Future<RegionEntry> future = doCreateInAnotherThread(arm, key1);
+    if (!removePhase1Completed.await(5, TimeUnit.SECONDS)) {
+      // something is wrong with the other thread
+      // so count down the latch it may be waiting
+      // on and then call get to see what went wrong with him.
+      secondCreateCompleted.countDown();
+      fail("other thread took too long. It returned " + future.get());
+    }
+    EntryEventImpl event = createEventForCreate(arm._getOwner(), key2);
+    RegionEntry result = arm.basicPut(event, 0L, true, false, null, false, false);
+    secondCreateCompleted.countDown();
+
+    RegionEntry resultFromOtherThread = future.get();
+
+    assertThat(result).isNull();
+    assertThat(resultFromOtherThread).isNotNull();
+    System.out.println("DEBUG key1=" + System.identityHashCode(key1) + " key2="
+        + System.identityHashCode(key2) + " resultFromOtherThread.getKey()="
+        + System.identityHashCode(resultFromOtherThread.getKey()));
+    assertThat(resultFromOtherThread.getKey()).isSameAs(key1);
+  }
+
+  private EntryEventImpl createEventForCreate(LocalRegion lr, String key) {
+    when(lr.getKeyInfo(key)).thenReturn(new KeyInfo(key, null, null));
+    EntryEventImpl event =
+        EntryEventImpl.create(lr, Operation.CREATE, key, false, null, true, false);
+    event.setNewValue("create_value");
+    return event;
+  }
+
+  private Future<RegionEntry> doCreateInAnotherThread(TestableBasicPutMap arm, String key) {
+    Future<RegionEntry> result = CompletableFuture.supplyAsync(() -> {
+      EntryEventImpl event = createEventForCreate(arm._getOwner(), key);
+      return arm.basicPut(event, 0L, true, false, null, false, false);
+    });
+    return result;
+  }
+
+  private static class TestableBasicPutMap extends TestableAbstractRegionMap {
+    private final CountDownLatch removePhase1Completed;
+    private final CountDownLatch secondCreateCompleted;
+    private boolean alreadyCalledPutIfAbsentNewEntry;
+    private boolean alreadyCalledAddRegionEntryToMapAndDoPut;
+
+    public TestableBasicPutMap(CountDownLatch removePhase1Completed,
+        CountDownLatch secondCreateCompleted) {
+      super();
+      this.removePhase1Completed = removePhase1Completed;
+      this.secondCreateCompleted = secondCreateCompleted;
+    }
+
+    @Override
+    protected boolean addRegionEntryToMapAndDoPut(final RegionMapPutContext putInfo) {
+      if (!alreadyCalledAddRegionEntryToMapAndDoPut) {
+        alreadyCalledAddRegionEntryToMapAndDoPut = true;
+      } else {
+        this.secondCreateCompleted.countDown();
+      }
+      return super.addRegionEntryToMapAndDoPut(putInfo);
+    }
+
+    @Override
+    protected void putIfAbsentNewEntry(final RegionMapPutContext putInfo) {
+      super.putIfAbsentNewEntry(putInfo);
+      if (!alreadyCalledPutIfAbsentNewEntry) {
+        alreadyCalledPutIfAbsentNewEntry = true;
+        this.removePhase1Completed.countDown();
+        try {
+          this.secondCreateCompleted.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException ignore) {
+        }
       }
     }
   }

@@ -2261,14 +2261,14 @@ public abstract class AbstractRegionMap
   /**
    * @return false if caller should retry
    */
-  private boolean addRegionEntryToMapAndDoPut(final RegionMapPutContext putInfo) {
+  protected boolean addRegionEntryToMapAndDoPut(final RegionMapPutContext putInfo) {
     synchronized (putInfo.getRegionEntry()) {
       putIfAbsentNewEntry(putInfo);
       return doPutOnRegionEntry(putInfo);
     }
   }
 
-  private void putIfAbsentNewEntry(final RegionMapPutContext putInfo) {
+  protected void putIfAbsentNewEntry(final RegionMapPutContext putInfo) {
     if (putInfo.isCreate()) {
       RegionEntry oldRe = putEntryIfAbsent(putInfo.getEvent().getKey(), putInfo.getRegionEntry());
       if (oldRe != null) {
