@@ -26,7 +26,7 @@ public class AsyncEventQueueStats extends GatewaySenderStats {
   public static final String typeName = "AsyncEventQueueStatistics";
 
   /** The <code>StatisticsType</code> of the statistics */
-  private static final StatisticsType type;
+  public static final StatisticsType type;
 
 
   static {
@@ -47,9 +47,6 @@ public class AsyncEventQueueStats extends GatewaySenderStats {
             f.createIntCounter(EVENTS_NOT_QUEUED_CONFLATED,
                 "Number of events received but not added to the event queue because the queue already contains an event with the event's key.",
                 "operations"),
-            f.createIntCounter(NOT_QUEUED_EVENTS, "Number of events not added to queue.", "events"),
-            f.createIntCounter(NOT_QUEUED_EVENTS_AT_YET_RUNNING_PRIMARY_SENDER,
-                "Number of events not added to primary queue due to sender yet runing.", "events"),
             f.createIntCounter(EVENTS_CONFLATED_FROM_BATCHES,
                 "Number of events conflated from batches.", "operations"),
             f.createIntCounter(EVENTS_DISTRIBUTED,
@@ -90,6 +87,8 @@ public class AsyncEventQueueStats extends GatewaySenderStats {
             f.createIntGauge(CONFLATION_INDEXES_MAP_SIZE,
                 "Current number of entries in the conflation indexes map.", "events"),
             f.createIntCounter(NOT_QUEUED_EVENTS, "Number of events not added to queue.", "events"),
+            f.createIntCounter(NOT_QUEUED_EVENTS_AT_YET_RUNNING_PRIMARY_SENDER,
+                "Number of events not added to primary queue due to sender yet running.", "events"),
             f.createIntCounter(EVENTS_FILTERED,
                 "Number of events filtered through GatewayEventFilter.", "events"),
             f.createIntCounter(LOAD_BALANCES_COMPLETED, "Number of load balances completed",

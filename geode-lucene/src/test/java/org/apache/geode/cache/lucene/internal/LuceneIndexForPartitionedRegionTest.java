@@ -91,6 +91,40 @@ public class LuceneIndexForPartitionedRegionTest {
   }
 
   @Test
+  public void indexIsAvailableReturnsFalseIfCompleteFileIsNotPresent() {
+    String name = "indexName";
+    String regionPath = "regionName";
+    InternalCache cache = Fakes.cache();
+    PartitionedRegion region = mock(PartitionedRegion.class);
+    PartitionedRegion mockFileRegion = mock(PartitionedRegion.class);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    String fileRegionName = index.createFileRegionName();
+    when(cache.getRegion(fileRegionName)).thenReturn(region);
+    LuceneIndexForPartitionedRegion spy = spy(index);
+    when(spy.getFileAndChunkRegion()).thenReturn(mockFileRegion);
+    assertFalse(spy.isIndexAvailable(0));
+  }
+
+  @Test
+  public void indexIsAvailableReturnsTrueIfCompleteFileIsPresent() {
+    String name = "indexName";
+    String regionPath = "regionName";
+    InternalCache cache = Fakes.cache();
+    PartitionedRegion region = mock(PartitionedRegion.class);
+    PartitionedRegion mockFileRegion = mock(PartitionedRegion.class);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    String fileRegionName = index.createFileRegionName();
+    when(cache.getRegion(fileRegionName)).thenReturn(region);
+    LuceneIndexForPartitionedRegion spy = spy(index);
+    when(spy.getFileAndChunkRegion()).thenReturn(mockFileRegion);
+    when(mockFileRegion.get(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE, 1))
+        .thenReturn("SOMETHING IS PRESENT");
+    assertTrue(spy.isIndexAvailable(1));
+  }
+
+  @Test
   public void fileRegionExistsWhenFileRegionDoesNotExistShouldReturnFalse() {
     String name = "indexName";
     String regionPath = "regionName";
