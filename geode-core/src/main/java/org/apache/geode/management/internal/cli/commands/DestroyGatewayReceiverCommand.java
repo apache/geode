@@ -16,19 +16,16 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyGatewayReceiverFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -77,13 +74,13 @@ public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
         onGroups = new String[] {"cluster"};
       }
       Arrays.stream(onGroups).forEach(group -> service.updateCacheConfig(group, cc -> {
-        CacheConfig.GatewayReceiver receiver = cc.getGatewayReceiver();
-        if (receiver == null) {
-          throw new EntityNotFoundException(
-              CliStrings.format(GATEWAYRECIEVER_NOT_FOUND_ON_0, group), ifExists);
-
+        if (cc == null) {
+          if (!ifExists) {
+            result.setStatus(Result.Status.ERROR);
+          }
+        } else {
+          cc.setGatewayReceiver(null);
         }
-        cc.setGatewayReceiver(null);
         return cc;
       }));
       persisted = true;

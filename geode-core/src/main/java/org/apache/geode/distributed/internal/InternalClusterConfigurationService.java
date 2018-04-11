@@ -834,7 +834,11 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     if (group == null) {
       group = CLUSTER_CONFIG;
     }
-    String xmlContent = getConfiguration(group).getCacheXmlContent();
+    Configuration groupConfig = getConfiguration(group);
+    if (groupConfig == null) {
+      return null;
+    }
+    String xmlContent = groupConfig.getCacheXmlContent();
     if (xmlContent == null || xmlContent.isEmpty()) {
       xmlContent = generateInitialXmlContent();
     }

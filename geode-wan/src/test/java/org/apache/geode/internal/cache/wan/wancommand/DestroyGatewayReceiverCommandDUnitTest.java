@@ -31,6 +31,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.management.internal.cli.commands.DestroyGatewayReceiverCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -104,8 +105,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
   private void verifyConfigDoesNotHaveGatewayReceiver(String groupName) {
     locatorSite1.invoke(() -> {
-      String sharedConfigXml = ClusterStartupRule.getLocator().getSharedConfiguration()
-          .getConfiguration(groupName).getCacheXmlContent();
+      Configuration groupConfig =
+          ClusterStartupRule.getLocator().getSharedConfiguration().getConfiguration(groupName);
+      String sharedConfigXml = groupConfig == null ? "" : groupConfig.getCacheXmlContent();
       // Null or emnpty XML doesn't have gateway-receiver element, so it's OK
       if (StringUtils.isNotEmpty(sharedConfigXml)) {
         assertThat(sharedConfigXml).doesNotContain("<gateway-receiver");
@@ -319,7 +321,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
   }
 
   @Test
-  public void destroyGatewayReceiverOnListOfGroups_destroysReceiversListedGroups() {
+  public void destroyGatewayReceiverOnGroup_destroysReceiversOnlyOnListedGroup() {
     Integer locator1Port = locatorSite1.getPort();
     server3 = startServerWithGroups(3, "Grp1", locator1Port);
     server4 = startServerWithGroups(4, "Grp2", locator1Port);
@@ -355,5 +357,71 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
         "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server4);
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
+  }
+
+  @Test
+  public void destroyGatewayReceiverDoesNotExistInMultipleGroups_errorsGroupsWithoutReceviers() {
+    Integer locator1Port = locatorSite1.getPort();
+    server3 = startServerWithGroups(3, "Grp1", locator1Port);
+    server4 = startServerWithGroups(4, "Grp2", locator1Port);
+    server5 = startServerWithGroups(5, "Grp3", locator1Port);
+
+    gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"");
+    verifyConfigHasGatewayReceiver("Grp2");
+    verifyConfigDoesNotHaveGatewayReceiver("cluster");
+    verifyConfigDoesNotHaveGatewayReceiver("Grp1");
+    verifyConfigDoesNotHaveGatewayReceiver("Grp3");
+
+    VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
+        "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server4);
+    VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server5);
+
+    CommandStringBuilder csb =
+        new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
+            .addOption(CliStrings.GROUP, "Grp1,Grp2,Grp3");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .doesNotContainOutput("change is not persisted")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5");
+    verifyConfigDoesNotHaveGatewayReceiver("Grp1");
+    verifyConfigDoesNotHaveGatewayReceiver("cluster");
+
+    VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4);
+  }
+
+  @Test
+  public void destroyGatewayReceiverDoesNotExistInMultipleGroups_ifExistsSkipsGroupsWithoutReceviers() {
+    Integer locator1Port = locatorSite1.getPort();
+    server3 = startServerWithGroups(3, "Grp1", locator1Port);
+    server4 = startServerWithGroups(4, "Grp2", locator1Port);
+    server5 = startServerWithGroups(5, "Grp3", locator1Port);
+
+    gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"");
+    verifyConfigHasGatewayReceiver("Grp2");
+    verifyConfigDoesNotHaveGatewayReceiver("cluster");
+    verifyConfigDoesNotHaveGatewayReceiver("Grp1");
+    verifyConfigDoesNotHaveGatewayReceiver("Grp3");
+
+    VMProvider.invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000,
+        "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS), server4);
+    VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server5);
+
+    CommandStringBuilder csb =
+        new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
+            .addOption(CliStrings.IFEXISTS, "true").addOption(CliStrings.GROUP, "Grp1,Grp2,Grp3");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .doesNotContainOutput("change is not persisted")
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5");
+    verifyConfigDoesNotHaveGatewayReceiver("Grp1");
+    verifyConfigDoesNotHaveGatewayReceiver("cluster");
+
+    VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3, server4);
   }
 }
