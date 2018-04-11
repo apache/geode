@@ -42,6 +42,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -287,7 +288,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     repoManager.getRepositories(ctx);
   }
 
-
+  @Ignore
   @Test
   public void queryOnlyWhenIndexIsAvailable() throws Exception {
     setUpMockBucket(0);
