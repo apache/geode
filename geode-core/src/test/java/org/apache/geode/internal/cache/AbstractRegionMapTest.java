@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -739,6 +740,115 @@ public class AbstractRegionMapTest {
         new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class), false,
         mock(EventID.class), null, null, null, null, null, null, 1);
     assertEquals(re.getValueAsToken(), token);
+  }
+
+  @Test
+  public void updateOnEmptyMapReturnsNull() {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    final EntryEventImpl event = createEventForCreate(arm._getOwner(), "key");
+
+    RegionEntry result = arm.basicPut(event, 0L, false, true, null, false, false);
+
+    assertThat(result).isNull();
+    verify(arm._getOwner(), never()).basicPutPart2(any(), any(), anyBoolean(), anyLong(),
+        anyBoolean());
+    verify(arm._getOwner(), never()).basicPutPart3(any(), any(), anyBoolean(), anyLong(),
+        anyBoolean(), anyBoolean(), anyBoolean(), any(), anyBoolean());
+  }
+
+  @Test
+  public void createOnExistingEntryReturnsNull() {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    // do a create to get a region entry in the map
+    arm.basicPut(createEventForCreate(arm._getOwner(), "key"), 0L, true, false, null, false, false);
+    final EntryEventImpl event = createEventForCreate(arm._getOwner(), "key");
+    final boolean ifNew = true;
+    final boolean ifOld = false;
+    final boolean requireOldValue = false;
+    final Object expectedOldValue = null;
+
+    RegionEntry result =
+        arm.basicPut(event, 0L, ifNew, ifOld, expectedOldValue, requireOldValue, false);
+    assertThat(result).isNull();
+    verify(arm._getOwner(), never()).basicPutPart2(eq(event), any(), anyBoolean(), anyLong(),
+        anyBoolean());
+    verify(arm._getOwner(), never()).basicPutPart3(eq(event), any(), anyBoolean(), anyLong(),
+        anyBoolean(), anyBoolean(), anyBoolean(), any(), anyBoolean());
+  }
+
+  @Test
+  public void createOnExistingEntryWithRemovePhase2DoesCreate() throws RegionClearedException {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    // do a create to get a region entry in the map
+    RegionEntry createdEntry = arm.basicPut(createEventForCreate(arm._getOwner(), "key"), 0L, true,
+        false, null, false, false);
+    createdEntry.setValue(null, Token.REMOVED_PHASE2);
+    final EntryEventImpl event = createEventForCreate(arm._getOwner(), "key");
+    event.setNewValue("create");
+    final boolean ifNew = true;
+    final boolean ifOld = false;
+    final boolean requireOldValue = false;
+    final Object expectedOldValue = null;
+
+    RegionEntry result =
+        arm.basicPut(event, 0L, ifNew, ifOld, expectedOldValue, requireOldValue, false);
+
+    assertThat(result).isNotNull();
+    assertThat(result).isNotSameAs(createdEntry);
+    assertThat(result.getKey()).isEqualTo("key");
+    assertThat(result.getValue()).isEqualTo("create");
+    verify(arm._getOwner(), times(1)).basicPutPart2(eq(event), eq(result), eq(true), anyLong(),
+        eq(false));
+    verify(arm._getOwner(), times(1)).basicPutPart3(eq(event), eq(result), eq(true), anyLong(),
+        eq(true), eq(ifNew), eq(ifOld), eq(expectedOldValue), eq(requireOldValue));
+  }
+
+
+  @Test
+  public void updateOnExistingEntryDoesUpdate() {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    // do a create to get a region entry in the map
+    RegionEntry createdEntry = arm.basicPut(createEventForCreate(arm._getOwner(), "key"), 0L, true,
+        false, null, false, false);
+    final EntryEventImpl event = createEventForCreate(arm._getOwner(), "key");
+    event.setNewValue("update");
+    final boolean ifNew = false;
+    final boolean ifOld = true;
+    final boolean requireOldValue = false;
+    final Object expectedOldValue = null;
+
+    RegionEntry result =
+        arm.basicPut(event, 0L, ifNew, ifOld, expectedOldValue, requireOldValue, false);
+
+    assertThat(result).isSameAs(createdEntry);
+    assertThat(result.getKey()).isEqualTo("key");
+    assertThat(result.getValue()).isEqualTo("update");
+    verify(arm._getOwner(), times(1)).basicPutPart2(eq(event), eq(result), eq(true), anyLong(),
+        eq(false));
+    verify(arm._getOwner(), times(1)).basicPutPart3(eq(event), eq(result), eq(true), anyLong(),
+        eq(true), eq(ifNew), eq(ifOld), eq(expectedOldValue), eq(requireOldValue));
+  }
+
+  @Test
+  public void createOnEmptyMapAddsEntry() {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    final EntryEventImpl event = createEventForCreate(arm._getOwner(), "key");
+    event.setNewValue("value");
+    final boolean ifNew = true;
+    final boolean ifOld = false;
+    final boolean requireOldValue = false;
+    final Object expectedOldValue = null;
+
+    RegionEntry result =
+        arm.basicPut(event, 0L, ifNew, ifOld, expectedOldValue, requireOldValue, false);
+
+    assertThat(result).isNotNull();
+    assertThat(result.getKey()).isEqualTo("key");
+    assertThat(result.getValue()).isEqualTo("value");
+    verify(arm._getOwner(), times(1)).basicPutPart2(eq(event), eq(result), eq(true), anyLong(),
+        eq(false));
+    verify(arm._getOwner(), times(1)).basicPutPart3(eq(event), eq(result), eq(true), anyLong(),
+        eq(true), eq(ifNew), eq(ifOld), eq(expectedOldValue), eq(requireOldValue));
   }
 
   /**
