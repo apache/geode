@@ -86,6 +86,7 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     ai1.checkException();
     ai2.checkException();
 
+    waitForFlushBeforeExecuteTextSearch(accessor, 60000);
     executeTextSearch(accessor);
   }
 
@@ -123,6 +124,7 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     ai1.checkException();
     ai2.checkException();
 
+    waitForFlushBeforeExecuteTextSearch(accessor, 60000);
     executeTextSearch(accessor);
   }
 

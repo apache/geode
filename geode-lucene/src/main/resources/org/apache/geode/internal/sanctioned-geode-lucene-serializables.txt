@@ -17,3 +17,4 @@ org/apache/geode/cache/lucene/internal/directory/DumpDirectoryFiles,true,1
 org/apache/geode/cache/lucene/internal/distributed/LuceneQueryFunction,true,1
 org/apache/geode/cache/lucene/internal/distributed/WaitUntilFlushedFunction,true,1
 org/apache/geode/cache/lucene/internal/results/LuceneGetPageFunction,true,1
+org/apache/geode/cache/lucene/internal/LuceneIndexCreationInProgressException,false

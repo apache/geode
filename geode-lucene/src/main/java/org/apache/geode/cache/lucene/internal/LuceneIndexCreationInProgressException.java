@@ -12,32 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.lucene.LuceneIndex;
-import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
+import org.apache.geode.GemFireException;
 
-public interface InternalLuceneIndex extends LuceneIndex {
-
-  RepositoryManager getRepositoryManager();
-
-  /**
-   * Dump the files for this index to the given directory.
-   */
-  void dumpFiles(String directory);
-
-  /**
-   * Destroy the index
-   */
-  void destroy(boolean initiator);
-
-  LuceneIndexStats getIndexStats();
-
-  Cache getCache();
-
-  void initialize();
-
-  boolean isIndexAvailable(int id);
+public class LuceneIndexCreationInProgressException extends GemFireException {
+  public LuceneIndexCreationInProgressException(String message) {
+    super(message);
+  }
 }

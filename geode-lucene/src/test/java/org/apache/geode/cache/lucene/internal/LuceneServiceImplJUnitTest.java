@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -52,6 +53,7 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
@@ -123,6 +125,9 @@ public class LuceneServiceImplJUnitTest {
     when(((StatisticsFactory) ds).createAtomicStatistics(any(), anyString()))
         .thenReturn(luceneIndexStats);
     when(cache.getRegion(anyString())).thenReturn(region);
+    when(cache.getDistributionManager()).thenReturn(mock(DistributionManager.class));
+    when(cache.getDistributionManager().getWaitingThreadPool())
+        .thenReturn(Executors.newSingleThreadExecutor());
 
     RegionAttributes ratts = mock(RegionAttributes.class);
     when(region.getAttributes()).thenReturn(ratts);
