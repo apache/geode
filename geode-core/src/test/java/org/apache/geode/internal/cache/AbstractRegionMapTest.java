@@ -115,6 +115,7 @@ public class AbstractRegionMapTest {
 
     // invalidate on region that is not initialized should create
     // entry in map as invalid.
+    when(arm._getOwner().isInitialized()).thenReturn(false);
     assertThatThrownBy(() -> arm.invalidate(event, true, false, false))
         .isInstanceOf(EntryNotFoundException.class);
 
@@ -132,6 +133,7 @@ public class AbstractRegionMapTest {
 
     // invalidate on region that is not initialized should create
     // entry in map as invalid.
+    when(arm._getOwner().isInitialized()).thenReturn(false);
     assertThatThrownBy(() -> arm.invalidate(event, true, false, false))
         .isInstanceOf(EntryNotFoundException.class);
 
@@ -168,6 +170,7 @@ public class AbstractRegionMapTest {
 
       // invalidate on region that is not initialized should create
       // entry in map as invalid.
+      when(arm._getOwner().isInitialized()).thenReturn(false);
       assertTrue(arm.invalidate(event, true, true, false));
       verify(arm._getOwner(), times(1)).basicInvalidatePart2(any(), any(), anyBoolean(),
           anyBoolean());
@@ -797,9 +800,6 @@ public class AbstractRegionMapTest {
 
     assertThat(result).isNull();
     assertThat(resultFromOtherThread).isNotNull();
-    System.out.println("DEBUG key1=" + System.identityHashCode(key1) + " key2="
-        + System.identityHashCode(key2) + " resultFromOtherThread.getKey()="
-        + System.identityHashCode(resultFromOtherThread.getKey()));
     assertThat(resultFromOtherThread.getKey()).isSameAs(key1);
   }
 
