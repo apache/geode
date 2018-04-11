@@ -72,14 +72,13 @@ public class RegionMapPutContext {
     this.retrieveOldValueForDelta = event.getDeltaBytes() != null && event.getRawNewValue() == null;
     this.replaceOnClient =
         event.getOperation() == Operation.REPLACE && owner.getServerProxy() != null;
-    this.onlyExisting = ifOld && !this.isReplaceOnClient();
+    this.onlyExisting = ifOld && !isReplaceOnClient();
     this.cacheWriter = owner.basicGetWriter();
     this.cacheWrite = !event.isOriginRemote() && !event.isNetSearch() && event.isGenerateCallbacks()
-        && (this.getCacheWriter() != null || owner.hasServerProxy()
-            || owner.getScope().isDistributed());
+        && (getCacheWriter() != null || owner.hasServerProxy() || owner.getScope().isDistributed());
     this.expectedOldValue = expectedOldValue;
-    if (this.isCacheWrite()) {
-      if (this.getCacheWriter() == null && owner.getScope().isDistributed()) {
+    if (isCacheWrite()) {
+      if (getCacheWriter() == null && owner.getScope().isDistributed()) {
         this.netWriteRecipients =
             ((DistributedRegion) owner).getCacheDistributionAdvisor().adviseNetWrite();
       } else {
