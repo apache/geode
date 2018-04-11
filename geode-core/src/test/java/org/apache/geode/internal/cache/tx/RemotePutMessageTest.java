@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -36,9 +37,10 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
+@Category(UnitTest.class)
+@PowerMockIgnore("*.UnitTest")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(RemotePutMessage.class)
-@Category(UnitTest.class)
 public class RemotePutMessageTest {
   @Test
   public void testDistributeNotFailWithRegionDestroyedException() throws RemoteOperationException {
