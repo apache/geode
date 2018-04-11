@@ -37,6 +37,9 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  * The function to a create GatewayReceiver using given configuration parameters.
  */
 public class GatewayReceiverCreateFunction implements InternalFunction {
+  public static final String A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER =
+      "A Gateway Receiver already exists on this member.";
+
 
   private static final Logger logger = LogService.getLogger();
 
@@ -58,14 +61,14 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
 
     // Exit early if a receiver already exists.
     // Consider this a failure unless --if-not-exists was provided.
-    if (doesSomeGatewayReceiverAlreadyExists(cache)) {
+    if (gatewayReceiverExists(cache)) {
       CliFunctionResult result;
       if (gatewayReceiverCreateArgs.getIfNotExists()) {
         result = new CliFunctionResult(memberNameOrId, true,
-            "SKIP: A Gateway Receiver already exists on this member.");
+            "Skipping: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
       } else {
         Exception illegalState =
-            new IllegalStateException("A Gateway Receiver already exists on this member.");
+            new IllegalStateException(A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
         result = new CliFunctionResult(memberNameOrId, illegalState, illegalState.getMessage());
       }
       resultSender.lastResult(result);
@@ -165,7 +168,7 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
     return ClassPathLoader.getLatest().forName(className).newInstance();
   }
 
-  private boolean doesSomeGatewayReceiverAlreadyExists(Cache cache) {
+  private boolean gatewayReceiverExists(Cache cache) {
     return cache.getGatewayReceivers() != null && !cache.getGatewayReceivers().isEmpty();
   }
 
