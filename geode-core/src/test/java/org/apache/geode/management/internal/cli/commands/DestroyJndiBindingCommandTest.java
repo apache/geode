@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -69,6 +70,8 @@ public class DestroyJndiBindingCommandTest {
     doReturn(cache).when(command).getCache();
     cacheConfig = mock(CacheConfig.class);
     ccService = mock(InternalClusterConfigurationService.class);
+
+
     doReturn(ccService).when(command).getConfigurationService();
     when(ccService.getCacheConfig(any())).thenReturn(cacheConfig);
     doCallRealMethod().when(ccService).updateCacheConfig(any(), any());
@@ -120,6 +123,7 @@ public class DestroyJndiBindingCommandTest {
 
   @Test
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig() {
+    doNothing().when(ccService).updateCacheConfig(any(), any());
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     when(ccService.findIdentifiable(any(), any()))
         .thenReturn(mock(JndiBindingsType.JndiBinding.class));
@@ -177,6 +181,7 @@ public class DestroyJndiBindingCommandTest {
 
     doReturn(members).when(command).findMembers(any(), any());
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
+    doNothing().when(ccService).updateCacheConfig(any(), any());
     when(ccService.findIdentifiable(any(), any()))
         .thenReturn(mock(JndiBindingsType.JndiBinding.class));
 
