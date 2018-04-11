@@ -2410,7 +2410,7 @@ public class CliStrings {
   public static final String START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM =
       "load-cluster-configuration-from-dir";
   public static final String START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM__HELP =
-      "Deprecated: Since Geode 1.7, use import cluster-configuration command instead. When \" "
+      "Deprecated: Since Geode 1.6, use import cluster-configuration command instead. When \" "
           + START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM
           + " \" is set to true, the locator loads the cluster configuration from the \""
           + InternalClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME + "\" directory.";
