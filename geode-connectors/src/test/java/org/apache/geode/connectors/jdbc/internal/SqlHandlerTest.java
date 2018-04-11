@@ -519,11 +519,12 @@ public class SqlHandlerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
 
-    List<ColumnValue> columnValueList =
-        handler.getColumnToValueList(tableMetaDataView, regionMapping, key, value, Operation.GET);
+    EntryColumnData entryColumnData =
+        handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, Operation.GET);
 
-    assertThat(columnValueList).hasSize(1);
-    assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);
+    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+    assertThat(entryColumnData.getEntryValueColumnData()).isEmpty();
+    assertThat(entryColumnData.getEntryKeyColumnData().getColumnName()).isEqualTo(KEY_COLUMN);
   }
 
   @Test
@@ -535,12 +536,14 @@ public class SqlHandlerTest {
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
     when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
 
-    List<ColumnValue> columnValueList = handler.getColumnToValueList(tableMetaDataView,
-        regionMapping, key, value, Operation.UPDATE);
+    EntryColumnData entryColumnData =
+        handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, Operation.UPDATE);
 
-    assertThat(columnValueList).hasSize(2);
-    assertThat(columnValueList.get(0).getColumnName()).isEqualTo(nonKeyColumn);
-    assertThat(columnValueList.get(1).getColumnName()).isEqualTo(KEY_COLUMN);
+    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+    assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
+        .isEqualTo(nonKeyColumn);
+    assertThat(entryColumnData.getEntryKeyColumnData().getColumnName()).isEqualTo(KEY_COLUMN);
   }
 
   @Test
@@ -548,11 +551,12 @@ public class SqlHandlerTest {
     ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
 
-    List<ColumnValue> columnValueList = handler.getColumnToValueList(tableMetaDataView,
-        regionMapping, key, value, Operation.DESTROY);
+    EntryColumnData entryColumnData =
+        handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, Operation.DESTROY);
 
-    assertThat(columnValueList).hasSize(1);
-    assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);
+    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+    assertThat(entryColumnData.getEntryValueColumnData()).isEmpty();
+    assertThat(entryColumnData.getEntryKeyColumnData().getColumnName()).isEqualTo(KEY_COLUMN);
   }
 
   private ResultSet getPrimaryKeysMetaData() throws SQLException {

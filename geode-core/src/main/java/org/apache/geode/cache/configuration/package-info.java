@@ -14,18 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.connectors.jdbc.internal;
 
-import java.util.Set;
+@XmlSchema(namespace = "http://geode.apache.org/schema/cache",
+    xmlns = {@XmlNs(prefix = "", namespaceURI = "http://geode.apache.org/schema/cache")},
+    elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 
-public interface TableMetaDataView {
-  String getTableName();
+package org.apache.geode.cache.configuration;
 
-  String getKeyColumnName();
-
-  int getColumnDataType(String columnName);
-
-  Set<String> getColumnNames();
-
-  String getIdentifierQuoteString();
-}
+import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlSchema;

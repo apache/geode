@@ -19,6 +19,7 @@ package org.apache.geode.connectors.jdbc.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
@@ -68,8 +69,11 @@ public abstract class TableMetaDataManagerIntegrationTest {
   protected abstract Connection getConnection() throws SQLException;
 
   protected void createTable() throws SQLException {
-    statement.execute("CREATE TABLE " + REGION_TABLE_NAME
-        + " (id VARCHAR(10) primary key not null, name VARCHAR(10), age int)");
+    DatabaseMetaData metaData = connection.getMetaData();
+    String quote = metaData.getIdentifierQuoteString();
+    statement.execute("CREATE TABLE " + REGION_TABLE_NAME + " (" + quote + "id" + quote
+        + " VARCHAR(10) primary key not null," + quote + "name" + quote + " VARCHAR(10)," + quote
+        + "age" + quote + " int)");
 
   }
 

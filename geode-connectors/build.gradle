@@ -37,7 +37,7 @@ dependencies {
     testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
     testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
     testCompile files(project(':geode-core').sourceSets.test.output)
-    testCompile project(':geode-old-versions')
+    testCompile files(project(':geode-old-versions').sourceSets.main.output)
 }
 
 integrationTest.forkEvery 0

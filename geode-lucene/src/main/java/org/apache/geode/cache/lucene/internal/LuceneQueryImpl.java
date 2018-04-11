@@ -133,6 +133,8 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     } catch (TransactionException e) {
       // When function execution is run from server
       throw new LuceneQueryException(LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION);
+    } catch (LuceneIndexCreationInProgressException e) {
+      throw new LuceneQueryException("Lucene Index is not available, currently indexing");
     }
 
     return entries;

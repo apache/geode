@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -103,17 +104,22 @@ public abstract class JdbcDistributedTest implements Serializable {
     server = startupRule.startServerVM(1,
         x -> x.withConnectionToLocator(locator.getPort()).withPDXReadSerialized());
     Connection connection = getConnection();
+    DatabaseMetaData metaData = connection.getMetaData();
+    String quote = metaData.getIdentifierQuoteString();
     Statement statement = connection.createStatement();
-    createSupportedFieldsTable(statement, TABLE_NAME);
+    createSupportedFieldsTable(statement, TABLE_NAME, quote);
   }
 
-  protected abstract void createSupportedFieldsTable(Statement statement, String tableName)
-      throws SQLException;
+  protected abstract void createSupportedFieldsTable(Statement statement, String tableName,
+      String quote) throws SQLException;
 
   private void insertNullDataForAllSupportedFieldsTable(String key) throws SQLException {
     Connection connection = DriverManager.getConnection(connectionUrl);
+    DatabaseMetaData metaData = connection.getMetaData();
+    String quote = metaData.getIdentifierQuoteString();
 
-    String insertQuery = "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    String insertQuery =
+        "Insert into " + quote + TABLE_NAME + quote + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
     System.out.println("### Query is :" + insertQuery);
     PreparedStatement statement = connection.prepareStatement(insertQuery);
     createNullStatement(key, statement);
@@ -127,8 +133,11 @@ public abstract class JdbcDistributedTest implements Serializable {
   private void insertDataForAllSupportedFieldsTable(String key, ClassWithSupportedPdxFields data)
       throws SQLException {
     Connection connection = DriverManager.getConnection(connectionUrl);
+    DatabaseMetaData metaData = connection.getMetaData();
+    String quote = metaData.getIdentifierQuoteString();
 
-    String insertQuery = "Insert into " + TABLE_NAME + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    String insertQuery =
+        "Insert into " + quote + TABLE_NAME + quote + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
     System.out.println("### Query is :" + insertQuery);
     PreparedStatement statement = connection.prepareStatement(insertQuery);
     statement.setObject(1, key);
@@ -155,9 +164,16 @@ public abstract class JdbcDistributedTest implements Serializable {
 
   private void closeDB() throws SQLException {
     try (Connection connection = DriverManager.getConnection(connectionUrl)) {
+      DatabaseMetaData metaData = connection.getMetaData();
+      String quote = metaData.getIdentifierQuoteString();
       try (Statement statement = connection.createStatement()) {
         try {
           statement.execute("Drop table " + TABLE_NAME);
+        } catch (SQLException ignore) {
+        }
+
+        try {
+          statement.execute("Drop table " + quote + TABLE_NAME + quote);
         } catch (SQLException ignore) {
         }
       }

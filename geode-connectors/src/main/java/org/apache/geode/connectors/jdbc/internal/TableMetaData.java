@@ -24,11 +24,13 @@ public class TableMetaData implements TableMetaDataView {
   private final String tableName;
   private final String keyColumnName;
   private final HashMap<String, Integer> columnNameToTypeMap;
+  private final String identifierQuoteString;
 
-  public TableMetaData(String tableName, String keyColumnName) {
+  public TableMetaData(String tableName, String keyColumnName, String quoteString) {
     this.tableName = tableName;
     this.keyColumnName = keyColumnName;
     this.columnNameToTypeMap = new HashMap<>();
+    this.identifierQuoteString = quoteString;
   }
 
   @Override
@@ -57,5 +59,10 @@ public class TableMetaData implements TableMetaDataView {
 
   public void addDataType(String columnName, int dataType) {
     this.columnNameToTypeMap.put(columnName, dataType);
+  }
+
+  @Override
+  public String getIdentifierQuoteString() {
+    return this.identifierQuoteString;
   }
 }

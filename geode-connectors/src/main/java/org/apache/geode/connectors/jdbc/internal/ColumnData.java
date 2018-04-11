@@ -14,33 +14,34 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.sql.JDBCType;
 
-class DataSourceManager {
+class ColumnData {
+  private final String columnName;
+  private final Object value;
+  private final int dataType;
 
-  private final JdbcDataSourceFactory jdbcDataSourceFactory;
-  private final Map<String, JdbcDataSource> dataSourceMap = new ConcurrentHashMap<>();
-
-  DataSourceManager(JdbcDataSourceFactory jdbcDataSourceFactory) {
-    this.jdbcDataSourceFactory = jdbcDataSourceFactory;
+  ColumnData(String columnName, Object value, int dataType) {
+    this.columnName = columnName;
+    this.value = value;
+    this.dataType = dataType;
   }
 
-  JdbcDataSource getOrCreateDataSource(ConnectionConfiguration config) {
-    return dataSourceMap.computeIfAbsent(config.getName(), k -> {
-      return this.jdbcDataSourceFactory.create(config);
-    });
+  String getColumnName() {
+    return columnName;
   }
 
-  synchronized void close() {
-    dataSourceMap.values().forEach(this::close);
-    dataSourceMap.clear();
+  Object getValue() {
+    return value;
   }
 
-  private void close(JdbcDataSource dataSource) {
-    try {
-      dataSource.close();
-    } catch (Exception ignore) {
-    }
+  int getDataType() {
+    return dataType;
+  }
+
+  @Override
+  public String toString() {
+    return "ColumnData [columnName=" + columnName + ", value=" + value + ", dataType="
+        + JDBCType.valueOf(dataType) + "]";
   }
 }
