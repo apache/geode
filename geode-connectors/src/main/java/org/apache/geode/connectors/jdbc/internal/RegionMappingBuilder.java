@@ -17,9 +17,7 @@ package org.apache.geode.connectors.jdbc.internal;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.geode.annotations.Experimental;
 
-@Experimental
 public class RegionMappingBuilder {
 
   private static final String MAPPINGS_DELIMITER = ":";

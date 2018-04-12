@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
@@ -22,7 +21,7 @@ import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-@Experimental
+
 public class CreateMappingFunction extends JdbcCliFunction<RegionMapping, CliFunctionResult> {
 
   CreateMappingFunction() {

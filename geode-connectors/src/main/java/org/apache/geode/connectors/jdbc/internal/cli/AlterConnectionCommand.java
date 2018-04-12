@@ -20,7 +20,6 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
@@ -37,11 +36,11 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
+
 public class AlterConnectionCommand extends InternalGfshCommand {
   static final String ALTER_JDBC_CONNECTION = "alter jdbc-connection";
   static final String ALTER_JDBC_CONNECTION__HELP =
-      EXPERIMENTAL + "Alter properties for an existing jdbc connection.";
+      "Alter properties for an existing jdbc connection.";
 
   static final String ALTER_CONNECTION__NAME = "name";
   static final String ALTER_CONNECTION__NAME__HELP = "Name of the connection to be altered.";
@@ -85,7 +84,6 @@ public class AlterConnectionCommand extends InternalGfshCommand {
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
     XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
-    tabularResultData.setHeader(EXPERIMENTAL);
     Result result = ResultBuilder.buildResult(tabularResultData);
     updateClusterConfiguration(result, xmlEntity);
     return result;

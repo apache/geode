@@ -19,9 +19,7 @@ import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorService
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.geode.annotations.Experimental;
 
-@Experimental
 public class ConnectionConfigBuilder {
 
   private String name;

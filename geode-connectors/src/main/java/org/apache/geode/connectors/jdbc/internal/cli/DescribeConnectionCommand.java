@@ -26,7 +26,6 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.distributed.DistributedMember;
@@ -40,11 +39,10 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
+
 public class DescribeConnectionCommand extends InternalGfshCommand {
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
-  static final String DESCRIBE_CONNECTION__HELP =
-      EXPERIMENTAL + "Describe the specified jdbc connection.";
+  static final String DESCRIBE_CONNECTION__HELP = "Describe the specified jdbc connection.";
   static final String DESCRIBE_CONNECTION__NAME = "name";
   static final String DESCRIBE_CONNECTION__NAME__HELP =
       "Name of the jdbc connection to be described.";
@@ -73,13 +71,11 @@ public class DescribeConnectionCommand extends InternalGfshCommand {
     // output
     ConnectionConfiguration config = resultCollector.getResult().get(0);
     if (config == null) {
-      return ResultBuilder.createInfoResult(
-          String.format(EXPERIMENTAL + "\n" + "Connection named '%s' not found", name));
+      return ResultBuilder.createInfoResult(String.format("Connection named '%s' not found", name));
     }
 
     CompositeResultData resultData = ResultBuilder.createCompositeResultData();
     fillResultData(config, resultData);
-    resultData.setHeader(EXPERIMENTAL);
     return ResultBuilder.buildResult(resultData);
   }
 

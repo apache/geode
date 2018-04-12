@@ -20,7 +20,6 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
@@ -37,11 +36,11 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
+
 public class CreateMappingCommand extends InternalGfshCommand {
   static final String CREATE_MAPPING = "create jdbc-mapping";
   static final String CREATE_MAPPING__HELP =
-      EXPERIMENTAL + "Create a mapping for a region for use with a JDBC database connection.";
+      "Create a mapping for a region for use with a JDBC database connection.";
   static final String CREATE_MAPPING__REGION_NAME = "region";
   static final String CREATE_MAPPING__REGION_NAME__HELP =
       "Name of the region the mapping is being created for.";
@@ -93,7 +92,6 @@ public class CreateMappingCommand extends InternalGfshCommand {
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
     XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
-    tabularResultData.setHeader(EXPERIMENTAL);
     Result result = ResultBuilder.buildResult(tabularResultData);
     updateClusterConfiguration(result, xmlEntity);
     return result;

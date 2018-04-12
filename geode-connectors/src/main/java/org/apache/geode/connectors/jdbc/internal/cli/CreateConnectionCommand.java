@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
@@ -42,13 +41,13 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
+
 public class CreateConnectionCommand extends InternalGfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   static final String CREATE_CONNECTION = "create jdbc-connection";
   static final String CREATE_CONNECTION__HELP =
-      EXPERIMENTAL + "Create a connection for communicating with a database through jdbc.";
+      "Create a connection for communicating with a database through jdbc.";
   static final String CREATE_CONNECTION__NAME = "name";
   static final String CREATE_CONNECTION__NAME__HELP = "Name of the connection to be created.";
   static final String CREATE_CONNECTION__URL = "url";
@@ -92,7 +91,6 @@ public class CreateConnectionCommand extends InternalGfshCommand {
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
     XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
-    tabularResultData.setHeader(EXPERIMENTAL);
     Result result = ResultBuilder.buildResult(tabularResultData);
     updateClusterConfiguration(result, xmlEntity);
     return result;

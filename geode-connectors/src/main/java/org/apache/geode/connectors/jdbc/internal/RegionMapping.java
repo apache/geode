@@ -23,12 +23,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
-@Experimental
+
 public class RegionMapping implements Serializable {
   private final String regionName;
   private final String pdxClassName;

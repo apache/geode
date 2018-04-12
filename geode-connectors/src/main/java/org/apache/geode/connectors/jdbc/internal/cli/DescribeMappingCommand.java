@@ -26,7 +26,6 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
@@ -40,11 +39,10 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
+
 public class DescribeMappingCommand extends InternalGfshCommand {
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
-  static final String DESCRIBE_MAPPING__HELP =
-      EXPERIMENTAL + "Describe the specified jdbc mapping.";
+  static final String DESCRIBE_MAPPING__HELP = "Describe the specified jdbc mapping.";
   static final String DESCRIBE_MAPPING__REGION_NAME = "region";
   static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
       "Region name of the jdbc mapping to be described.";
@@ -73,13 +71,12 @@ public class DescribeMappingCommand extends InternalGfshCommand {
     // output
     RegionMapping config = resultCollector.getResult().get(0);
     if (config == null) {
-      return ResultBuilder.createInfoResult(
-          String.format(EXPERIMENTAL + "\n" + "Mapping for region '%s' not found", regionName));
+      return ResultBuilder
+          .createInfoResult(String.format("Mapping for region '%s' not found", regionName));
     }
 
     CompositeResultData resultData = ResultBuilder.createCompositeResultData();
     fillResultData(config, resultData);
-    resultData.setHeader(EXPERIMENTAL);
     return ResultBuilder.buildResult(resultData);
   }
 

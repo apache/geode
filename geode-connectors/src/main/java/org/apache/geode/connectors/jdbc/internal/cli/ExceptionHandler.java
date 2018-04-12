@@ -14,8 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.io.Serializable;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 

@@ -14,12 +14,11 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 
-@Experimental
+
 public class DescribeMappingFunction extends JdbcCliFunction<String, RegionMapping> {
 
   DescribeMappingFunction() {

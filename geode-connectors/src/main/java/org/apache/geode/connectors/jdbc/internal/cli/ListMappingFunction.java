@@ -16,12 +16,11 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.util.Set;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 
-@Experimental
+
 public class ListMappingFunction extends JdbcCliFunction<Void, RegionMapping[]> {
 
   ListMappingFunction() {

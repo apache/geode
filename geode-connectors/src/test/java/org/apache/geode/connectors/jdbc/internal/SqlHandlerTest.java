@@ -34,7 +34,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import junitparams.JUnitParamsRunner;
 import org.junit.Before;
@@ -112,7 +111,6 @@ public class SqlHandlerTest {
     when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
     when(regionMapping.getRegionToTableName()).thenReturn(TABLE_NAME);
     when(connectorService.getMappingForRegion(REGION_NAME)).thenReturn(regionMapping);
-
 
     when(manager.getOrCreateDataSource(any())).thenReturn(this.dataSource);
     when(dataSource.getConnection()).thenReturn(this.connection);

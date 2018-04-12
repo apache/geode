@@ -24,14 +24,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 
-@Experimental
+
 public class SqlHandler {
   private final JdbcConnectorService configService;
   private final DataSourceManager manager;
