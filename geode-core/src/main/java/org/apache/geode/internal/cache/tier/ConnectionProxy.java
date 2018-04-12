@@ -29,5 +29,5 @@ public interface ConnectionProxy {
    *
    * @since GemFire 5.7
    */
-  Version VERSION = Version.CURRENT.getGemFireVersion();
+  Version VERSION = Version.CURRENT;
 }

@@ -362,7 +362,7 @@ public class HARegion extends DistributedRegion {
     Assert.assertTrue(!hasServerProxy());
     CacheLoader loader = basicGetLoader();
     if (loader != null) {
-      value = callCacheLoader(loader, key, aCallbackArgument);
+      value = callCacheLoader(loader, key, aCallbackArgument, preferCD);
 
       if (value != null) {
         try {

@@ -24,8 +24,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;

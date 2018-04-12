@@ -83,8 +83,8 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
   @Override
   protected void process(ClusterDistributionManager dm) {
     try {
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{}: processing message {}", getClass().getName(), this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{}: processing message {}", getClass().getName(), this);
       }
 
       IdentityReplyMessage.send(getSender(), getProcessorId(), dm);
@@ -193,23 +193,24 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
     @Override
     protected void process(final ClusterDistributionManager dm) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} process invoking reply processor with processorId:{}",
-            getClass().getName(), this.processorId);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
+            "{} process invoking reply processor with processorId:{}", getClass().getName(),
+            this.processorId);
       }
 
       ReplyProcessor21 processor = ReplyProcessor21.getProcessor(this.processorId);
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "Processor not found: {}", getClass().getName());
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "Processor not found: {}", getClass().getName());
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} Processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} Processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
@@ -287,8 +288,8 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
               }
             }
           }
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "{} return value is {}", getClass().getName(),
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "{} return value is {}", getClass().getName(),
                 this.returnValue);
           }
         }

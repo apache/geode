@@ -188,8 +188,8 @@ public class InvalidateMessage extends DestroyMessage {
           r.getDataView().invalidateOnRemote(event, true/* invokeCallbacks */,
               false/* forceNewEntry */);
           this.versionTag = event.getVersionTag();
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "{} invalidateLocally in bucket: {}, key: {}",
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "{} invalidateLocally in bucket: {}, key: {}",
                 getClass().getName(), bucket, key);
           }
         } catch (DataLocationException e) {
@@ -281,15 +281,15 @@ public class InvalidateMessage extends DestroyMessage {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "InvalidateReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
 
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "InvalidateReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "InvalidateReplyMessage processor not found");
         }
         return;
       }
@@ -299,8 +299,8 @@ public class InvalidateMessage extends DestroyMessage {
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", rp, this);
       }
 
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);

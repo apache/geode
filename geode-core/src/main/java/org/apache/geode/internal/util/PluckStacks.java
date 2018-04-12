@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.geode.management.internal.cli.commands.ExportStackTraceCommand;
@@ -78,7 +79,7 @@ public class PluckStacks {
     }
 
     try {
-      Map<String, List<ThreadStack>> dumps = getThreadDumps(reader, log.getName());
+      TreeMap<String, List<ThreadStack>> dumps = getThreadDumps(reader, log.getName());
 
       StringBuffer buffer = new StringBuffer();
       for (Map.Entry<String, List<ThreadStack>> dump : dumps.entrySet()) {
@@ -103,9 +104,9 @@ public class PluckStacks {
     }
   }
 
-  public Map<String, List<ThreadStack>> getThreadDumps(LineNumberReader reader,
+  public TreeMap<String, List<ThreadStack>> getThreadDumps(LineNumberReader reader,
       String logFileName) {
-    Map<String, List<ThreadStack>> result = new HashMap<>();
+    TreeMap<String, List<ThreadStack>> result = new TreeMap<>();
 
     String line = null;
     int stackNumber = 1;

@@ -31,6 +31,8 @@ import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -73,5 +75,16 @@ public class PdxInstanceLoaderIntegrationTest {
         .setCacheLoader(new PdxInstanceLoader()).create("region");
     Object obj = region.get("key");
     assertThat(obj).isInstanceOf(PdxInstance.class);
+  }
+
+  @Test
+  public void loadOfPdxInstanceWithPreferCDReturnsCachedDeserializable() {
+    cache = new CacheFactory().set(MCAST_PORT, "0").setPdxReadSerialized(false).create();
+    LocalRegion region = (LocalRegion) cache.createRegionFactory(RegionShortcut.LOCAL)
+        .setCacheLoader(new PdxInstanceLoader()).create("region");
+
+    Object obj = region.get("key", null, true, true, true, null, null, false);
+
+    assertThat(obj).isInstanceOf(CachedDeserializable.class);
   }
 }

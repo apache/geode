@@ -21,7 +21,6 @@ import java.util.*;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.*;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.*;
 
 public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
@@ -152,6 +151,6 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     this.attributes = (RemoteRegionAttributes) DataSerializer.readObject(in);
     this.entryCount = in.readInt();
     this.subregionCount = in.readInt();
-    this.userAttribute = InternalDataSerializer.readUserObject(in);
+    this.userAttribute = DataSerializer.readObject(in);
   }
 }

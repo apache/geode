@@ -60,7 +60,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
@@ -158,9 +157,6 @@ public class ConnectCommandWithSSLTest {
 
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
-
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private static MemberVM locator;
   private OutputStream out = null;

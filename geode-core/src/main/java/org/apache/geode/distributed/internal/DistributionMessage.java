@@ -335,10 +335,6 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     return dm.getExecutor(getProcessorType(), sender);
   }
 
-  // private Executor getExecutor(DistributionManager dm, Class clazz) {
-  // return dm.getExecutor(getProcessorType());
-  // }
-
   public abstract int getProcessorType();
 
   /**
@@ -352,8 +348,8 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * Scheduled action to take when on this message when we are ready to process it.
    */
   protected void scheduleAction(final ClusterDistributionManager dm) {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "Processing '{}'", this);
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "Processing '{}'", this);
     }
     String reason = dm.getCancelCriterion().cancelInProgress();
     if (reason != null) {

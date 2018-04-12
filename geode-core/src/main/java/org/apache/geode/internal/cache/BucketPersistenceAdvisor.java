@@ -127,13 +127,13 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   protected void logWaitingForMember(Set<PersistentMemberID> allMembersToWaitFor,
       Set<PersistentMemberID> offlineMembersToWaitFor) {
     // We only log the bucket level information at fine level.
-    if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
+    if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
       Set<String> membersToWaitForPrettyFormat = new HashSet<String>();
 
       if (offlineMembersToWaitFor != null && !offlineMembersToWaitFor.isEmpty()) {
         TransformUtils.transform(offlineMembersToWaitFor, membersToWaitForPrettyFormat,
             TransformUtils.persistentMemberIdToLogEntryTransformer);
-        logger.info(LogMarker.PERSIST_ADVISOR, LocalizedMessage.create(
+        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, LocalizedMessage.create(
             LocalizedStrings.BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER,
             new Object[] {proxyBucket.getPartitionedRegion().getFullPath(),
                 proxyBucket.getBucketId(),
@@ -143,10 +143,10 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
         TransformUtils.transform(allMembersToWaitFor, membersToWaitForPrettyFormat,
             TransformUtils.persistentMemberIdToLogEntryTransformer);
         if (logger.isDebugEnabled()) {
-          logger.debug(LogMarker.PERSIST_ADVISOR,
+          logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
               "All persistent members being waited on are online, but they have not yet initialized");
         }
-        logger.info(LogMarker.PERSIST_ADVISOR, LocalizedMessage.create(
+        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, LocalizedMessage.create(
             LocalizedStrings.BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER,
             new Object[] {proxyBucket.getPartitionedRegion().getFullPath(),
                 proxyBucket.getBucketId(),
@@ -166,8 +166,8 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
       // the delock.
       if (!proxyBucket.hasPersistentChildRegion()
           && !proxyBucket.checkBucketRedundancyBeforeGrab(null, false)) {
-        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR,
+        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
+          logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
               "{}-{}: After reacquiring dlock, we detected that redundancy is already satisfied",
               shortDiskStoreId(), regionPath);
         }
@@ -405,8 +405,8 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   @Override
   public void setInitializing(PersistentMemberID newId) {
     if (atomicCreation) {
-      if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-        logger.debug(LogMarker.PERSIST_ADVISOR,
+      if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
+        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
             "{}-{}: {} Deferring setInitializing until the EndBucketCreation phase for {}",
             shortDiskStoreId(), regionPath, regionPath, newId);
       }
@@ -427,8 +427,8 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
     // is called, we will pass the "wasAtomicCreation" flag down to the super
     // class to ensure that it knows its coming online as part of an atomic creation.
     if (this.atomicCreation) {
-      if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-        logger.debug(LogMarker.PERSIST_ADVISOR,
+      if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
+        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
             "{}-{}: {} Deferring setOnline until the EndBucketCreation phase for {}",
             shortDiskStoreId(), regionPath, regionPath, newId);
       }
@@ -444,16 +444,16 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   public void endBucketCreation(PersistentMemberID newId) {
     synchronized (lock) {
       if (!atomicCreation) {
-        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR,
+        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
+          logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
               "{}-{}: {} In endBucketCreation - already online, skipping (possible concurrent endBucketCreation)",
               shortDiskStoreId(), regionPath, regionPath);
         }
         return;
       }
 
-      if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-        logger.debug(LogMarker.PERSIST_ADVISOR,
+      if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
+        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
             "{}-{}: {} In endBucketCreation - now persisting the id {}", shortDiskStoreId(),
             regionPath, regionPath, newId);
       }

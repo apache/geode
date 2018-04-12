@@ -131,7 +131,8 @@ dependencies {
   jcaCompile sourceSets.main.output
 
   testCompile project(':geode-junit')
-  testCompile project(':geode-old-versions')
+
+  testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
   // Test Dependencies
   // External

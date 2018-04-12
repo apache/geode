@@ -59,6 +59,7 @@ dependencies {
   testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
 
   testRuntime files(war.destinationDir)
+  testCompile files(project(':geode-old-versions').sourceSets.main.output)
 }
 
 //Remove the gradle output directories from the eclipse classpath. These

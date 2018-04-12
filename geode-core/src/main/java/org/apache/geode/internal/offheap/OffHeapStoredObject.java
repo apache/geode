@@ -290,7 +290,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
         if (this.isSerialized()) {
           hdos.write(bb);
         } else {
-          hdos.writeByte(DSCODE.BYTE_ARRAY);
+          hdos.writeByte(DSCODE.BYTE_ARRAY.toByte());
           InternalDataSerializer.writeArrayLength(bb.remaining(), hdos);
           hdos.write(bb);
         }

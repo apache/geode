@@ -1767,8 +1767,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         } else if (type.equals(RANGE_INDEX_TYPE)) {
           icd.setIndexData(IndexType.FUNCTIONAL, fromClause, expression, importStr);
         } else {
-          logger.trace(LogMarker.CACHE_XML_PARSER,
-              LocalizedMessage.create(LocalizedStrings.CacheXmlParser_UNKNOWN_INDEX_TYPE, type));
+          if (logger.isTraceEnabled(LogMarker.CACHE_XML_PARSER_VERBOSE)) {
+            logger.trace(LogMarker.CACHE_XML_PARSER_VERBOSE,
+                LocalizedMessage.create(LocalizedStrings.CacheXmlParser_UNKNOWN_INDEX_TYPE, type));
+          }
           icd.setIndexData(IndexType.FUNCTIONAL, fromClause, expression, importStr);
         }
       }
@@ -1940,12 +1942,16 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       props.put(param.getName(), param.getValue());
       top = stack.pop();
     }
-    logger.trace(LogMarker.CACHE_XML_PARSER, LocalizedMessage
-        .create(LocalizedStrings.CacheXmlParser_XML_PARSER_CREATEDECLARABLE_PROPERTIES__0, props));
+    if (logger.isTraceEnabled(LogMarker.CACHE_XML_PARSER_VERBOSE)) {
+      logger.trace(LogMarker.CACHE_XML_PARSER_VERBOSE, LocalizedMessage.create(
+          LocalizedStrings.CacheXmlParser_XML_PARSER_CREATEDECLARABLE_PROPERTIES__0, props));
+    }
     Assert.assertTrue(top instanceof String);
     String className = (String) top;
-    logger.trace(LogMarker.CACHE_XML_PARSER, LocalizedMessage.create(
-        LocalizedStrings.CacheXmlParser_XML_PARSER_CREATEDECLARABLE_CLASS_NAME_0, className));
+    if (logger.isTraceEnabled(LogMarker.CACHE_XML_PARSER_VERBOSE)) {
+      logger.trace(LogMarker.CACHE_XML_PARSER_VERBOSE, LocalizedMessage.create(
+          LocalizedStrings.CacheXmlParser_XML_PARSER_CREATEDECLARABLE_CLASS_NAME_0, className));
+    }
     Class c;
     try {
       c = InternalDataSerializer.getCachedClass(className);
@@ -3300,16 +3306,20 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       if (o instanceof StringBuffer) {
         chars = (StringBuffer) o;
         chars.append(ch, start, length);
-        logger.trace(LogMarker.CACHE_XML_PARSER,
-            LocalizedMessage.create(
-                LocalizedStrings.CacheXmlParser_XML_PARSER_CHARACTERS_APPENDED_CHARACTER_DATA_0,
-                chars));
+        if (logger.isTraceEnabled(LogMarker.CACHE_XML_PARSER_VERBOSE)) {
+          logger.trace(LogMarker.CACHE_XML_PARSER_VERBOSE,
+              LocalizedMessage.create(
+                  LocalizedStrings.CacheXmlParser_XML_PARSER_CHARACTERS_APPENDED_CHARACTER_DATA_0,
+                  chars));
+        }
       } else {
         chars = new StringBuffer(length);
         chars.append(ch, start, length);
         stack.push(chars);
-        logger.trace(LogMarker.CACHE_XML_PARSER, LocalizedMessage.create(
-            LocalizedStrings.CacheXmlParser_XML_PARSER_CHARACTERS_NEW_CHARACTER_DATA_0, chars));
+        if (logger.isTraceEnabled(LogMarker.CACHE_XML_PARSER_VERBOSE)) {
+          logger.trace(LogMarker.CACHE_XML_PARSER_VERBOSE, LocalizedMessage.create(
+              LocalizedStrings.CacheXmlParser_XML_PARSER_CHARACTERS_NEW_CHARACTER_DATA_0, chars));
+        }
       }
     }
   }

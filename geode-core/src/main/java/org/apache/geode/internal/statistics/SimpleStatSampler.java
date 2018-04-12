@@ -65,7 +65,7 @@ public class SimpleStatSampler extends HostStatSampler {
   public SimpleStatSampler(CancelCriterion stopper, StatisticsManager sm, NanoTimer timer) {
     super(stopper, new StatSamplerStats(sm, sm.getId()), timer);
     this.sm = sm;
-    logger.info(LogMarker.STATISTICS, LocalizedMessage
+    logger.info(LogMarker.STATISTICS_MARKER, LocalizedMessage
         .create(LocalizedStrings.SimpleStatSampler_STATSSAMPLERATE_0, getSampleRate()));
   }
 

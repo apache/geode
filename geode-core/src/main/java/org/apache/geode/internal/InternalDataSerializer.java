@@ -130,7 +130,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *
  * @since GemFire 3.5
  */
-public abstract class InternalDataSerializer extends DataSerializer implements DSCODE {
+public abstract class InternalDataSerializer extends DataSerializer {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -186,6 +186,9 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
           // jar deployment
           + ";com.sun.proxy.$Proxy*" + ";com.healthmarketscience.rmiio.RemoteInputStream"
+          + ";javax.rmi.ssl.SslRMIClientSocketFactory" + ";javax.net.ssl.SSLHandshakeException"
+          + ";javax.net.ssl.SSLException;sun.security.validator.ValidatorException"
+          + ";sun.security.provider.certpath.SunCertPathBuilderException"
 
           // geode-modules
           + ";org.apache.geode.modules.util.SessionCustomExpiry" + ";";
@@ -383,7 +386,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         InetAddress address = (InetAddress) o;
-        out.writeByte(INET_ADDRESS);
+        out.writeByte(DSCODE.INET_ADDRESS.toByte());
         writeInetAddress(address, out);
         return true;
       }
@@ -392,7 +395,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         InetAddress address = (InetAddress) o;
-        out.writeByte(INET_ADDRESS);
+        out.writeByte(DSCODE.INET_ADDRESS.toByte());
         writeInetAddress(address, out);
         return true;
       }
@@ -401,7 +404,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         InetAddress address = (InetAddress) o;
-        out.writeByte(INET_ADDRESS);
+        out.writeByte(DSCODE.INET_ADDRESS.toByte());
         writeInetAddress(address, out);
         return true;
       }
@@ -413,7 +416,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         if (c.isPrimitive()) {
           writePrimitiveClass(c, out);
         } else {
-          out.writeByte(CLASS);
+          out.writeByte(DSCODE.CLASS.toByte());
           writeClass(c, out);
         }
         return true;
@@ -423,7 +426,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Boolean value = (Boolean) o;
-        out.writeByte(BOOLEAN);
+        out.writeByte(DSCODE.BOOLEAN.toByte());
         writeBoolean(value, out);
         return true;
       }
@@ -432,7 +435,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Character value = (Character) o;
-        out.writeByte(CHARACTER);
+        out.writeByte(DSCODE.CHARACTER.toByte());
         writeCharacter(value, out);
         return true;
       }
@@ -441,7 +444,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Byte value = (Byte) o;
-        out.writeByte(BYTE);
+        out.writeByte(DSCODE.BYTE.toByte());
         writeByte(value, out);
         return true;
       }
@@ -450,7 +453,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Short value = (Short) o;
-        out.writeByte(SHORT);
+        out.writeByte(DSCODE.SHORT.toByte());
         writeShort(value, out);
         return true;
       }
@@ -459,7 +462,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Integer value = (Integer) o;
-        out.writeByte(INTEGER);
+        out.writeByte(DSCODE.INTEGER.toByte());
         writeInteger(value, out);
         return true;
       }
@@ -468,7 +471,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Long value = (Long) o;
-        out.writeByte(LONG);
+        out.writeByte(DSCODE.LONG.toByte());
         writeLong(value, out);
         return true;
       }
@@ -477,7 +480,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Float value = (Float) o;
-        out.writeByte(FLOAT);
+        out.writeByte(DSCODE.FLOAT.toByte());
         writeFloat(value, out);
         return true;
       }
@@ -486,7 +489,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Double value = (Double) o;
-        out.writeByte(DOUBLE);
+        out.writeByte(DSCODE.DOUBLE.toByte());
         writeDouble(value, out);
         return true;
       }
@@ -495,7 +498,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         new WellKnownPdxDS() {
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
-            out.writeByte(BOOLEAN_ARRAY);
+            out.writeByte(DSCODE.BOOLEAN_ARRAY.toByte());
             writeBooleanArray((boolean[]) o, out);
             return true;
           }
@@ -505,7 +508,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             byte[] array = (byte[]) o;
-            out.writeByte(BYTE_ARRAY);
+            out.writeByte(DSCODE.BYTE_ARRAY.toByte());
             writeByteArray(array, out);
             return true;
           }
@@ -514,7 +517,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         new WellKnownPdxDS() {
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
-            out.writeByte(CHAR_ARRAY);
+            out.writeByte(DSCODE.CHAR_ARRAY.toByte());
             writeCharArray((char[]) o, out);
             return true;
           }
@@ -524,7 +527,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             double[] array = (double[]) o;
-            out.writeByte(DOUBLE_ARRAY);
+            out.writeByte(DSCODE.DOUBLE_ARRAY.toByte());
             writeDoubleArray(array, out);
             return true;
           }
@@ -534,7 +537,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             float[] array = (float[]) o;
-            out.writeByte(FLOAT_ARRAY);
+            out.writeByte(DSCODE.FLOAT_ARRAY.toByte());
             writeFloatArray(array, out);
             return true;
           }
@@ -544,7 +547,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             int[] array = (int[]) o;
-            out.writeByte(INT_ARRAY);
+            out.writeByte(DSCODE.INT_ARRAY.toByte());
             writeIntArray(array, out);
             return true;
           }
@@ -554,7 +557,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             long[] array = (long[]) o;
-            out.writeByte(LONG_ARRAY);
+            out.writeByte(DSCODE.LONG_ARRAY.toByte());
             writeLongArray(array, out);
             return true;
           }
@@ -564,7 +567,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             short[] array = (short[]) o;
-            out.writeByte(SHORT_ARRAY);
+            out.writeByte(DSCODE.SHORT_ARRAY.toByte());
             writeShortArray(array, out);
             return true;
           }
@@ -574,7 +577,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           @Override
           public boolean toData(Object o, DataOutput out) throws IOException {
             String[] array = (String[]) o;
-            out.writeByte(STRING_ARRAY);
+            out.writeByte(DSCODE.STRING_ARRAY.toByte());
             writeStringArray(array, out);
             return true;
           }
@@ -582,7 +585,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put(TimeUnit.NANOSECONDS.getClass().getName(), new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TIME_UNIT);
+        out.writeByte(DSCODE.TIME_UNIT.toByte());
         out.writeByte(TIME_UNIT_NANOSECONDS);
         return true;
       }
@@ -590,7 +593,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put(TimeUnit.MICROSECONDS.getClass().getName(), new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TIME_UNIT);
+        out.writeByte(DSCODE.TIME_UNIT.toByte());
         out.writeByte(TIME_UNIT_MICROSECONDS);
         return true;
       }
@@ -598,7 +601,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put(TimeUnit.MILLISECONDS.getClass().getName(), new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TIME_UNIT);
+        out.writeByte(DSCODE.TIME_UNIT.toByte());
         out.writeByte(TIME_UNIT_MILLISECONDS);
         return true;
       }
@@ -606,7 +609,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put(TimeUnit.SECONDS.getClass().getName(), new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TIME_UNIT);
+        out.writeByte(DSCODE.TIME_UNIT.toByte());
         out.writeByte(TIME_UNIT_SECONDS);
         return true;
       }
@@ -615,7 +618,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Date date = (Date) o;
-        out.writeByte(DATE);
+        out.writeByte(DSCODE.DATE.toByte());
         writeDate(date, out);
         return true;
       }
@@ -624,7 +627,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         File file = (File) o;
-        out.writeByte(FILE);
+        out.writeByte(DSCODE.FILE.toByte());
         writeFile(file, out);
         return true;
       }
@@ -633,7 +636,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         ArrayList list = (ArrayList) o;
-        out.writeByte(ARRAY_LIST);
+        out.writeByte(DSCODE.ARRAY_LIST.toByte());
         writeArrayList(list, out);
         return true;
       }
@@ -642,7 +645,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         LinkedList list = (LinkedList) o;
-        out.writeByte(LINKED_LIST);
+        out.writeByte(DSCODE.LINKED_LIST.toByte());
         writeLinkedList(list, out);
         return true;
       }
@@ -650,7 +653,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.Vector", new WellKnownPdxDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(VECTOR);
+        out.writeByte(DSCODE.VECTOR.toByte());
         writeVector((Vector) o, out);
         return true;
       }
@@ -658,7 +661,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.Stack", new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(STACK);
+        out.writeByte(DSCODE.STACK.toByte());
         writeStack((Stack) o, out);
         return true;
       }
@@ -667,7 +670,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         HashSet list = (HashSet) o;
-        out.writeByte(HASH_SET);
+        out.writeByte(DSCODE.HASH_SET.toByte());
         writeHashSet(list, out);
         return true;
       }
@@ -675,7 +678,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.LinkedHashSet", new WellKnownPdxDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(LINKED_HASH_SET);
+        out.writeByte(DSCODE.LINKED_HASH_SET.toByte());
         writeLinkedHashSet((LinkedHashSet) o, out);
         return true;
       }
@@ -684,7 +687,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         HashMap list = (HashMap) o;
-        out.writeByte(HASH_MAP);
+        out.writeByte(DSCODE.HASH_MAP.toByte());
         writeHashMap(list, out);
         return true;
       }
@@ -692,7 +695,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.IdentityHashMap", new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(IDENTITY_HASH_MAP);
+        out.writeByte(DSCODE.IDENTITY_HASH_MAP.toByte());
         writeIdentityHashMap((IdentityHashMap) o, out);
         return true;
       }
@@ -700,7 +703,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.Hashtable", new WellKnownPdxDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(HASH_TABLE);
+        out.writeByte(DSCODE.HASH_TABLE.toByte());
         writeHashtable((Hashtable) o, out);
         return true;
       }
@@ -709,7 +712,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
         Properties props = (Properties) o;
-        out.writeByte(PROPERTIES);
+        out.writeByte(DSCODE.PROPERTIES.toByte());
         writeProperties(props, out);
         return true;
       }
@@ -717,7 +720,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.TreeMap", new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TREE_MAP);
+        out.writeByte(DSCODE.TREE_MAP.toByte());
         writeTreeMap((TreeMap) o, out);
         return true;
       }
@@ -725,7 +728,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     classesToSerializers.put("java.util.TreeSet", new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(TREE_SET);
+        out.writeByte(DSCODE.TREE_SET.toByte());
         writeTreeSet((TreeSet) o, out);
         return true;
       }
@@ -734,7 +737,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       classesToSerializers.put("java.math.BigInteger", new WellKnownDS() {
         @Override
         public boolean toData(Object o, DataOutput out) throws IOException {
-          out.writeByte(BIG_INTEGER);
+          out.writeByte(DSCODE.BIG_INTEGER.toByte());
           writeBigInteger((BigInteger) o, out);
           return true;
         }
@@ -742,7 +745,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       classesToSerializers.put("java.math.BigDecimal", new WellKnownDS() {
         @Override
         public boolean toData(Object o, DataOutput out) throws IOException {
-          out.writeByte(BIG_DECIMAL);
+          out.writeByte(DSCODE.BIG_DECIMAL.toByte());
           writeBigDecimal((BigDecimal) o, out);
           return true;
         }
@@ -750,7 +753,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       classesToSerializers.put("java.util.UUID", new WellKnownDS() {
         @Override
         public boolean toData(Object o, DataOutput out) throws IOException {
-          out.writeByte(UUID);
+          out.writeByte(DSCODE.UUID.toByte());
           writeUUID((UUID) o, out);
           return true;
         }
@@ -758,7 +761,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       classesToSerializers.put("java.sql.Timestamp", new WellKnownDS() {
         @Override
         public boolean toData(Object o, DataOutput out) throws IOException {
-          out.writeByte(TIMESTAMP);
+          out.writeByte(DSCODE.TIMESTAMP.toByte());
           writeTimestamp((Timestamp) o, out);
           return true;
         }
@@ -1148,8 +1151,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       Part.encodeInt(dataSerializer.getId(), idBytes);
       serializedDataSerializer[1] = idBytes;
     } catch (IOException ignored) {
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER,
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE,
             "InternalDataSerializer encountered an IOException while serializing DataSerializer :{}",
             dataSerializer);
       }
@@ -1229,7 +1232,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           }
           return serializer;
         } catch (ClassNotFoundException ignored) {
-          logger.info(LogMarker.SERIALIZER,
+          logger.info(LogMarker.SERIALIZER_MARKER,
               LocalizedMessage.create(
                   LocalizedStrings.InternalDataSerializer_COULD_NOT_LOAD_DATASERIALIZER_CLASS_0,
                   dsClass));
@@ -1277,7 +1280,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           }
           return ds;
         } catch (ClassNotFoundException ignored) {
-          logger.info(LogMarker.SERIALIZER,
+          logger.info(LogMarker.SERIALIZER_MARKER,
               LocalizedMessage.create(
                   LocalizedStrings.InternalDataSerializer_COULD_NOT_LOAD_DATASERIALIZER_CLASS_0,
                   dsClass));
@@ -1323,7 +1326,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           supportedClassesToHolders.remove(clazz.getName());
         }
       } catch (ClassNotFoundException ignored) {
-        logger.info(LogMarker.SERIALIZER, LocalizedMessage.create(
+        logger.info(LogMarker.SERIALIZER_MARKER, LocalizedMessage.create(
             LocalizedStrings.InternalDataSerializer_COULD_NOT_LOAD_DATASERIALIZER_CLASS_0, name));
       }
     }
@@ -1384,7 +1387,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         try {
           dsClass = getCachedClass(iterator.next().getKey());
         } catch (ClassNotFoundException ignored) {
-          logger.info(LogMarker.SERIALIZER,
+          logger.info(LogMarker.SERIALIZER_MARKER,
               LocalizedMessage.create(
                   LocalizedStrings.InternalDataSerializer_COULD_NOT_LOAD_DATASERIALIZER_CLASS_0,
                   dsClass));
@@ -1494,21 +1497,23 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
               .toLocalizedString());
     }
     if (dsfid <= Byte.MAX_VALUE && dsfid >= Byte.MIN_VALUE) {
-      out.writeByte(DS_FIXED_ID_BYTE);
+      out.writeByte(DSCODE.DS_FIXED_ID_BYTE.toByte());
       out.writeByte(dsfid);
     } else if (dsfid <= Short.MAX_VALUE && dsfid >= Short.MIN_VALUE) {
-      out.writeByte(DS_FIXED_ID_SHORT);
+      out.writeByte(DSCODE.DS_FIXED_ID_SHORT.toByte());
       out.writeShort(dsfid);
     } else {
-      out.writeByte(DS_FIXED_ID_INT);
+      out.writeByte(DSCODE.DS_FIXED_ID_INT.toByte());
       out.writeInt(dsfid);
     }
   }
 
   public static void writeDSFID(DataSerializableFixedID o, DataOutput out) throws IOException {
     int dsfid = o.getDSFID();
-    if (dsfidToClassMap != null && logger.isTraceEnabled(LogMarker.DEBUG_DSFID)) {
-      logger.trace(LogMarker.DEBUG_DSFID, "writeDSFID {} class={}", dsfid, o.getClass());
+    if (dsfidToClassMap != null
+        && logger.isTraceEnabled(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE, "writeDSFID {} class={}", dsfid,
+          o.getClass());
       if (dsfid != DataSerializableFixedID.NO_FIXED_ID
           && dsfid != DataSerializableFixedID.ILLEGAL) {
         // consistency check to make sure that the same DSFID is not used
@@ -1516,13 +1521,13 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         String newClassName = o.getClass().getName();
         String existingClassName = (String) dsfidToClassMap.putIfAbsent(dsfid, newClassName);
         if (existingClassName != null && !existingClassName.equals(newClassName)) {
-          logger.trace(LogMarker.DEBUG_DSFID, "dsfid={} is used for class {} and class {}", dsfid,
-              existingClassName, newClassName);
+          logger.trace(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE,
+              "dsfid={} is used for class {} and class {}", dsfid, existingClassName, newClassName);
         }
       }
     }
     if (dsfid == DataSerializableFixedID.NO_FIXED_ID) {
-      out.writeByte(DS_NO_FIXED_ID);
+      out.writeByte(DSCODE.DS_NO_FIXED_ID.toByte());
       DataSerializer.writeClass(o.getClass(), out);
     } else {
       writeDSFIDHeader(dsfid, out);
@@ -1579,13 +1584,13 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         checkPdxCompatible(o, ensurePdxCompatibility);
         // id will be 0 if it is a WellKnowDS
         if (id <= Byte.MAX_VALUE && id >= Byte.MIN_VALUE) {
-          out.writeByte(USER_CLASS);
+          out.writeByte(DSCODE.USER_CLASS.toByte());
           out.writeByte((byte) id);
         } else if (id <= Short.MAX_VALUE && id >= Short.MIN_VALUE) {
-          out.writeByte(USER_CLASS_2);
+          out.writeByte(DSCODE.USER_CLASS_2.toByte());
           out.writeShort(id);
         } else {
-          out.writeByte(USER_CLASS_4);
+          out.writeByte(DSCODE.USER_CLASS_4.toByte());
           out.writeInt(id);
         }
       } else {
@@ -1639,12 +1644,12 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       // Do byte[][] and Object[] here to fix bug 44060
     } else if (o instanceof byte[][]) {
       byte[][] byteArrays = (byte[][]) o;
-      out.writeByte(ARRAY_OF_BYTE_ARRAYS);
+      out.writeByte(DSCODE.ARRAY_OF_BYTE_ARRAYS.toByte());
       writeArrayOfByteArrays(byteArrays, out);
       return true;
     } else if (o instanceof Object[]) {
       Object[] array = (Object[]) o;
-      out.writeByte(OBJECT_ARRAY);
+      out.writeByte(DSCODE.OBJECT_ARRAY.toByte());
       writeObjectArray(array, out, ensurePdxCompatibility);
       return true;
     } else if (is662SerializationEnabled()
@@ -1749,7 +1754,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    *
    * @throws IOException If the serializer that can deserialize the object is not registered.
    */
-  private static Object readUserClass(DataInput in, int serializerId)
+  private static Object readUserObject(DataInput in, int serializerId)
       throws IOException, ClassNotFoundException {
     DataSerializer serializer = InternalDataSerializer.getSerializer(serializerId);
 
@@ -1808,8 +1813,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       size = set.size();
     }
     writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing HashSet with {} elements: {}", size, set);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing HashSet with {} elements: {}", size, set);
     }
     if (size > 0) {
       for (Object element : set) {
@@ -1854,8 +1859,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         c.add(element);
       }
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read Collection with {} elements: {}", size, c);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Collection with {} elements: {}", size, c);
       }
       return true;
     }
@@ -1951,25 +1956,25 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    */
   public static void writePrimitiveClass(Class c, DataOutput out) throws IOException {
     if (c == Boolean.TYPE) {
-      out.writeByte(BOOLEAN_TYPE);
+      out.writeByte(DSCODE.BOOLEAN_TYPE.toByte());
     } else if (c == Character.TYPE) {
-      out.writeByte(CHARACTER_TYPE);
+      out.writeByte(DSCODE.CHARACTER_TYPE.toByte());
     } else if (c == Byte.TYPE) {
-      out.writeByte(BYTE_TYPE);
+      out.writeByte(DSCODE.BYTE_TYPE.toByte());
     } else if (c == Short.TYPE) {
-      out.writeByte(SHORT_TYPE);
+      out.writeByte(DSCODE.SHORT_TYPE.toByte());
     } else if (c == Integer.TYPE) {
-      out.writeByte(INTEGER_TYPE);
+      out.writeByte(DSCODE.INTEGER_TYPE.toByte());
     } else if (c == Long.TYPE) {
-      out.writeByte(LONG_TYPE);
+      out.writeByte(DSCODE.LONG_TYPE.toByte());
     } else if (c == Float.TYPE) {
-      out.writeByte(FLOAT_TYPE);
+      out.writeByte(DSCODE.FLOAT_TYPE.toByte());
     } else if (c == Double.TYPE) {
-      out.writeByte(DOUBLE_TYPE);
+      out.writeByte(DSCODE.DOUBLE_TYPE.toByte());
     } else if (c == Void.TYPE) {
-      out.writeByte(VOID_TYPE);
+      out.writeByte(DSCODE.VOID_TYPE.toByte());
     } else if (c == null) {
-      out.writeByte(NULL);
+      out.writeByte(DSCODE.NULL.toByte());
     } else {
       throw new InternalGemFireError(
           LocalizedStrings.InternalDataSerializer_UNKNOWN_PRIMITIVE_TYPE_0
@@ -1978,31 +1983,38 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
 
   public static Class decodePrimitiveClass(byte typeCode) {
-    switch (typeCode) {
-      case BOOLEAN_TYPE:
-        return Boolean.TYPE;
-      case CHARACTER_TYPE:
-        return Character.TYPE;
-      case BYTE_TYPE:
-        return Byte.TYPE;
-      case SHORT_TYPE:
-        return Short.TYPE;
-      case INTEGER_TYPE:
-        return Integer.TYPE;
-      case LONG_TYPE:
-        return Long.TYPE;
-      case FLOAT_TYPE:
-        return Float.TYPE;
-      case DOUBLE_TYPE:
-        return Double.TYPE;
-      case VOID_TYPE:
-        return Void.TYPE;
-      case NULL:
-        return null;
-      default:
-        throw new InternalGemFireError(LocalizedStrings.InternalDataSerializer_UNEXPECTED_TYPECODE_0
-            .toLocalizedString(typeCode));
+    if (typeCode == DSCODE.BOOLEAN_TYPE.toByte()) {
+      return Boolean.TYPE;
     }
+    if (typeCode == DSCODE.CHARACTER_TYPE.toByte()) {
+      return Character.TYPE;
+    }
+    if (typeCode == DSCODE.BYTE_TYPE.toByte()) {
+      return Byte.TYPE;
+    }
+    if (typeCode == DSCODE.SHORT_TYPE.toByte()) {
+      return Short.TYPE;
+    }
+    if (typeCode == DSCODE.INTEGER_TYPE.toByte()) {
+      return Integer.TYPE;
+    }
+    if (typeCode == DSCODE.LONG_TYPE.toByte()) {
+      return Long.TYPE;
+    }
+    if (typeCode == DSCODE.FLOAT_TYPE.toByte()) {
+      return Float.TYPE;
+    }
+    if (typeCode == DSCODE.DOUBLE_TYPE.toByte()) {
+      return Double.TYPE;
+    }
+    if (typeCode == DSCODE.VOID_TYPE.toByte()) {
+      return Void.TYPE;
+    }
+    if (typeCode == DSCODE.NULL.toByte()) {
+      return null;
+    }
+    throw new InternalGemFireError(
+        LocalizedStrings.InternalDataSerializer_UNEXPECTED_TYPECODE_0.toLocalizedString(typeCode));
   }
 
   private static final byte TIME_UNIT_NANOSECONDS = -1;
@@ -2039,8 +2051,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
             LocalizedStrings.DataSerializer_UNKNOWN_TIMEUNIT_TYPE_0.toLocalizedString(type));
     }
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read TimeUnit: {}", unit);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read TimeUnit: {}", unit);
     }
 
     return unit;
@@ -2049,8 +2061,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static void writeTimestamp(Timestamp o, DataOutput out) throws IOException {
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Timestamp: {}", o);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Timestamp: {}", o);
     }
     DataSerializer.writePrimitiveLong(o.getTime(), out);
   }
@@ -2058,8 +2070,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static Timestamp readTimestamp(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
     Timestamp result = new Timestamp(DataSerializer.readPrimitiveLong(in));
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read Timestamp: {}", result);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Timestamp: {}", result);
     }
     return result;
   }
@@ -2067,8 +2079,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static void writeUUID(java.util.UUID o, DataOutput out) throws IOException {
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing UUID: {}", o);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing UUID: {}", o);
     }
     DataSerializer.writePrimitiveLong(o.getMostSignificantBits(), out);
     DataSerializer.writePrimitiveLong(o.getLeastSignificantBits(), out);
@@ -2079,8 +2091,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     long mb = DataSerializer.readPrimitiveLong(in);
     long lb = DataSerializer.readPrimitiveLong(in);
     UUID result = new UUID(mb, lb);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read UUID: {}", result);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read UUID: {}", result);
     }
     return result;
   }
@@ -2088,8 +2100,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static void writeBigDecimal(BigDecimal o, DataOutput out) throws IOException {
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing BigDecimal: {}", o);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing BigDecimal: {}", o);
     }
     DataSerializer.writeString(o.toString(), out);
   }
@@ -2097,8 +2109,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static BigDecimal readBigDecimal(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
     BigDecimal result = new BigDecimal(DataSerializer.readString(in));
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read BigDecimal: {}", result);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read BigDecimal: {}", result);
     }
     return result;
   }
@@ -2106,8 +2118,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static void writeBigInteger(BigInteger o, DataOutput out) throws IOException {
     InternalDataSerializer.checkOut(out);
 
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing BigInteger: {}", o);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing BigInteger: {}", o);
     }
     DataSerializer.writeByteArray(o.toByteArray(), out);
   }
@@ -2115,25 +2127,26 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static BigInteger readBigInteger(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
     BigInteger result = new BigInteger(DataSerializer.readByteArray(in));
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Read BigInteger: {}", result);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read BigInteger: {}", result);
     }
     return result;
   }
 
   private static final ConcurrentMap dsfidToClassMap =
-      logger.isTraceEnabled(LogMarker.DEBUG_DSFID) ? new ConcurrentHashMap() : null;
+      logger.isTraceEnabled(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE) ? new ConcurrentHashMap()
+          : null;
 
   public static void writeUserDataSerializableHeader(int classId, DataOutput out)
       throws IOException {
     if (classId <= Byte.MAX_VALUE && classId >= Byte.MIN_VALUE) {
-      out.writeByte(USER_DATA_SERIALIZABLE);
+      out.writeByte(DSCODE.USER_DATA_SERIALIZABLE.toByte());
       out.writeByte(classId);
     } else if (classId <= Short.MAX_VALUE && classId >= Short.MIN_VALUE) {
-      out.writeByte(USER_DATA_SERIALIZABLE_2);
+      out.writeByte(DSCODE.USER_DATA_SERIALIZABLE_2.toByte());
       out.writeShort(classId);
     } else {
-      out.writeByte(USER_DATA_SERIALIZABLE_4);
+      out.writeByte(DSCODE.USER_DATA_SERIALIZABLE_4.toByte());
       out.writeInt(classId);
     }
   }
@@ -2153,8 +2166,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       length = -1;
     }
     writeArrayLength(length, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing char array of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing char array of length {}", length);
     }
     if (length > 0) {
       for (int i = 0; i < length; i++) {
@@ -2169,21 +2182,21 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @param serializedForm the serialized byte array
    */
   public static boolean isSerializedNull(byte[] serializedForm) {
-    return serializedForm.length == 1 && serializedForm[0] == NULL;
+    return serializedForm.length == 1 && serializedForm[0] == DSCODE.NULL.toByte();
   }
 
   public static void basicWriteObject(Object o, DataOutput out, boolean ensurePdxCompatibility)
       throws IOException {
     checkOut(out);
 
-    final boolean isDebugEnabled_SERIALIZER = logger.isTraceEnabled(LogMarker.SERIALIZER);
+    final boolean isDebugEnabled_SERIALIZER = logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE);
     if (isDebugEnabled_SERIALIZER) {
-      logger.trace(LogMarker.SERIALIZER, "basicWriteObject: {}", o);
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "basicWriteObject: {}", o);
     }
 
     // Handle special objects first
     if (o == null) {
-      out.writeByte(NULL);
+      out.writeByte(DSCODE.NULL.toByte());
 
     } else if (o instanceof DataSerializableFixedID) {
       checkPdxCompatible(o, ensurePdxCompatibility);
@@ -2202,7 +2215,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           .getForPdx("PDX registry is unavailable because the Cache has been closed."), o, null);
     } else if (o instanceof DataSerializable) {
       if (isDebugEnabled_SERIALIZER) {
-        logger.trace(LogMarker.SERIALIZER, "Writing DataSerializable: {}", o);
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing DataSerializable: {}", o);
       }
       checkPdxCompatible(o, ensurePdxCompatibility);
 
@@ -2212,7 +2225,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       if (classId != 0) {
         writeUserDataSerializableHeader(classId, out);
       } else {
-        out.writeByte(DATA_SERIALIZABLE);
+        out.writeByte(DSCODE.DATA_SERIALIZABLE.toByte());
         DataSerializer.writeClass(c, out);
       }
       DataSerializable ds = (DataSerializable) o;
@@ -2227,9 +2240,9 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       // Nothing more to do...
     } else {
       checkPdxCompatible(o, ensurePdxCompatibility);
-      if (logger.isTraceEnabled(LogMarker.DUMP_SERIALIZED)) {
-        logger.trace(LogMarker.DUMP_SERIALIZED, "DataSerializer Serializing an instance of {}",
-            o.getClass().getName());
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_ANNOUNCE_TYPE_WRITTEN_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_ANNOUNCE_TYPE_WRITTEN_VERBOSE,
+            "DataSerializer Serializing an instance of {}", o.getClass().getName());
       }
 
       /*
@@ -2249,7 +2262,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
 
   private static boolean disallowJavaSerialization() {
-    Boolean v = disallowJavaSerializationForThread.get();
+    Boolean v = DISALLOW_JAVA_SERIALIZATION.get();
     return v != null && v;
   }
 
@@ -2261,14 +2274,14 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.")
             .getPdxRegistry();
     int eId = tr.getEnumId(e);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "write PdxEnum id={} enum={}", eId, e);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "write PdxEnum id={} enum={}", eId, e);
     }
     writePdxEnumId(eId, out);
   }
 
   public static void writePdxEnumId(int eId, DataOutput out) throws IOException {
-    out.writeByte(PDX_ENUM);
+    out.writeByte(DSCODE.PDX_ENUM.toByte());
     out.writeByte(eId >> 24);
     writeArrayLength(eId & 0xFFFFFF, out);
   }
@@ -2280,8 +2293,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     int dsId = in.readByte();
     int tmp = readArrayLength(in);
     int enumId = dsId << 24 | tmp & 0xFFFFFF;
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "read PdxEnum id={}", enumId);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "read PdxEnum id={}", enumId);
     }
     InternalCache internalCache = GemFireCacheImpl
         .getForPdx("PDX registry is unavailable because the Cache has been closed.");
@@ -2296,7 +2309,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   private static void writeGemFireEnum(Enum<?> e, DataOutput out) throws IOException {
     boolean isGemFireObject = isGemfireObject(e);
-    DataSerializer.writePrimitiveByte(isGemFireObject ? GEMFIRE_ENUM : PDX_INLINE_ENUM, out);
+    DataSerializer.writePrimitiveByte(
+        isGemFireObject ? DSCODE.GEMFIRE_ENUM.toByte() : DSCODE.PDX_INLINE_ENUM.toByte(), out);
     DataSerializer.writeString(e.getDeclaringClass().getName(), out);
     DataSerializer.writeString(e.name(), out);
     if (!isGemFireObject) {
@@ -2336,7 +2350,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @param out the data output to serialize to
    */
   public static void writeSerializableObject(Object o, DataOutput out) throws IOException {
-    out.writeByte(SERIALIZABLE);
+    out.writeByte(DSCODE.SERIALIZABLE.toByte());
     if (out instanceof ObjectOutputStream) {
       ((ObjectOutputStream) out).writeObject(o);
     } else {
@@ -2518,8 +2532,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       Assert.assertTrue(o instanceof DataSerializable);
       invokeFromData(o, in);
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Read DataSerializable {}", o);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read DataSerializable {}", o);
       }
 
       return o;
@@ -2537,31 +2551,25 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   private static Object readDataSerializableFixedID(final DataInput in)
       throws IOException, ClassNotFoundException {
-    boolean readSerializedOverride = TypeRegistry.getPdxReadSerialized();
-    TypeRegistry.setPdxReadSerialized(false);
+    Class c = readClass(in);
     try {
-      Class c = readClass(in);
-      try {
-        Constructor init = c.getConstructor(new Class[0]);
-        init.setAccessible(true);
-        Object o = init.newInstance(new Object[0]);
+      Constructor init = c.getConstructor(new Class[0]);
+      init.setAccessible(true);
+      Object o = init.newInstance(new Object[0]);
 
-        invokeFromData(o, in);
+      invokeFromData(o, in);
 
-        if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-          logger.trace(LogMarker.SERIALIZER, "Read DataSerializableFixedID {}", o);
-        }
-
-        return o;
-
-      } catch (Exception ex) {
-        throw new SerializationException(
-            LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_0
-                .toLocalizedString(c.getName()),
-            ex);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read DataSerializableFixedID {}", o);
       }
-    } finally {
-      TypeRegistry.setPdxReadSerialized(readSerializedOverride);
+
+      return o;
+
+    } catch (Exception ex) {
+      throw new SerializationException(
+          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_0
+              .toLocalizedString(c.getName()),
+          ex);
     }
   }
 
@@ -2696,16 +2704,16 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   public static Object readDSFID(final DataInput in) throws IOException, ClassNotFoundException {
     checkIn(in);
     byte header = in.readByte();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "readDSFID: header={}", header);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "readDSFID: header={}", header);
     }
-    if (header == DS_FIXED_ID_BYTE) {
+    if (header == DSCODE.DS_FIXED_ID_BYTE.toByte()) {
       return DSFIDFactory.create(in.readByte(), in);
-    } else if (header == DS_FIXED_ID_SHORT) {
+    } else if (header == DSCODE.DS_FIXED_ID_SHORT.toByte()) {
       return DSFIDFactory.create(in.readShort(), in);
-    } else if (header == DS_NO_FIXED_ID) {
+    } else if (header == DSCODE.DS_NO_FIXED_ID.toByte()) {
       return readDataSerializableFixedID(in);
-    } else if (header == DS_FIXED_ID_INT) {
+    } else if (header == DSCODE.DS_FIXED_ID_INT.toByte()) {
       return DSFIDFactory.create(in.readInt(), in);
     } else {
       throw new IllegalStateException("unexpected byte: " + header + " while reading dsfid");
@@ -2715,14 +2723,14 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   public static int readDSFIDHeader(final DataInput in) throws IOException {
     checkIn(in);
     byte header = in.readByte();
-    if (header == DS_FIXED_ID_BYTE) {
+    if (header == DSCODE.DS_FIXED_ID_BYTE.toByte()) {
       return in.readByte();
-    } else if (header == DS_FIXED_ID_SHORT) {
+    } else if (header == DSCODE.DS_FIXED_ID_SHORT.toByte()) {
       return in.readShort();
-    } else if (header == DS_NO_FIXED_ID) {
+    } else if (header == DSCODE.DS_NO_FIXED_ID.toByte()) {
       // is that correct??
       return Integer.MAX_VALUE;
-    } else if (header == DS_FIXED_ID_INT) {
+    } else if (header == DSCODE.DS_FIXED_ID_INT.toByte()) {
       return in.readInt();
     } else {
       throw new IllegalStateException("unexpected byte: " + header + " while reading dsfid");
@@ -2738,36 +2746,36 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @since GemFire 5.7
    */
   public static String readString(DataInput in, byte header) throws IOException {
-    if (header == DSCODE.STRING_BYTES) {
+    if (header == DSCODE.STRING_BYTES.toByte()) {
       int len = in.readUnsignedShort();
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Reading STRING_BYTES of len={}", len);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading STRING_BYTES of len={}", len);
       }
       byte[] buf = new byte[len];
       in.readFully(buf, 0, len);
       return new String(buf, 0); // intentionally using deprecated constructor
-    } else if (header == DSCODE.STRING) {
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Reading utf STRING");
+    } else if (header == DSCODE.STRING.toByte()) {
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading utf STRING");
       }
       return in.readUTF();
-    } else if (header == DSCODE.NULL_STRING) {
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Reading NULL_STRING");
+    } else if (header == DSCODE.NULL_STRING.toByte()) {
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading NULL_STRING");
       }
       return null;
-    } else if (header == DSCODE.HUGE_STRING_BYTES) {
+    } else if (header == DSCODE.HUGE_STRING_BYTES.toByte()) {
       int len = in.readInt();
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Reading HUGE_STRING_BYTES of len={}", len);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading HUGE_STRING_BYTES of len={}", len);
       }
       byte[] buf = new byte[len];
       in.readFully(buf, 0, len);
       return new String(buf, 0); // intentionally using deprecated constructor
-    } else if (header == DSCODE.HUGE_STRING) {
+    } else if (header == DSCODE.HUGE_STRING.toByte()) {
       int len = in.readInt();
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-        logger.trace(LogMarker.SERIALIZER, "Reading HUGE_STRING of len={}", len);
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading HUGE_STRING of len={}", len);
       }
       char[] buf = new char[len];
       for (int i = 0; i < len; i++) {
@@ -2780,72 +2788,31 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
   }
 
+  private static DataSerializer dvddeserializer;
+
+  // TODO: registerDVDDeserializer is unused
+  public static void registerDVDDeserializer(DataSerializer dvddeslzr) {
+    dvddeserializer = dvddeslzr;
+  }
+
   /**
    * Just like readObject but make sure and pdx deserialized is not a PdxInstance.
    *
    * @since GemFire 6.6.2
    */
-  public static <T> T readDeserializedObject(final DataInput in)
+  public static <T> T readNonPdxInstanceObject(final DataInput in)
       throws IOException, ClassNotFoundException {
-    boolean wouldReadSerialized = TypeRegistry.getPdxReadSerialized();
+    boolean wouldReadSerialized = PdxInstanceImpl.getPdxReadSerialized();
     if (!wouldReadSerialized) {
       return DataSerializer.readObject(in);
     } else {
-      TypeRegistry.setPdxReadSerialized(false);
+      PdxInstanceImpl.setPdxReadSerialized(false);
       try {
         return DataSerializer.readObject(in);
       } finally {
-        TypeRegistry.setPdxReadSerialized(true);
+        PdxInstanceImpl.setPdxReadSerialized(true);
       }
     }
-  }
-
-  /**
-   * Just like readObject but override PdxInstanceImpl.getPdxReadSerialized(), allowing
-   * the result to be a PdxInstance if pdx-read-serialized is enabled on the cache.
-   * Use this to read cache keys, values and callback values in DataSerializableFixedID
-   * fromData methods, which have pdx-read-serialize disabled.
-   */
-  public static <T> T readUserObject(final DataInput in)
-      throws IOException, ClassNotFoundException {
-    boolean wouldReadSerialized = TypeRegistry.getPdxReadSerialized();
-    if (wouldReadSerialized) {
-      return DataSerializer.readObject(in);
-    } else {
-      TypeRegistry.setPdxReadSerialized(true);
-      try {
-        return DataSerializer.readObject(in);
-      } finally {
-        TypeRegistry.setPdxReadSerialized(false);
-      }
-    }
-  }
-
-  /**
-   * This method is used by DataSerializableFixedID objects in their fromData methods
-   * to deserialize application objects such as keys, values and callback arguments.
-   * It allows the value to be read as a PdxInstance instead of being completely
-   * deserialized into a POJO.
-   *
-   * @param runnable code performing deserialization with PdxInstanceImpl.setPdxReadSerialized set
-   *        to true
-   * @throws ClassNotFoundException
-   * @throws IOException
-   */
-  public static void doWithPdxReadSerialized(RunnableThrowingException runnable)
-      throws ClassNotFoundException, IOException {
-    boolean isAlreadySet = TypeRegistry.getPdxReadSerialized();
-    if (!isAlreadySet) {
-      TypeRegistry.setPdxReadSerialized(true);
-    }
-    try {
-      runnable.run();
-    } finally {
-      if (!isAlreadySet) {
-        TypeRegistry.setPdxReadSerialized(false);
-      }
-    }
-
   }
 
   public static Object basicReadObject(final DataInput in)
@@ -2854,206 +2821,267 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
     // Read the header byte
     byte header = in.readByte();
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "basicReadObject: header={}", header);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "basicReadObject: header={}", header);
     }
-    switch (header) {
-      case DS_FIXED_ID_BYTE:
-        return DSFIDFactory.create(in.readByte(), in);
-      case DS_FIXED_ID_SHORT:
-        return DSFIDFactory.create(in.readShort(), in);
-      case DS_FIXED_ID_INT:
-        return DSFIDFactory.create(in.readInt(), in);
-      case DS_NO_FIXED_ID:
-        return readDataSerializableFixedID(in);
-      case NULL:
-        return null;
-      case NULL_STRING:
-      case STRING:
-      case HUGE_STRING:
-      case STRING_BYTES:
-      case HUGE_STRING_BYTES:
-        return readString(in, header);
-      case CLASS:
-        return readClass(in);
-      case DATE:
-        return readDate(in);
-      case FILE:
-        return readFile(in);
-      case INET_ADDRESS:
-        return readInetAddress(in);
-      case BOOLEAN:
-        return readBoolean(in);
-      case CHARACTER:
-        return readCharacter(in);
-      case BYTE:
-        return readByte(in);
-      case SHORT:
-        return readShort(in);
-      case INTEGER:
-        return readInteger(in);
-      case LONG:
-        return readLong(in);
-      case FLOAT:
-        return readFloat(in);
-      case DOUBLE:
-        return readDouble(in);
-      case BYTE_ARRAY:
-        return readByteArray(in);
-      case ARRAY_OF_BYTE_ARRAYS:
-        return readArrayOfByteArrays(in);
-      case SHORT_ARRAY:
-        return readShortArray(in);
-      case STRING_ARRAY:
-        return readStringArray(in);
-      case INT_ARRAY:
-        return readIntArray(in);
-      case LONG_ARRAY:
-        return readLongArray(in);
-      case FLOAT_ARRAY:
-        return readFloatArray(in);
-      case DOUBLE_ARRAY:
-        return readDoubleArray(in);
-      case BOOLEAN_ARRAY:
-        return readBooleanArray(in);
-      case CHAR_ARRAY:
-        return readCharArray(in);
-      case OBJECT_ARRAY:
-        return readObjectArray(in);
-      case ARRAY_LIST:
-        return readArrayList(in);
-      case LINKED_LIST:
-        return readLinkedList(in);
-      case HASH_SET:
-        return readHashSet(in);
-      case LINKED_HASH_SET:
-        return readLinkedHashSet(in);
-      case HASH_MAP:
-        return readHashMap(in);
-      case IDENTITY_HASH_MAP:
-        return readIdentityHashMap(in);
-      case HASH_TABLE:
-        return readHashtable(in);
-      case CONCURRENT_HASH_MAP:
-        return readConcurrentHashMap(in);
-      case PROPERTIES:
-        return readProperties(in);
-      case TIME_UNIT:
-        return readTimeUnit(in);
-      case USER_CLASS:
-        return readUserClass(in, in.readByte());
-      case USER_CLASS_2:
-        return readUserClass(in, in.readShort());
-      case USER_CLASS_4:
-        return readUserClass(in, in.readInt());
-      case VECTOR:
-        return readVector(in);
-      case STACK:
-        return readStack(in);
-      case TREE_MAP:
-        return readTreeMap(in);
-      case TREE_SET:
-        return readTreeSet(in);
-      case BOOLEAN_TYPE:
-        return Boolean.TYPE;
-      case CHARACTER_TYPE:
-        return Character.TYPE;
-      case BYTE_TYPE:
-        return Byte.TYPE;
-      case SHORT_TYPE:
-        return Short.TYPE;
-      case INTEGER_TYPE:
-        return Integer.TYPE;
-      case LONG_TYPE:
-        return Long.TYPE;
-      case FLOAT_TYPE:
-        return Float.TYPE;
-      case DOUBLE_TYPE:
-        return Double.TYPE;
-      case VOID_TYPE:
-        return Void.TYPE;
-
-      case USER_DATA_SERIALIZABLE:
-        return readUserDataSerializable(in, in.readByte());
-      case USER_DATA_SERIALIZABLE_2:
-        return readUserDataSerializable(in, in.readShort());
-      case USER_DATA_SERIALIZABLE_4:
-        return readUserDataSerializable(in, in.readInt());
-
-      case DATA_SERIALIZABLE:
-        return readDataSerializable(in);
-
-      case SERIALIZABLE: {
-        final boolean isDebugEnabled_SERIALIZER = logger.isTraceEnabled(LogMarker.SERIALIZER);
-        Object serializableResult;
-        if (in instanceof DSObjectInputStream) {
-          serializableResult = ((DSObjectInputStream) in).readObject();
+    if (header == DSCODE.DS_FIXED_ID_BYTE.toByte()) {
+      return DSFIDFactory.create(in.readByte(), in);
+    }
+    if (header == DSCODE.DS_FIXED_ID_SHORT.toByte()) {
+      return DSFIDFactory.create(in.readShort(), in);
+    }
+    if (header == DSCODE.DS_FIXED_ID_INT.toByte()) {
+      return DSFIDFactory.create(in.readInt(), in);
+    }
+    if (header == DSCODE.DS_NO_FIXED_ID.toByte()) {
+      return readDataSerializableFixedID(in);
+    }
+    if (header == DSCODE.NULL.toByte()) {
+      return null;
+    }
+    if (header == DSCODE.NULL_STRING.toByte() || header == DSCODE.STRING.toByte()
+        || header == DSCODE.HUGE_STRING.toByte() || header == DSCODE.STRING_BYTES.toByte()
+        || header == DSCODE.HUGE_STRING_BYTES.toByte()) {
+      return readString(in, header);
+    }
+    if (header == DSCODE.CLASS.toByte()) {
+      return readClass(in);
+    }
+    if (header == DSCODE.DATE.toByte()) {
+      return readDate(in);
+    }
+    if (header == DSCODE.FILE.toByte()) {
+      return readFile(in);
+    }
+    if (header == DSCODE.INET_ADDRESS.toByte()) {
+      return readInetAddress(in);
+    }
+    if (header == DSCODE.BOOLEAN.toByte()) {
+      return readBoolean(in);
+    }
+    if (header == DSCODE.CHARACTER.toByte()) {
+      return readCharacter(in);
+    }
+    if (header == DSCODE.BYTE.toByte()) {
+      return readByte(in);
+    }
+    if (header == DSCODE.SHORT.toByte()) {
+      return readShort(in);
+    }
+    if (header == DSCODE.INTEGER.toByte()) {
+      return readInteger(in);
+    }
+    if (header == DSCODE.LONG.toByte()) {
+      return readLong(in);
+    }
+    if (header == DSCODE.FLOAT.toByte()) {
+      return readFloat(in);
+    }
+    if (header == DSCODE.DOUBLE.toByte()) {
+      return readDouble(in);
+    }
+    if (header == DSCODE.BYTE_ARRAY.toByte()) {
+      return readByteArray(in);
+    }
+    if (header == DSCODE.ARRAY_OF_BYTE_ARRAYS.toByte()) {
+      return readArrayOfByteArrays(in);
+    }
+    if (header == DSCODE.SHORT_ARRAY.toByte()) {
+      return readShortArray(in);
+    }
+    if (header == DSCODE.STRING_ARRAY.toByte()) {
+      return readStringArray(in);
+    }
+    if (header == DSCODE.INT_ARRAY.toByte()) {
+      return readIntArray(in);
+    }
+    if (header == DSCODE.LONG_ARRAY.toByte()) {
+      return readLongArray(in);
+    }
+    if (header == DSCODE.FLOAT_ARRAY.toByte()) {
+      return readFloatArray(in);
+    }
+    if (header == DSCODE.DOUBLE_ARRAY.toByte()) {
+      return readDoubleArray(in);
+    }
+    if (header == DSCODE.BOOLEAN_ARRAY.toByte()) {
+      return readBooleanArray(in);
+    }
+    if (header == DSCODE.CHAR_ARRAY.toByte()) {
+      return readCharArray(in);
+    }
+    if (header == DSCODE.OBJECT_ARRAY.toByte()) {
+      return readObjectArray(in);
+    }
+    if (header == DSCODE.ARRAY_LIST.toByte()) {
+      return readArrayList(in);
+    }
+    if (header == DSCODE.LINKED_LIST.toByte()) {
+      return readLinkedList(in);
+    }
+    if (header == DSCODE.HASH_SET.toByte()) {
+      return readHashSet(in);
+    }
+    if (header == DSCODE.LINKED_HASH_SET.toByte()) {
+      return readLinkedHashSet(in);
+    }
+    if (header == DSCODE.HASH_MAP.toByte()) {
+      return readHashMap(in);
+    }
+    if (header == DSCODE.IDENTITY_HASH_MAP.toByte()) {
+      return readIdentityHashMap(in);
+    }
+    if (header == DSCODE.HASH_TABLE.toByte()) {
+      return readHashtable(in);
+    }
+    if (header == DSCODE.CONCURRENT_HASH_MAP.toByte()) {
+      return readConcurrentHashMap(in);
+    }
+    if (header == DSCODE.PROPERTIES.toByte()) {
+      return readProperties(in);
+    }
+    if (header == DSCODE.TIME_UNIT.toByte()) {
+      return readTimeUnit(in);
+    }
+    if (header == DSCODE.USER_CLASS.toByte()) {
+      return readUserObject(in, in.readByte());
+    }
+    if (header == DSCODE.USER_CLASS_2.toByte()) {
+      return readUserObject(in, in.readShort());
+    }
+    if (header == DSCODE.USER_CLASS_4.toByte()) {
+      return readUserObject(in, in.readInt());
+    }
+    if (header == DSCODE.VECTOR.toByte()) {
+      return readVector(in);
+    }
+    if (header == DSCODE.STACK.toByte()) {
+      return readStack(in);
+    }
+    if (header == DSCODE.TREE_MAP.toByte()) {
+      return readTreeMap(in);
+    }
+    if (header == DSCODE.TREE_SET.toByte()) {
+      return readTreeSet(in);
+    }
+    if (header == DSCODE.BOOLEAN_TYPE.toByte()) {
+      return Boolean.TYPE;
+    }
+    if (header == DSCODE.CHARACTER_TYPE.toByte()) {
+      return Character.TYPE;
+    }
+    if (header == DSCODE.BYTE_TYPE.toByte()) {
+      return Byte.TYPE;
+    }
+    if (header == DSCODE.SHORT_TYPE.toByte()) {
+      return Short.TYPE;
+    }
+    if (header == DSCODE.INTEGER_TYPE.toByte()) {
+      return Integer.TYPE;
+    }
+    if (header == DSCODE.LONG_TYPE.toByte()) {
+      return Long.TYPE;
+    }
+    if (header == DSCODE.FLOAT_TYPE.toByte()) {
+      return Float.TYPE;
+    }
+    if (header == DSCODE.DOUBLE_TYPE.toByte()) {
+      return Double.TYPE;
+    }
+    if (header == DSCODE.VOID_TYPE.toByte()) {
+      return Void.TYPE;
+    }
+    if (header == DSCODE.USER_DATA_SERIALIZABLE.toByte()) {
+      return readUserDataSerializable(in, in.readByte());
+    }
+    if (header == DSCODE.USER_DATA_SERIALIZABLE_2.toByte()) {
+      return readUserDataSerializable(in, in.readShort());
+    }
+    if (header == DSCODE.USER_DATA_SERIALIZABLE_4.toByte()) {
+      return readUserDataSerializable(in, in.readInt());
+    }
+    if (header == DSCODE.DATA_SERIALIZABLE.toByte()) {
+      return readDataSerializable(in);
+    }
+    if (header == DSCODE.SERIALIZABLE.toByte()) {
+      final boolean isDebugEnabled_SERIALIZER = logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE);
+      Object serializableResult;
+      if (in instanceof DSObjectInputStream) {
+        serializableResult = ((DSObjectInputStream) in).readObject();
+      } else {
+        InputStream stream;
+        if (in instanceof InputStream) {
+          stream = (InputStream) in;
         } else {
-          InputStream stream;
-          if (in instanceof InputStream) {
-            stream = (InputStream) in;
-          } else {
-            stream = new InputStream() {
-              @Override
-              public int read() throws IOException {
-                try {
-                  return in.readUnsignedByte(); // fix for bug 47249
-                } catch (EOFException ignored) {
-                  return -1;
-                }
+          stream = new InputStream() {
+            @Override
+            public int read() throws IOException {
+              try {
+                return in.readUnsignedByte(); // fix for bug 47249
+              } catch (EOFException ignored) {
+                return -1;
               }
-
-            };
-          }
-
-          ObjectInput ois = new DSObjectInputStream(stream);
-          serializationFilter.setFilterOn((ObjectInputStream) ois);
-          if (stream instanceof VersionedDataStream) {
-            Version v = ((VersionedDataStream) stream).getVersion();
-            if (v != null && v != Version.CURRENT) {
-              ois = new VersionedObjectInput(ois, v);
             }
-          }
 
-          serializableResult = ois.readObject();
+          };
+        }
 
-          if (isDebugEnabled_SERIALIZER) {
-            logger.trace(LogMarker.SERIALIZER, "Read Serializable object: {}", serializableResult);
+        ObjectInput ois = new DSObjectInputStream(stream);
+        serializationFilter.setFilterOn((ObjectInputStream) ois);
+        if (stream instanceof VersionedDataStream) {
+          Version v = ((VersionedDataStream) stream).getVersion();
+          if (v != null && v != Version.CURRENT) {
+            ois = new VersionedObjectInput(ois, v);
           }
         }
+
+        serializableResult = ois.readObject();
+
         if (isDebugEnabled_SERIALIZER) {
-          logger.trace(LogMarker.SERIALIZER, "deserialized instanceof {}",
-              serializableResult.getClass());
+          logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Serializable object: {}",
+              serializableResult);
         }
-        return serializableResult;
       }
-      case PDX:
-        return readPdxSerializable(in);
-      case PDX_ENUM:
-        return readPdxEnum(in);
-      case GEMFIRE_ENUM:
-        return readGemFireEnum(in);
-      case PDX_INLINE_ENUM:
-        return readPdxInlineEnum(in);
-      case BIG_INTEGER:
-        return readBigInteger(in);
-      case BIG_DECIMAL:
-        return readBigDecimal(in);
-      case UUID:
-        return readUUID(in);
-      case TIMESTAMP:
-        return readTimestamp(in);
-      default:
-        String s = "Unknown header byte: " + header;
-        throw new IOException(s);
+      if (isDebugEnabled_SERIALIZER) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "deserialized instanceof {}",
+            serializableResult.getClass());
+      }
+      return serializableResult;
     }
+    if (header == DSCODE.PDX.toByte()) {
+      return readPdxSerializable(in);
+    }
+    if (header == DSCODE.PDX_ENUM.toByte()) {
+      return readPdxEnum(in);
+    }
+    if (header == DSCODE.GEMFIRE_ENUM.toByte()) {
+      return readGemFireEnum(in);
+    }
+    if (header == DSCODE.PDX_INLINE_ENUM.toByte()) {
+      return readPdxInlineEnum(in);
+    }
+    if (header == DSCODE.BIG_INTEGER.toByte()) {
+      return readBigInteger(in);
+    }
+    if (header == DSCODE.BIG_DECIMAL.toByte()) {
+      return readBigDecimal(in);
+    }
+    if (header == DSCODE.UUID.toByte()) {
+      return readUUID(in);
+    }
+    if (header == DSCODE.TIMESTAMP.toByte()) {
+      return readTimestamp(in);
+    }
+
+    String s = "Unknown header byte: " + header;
+    throw new IOException(s);
   }
 
   private static Object readUserDataSerializable(final DataInput in, int classId)
       throws IOException {
     Instantiator instantiator = InternalInstantiator.getInstantiator(classId);
     if (instantiator == null) {
-      logger.error(LogMarker.SERIALIZER,
+      logger.error(LogMarker.SERIALIZER_MARKER,
           LocalizedMessage.create(
               LocalizedStrings.DataSerializer_NO_INSTANTIATOR_HAS_BEEN_REGISTERED_FOR_CLASS_WITH_ID_0,
               classId));
@@ -3207,8 +3235,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     InternalCache internalCache = GemFireCacheImpl
         .getForPdx("PDX registry is unavailable because the Cache has been closed.");
     PdxType pdxType = internalCache.getPdxRegistry().getType(typeId);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "readPdxSerializable pdxType={}", pdxType);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "readPdxSerializable pdxType={}", pdxType);
     }
     if (pdxType == null) {
       throw new IllegalStateException("Unknown pdx type=" + typeId);
@@ -3234,7 +3262,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   public static PdxInstance readPdxInstance(final byte[] dataBytes, InternalCache internalCache) {
     try {
       byte type = dataBytes[0];
-      if (type == PDX) {
+      if (type == DSCODE.PDX.toByte()) {
         PdxInputStream in = new PdxInputStream(dataBytes);
         in.readByte(); // throw away the type byte
         int len = in.readInt();
@@ -3245,7 +3273,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         }
 
         return new PdxInstanceImpl(pdxType, in, len);
-      } else if (type == DSCODE.PDX_ENUM) {
+      } else if (type == DSCODE.PDX_ENUM.toByte()) {
         PdxInputStream in = new PdxInputStream(dataBytes);
         in.readByte(); // throw away the type byte
         int dsId = in.readByte();
@@ -3257,7 +3285,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           throw new IllegalStateException("Unknown pdx enum id=" + enumId);
         }
         return ei.getPdxInstance(enumId);
-      } else if (type == DSCODE.PDX_INLINE_ENUM) {
+      } else if (type == DSCODE.PDX_INLINE_ENUM.toByte()) {
         PdxInputStream in = new PdxInputStream(dataBytes);
         in.readByte(); // throw away the type byte
         String className = DataSerializer.readString(in);
@@ -3676,8 +3704,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       length = array.length;
     }
     InternalDataSerializer.writeArrayLength(length, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
-      logger.trace(LogMarker.SERIALIZER, "Writing Object array of length {}", length);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Object array of length {}", length);
     }
     if (length >= 0) {
       writeClass(array.getClass().getComponentType(), out);
@@ -3896,14 +3924,4 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       classCache.clear();
     }
   }
-
-
-  /**
-   * @see #doWithPdxReadSerialized
-   */
-  @FunctionalInterface
-  public interface RunnableThrowingException {
-    void run() throws ClassNotFoundException, IOException;
-  }
-
 }

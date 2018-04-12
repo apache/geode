@@ -109,7 +109,7 @@ dependencies {
     exclude module: 'commons-logging'
   }
 
-  testCompile project(':geode-old-versions')
+  testCompile files(project(':geode-old-versions').sourceSets.main.output)
 }
 
 sourceSets {

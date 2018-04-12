@@ -116,12 +116,12 @@ public class DisconnectClientIntegrationTest {
 
   private void authenticateWithServer() throws IOException {
     ClientProtocol.Message.Builder request = ClientProtocol.Message.newBuilder()
-        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+        .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
             .putCredentials(ResourceConstants.USER_NAME, "someuser")
             .putCredentials(ResourceConstants.PASSWORD, "somepassword"));
 
     ClientProtocol.Message response = writeMessage(request.build());
-    assertTrue(response.getAuthenticationResponse().getAuthenticated());
+    assertTrue(response.getHandshakeResponse().getAuthenticated());
   }
 
   private ClientProtocol.Message.Builder createRequestMessageBuilder(

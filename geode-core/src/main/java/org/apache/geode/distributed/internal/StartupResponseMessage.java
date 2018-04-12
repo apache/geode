@@ -182,8 +182,8 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage
           proc.setReceivedAcceptance(true);
         }
         proc.process(this);
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "{} Processed {}", proc, this);
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "{} Processed {}", proc, this);
         }
       }
     } // proc != null

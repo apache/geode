@@ -16,11 +16,23 @@
 syntax = "proto3";
 package org.apache.geode.internal.protocol.protobuf.v1;
 
-message AuthenticationRequest {
+message HandshakeRequest {
+    //Credentials used to authenticate with the security service
+    //Not required if the server does not have a security service enabled
     map<string,string> credentials = 1;
+
+    // Set the serialization format for values. This should match the getID of a registered
+    // org.apache.geode.protocol.serialization.ValueSerializer on the server side.
+    //
+    // If set any EncodedValue can be sent using EncodedValue.customObjectResult, and EncodedValues
+    // sent by the server may also come back as EncodedValue.customObjectResult.
+    //
+    // If not set the server will attempt to convert non primative objects to JSON and
+    // send them as EncodedValue.jsonResult.
+    string valueFormat = 2;
 }
 
-message AuthenticationResponse {
+message HandshakeResponse {
     bool authenticated = 1;
 }
 

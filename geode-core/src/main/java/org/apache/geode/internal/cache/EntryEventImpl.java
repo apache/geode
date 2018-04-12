@@ -194,12 +194,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.eventID = (EventID) DataSerializer.readObject(in);
-    Object key = InternalDataSerializer.readUserObject(in);
-    Object value = InternalDataSerializer.readUserObject(in);
+    Object key = DataSerializer.readObject(in);
+    Object value = DataSerializer.readObject(in);
     this.keyInfo = new KeyInfo(key, value, null);
     this.op = Operation.fromOrdinal(in.readByte());
     this.eventFlags = in.readShort();
-    this.keyInfo.setCallbackArg(InternalDataSerializer.readUserObject(in));
+    this.keyInfo.setCallbackArg(DataSerializer.readObject(in));
     this.txId = (TXId) DataSerializer.readObject(in);
 
     if (in.readBoolean()) { // isDelta
@@ -214,7 +214,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       } else {
         this.newValueBytes = null;
         this.cachedSerializedNewValue = null;
-        this.newValue = InternalDataSerializer.readUserObject(in);
+        this.newValue = DataSerializer.readObject(in);
       }
     }
 
@@ -225,7 +225,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       this.oldValue = null; // set later in basicGetOldValue
     } else {
       this.oldValueBytes = null;
-      this.oldValue = InternalDataSerializer.readUserObject(in);
+      this.oldValue = DataSerializer.readObject(in);
     }
     this.distributedMember = DSFIDFactory.readInternalDistributedMember(in);
     this.context = ClientProxyMembershipID.readCanonicalized(in);
@@ -651,9 +651,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     Assert.assertTrue(this.eventID == null, "Double setting event id");
     EventID newID = new EventID(sys);
     if (this.eventID != null) {
-      if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-        logger.trace(LogMarker.BRIDGE_SERVER, "Replacing event ID with {} in event {}", newID,
-            this);
+      if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+        logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "Replacing event ID with {} in event {}",
+            newID, this);
       }
     }
     this.eventID = newID;
@@ -2157,6 +2157,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     }
     if (this.getInhibitDistribution()) {
       buf.append(";inhibitDistribution");
+    }
+    if (this.tailKey != -1) {
+      buf.append(";tailKey=" + tailKey);
     }
     buf.append("]");
     return buf.toString();
