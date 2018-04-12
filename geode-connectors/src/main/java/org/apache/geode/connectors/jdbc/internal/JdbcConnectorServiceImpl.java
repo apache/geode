@@ -53,7 +53,7 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
     ConnectorService.Connection existingConfig = connectionsByName.get(alteredConfig.getName());
     if (existingConfig == null) {
       throw new ConnectionConfigNotFoundException(
-          "Connection co" + alteredConfig.getName() + " was not found");
+          "Connection configuration " + alteredConfig.getName() + " was not found");
     }
 
     connectionsByName.put(existingConfig.getName(), alteredConfig);
