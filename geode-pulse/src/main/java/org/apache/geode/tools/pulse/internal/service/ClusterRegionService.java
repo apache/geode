@@ -93,7 +93,6 @@ public class ClusterRegionService implements PulseService {
    * This method is used to get various regions associated with the given cluster and create json
    * for each region fields and returns Array List for all the regions associated with given cluster
    *
-   * @param cluster
    * @return ArrayNode Array List
    */
   private ArrayNode getRegionJson(Cluster cluster) {

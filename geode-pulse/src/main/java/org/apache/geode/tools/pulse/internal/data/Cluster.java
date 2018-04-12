@@ -1312,7 +1312,6 @@ public class Cluster extends Thread {
     }
 
     /**
-     * @param localMaxMemory
      */
     public void setLocalMaxMemory(int localMaxMemory) {
       this.localMaxMemory = localMaxMemory;
@@ -2886,7 +2885,6 @@ public class Cluster extends Thread {
    * '-'
    *
    *
-   * @param memberKey
    * @return the Member for a given key
    */
   public Cluster.Member getMember(String memberKey) {

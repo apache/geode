@@ -178,7 +178,6 @@ public class ClassBuilder implements Serializable {
    * @param className Name of the class to compile.
    * @param classCode Plain text contents of the class
    * @return The byte contents of the compiled class.
-   * @throws IOException
    */
   public byte[] compileClass(final String className, final String classCode) throws IOException {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

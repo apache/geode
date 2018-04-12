@@ -302,7 +302,6 @@ public class GemfireSessionManager implements SessionManager {
   /**
    * Start the underlying distributed system
    *
-   * @param config
    */
   private void startDistributedSystem(FilterConfig config) {
     // Get the distributedCache type

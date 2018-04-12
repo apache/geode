@@ -304,7 +304,6 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    *
    * @return the <code>Connection</code>
    *
-   * @throws GatewaySenderException
    */
   public Connection getConnection(boolean startAckReaderThread) throws GatewaySenderException {
     if (this.processor.isStopped()) {
@@ -370,7 +369,6 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   /**
    * Initializes the <code>Connection</code>.
    *
-   * @throws GatewaySenderException
    */
   private void initializeConnection() throws GatewaySenderException, GemFireSecurityException {
     if (ackReaderThread != null) {

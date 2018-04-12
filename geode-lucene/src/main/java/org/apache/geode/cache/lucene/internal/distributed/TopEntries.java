@@ -57,7 +57,6 @@ public class TopEntries<K> implements DataSerializableFixedID {
    * Adds an entry to the collection. The new entry must have a lower score than all previous
    * entries added to the collection. The new entry will be ignored if the limit is already reached.
    *
-   * @param entry
    */
   public void addHit(EntryScore<K> entry) {
     if (hits.size() > 0) {

@@ -53,7 +53,6 @@ public class ProtobufDriver implements Driver {
    * @param trustStorePath Path to SSL trust store; SSL is <em>not</em> used if <code>null</code>.
    * @param protocols Space-separated list of the SSL protocols to enable.
    * @param ciphers Space-separated list of the SSL cipher suites to enable.
-   * @throws IOException
    */
   ProtobufDriver(Set<InetSocketAddress> locators, String username, String password,
       String keyStorePath, String trustStorePath, String protocols, String ciphers,
