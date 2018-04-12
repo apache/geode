@@ -16,17 +16,12 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.shiro.util.ThreadState;
 
-import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
-import org.apache.geode.cache.query.internal.DefaultQuery;
-import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
@@ -43,12 +38,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionAuthorizingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.security.ResourcePermission;
 
 public class OqlQueryRequestOperationHandler
     implements ProtobufOperationHandler<OQLQueryRequest, OQLQueryResponse> {

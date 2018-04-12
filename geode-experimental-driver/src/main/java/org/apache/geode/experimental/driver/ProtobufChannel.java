@@ -38,10 +38,12 @@ class ProtobufChannel {
    * Socket to a GemFire server that has Protobuf enabled.
    */
   final Socket socket;
+  private final ValueSerializer serializer;
 
   public ProtobufChannel(final Set<InetSocketAddress> locators, String username, String password,
-      String keyStorePath, String trustStorePath, String protocols, String ciphers)
-      throws GeneralSecurityException, IOException {
+      String keyStorePath, String trustStorePath, String protocols, String ciphers,
+      ValueSerializer serializer) throws GeneralSecurityException, IOException {
+    this.serializer = serializer;
     socket = connectToAServer(locators, username, password, keyStorePath, trustStorePath, protocols,
         ciphers);
   }
@@ -66,22 +68,33 @@ class ProtobufChannel {
     socket.setReceiveBufferSize(65535);
 
     final OutputStream outputStream = socket.getOutputStream();
-    ProtocolVersion.NewConnectionClientVersion.newBuilder()
-        .setMajorVersion(ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-        .setMinorVersion(ProtocolVersion.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
-        .writeDelimitedTo(outputStream);
-
     final InputStream inputStream = socket.getInputStream();
+
+    handshake(username, password, outputStream, inputStream);
+
+    return socket;
+  }
+
+  private void handshake(String username, String password, OutputStream outputStream,
+      InputStream inputStream) throws IOException {
+    sendVersionMessage(outputStream);
+    sendHandshake(username, password, outputStream);
+    readVersionResponse(inputStream);
+    readHandshakeResponse(username, inputStream);
+  }
+
+  private void readVersionResponse(InputStream inputStream) throws IOException {
     if (!ProtocolVersion.VersionAcknowledgement.parseDelimitedFrom(inputStream)
         .getVersionAccepted()) {
       throw new IOException("Failed protocol version verification.");
     }
+  }
 
-    if (!Objects.isNull(username)) {
-      authenticate(username, password, outputStream, inputStream);
-    }
-
-    return socket;
+  private void sendVersionMessage(OutputStream outputStream) throws IOException {
+    ProtocolVersion.NewConnectionClientVersion.newBuilder()
+        .setMajorVersion(ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+        .setMinorVersion(ProtocolVersion.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
+        .writeDelimitedTo(outputStream);
   }
 
   /**
@@ -102,26 +115,19 @@ class ProtobufChannel {
 
         final OutputStream outputStream = locatorSocket.getOutputStream();
         final InputStream inputStream = locatorSocket.getInputStream();
-        ProtocolVersion.NewConnectionClientVersion.newBuilder()
-            .setMajorVersion(ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-            .setMinorVersion(ProtocolVersion.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
-            .writeDelimitedTo(outputStream);
 
-        // The locator does not currently send a reply to the ProtocolVersion...
-        if (!ProtocolVersion.VersionAcknowledgement.parseDelimitedFrom(inputStream)
-            .getVersionAccepted()) {
-          throw new IOException("Failed ProtocolVersion.");
-        }
-
-        if (!Objects.isNull(username)) {
-          authenticate(username, password, outputStream, inputStream);
-        }
+        handshake(username, password, outputStream, inputStream);
 
         ClientProtocol.Message.newBuilder()
             .setGetServerRequest(LocatorAPI.GetServerRequest.newBuilder()).build()
             .writeDelimitedTo(outputStream);
 
         ClientProtocol.Message response = ClientProtocol.Message.parseDelimitedFrom(inputStream);
+
+        if (response == null) {
+          throw new IOException("Server terminated connection");
+        }
+
         ClientProtocol.ErrorResponse errorResponse = response.getErrorResponse();
 
         if (errorResponse != null && errorResponse.hasError()) {
@@ -153,14 +159,12 @@ class ProtobufChannel {
 
   private void authenticate(String username, String password, OutputStream outputStream,
       InputStream inputStream) throws IOException {
-    final ConnectionAPI.AuthenticationRequest.Builder builder =
-        ConnectionAPI.AuthenticationRequest.newBuilder();
-    builder.putCredentials("security-username", username);
-    builder.putCredentials("security-password", password);
-    final Message authenticationRequest =
-        Message.newBuilder().setAuthenticationRequest(builder).build();
-    authenticationRequest.writeDelimitedTo(outputStream);
+    sendHandshake(username, password, outputStream);
 
+    readHandshakeResponse(username, inputStream);
+  }
+
+  private void readHandshakeResponse(String username, InputStream inputStream) throws IOException {
     final Message authenticationResponseMessage = Message.parseDelimitedFrom(inputStream);
     final ErrorResponse errorResponse = authenticationResponseMessage.getErrorResponse();
     if (!Objects.isNull(errorResponse) && errorResponse.hasError()) {
@@ -168,9 +172,10 @@ class ProtobufChannel {
           + errorResponse.getError().getErrorCode() + "; error message="
           + errorResponse.getError().getMessage());
     }
-    final ConnectionAPI.AuthenticationResponse authenticationResponse =
-        authenticationResponseMessage.getAuthenticationResponse();
-    if (!Objects.isNull(authenticationResponse) && !authenticationResponse.getAuthenticated()) {
+    final ConnectionAPI.HandshakeResponse authenticationResponse =
+        authenticationResponseMessage.getHandshakeResponse();
+    if (username != null && !Objects.isNull(authenticationResponse)
+        && !authenticationResponse.getAuthenticated()) {
       throw new IOException("Failed authentication for " + username);
     }
   }
@@ -185,6 +190,22 @@ class ProtobufChannel {
           "Got invalid response for request " + request + ", response " + response);
     }
     return response;
+  }
+
+  private void sendHandshake(String username, String password, OutputStream outputStream)
+      throws IOException {
+    final ConnectionAPI.HandshakeRequest.Builder builder =
+        ConnectionAPI.HandshakeRequest.newBuilder();
+
+    if (username != null) {
+      builder.putCredentials("security-username", username);
+      builder.putCredentials("security-password", password);
+    }
+
+    builder.setValueFormat(serializer.getID());
+
+    final Message authenticationRequest = Message.newBuilder().setHandshakeRequest(builder).build();
+    authenticationRequest.writeDelimitedTo(outputStream);
   }
 
   private Message readResponse() throws IOException {

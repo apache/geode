@@ -71,13 +71,6 @@ import org.apache.geode.security.GemFireSecurityException;
 
 public class ClientSideHandshakeImpl extends Handshake implements ClientSideHandshake {
   /**
-   * Used at client side, indicates whether the 'delta-propagation' property is enabled on the DS
-   * this client is connected to. This variable is used to decide whether to send delta bytes or
-   * full value to the server for a delta-update operation.
-   */
-  private static boolean deltaEnabledOnServer = true;
-
-  /**
    * If true, the client has configured multi-user security, meaning that each thread holds its own
    * security principal.
    */
@@ -93,10 +86,6 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   @Override
   protected byte getReplyCode() {
     return replyCode;
-  }
-
-  public static boolean isDeltaEnabledOnServer() {
-    return deltaEnabledOnServer;
   }
 
   public ClientSideHandshakeImpl(ClientProxyMembershipID proxyId,
@@ -245,7 +234,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // [sumedh] Static variable below? Client can connect to different
       // DSes with different values of this. It shoule be a member variable.
       if (!communicationMode.isWAN() && currentClientVersion.compareTo(Version.GFE_61) >= 0) {
-        deltaEnabledOnServer = dis.readBoolean();
+        ((InternalDistributedSystem) system).setDeltaEnabledOnServer(dis.readBoolean());
       }
 
       // validate that the remote side has a different distributed system id.

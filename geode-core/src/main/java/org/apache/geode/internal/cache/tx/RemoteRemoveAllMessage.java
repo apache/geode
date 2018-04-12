@@ -152,8 +152,8 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
         }
         successful = true; // not a cancel-exception, so don't complain any more about it
       } catch (RegionDestroyedException | RemoteOperationException e) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
               "RemoteRemoveAllMessage caught an exception during distribution; retrying to another member",
               e);
         }
@@ -439,8 +439,8 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
       final long startTime = getTimestamp();
 
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.debug("RemoveAllReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace("RemoveAllReplyMessage processor not found");
         }
         return;
       }
@@ -450,8 +450,8 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} Processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} Processed {}", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }

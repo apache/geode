@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.compression.Compressor;
+import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -346,7 +347,7 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     byte[] serializedValue = EntryEventImpl.serialize(regionEntryValueAsBytes);
 
     // store -127 (DSCODE.ILLEGAL) - in order the deserialize to throw exception
-    serializedValue[0] = -127;
+    serializedValue[0] = DSCODE.ILLEGAL.toByte();
 
     // encode a un serialized entry value to address
     long encodedAddress =

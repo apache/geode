@@ -19,7 +19,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -34,10 +33,27 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.control.RebalanceOperation;
+import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -84,12 +100,12 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     return result;
   }
 
-  private File[] testingDirs = new File[3];
+  private File[] testingDirs = new File[2];
 
   private static String diskDir = "RollingUpgradeDUnitTest";
 
   // Each vm will have a cache object
-  private static Object cache;
+  private static Cache cache;
 
   // the old version of Geode we're testing against
   private String oldVersion;
@@ -147,10 +163,9 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   public void doTestRollAll(String regionType, String objectType, String startingVersion)
       throws Exception {
     final Host host = Host.getHost(0);
-    VM server1 = host.getVM(startingVersion, 0);
-    VM server2 = host.getVM(startingVersion, 1);
-    VM server3 = host.getVM(startingVersion, 2);
-    VM locator = host.getVM(startingVersion, 3);
+    VM server1 = host.getVM(startingVersion, 0); // testingDirs[0]
+    VM server2 = host.getVM(startingVersion, 1); // testingDirs[1]
+    VM locator = host.getVM(startingVersion, 2); // locator must be last
 
 
     String regionName = "aRegion";
@@ -179,7 +194,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
 
     try {
       locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
-          locatorString, locatorProps));
+          locatorString, locatorProps, true));
 
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
@@ -189,8 +204,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
-      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2,
-          server3);
+      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2);
 
       // create region
       if ((regionType.equals("persistentReplicate"))) {
@@ -200,36 +214,27 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
           invokeRunnableInVMs(runnable, host.getVM(i));
         }
       } else {
-        invokeRunnableInVMs(invokeCreateRegion(regionName, shortcutName), server1, server2,
-            server3);
+        invokeRunnableInVMs(invokeCreateRegion(regionName, shortcutName), server1, server2);
       }
 
-      putAndVerify(objectType, server1, regionName, 0, 10, server2, server3);
+      putAndVerify(objectType, server1, regionName, 0, 10, server2);
       locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
           locatorString);
 
       server1 = rollServerToCurrentAndCreateRegion(server1, regionType, testingDirs[0],
           shortcutName, regionName, locatorPorts);
       verifyValues(objectType, regionName, 0, 10, server1);
-      putAndVerify(objectType, server1, regionName, 5, 15, server2, server3);
-      putAndVerify(objectType, server2, regionName, 10, 20, server1, server3);
+      putAndVerify(objectType, server1, regionName, 5, 15, server2);
+      putAndVerify(objectType, server2, regionName, 10, 20, server1);
 
       server2 = rollServerToCurrentAndCreateRegion(server2, regionType, testingDirs[1],
           shortcutName, regionName, locatorPorts);
       verifyValues(objectType, regionName, 0, 10, server2);
-      putAndVerify(objectType, server2, regionName, 15, 25, server1, server3);
-      putAndVerify(objectType, server3, regionName, 20, 30, server2, server3);
-
-      server3 = rollServerToCurrentAndCreateRegion(server3, regionType, testingDirs[2],
-          shortcutName, regionName, locatorPorts);
-      verifyValues(objectType, regionName, 0, 10, server3);
-      putAndVerify(objectType, server3, regionName, 15, 25, server1, server2);
-      putAndVerify(objectType, server1, regionName, 20, 30, server1, server2, server3);
-
+      putAndVerify(objectType, server2, regionName, 15, 25, server1);
 
     } finally {
       invokeRunnableInVMs(true, invokeStopLocator(), locator);
-      invokeRunnableInVMs(true, invokeCloseCache(), server1, server2, server3);
+      invokeRunnableInVMs(true, invokeCloseCache(), server1, server2);
       if ((regionType.equals("persistentReplicate"))) {
         deleteDiskStores();
       }
@@ -252,13 +257,13 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
 
   // ******** TEST HELPER METHODS ********/
   private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
-      VM check1, VM check2) throws Exception {
+      VM... checkVMs) throws Exception {
     if (objectType.equals("strings")) {
-      putStringsAndVerify(putter, regionName, start, end, check1, check2);
+      putStringsAndVerify(putter, regionName, start, end, checkVMs);
     } else if (objectType.equals("serializable")) {
-      putSerializableAndVerify(putter, regionName, start, end, check1, check2);
+      putSerializableAndVerify(putter, regionName, start, end, checkVMs);
     } else if (objectType.equals("dataserializable")) {
-      putDataSerializableAndVerify(putter, regionName, start, end, check1, check2);
+      putDataSerializableAndVerify(putter, regionName, start, end, checkVMs);
     } else {
       throw new Error("Not a valid test object type");
     }
@@ -372,7 +377,8 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     VM rollLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldLocator.getId());
     final Properties props = new Properties();
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    rollLocator.invoke(invokeStartLocator(serverHostName, port, testName, locatorString, props));
+    rollLocator
+        .invoke(invokeStartLocator(serverHostName, port, testName, locatorString, props, false));
     return rollLocator;
   }
 
@@ -423,11 +429,12 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
 
 
   private CacheSerializableRunnable invokeStartLocator(final String serverHostName, final int port,
-      final String testName, final String locatorsString, final Properties props) {
+      final String testName, final String locatorsString, final Properties props,
+      boolean fastStart) {
     return new CacheSerializableRunnable("execute: startLocator") {
       public void run2() {
         try {
-          startLocator(serverHostName, port, testName, locatorsString, props);
+          startLocator(serverHostName, port, testName, locatorsString, props, fastStart);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -502,7 +509,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: createClientRegion") {
       public void run2() {
         try {
-          createClientRegion(RollingUpgradeDUnitTest.cache, regionName, shortcutName);
+          createClientRegion((ClientCache) RollingUpgradeDUnitTest.cache, regionName, shortcutName);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -598,7 +605,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static Object createCache(Properties systemProperties) throws Exception {
+  public static Cache createCache(Properties systemProperties) throws Exception {
 
     // systemProperties.put(DistributionConfig.LOG_FILE_NAME,
     // "rollingUpgradeCacheVM" + VM.getCurrentVMNum() + ".log");
@@ -615,201 +622,140 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
       systemProperties.put(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
     }
 
-    Class cacheFactoryClass = Thread.currentThread().getContextClassLoader()
-        .loadClass("org.apache.geode.cache.CacheFactory");
-    Constructor constructor = cacheFactoryClass.getConstructor(Properties.class);
-    constructor.setAccessible(true);
-    Object cacheFactory = constructor.newInstance(systemProperties);
-
-    Method createMethod = cacheFactoryClass.getMethod("create");
-    createMethod.setAccessible(true);
-    Object cache = null;
-    cache = createMethod.invoke(cacheFactory);
+    cache = new CacheFactory(systemProperties).create();
     return cache;
   }
 
-  public static void startCacheServer(Object cache, int port) throws Exception {
-    Method addCacheServerMethod = cache.getClass().getMethod("addCacheServer");
-    addCacheServerMethod.setAccessible(true);
-    Object cacheServer = addCacheServerMethod.invoke(cache);
-
-    Method setPortMethod = cacheServer.getClass().getMethod("setPort", int.class);
-    setPortMethod.setAccessible(true);
-    setPortMethod.invoke(cacheServer, port);
-
-    Method startMethod = cacheServer.getClass().getMethod("start");
-    startMethod.setAccessible(true);
-    startMethod.invoke(cacheServer);
+  public static void startCacheServer(Cache cache, int port) throws Exception {
+    CacheServer server = cache.addCacheServer();
+    server.setPort(port);
+    server.start();
   }
 
-  public static boolean assertRegionExists(Object cache, String regionName) throws Exception {
-    Object region = cache.getClass().getMethod("getRegion", String.class).invoke(cache, regionName);
+  public static boolean assertRegionExists(Cache cache, String regionName) throws Exception {
+    Region region = cache.getRegion(regionName);
     if (region == null) {
       throw new Error("Region: " + regionName + " does not exist");
     }
     return true;
   }
 
-  public static Object getRegion(Object cache, String regionName) throws Exception {
-    return cache.getClass().getMethod("getRegion", String.class).invoke(cache, regionName);
+  public static Region getRegion(Cache cache, String regionName) throws Exception {
+    return cache.getRegion(regionName);
   }
 
-  public static boolean assertEntryEquals(Object cache, String regionName, Object key, Object value)
+  public static boolean assertEntryEquals(Cache cache, String regionName, Object key, Object value)
       throws Exception {
     assertRegionExists(cache, regionName);
-    Object region = getRegion(cache, regionName);
-    Object regionValue = region.getClass().getMethod("get", Object.class).invoke(region, key);
+    Region region = getRegion(cache, regionName);
+    Object regionValue = region.get(key);
     if (regionValue == null) {
-      System.out.println("region value does not exist for key: " + key);
       throw new Error("Region value does not exist for key:" + key);
     }
     if (!regionValue.equals(value)) {
-      System.out.println("Entry for key:" + key + " does not equal value: " + value);
       throw new Error("Entry for key:" + key + " does not equal value: " + value);
     }
     return true;
   }
 
-  public static boolean assertEntryExists(Object cache, String regionName, Object key)
+  public static boolean assertEntryExists(Cache cache, String regionName, Object key)
       throws Exception {
     assertRegionExists(cache, regionName);
-    Object region = getRegion(cache, regionName);
-    Object regionValue = region.getClass().getMethod("get", Object.class).invoke(region, key);
-    if (regionValue == null) {
-      System.out.println("Entry for key:" + key + " does not exist");
+    Region region = getRegion(cache, regionName);
+    if (!region.keySet().contains(key)) {
       throw new Error("Entry for key:" + key + " does not exist");
     }
     return true;
   }
 
-  public static Object put(Object cache, String regionName, Object key, Object value)
+  public static Object put(Cache cache, String regionName, Object key, Object value)
       throws Exception {
-    Object region = getRegion(cache, regionName);
-    return region.getClass().getMethod("put", Object.class, Object.class).invoke(region, key,
-        value);
+    Region region = getRegion(cache, regionName);
+    return region.put(key, value);
   }
 
-  public static void createRegion(Object cache, String regionName, String shortcutName)
+  public static void createRegion(Cache cache, String regionName, String shortcutName)
       throws Exception {
     Class aClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.RegionShortcut");
     Object[] enumConstants = aClass.getEnumConstants();
-    Object shortcut = null;
+    RegionShortcut shortcut = null;
     int length = enumConstants.length;
     for (int i = 0; i < length; i++) {
       Object constant = enumConstants[i];
       if (((Enum) constant).name().equals(shortcutName)) {
-        shortcut = constant;
+        shortcut = (RegionShortcut) constant;
         break;
       }
     }
 
-    Method createRegionFactoryMethod = cache.getClass().getMethod("createRegionFactory", aClass);
-    createRegionFactoryMethod.setAccessible(true);
-    Object regionFactory = createRegionFactoryMethod.invoke(cache, shortcut);
-    Method createMethod = regionFactory.getClass().getMethod("create", String.class);
-    createMethod.setAccessible(true);
-    createMethod.invoke(regionFactory, regionName);
+    cache.createRegionFactory(shortcut).create(regionName);
   }
 
-  public static void createPartitionedRegion(Object cache, String regionName) throws Exception {
+  public static void createPartitionedRegion(Cache cache, String regionName) throws Exception {
     createRegion(cache, regionName, RegionShortcut.PARTITION.name());
   }
 
-  public static void createPartitionedRedundantRegion(Object cache, String regionName)
+  public static void createPartitionedRedundantRegion(Cache cache, String regionName)
       throws Exception {
     createRegion(cache, regionName, RegionShortcut.PARTITION_REDUNDANT.name());
   }
 
-  public static void createReplicatedRegion(Object cache, String regionName) throws Exception {
+  public static void createReplicatedRegion(Cache cache, String regionName) throws Exception {
     createRegion(cache, regionName, RegionShortcut.REPLICATE.name());
   }
 
   // Assumes a client cache is passed
-  public static void createClientRegion(Object cache, String regionName, String shortcutName)
+  public static void createClientRegion(ClientCache cache, String regionName, String shortcutName)
       throws Exception {
     Class aClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.client.ClientRegionShortcut");
     Object[] enumConstants = aClass.getEnumConstants();
-    Object shortcut = null;
+    ClientRegionShortcut shortcut = null;
     int length = enumConstants.length;
     for (int i = 0; i < length; i++) {
       Object constant = enumConstants[i];
       if (((Enum) constant).name().equals(shortcutName)) {
-        shortcut = constant;
+        shortcut = (ClientRegionShortcut) constant;
         break;
       }
     }
-    Object clientRegionFactory = cache.getClass()
-        .getMethod("createClientRegionFactory", shortcut.getClass()).invoke(cache, shortcut);
-    clientRegionFactory.getClass().getMethod("create", String.class).invoke(clientRegionFactory,
-        regionName);
+    cache.createClientRegionFactory(shortcut).create(regionName);
   }
 
   public static void createRegion(String regionName, Object regionFactory) throws Exception {
     regionFactory.getClass().getMethod("create", String.class).invoke(regionFactory, regionName);
   }
 
-  public static void createPersistentReplicateRegion(Object cache, String regionName,
-      File diskStore) throws Exception {
-    Object store = cache.getClass().getMethod("findDiskStore", String.class).invoke(cache, "store");
-    Class dataPolicyObject = Thread.currentThread().getContextClassLoader()
-        .loadClass("org.apache.geode.cache.DataPolicy");
-    Object dataPolicy = dataPolicyObject.getField("PERSISTENT_REPLICATE").get(null);
-    Class scopeClass =
-        Thread.currentThread().getContextClassLoader().loadClass("org.apache.geode.cache.Scope");
-    Object scope = scopeClass.getField("DISTRIBUTED_ACK").get(null);
+  public static void createPersistentReplicateRegion(Cache cache, String regionName, File diskStore)
+      throws Exception {
+
+    DiskStore store = cache.findDiskStore("store");
     if (store == null) {
-      Object dsf = cache.getClass().getMethod("createDiskStoreFactory").invoke(cache);
-      dsf.getClass().getMethod("setMaxOplogSize", long.class).invoke(dsf, 1L);
-      dsf.getClass().getMethod("setDiskDirs", File[].class).invoke(dsf,
-          new Object[] {new File[] {diskStore.getAbsoluteFile()}});
-      dsf.getClass().getMethod("create", String.class).invoke(dsf, "store");
+      cache.createDiskStoreFactory().setMaxOplogSize(1L)
+          .setDiskDirs(new File[] {diskStore.getAbsoluteFile()}).create("store");
     }
-    Object rf = cache.getClass().getMethod("createRegionFactory").invoke(cache);
-    rf.getClass().getMethod("setDiskStoreName", String.class).invoke(rf, "store");
-    rf.getClass().getMethod("setDataPolicy", dataPolicy.getClass()).invoke(rf, dataPolicy);
-    rf.getClass().getMethod("setScope", scope.getClass()).invoke(rf, scope);
-    rf.getClass().getMethod("create", String.class).invoke(rf, regionName);
+    cache.createRegionFactory().setDiskStoreName("store")
+        .setDataPolicy(DataPolicy.PERSISTENT_REPLICATE).setScope(Scope.DISTRIBUTED_ACK)
+        .create(regionName);
   }
 
-  public static void assertVersion(Object cache, short ordinal) throws Exception {
-    Class idmClass = Thread.currentThread().getContextClassLoader()
-        .loadClass("org.apache.geode.distributed.internal.membership.InternalDistributedMember");
-    Method getDSMethod = cache.getClass().getMethod("getDistributedSystem");
-    getDSMethod.setAccessible(true);
-    Object ds = getDSMethod.invoke(cache);
-
-    Method getDistributedMemberMethod = ds.getClass().getMethod("getDistributedMember");
-    getDistributedMemberMethod.setAccessible(true);
-    Object member = getDistributedMemberMethod.invoke(ds);
-    Method getVersionObjectMethod = member.getClass().getMethod("getVersionObject");
-    getVersionObjectMethod.setAccessible(true);
-    Object thisVersion = getVersionObjectMethod.invoke(member);
-    Method getOrdinalMethod = thisVersion.getClass().getMethod("ordinal");
-    getOrdinalMethod.setAccessible(true);
-    short thisOrdinal = (Short) getOrdinalMethod.invoke(thisVersion);
+  public static void assertVersion(Cache cache, short ordinal) throws Exception {
+    DistributedSystem ds = cache.getDistributedSystem();
+    InternalDistributedMember member = (InternalDistributedMember) ds.getDistributedMember();
+    Version thisVersion = member.getVersionObject();
+    short thisOrdinal = thisVersion.ordinal();
     if (ordinal != thisOrdinal) {
       throw new Error(
           "Version ordinal:" + thisOrdinal + " was not the expected ordinal of:" + ordinal);
     }
   }
 
-  public static void assertQueryResults(Object cache, String queryString, int numExpectedResults) {
+  public static void assertQueryResults(Cache cache, String queryString, int numExpectedResults) {
     try {
-      Method getQSMethod = cache.getClass().getMethod("getQueryService");
-      getQSMethod.setAccessible(true);
-      Object qs = getQSMethod.invoke(cache);
-      Method newQueryMethod = qs.getClass().getMethod("newQuery", String.class);
-      newQueryMethod.setAccessible(true);
-      Object query = newQueryMethod.invoke(qs, queryString);
-      Method executeMethod = query.getClass().getMethod("execute");
-      executeMethod.setAccessible(true);
-      Object results = executeMethod.invoke(query);
-
-      Method sizeMethod = results.getClass().getMethod("size");
-      sizeMethod.setAccessible(true);
-      int numResults = (Integer) sizeMethod.invoke(results);
+      Query query = cache.getQueryService().newQuery(queryString);
+      SelectResults results = (SelectResults) query.execute();
+      int numResults = results.size();
 
       if (numResults != numExpectedResults) {
         System.out.println("Num Results was:" + numResults);
@@ -820,71 +766,33 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void stopCacheServers(Object cache) throws Exception {
-    Method getCacheServersMethod = cache.getClass().getMethod("getCacheServers");
-    getCacheServersMethod.setAccessible(true);
-    List cacheServers = (List) getCacheServersMethod.invoke(cache);
-    Method stopMethod = null;
-    for (Object cs : cacheServers) {
-      if (stopMethod == null) {
-        stopMethod = cs.getClass().getMethod("stop");
-      }
-      stopMethod.setAccessible(true);
-      stopMethod.invoke(cs);
+  public static void stopCacheServers(Cache cache) throws Exception {
+    for (CacheServer server : cache.getCacheServers()) {
+      server.stop();
     }
   }
 
-  public static void closeCache(Object cache) throws Exception {
+  public static void closeCache(final Cache cache) throws Exception {
     if (cache == null) {
       return;
     }
-    Method isClosedMethod = cache.getClass().getMethod("isClosed");
-    isClosedMethod.setAccessible(true);
-    boolean cacheClosed = (Boolean) isClosedMethod.invoke(cache);
-    if (cache != null && !cacheClosed) {
+    if (!cache.isClosed()) {
       stopCacheServers(cache);
-      Method method = cache.getClass().getMethod("close");
-      method.setAccessible(true);
-      method.invoke(cache);
+      cache.close();
       long startTime = System.currentTimeMillis();
-      while (!cacheClosed && System.currentTimeMillis() - startTime < 30000) {
-        try {
-          Thread.sleep(1000);
-          Method cacheClosedMethod = cache.getClass().getMethod("isClosed");
-          cacheClosedMethod.setAccessible(true);
-          cacheClosed = (Boolean) cacheClosedMethod.invoke(cache);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> cache.isClosed());
     }
-    cache = null;
   }
 
-  public static void rebalance(Object cache) throws Exception {
-    Method getRMMethod = cache.getClass().getMethod("getResourceManager");
-    getRMMethod.setAccessible(true);
-    Object manager = getRMMethod.invoke(cache);
-
-    Method createRebalanceFactoryMethod = manager.getClass().getMethod("createRebalanceFactory");
-    createRebalanceFactoryMethod.setAccessible(true);
-    Object rebalanceFactory = createRebalanceFactoryMethod.invoke(manager);
-    Object op = null;
-    Method m = rebalanceFactory.getClass().getMethod("start");
-    m.setAccessible(true);
-    op = m.invoke(rebalanceFactory);
+  public static void rebalance(Cache cache) throws Exception {
+    RebalanceOperation op = cache.getResourceManager().createRebalanceFactory().start();
 
     // Wait until the rebalance is complete
     try {
-      Method getResultsMethod = op.getClass().getMethod("getResults");
-      getResultsMethod.setAccessible(true);
-      Object results = getResultsMethod.invoke(op);
-      Method getTotalTimeMethod = results.getClass().getMethod("getTotalTime");
-      getTotalTimeMethod.setAccessible(true);
-      System.out.println("Took " + getTotalTimeMethod.invoke(results) + " milliseconds\n");
-      Method getTotalBucketsMethod = results.getClass().getMethod("getTotalBucketTransferBytes");
-      getTotalBucketsMethod.setAccessible(true);
-      System.out.println("Transfered " + getTotalBucketsMethod.invoke(results) + "bytes\n");
+      RebalanceResults results = op.getResults();
+      long totalTime = results.getTotalTime();
+      System.out.println("Took " + totalTime + " milliseconds");
+      System.out.println("Transfered " + results.getTotalBucketTransferBytes() + "bytes");
     } catch (Exception e) {
       Thread.currentThread().interrupt();
       throw e;
@@ -895,7 +803,8 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
    * Starts a locator with given configuration.
    */
   public static void startLocator(final String serverHostName, final int port,
-      final String testName, final String locatorsString, final Properties props) throws Exception {
+      final String testName, final String locatorsString, final Properties props, boolean fastStart)
+      throws Exception {
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, locatorsString);
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
@@ -907,25 +816,20 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
       throw new Error("While resolving bind address ", uhe);
     }
 
-    File logFile = new File(testName + "-locator" + port + ".log");
-    Class locatorClass = Thread.currentThread().getContextClassLoader()
-        .loadClass("org.apache.geode.distributed.Locator");
-    Method startLocatorAndDSMethod =
-        locatorClass.getMethod("startLocatorAndDS", int.class, File.class, InetAddress.class,
-            Properties.class, boolean.class, boolean.class, String.class);
-    startLocatorAndDSMethod.setAccessible(true);
-    startLocatorAndDSMethod.invoke(null, port, logFile, bindAddr, props, true, true, null);
+    if (fastStart) {
+      System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
+    }
+    try {
+      Locator.startLocatorAndDS(port, new File(""), bindAddr, props, true, true, null);
+    } finally {
+      if (fastStart) {
+        System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
+      }
+    }
   }
 
   public static void stopLocator() throws Exception {
-    Class internalLocatorClass = Thread.currentThread().getContextClassLoader()
-        .loadClass("org.apache.geode.distributed.internal.InternalLocator");
-    Method locatorMethod = internalLocatorClass.getMethod("getLocator");
-    locatorMethod.setAccessible(true);
-    Object locator = locatorMethod.invoke(null);
-    Method stopLocatorMethod = locator.getClass().getMethod("stop");
-    stopLocatorMethod.setAccessible(true);
-    stopLocatorMethod.invoke(locator);
+    Locator.getLocator().stop();
   }
 
   /**

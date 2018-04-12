@@ -14,8 +14,20 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,7 +87,6 @@ public class DistributedSystemLogFileJUnitTest {
 
   @Test
   public void testDistributedSystemCreatesLogFile() throws Exception {
-    // final int port = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final String logFileName = name.getMethodName() + "-system-0.log";
 
     final Properties properties = new Properties();
@@ -495,7 +506,6 @@ public class DistributedSystemLogFileJUnitTest {
 
   @Test
   public void testDistributedSystemWithFineLogLevel() throws Exception {
-    // final int port = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final String logFileName =
         name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
 
@@ -733,7 +743,6 @@ public class DistributedSystemLogFileJUnitTest {
 
   @Test
   public void testDistributedSystemWithDebugLogLevel() throws Exception {
-    // final int port = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final String logFileName =
         name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
 
@@ -971,7 +980,6 @@ public class DistributedSystemLogFileJUnitTest {
 
   @Test
   public void testDistributedSystemWithSecurityLogDefaultLevel() throws Exception {
-    // final int port = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final String logFileName =
         name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
     final String securityLogFileName =
@@ -1101,7 +1109,6 @@ public class DistributedSystemLogFileJUnitTest {
 
   @Test
   public void testDistributedSystemWithSecurityLogFineLevel() throws Exception {
-    // final int port = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final String logFileName =
         name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
     final String securityLogFileName =
@@ -1294,13 +1301,10 @@ public class DistributedSystemLogFileJUnitTest {
    * tests scenario where security log has not been set but a level has been set to a less granular
    * level than that of the regular log. Verifies that the correct logs for security show up in the
    * regular log as expected
-   *
-   * @throws Exception
    */
   @Test
   public void testDistributedSystemWithSecurityInfoLevelAndLogAtFineLevelButNoSecurityLog()
       throws Exception {
-    // final int port = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final String logFileName =
         name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
 
@@ -1461,13 +1465,10 @@ public class DistributedSystemLogFileJUnitTest {
    * tests scenario where security log has not been set but a level has been set to a more granular
    * level than that of the regular log. Verifies that the correct logs for security show up in the
    * regular log as expected
-   *
-   * @throws Exception
    */
   @Test
   public void testDistributedSystemWithSecurityFineLevelAndLogAtInfoLevelButNoSecurityLog()
       throws Exception {
-    // final int port = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final String logFileName =
         name.getMethodName() + "-system-" + System.currentTimeMillis() + ".log";
 

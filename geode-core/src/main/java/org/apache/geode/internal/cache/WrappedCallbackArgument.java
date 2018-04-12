@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 
 /**
  * Used to create subclasses that wrap another callback argument by having a reference to the
@@ -68,7 +67,7 @@ public abstract class WrappedCallbackArgument {
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this._originalCallbackArg = InternalDataSerializer.readUserObject(in);
+    this._originalCallbackArg = DataSerializer.readObject(in);
   }
 
   void setOriginalCallbackArgument(Object origCallbackArg) {

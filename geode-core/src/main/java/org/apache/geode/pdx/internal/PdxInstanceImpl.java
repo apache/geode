@@ -85,6 +85,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
 
   private transient volatile int cachedHashCode = UNUSED_HASH_CODE;
 
+  private static final ThreadLocal<Boolean> pdxGetObjectInProgress = new ThreadLocal<Boolean>();
+
   public PdxInstanceImpl(PdxType pdxType, DataInput in, int len) {
     super(pdxType, createDis(in, len));
   }
@@ -119,6 +121,18 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     return dis;
   }
 
+  public static boolean getPdxReadSerialized() {
+    return pdxGetObjectInProgress.get() == null;
+  }
+
+  public static void setPdxReadSerialized(boolean readSerialized) {
+    if (!readSerialized) {
+      pdxGetObjectInProgress.set(true);
+    } else {
+      pdxGetObjectInProgress.remove();
+    }
+  }
+
   @Override
   public Object getField(String fieldName) {
     return getUnmodifiableReader(fieldName).readField(fieldName);
@@ -147,7 +161,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       PdxWriterImpl writer = convertToTypeWithNoDeletedFields(ur);
       writer.sendTo(out);
     } else {
-      out.write(DSCODE.PDX);
+      out.write(DSCODE.PDX.toByte());
       out.writeInt(ur.basicSize());
       out.writeInt(ur.getPdxType().getTypeId());
       ur.basicSendTo(out);
@@ -163,7 +177,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     } else {
       byte[] result = new byte[PdxWriterImpl.HEADER_SIZE + ur.basicSize()];
       ByteBuffer bb = ByteBuffer.wrap(result);
-      bb.put(DSCODE.PDX);
+      bb.put(DSCODE.PDX.toByte());
       bb.putInt(ur.basicSize());
       bb.putInt(ur.getPdxType().getTypeId());
       ur.basicSendTo(bb);
@@ -220,16 +234,15 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       }
       return this;
     }
-
-    boolean wouldReadSerialized = TypeRegistry.getPdxReadSerialized();
+    boolean wouldReadSerialized = PdxInstanceImpl.getPdxReadSerialized();
     if (!wouldReadSerialized) {
       return getUnmodifiableReader().basicGetObject();
     } else {
-      TypeRegistry.setPdxReadSerialized(false);
+      PdxInstanceImpl.setPdxReadSerialized(false);
       try {
         return getUnmodifiableReader().basicGetObject();
       } finally {
-        TypeRegistry.setPdxReadSerialized(true);
+        PdxInstanceImpl.setPdxReadSerialized(true);
       }
     }
   }

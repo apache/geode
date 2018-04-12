@@ -26,7 +26,6 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ConflationKey;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -159,7 +158,7 @@ public class DestroyOperation extends DistributedCacheOperation {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.eventId = (EventID) DataSerializer.readObject(in);
-      this.key = InternalDataSerializer.readUserObject(in);
+      this.key = DataSerializer.readObject(in);
       Boolean hasTailKey = DataSerializer.readBoolean(in);
       if (hasTailKey.booleanValue()) {
         this.tailKey = DataSerializer.readLong(in);

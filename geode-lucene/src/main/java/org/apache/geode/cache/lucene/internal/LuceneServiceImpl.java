@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -166,8 +164,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     if (!regionPath.startsWith("/")) {
       regionPath = "/" + regionPath;
     }
-    String name = indexName + "#" + regionPath.replace('/', '_');
-    return name;
+    return indexName + "#" + regionPath.replace('/', '_');
   }
 
   public static String getUniqueIndexRegionName(String indexName, String regionPath,
@@ -228,6 +225,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
         analyzer, fieldAnalyzers, serializer));
 
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
+    region.updatePRConfigWithNewGatewaySender(aeqId);
     LuceneIndexImpl luceneIndex = beforeDataRegionCreated(indexName, regionPath,
         region.getAttributes(), analyzer, fieldAnalyzers, aeqId, serializer, fields);
 
@@ -254,15 +252,13 @@ public class LuceneServiceImpl implements InternalLuceneService {
             throw new BucketNotFoundException(
                 "Bucket ID : " + primaryBucketId + " not found during lucene indexing");
           }
-          if (!userBucket.isEmpty()) {
-            /**
-             *
-             * Calling getRepository will in turn call computeRepository
-             * which is responsible for indexing the user region.
-             *
-             **/
-            repositoryManager.getRepository(primaryBucketId);
-          }
+          /**
+           *
+           * Calling getRepository will in turn call computeRepository
+           * which is responsible for indexing the user region.
+           *
+           **/
+          repositoryManager.getRepository(primaryBucketId);
         } catch (BucketNotFoundException | PrimaryBucketException e) {
           logger.debug("Bucket ID : " + primaryBucketId
               + " not found while saving to lucene index: " + e.getMessage(), e);

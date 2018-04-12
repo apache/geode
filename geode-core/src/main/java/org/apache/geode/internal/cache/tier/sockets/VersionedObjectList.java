@@ -76,9 +76,9 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
    *        available
    */
   public void addKeyAndVersion(Object key, VersionTag versionTag) {
-    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST)) {
-      logger.trace(LogMarker.VERSIONED_OBJECT_LIST, "VersionedObjectList.addKeyAndVersion({}; {})",
-          key, versionTag);
+    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE)) {
+      logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE,
+          "VersionedObjectList.addKeyAndVersion({}; {})", key, versionTag);
     }
     if (this.objects.size() > 0) {
       throw new IllegalStateException("attempt to add key/version to a list containing objects");
@@ -92,8 +92,8 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   @Override
   public void addPart(Object key, Object value, byte objectType, VersionTag versionTag) {
-    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST)) {
-      logger.trace(LogMarker.VERSIONED_OBJECT_LIST, "addPart({}; {}; {}; {}", key, value,
+    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE)) {
+      logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE, "addPart({}; {}; {}; {}", key, value,
           objectType, versionTag);
     }
     super.addPart(key, value, objectType, versionTag);
@@ -115,10 +115,6 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   /**
    * add a versioned "map" entry to the list
-   *
-   * @param key
-   * @param value
-   * @param versionTag
    */
   public void addObject(Object key, Object value, VersionTag versionTag) {
     addPart(key, value, OBJECT, versionTag);
@@ -186,8 +182,9 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   @Override
   public void addAll(ObjectPartList other) {
-    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST)) {
-      logger.trace(LogMarker.VERSIONED_OBJECT_LIST, "VOL.addAll(other={}; this={}", other, this);
+    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE)) {
+      logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE, "VOL.addAll(other={}; this={}", other,
+          this);
     }
     int myTypeArrayLength = this.hasKeys ? this.keys.size() : this.objects.size();
     int otherTypeArrayLength = other.hasKeys ? other.keys.size() : other.objects.size();
@@ -376,8 +373,8 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     if (this.serializeValues) {
       flags |= 0x10;
     }
-    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST)) {
-      logger.trace(LogMarker.VERSIONED_OBJECT_LIST,
+    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE)) {
+      logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE,
           "serializing {} with flags 0x{} startIndex={} numEntries={}", this,
           Integer.toHexString(flags), startIndex, numEntries);
     }
@@ -444,7 +441,8 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    final boolean isDebugEnabled_VOL = logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST);
+    final boolean isDebugEnabled_VOL =
+        logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE);
     int flags = in.readByte();
     this.hasKeys = (flags & 0x01) == 0x01;
     boolean hasObjects = (flags & 0x02) == 0x02;
@@ -453,23 +451,23 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     this.serializeValues = (flags & 0x10) == 0x10;
     boolean persistent = (flags & 0x20) == 0x20;
     if (isDebugEnabled_VOL) {
-      logger.trace(LogMarker.VERSIONED_OBJECT_LIST,
+      logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE,
           "deserializing a VersionedObjectList with flags 0x{}", Integer.toHexString(flags));
     }
     if (this.hasKeys) {
       int size = (int) InternalDataSerializer.readUnsignedVL(in);
       this.keys = new ArrayList(size);
       if (isDebugEnabled_VOL) {
-        logger.trace(LogMarker.VERSIONED_OBJECT_LIST, "reading {} keys", size);
+        logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE, "reading {} keys", size);
       }
       for (int i = 0; i < size; i++) {
-        this.keys.add(InternalDataSerializer.readUserObject(in));
+        this.keys.add(DataSerializer.readObject(in));
       }
     }
     if (hasObjects) {
       int size = (int) InternalDataSerializer.readUnsignedVL(in);
       if (isDebugEnabled_VOL) {
-        logger.trace(LogMarker.VERSIONED_OBJECT_LIST, "reading {} objects", size);
+        logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE, "reading {} objects", size);
       }
       this.objects = new ArrayList(size);
       this.objectTypeArray = new byte[size];
@@ -482,7 +480,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     if (hasTags) {
       int size = (int) InternalDataSerializer.readUnsignedVL(in);
       if (isDebugEnabled_VOL) {
-        logger.trace(LogMarker.VERSIONED_OBJECT_LIST, "reading {} version tags", size);
+        logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE, "reading {} version tags", size);
       }
       this.versionTags = new ArrayList<VersionTag>(size);
       List<VersionSource> ids = new ArrayList<VersionSource>(size);
@@ -515,9 +513,9 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   private void writeObject(Object value, int index, DataOutput out) throws IOException {
     byte objectType = this.objectTypeArray[index];
-    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST)) {
-      logger.trace(LogMarker.VERSIONED_OBJECT_LIST, "writing object {} of type {}: {}", index,
-          objectType, value);
+    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE)) {
+      logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE, "writing object {} of type {}: {}",
+          index, objectType, value);
     }
     out.writeByte(objectType);
     if (objectType == OBJECT && value instanceof byte[]) {
@@ -544,8 +542,8 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
   private void readObject(int index, DataInput in) throws IOException, ClassNotFoundException {
     Object value;
     this.objectTypeArray[index] = in.readByte();
-    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST)) {
-      logger.trace(LogMarker.VERSIONED_OBJECT_LIST, "reading object {} of type {}", index,
+    if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE)) {
+      logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE, "reading object {} of type {}", index,
           objectTypeArray[index]);
     }
     boolean isException = this.objectTypeArray[index] == EXCEPTION;
@@ -557,7 +555,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     } else if (this.serializeValues) {
       value = DataSerializer.readByteArray(in);
     } else {
-      value = InternalDataSerializer.readUserObject(in);
+      value = DataSerializer.readObject(in);
     }
     this.objects.add(value);
   }

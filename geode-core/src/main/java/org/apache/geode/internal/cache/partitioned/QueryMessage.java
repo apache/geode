@@ -30,7 +30,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
-import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
@@ -45,11 +44,9 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.streaming.StreamingOperation.StreamingReplyMessage;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ForceReattemptException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PRQueryProcessor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
@@ -155,8 +152,8 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "QueryMessage operateOnPartitionedRegion: {} buckets {}",
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "QueryMessage operateOnPartitionedRegion: {} buckets {}",
           pr.getFullPath(), this.buckets);
     }
 
@@ -304,9 +301,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     super.fromData(in);
     this.queryString = DataSerializer.readString(in);
     this.buckets = DataSerializer.readArrayList(in);
-    InternalDataSerializer.doWithPdxReadSerialized(() -> {
-      this.parameters = DataSerializer.readObjectArray(in);
-    });
+    this.parameters = DataSerializer.readObjectArray(in);
     this.cqQuery = DataSerializer.readBoolean(in);
     this.isPdxSerialized = DataSerializer.readBoolean(in);
     this.traceOn = DataSerializer.readBoolean(in);

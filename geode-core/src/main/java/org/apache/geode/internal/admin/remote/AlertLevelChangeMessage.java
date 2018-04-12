@@ -63,8 +63,8 @@ public class AlertLevelChangeMessage extends SerialDistributionMessage {
 
     if (this.newLevel != Alert.OFF) {
       AlertAppender.getInstance().addAlertListener(this.getSender(), this.newLevel);
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "Added new AlertListener to application log writer");
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Added new AlertListener to application log writer");
       }
     }
   }

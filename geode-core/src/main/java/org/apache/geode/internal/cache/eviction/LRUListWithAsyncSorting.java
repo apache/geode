@@ -131,8 +131,8 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
         return null;
       }
 
-      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-        logger.trace(LogMarker.LRU_CLOCK, "lru considering {}", evictionNode);
+      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+        logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "lru considering {}", evictionNode);
       }
 
       if (!isEvictable(evictionNode)) {
@@ -146,8 +146,8 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
         continue;
       }
 
-      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-        logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage
+      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+        logger.trace(LogMarker.LRU_CLOCK_VERBOSE, LocalizedMessage
             .create(LocalizedStrings.NewLRUClockHand_RETURNING_UNUSED_ENTRY, evictionNode));
       }
       if (evictionNode.isRecentlyUsed()) {

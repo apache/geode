@@ -1269,7 +1269,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     // if (this._hasCqs) {
     // this._clientCqs = DataSerializer.readHashMap(in);
     // }
-    this._callbackArgument = InternalDataSerializer.readUserObject(in);
+    this._callbackArgument = DataSerializer.readObject(in);
 
     CacheClientNotifier ccn = CacheClientNotifier.getInstance();
 
@@ -1475,7 +1475,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     @Override
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
-      out.writeByte(DSCODE.HASH_MAP);
+      out.writeByte(DSCODE.HASH_MAP.toByte());
       int size = size();
       InternalDataSerializer.writeArrayLength(size, out);
       if (size > 0) {
@@ -1547,7 +1547,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     @Override
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
-      out.writeByte(DSCODE.HASH_MAP);
+      out.writeByte(DSCODE.HASH_MAP.toByte());
       DataSerializer.writeHashMap(this, out);
     }
 

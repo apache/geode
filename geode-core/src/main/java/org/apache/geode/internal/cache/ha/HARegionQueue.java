@@ -410,9 +410,7 @@ public class HARegionQueue implements RegionQueue {
     Exception problem = null;
     try {
       createHARegion(regionName, cache);
-    } catch (IOException e) {
-      problem = e;
-    } catch (ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException e) {
       problem = e;
     }
     if (problem != null) {
@@ -434,7 +432,7 @@ public class HARegionQueue implements RegionQueue {
   @SuppressWarnings("synthetic-access")
   public void recordEventState(InternalDistributedMember sender, Map eventState) {
     StringBuffer sb = null;
-    final boolean isDebugEnabled_BS = logger.isTraceEnabled(LogMarker.BRIDGE_SERVER);
+    final boolean isDebugEnabled_BS = logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE);
     if (isDebugEnabled_BS) {
       sb = new StringBuffer(500);
       sb.append("Recording initial event state for ").append(this.regionName).append(" from ")
@@ -463,7 +461,7 @@ public class HARegionQueue implements RegionQueue {
       }
     }
     if (isDebugEnabled_BS) {
-      logger.trace(LogMarker.BRIDGE_SERVER, sb.toString());
+      logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, sb.toString());
     }
   }
 
@@ -514,9 +512,6 @@ public class HARegionQueue implements RegionQueue {
               // TODO: remove this assertion
               Assert.assertTrue(counterInRegion > max);
               max = counterInRegion;
-              // putInQueue(val);
-              // logger.info(LocalizedStrings.DEBUG, this + " putting GII entry #" + counterInRegion
-              // + " into queue: " + val);
               this.put(val);
             } else if (isDebugEnabled) {
               logger.debug(
@@ -680,8 +675,9 @@ public class HARegionQueue implements RegionQueue {
             this.put(object);
           }
         } else {
-          if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-            logger.trace(LogMarker.BRIDGE_SERVER, "{}: Adding message to queue: {}", this, object);
+          if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+            logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "{}: Adding message to queue: {}", this,
+                object);
           }
         }
 
@@ -708,8 +704,9 @@ public class HARegionQueue implements RegionQueue {
       if (!dace.putObject(event, sequenceID)) {
         this.put(object);
       } else {
-        if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-          logger.trace(LogMarker.BRIDGE_SERVER, "{}: Adding message to queue: {}", this, object);
+        if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+          logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "{}: Adding message to queue: {}", this,
+              object);
         }
       }
     }
@@ -727,9 +724,6 @@ public class HARegionQueue implements RegionQueue {
       logger.debug("{}: startGiiQueueing count is now {}", this.region.getName(), this.giiCount);
     }
     this.giiLock.writeLock().unlock();
-    // slow GII serving for debugging #43609
-    // try {Thread.sleep(5000);} catch (InterruptedException e) {
-    // Thread.currentThread().interrupt(); }
   }
 
   /**
@@ -2900,10 +2894,10 @@ public class HARegionQueue implements RegionQueue {
     protected boolean putObject(Conflatable event, long sequenceID)
         throws CacheException, InterruptedException {
       Long oldPosition = null;
-      final boolean isDebugEnabled_BS = logger.isTraceEnabled(LogMarker.BRIDGE_SERVER);
+      final boolean isDebugEnabled_BS = logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE);
       if (isDebugEnabled_BS && this.lastSequenceIDPut >= sequenceID
           && !owningQueue.puttingGIIDataInQueue) {
-        logger.trace(LogMarker.BRIDGE_SERVER,
+        logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE,
             "HARegionQueue::DACE:putObject: Given sequence ID is already present ({}).\nThis may be a recovered operation via P2P or a GetInitialImage.\nlastSequenceIDPut = {} ; event = {};\n",
             sequenceID, lastSequenceIDPut, event);
       }
@@ -2917,7 +2911,7 @@ public class HARegionQueue implements RegionQueue {
           this.lastSequenceIDPut = sequenceID;
         } else if (!owningQueue.puttingGIIDataInQueue) {
           if (isDebugEnabled_BS) {
-            logger.trace(LogMarker.BRIDGE_SERVER,
+            logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE,
                 "{} eliding event with ID {}, because it is not greater than the last sequence ID ({}). The rejected event has key <{}> and value <{}>",
                 this, event.getEventId(), this.lastSequenceIDPut, event.getKeyToConflate(),
                 event.getValueToConflate());
@@ -3346,9 +3340,7 @@ public class HARegionQueue implements RegionQueue {
 
       try {
         this.region.destroyRegion();
-      } catch (RegionDestroyedException ignore) {
-        // keep going
-      } catch (CancelException ignore) {
+      } catch (RegionDestroyedException | CancelException ignore) {
         // keep going
       }
       ((HAContainerWrapper) haContainer).removeProxy(regionName);

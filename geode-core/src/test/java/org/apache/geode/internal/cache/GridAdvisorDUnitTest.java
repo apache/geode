@@ -29,10 +29,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort.Keeper;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -52,6 +50,19 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  */
 @Category(DistributedTest.class)
 public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
+
+  private static InternalCache cache;
+
+  private void createCache(String locators, String groups) {
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, locators);
+    if (groups != null) {
+      props.setProperty(GROUPS, groups);
+    }
+    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+    cache = (InternalCache) new CacheFactory(props).create();
+  }
 
   /**
    * Tests 2 controllers and 2 bridge servers
@@ -118,11 +129,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
     SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
       public void run() {
-        Properties props = new Properties();
-        props.setProperty(MCAST_PORT, "0");
-        props.setProperty(LOCATORS, locators);
-        dsProps.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-        CacheFactory.create(DistributedSystem.connect(props));
+        createCache(locators, null);
       }
     };
     vm1.invoke(connect);
@@ -130,7 +137,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     SerializableRunnable startBS1 = new SerializableRunnable("start bridgeServer on " + bsPort1) {
       public void run() {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = cache;
           CacheServer bs = c.addCacheServer();
           bs.setPort(bsPort1);
           bs.setGroups(new String[] {"bs1Group1", "bs1Group2"});
@@ -145,7 +152,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     SerializableRunnable startBS3 = new SerializableRunnable("start bridgeServer on " + bsPort3) {
       public void run() {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = cache;
           CacheServer bs = c.addCacheServer();
           bs.setPort(bsPort3);
           bs.setGroups(new String[] {"bs3Group1", "bs3Group2"});
@@ -166,7 +173,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(new SerializableRunnable("start bridgeServer on " + bsPort2) {
       public void run() {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = cache;
           CacheServer bs = c.addCacheServer();
           bs.setPort(bsPort2);
           bs.setGroups(new String[] {"bs2Group1", "bs2Group2"});
@@ -182,7 +189,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(new SerializableRunnable("start bridgeServer on " + bsPort4) {
       public void run() {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = cache;
           CacheServer bs = c.addCacheServer();
           bs.setPort(bsPort4);
           bs.setGroups(new String[] {"bs4Group1", "bs4Group2"});
@@ -273,7 +280,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     vm1.invoke(
         new SerializableRunnable("Verify bridge server view on " + bsPort1 + " and on " + bsPort3) {
           public void run() {
-            Cache c = CacheFactory.getAnyInstance();
+            Cache c = cache;
             List bslist = c.getCacheServers();
             assertEquals(2, bslist.size());
             for (int i = 0; i < bslist.size(); i++) {
@@ -303,7 +310,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(
         new SerializableRunnable("Verify bridge server view on " + bsPort2 + " and on " + bsPort4) {
           public void run() {
-            Cache c = CacheFactory.getAnyInstance();
+            Cache c = cache;
             List bslist = c.getCacheServers();
             assertEquals(2, bslist.size());
             for (int i = 0; i < bslist.size(); i++) {
@@ -333,7 +340,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
     SerializableRunnable stopBS = new SerializableRunnable("stop bridge server") {
       public void run() {
-        Cache c = CacheFactory.getAnyInstance();
+        Cache c = cache;
         List bslist = c.getCacheServers();
         assertEquals(2, bslist.size());
         CacheServer bs = (CacheServer) bslist.get(0);
@@ -414,10 +421,9 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
     SerializableRunnable disconnect = new SerializableRunnable("Disconnect from " + locators) {
       public void run() {
-        Properties props = new Properties();
-        props.setProperty(MCAST_PORT, "0");
-        props.setProperty(LOCATORS, locators);
-        DistributedSystem.connect(props).disconnect();
+        if (cache != null) {
+          cache.close();
+        }
       }
     };
     SerializableRunnable stopLocator = new SerializableRunnable("Stop locator") {
@@ -443,7 +449,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     });
     vm2.invoke(new SerializableRunnable("Verify bridge server saw locator stop") {
       public void run() {
-        Cache c = CacheFactory.getAnyInstance();
+        Cache c = cache;
         List bslist = c.getCacheServers();
         assertEquals(2, bslist.size());
         for (int i = 0; i < bslist.size(); i++) {
@@ -466,7 +472,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     });
     vm1.invoke(new SerializableRunnable("Verify bridge server saw locator stop") {
       public void run() {
-        Cache c = CacheFactory.getAnyInstance();
+        Cache c = cache;
         List bslist = c.getCacheServers();
         assertEquals(2, bslist.size());
         for (int i = 0; i < bslist.size(); i++) {
@@ -495,7 +501,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     SerializableRunnable restartBS = new SerializableRunnable("restart bridge server") {
       public void run() {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = cache;
           List bslist = c.getCacheServers();
           assertEquals(2, bslist.size());
           CacheServer bs = (CacheServer) bslist.get(0);
@@ -623,29 +629,19 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
     vm1.invoke(new SerializableRunnable("Connect to " + locators) {
       public void run() {
-        Properties props = new Properties();
-        props.setProperty(MCAST_PORT, "0");
-        props.setProperty(LOCATORS, locators);
-        props.setProperty(GROUPS, "bs1Group1, bs1Group2");
-        props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-        CacheFactory.create(DistributedSystem.connect(props));
+        createCache(locators, "bs1Group1, bs1Group2");
       }
     });
     vm2.invoke(new SerializableRunnable("Connect to " + locators) {
       public void run() {
-        Properties props = new Properties();
-        props.setProperty(MCAST_PORT, "0");
-        props.setProperty(LOCATORS, locators);
-        props.setProperty(GROUPS, "bs2Group1, bs2Group2");
-        props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-        CacheFactory.create(DistributedSystem.connect(props));
+        createCache(locators, "bs2Group1, bs2Group2");
       }
     });
 
     SerializableRunnable startBS1 = new SerializableRunnable("start bridgeServer on " + bsPort1) {
       public void run() {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = cache;
           CacheServer bs = c.addCacheServer();
           bs.setPort(bsPort1);
           bs.start();
@@ -659,7 +655,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     SerializableRunnable startBS3 = new SerializableRunnable("start bridgeServer on " + bsPort3) {
       public void run() {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = cache;
           CacheServer bs = c.addCacheServer();
           bs.setPort(bsPort3);
           bs.start();
@@ -679,7 +675,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(new SerializableRunnable("start bridgeServer on " + bsPort2) {
       public void run() {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = cache;
           CacheServer bs = c.addCacheServer();
           bs.setPort(bsPort2);
           bs.start();
@@ -694,7 +690,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(new SerializableRunnable("start bridgeServer on " + bsPort4) {
       public void run() {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = cache;
           CacheServer bs = c.addCacheServer();
           bs.setPort(bsPort4);
           bs.start();
@@ -784,7 +780,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     vm1.invoke(
         new SerializableRunnable("Verify bridge server view on " + bsPort1 + " and on " + bsPort3) {
           public void run() {
-            Cache c = CacheFactory.getAnyInstance();
+            Cache c = cache;
             List bslist = c.getCacheServers();
             assertEquals(2, bslist.size());
             for (int i = 0; i < bslist.size(); i++) {
@@ -814,7 +810,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(
         new SerializableRunnable("Verify bridge server view on " + bsPort2 + " and on " + bsPort4) {
           public void run() {
-            Cache c = CacheFactory.getAnyInstance();
+            Cache c = cache;
             List bslist = c.getCacheServers();
             assertEquals(2, bslist.size());
             for (int i = 0; i < bslist.size(); i++) {
@@ -844,7 +840,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
     SerializableRunnable stopBS = new SerializableRunnable("stop bridge server") {
       public void run() {
-        Cache c = CacheFactory.getAnyInstance();
+        Cache c = cache;
         List bslist = c.getCacheServers();
         assertEquals(2, bslist.size());
         CacheServer bs = (CacheServer) bslist.get(0);
@@ -925,7 +921,9 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
     SerializableRunnable disconnect = new SerializableRunnable("Disconnect from " + locators) {
       public void run() {
-        InternalDistributedSystem.getAnyInstance().disconnect();
+        if (cache != null) {
+          cache.close();
+        }
       }
     };
     SerializableRunnable stopLocator = new SerializableRunnable("Stop locator") {
@@ -951,7 +949,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     });
     vm2.invoke(new SerializableRunnable("Verify bridge server saw locator stop") {
       public void run() {
-        Cache c = CacheFactory.getAnyInstance();
+        Cache c = cache;
         List bslist = c.getCacheServers();
         assertEquals(2, bslist.size());
         for (int i = 0; i < bslist.size(); i++) {
@@ -974,7 +972,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     });
     vm1.invoke(new SerializableRunnable("Verify bridge server saw locator stop") {
       public void run() {
-        Cache c = CacheFactory.getAnyInstance();
+        Cache c = cache;
         List bslist = c.getCacheServers();
         assertEquals(2, bslist.size());
         for (int i = 0; i < bslist.size(); i++) {
@@ -1003,7 +1001,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     SerializableRunnable restartBS = new SerializableRunnable("restart bridge server") {
       public void run() {
         try {
-          Cache c = CacheFactory.getAnyInstance();
+          Cache c = cache;
           List bslist = c.getCacheServers();
           assertEquals(2, bslist.size());
           CacheServer bs = (CacheServer) bslist.get(0);

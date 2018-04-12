@@ -241,12 +241,10 @@ jobs:
           MAINTENANCE_VERSION: ((!maintenance-version))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
           PUBLIC_BUCKET: ((!public-bucket))
-          PARALLEL_DUNIT: true
-          DUNIT_PARALLEL_FORKS: 1
           CALL_STACK_TIMEOUT: 25200
         run:
           args:
-          - :geode-assembly:acceptanceTest
+          - :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
           - acceptancetestfiles
           path: geode-ci/ci/scripts/test-run.sh
       on_failure:

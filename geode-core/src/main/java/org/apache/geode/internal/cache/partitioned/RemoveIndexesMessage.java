@@ -284,8 +284,9 @@ public class RemoveIndexesMessage extends PartitionMessage {
       // log the exception at fine level if there is no reply to the message
       if (this.processorId == 0) {
         logger.debug("{} exception while processing message: {}", this, t.getMessage(), t);
-      } else if (logger.isTraceEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
-        logger.debug("Exception caught while processing message: {}", t.getMessage(), t);
+      } else if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message: {}",
+            t.getMessage(), t);
       }
       if (t instanceof RegionDestroyedException && pr != null) {
         if (pr.isClosed) {

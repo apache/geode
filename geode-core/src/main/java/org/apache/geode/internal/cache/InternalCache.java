@@ -356,7 +356,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
    * @return either the original obj if no conversion was needed;
    *         or the result of calling PdxInstance.getObject on obj.
    */
-  Object convertPdxInstanceIfNeeded(Object obj);
+  Object convertPdxInstanceIfNeeded(Object obj, boolean preferCD);
 
   Boolean getPdxReadSerializedOverride();
 

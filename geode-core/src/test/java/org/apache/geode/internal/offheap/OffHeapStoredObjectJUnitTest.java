@@ -375,19 +375,19 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
     byte[] serailizedValue = chunk.getSerializedValue();
-    serailizedValue[0] = DSCODE.PDX;
+    serailizedValue[0] = DSCODE.PDX.toByte();
     chunk.setSerializedValue(serailizedValue);
 
     assertThat(chunk.isSerializedPdxInstance()).isTrue();
 
     serailizedValue = chunk.getSerializedValue();
-    serailizedValue[0] = DSCODE.PDX_ENUM;
+    serailizedValue[0] = DSCODE.PDX_ENUM.toByte();
     chunk.setSerializedValue(serailizedValue);
 
     assertThat(chunk.isSerializedPdxInstance()).isTrue();
 
     serailizedValue = chunk.getSerializedValue();
-    serailizedValue[0] = DSCODE.PDX_INLINE_ENUM;
+    serailizedValue[0] = DSCODE.PDX_INLINE_ENUM.toByte();
     chunk.setSerializedValue(serailizedValue);
 
     assertThat(chunk.isSerializedPdxInstance()).isTrue();
@@ -572,7 +572,7 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     byte[] actual = dataOutput.toByteArray();
 
     byte[] expected = new byte[regionEntryValue.length + 2];
-    expected[0] = DSCODE.BYTE_ARRAY;
+    expected[0] = DSCODE.BYTE_ARRAY.toByte();
     expected[1] = (byte) regionEntryValue.length;
     System.arraycopy(regionEntryValue, 0, expected, 2, regionEntryValue.length);
 

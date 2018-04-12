@@ -16,13 +16,15 @@ package org.apache.geode.experimental.driver;
 
 public class ProtobufFunctionService implements FunctionService {
   private final ProtobufChannel channel;
+  private final ValueEncoder valueEncoder;
 
-  public ProtobufFunctionService(ProtobufChannel channel) {
+  public ProtobufFunctionService(ProtobufChannel channel, ValueEncoder valueEncoder) {
     this.channel = channel;
+    this.valueEncoder = valueEncoder;
   }
 
   @Override
   public <T> Function newFunction(String functionId) {
-    return new ProtobufFunction<T>(functionId, channel);
+    return new ProtobufFunction<T>(functionId, channel, valueEncoder);
   }
 }

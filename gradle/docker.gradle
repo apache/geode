@@ -108,6 +108,5 @@ subprojects {
 
   if (project.hasProperty('parallelDunit')) {
     distributedTest.configure(dockerConfig)
-    acceptanceTest.configure(dockerConfig)
   }
 }

@@ -53,7 +53,7 @@ public class DescribeJndiBindingCommandDUnitTest {
   @Test
   public void describeJndiBindingForSimpleDataSource() {
     gfsh.executeAndAssertThat(
-        "create jndi-binding --name=jndi-simple --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\" --username=joe --datasource-config-properties={'name':'prop1','value':'value1'}")
+        "create jndi-binding --name=jndi-simple --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\" --username=joe --datasource-config-properties={'name':'prop1','value':'value1','type':'java.lang.String'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     gfsh.executeAndAssertThat("describe jndi-binding --name=jndi-simple").statusIsSuccess()

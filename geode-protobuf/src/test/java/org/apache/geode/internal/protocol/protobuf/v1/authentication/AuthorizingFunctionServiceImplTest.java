@@ -18,7 +18,6 @@ import static org.apache.geode.security.ResourcePermission.ALL;
 import static org.apache.geode.security.ResourcePermission.Operation.WRITE;
 import static org.apache.geode.security.ResourcePermission.Resource.CLUSTER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;

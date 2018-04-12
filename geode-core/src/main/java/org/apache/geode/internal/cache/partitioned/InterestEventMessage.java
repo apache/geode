@@ -70,8 +70,9 @@ public class InterestEventMessage extends PartitionMessage {
   @Override
   protected boolean operateOnPartitionedRegion(final ClusterDistributionManager dm,
       PartitionedRegion r, long startTime) throws ForceReattemptException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.debug("InterestEventMessage operateOnPartitionedRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "InterestEventMessage operateOnPartitionedRegion: {}",
+          r.getFullPath());
     }
 
     PartitionedRegionDataStore ds = r.getDataStore();
@@ -170,8 +171,8 @@ public class InterestEventMessage extends PartitionMessage {
     @Override
     protected void process(final ClusterDistributionManager dm) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "InterestEventReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
@@ -180,15 +181,15 @@ public class InterestEventMessage extends PartitionMessage {
         ReplyProcessor21 processor = ReplyProcessor21.getProcessor(this.processorId);
 
         if (processor == null) {
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "InterestEventReplyMessage processor not found");
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "InterestEventReplyMessage processor not found");
           }
           return;
         }
         processor.process(this);
 
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.debug("{} processed {}", processor, this);
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace("{} processed {}", processor, this);
         }
       } finally {
         dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);

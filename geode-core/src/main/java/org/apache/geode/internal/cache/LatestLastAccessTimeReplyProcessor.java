@@ -48,8 +48,8 @@ public class LatestLastAccessTimeReplyProcessor extends ReplyProcessor21 {
       ReplyMessage reply = (ReplyMessage) msg;
       long replyTime = (long) reply.getReturnValue();
       updateLatestLastAccessTime(replyTime);
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "LatestLastAccessTimeReplyMessage return value is {}",
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "LatestLastAccessTimeReplyMessage return value is {}",
             replyTime);
       }
     } finally {

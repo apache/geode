@@ -158,17 +158,16 @@ public class AuthorizationIntegrationTest {
     MessageUtil.performAndVerifyHandshake(socket);
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+        .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
             .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
             .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD))
         .build();
     authenticationRequest.writeDelimitedTo(outputStream);
 
     ClientProtocol.Message responseMessage = ClientProtocol.Message.parseDelimitedFrom(inputStream);
-    assertEquals(ClientProtocol.Message.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
+    assertEquals(ClientProtocol.Message.HANDSHAKERESPONSE_FIELD_NUMBER,
         responseMessage.getMessageTypeCase().getNumber());
-    ConnectionAPI.AuthenticationResponse authenticationResponse =
-        responseMessage.getAuthenticationResponse();
+    ConnectionAPI.HandshakeResponse authenticationResponse = responseMessage.getHandshakeResponse();
     assertTrue(authenticationResponse.getAuthenticated());
   }
 

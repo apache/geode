@@ -894,10 +894,11 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     logger.info(Banner.getString(this.agentConfig.getOriginalArgs()));
 
     // LOG:CONFIG: changed next three statements from config to info
-    logger.info(LogMarker.CONFIG, LocalizedStrings.AgentImpl_AGENT_CONFIG_PROPERTY_FILE_NAME_0
-        .toLocalizedString(AgentConfigImpl.retrievePropertyFile()));
-    logger.info(LogMarker.CONFIG, this.agentConfig.getPropertyFileDescription());
-    logger.info(LogMarker.CONFIG, this.agentConfig.toPropertiesAsString());
+    logger.info(LogMarker.CONFIG_MARKER,
+        LocalizedStrings.AgentImpl_AGENT_CONFIG_PROPERTY_FILE_NAME_0
+            .toLocalizedString(AgentConfigImpl.retrievePropertyFile()));
+    logger.info(LogMarker.CONFIG_MARKER, this.agentConfig.getPropertyFileDescription());
+    logger.info(LogMarker.CONFIG_MARKER, this.agentConfig.toPropertiesAsString());
   }
 
   /**
@@ -1301,7 +1302,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       // validate and set host and port values...
       if (this.agentConfig.getHttpPort() > 0) {
         this.httpAdaptor.setPort(this.agentConfig.getHttpPort());
-        logger.info(LogMarker.CONFIG,
+        logger.info(LogMarker.CONFIG_MARKER,
             LocalizedMessage.create(LocalizedStrings.AgentImpl_HTTP_ADAPTOR_LISTENING_ON_PORT__0,
                 this.agentConfig.getHttpPort()));
       } else {
@@ -1311,7 +1312,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
 
       if (this.agentConfig.getHttpBindAddress() != null) {
         String host = this.agentConfig.getHttpBindAddress();
-        logger.info(LogMarker.CONFIG, LocalizedMessage
+        logger.info(LogMarker.CONFIG_MARKER, LocalizedMessage
             .create(LocalizedStrings.AgentImpl_HTTP_ADAPTOR_LISTENING_ON_ADDRESS__0, host));
         this.httpAdaptor.setHost(host);
       } else {

@@ -276,8 +276,8 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
         successful = true; // not a cancel-exception, so don't complain any more about it
 
       } catch (RegionDestroyedException | RemoteOperationException e) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
               "RemoteDestroyMessage caught an exception during distribution; retrying to another member",
               e);
         }
@@ -404,8 +404,8 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    setKey(InternalDataSerializer.readUserObject(in));
-    this.cbArg = InternalDataSerializer.readUserObject(in);
+    setKey(DataSerializer.readObject(in));
+    this.cbArg = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
       this.bridgeContext = DataSerializer.readObject(in);
@@ -422,7 +422,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       in.readByte();
       setOldValBytes(DataSerializer.readByteArray(in));
     }
-    this.expectedOldValue = InternalDataSerializer.readUserObject(in);
+    this.expectedOldValue = DataSerializer.readObject(in);
     // to prevent bug 51024 always call readObject for versionTag
     // since toData always calls writeObject for versionTag.
     this.versionTag = DataSerializer.readObject(in);
@@ -593,14 +593,14 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "DestroyReplyMessage process invoking reply processor with processorId:{}",
             this.processorId);
       }
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "DestroyReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "DestroyReplyMessage processor not found");
         }
         return;
       }
@@ -613,8 +613,8 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }

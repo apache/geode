@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
@@ -142,27 +141,23 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
       if (ok) {
         RegionAdvisor ra = r.getRegionAdvisor();
         ra.removeIdAndBuckets(this.sender, this.prSerial, this.bucketSerials, !this.op.isClose());
-        // r.getRegionAdvisor().removeId(this.sender);
       }
 
       sendReply(getSender(), getProcessorId(), dm, null, r, startTime);
-      /*
-       * } finally { isClosingWriteLock.unlock(); }
-       */
       return false;
     }
 
     // If region's isDestroyed flag is true, we can check if local destroy is done or not and if
-    // NOT,
-    // we can invoke destroyPartitionedRegionLocally method.
+    // NOT, we can invoke destroyPartitionedRegionLocally method.
     if (r.isDestroyed()) {
       boolean isClose = this.op.isClose();
       r.destroyPartitionedRegionLocally(!isClose);
       return true;
     }
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "{} operateOnRegion: {}", getClass().getName(), r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "{} operateOnRegion: {}", getClass().getName(),
+          r.getFullPath());
     }
     RegionEventImpl event = new RegionEventImpl(r, this.op, this.cbArg, true, r.getMyId());
     r.basicDestroyRegion(event, false, false, true);
@@ -191,7 +186,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.cbArg = InternalDataSerializer.readUserObject(in);
+    this.cbArg = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
     this.prSerial = in.readInt();
     int len = in.readInt();

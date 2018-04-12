@@ -18,7 +18,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,8 +35,6 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.result.CliJsonSerializable;
-import org.apache.geode.management.internal.cli.result.CliJsonSerializableFactory;
 import org.apache.geode.management.internal.cli.result.ResultDataException;
 
 /**
@@ -479,51 +476,6 @@ public class JsonUtil {
     }
     return byteArray;
   }
-
-  public static List<CliJsonSerializable> getList(GfJsonObject jsonObject, String byName) {
-    List<CliJsonSerializable> cliJsonSerializables = Collections.emptyList();
-    try {
-      GfJsonArray cliJsonSerializableArray = jsonObject.getJSONArray(byName);
-      int size = cliJsonSerializableArray.size();
-      if (size > 0) {
-        cliJsonSerializables = new ArrayList<CliJsonSerializable>();
-      }
-      for (int i = 0; i < size; i++) {
-        GfJsonObject cliJsonSerializableState = cliJsonSerializableArray.getJSONObject(i);
-        int jsId = cliJsonSerializableState.getInt(CliJsonSerializable.JSID);
-        CliJsonSerializable cliJsonSerializable =
-            CliJsonSerializableFactory.getCliJsonSerializable(jsId);
-        cliJsonSerializable.fromJson(cliJsonSerializableState);
-        cliJsonSerializables.add(cliJsonSerializable);
-      }
-    } catch (GfJsonException e) {
-      throw new ResultDataException(e.getMessage());
-    }
-    return cliJsonSerializables;
-  }
-
-  public static Set<CliJsonSerializable> getSet(GfJsonObject jsonObject, String byName) {
-    Set<CliJsonSerializable> cliJsonSerializables = Collections.emptySet();
-    try {
-      GfJsonArray cliJsonSerializableArray = jsonObject.getJSONArray(byName);
-      int size = cliJsonSerializableArray.size();
-      if (size > 0) {
-        cliJsonSerializables = new HashSet<CliJsonSerializable>();
-      }
-      for (int i = 0; i < size; i++) {
-        GfJsonObject cliJsonSerializableState = cliJsonSerializableArray.getJSONObject(i);
-        int jsId = cliJsonSerializableState.getInt(CliJsonSerializable.JSID);
-        CliJsonSerializable cliJsonSerializable =
-            CliJsonSerializableFactory.getCliJsonSerializable(jsId);
-        cliJsonSerializable.fromJson(cliJsonSerializableState);
-        cliJsonSerializables.add(cliJsonSerializable);
-      }
-    } catch (GfJsonException e) {
-      throw new ResultDataException(e.getMessage());
-    }
-    return cliJsonSerializables;
-  }
-
 
   // For testing purpose
   public static void main(String[] args) {
