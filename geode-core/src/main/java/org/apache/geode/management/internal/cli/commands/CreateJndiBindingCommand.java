@@ -51,7 +51,7 @@ public class CreateJndiBindingCommand extends InternalGfshCommand {
       "This element specifies the maximum time to block while waiting for a connection before throwing an exception.";
   static final String CONNECTION_POOLED_DATASOURCE_CLASS = "conn-pooled-datasource-class";
   static final String CONNECTION_POOLED_DATASOURCE_CLASS__HELP =
-      "This is the fully qualified name of the connection pool implementation to hold XS datasource connections.";
+      "This is the fully qualified name of the connection pool implementation to hold XA datasource connections.";
   static final String CONNECTION_URL = "connection-url";
   static final String CONNECTION_URL__HELP =
       "This is the JDBC driver connection URL string, for example, jdbc:hsqldb:hsql://localhost:1701.";
@@ -82,7 +82,7 @@ public class CreateJndiBindingCommand extends InternalGfshCommand {
   static final String TRANSACTION_TYPE__HELP = "Type of the transaction.";
   static final String TYPE = "type";
   static final String TYPE__HELP =
-      "Type of the XA datasource. Type of region to create. The following types are pre-defined by the product: MANAGED, SIMPLE, POOLED, XAPOOLED.";
+      "Type of the XA datasource. The following types are pre-defined by the product: MANAGED, SIMPLE, POOLED, XAPOOLED.";
   static final String USERNAME = "username";
   static final String USERNAME__HELP =
       "This element specifies the default username used when creating a new connection.";
