@@ -2892,7 +2892,7 @@ public class CliStrings {
   public static final String HEADER_GATEWAY_RECEIVER = "GatewayReceiver";
   public static final String RESULT_PORT = "Port";
   public static final String RESULT_SENDERS_COUNT = "Sender Count";
-  public static final String RESULT_SENDER_CONNECTED = "Sender's Connected";
+  public static final String RESULT_SENDER_CONNECTED = "Senders Connected";
   public static final String SECTION_GATEWAY_SENDER_AVAILABLE = "Available GatewaySender Section";
   public static final String SECTION_GATEWAY_SENDER_NOT_AVAILABLE =
       "Not Available GatewaySender Section";
