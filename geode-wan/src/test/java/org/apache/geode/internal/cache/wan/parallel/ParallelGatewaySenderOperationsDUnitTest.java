@@ -37,6 +37,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 /**
@@ -376,6 +377,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * case in the way that when the sender is starting from stopped state, puts are simultaneously
    * happening on the region by another thread.
    */
+  @Category({FlakyTest.class, WanTest.class}) // GEODE-5056
   @Test
   public void testParallelPropagationSenderStartAfterStop_Scenario2() throws Exception {
     addIgnoredException("Broken pipe");
