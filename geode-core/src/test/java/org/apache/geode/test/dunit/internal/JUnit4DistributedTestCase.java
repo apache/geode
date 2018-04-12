@@ -43,40 +43,20 @@ import org.junit.Rule;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.QueryTestUtils;
-import org.apache.geode.cache.query.internal.QueryObserverHolder;
-import org.apache.geode.cache30.ClientServerTestCase;
-import org.apache.geode.cache30.GlobalLockingDUnitTest;
-import org.apache.geode.cache30.MultiVMRegionTestCase;
-import org.apache.geode.cache30.RegionTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.admin.ClientStatsManager;
-import org.apache.geode.internal.cache.CacheServerLauncher;
-import org.apache.geode.internal.cache.DiskStoreObserver;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
-import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.tier.InternalClientMembership;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -584,43 +564,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   private static final void tearDownVM() {
     closeCache();
-    disconnectFromDS();
-
-    // keep alphabetized to detect duplicate lines
-    CacheCreation.clearThreadLocals();
-    CacheServerLauncher.clearStatics();
-    CacheServerTestUtil.clearCacheReference();
-    ClientProxyMembershipID.system = null;
-    ClientServerTestCase.AUTO_LOAD_BALANCE = false;
-    ClientStatsManager.cleanupForTests();
-    DiskStoreObserver.setInstance(null);
-    unregisterInstantiatorsInThisVM();
-    DistributionMessageObserver.setInstance(null);
-    GlobalLockingDUnitTest.region_testBug32356 = null;
-    InitialImageOperation.slowImageProcessing = 0;
-    InternalClientMembership.unregisterAllListeners();
-    LogWrapper.close();
-    MultiVMRegionTestCase.CCRegion = null;
-    QueryObserverHolder.reset();
-    QueryTestUtils.setCache(null);
-    RegionTestCase.preSnapshotRegion = null;
-    SocketCreator.resetHostNameCache();
-    SocketCreator.resolve_dns = true;
-    TcpClient.clearStaticData();
-
-    // clear system properties -- keep alphabetized
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
-    System.clearProperty("jgroups.resolve_dns");
-    System.clearProperty(Message.MAX_MESSAGE_SIZE_PROPERTY);
-
-    if (InternalDistributedSystem.systemAttemptingReconnect != null) {
-      InternalDistributedSystem.systemAttemptingReconnect.stopReconnecting();
-    }
-
-    IgnoredException.removeAllExpectedExceptions();
-    SocketCreatorFactory.close();
-    TypeRegistry.setPdxSerializer(null);
-    TypeRegistry.init();
+    DistributedTestRule.TearDown.tearDownInVM();
     cleanDiskDirs();
   }
 

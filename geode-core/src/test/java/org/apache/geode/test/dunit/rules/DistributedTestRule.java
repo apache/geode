@@ -195,7 +195,7 @@ public class DistributedTestRule extends AbstractDistributedTestRule {
       DUnitLauncher.closeAndCheckForSuspects();
     }
 
-    private static void tearDownInVM() {
+    public static void tearDownInVM() {
       // 1. Please do NOT add to this list. I'm trying to DELETE this list.
       // 2. Instead, please add to the after() of your test or your rule.
 

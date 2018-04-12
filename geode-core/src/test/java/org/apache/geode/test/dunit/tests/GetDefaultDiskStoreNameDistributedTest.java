@@ -14,19 +14,20 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMCount;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.DistributedTestCase;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class GetDefaultDiskStoreNameDUnitTest extends DistributedTestCase {
+public class GetDefaultDiskStoreNameDistributedTest extends DistributedTestCase {
 
   @Test
   public void testGetTestMethodName() {
@@ -45,9 +46,9 @@ public class GetDefaultDiskStoreNameDUnitTest extends DistributedTestCase {
     String expected = createDefaultDiskStoreName(0, -1, "testGetTestMethodNameInAllVMs");
     assertGetDefaultDiskStoreName(expected);
 
-    for (int vmIndex = 0; vmIndex < Host.getHost(0).getVMCount(); vmIndex++) {
+    for (int vmIndex = 0; vmIndex < getVMCount(); vmIndex++) {
       String expectedInVM = createDefaultDiskStoreName(0, vmIndex, "testGetTestMethodNameInAllVMs");
-      Host.getHost(0).getVM(vmIndex).invoke(() -> assertGetDefaultDiskStoreName(expectedInVM));
+      getVM(vmIndex).invoke(() -> assertGetDefaultDiskStoreName(expectedInVM));
     }
   }
 
@@ -62,6 +63,6 @@ public class GetDefaultDiskStoreNameDUnitTest extends DistributedTestCase {
   }
 
   private String getDefaultDiskStoreName() {
-    return GemFireCacheImpl.getDefaultDiskStoreName(); // TODO: not thread safe
+    return GemFireCacheImpl.getDefaultDiskStoreName();
   }
 }
