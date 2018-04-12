@@ -64,9 +64,6 @@ public class MBeanJMXAdapter implements ManagementConstants {
   /** The <code>MBeanServer</code> for this application */
   public static MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
 
-  /**
-   *
-   */
   private Map<ObjectName, Object> localGemFireMBean;
 
   private DistributedMember distMember;
@@ -298,10 +295,6 @@ public class MBeanJMXAdapter implements ManagementConstants {
     final int len = value.length();
     return len >= 2 && value.charAt(0) == '"' && value.charAt(len - 1) == '"';
   }
-
-  /**
-   *
-   */
 
   public static String makeCompliantRegionNameAppender(String value) {
 

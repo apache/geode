@@ -12,15 +12,8 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.management.internal.cli.util;
 
-/**
- *
- *
- */
 public class ConnectionEndpoint {
   public static final String JMXMANAGER_OPTION_CONTEXT = "__jmx-manager__";
   public static final String LOCATOR_OPTION_CONTEXT = "__locator__";
@@ -28,8 +21,6 @@ public class ConnectionEndpoint {
   private final String host;
   private final int port;
 
-  /**
-   */
   public ConnectionEndpoint(String host, int port) {
     this.host = host;
     this.port = port;

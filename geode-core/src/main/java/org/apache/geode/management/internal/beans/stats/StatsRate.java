@@ -16,10 +16,6 @@ package org.apache.geode.management.internal.beans.stats;
 
 import org.apache.geode.management.internal.beans.MetricsCalculator;
 
-/**
- *
- *
- */
 public class StatsRate {
 
   private long prevLongCounter = 0;

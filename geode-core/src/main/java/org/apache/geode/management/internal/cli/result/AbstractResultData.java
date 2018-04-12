@@ -175,8 +175,6 @@ public abstract class AbstractResultData implements ResultData {
     return this;
   }
 
-  /**
-   */
   public static void readFileDataAndDump(GfJsonArray byteDataArray, String directory)
       throws GfJsonException, DataFormatException, IOException {
     boolean overwriteAllExisting = false;

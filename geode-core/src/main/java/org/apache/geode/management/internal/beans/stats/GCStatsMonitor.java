@@ -20,10 +20,6 @@ import org.apache.geode.internal.statistics.StatisticId;
 import org.apache.geode.internal.statistics.StatisticNotFoundException;
 import org.apache.geode.internal.statistics.StatisticsNotification;
 
-/**
- *
- *
- */
 public class GCStatsMonitor extends MBeanStatsMonitor {
 
   private volatile long collections = 0;

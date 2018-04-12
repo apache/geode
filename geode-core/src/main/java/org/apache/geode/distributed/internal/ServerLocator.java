@@ -381,8 +381,6 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     return new ServerLocation(p.getHost(), p.getPort());
   }
 
-  /**
-   */
   public void profileCreated(Profile profile) {
     if (profile instanceof CacheServerProfile) {
       CacheServerProfile bp = (CacheServerProfile) profile;
@@ -401,8 +399,6 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     }
   }
 
-  /**
-   */
   public void profileRemoved(Profile profile) {
     if (profile instanceof CacheServerProfile) {
       CacheServerProfile bp = (CacheServerProfile) profile;

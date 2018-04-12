@@ -27,9 +27,6 @@ import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 
 public class EvictionAttributesInfo implements Serializable {
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
   private String evictionAction = "";
   private String evictionAlgorithm = "";

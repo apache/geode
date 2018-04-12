@@ -31,9 +31,6 @@ import org.apache.geode.management.internal.beans.stats.StatsKey;
 import org.apache.geode.management.internal.beans.stats.StatsLatency;
 import org.apache.geode.management.internal.beans.stats.StatsRate;
 
-/**
- *
- */
 public class PartitionedRegionBridge<K, V> extends RegionMBeanBridge<K, V> {
 
   private PartitionedRegionStats prStats;

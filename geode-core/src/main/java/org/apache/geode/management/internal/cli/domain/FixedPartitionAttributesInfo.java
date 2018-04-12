@@ -23,9 +23,6 @@ import org.apache.geode.cache.FixedPartitionAttributes;
 
 public class FixedPartitionAttributesInfo implements Serializable {
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
   private boolean isPrimary;
   private String partitionName;

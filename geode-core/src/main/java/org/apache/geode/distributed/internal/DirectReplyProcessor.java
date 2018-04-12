@@ -105,8 +105,6 @@ public class DirectReplyProcessor extends ReplyProcessor21 {
     this(system.getDistributionManager(), system, initMembers, cancelCriterion);
   }
 
-  /**
-   */
   public DirectReplyProcessor(DistributionManager dm, InternalDistributedSystem system,
       Collection initMembers, CancelCriterion cancelCriterion) {
     super(dm, system, initMembers, cancelCriterion, false);

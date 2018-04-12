@@ -44,9 +44,6 @@ public class FederationComponent
   private static final Logger logger = LogService.getLogger();
 
   private static final String THIS_COMPONENT = FederationComponent.class.getName();
-  /**
-   *
-   */
   private static final long serialVersionUID = 3123549507449088591L;
 
   /**

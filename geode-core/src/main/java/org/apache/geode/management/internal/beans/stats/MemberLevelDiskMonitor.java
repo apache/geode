@@ -27,10 +27,6 @@ import org.apache.geode.internal.statistics.StatisticsNotification;
 import org.apache.geode.internal.statistics.ValueMonitor;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor.DefaultHashMap;
 
-/**
- *
- *
- */
 public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
 
 

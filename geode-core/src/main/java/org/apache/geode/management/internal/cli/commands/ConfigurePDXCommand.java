@@ -41,9 +41,6 @@ import org.apache.geode.security.ResourcePermission;
 
 public class ConfigurePDXCommand extends InternalGfshCommand {
 
-  /**
-   *
-   */
   protected ReflectionBasedAutoSerializer createReflectionBasedAutoSerializer(
       boolean checkPortability, String[] patterns) {
     return new ReflectionBasedAutoSerializer(checkPortability, patterns);

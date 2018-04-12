@@ -37,9 +37,6 @@ import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
  */
 public class PartitionAttributesInfo implements Serializable {
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
   private int totalNumBuckets = 0;
   private int localMaxMemory = 0;

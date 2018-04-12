@@ -28,10 +28,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 
-/*****
- *
- *
- */
 public class SharedConfigurationStatusResponse implements DataSerializable {
 
 
