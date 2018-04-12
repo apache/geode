@@ -14,38 +14,90 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.geode.test.dunit.Disconnect.disconnectFromDS;
+import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.test.dunit.Invoke.invokeInLocator;
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.cache.query.QueryTestUtils;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.cache30.ClientServerTestCase;
+import org.apache.geode.cache30.GlobalLockingDUnitTest;
+import org.apache.geode.cache30.MultiVMRegionTestCase;
+import org.apache.geode.cache30.RegionTestCase;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.admin.ClientStatsManager;
+import org.apache.geode.internal.cache.CacheServerLauncher;
+import org.apache.geode.internal.cache.DiskStoreObserver;
+import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.tier.InternalClientMembership;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**
- * JUnit Rule that launches DistributedTest VMs without {@code DistributedTestCase}. Class may need
- * to implement {@code Serializable}.
+ * JUnit Rule that launches DistributedTest VMs without {@code DistributedTestCase}. Test class may
+ * need to implement {@code Serializable}.
  *
  * <p>
- * {@code DistributedTestRule} follows the standard convention of using a {@code Builder} for
- * configuration as introduced in the JUnit {@code Timeout} rule.
- *
- * <p>
- * {@code DistributedTestRule} can be used in DistributedTests as a {@code ClassRule}:
+ * {@code DistributedTestRule} can be used in DistributedTests as a {@code ClassRule}. This ensures
+ * that DUnit VMs will be available to non-Class {@code Rule}s. Unfortunately, you will need to
+ * declare {@code DistributedTestRule.TearDown} as a non-Class {@code Rule}. Without
+ * {@code DistributedTestRule.TearDown} grep for suspect strings will not be invoked after each
+ * test.
  *
  * <pre>
  * {@literal @}ClassRule
  * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
  *
+ * {@literal @}Rule
+ * public DistributedTestRule.TearDown tearDownRule = new DistributedTestRule.TearDown();
+ *
  * {@literal @}Test
  * public void shouldHaveFourDUnitVMsByDefault() {
- *   assertThat(Host.getHost(0).getVMCount()).isEqualTo(4);
+ *   assertThat(getVMCount()).isEqualTo(4);
+ * }
+ * </pre>
+ *
+ * <p>
+ * Or as a non-Class {@code Rule}. This usage does <bold>not</bold> require separate declaration of
+ * {@code DistributedTestRule.TearDown}:
+ *
+ * <pre>
+ * {@literal @}Rule
+ * public DistributedTestRule distributedTestRule = new DistributedTestRule();
+ *
+ * {@literal @}Rule
+ * public DistributedTestRule.TearDown tearDownRule = new DistributedTestRule.TearDown();
+ *
+ * {@literal @}Test
+ * public void shouldHaveFourDUnitVMsByDefault() {
+ *   assertThat(getVMCount()).isEqualTo(4);
  * }
  * </pre>
  */
 @SuppressWarnings("unused")
-public class DistributedTestRule extends DistributedExternalResource {
+public class DistributedTestRule extends AbstractDistributedTestRule {
 
   private final int vmCount;
 
+  /**
+   * Use {@code Builder} for more options in constructing {@code DistributedTestRule}.
+   */
   public static Builder builder() {
     return new Builder();
   }
@@ -63,13 +115,21 @@ public class DistributedTestRule extends DistributedExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
+  protected void before() throws Exception {
     DUnitLauncher.launchIfNeeded();
     for (int i = 0; i < vmCount; i++) {
       assertThat(getVM(i)).isNotNull();
     }
   }
 
+  @Override
+  protected void after() {
+    TearDown.doTearDown();
+  }
+
+  /**
+   * Builds an instance of CacheRule.
+   */
   public static class Builder {
 
     private int vmCount = DEFAULT_VM_COUNT;
@@ -84,6 +144,98 @@ public class DistributedTestRule extends DistributedExternalResource {
 
     public DistributedTestRule build() {
       return new DistributedTestRule(this);
+    }
+  }
+
+  /**
+   * Cleans up horrendous things like static state and non-default instances in Geode.
+   *
+   * <p>
+   * {@link DistributedTestRule#after()} invokes the same cleanup that this Rule does, but if you
+   * defined {@code DistributedTestRule} as a {@code ClassRule} then you should declare TearDown
+   * as a non-class {@code Rule} in your test:
+   *
+   * <pre>
+   * {@literal @}ClassRule
+   * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+   *
+   * {@literal @}Rule
+   * public DistributedTestRule.TearDown tearDownRule = new DistributedTestRule.TearDown();
+   *
+   * {@literal @}Test
+   * public void shouldHaveFourDUnitVMsByDefault() {
+   *   assertThat(getVMCount()).isEqualTo(4);
+   * }
+   * </pre>
+   *
+   * <p>
+   * Note: {@link CacheRule} handles its own cleanup of Cache and Regions.
+   */
+  public static class TearDown extends SerializableExternalResource {
+
+    @Override
+    protected void before() throws Exception {
+      // nothing
+    }
+
+    @Override
+    protected void after() {
+      doTearDown();
+    }
+
+    static void doTearDown() {
+      tearDownInVM();
+      invokeInEveryVM(() -> {
+        tearDownInVM();
+      });
+      invokeInLocator(() -> {
+        DistributionMessageObserver.setInstance(null);
+        unregisterInstantiatorsInThisVM();
+      });
+      DUnitLauncher.closeAndCheckForSuspects();
+    }
+
+    private static void tearDownInVM() {
+      // 1. Please do NOT add to this list. I'm trying to DELETE this list.
+      // 2. Instead, please add to the after() of your test or your rule.
+
+      disconnectFromDS();
+
+      // keep alphabetized to detect duplicate lines
+      CacheCreation.clearThreadLocals();
+      CacheServerLauncher.clearStatics();
+      CacheServerTestUtil.clearCacheReference();
+      ClientProxyMembershipID.system = null;
+      ClientServerTestCase.AUTO_LOAD_BALANCE = false;
+      ClientStatsManager.cleanupForTests();
+      DiskStoreObserver.setInstance(null);
+      unregisterInstantiatorsInThisVM();
+      DistributionMessageObserver.setInstance(null);
+      GlobalLockingDUnitTest.region_testBug32356 = null;
+      InitialImageOperation.slowImageProcessing = 0;
+      InternalClientMembership.unregisterAllListeners();
+      LogWrapper.close();
+      MultiVMRegionTestCase.CCRegion = null;
+      QueryObserverHolder.reset();
+      QueryTestUtils.setCache(null);
+      RegionTestCase.preSnapshotRegion = null;
+      SocketCreator.resetHostNameCache();
+      SocketCreator.resolve_dns = true;
+      TcpClient.clearStaticData();
+
+      // clear system properties -- keep alphabetized
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
+      System.clearProperty("jgroups.resolve_dns");
+      System.clearProperty(Message.MAX_MESSAGE_SIZE_PROPERTY);
+
+      if (InternalDistributedSystem.systemAttemptingReconnect != null) {
+        InternalDistributedSystem.systemAttemptingReconnect.stopReconnecting();
+      }
+
+      IgnoredException.removeAllExpectedExceptions();
+      SocketCreatorFactory.close();
+      TypeRegistry.setPdxSerializer(null);
+      TypeRegistry.init();
     }
   }
 }
