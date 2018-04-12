@@ -54,17 +54,6 @@ public class GfJsonArray {
   }
 
   /**
-   * @throws GfJsonException If there is a syntax error.
-   */
-  public GfJsonArray(String source) throws GfJsonException {
-    try {
-      this.jsonArray = new JSONArray(source);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
-    }
-  }
-
-  /**
    * Get the object value associated with an index.
    *
    * @return An object value.
@@ -148,18 +137,6 @@ public class GfJsonArray {
   @Override
   public String toString() {
     return jsonArray.toString();
-  }
-
-  /**
-   * @return this GfJsonArray
-   * @throws GfJsonException If the object contains an invalid number.
-   */
-  public String toIndentedString(int indentFactor) throws GfJsonException {
-    try {
-      return jsonArray.toString(indentFactor);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
-    }
   }
 
   public static byte[] toByteArray(GfJsonArray jsonArray) throws GfJsonException {

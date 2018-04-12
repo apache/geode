@@ -77,8 +77,8 @@ public class DiskInitFileParser {
         break;
       }
       byte opCode = dis.readByte();
-      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-        logger.trace(LogMarker.PERSIST_RECOVERY, "DiskInitFile opcode={}", opCode);
+      if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+        logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "DiskInitFile opcode={}", opCode);
       }
       switch (opCode) {
         case DiskInitFile.IF_EOF_ID:
@@ -103,9 +103,9 @@ public class DiskInitFileParser {
           long drId = readDiskRegionID(dis);
           PersistentMemberID pmid = readPMID(dis, gfversion);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_ONLINE_MEMBER_ID drId={} omid={}", drId,
-                pmid);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                "IFREC_ONLINE_MEMBER_ID drId={} omid={}", drId, pmid);
           }
           interpreter.cmnOnlineMemberId(drId, pmid);
         }
@@ -114,9 +114,9 @@ public class DiskInitFileParser {
           long drId = readDiskRegionID(dis);
           PersistentMemberID pmid = readPMID(dis, gfversion);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_OFFLINE_MEMBER_ID drId={} pmid={}",
-                drId, pmid);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                "IFREC_OFFLINE_MEMBER_ID drId={} pmid={}", drId, pmid);
           }
           interpreter.cmnOfflineMemberId(drId, pmid);
         }
@@ -125,9 +125,9 @@ public class DiskInitFileParser {
           long drId = readDiskRegionID(dis);
           PersistentMemberID pmid = readPMID(dis, gfversion);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_RM_MEMBER_ID drId={} pmid={}", drId,
-                pmid);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_RM_MEMBER_ID drId={} pmid={}",
+                drId, pmid);
           }
           interpreter.cmnRmMemberId(drId, pmid);
         }
@@ -136,8 +136,8 @@ public class DiskInitFileParser {
           long drId = readDiskRegionID(dis);
           PersistentMemberID pmid = readPMID(dis, gfversion);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY,
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
                 "IFREC_MY_MEMBER_INITIALIZING_ID drId={} pmid={}", drId, pmid);
           }
           interpreter.cmnAddMyInitializingPMID(drId, pmid);
@@ -146,9 +146,9 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_MY_MEMBER_INITIALIZED_ID: {
           long drId = readDiskRegionID(dis);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_MY_MEMBER_INITIALIZED_ID drId={}",
-                drId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                "IFREC_MY_MEMBER_INITIALIZED_ID drId={}", drId);
           }
           interpreter.cmnMarkInitialized(drId);
         }
@@ -157,9 +157,9 @@ public class DiskInitFileParser {
           long drId = readDiskRegionID(dis);
           String regName = dis.readUTF();
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_CREATE_REGION_ID drId= name={}", drId,
-                regName);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_CREATE_REGION_ID drId= name={}",
+                drId, regName);
           }
           interpreter.cmnCreateRegion(drId, regName);
         }
@@ -167,8 +167,9 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_BEGIN_DESTROY_REGION_ID: {
           long drId = readDiskRegionID(dis);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_BEGIN_DESTROY_REGION_ID drId={}", drId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                "IFREC_BEGIN_DESTROY_REGION_ID drId={}", drId);
           }
           interpreter.cmnBeginDestroyRegion(drId);
         }
@@ -176,8 +177,9 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_END_DESTROY_REGION_ID: {
           long drId = readDiskRegionID(dis);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_END_DESTROY_REGION_ID drId={}", drId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_END_DESTROY_REGION_ID drId={}",
+                drId);
           }
           interpreter.cmnEndDestroyRegion(drId);
         }
@@ -185,8 +187,8 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_BEGIN_PARTIAL_DESTROY_REGION_ID: {
           long drId = readDiskRegionID(dis);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY,
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
                 "IFREC_BEGIN_PARTIAL_DESTROY_REGION_ID drId={}", drId);
           }
           interpreter.cmnBeginPartialDestroyRegion(drId);
@@ -195,9 +197,9 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_END_PARTIAL_DESTROY_REGION_ID: {
           long drId = readDiskRegionID(dis);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_END_PARTIAL_DESTROY_REGION_ID drId={}",
-                drId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                "IFREC_END_PARTIAL_DESTROY_REGION_ID drId={}", drId);
           }
           interpreter.cmnEndPartialDestroyRegion(drId);
         }
@@ -206,8 +208,8 @@ public class DiskInitFileParser {
           long drId = readDiskRegionID(dis);
           long clearOplogEntryId = dis.readLong();
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY,
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
                 "IFREC_CLEAR_REGION_ID drId={} oplogEntryId={}", drId, clearOplogEntryId);
           }
           interpreter.cmnClearRegion(drId, clearOplogEntryId);
@@ -225,8 +227,8 @@ public class DiskInitFileParser {
             memberToVersion.put(id, holder);
           }
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY,
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
                 "IFREC_CLEAR_REGION_WITH_RVV_ID drId={} memberToVersion={}", drId, memberToVersion);
           }
           interpreter.cmnClearRegion(drId, memberToVersion);
@@ -235,8 +237,9 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_CRF_CREATE: {
           long oplogId = dis.readLong();
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_CRF_CREATE oplogId={}", oplogId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_CRF_CREATE oplogId={}",
+                oplogId);
           }
           interpreter.cmnCrfCreate(oplogId);
         }
@@ -244,8 +247,9 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_DRF_CREATE: {
           long oplogId = dis.readLong();
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_DRF_CREATE oplogId={}", oplogId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_DRF_CREATE oplogId={}",
+                oplogId);
           }
           interpreter.cmnDrfCreate(oplogId);
         }
@@ -253,8 +257,9 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_KRF_CREATE: {
           long oplogId = dis.readLong();
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_KRF_CREATE oplogId={}", oplogId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_KRF_CREATE oplogId={}",
+                oplogId);
           }
           interpreter.cmnKrfCreate(oplogId);
         }
@@ -262,8 +267,9 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_CRF_DELETE: {
           long oplogId = dis.readLong();
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_CRF_DELETE oplogId={}", oplogId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_CRF_DELETE oplogId={}",
+                oplogId);
           }
           interpreter.cmnCrfDelete(oplogId);
         }
@@ -271,8 +277,9 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_DRF_DELETE: {
           long oplogId = dis.readLong();
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_DRF_DELETE oplogId={}", oplogId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_DRF_DELETE oplogId={}",
+                oplogId);
           }
           interpreter.cmnDrfDelete(oplogId);
         }
@@ -289,8 +296,9 @@ public class DiskInitFileParser {
           boolean isBucket = dis.readBoolean();
           EnumSet<DiskRegionFlag> flags = EnumSet.noneOf(DiskRegionFlag.class);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_REGION_CONFIG_ID drId={}", drId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_REGION_CONFIG_ID drId={}",
+                drId);
           }
           interpreter.cmnRegionConfig(drId, lruAlgorithm, lruAction, lruLimit, concurrencyLevel,
               initialCapacity, loadFactor, statisticsEnabled, isBucket, flags,
@@ -312,8 +320,9 @@ public class DiskInitFileParser {
           String partitionName = dis.readUTF();
           int startingBucketId = dis.readInt();
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_REGION_CONFIG_ID drId={}", drId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_REGION_CONFIG_ID drId={}",
+                drId);
           }
           interpreter.cmnRegionConfig(drId, lruAlgorithm, lruAction, lruLimit, concurrencyLevel,
               initialCapacity, loadFactor, statisticsEnabled, isBucket, flags, partitionName,
@@ -342,8 +351,9 @@ public class DiskInitFileParser {
             flags.add(DiskRegionFlag.IS_WITH_VERSIONING);
           }
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_REGION_CONFIG_ID drId={}", drId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_REGION_CONFIG_ID drId={}",
+                drId);
           }
           interpreter.cmnRegionConfig(drId, lruAlgorithm, lruAction, lruLimit, concurrencyLevel,
               initialCapacity, loadFactor, statisticsEnabled, isBucket, flags, partitionName,
@@ -374,8 +384,9 @@ public class DiskInitFileParser {
           boolean offHeap = dis.readBoolean();
 
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_REGION_CONFIG_ID drId={}", drId);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_REGION_CONFIG_ID drId={}",
+                drId);
           }
           interpreter.cmnRegionConfig(drId, lruAlgorithm, lruAction, lruLimit, concurrencyLevel,
               initialCapacity, loadFactor, statisticsEnabled, isBucket, flags, partitionName,
@@ -386,8 +397,8 @@ public class DiskInitFileParser {
           long drId = readDiskRegionID(dis);
           PersistentMemberID pmid = readPMID(dis, gfversion);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY,
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
                 "IFREC_OFFLINE_AND_EQUAL_MEMBER_ID drId={} pmid={}", drId, pmid);
           }
           interpreter.cmdOfflineAndEqualMemberId(drId, pmid);
@@ -410,9 +421,9 @@ public class DiskInitFileParser {
           String colocatedWith = dis.readUTF();
           readEndOfRecord(dis);
           PRPersistentConfig config = new PRPersistentConfig(numBuckets, colocatedWith);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_PR_CREATE name={}, config={}", name,
-                config);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_PR_CREATE name={}, config={}",
+                name, config);
           }
           interpreter.cmnPRCreate(name, config);
         }
@@ -420,8 +431,9 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_GEMFIRE_VERSION: {
           short ver = Version.readOrdinal(dis);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_GEMFIRE_VERSION version={}", ver);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_GEMFIRE_VERSION version={}",
+                ver);
           }
           try {
             gfversion = Version.fromOrdinal(ver, false);
@@ -436,8 +448,8 @@ public class DiskInitFileParser {
         case DiskInitFile.IFREC_PR_DESTROY: {
           String name = dis.readUTF();
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_PR_DESTROY name={}", name);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_PR_DESTROY name={}", name);
           }
           interpreter.cmnPRDestroy(name);
         }
@@ -446,9 +458,9 @@ public class DiskInitFileParser {
           int id = dis.readInt();
           Object object = DataSerializer.readObject(dis);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_ADD_CANONICAL_MEMBER_ID id={} name={}",
-                id, object);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                "IFREC_ADD_CANONICAL_MEMBER_ID id={} name={}", id, object);
           }
           interpreter.cmnAddCanonicalMemberId(id, object);
           break;
@@ -457,8 +469,9 @@ public class DiskInitFileParser {
           PersistentMemberPattern pattern = new PersistentMemberPattern();
           InternalDataSerializer.invokeFromData(pattern, dis);
           readEndOfRecord(dis);
-          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY, "IFREC_REVOKE_DISK_STORE_ID id={}" + pattern);
+          if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                "IFREC_REVOKE_DISK_STORE_ID id={}" + pattern);
           }
           interpreter.cmnRevokeDiskStoreId(pattern);
         }
@@ -480,20 +493,20 @@ public class DiskInitFileParser {
     dis.readFully(seq);
     for (int i = 0; i < OPLOG_TYPE.getLen(); i++) {
       if (seq[i] != type.getBytes()[i]) {
-        if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
-          logger.trace(LogMarker.PERSIST_RECOVERY,
+        if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
+          logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
               "oplog magic code mismatched at byte:{}, value:{}", (i + 1), seq[i]);
         }
         throw new DiskAccessException("Invalid oplog (" + type.name() + ") file provided.",
             interpreter.getNameForError());
       }
     }
-    if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY)) {
+    if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
       StringBuffer sb = new StringBuffer();
       for (int i = 0; i < OPLOG_TYPE.getLen(); i++) {
         sb.append(" " + seq[i]);
       }
-      logger.trace(LogMarker.PERSIST_RECOVERY, "oplog magic code: {}", sb);
+      logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "oplog magic code: {}", sb);
     }
     readEndOfRecord(dis);
   }

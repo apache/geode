@@ -31,10 +31,8 @@ import javax.transaction.xa.XAResource;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
-import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.logging.LogService;
 
 /**

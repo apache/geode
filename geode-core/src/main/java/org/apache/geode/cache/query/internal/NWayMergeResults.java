@@ -38,7 +38,6 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.HeapDataOutputStream.LongUpdater;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 /**
@@ -450,7 +449,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
         Object[] fields = DataSerializer.readObjectArray(in);
         this.data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
       } else {
-        E element = InternalDataSerializer.readUserObject(in);
+        E element = DataSerializer.readObject(in);
         this.data.add(element);
       }
       --numLeft;

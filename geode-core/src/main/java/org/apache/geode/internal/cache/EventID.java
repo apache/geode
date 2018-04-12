@@ -504,7 +504,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   @Override
   public String toString() {
-    if (logger.isTraceEnabled(LogMarker.DM_BRIDGE_SERVER)) {
+    if (logger.isTraceEnabled(LogMarker.EVENT_ID_TO_STRING_VERBOSE)) {
       return expensiveToString();
     } else {
       return cheapToString();

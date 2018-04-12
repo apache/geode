@@ -85,7 +85,7 @@ public class Part {
     }
     if (isObject() && this.part instanceof byte[]) {
       byte[] b = (byte[]) this.part;
-      if (b.length == 1 && b[0] == DSCODE.NULL) {
+      if (b.length == 1 && b[0] == DSCODE.NULL.toByte()) {
         return true;
       }
     }

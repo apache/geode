@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
 
 /*

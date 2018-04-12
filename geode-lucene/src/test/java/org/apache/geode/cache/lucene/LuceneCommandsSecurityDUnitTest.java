@@ -57,7 +57,7 @@ public class LuceneCommandsSecurityDUnitTest {
   @Rule
   public GfshCommandRule gfshShell = new GfshCommandRule();
 
-  private MemberVM locator;
+  protected MemberVM locator;
 
   @Before
   public void before() throws Exception {
@@ -192,7 +192,7 @@ public class LuceneCommandsSecurityDUnitTest {
     verifyResult(user, result);
   }
 
-  private void createIndexAndRegion() throws Exception {
+  protected void createIndexAndRegion() throws Exception {
     // Connect gfsh to locator with permissions necessary to create an index and region
     this.gfshShell.secureConnectAndVerify(this.locator.getPort(), GfshCommandRule.PortType.locator,
         "cluster,data", "cluster,data");
@@ -218,7 +218,7 @@ public class LuceneCommandsSecurityDUnitTest {
     assertTrue(this.gfshShell.getGfshOutput().contains(user.getExpectedResponse()));
   }
 
-  private String getCreateIndexCommand() {
+  protected String getCreateIndexCommand() {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
@@ -226,7 +226,7 @@ public class LuceneCommandsSecurityDUnitTest {
     return csb.toString();
   }
 
-  private String getCreateRegionCommand() {
+  protected String getCreateRegionCommand() {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
     csb.addOption(CliStrings.CREATE_REGION__REGION, REGION_NAME);
     csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,

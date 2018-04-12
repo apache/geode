@@ -40,6 +40,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetRegionNamesRe
 public class ProtobufDriver implements Driver {
 
   private final ProtobufChannel channel;
+  private ValueEncoder valueEncoder;
 
   /**
    * Creates a driver implementation that communicates via <code>socket</code> to a GemFire locator.
@@ -55,10 +56,11 @@ public class ProtobufDriver implements Driver {
    * @throws IOException
    */
   ProtobufDriver(Set<InetSocketAddress> locators, String username, String password,
-      String keyStorePath, String trustStorePath, String protocols, String ciphers)
-      throws GeneralSecurityException, IOException {
+      String keyStorePath, String trustStorePath, String protocols, String ciphers,
+      ValueSerializer serializer) throws GeneralSecurityException, IOException {
     this.channel = new ProtobufChannel(locators, username, password, keyStorePath, trustStorePath,
-        protocols, ciphers);
+        protocols, ciphers, serializer);
+    this.valueEncoder = new ValueEncoder(serializer);
   }
 
   @Override
@@ -79,17 +81,17 @@ public class ProtobufDriver implements Driver {
 
   @Override
   public <K, V> Region<K, V> getRegion(String regionName) {
-    return new ProtobufRegion(regionName, channel);
+    return new ProtobufRegion(regionName, channel, valueEncoder);
   }
 
   @Override
   public QueryService getQueryService() {
-    return new ProtobufQueryService(channel);
+    return new ProtobufQueryService(channel, valueEncoder);
   }
 
   @Override
   public FunctionService getFunctionService() {
-    return new ProtobufFunctionService(channel);
+    return new ProtobufFunctionService(channel, valueEncoder);
   }
 
   @Override

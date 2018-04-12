@@ -27,7 +27,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * Used by {@link AdminRequest} to wait for a {@link AdminResponse}. Prior to GemFire 4.0, a
@@ -42,10 +41,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * class can go away.
  */
 public class AdminWaiters {
-  private static final Logger logger = LogService.getLogger();
-
-  // private static final long TIMEOUT = 10000L;
-
   /**
    * Sends <code>msg</code> using <code>dm</code> and waits for the response.
    *
@@ -74,10 +69,7 @@ public class AdminWaiters {
         if (failures != null && failures.size() > 0) { // didn't go out
           if (dm.getDistributionManagerIds().contains(msg.getRecipient())) {
             // it's still in the view
-            String s = "";
-            if (logger.isTraceEnabled(LogMarker.DM)) {
-              s += " (" + msg + ")";
-            }
+            String s = " (" + msg + ")";
             throw new RuntimeAdminException(
                 LocalizedStrings.AdminWaiters_COULD_NOT_SEND_REQUEST_0.toLocalizedString(s));
           }
@@ -103,10 +95,7 @@ public class AdminWaiters {
             throw new RuntimeAdminException(sb.toString());
           } // still here?
           // recipient vanished
-          String s = "";
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            s = " (" + msg + ")";
-          }
+          String s = " (" + msg + ")";
           throw new OperationCancelledException(
               LocalizedStrings.AdminWaiters_REQUEST_SENT_TO_0_FAILED_SINCE_MEMBER_DEPARTED_1
                   .toLocalizedString(new Object[] {msg.getRecipient(), s}));
@@ -118,17 +107,12 @@ public class AdminWaiters {
       Thread.currentThread().interrupt();
       dm.getCancelCriterion().checkCancelInProgress(ex);
       String s = LocalizedStrings.AdminWaiters_REQUEST_WAIT_WAS_INTERRUPTED.toLocalizedString();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        s += " (" + msg + ")";
-      }
+      s += " (" + msg + ")";
       throw new RuntimeAdminException(s, ex);
     }
 
     if (result == null) {
-      String s = "";
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        s += " (" + msg + ")";
-      }
+      String s = " (" + msg + ")";
       throw new OperationCancelledException(
           LocalizedStrings.AdminWaiters_REQUEST_SEND_TO_0_WAS_CANCELLED_1
               .toLocalizedString(new Object[] {msg.getRecipient(), s}));
@@ -150,7 +134,6 @@ public class AdminWaiters {
 
     if (processor == null) {
       return; // must've been cancelled
-
     } else {
       processor.process(msg);
     }

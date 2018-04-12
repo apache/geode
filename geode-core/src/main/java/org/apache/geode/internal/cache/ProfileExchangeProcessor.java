@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.HashSet;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;

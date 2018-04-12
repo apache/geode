@@ -269,6 +269,53 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
   }
 
   @Test
+  public void testRestartSerialGatewaySendersWhilePutting() throws Throwable {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
+
+    createSenderCaches(lnPort);
+
+    createSenderVM4();
+    createSenderVM5();
+
+    createReceiverRegions();
+
+    createSenderRegions();
+
+    vm7.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 20));
+
+    startSenderInVMs("ln", vm4, vm5);
+
+    vm7.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 20));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 20));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 20));
+
+    vm4.invoke(() -> WANTestBase.stopSender("ln"));
+    vm5.invoke(() -> WANTestBase.stopSender("ln"));
+
+    vm4.invoke(() -> SerialGatewaySenderOperationsDUnitTest.verifySenderStoppedState("ln"));
+    vm5.invoke(() -> SerialGatewaySenderOperationsDUnitTest.verifySenderStoppedState("ln"));
+
+    vm4.invoke(() -> WANTestBase.validateQueueSizeStat("ln", 0));
+    vm5.invoke(() -> WANTestBase.validateQueueSizeStat("ln", 0));
+
+    // do a lot of puts while senders are restarting
+    AsyncInvocation async = vm7.invokeAsync(() -> doPuts(getTestMethodName() + "_RR", 5000));
+
+    startSenderInVMsAsync("ln", vm4, vm5);
+    async.join();
+
+    vm4.invoke(() -> WANTestBase.validateQueueSizeStat("ln", 0));
+    vm5.invoke(() -> WANTestBase.validateQueueSizeStat("ln", 0));
+    vm4.invoke(() -> WANTestBase.validateSecondaryQueueSizeStat("ln", 0));
+    vm5.invoke(() -> WANTestBase.validateSecondaryQueueSizeStat("ln", 0));
+  }
+
+  @Test
   public void testStopOneSerialGatewaySenderBothPrimary() throws Throwable {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
@@ -298,7 +345,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 200));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 200));
 
-    // Do some puts while restarting a sender
+    // Do some puts from both vm4 and vm5 while restarting a sender
     AsyncInvocation asyncPuts =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 300));
 

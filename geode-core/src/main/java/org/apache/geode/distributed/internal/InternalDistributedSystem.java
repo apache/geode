@@ -310,6 +310,21 @@ public class InternalDistributedSystem extends DistributedSystem
 
   private volatile SecurityService securityService;
 
+  /**
+   * Used at client side, indicates whether the 'delta-propagation' property is enabled on the DS
+   * this client is connected to. This variable is used to decide whether to send delta bytes or
+   * full value to the server for a delta-update operation.
+   */
+  private boolean deltaEnabledOnServer = true;
+
+  public boolean isDeltaEnabledOnServer() {
+    return deltaEnabledOnServer;
+  }
+
+  public void setDeltaEnabledOnServer(boolean deltaEnabledOnServer) {
+    this.deltaEnabledOnServer = deltaEnabledOnServer;
+  }
+
   ///////////////////// Static Methods /////////////////////
 
   /**

@@ -719,8 +719,7 @@ public class GatewaySenderEventImpl
     this.valueIsObject = in.readByte();
     deserializeKey(in);
     this.value = DataSerializer.readByteArray(in);
-    this.callbackArgument =
-        (GatewaySenderEventCallbackArgument) InternalDataSerializer.readUserObject(in);
+    this.callbackArgument = (GatewaySenderEventCallbackArgument) DataSerializer.readObject(in);
     this.possibleDuplicate = in.readBoolean();
     this.creationTime = in.readLong();
     this.bucketId = in.readInt();
@@ -730,7 +729,7 @@ public class GatewaySenderEventImpl
   }
 
   protected void deserializeKey(DataInput in) throws IOException, ClassNotFoundException {
-    this.key = InternalDataSerializer.readUserObject(in);
+    this.key = DataSerializer.readObject(in);
   }
 
   @Override

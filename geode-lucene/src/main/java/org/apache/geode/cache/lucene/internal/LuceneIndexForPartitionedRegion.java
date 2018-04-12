@@ -16,6 +16,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.AttributesFactory;
@@ -49,8 +50,11 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   public static final String FILES_REGION_SUFFIX = ".files";
 
+  private final ExecutorService waitingThreadPoolFromDM;
+
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, InternalCache cache) {
     super(indexName, regionPath, cache);
+    this.waitingThreadPoolFromDM = cache.getDistributionManager().getWaitingThreadPool();
 
     final String statsName = indexName + "-" + regionPath;
     this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
@@ -62,7 +66,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       mapper = new HeterogeneousLuceneSerializer();
     }
     PartitionedRepositoryManager partitionedRepositoryManager =
-        new PartitionedRepositoryManager(this, mapper);
+        new PartitionedRepositoryManager(this, mapper, this.waitingThreadPoolFromDM);
     return partitionedRepositoryManager;
   }
 
@@ -200,6 +204,13 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       logger.debug("Destroyed index regionPath=" + regionPath + "; indexName=" + indexName
           + "; initiator=" + initiator);
     }
+  }
+
+  @Override
+  public boolean isIndexAvailable(int id) {
+    PartitionedRegion fileAndChunkRegion = getFileAndChunkRegion();
+    return (fileAndChunkRegion.get(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE, id) != null
+        || !LuceneServiceImpl.LUCENE_REINDEX);
   }
 
   private void destroyOnRemoteMembers() {

@@ -124,7 +124,7 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
   }
 
   public void sendTo(DataOutput out) throws IOException {
-    out.writeByte(DSCODE.PDX_INLINE_ENUM);
+    out.writeByte(DSCODE.PDX_INLINE_ENUM.toByte());
     DataSerializer.writeString(this.className, out);
     DataSerializer.writeString(this.enumName, out);
     InternalDataSerializer.writeArrayLength(this.enumOrdinal, out);

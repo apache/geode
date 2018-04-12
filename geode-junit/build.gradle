@@ -35,4 +35,5 @@ dependencies {
     exclude module: 'hamcrest-core'
   }
   compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
+  compile project(":geode-old-versions")
 }

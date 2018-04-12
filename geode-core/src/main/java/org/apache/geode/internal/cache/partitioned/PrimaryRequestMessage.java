@@ -96,8 +96,9 @@ public class PrimaryRequestMessage extends PartitionMessage {
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException, ForceReattemptException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "PrimaryRequestMessage operateOnRegion: {}", pr.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "PrimaryRequestMessage operateOnRegion: {}",
+          pr.getFullPath());
     }
 
     pr.checkReadiness();
@@ -193,13 +194,13 @@ public class PrimaryRequestMessage extends PartitionMessage {
           PrimaryRequestReplyMessage reply = (PrimaryRequestReplyMessage) msg;
           if (reply.isPrimary) {
             this.msg = reply;
-            if (logger.isTraceEnabled(LogMarker.DM)) {
-              logger.trace(LogMarker.DM, "PrimaryRequestResponse primary is {}",
+            if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+              logger.trace(LogMarker.DM_VERBOSE, "PrimaryRequestResponse primary is {}",
                   this.msg.getSender());
             }
           } else {
-            if (logger.isTraceEnabled(LogMarker.DM)) {
-              logger.debug("PrimaryRequestResponse {} is not primary", this.msg.getSender());
+            if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+              logger.trace("PrimaryRequestResponse {} is not primary", this.msg.getSender());
             }
           }
         } else {
@@ -216,8 +217,8 @@ public class PrimaryRequestMessage extends PartitionMessage {
       } catch (ReplyException e) {
         Throwable t = e.getCause();
         if (t instanceof CancelException) {
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM,
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE,
                 "NodeResponse got remote CacheClosedException, throwing PartitionedRegionCommunication Exception. {}",
                 t.getMessage(), t);
           }

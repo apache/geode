@@ -140,15 +140,17 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       // build grantTokens from each reply...
       switch (reply.replyCode) {
         case DLockRecoverGrantorReplyMessage.GRANTOR_DISPUTE:
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS, "Failed DLockRecoverGrantorReplyMessage: '{}'", reply);
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE, "Failed DLockRecoverGrantorReplyMessage: '{}'",
+                reply);
           }
           this.error = true;
           break;
         case DLockRecoverGrantorReplyMessage.OK:
           // collect results...
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS, "Processing DLockRecoverGrantorReplyMessage: '{}'", reply);
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE, "Processing DLockRecoverGrantorReplyMessage: '{}'",
+                reply);
           }
 
           Set lockSet = new HashSet();
@@ -170,8 +172,8 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       }
       // maybe build up another reply to indicate lock recovery status?
     } catch (IllegalStateException e) {
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS,
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE,
             "Processing of DLockRecoverGrantorReplyMessage {} resulted in {}", msg, e.getMessage(),
             e);
       }
@@ -418,25 +420,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
                 LocalizedStrings.DLOCKRECOVERGRANTORPROCESSOR_DLOCKRECOVERGRANTORMESSAGE_PROCESS_THROWABLE),
             e);
         replyException = new ReplyException(e);
-      }
-      // catch (VirtualMachineError err) {
-      // SystemFailure.initiateFailure(err);
-      // // If this ever returns, rethrow the error. We're poisoned
-      // // now, so don't let this thread continue.
-      // throw err;
-      // }
-      // catch (Throwable t) {
-      // // Whenever you catch Error or Throwable, you must also
-      // // catch VirtualMachineError (see above). However, there is
-      // // _still_ a possibility that you are dealing with a cascading
-      // // error condition, so you also need to check to see if the JVM
-      // // is still usable:
-      // SystemFailure.checkFailure();
-      // log.warning(LocalizedStrings.DLockRecoverGrantorProcessor_DLOCKRECOVERGRANTORMESSAGEPROCESS_THROWABLE,
-      // t);
-      // replyException = new ReplyException(t);
-      // }
-      finally {
+      } finally {
         DLockRecoverGrantorReplyMessage replyMsg = new DLockRecoverGrantorReplyMessage();
         replyMsg.replyCode = replyCode;
         replyMsg.heldLocks = heldLocks;
@@ -445,15 +429,15 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
         replyMsg.setException(replyException);
         if (msg.getSender().equals(dm.getId())) {
           // process in-line in this VM
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS,
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE,
                 "[DLockRecoverGrantorMessage.process] locally process reply");
           }
           replyMsg.setSender(dm.getId());
           replyMsg.dmProcess(dm);
         } else {
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS, "[DLockRecoverGrantorMessage.process] send reply");
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE, "[DLockRecoverGrantorMessage.process] send reply");
           }
           dm.putOutgoing(replyMsg);
         }

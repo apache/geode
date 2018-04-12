@@ -128,8 +128,20 @@ def configureTcServer30Assembly = {
     }
   }
 
+  into('geode-cs-tomcat-85/conf') {
+    from('release/tcserver/geode-cs-tomcat-85') {
+      include 'context-fragment.xml'
+    }
+  }
+
   into('geode-p2p-tomcat-8/conf') {
     from('release/tcserver/geode-p2p-tomcat-8') {
+      include 'context-fragment.xml'
+    }
+  }
+
+  into('geode-p2p-tomcat-85/conf') {
+    from('release/tcserver/geode-p2p-tomcat-85') {
       include 'context-fragment.xml'
     }
   }

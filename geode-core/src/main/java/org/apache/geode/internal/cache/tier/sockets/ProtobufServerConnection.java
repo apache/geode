@@ -23,7 +23,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.apache.geode.cache.IncompatibleVersionException;
-import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;

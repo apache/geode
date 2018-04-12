@@ -113,10 +113,10 @@ public class StatMonitorHandler implements SampleHandler {
         throw e;
       } catch (Error e) {
         SystemFailure.checkFailure();
-        logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor,
+        logger.warn(LogMarker.STATISTICS_MARKER, "StatisticsMonitor {} threw {}", monitor,
             e.getClass().getSimpleName(), e);
       } catch (RuntimeException e) {
-        logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor,
+        logger.warn(LogMarker.STATISTICS_MARKER, "StatisticsMonitor {} threw {}", monitor,
             e.getClass().getSimpleName(), e);
       }
     }
@@ -179,9 +179,9 @@ public class StatMonitorHandler implements SampleHandler {
 
     @Override
     public void run() {
-      final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS);
+      final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE);
       if (isDebugEnabled_STATISTICS) {
-        logger.trace(LogMarker.STATISTICS, "StatMonitorNotifier is starting {}", this);
+        logger.trace(LogMarker.STATISTICS_VERBOSE, "StatMonitorNotifier is starting {}", this);
       }
       try {
         work();
@@ -194,7 +194,7 @@ public class StatMonitorHandler implements SampleHandler {
         }
       }
       if (isDebugEnabled_STATISTICS) {
-        logger.trace(LogMarker.STATISTICS, "StatMonitorNotifier is stopping {}", this);
+        logger.trace(LogMarker.STATISTICS_VERBOSE, "StatMonitorNotifier is stopping {}", this);
       }
     }
 
@@ -229,10 +229,10 @@ public class StatMonitorHandler implements SampleHandler {
                 throw e;
               } catch (Error e) {
                 SystemFailure.checkFailure();
-                logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor,
+                logger.warn(LogMarker.STATISTICS_MARKER, "StatisticsMonitor {} threw {}", monitor,
                     e.getClass().getSimpleName(), e);
               } catch (RuntimeException e) {
-                logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor,
+                logger.warn(LogMarker.STATISTICS_MARKER, "StatisticsMonitor {} threw {}", monitor,
                     e.getClass().getSimpleName(), e);
               }
             }

@@ -77,6 +77,30 @@ public class TableMetaDataManagerTest {
   }
 
   @Test
+  public void returnsDefaultQuoteString() throws Exception {
+    setupPrimaryKeysMetaData();
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
+
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
+
+    assertThat(data.getIdentifierQuoteString()).isEqualTo("");
+    verify(connection).getMetaData();
+  }
+
+  @Test
+  public void returnsQuoteStringFromMetaData() throws Exception {
+    setupPrimaryKeysMetaData();
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
+    String expectedQuoteString = "123";
+    when(databaseMetaData.getIdentifierQuoteString()).thenReturn(expectedQuoteString);
+
+    TableMetaDataView data = tableMetaDataManager.getTableMetaDataView(connection, TABLE_NAME);
+
+    assertThat(data.getIdentifierQuoteString()).isEqualTo(expectedQuoteString);
+    verify(connection).getMetaData();
+  }
+
+  @Test
   public void secondCallDoesNotUseMetaData() throws Exception {
     setupPrimaryKeysMetaData();
     when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);

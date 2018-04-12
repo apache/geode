@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.geode.cache.*;

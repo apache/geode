@@ -19,6 +19,7 @@ import static org.mockito.Mockito.mock;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -32,7 +33,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ProtobufStreamProcessorTest {
-  @Test(expected = EOFException.class)
+  @Test(expected = IOException.class)
   public void receiveMessage() throws Exception {
     InputStream inputStream = new ByteArrayInputStream(new byte[0]);
     OutputStream outputStream = new ByteArrayOutputStream(2);

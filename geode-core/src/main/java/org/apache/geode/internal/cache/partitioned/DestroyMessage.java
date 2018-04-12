@@ -264,26 +264,17 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
         try {
           Integer bucket = Integer
               .valueOf(PartitionedRegionHelper.getHashKey(r, null, this.key, null, this.cbArg));
-          // try {
-          // // the event must show its true origin for cachewriter invocation
-          // event.setOriginRemote(true);
-          // event.setPartitionMessage(this);
-          // r.doCacheWriteBeforeDestroy(event);
-          // }
-          // finally {
-          // event.setOriginRemote(false);
-          // }
           event.setCausedByMessage(this);
           r.getDataView().destroyOnRemote(event, true/* cacheWrite */, this.expectedOldValue);
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "{} updated bucket: {} with key: {}", getClass().getName(),
-                bucket, this.key);
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "{} updated bucket: {} with key: {}",
+                getClass().getName(), bucket, this.key);
           }
         } catch (CacheWriterException cwe) {
           sendReply(getSender(), this.processorId, dm, new ReplyException(cwe), r, startTime);
           return false;
         } catch (EntryNotFoundException eee) {
-          logger.trace(LogMarker.DM, "{}: operateOnRegion caught EntryNotFoundException",
+          logger.trace(LogMarker.DM_VERBOSE, "{}: operateOnRegion caught EntryNotFoundException",
               getClass().getName());
           ReplyMessage.send(getSender(), getProcessorId(), new ReplyException(eee),
               getReplySender(dm), r.isInternalRegion());
@@ -338,14 +329,14 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    setKey(InternalDataSerializer.readUserObject(in));
+    setKey(DataSerializer.readObject(in));
     this.cbArg = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
     this.notificationOnly = in.readBoolean();
     this.bridgeContext = ClientProxyMembershipID.readCanonicalized(in);
     this.originalSender = (InternalDistributedMember) DataSerializer.readObject(in);
     this.eventId = (EventID) DataSerializer.readObject(in);
-    this.expectedOldValue = InternalDataSerializer.readUserObject(in);
+    this.expectedOldValue = DataSerializer.readObject(in);
 
     final boolean hasFilterInfo = ((flags & HAS_FILTER_INFO) != 0);
     if (hasFilterInfo) {
@@ -499,16 +490,16 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "DestroyReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
       // dm.getLogger().warning("RemotePutResponse processor is " +
       // ReplyProcessor21.getProcessor(this.processorId));
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "DestroyReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "DestroyReplyMessage processor not found");
         }
         return;
       }
@@ -524,8 +515,8 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.debug("{} processed {} ", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {} ", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }

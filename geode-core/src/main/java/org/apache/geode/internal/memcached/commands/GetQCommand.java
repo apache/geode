@@ -14,13 +14,7 @@
  */
 package org.apache.geode.internal.memcached.commands;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.memcached.Command;
-import org.apache.geode.internal.memcached.RequestReader;
-import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * Does not send a response on a cache miss.
