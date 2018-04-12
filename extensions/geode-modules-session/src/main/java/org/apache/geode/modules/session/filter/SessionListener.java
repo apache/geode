@@ -21,7 +21,6 @@ import javax.servlet.http.HttpSessionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 
 /**
  * Listener to destroy gemfire sessions when native sessions are destroyed.

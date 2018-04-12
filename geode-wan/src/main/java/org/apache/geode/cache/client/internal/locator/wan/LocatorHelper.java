@@ -14,15 +14,10 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 

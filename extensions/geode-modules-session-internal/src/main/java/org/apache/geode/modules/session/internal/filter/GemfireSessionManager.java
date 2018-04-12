@@ -16,8 +16,6 @@
 package org.apache.geode.modules.session.internal.filter;
 
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.management.MBeanServer;

@@ -19,7 +19,6 @@ import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.geode.modules.session.SessionCountingListener;
 
 public class GetMaxInactiveInterval implements Function<HttpServletRequest, String> {
   @Override

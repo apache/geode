@@ -20,8 +20,6 @@ import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorService
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAMESPACE;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.CACHE;
 
-import java.io.Serializable;
-
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
