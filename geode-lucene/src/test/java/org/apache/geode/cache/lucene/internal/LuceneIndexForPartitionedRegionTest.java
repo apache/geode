@@ -19,6 +19,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Properties;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -90,6 +91,7 @@ public class LuceneIndexForPartitionedRegionTest {
     assertTrue(index.fileRegionExists(fileRegionName));
   }
 
+  @Ignore // Enable the test when LuceneServiceImpl.LUCENE_REINDEX feature flag is removed.
   @Test
   public void indexIsAvailableReturnsFalseIfCompleteFileIsNotPresent() {
     String name = "indexName";
