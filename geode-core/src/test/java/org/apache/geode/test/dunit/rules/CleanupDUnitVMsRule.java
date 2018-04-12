@@ -14,12 +14,7 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Host.getHostCount;
-
-import java.io.Serializable;
-
-import org.junit.rules.ExternalResource;
 
 import org.apache.geode.test.dunit.VM;
 

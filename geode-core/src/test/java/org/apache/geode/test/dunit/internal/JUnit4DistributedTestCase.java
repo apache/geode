@@ -572,7 +572,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
   }
 
-  private static final void cleanupAllVms() {
+  public static final void cleanupAllVms() {
     tearDownVM();
     invokeInEveryVM("tearDownVM", () -> tearDownVM());
     invokeInLocator(() -> {

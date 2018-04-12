@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getAllVMs;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ import org.apache.geode.test.dunit.VM;
  * </pre>
  */
 @SuppressWarnings({"serial", "unused"})
-public class SharedCountersRule extends DistributedExternalResource {
+public class SharedCountersRule extends AbstractDistributedTestRule {
 
   private static volatile Map<Serializable, AtomicInteger> counters;
 
@@ -67,15 +67,10 @@ public class SharedCountersRule extends DistributedExternalResource {
   }
 
   public SharedCountersRule() {
-    this(new Builder(), new RemoteInvoker());
+    this(new Builder());
   }
 
   SharedCountersRule(final Builder builder) {
-    this(builder, new RemoteInvoker());
-  }
-
-  SharedCountersRule(final Builder builder, final RemoteInvoker invoker) {
-    super(invoker);
     idsToInitInBefore.addAll(builder.ids);
   }
 
@@ -148,7 +143,7 @@ public class SharedCountersRule extends DistributedExternalResource {
    */
   public int getTotal(final Serializable id) {
     int total = counters.get(id).get();
-    for (VM vm : getHost(0).getAllVMs()) {
+    for (VM vm : getAllVMs()) {
       total += vm.invoke(() -> counters.get(id).get());
     }
     return total;

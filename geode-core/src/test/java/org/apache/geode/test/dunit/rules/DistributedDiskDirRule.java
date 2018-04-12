@@ -31,6 +31,7 @@ import org.junit.rules.TestName;
 import org.junit.runner.Description;
 
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.DiskDirRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
@@ -124,6 +125,7 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
 
   @Override
   protected void before(Description description) throws Exception {
+    DUnitLauncher.launchIfNeeded();
     beforeVmCount = getVMCount();
 
     if (initializeHelperRules) {
