@@ -39,7 +39,6 @@ import org.apache.geode.management.internal.cli.GfshParser;
 public class ReadWriteFile {
 
   /**
-   * @param args
    */
   public static void main(String[] args) {
     if (args.length < 6 || args.length > 6) {

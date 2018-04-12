@@ -195,8 +195,6 @@ public class GetMemberConfigInformationFunction implements InternalFunction {
   /****
    * Removes the default values from the attributesMap based on defaultAttributesMap
    *
-   * @param attributesMap
-   * @param defaultAttributesMap
    */
   private void removeDefaults(Map<String, String> attributesMap,
       Map<String, String> defaultAttributesMap) {

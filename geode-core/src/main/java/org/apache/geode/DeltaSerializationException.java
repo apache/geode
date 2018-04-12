@@ -33,22 +33,18 @@ public class DeltaSerializationException extends RuntimeException {
   public DeltaSerializationException() {}
 
   /**
-   * @param message
    */
   public DeltaSerializationException(String message) {
     super(message);
   }
 
   /**
-   * @param cause
    */
   public DeltaSerializationException(Throwable cause) {
     super(cause);
   }
 
   /**
-   * @param message
-   * @param cause
    */
   public DeltaSerializationException(String message, Throwable cause) {
     super(message, cause);

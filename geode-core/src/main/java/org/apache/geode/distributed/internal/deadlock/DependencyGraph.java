@@ -133,7 +133,6 @@ public class DependencyGraph implements Serializable {
    * This returns a collection of top-level threads and their path to the given object. The object
    * name is some substring of the toString of the object
    *
-   * @param objectName
    */
   public List<DependencyGraph> findDependenciesWith(String objectName) {
 

@@ -88,8 +88,6 @@ public class MBeanJMXAdapter implements ManagementConstants {
    * registered. Although the filter will remember the filtered MBean and register it once the
    * filter is removed.
    *
-   * @param object
-   * @param objectName
    * @return modified ObjectName
    */
   public ObjectName registerMBean(Object object, ObjectName objectName, boolean isGemFireMBean) {
@@ -115,7 +113,6 @@ public class MBeanJMXAdapter implements ManagementConstants {
   /**
    * Checks whether an MBean implements notification support classes or not
    *
-   * @param objectName
    * @return if this MBean can be a notification broadcaster
    */
   public boolean hasNotificationSupport(ObjectName objectName) {
@@ -151,8 +148,6 @@ public class MBeanJMXAdapter implements ManagementConstants {
    * registered. Although the filter will remember the filtered MBean and register it once the
    * filter is removed.
    *
-   * @param object
-   * @param objectName
    */
   public void registerMBeanProxy(Object object, ObjectName objectName) {
 
@@ -171,7 +166,6 @@ public class MBeanJMXAdapter implements ManagementConstants {
    *
    * This method will unregister the MBean from GemFire Domain
    *
-   * @param objectName
    */
   public void unregisterMBean(ObjectName objectName) {
 
@@ -198,8 +192,6 @@ public class MBeanJMXAdapter implements ManagementConstants {
   /**
    * Finds the MBean instance by {@link javax.management.ObjectName}
    *
-   * @param objectName
-   * @param interfaceClass
    * @return instance of MBean
    */
   public <T> T findMBeanByName(ObjectName objectName, Class<T> interfaceClass) {

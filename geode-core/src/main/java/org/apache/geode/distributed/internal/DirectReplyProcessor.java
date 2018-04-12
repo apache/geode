@@ -106,10 +106,6 @@ public class DirectReplyProcessor extends ReplyProcessor21 {
   }
 
   /**
-   * @param dm
-   * @param system
-   * @param initMembers
-   * @param cancelCriterion
    */
   public DirectReplyProcessor(DistributionManager dm, InternalDistributedSystem system,
       Collection initMembers, CancelCriterion cancelCriterion) {

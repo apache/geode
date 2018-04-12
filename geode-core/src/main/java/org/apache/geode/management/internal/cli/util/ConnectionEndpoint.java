@@ -29,8 +29,6 @@ public class ConnectionEndpoint {
   private final int port;
 
   /**
-   * @param host
-   * @param port
    */
   public ConnectionEndpoint(String host, int port) {
     this.host = host;

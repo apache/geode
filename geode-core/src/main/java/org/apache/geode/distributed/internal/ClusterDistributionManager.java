@@ -1939,7 +1939,6 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * Cheap tool to examine an executor to see if it is still working
    *
-   * @param tpe
    * @return true if executor is still active
    */
   private boolean executorAlive(ThreadPoolExecutor tpe, String name) {
@@ -3770,7 +3769,6 @@ public class ClusterDistributionManager implements DistributionManager {
      * Constructor.
      *
      * @param group thread group to which the threads will belog to.
-     * @param stats
      */
     SerialQueuedExecutorPool(ThreadGroup group, DistributionStats stats,
         boolean throttlingDisabled) {
@@ -3782,7 +3780,6 @@ public class ClusterDistributionManager implements DistributionManager {
     /*
      * Returns an id of the thread in serialQueuedExecutorMap, thats mapped to the given seder.
      *
-     * @param sender
      *
      * @param createNew boolean flag to indicate whether to create a new id, if id doesnot exists.
      */

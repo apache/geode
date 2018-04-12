@@ -46,7 +46,6 @@ public class PdxOutputStream implements ByteBufferWriter {
   }
 
   /**
-   * @param allocSize
    */
   public PdxOutputStream(int allocSize) {
     this.hdos = new HeapDataOutputStream(allocSize, Version.CURRENT);
@@ -55,7 +54,6 @@ public class PdxOutputStream implements ByteBufferWriter {
   /**
    * Wrapper constructor
    *
-   * @param hdos
    */
   public PdxOutputStream(HeapDataOutputStream hdos) {
     this.hdos = hdos;

@@ -49,7 +49,6 @@ public class ErrorResultData extends InfoResultData {
 
   /**
    *
-   * @param errorCode
    * @return this ErrorResultData
    * @throws ResultDataException If the errorCode value is a non-finite number or invalid.
    */
@@ -65,9 +64,7 @@ public class ErrorResultData extends InfoResultData {
 
   /**
    *
-   * @param headerText
    * @return this ErrorResultData
-   * @throws ResultDataException
    */
   public ErrorResultData setHeader(String headerText) {
     return (ErrorResultData) super.setHeader(headerText);
@@ -84,9 +81,7 @@ public class ErrorResultData extends InfoResultData {
 
   /**
    *
-   * @param footerText
    * @return this InfoResultData
-   * @throws ResultDataException
    */
   public ErrorResultData setFooter(String footerText) {
     return (ErrorResultData) super.setFooter(footerText);

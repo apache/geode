@@ -382,7 +382,6 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   }
 
   /**
-   * @param profile
    */
   public void profileCreated(Profile profile) {
     if (profile instanceof CacheServerProfile) {
@@ -403,7 +402,6 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   }
 
   /**
-   * @param profile
    */
   public void profileRemoved(Profile profile) {
     if (profile instanceof CacheServerProfile) {

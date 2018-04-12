@@ -29,9 +29,7 @@ public interface TcpHandler {
   /**
    * Process a request and return a response
    *
-   * @param request
    * @return the response, or null if there is no reponse
-   * @throws IOException
    */
   Object processRequest(Object request) throws IOException;
 

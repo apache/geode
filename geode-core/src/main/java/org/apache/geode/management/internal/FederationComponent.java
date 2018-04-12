@@ -155,7 +155,6 @@ public class FederationComponent
    * @return true if the refresh detects that the state changed. It will return false if two
    *         consecutive refresh calls results in no state change. This indicates to the
    *         LocalManager whether to send the MBean state to Manager or not.
-   * @throws ManagementException
    */
 
   public boolean refreshObjectState(boolean keepOldState) {
@@ -229,7 +228,6 @@ public class FederationComponent
   /**
    * Managing node will get Object state by calling this method
    *
-   * @param propertyName
    * @return value of the given property
    */
   public Object getValue(String propertyName) {

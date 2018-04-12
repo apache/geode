@@ -395,7 +395,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return float
    */
   public float getPutLocalRate() {
     return ManagementConstants.NOT_AVAILABLE_FLOAT;
@@ -404,7 +403,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return float
    */
   public float getPutRemoteRate() {
     return ManagementConstants.NOT_AVAILABLE_FLOAT;
@@ -413,7 +411,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return long
    */
   public long getPutRemoteAvgLatency() {
     return ManagementConstants.NOT_AVAILABLE_LONG;
@@ -422,7 +419,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return long
    */
   public long getPutRemoteLatency() {
     return ManagementConstants.NOT_AVAILABLE_LONG;
@@ -431,7 +427,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getActualRedundancy() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -440,7 +435,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getAvgBucketSize() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -449,7 +443,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getBucketCount() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -462,7 +455,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getNumBucketsWithoutRedundancy() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -471,7 +463,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getPrimaryBucketCount() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -480,7 +471,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getTotalBucketSize() {
     return ManagementConstants.NOT_AVAILABLE_INT;

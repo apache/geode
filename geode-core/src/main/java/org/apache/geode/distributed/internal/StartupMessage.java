@@ -86,7 +86,6 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
   /**
    * Creates new instance for StartupOperation.
    *
-   * @param hostedLocators
    * @param isSharedConfigurationEnabled true if cluster configuration is enabled
    */
   StartupMessage(Collection<String> hostedLocators, boolean isSharedConfigurationEnabled) {

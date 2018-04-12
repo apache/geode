@@ -195,7 +195,6 @@ class StartupMessageData {
   /**
    * Writes all optional fields to the DataOutput or null for minimal wire footprint.
    *
-   * @throws IOException
    */
   void writeTo(DataOutput out) throws IOException {
     if (this.optionalFields.isEmpty()) {

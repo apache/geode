@@ -43,8 +43,6 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
 
   /**
    *
-   * @param checkPortability
-   * @param patterns
    */
   protected ReflectionBasedAutoSerializer createReflectionBasedAutoSerializer(
       boolean checkPortability, String[] patterns) {

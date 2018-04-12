@@ -37,22 +37,18 @@ public class InternalGemFireError extends Error {
   }
 
   /**
-   * @param message
    */
   public InternalGemFireError(String message) {
     super(message);
   }
 
   /**
-   * @param cause
    */
   public InternalGemFireError(Throwable cause) {
     super(cause);
   }
 
   /**
-   * @param message
-   * @param cause
    */
   public InternalGemFireError(String message, Throwable cause) {
     super(message, cause);

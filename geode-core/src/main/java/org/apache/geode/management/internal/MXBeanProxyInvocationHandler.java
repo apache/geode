@@ -91,7 +91,6 @@ public class MXBeanProxyInvocationHandler {
    * Eliminate methods that are overridden with a covariant return type. Reflection will return both
    * the original and the overriding method but we need only the overriding one is of interest
    *
-   * @param methodArray
    * @return the method after eliminating covariant menthods
    */
   static List<Method> eliminateCovariantMethods(Method[] methodArray) {

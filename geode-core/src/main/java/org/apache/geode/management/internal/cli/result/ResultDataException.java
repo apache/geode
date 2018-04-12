@@ -23,7 +23,6 @@ public class ResultDataException extends RuntimeException {
   private static final long serialVersionUID = 3851919811942980944L;
 
   /**
-   * @param message
    */
   public ResultDataException(String message) {
     super(message);

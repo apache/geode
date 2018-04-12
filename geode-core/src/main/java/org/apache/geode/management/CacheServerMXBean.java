@@ -374,7 +374,6 @@ public interface CacheServerMXBean {
    * eventsRemovedByQrm , eventsTaken , numVoidRemovals
    *
    * @return an array of ClientQueueDetail
-   * @throws Exception
    */
   ClientQueueDetail[] showClientQueueDetails() throws Exception;
 
@@ -387,8 +386,6 @@ public interface CacheServerMXBean {
    * eventsRemovedByQrm , eventsTaken , numVoidRemovals
    *
    * @param clientId the ID of client which is returned by the attribute ClientIds
-   * @return ClientQueueDetail
-   * @throws Exception
    */
   ClientQueueDetail showClientQueueDetails(String clientId) throws Exception;
 

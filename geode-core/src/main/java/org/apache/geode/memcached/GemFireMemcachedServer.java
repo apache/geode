@@ -240,7 +240,6 @@ public class GemFireMemcachedServer {
 
   /**
    *
-   * @param args
    */
   public static void main(String[] args) {
     int port = getPort(args);

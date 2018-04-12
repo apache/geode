@@ -158,8 +158,6 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     /**
      * Constructor used to send
      *
-     * @param recips
-     * @param p
      */
     private JmxManagerProfileMessage(final Set<InternalDistributedMember> recips,
         final JmxManagerProfile p) {
@@ -234,7 +232,6 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
      * Send profile to the provided members
      *
      * @param recips The recipients of the message
-     * @throws ReplyException
      */
     public static void send(final DistributionManager dm, Set<InternalDistributedMember> recips,
         JmxManagerProfile profile) {

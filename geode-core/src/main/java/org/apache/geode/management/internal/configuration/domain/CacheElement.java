@@ -99,10 +99,6 @@ public class CacheElement {
    *
    * @param doc {@link Document} to parse schema for.
    * @return Element map
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws SAXException
-   * @throws XPathExpressionException
    * @since GemFire 8.1
    */
   public static LinkedHashMap<String, CacheElement> buildElementMap(final Document doc)
@@ -163,10 +159,6 @@ public class CacheElement {
    *
    * @param elementMap to add elements to.
    * @param inputSource to parse elements from.
-   * @throws SAXException
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws XPathExpressionException
    * @since GemFire 8.1
    */
   private static void buildElementMapCacheType(final LinkedHashMap<String, CacheElement> elementMap,
@@ -195,7 +187,6 @@ public class CacheElement {
    * @param xPath XPath to query for elements.
    * @param xPathContext XPath context for queries.
    * @return final rank of elements.
-   * @throws XPathExpressionException
    * @since GemFire 8.1
    */
   private static int buildElementMapXPath(final LinkedHashMap<String, CacheElement> elementMap,

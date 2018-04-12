@@ -538,7 +538,6 @@ public class XmlEntity implements VersionedDataSerializable {
      *
      * You are required to at least call {@link #withType(String)}.
      *
-     * @return XmlEntity
      * @since GemFire 8.1
      */
     public XmlEntity build() {

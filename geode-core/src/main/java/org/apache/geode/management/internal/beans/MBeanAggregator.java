@@ -109,7 +109,6 @@ public class MBeanAggregator implements ProxyListener {
   /**
    * Public constructor.
    *
-   * @param distributedSystemBridge
    */
   public MBeanAggregator(DistributedSystemBridge distributedSystemBridge) {
 

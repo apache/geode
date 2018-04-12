@@ -2402,7 +2402,6 @@ public class InternalDistributedSystem extends DistributedSystem
     /**
      * Invoked after the connection to the distributed system has been disconnected
      *
-     * @param sys
      */
     void onShutdown(InternalDistributedSystem sys);
   }
