@@ -42,7 +42,6 @@ public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
       "Group(s) of members on which to destroy the Gateway Receiver.";
   public static final String DESTROY_GATEWAYRECEIVER__MEMBER__HELP =
       "Name/Id of the member on which to destroy the Gateway Receiver.";
-  public static final String GATEWAYRECIEVER_NOT_FOUND_ON_0 = "Gateway Receiver not found on {0}";
 
   @CliCommand(value = DESTROY_GATEWAYRECEIVER, help = DESTROY_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
