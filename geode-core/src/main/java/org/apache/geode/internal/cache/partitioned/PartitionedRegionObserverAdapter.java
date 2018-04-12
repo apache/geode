@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.ProxyBucketRegion;
 
 /**
  * This class provides 'do-nothing' implementations of all of the methods of interface

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.size;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;

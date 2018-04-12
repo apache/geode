@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.memcached.Command;
 import org.apache.geode.internal.memcached.KeyWrapper;
 import org.apache.geode.internal.memcached.Reply;
 import org.apache.geode.internal.memcached.RequestReader;

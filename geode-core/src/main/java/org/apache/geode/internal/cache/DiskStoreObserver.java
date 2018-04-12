@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.Map;
 
 /**
  * For testing purposes only, observers events in the disk store.

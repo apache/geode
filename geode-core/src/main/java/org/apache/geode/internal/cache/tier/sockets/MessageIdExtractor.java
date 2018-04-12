@@ -16,7 +16,6 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import org.apache.geode.internal.cache.tier.Encryptor;
-import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.AuthenticationRequiredException;
 

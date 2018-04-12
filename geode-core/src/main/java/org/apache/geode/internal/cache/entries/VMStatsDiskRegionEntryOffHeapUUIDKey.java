@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.Token;
