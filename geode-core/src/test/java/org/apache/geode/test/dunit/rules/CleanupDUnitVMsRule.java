@@ -15,20 +15,21 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.Host.getHostCount;
+import static org.apache.geode.test.dunit.VM.getAllVMs;
 
 import org.apache.geode.test.dunit.VM;
 
-public class CleanupDUnitVMsRule extends ExternalResource implements Serializable {
+public class CleanupDUnitVMsRule extends AbstractDistributedTestRule {
 
   @Override
   public void before() {
     if (getHostCount() > 0) {
-      getHost(0).getAllVMs().forEach(VM::bounce);
+      getAllVMs().forEach(VM::bounce);
     }
   }
 
   @Override
   public void after() {
-    getHost(0).getAllVMs().forEach(VM::bounce);
+    getAllVMs().forEach(VM::bounce);
   }
 }

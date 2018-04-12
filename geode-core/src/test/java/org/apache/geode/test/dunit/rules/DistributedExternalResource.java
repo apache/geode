@@ -34,6 +34,6 @@ public abstract class DistributedExternalResource extends SerializableExternalRe
   }
 
   protected RemoteInvoker invoker() {
-    return this.invoker;
+    return invoker;
   }
 }
