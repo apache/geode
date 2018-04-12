@@ -110,7 +110,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   }
 
   /**
-   * @throws Exception
    */
   @Test
   public void testCacheServerMBean() throws Exception {
@@ -168,7 +167,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   /**
    * Test for client server connection related management artifacts like notifications
    *
-   * @throws Exception
    */
 
   @Test
@@ -207,7 +205,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
    * Thats why used service.getLocalManager().runManagementTaskAdhoc() to make node ready for
    * federation when manager node comes up
    *
-   * @throws Exception
    */
 
   // renable when bug 46138
@@ -314,7 +311,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   /**
    * Verify the Cache Server details
    *
-   * @param vm
    */
   @SuppressWarnings("serial")
   protected void addClientNotifListener(final VM vm, final int serverPort) throws Exception {
@@ -354,7 +350,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   /**
    * Verify the closed CQ which is closed from Managing Node
    *
-   * @param vm
    */
   @SuppressWarnings("serial")
   protected void verifyIndex(final VM vm, final int serverPort) throws Exception {
@@ -397,7 +392,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   /**
    * Verify the closed CQ which is closed from Managing Node
    *
-   * @param vm
    */
   @SuppressWarnings("serial")
   protected void verifyClosedCQ(final VM vm) throws Exception {
@@ -416,7 +410,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   /**
    * Verify the Cache Server details
    *
-   * @param vm
    */
   @SuppressWarnings("serial")
   protected void verifyCacheServer(final VM vm, final int serverPort) throws Exception {
@@ -464,7 +457,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   /**
    * Verify the Cache Server details
    *
-   * @param vm
    */
   @SuppressWarnings("serial")
   protected void verifyCacheServerRemote(final VM vm, final DistributedMember serverMember,

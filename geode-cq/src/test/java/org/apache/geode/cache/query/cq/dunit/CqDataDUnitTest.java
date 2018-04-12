@@ -91,7 +91,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
    * of InterestList the events are not sent back to the client if its the originator, this is not
    * true for cq.
    *
-   * @throws Exception
    */
   @Test
   public void testClientWithFeederAndCQ() throws Exception {
@@ -129,7 +128,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ Fail over/HA with redundancy level set.
    *
-   * @throws Exception
    */
   @Test
   public void testCQHAWithState() throws Exception {
@@ -254,7 +252,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests propogation of invalidates and destorys to the clients. Bug 37242.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithDestroysAndInvalidates() throws Exception {
@@ -383,7 +380,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ when region is populated with net load.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithLoad() throws Exception {
@@ -436,7 +432,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ when entries are evicted from region.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithEviction() throws Exception {
@@ -509,7 +504,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ with ConnectionPool.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithConnectionPool() throws Exception {
@@ -571,7 +565,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ with BridgeClient.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithBridgeClient() throws Exception {
@@ -630,7 +623,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ with ConnectionPool.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithPool() throws Exception {
@@ -688,7 +680,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ with establishCallBackConnection.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithEstablishCallBackConnection() throws Exception {
@@ -756,7 +747,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
    * Test for: Region destroy, calls close on the server. Region clear triggers cqEvent with query
    * op region clear. Region invalidate triggers cqEvent with query op region invalidate.
    *
-   * @throws Exception
    */
   @Test
   public void testRegionEvents() throws Exception {
@@ -838,7 +828,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
    * not be reflected in the query result set thus making the query data and region data
    * inconsistent.
    *
-   * @throws Exception
    */
   @Test
   public void testEventsDuringQueryExecution() throws Exception {
@@ -974,7 +963,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
    * is implemented) A third thread will be awaken and release the latch in the testhook for TC1 to
    * complete.
    *
-   * @throws Exception
    */
   @Test
   public void testMultipleExecuteWithInitialResults() throws Exception {

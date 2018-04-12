@@ -75,7 +75,6 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
    * Tests CQ Result Caching with CQ Failover. When EXECUTE_QUERY_DURING_INIT is false and new
    * server calls execute during HA the results cache is not initialized.
    *
-   * @throws Exception
    */
   @Override
   @Test

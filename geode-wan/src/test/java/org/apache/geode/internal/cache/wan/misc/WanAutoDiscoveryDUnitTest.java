@@ -83,7 +83,6 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * after startInitLocator. I think, after throwing this exception, locator is not stopped properly
    * and hence other tests are failing.
    *
-   * @throws Exception
    */
   @Ignore
   @Test
@@ -105,7 +104,6 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * Test to validate that multiple locators added on LN site and multiple locators on Ny site
    * recognizes each other
    *
-   * @throws Exception
    */
   @Test
   public void test_NY_Recognises_ALL_LN_Locators() throws Exception {

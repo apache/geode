@@ -81,7 +81,6 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
    * conflation in batch. yet did find any way to ascertain that the vents in the batch will always
    * be conflated.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationBatchConflation() throws Exception {

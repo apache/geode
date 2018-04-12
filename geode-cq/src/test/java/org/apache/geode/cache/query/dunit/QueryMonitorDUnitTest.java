@@ -879,7 +879,6 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
    * The following CQ test is added to make sure testMaxQueryExecutionTime is reset and is not
    * affecting other query related tests.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithDestroysAndInvalidates() throws Exception {

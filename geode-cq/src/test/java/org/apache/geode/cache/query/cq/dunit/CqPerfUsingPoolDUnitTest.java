@@ -84,7 +84,6 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests the cq performance.
    *
-   * @throws Exception
    */
   @Ignore("perf")
   @Test
@@ -195,7 +194,6 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for maintaining keys for update optimization.
    *
-   * @throws Exception
    */
   @Test
   public void testKeyMaintenance() throws Exception {
@@ -417,7 +415,6 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * Test for common CQs. To test the changes relating to, executing CQ only once for all similar
    * CQs.
    *
-   * @throws Exception
    */
   @Test
   public void testMatchingCqs() throws Exception {
@@ -532,7 +529,6 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * Test for common CQs. To test the changes relating to, executing CQ only once for all similar
    * CQs.
    *
-   * @throws Exception
    */
   @Test
   public void testMatchingCQWithMultipleClients() throws Exception {
@@ -693,7 +689,6 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ Fail over.
    *
-   * @throws Exception
    */
   @Test
   public void testMatchingCQsWithMultipleServers() throws Exception {
@@ -856,7 +851,6 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Performance test for Matching CQ optimization changes.
    *
-   * @throws Exception
    */
   @Ignore("perf")
   @Test

@@ -315,7 +315,6 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
    * required.
    *
    *
-   * @throws Exception
    */
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {

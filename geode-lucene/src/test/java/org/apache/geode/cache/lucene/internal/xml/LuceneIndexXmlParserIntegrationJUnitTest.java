@@ -209,7 +209,6 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
   /**
    * Test that the Index creation objects get appropriately translated into a real index.
    *
-   * @throws FileNotFoundException
    */
   @Test
   public void createIndex() throws FileNotFoundException {

@@ -1517,7 +1517,6 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * Test for bug 50120 see if we can recover after deleting the parallel gateway sender files and
    * not recoverying the sender when we have a persistent PR.
    *
-   * @throws Throwable
    */
   @Test
   public void testRemoveGatewayFromPersistentRegionOnRestart() throws Throwable {

@@ -127,7 +127,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResults() throws Exception {
@@ -182,7 +181,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set with Compact Range Index.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsWithCompactRangeIndex() throws Exception {
@@ -227,7 +225,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set with Range Index.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsWithRangeIndex() throws Exception {
@@ -286,7 +283,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsOnPR() throws Exception {
@@ -343,7 +339,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set with Compact Range Index.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsWithCompactRangeIndexOnPR() throws Exception {
@@ -392,7 +387,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set with Range Index.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsWithRangeIndexOnPR() throws Exception {
@@ -465,7 +459,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsCaching() throws Exception {
@@ -587,7 +580,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsCachingForMultipleCQs() throws Exception {
@@ -714,7 +706,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsCachingForPR() throws Exception {
@@ -810,7 +801,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set caching for destroy events.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsCachingForDestroyEventsOnPR() throws Exception {
@@ -929,7 +919,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Caching with CQ Failover.
    *
-   * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-1251
   @Test

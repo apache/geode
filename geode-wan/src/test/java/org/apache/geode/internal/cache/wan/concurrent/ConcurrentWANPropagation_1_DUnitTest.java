@@ -45,7 +45,6 @@ import org.apache.geode.test.junit.categories.WanTest;
 public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
 
   /**
-   * @param name
    */
   public ConcurrentWANPropagation_1_DUnitTest() {
     super();
@@ -56,7 +55,6 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
   /**
    * All the test cases are similar to SerialWANPropagationDUnitTest
    *
-   * @throws Exception
    */
   @Test
   public void testReplicatedSerialPropagation_withoutRemoteSite() throws Exception {
@@ -224,7 +222,6 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
    * Two regions configured with the same sender and put is in progress on both the regions. One of
    * the two regions is destroyed in the middle.
    *
-   * @throws Exception
    */
   @Test
   public void testReplicatedSerialPropagationWithLocalRegionDestroy() throws Exception {
@@ -303,7 +300,6 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
    * 1 region and sender configured on local site and 1 region and a receiver configured on remote
    * site. Puts to the local region are in progress. Remote region is destroyed in the middle.
    *
-   * @throws Exception
    */
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {
@@ -375,7 +371,6 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
    * regions. Same two regions are configured on remote site as well. One of the two regions is
    * destroyed in the middle on remote site.
    *
-   * @throws Exception
    */
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy2() throws Exception {
