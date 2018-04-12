@@ -27,7 +27,7 @@ subprojects {
 
       // As the method name suggests, bump this number if any of the below "custom" rules change.
       // Spotless will not run on unchanged files unless this number changes.
-      bumpThisNumberIfACustomStepChanges(0)
+      bumpThisNumberIfACustomStepChanges(1)
 
       custom 'Remove commented-out import statements', {
         it.replaceAll(/\n\/\/ import .*?;.*/, '')
@@ -35,6 +35,15 @@ subprojects {
 
       // Enforce style import order
       importOrderFile "${project(':geode-core').projectDir}/../etc/eclipseOrganizeImports.importorder"
+
+      custom 'Remove unhelpful javadoc stubs', {
+        // e.g., remove the following lines:
+        // "* @param paramName"
+        // "* @throws ExceptionType"
+        // "* @return returnType"'
+        // Multiline to allow anchors on newlines
+        it.replaceAll(/(?m)^ *\* *@(?:param|throws|return) *\w* *\n/, '')
+      }
 
       // Enforce style modifier order
       custom 'Modifier ordering', {
