@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,7 +33,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedDisconnectRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -42,12 +40,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @SuppressWarnings("serial")
 public class LocatorPortClusterExampleTest implements Serializable {
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
-
   @Rule
-  public DistributedDisconnectRule disconnectRule =
-      new DistributedDisconnectRule.Builder().disconnectAfter(true).build();
+  public DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   private static InternalCache cache;
 
