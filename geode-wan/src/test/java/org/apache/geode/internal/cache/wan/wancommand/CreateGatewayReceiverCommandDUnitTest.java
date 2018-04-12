@@ -134,7 +134,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(createOnBoth).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
         .tableHasColumnWithValuesContaining("Status",
-            "SKIP: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
+            "Skipping: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
             "GatewayReceiver created on member \"" + SERVER_2 + "\"");
   }
 
