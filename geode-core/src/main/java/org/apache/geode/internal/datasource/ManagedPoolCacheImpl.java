@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.datasource;
 
-/**
- */
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEventListener;
 import javax.resource.spi.ConnectionRequestInfo;

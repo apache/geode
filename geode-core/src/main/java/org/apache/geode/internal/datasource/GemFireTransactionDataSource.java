@@ -190,9 +190,6 @@ public class GemFireTransactionDataSource extends AbstractDataSource
     }
   }
 
-  /**
-   *
-   */
   void registerTranxConnection(XAConnection xaConn) throws Exception {
     try {
       synchronized (this) {

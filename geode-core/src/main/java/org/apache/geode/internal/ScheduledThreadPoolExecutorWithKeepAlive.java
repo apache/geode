@@ -46,8 +46,6 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
 
   private final ScheduledThreadPoolExecutor timer;
 
-  /**
-   */
   public ScheduledThreadPoolExecutorWithKeepAlive(int corePoolSize, long keepAlive,
       TimeUnit timeUnit, ThreadFactory threadFactory) {
     super(0, corePoolSize - 1, keepAlive, timeUnit, new SynchronousQueue(), threadFactory,

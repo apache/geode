@@ -55,8 +55,6 @@ public class StoppableCountDownLatch {
     this.stopper = stopper;
   }
 
-  /**
-   */
   public void await() throws InterruptedException {
     for (;;) {
       stopper.checkCancelInProgress(null);

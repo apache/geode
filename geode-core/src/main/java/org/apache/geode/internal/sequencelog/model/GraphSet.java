@@ -26,9 +26,6 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.internal.sequencelog.GraphType;
 
-/**
- *
- */
 public class GraphSet implements GraphReaderCallback {
   private Map<GraphID, Graph> graphs = new HashMap<GraphID, Graph>();
   private long maxTime = Long.MIN_VALUE;

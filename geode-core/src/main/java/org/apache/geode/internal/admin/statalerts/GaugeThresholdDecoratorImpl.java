@@ -40,8 +40,6 @@ public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
 
   public GaugeThresholdDecoratorImpl() {}
 
-  /**
-   */
   public GaugeThresholdDecoratorImpl(StatAlertDefinition definition, Number lowerLimit,
       Number upperLimit) {
     super(definition);

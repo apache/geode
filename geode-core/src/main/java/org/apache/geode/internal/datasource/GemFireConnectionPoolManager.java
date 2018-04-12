@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.datasource;
 
-/**
- */
 import java.io.Serializable;
 
 import javax.sql.*;

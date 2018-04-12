@@ -44,8 +44,6 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
 
   public DummyStatisticInfoImpl() {}
 
-  /**
-   */
   public DummyStatisticInfoImpl(String statisticsTypeName, String statisticsTextId,
       String statisticName) {
     super();

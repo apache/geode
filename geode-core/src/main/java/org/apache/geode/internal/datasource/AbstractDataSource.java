@@ -127,8 +127,6 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
     throw new SQLFeatureNotSupportedException();
   }
 
-  /**
-   */
   protected boolean validateConnection(Connection conn) {
     try {
       return (!conn.isClosed());
@@ -207,9 +205,6 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
     }
   }
 
-  /**
-   *
-   */
   public void clearUp() {
     isActive = false;
   }

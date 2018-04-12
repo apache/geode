@@ -115,8 +115,6 @@ public class StoppableReentrantReadWriteLock implements /* ReadWriteLock, */ jav
       }
     }
 
-    /**
-     */
     public void lockInterruptibly() throws InterruptedException {
       for (;;) {
         stopper.checkCancelInProgress(null);
@@ -193,8 +191,6 @@ public class StoppableReentrantReadWriteLock implements /* ReadWriteLock, */ jav
       }
     }
 
-    /**
-     */
     public void lockInterruptibly() throws InterruptedException {
       for (;;) {
         stopper.checkCancelInProgress(null);
@@ -220,8 +216,6 @@ public class StoppableReentrantReadWriteLock implements /* ReadWriteLock, */ jav
       return lock.tryLock(timeout, TimeUnit.MILLISECONDS);
     }
 
-    /**
-     */
     public void unlock() {
       lock.unlock();
     }

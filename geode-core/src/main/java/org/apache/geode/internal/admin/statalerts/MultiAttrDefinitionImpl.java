@@ -40,8 +40,6 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   public MultiAttrDefinitionImpl() {}
 
-  /**
-   */
   public MultiAttrDefinitionImpl(String name, StatisticInfo[] statInfo) {
     super();
     setStatisticInfo(statInfo);

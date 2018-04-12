@@ -24,9 +24,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.sequencelog.io.OutputStreamAppender;
 
-/**
- *
- */
 public class SequenceLoggerImpl implements SequenceLogger {
 
   private static final SequenceLoggerImpl INSTANCE;

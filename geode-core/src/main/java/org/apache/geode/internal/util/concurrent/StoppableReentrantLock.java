@@ -79,8 +79,6 @@ public class StoppableReentrantLock {
     } // for
   }
 
-  /**
-   */
   public void lockInterruptibly() throws InterruptedException {
     for (;;) {
       stopper.checkCancelInProgress(null);
