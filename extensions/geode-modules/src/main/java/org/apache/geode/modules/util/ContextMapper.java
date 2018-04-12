@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.apache.catalina.session.ManagerBase;
 
-import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 
 /**
  * This basic singleton class maps context paths to manager instances.

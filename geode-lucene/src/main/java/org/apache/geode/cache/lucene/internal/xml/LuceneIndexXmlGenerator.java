@@ -17,16 +17,11 @@ package org.apache.geode.cache.lucene.internal.xml;
 
 import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.*;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
