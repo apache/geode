@@ -41,9 +41,6 @@ import org.apache.juli.logging.LogFactory;
 
 import org.apache.geode.modules.session.catalina.JvmRouteBinderValve;
 
-/**
- *
- */
 public class EmbeddedTomcat8 {
 
   private String contextPath = null;

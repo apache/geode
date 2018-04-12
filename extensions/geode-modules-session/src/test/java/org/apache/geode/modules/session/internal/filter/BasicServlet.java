@@ -25,9 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.servlet.DefaultServlet;
 
-/**
- *
- */
 public class BasicServlet extends DefaultServlet {
 
   Callback callback = null;

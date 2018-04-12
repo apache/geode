@@ -45,9 +45,6 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   final String expectedExceptions = null;
 
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
 
   @Test

@@ -109,8 +109,6 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     disconnectAllFromDS();
   }
 
-  /**
-   */
   @Test
   public void testCacheServerMBean() throws Exception {
     final Host host = Host.getHost(0);

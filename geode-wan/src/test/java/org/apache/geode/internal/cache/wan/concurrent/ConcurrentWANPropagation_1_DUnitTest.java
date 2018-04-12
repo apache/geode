@@ -44,8 +44,6 @@ import org.apache.geode.test.junit.categories.WanTest;
 @Category({DistributedTest.class, WanTest.class})
 public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
 
-  /**
-   */
   public ConcurrentWANPropagation_1_DUnitTest() {
     super();
   }

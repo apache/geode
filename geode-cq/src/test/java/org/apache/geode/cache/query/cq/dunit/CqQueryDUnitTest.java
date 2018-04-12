@@ -3207,9 +3207,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  /**
-   *
-   */
   @Test
   public void testCQWhereCondOnShort() throws Exception {
 
@@ -3240,9 +3237,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     closeServer(server);
   }
 
-  /**
-   *
-   */
   @Test
   public void testCQEquals() throws Exception {
 
@@ -3295,9 +3289,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     closeServer(server);
   }
 
-  /**
-   *
-   */
   @Test
   public void testCQEqualsWithIndex() throws Exception {
 
