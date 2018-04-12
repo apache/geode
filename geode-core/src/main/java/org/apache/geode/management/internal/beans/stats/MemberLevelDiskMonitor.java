@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.statistics.StatisticId;
 import org.apache.geode.internal.statistics.StatisticNotFoundException;
 import org.apache.geode.internal.statistics.StatisticsListener;

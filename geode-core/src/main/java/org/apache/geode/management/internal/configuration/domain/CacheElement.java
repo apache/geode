@@ -21,7 +21,6 @@ import static org.apache.geode.management.internal.configuration.utils.XmlUtils.
 import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
