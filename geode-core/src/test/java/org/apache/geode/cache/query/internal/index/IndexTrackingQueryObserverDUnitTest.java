@@ -138,7 +138,6 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
   /**
    * CReates a PR on a VM with NUM_BKTS buckets.
    *
-   * @param vm
    */
   private void createPR(VM vm) {
 

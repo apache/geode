@@ -143,7 +143,6 @@ public class Bug39356DUnitTest extends JUnit4CacheTestCase {
     private final VM vm0;
 
     /**
-     * @param vm0
      */
     MyRegionObserver(VM vm0) {
       this.vm0 = vm0;

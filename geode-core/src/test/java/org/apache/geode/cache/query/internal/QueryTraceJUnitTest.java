@@ -76,7 +76,6 @@ public class QueryTraceJUnitTest {
   /**
    * Tests tracing on queries with <TRACE> or <trace> tag.
    *
-   * @throws Exception
    */
   @Test
   public void testTraceOnPartitionedRegionWithTracePrefix() throws Exception {
@@ -155,7 +154,6 @@ public class QueryTraceJUnitTest {
   /**
    * negative testing: if <TRACE> is in comments not tracing is done.
    *
-   * @throws Exception
    */
   @Test
   public void testNegTraceOnPartitionedRegionWithTracePrefix() throws Exception {
@@ -197,7 +195,6 @@ public class QueryTraceJUnitTest {
   /**
    * negative testing: if <TRACE> is in comments not tracing is done.
    *
-   * @throws Exception
    */
   @Test
   public void testNegTraceOnLocalRegionWithTracePrefix() throws Exception {
@@ -237,7 +234,6 @@ public class QueryTraceJUnitTest {
   /**
    * No Query comments
    *
-   * @throws Exception
    */
   @Test
   public void testTraceOnPartitionedRegionWithTracePrefixNoComments() throws Exception {

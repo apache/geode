@@ -81,8 +81,6 @@ public class CreateMockCacheExtensionFunction implements Function, DataSerializa
   }
 
   /**
-   * @param value
-   * @return
    * @since GemFire 8.1
    */
   public static Object[] toArgs(final String value) {

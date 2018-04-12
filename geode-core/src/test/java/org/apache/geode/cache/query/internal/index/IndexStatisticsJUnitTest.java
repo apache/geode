@@ -88,7 +88,6 @@ public class IndexStatisticsJUnitTest {
   /**
    * Test RenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForRangeIndex() throws Exception {
@@ -211,7 +210,6 @@ public class IndexStatisticsJUnitTest {
   /**
    * Test CompactRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactRangeIndex() throws Exception {
@@ -334,7 +332,6 @@ public class IndexStatisticsJUnitTest {
   /**
    * Test CompactMapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactMapRangeIndex() throws Exception {
@@ -410,7 +407,6 @@ public class IndexStatisticsJUnitTest {
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForMapRangeIndex() throws Exception {
@@ -488,7 +484,6 @@ public class IndexStatisticsJUnitTest {
   /**
    * Test RenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForRangeIndexBeforeRegionCreation() throws Exception {
@@ -565,7 +560,6 @@ public class IndexStatisticsJUnitTest {
   /**
    * Test CompactRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactRangeIndexBeforeRegionCreation() throws Exception {
@@ -641,7 +635,6 @@ public class IndexStatisticsJUnitTest {
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForMapRangeIndexBeforeRegionCreation() throws Exception {

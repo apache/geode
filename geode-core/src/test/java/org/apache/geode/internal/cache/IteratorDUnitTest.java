@@ -42,7 +42,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class IteratorDUnitTest extends JUnit4CacheTestCase {
 
   /**
-   * @param name
    */
   public IteratorDUnitTest() {
     super();

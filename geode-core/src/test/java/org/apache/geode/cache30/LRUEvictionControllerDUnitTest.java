@@ -309,7 +309,6 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    * Create two regions, one a "feed" that performs transactions which are replicated to a region
    * with an Entry LRU set to one Asserts that the LRU rules are observed
    *
-   * @throws Exception
    */
   @Test
   public void testReplicationAndTransactions() throws Exception {

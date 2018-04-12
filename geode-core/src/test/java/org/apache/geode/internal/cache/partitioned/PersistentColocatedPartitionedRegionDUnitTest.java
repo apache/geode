@@ -1609,7 +1609,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Test that if we replace an offline member, even if colocated regions are in different disk
    * stores, we still keep our metadata consistent.
    *
-   * @throws Throwable
    */
   @Test
   public void testReplaceOfflineMemberAndRestartTwoDiskStores() throws Throwable {
@@ -1671,7 +1670,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * in the child PR the other members ended up waiting for the child bucket to be created in the
    * member that discarded it's offline data.
    *
-   * @throws Throwable
    */
   public void replaceOfflineMemberAndRestart(SerializableRunnable createPRs) throws Throwable {
     disconnectAllFromDS();
@@ -1895,7 +1893,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * In this test case, we're creating the child PR later, after the parent buckets have already
    * been completely created.
    *
-   * @throws Throwable
    */
   public void replaceOfflineMemberAndRestartCreateColocatedPRLate(
       SerializableRunnable createParentPR, SerializableRunnable createChildPR) throws Throwable {
@@ -2000,7 +1997,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Test what happens when we crash in the middle of satisfying redundancy for a colocated bucket.
    *
-   * @throws Throwable
    */
   // This test method is disabled because it is failing
   // periodically and causing cruise control failures
@@ -2356,7 +2352,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Test that a user is not allowed to change the colocation of a PR with persistent data.
    *
-   * @throws Throwable
    */
   @Category(FlakyTest.class) // GEODE-900: disk dependency, filesystem sensitive
   @Test
@@ -2604,7 +2599,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Create three PRs on a VM, named region1, region2, and region3. The colocated with attribute
    * describes which region region3 should be colocated with.
    *
-   * @param colocatedWith
    */
   private void createColocatedPRs(final String colocatedWith) {
     Cache cache = getCache();
@@ -2634,7 +2628,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Test for bug 43570. Rebalance a persistent parent PR before we recover the persistent child PR
    * from disk.
    *
-   * @throws Throwable
    */
   public void rebalanceWithOfflineChildRegion(SerializableRunnable createParentPR,
       SerializableRunnable createChildPR) throws Throwable {
@@ -2704,8 +2697,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    *
    * @param createParentPR {@link SerializableRunnable} for creating the parent region on one member
    * @param createChildPR {@link SerializableRunnable} for creating the child region on one member
-   * @param concurrentCheckData
-   * @throws Throwable
    */
   public void regionGetWithOfflineChild(SerializableRunnable createParentPR,
       SerializableRunnable createChildPR, boolean concurrentCheckData) throws Throwable {
@@ -2799,8 +2790,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    *
    * @param createParentPR {@link SerializableRunnable} for creating the parent region on one member
    * @param createChildPR {@link SerializableRunnable} for creating the child region on one member
-   * @param concurrentCreateData
-   * @throws Throwable
    */
   public void regionPutWithOfflineChild(SerializableRunnable createParentPR,
       SerializableRunnable createChildPR, boolean concurrentCreateData) throws Throwable {

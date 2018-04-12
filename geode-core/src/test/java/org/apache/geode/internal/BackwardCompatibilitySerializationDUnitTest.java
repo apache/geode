@@ -86,7 +86,6 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
    * Test if correct toData/toDataPreXXX is called when changes are made to the TestMessage in 66
    * and 70 and version of peer is 56
    *
-   * @throws Exception
    */
   @Test
   public void testToDataFromHigherVersionToLower() throws Exception {
@@ -101,7 +100,6 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
    * Test if correct toData/toDataXXX is called when changes are made to the TestMessage in 66 and
    * 70 and version of peer is 70
    *
-   * @throws Exception
    */
   @Test
   public void testToDataFromLowerVersionToHigher() throws Exception {
@@ -115,7 +113,6 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
    * Test if correct fromData/fromDataXXX is called when changes are made to the TestMessage in 66
    * and 70 and version of peer is 70
    *
-   * @throws Exception
    */
   @Test
   public void testFromDataFromHigherVersionToLower() throws Exception {
@@ -132,7 +129,6 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
    * Test if correct fromData/fromDataXXX is called when changes are made to the TestMessage in 66
    * and 70 and version of peer is 56
    *
-   * @throws Exception
    */
   @Test
   public void testFromDataFromLowerVersionToHigher() throws Exception {
@@ -149,7 +145,6 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
    * Test if all messages implement toDataPreXXX and fromDataPreXXX if the message has been upgraded
    * in any of the versions
    *
-   * @throws Exception
    */
   @Test
   public void testAllMessages() throws Exception {

@@ -73,9 +73,6 @@ public class Item implements Serializable {
   public Item() {}
 
   /**
-   * @param order
-   * @param itemId
-   * @param itemDescription
    */
   public Item(Order order, String itemId, String itemDescription) {
     super();

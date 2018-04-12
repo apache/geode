@@ -83,8 +83,6 @@ public class DestroyMockCacheExtensionFunction implements Function, DataSerializ
   }
 
   /**
-   * @param value
-   * @return
    * @since GemFire 8.1
    */
   public static Object[] toArgs(final String value) {

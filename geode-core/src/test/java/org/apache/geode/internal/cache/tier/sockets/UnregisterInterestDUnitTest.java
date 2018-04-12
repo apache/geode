@@ -104,7 +104,6 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
    *
    * See bug #47619
    *
-   * @throws Exception
    */
   @Test
   public void testUnregisterInterestAllKeys() throws Exception {
@@ -126,7 +125,6 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
    *
    * See bug #47619
    *
-   * @throws Exception
    */
   @Test
   public void testUnregisterInterestKeys() throws Exception {
@@ -148,7 +146,6 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
    *
    * See bug #47619
    *
-   * @throws Exception
    */
   @Test
   public void testUnregisterInterestPatterns() throws Exception {
@@ -171,7 +168,6 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
    *
    * See bug #47717
    *
-   * @throws Exception
    */
   @Test
   public void testUnregisterInterestKeysInvForOneClientDoesNotAffectOtherClient() throws Exception {
@@ -198,7 +194,6 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
    *
    * See bug #47717
    *
-   * @throws Exception
    */
   @Test
   public void testUnregisterInterestRegexInvForOneClientDoesNotAffectOtherClient()

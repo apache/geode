@@ -161,7 +161,6 @@ public class PdxStringJUnitTest {
    * this test verifies that pdxstream with pdxType.Object tyep for string and checks whether we
    * create PdxString or not
    *
-   * @throws Exception
    */
   @Test
   public void testJSONFieldNameAsPdxString() throws Exception {

@@ -387,7 +387,6 @@ public class PdxAttributesJUnitTest {
   /**
    * Test that loner VMs lazily determine if they are a client or a peer.
    *
-   * @throws Exception
    */
   @Test
   public void testLazyLoner() throws Exception {

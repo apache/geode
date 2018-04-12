@@ -103,7 +103,6 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
    * This test ensures that parallel import succeeds even when each node does not have a file to
    * import (import cluster larger than export one)
    *
-   * @throws Exception
    */
   @Test
   public void testImportOnLargerCluster() throws Exception {

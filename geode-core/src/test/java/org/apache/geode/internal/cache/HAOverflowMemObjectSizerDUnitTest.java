@@ -273,7 +273,6 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
   /**
    * perform put on server region that will put entries on CMR region
    *
-   * @param lowerLimit
    * @param higerlimit - lower and upper limit on put
    */
   public static void performPut(Long lowerLimit, Long higerlimit) {

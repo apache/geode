@@ -68,7 +68,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   static Object giiSyncObject = new Object();
 
   /**
-   * @param name
    */
   public GIIDeltaDUnitTest() {
     super();
@@ -1921,7 +1920,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * Test the case where a member has an untrusted RVV and still initializes from the local data.
    * See bug 48066
    *
-   * @throws Throwable
    */
   @Test
   public void testRecoverFromUntrustedRVV() throws Throwable {
@@ -1997,7 +1995,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * Test case to make sure that if a tombstone GC occurs during a full GII, we still have the
    * correct RVV on the GII recipient at the end.
    *
-   * @throws Throwable
    */
   @Category(FlakyTest.class) // GEODE-1137: orphaned AsyncInvocations, time sensitive, GC,
                              // waitForCriterion, thread unsafe test hooks/observers, expiration

@@ -429,7 +429,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   /**
    * test that puts in a server are rejected when a remote VM crosses critical threshold
    *
-   * @throws Exception
    */
   private void doDistributedRegionRemotePutRejection(boolean localDestroy, boolean cacheClose)
       throws Exception {

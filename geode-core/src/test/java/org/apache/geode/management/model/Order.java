@@ -55,7 +55,6 @@ public class Order implements Serializable {
   }
 
   /**
-   * @param item
    */
   public void addItem(Item item) {
     this.items.add(item);
@@ -69,8 +68,6 @@ public class Order implements Serializable {
   }
 
   /**
-   * @param id
-   * @param items
    */
   public Order(String id, Collection<Item> items) {
     super();

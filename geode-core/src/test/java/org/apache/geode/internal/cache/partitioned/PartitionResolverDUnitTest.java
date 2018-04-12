@@ -72,7 +72,6 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
   VM datastore2;
 
   /**
-   * @param name
    */
   public PartitionResolverDUnitTest() {
     super();

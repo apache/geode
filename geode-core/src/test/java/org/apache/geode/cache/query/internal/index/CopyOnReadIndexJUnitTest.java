@@ -79,8 +79,6 @@ public class CopyOnReadIndexJUnitTest {
 
   /**
    *
-   * @param region
-   * @param numObjects
    * @param objectsAndResultsMultiplier number of similar objects to put into the cache so that
    *        results from queries will be satisfied by the multiple
    */
@@ -305,13 +303,6 @@ public class CopyOnReadIndexJUnitTest {
 
   /**
    *
-   * @param queries
-   * @param expectedResults
-   * @param numObjects
-   * @param objectsAndResultsMultiplier
-   * @param hasIndex
-   * @param isPR
-   * @throws Exception
    */
   private void helpExecuteQueriesCopyOnRead(String[] queries, int[] expectedResults, int numObjects,
       int objectsAndResultsMultiplier, boolean hasIndex, boolean isPR) throws Exception {
@@ -329,13 +320,6 @@ public class CopyOnReadIndexJUnitTest {
 
   /**
    *
-   * @param queries
-   * @param expectedResults
-   * @param numObjects
-   * @param objectsAndResultsMultiplier
-   * @param hasIndex
-   * @param isPR
-   * @throws Exception
    */
   private void helpExecuteQueriesCopyOnReadFalse(String[] queries, int[] expectedResults,
       int numObjects, int objectsAndResultsMultiplier, boolean hasIndex, boolean isPR)

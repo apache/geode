@@ -181,7 +181,6 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
    * Test to make sure the bridge servers communicate their updated load to the controller when the
    * load on the bridge server changes.
    *
-   * @throws Exception
    */
   @Test
   public void testLoadMessaging() throws Exception {
@@ -233,7 +232,6 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   /**
    * Test to make sure that the locator balancing load between two servers.
    *
-   * @throws Exception
    */
   @Test
   public void testBalancing() throws Exception {
@@ -298,7 +296,6 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
    * Test that the locator balances load between three servers with intersecting server groups.
    * Server: 1 2 3 Groups: a a,b b
    *
-   * @throws Exception
    */
   @Test
   public void testIntersectingServerGroups() throws Exception {

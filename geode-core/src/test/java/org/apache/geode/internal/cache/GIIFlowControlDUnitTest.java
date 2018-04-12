@@ -58,7 +58,6 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
   protected static FlowControlObserver observer;
 
   /**
-   * @param name
    */
   public GIIFlowControlDUnitTest() {
     super();

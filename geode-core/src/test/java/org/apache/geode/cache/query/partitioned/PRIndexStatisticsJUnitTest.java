@@ -103,7 +103,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test RenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForRangeIndex() throws Exception {
@@ -173,7 +172,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test CompactRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactRangeIndex() throws Exception {
@@ -243,7 +241,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test CompactMapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactMapRangeIndex() throws Exception {
@@ -315,7 +312,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForMapRangeIndex() throws Exception {
@@ -391,7 +387,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test RenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForRangeIndexBeforeRegionCreation() throws Exception {
@@ -469,7 +464,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test CompactRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactRangeIndexBeforeRegionCreation() throws Exception {
@@ -546,7 +540,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactMapRangeIndexBeforeRegionCreation() throws Exception {
@@ -627,7 +620,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForMapRangeIndexBeforeRegionCreation() throws Exception {

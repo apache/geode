@@ -128,8 +128,6 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
    *
    * If an operation causes a deserialization in the disallow VM, this test will fail.
    *
-   * @param operationVM
-   * @param disallowDeserializationVM
    */
   private void doTest(VM operationVM, VM disallowDeserializationVM) {
     Host host = Host.getHost(0);

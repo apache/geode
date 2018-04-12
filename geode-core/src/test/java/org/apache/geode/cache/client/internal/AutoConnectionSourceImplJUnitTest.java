@@ -302,7 +302,6 @@ public class AutoConnectionSourceImplJUnitTest {
   /**
    * This tests that discovery works even after one of two locators was shut down
    *
-   * @throws Exception
    */
   @Test
   public void test_DiscoverLocators_whenOneLocatorWasShutdown() throws Exception {

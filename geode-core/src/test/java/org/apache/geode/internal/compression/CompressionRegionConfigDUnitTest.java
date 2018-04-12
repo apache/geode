@@ -82,7 +82,6 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
   /**
    * Sanity check using two peers sharing a replicated region.
    *
-   * @throws Exception
    */
   @Test
   public void testReplicateRegion() throws Exception {
@@ -98,7 +97,6 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
   /**
    * Sanity check for two peers sharing a persisted replicated region.
    *
-   * @throws Exception
    */
   @Test
   public void testReplicatePersistentRegion() throws Exception {

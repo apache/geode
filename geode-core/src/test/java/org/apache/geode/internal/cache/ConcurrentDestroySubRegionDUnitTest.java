@@ -50,7 +50,6 @@ public class ConcurrentDestroySubRegionDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * @param name
    */
   public ConcurrentDestroySubRegionDUnitTest() {
     super();

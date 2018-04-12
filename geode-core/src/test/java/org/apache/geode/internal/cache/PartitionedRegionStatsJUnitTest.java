@@ -113,7 +113,6 @@ public class PartitionedRegionStatsJUnitTest {
    * This test verifies that PR statistics are working properly for single/multiple
    * PartitionedRegions on single node.
    *
-   * @throws Exception
    */
   @Test
   public void testStats() throws Exception {
@@ -266,7 +265,6 @@ public class PartitionedRegionStatsJUnitTest {
    * This test verifies that PR statistics are working properly for single/multiple
    * PartitionedRegions on single node.
    *
-   * @throws Exception
    */
   @Test
   public void testOverflowStats() throws Exception {
@@ -288,7 +286,6 @@ public class PartitionedRegionStatsJUnitTest {
    * This test verifies that PR statistics are working properly for single/multiple
    * PartitionedRegions on single node.
    *
-   * @throws Exception
    */
   @Test
   public void testPersistOverflowStats() throws Exception {

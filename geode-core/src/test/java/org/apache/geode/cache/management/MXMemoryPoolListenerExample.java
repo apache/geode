@@ -50,7 +50,6 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
   private final LogWriter logger;
 
   /**
-   * @param ds
    */
   public MXMemoryPoolListenerExample(DistributedSystem ds) {
     this.logger = ds.getLogWriter();
@@ -157,7 +156,6 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
     }
 
     /**
-     * @param percentTenured
      */
     public MemoryHog consumeMemory(final int percentTenured) {
       final long maxSecondsToRun = 180;

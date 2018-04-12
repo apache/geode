@@ -183,7 +183,6 @@ public class SelectToDateJUnitTest {
   /**
    * Each month will have exactly 20 entries with a matching date Code borrowed from shobhit's test
    *
-   * @throws ParseException
    */
   private void createLocalRegion() throws ParseException {
     Cache cache = CacheUtils.getCache();

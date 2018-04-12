@@ -1770,9 +1770,7 @@ public class LimitClauseJUnitTest {
   /*
    * helper method to test against a compact range index
    *
-   * @param query
    *
-   * @throws Exception
    */
   private SelectResults helpTestIndexForQuery(String query, String indexedExpression,
       String regionPath, Object[] params) throws Exception {
