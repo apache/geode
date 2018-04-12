@@ -66,10 +66,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 
-/**
- *
- *
- */
 public class LocalDataSet implements Region, QueryExecutor {
 
   private static final Logger logger = LogService.getLogger();

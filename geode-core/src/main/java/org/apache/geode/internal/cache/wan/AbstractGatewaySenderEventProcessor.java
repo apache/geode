@@ -145,8 +145,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
    */
   private int batchSize;
 
-  /**
-   */
   public AbstractGatewaySenderEventProcessor(LoggingThreadGroup createThreadGroup, String string,
       GatewaySender sender) {
     super(createThreadGroup, string);

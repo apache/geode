@@ -103,8 +103,6 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
     return replacement;
   }
 
-  /**
-   */
   public String processUnresolvableString(String stringWithPrefixAndSuffix, String prefix,
       String suffix) {
     String resolvedString = null;

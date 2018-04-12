@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-/**
- *
- */
 public class VersionTimestamp {
 
   /** actual storage of version timestamp is in a scalar long value */

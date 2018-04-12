@@ -29,10 +29,6 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionSource;
 
-/**
- *
- *
- */
 public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
 
   enum TOperation {

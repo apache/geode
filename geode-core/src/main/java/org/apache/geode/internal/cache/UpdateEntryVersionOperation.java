@@ -42,8 +42,6 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 public class UpdateEntryVersionOperation extends DistributedCacheOperation {
   private static final Logger logger = LogService.getLogger();
 
-  /**
-   */
   public UpdateEntryVersionOperation(CacheEvent event) {
     super(event);
   }

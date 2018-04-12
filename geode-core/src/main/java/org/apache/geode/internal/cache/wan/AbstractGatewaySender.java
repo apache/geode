@@ -1222,8 +1222,6 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return region;
   }
 
-  /**
-   */
   protected abstract void setModifiedEventId(EntryEventImpl clonedEvent);
 
   public static class DefaultGatewayEventFilter

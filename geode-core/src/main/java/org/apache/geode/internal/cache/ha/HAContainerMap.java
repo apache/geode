@@ -72,8 +72,6 @@ public class HAContainerMap implements HAContainerWrapper {
     return haRegionNameToProxy.remove(haName);
   }
 
-  /**
-   */
   public Object getKey(Object key) {
     Entry entry = (Entry) map.get(key);
     return (entry == null) ? null : entry.getKey();

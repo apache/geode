@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache;
 
 /**
@@ -25,8 +22,6 @@ package org.apache.geode.internal.cache;
 public class BucketNotFoundException extends ForceReattemptException {
   private static final long serialVersionUID = 2898657229184289911L;
 
-  /**
-   */
   public BucketNotFoundException(String message) {
     super(message);
   }

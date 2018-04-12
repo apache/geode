@@ -25,10 +25,6 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 
-/**
- *
- *
- */
 public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
   private byte[][] serializedDataSerializer;
 

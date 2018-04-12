@@ -25,9 +25,6 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
-/**
- *
- */
 public class OfflineMemberDetailsImpl
     implements OfflineMemberDetails, Serializable, DataSerializable {
   private Set<PersistentMemberID>[] offlineMembers;

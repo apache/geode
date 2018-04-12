@@ -29,10 +29,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
-/**
- *
- *
- */
 public class MemberFunctionResultSender implements InternalResultSender {
 
   private static final Logger logger = LogService.getLogger();

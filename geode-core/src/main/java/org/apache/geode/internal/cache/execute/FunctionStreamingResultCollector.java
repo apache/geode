@@ -49,10 +49,6 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- *
- *
- */
 public class FunctionStreamingResultCollector extends ReplyProcessor21 implements ResultCollector {
 
   private static final Logger logger = LogService.getLogger();

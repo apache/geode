@@ -23,9 +23,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 
-/**
- *
- */
 public interface PersistenceAdvisor {
 
   /**

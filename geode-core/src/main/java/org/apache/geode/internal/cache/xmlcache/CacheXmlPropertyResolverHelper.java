@@ -56,8 +56,6 @@ public class CacheXmlPropertyResolverHelper {
 
   private String prefixForSuffix = DEFAULT_PREFIX_FOR_SUFFIX;
 
-  /**
-   */
   public CacheXmlPropertyResolverHelper(String propPrefix, String propSuffix) {
     if (propPrefix != null && propSuffix != null) {
       String validPrefix = validSuffixAndPrefixes.get(propSuffix);

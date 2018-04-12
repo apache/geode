@@ -73,15 +73,11 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   /** for deserialization */
   public PRUpdateEntryVersionMessage() {}
 
-  /**
-   */
   public PRUpdateEntryVersionMessage(Collection<InternalDistributedMember> recipients, int regionId,
       DirectReplyProcessor processor) {
     super(recipients, regionId, processor);
   }
 
-  /**
-   */
   public PRUpdateEntryVersionMessage(Set recipients, int regionId, DirectReplyProcessor processor,
       EntryEventImpl event) {
     super(recipients, regionId, processor, event);

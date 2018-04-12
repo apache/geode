@@ -881,8 +881,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     handler.endElement("", TOP_SERIALIZER_REGISTRATION, TOP_SERIALIZER_REGISTRATION);
   }
 
-  /**
-   */
   private void generateFunctionService() throws SAXException {
     Collection<Function> functions = Collections.emptyList();
     if (this.cache instanceof CacheCreation) {

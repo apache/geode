@@ -21,75 +21,42 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 
-/**
- *
- */
 public interface DiskInitFileInterpreter {
 
   boolean isClosing();
 
   String getNameForError();
 
-  /**
-   */
   void cmnInstantiatorId(int id, Class c, Class ic);
 
-  /**
-   */
   void cmnInstantiatorId(int id, String cn, String icn);
 
-  /**
-   */
   void cmnDataSerializerId(Class dsc);
 
-  /**
-   */
   void cmnOnlineMemberId(long drId, PersistentMemberID pmid);
 
-  /**
-   */
   void cmnOfflineMemberId(long drId, PersistentMemberID pmid);
 
   void cmdOfflineAndEqualMemberId(long drId, PersistentMemberID pmid);
 
-  /**
-   */
   void cmnRmMemberId(long drId, PersistentMemberID pmid);
 
-  /**
-   */
   void cmnAddMyInitializingPMID(long drId, PersistentMemberID pmid);
 
-  /**
-   */
   void cmnMarkInitialized(long drId);
 
-  /**
-   */
   void cmnCreateRegion(long drId, String regName);
 
-  /**
-   */
   void cmnBeginDestroyRegion(long drId);
 
-  /**
-   */
   void cmnEndDestroyRegion(long drId);
 
-  /**
-   */
   void cmnBeginPartialDestroyRegion(long drId);
 
-  /**
-   */
   void cmnEndPartialDestroyRegion(long drId);
 
-  /**
-   */
   void cmnClearRegion(long drId, long clearOplogEntryId);
 
-  /**
-   */
   void cmnClearRegion(long drId,
       ConcurrentHashMap<DiskStoreID, RegionVersionHolder<DiskStoreID>> clearRVV);
 

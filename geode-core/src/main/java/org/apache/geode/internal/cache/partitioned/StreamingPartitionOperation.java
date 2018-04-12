@@ -306,8 +306,6 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       return status.trackMessage(m);
     }
 
-    /**
-     */
     public void removeFailedSenders(Set notReceivedMembers) {
       for (Iterator i = notReceivedMembers.iterator(); i.hasNext();) {
         removeMember((InternalDistributedMember) i.next(), true);

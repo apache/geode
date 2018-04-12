@@ -67,8 +67,6 @@ public interface InternalDataView {
    */
   int entryCount(LocalRegion localRegion);
 
-  /**
-   */
   Object getValueInVM(KeyInfo keyInfo, LocalRegion localRegion, boolean rememberRead);
 
   /**
@@ -76,12 +74,8 @@ public interface InternalDataView {
    */
   boolean containsKey(KeyInfo keyInfo, LocalRegion localRegion);
 
-  /**
-   */
   boolean containsValueForKey(KeyInfo keyInfo, LocalRegion localRegion);
 
-  /**
-   */
   Entry getEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones);
 
   /**
@@ -161,8 +155,6 @@ public interface InternalDataView {
   Object getKeyForIterator(KeyInfo keyInfo, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones);
 
-  /**
-   */
   Set getAdditionalKeysForIterator(LocalRegion currRgn);
 
   /**

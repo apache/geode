@@ -1807,8 +1807,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return new NonTXEntry(re);
   }
 
-  /**
-   */
   protected boolean isClosed() {
     return this.cache.isClosed();
   }

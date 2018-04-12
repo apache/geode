@@ -29,10 +29,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
 
-/**
- *
- *
- */
 public class DistributedClearOperation extends DistributedCacheOperation {
   public static enum OperationType {
     OP_LOCK_FOR_CLEAR, OP_CLEAR,

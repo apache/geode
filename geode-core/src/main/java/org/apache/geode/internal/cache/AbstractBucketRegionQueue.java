@@ -485,9 +485,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     return this.initialized;
   }
 
-  /**
-   *
-   */
   public void addToFailedBatchRemovalMessageKeys(Object key) {
     failedBatchRemovalMessageKeys.add(key);
   }

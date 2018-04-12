@@ -123,8 +123,6 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     this.clientCqs = ((ClientUpdateMessageImpl) event).getClientCqs();
   }
 
-  /**
-   */
   public HAEventWrapper(EventID eventId) {
     this.eventIdentifier = eventId;
     this.clientUpdateMessage = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE,

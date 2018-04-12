@@ -37,9 +37,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 
-/**
- *
- */
 public class MembershipFlushRequest extends PooledDistributionMessage implements MessageWithReply {
 
   private String regionPath;

@@ -480,8 +480,6 @@ public class HARegion extends DistributedRegion {
 
   /** HARegions have their own advisors so that interest registration state can be tracked */
   public static class HARegionAdvisor extends CacheDistributionAdvisor {
-    /**
-     */
     private HARegionAdvisor(CacheDistributionAdvisee region) {
       super(region);
     }

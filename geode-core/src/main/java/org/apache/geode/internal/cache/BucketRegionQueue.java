@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache;
 
 import java.io.IOException;
@@ -58,9 +55,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 
-/**
- *
- */
 public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   private static final Logger logger = LogService.getLogger();

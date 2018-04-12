@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.wan.serial;
 
 import java.io.IOException;
@@ -54,10 +51,6 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Released;
 
-/**
- *
- *
- */
 public class ConcurrentSerialGatewaySenderEventProcessor
     extends AbstractGatewaySenderEventProcessor {
 
@@ -72,8 +65,6 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   private final Set<RegionQueue> queues;
 
-  /**
-   */
   public ConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender) {
     super(LoggingThreadGroup
         .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),

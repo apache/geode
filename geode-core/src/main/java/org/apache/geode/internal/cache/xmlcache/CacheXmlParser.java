@@ -2113,8 +2113,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * default values for any attribute that is not provided.
    *
    */
-  /**
-   */
   private void startLRUEntryCount(Attributes atts) {
     final String maximum = atts.getValue(MAXIMUM);
     int max = EvictionAttributes.DEFAULT_ENTRIES_MAXIMUM;
@@ -3200,9 +3198,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     return (GatewaySenderFactory) a;
   }
 
-  /**
-   *
-   */
   private void endPdxSerializer() {
     Declarable d = createDeclarable();
     if (!(d instanceof PdxSerializer)) {

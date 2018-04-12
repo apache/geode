@@ -42,9 +42,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.TransformUtils;
 
-/**
- *
- */
 public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
 
   private static final Logger logger = LogService.getLogger();
