@@ -30,10 +30,6 @@ import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- *
- *
- */
 public class SortedStructBag extends SortedResultsBag<Object[]> implements StructFields {
 
 

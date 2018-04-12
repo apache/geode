@@ -91,9 +91,6 @@ public class TypeUtils implements OQLLexerTokenTypes {
       }
     };
 
-    /**
-     *
-     */
     protected Boolean applyComparator(int temporalResult, int comparator)
         throws IllegalArgumentException {
       switch (comparator) {
@@ -115,9 +112,6 @@ public class TypeUtils implements OQLLexerTokenTypes {
       }
     }
 
-    /**
-     *
-     */
     public static ComparisonStrategy get(Class object1Class, Class object2Class, int comparator)
         throws TypeMismatchException {
       if (isAssignableFrom(object1Class, Date.class)

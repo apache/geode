@@ -99,9 +99,6 @@ public interface IndexProtocol extends Index {
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException;
 
-  /**
-   *
-   */
   void query(Object key, int operator, Collection results, CompiledValue iterOp,
       RuntimeIterator indpndntItr, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,

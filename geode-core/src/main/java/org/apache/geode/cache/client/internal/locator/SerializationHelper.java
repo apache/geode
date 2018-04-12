@@ -28,9 +28,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 
-/**
- *
- */
 public class SerializationHelper {
 
   private static void writeServerLocations(Collection/* <ServerLocation> */ serverLocations,

@@ -20,9 +20,6 @@ import antlr.*;
 
 import org.apache.geode.cache.query.internal.QCompiler;
 
-/**
- *
- */
 public class ASTCombination extends GemFireAST {
   private static final long serialVersionUID = -5390937242819850292L;
 

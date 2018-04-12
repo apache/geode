@@ -343,16 +343,10 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     }
   }
 
-  /**
-   *
-   */
   void writeNumNulls(DataOutput out) throws IOException {
     out.writeInt(this.numNulls);
   }
 
-  /**
-   *
-   */
   void readNumNulls(DataInput in) throws IOException {
     this.numNulls = in.readInt();
   }
@@ -659,9 +653,6 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     }
   }
 
-  /**
-   *
-   */
   protected class LimitBagIterator extends Bag.BagIterator {
     private final int localLimit;
 

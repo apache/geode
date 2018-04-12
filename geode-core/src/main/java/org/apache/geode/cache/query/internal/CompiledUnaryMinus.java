@@ -24,16 +24,10 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- *
- */
 public class CompiledUnaryMinus extends AbstractCompiledValue {
 
   private CompiledValue _value;
 
-  /**
-   *
-   */
   public CompiledUnaryMinus(CompiledValue value) {
     _value = value;
   }
@@ -44,31 +38,21 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
     return Collections.singletonList(this._value);
   }
 
-  /**
-   */
   public int getType() {
     return LITERAL_sum;
   }
 
-  /**
-   */
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     return minus(_value.evaluate(context));
   }
 
-  /**
-   *
-   */
   @Override
   public Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     return context.addDependencies(this, this._value.computeDependencies(context));
   }
 
-  /**
-   *
-   */
   private Object minus(Object obj) throws TypeMismatchException {
 
     if (obj instanceof Number) {

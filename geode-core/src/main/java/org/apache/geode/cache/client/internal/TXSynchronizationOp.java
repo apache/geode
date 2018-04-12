@@ -55,8 +55,6 @@ public class TXSynchronizationOp {
     private CompletionType type;
     TXCommitMessage tXCommitMessageResponse;
 
-    /**
-     */
     public Impl(int status, int txId, CompletionType type) {
       super(MessageType.TX_SYNCHRONIZATION, (type == CompletionType.AFTER_COMPLETION) ? 3 : 2);
       this.status = status;

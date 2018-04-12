@@ -763,8 +763,6 @@ public class DefaultQueryService implements InternalQueryService {
     cache.getCqService().close();
   }
 
-  /**
-   */
   public CqService getCqService() throws CqException {
     CqService service = cache.getCqService();
     service.start();

@@ -265,19 +265,10 @@ public interface QueryObserver {
    */
   void afterIterJoinOfSingleIndexResults(Collection finalResult);
 
-  /**
-   *
-   */
   void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionAppliedResult);
 
-  /**
-   *
-   */
   void invokedQueryUtilsUnion(SelectResults sr1, SelectResults sr2);
 
-  /**
-   *
-   */
   void invokedQueryUtilsIntersection(SelectResults sr1, SelectResults sr2);
 
   void limitAppliedAtIndexLevel(Index index, int limit, Collection indexResult);

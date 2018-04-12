@@ -21,10 +21,6 @@ import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteReg
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
 import org.apache.geode.distributed.internal.ServerLocation;
 
-/**
- *
- *
- */
 public class SingleHopOperationCallable implements Callable {
 
   private final ServerLocation server;
