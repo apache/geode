@@ -14,13 +14,9 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -44,8 +41,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
@@ -127,11 +122,12 @@ public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
     final FunctionAPI.ExecuteFunctionOnRegionRequest request =
         FunctionAPI.ExecuteFunctionOnRegionRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .setRegion(TEST_REGION).build();
-    Authorizer authorizer = mock(Authorizer.class);
-    doThrow(new NotAuthorizedException("we should catch this")).when(authorizer)
-        .authorize(ResourcePermissions.DATA_WRITE);
+    SecurityService securityService = mock(SecurityService.class);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new NotAuthorizedException("we should catch this")).when(securityService)
+        .authorize(Mockito.eq(ResourcePermissions.DATA_WRITE), any());
     ServerMessageExecutionContext context = new ServerMessageExecutionContext(cacheStub,
-        mock(ProtobufClientStatistics.class), null, authorizer);
+        mock(ProtobufClientStatistics.class), securityService);
     expectedException.expect(NotAuthorizedException.class);
     operationHandler.process(serializationService, request, context);
   }
@@ -151,7 +147,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
   }
 
   private ServerMessageExecutionContext mockedMessageExecutionContext() {
-    return new ServerMessageExecutionContext(cacheStub, mock(ProtobufClientStatistics.class), null,
-        new NoSecurityAuthorizer());
+    return new ServerMessageExecutionContext(cacheStub, mock(ProtobufClientStatistics.class),
+        mock(SecurityService.class));
   }
 }

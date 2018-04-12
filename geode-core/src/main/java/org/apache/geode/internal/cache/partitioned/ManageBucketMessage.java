@@ -127,8 +127,9 @@ public class ManageBucketMessage extends PartitionMessage {
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "ManageBucketMessage operateOnRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "ManageBucketMessage operateOnRegion: {}",
+          r.getFullPath());
     }
 
     // This is to ensure that initialization is complete before bucket creation request is
@@ -286,22 +287,22 @@ public class ManageBucketMessage extends PartitionMessage {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "ManageBucketReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "ManageBucketReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "ManageBucketReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
@@ -355,8 +356,8 @@ public class ManageBucketMessage extends PartitionMessage {
         if (msg instanceof ManageBucketReplyMessage) {
           ManageBucketReplyMessage reply = (ManageBucketReplyMessage) msg;
           this.msg = reply;
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "NodeResponse return value is {} isInitializing {}",
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "NodeResponse return value is {} isInitializing {}",
                 reply.acceptedBucket, reply.notYetInitialized);
           }
         } else {

@@ -81,10 +81,9 @@ public abstract class AbstractOp implements Op {
    */
   protected void attemptSend(Connection cnx) throws Exception {
     setMsgTransactionId();
-    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Sending op={} using {}", getShortClassName(), cnx);
-      }
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE)) {
+      logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE, "Sending op={} using {}",
+          getShortClassName(), cnx);
     }
     getMessage().setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
         cnx.getCommBuffer(), cnx.getStats());
@@ -148,8 +147,8 @@ public abstract class AbstractOp implements Op {
     if (cnx.getServer().getRequiresCredentials()) {
       if (!message.isSecureMode()) {
         // This can be seen during shutdown
-        if (logger.isDebugEnabled()) {
-          logger.trace(LogMarker.BRIDGE_SERVER,
+        if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+          logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE,
               "Response message from {} for {} has no secure part.", cnx, this);
         }
         return;

@@ -51,6 +51,6 @@ public final class ProtobufCachePipeline implements ClientProtocolProcessor {
 
   @Override
   public boolean socketProcessingIsFinished() {
-    return messageExecutionContext.getConnectionStateProcessor().socketProcessingIsFinished();
+    return messageExecutionContext.getConnectionState().socketProcessingIsFinished();
   }
 }

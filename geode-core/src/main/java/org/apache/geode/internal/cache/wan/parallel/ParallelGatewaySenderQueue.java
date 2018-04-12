@@ -1112,7 +1112,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   // This method may need synchronization in case it is used by
   // ConcurrentParallelGatewaySender
-  protected void addRemovedEvent(PartitionedRegion prQ, int bucketId, Object key) {
+  public void addRemovedEvent(PartitionedRegion prQ, int bucketId, Object key) {
     StoppableReentrantLock lock = buckToDispatchLock;
     if (lock != null) {
       lock.lock();
@@ -1405,12 +1405,28 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return localSize(false);
   }
 
+  public String displayContent() {
+    int size = 0;
+    StringBuffer sb = new StringBuffer();
+    for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
+      if (prQ != null && prQ.getDataStore() != null) {
+        Set<BucketRegion> allLocalBuckets = prQ.getDataStore().getAllLocalBucketRegions();
+        for (BucketRegion br : allLocalBuckets) {
+          if (br.size() > 0) {
+            sb.append("bucketId=" + br.getId() + ":" + br.keySet() + ";");
+          }
+        }
+      }
+    }
+    return sb.toString();
+  }
+
   public int localSize(boolean includeSecondary) {
     int size = 0;
     for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
       if (prQ != null && prQ.getDataStore() != null) {
         if (includeSecondary) {
-          size += prQ.getDataStore().getSizeOfLocalBuckets(true);
+          size += prQ.getDataStore().getSizeOfLocalBuckets();
         } else {
           size += prQ.getDataStore().getSizeOfLocalPrimaryBuckets();
         }

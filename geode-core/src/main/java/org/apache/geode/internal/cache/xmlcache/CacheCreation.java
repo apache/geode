@@ -2351,7 +2351,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public Object convertPdxInstanceIfNeeded(Object obj) {
+  public Object convertPdxInstanceIfNeeded(Object obj, boolean preferCD) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 

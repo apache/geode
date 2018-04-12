@@ -26,25 +26,24 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.size.SingleObjectSizer;
 
 /**
- * Queue built on top of {@link ParallelGatewaySenderQueue} which allows multiple dispatcher to
- * register and do peek/remove from the underlying {@link ParallelGatewaySenderQueue}
+ * Queue built on top of {@link
+ * org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue} which allows multiple
+ * dispatcher to register and do peek/remove from the underlying {@link
+ * org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue}
  *
- * There is only one queue, but this class co-ordinates access by multiple threads such that we get
- * zero contention while peeking or removing.
+ * <p>
+ * There is only one queue, but this class co-ordinates access by multiple threads such that we
+ * get zero contention while peeking or removing.
  *
+ * <p>
  * It implements RegionQueue so that AbstractGatewaySenderEventProcessor can work on it.
- *
- *
  */
 public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
@@ -121,6 +120,11 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     return this.processors[0].getQueue().size();
   }
 
+  public String displayContent() {
+    ParallelGatewaySenderQueue pgsq = (ParallelGatewaySenderQueue) (processors[0].getQueue());
+    return pgsq.displayContent();
+  }
+
   public int localSize() {
     return localSize(false);
   }
@@ -188,6 +192,10 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   private ParallelGatewaySenderEventProcessor getPGSProcessor(int bucketId) {
     int index = bucketId % this.processors.length;
     return processors[index];
+  }
+
+  public RegionQueue getQueueByBucket(int bucketId) {
+    return getPGSProcessor(bucketId).getQueue();
   }
 
   public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(int bucketId) {

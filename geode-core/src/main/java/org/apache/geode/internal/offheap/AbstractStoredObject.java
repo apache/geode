@@ -117,7 +117,8 @@ public abstract class AbstractStoredObject implements StoredObject {
       return false;
     }
     byte dsCode = this.readDataByte(0);
-    return dsCode == DSCODE.PDX || dsCode == DSCODE.PDX_ENUM || dsCode == DSCODE.PDX_INLINE_ENUM;
+    return dsCode == DSCODE.PDX.toByte() || dsCode == DSCODE.PDX_ENUM.toByte()
+        || dsCode == DSCODE.PDX_INLINE_ENUM.toByte();
   }
 
   @Override

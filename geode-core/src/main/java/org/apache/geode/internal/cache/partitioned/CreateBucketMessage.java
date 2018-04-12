@@ -122,8 +122,9 @@ public class CreateBucketMessage extends PartitionMessage {
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "CreateBucketMessage operateOnRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "CreateBucketMessage operateOnRegion: {}",
+          r.getFullPath());
     }
 
     // This is to ensure that initialization is complete before bucket creation request is
@@ -235,22 +236,22 @@ public class CreateBucketMessage extends PartitionMessage {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "CreateBucketReplyMessage process invoking reply processor with processorId:"
                 + this.processorId);
       }
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "CreateBucketReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "CreateBucketReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
@@ -308,8 +309,8 @@ public class CreateBucketMessage extends PartitionMessage {
         if (msg instanceof CreateBucketReplyMessage) {
           CreateBucketReplyMessage reply = (CreateBucketReplyMessage) msg;
           this.msg = reply;
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.debug("NodeResponse return value is ");
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "NodeResponse return value is ");
           }
         } else {
           Assert.assertTrue(msg instanceof ReplyMessage);

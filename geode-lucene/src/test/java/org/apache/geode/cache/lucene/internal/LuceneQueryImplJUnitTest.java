@@ -63,7 +63,6 @@ public class LuceneQueryImplJUnitTest {
   private CacheTransactionManager cacheTransactionManager;
 
 
-
   @Before
   public void createMocks() {
     region = mock(Region.class);
@@ -169,4 +168,5 @@ public class LuceneQueryImplJUnitTest {
     assertEquals("value", element.getValue());
     assertEquals(5, element.getScore(), 0.01);
   }
+
 }

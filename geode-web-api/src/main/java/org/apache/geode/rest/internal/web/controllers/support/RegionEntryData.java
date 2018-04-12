@@ -16,33 +16,14 @@
 package org.apache.geode.rest.internal.web.controllers.support;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
-import org.apache.geode.cache.query.Struct;
-import org.apache.geode.cache.query.internal.StructImpl;
-import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.JsonWriter;
 
 /**

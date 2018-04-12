@@ -2,7 +2,6 @@ package org.apache.geode.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -21,7 +20,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.lang.ClassUtils;
-import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /*
@@ -46,7 +44,6 @@ public class InternalDataSerializerSerializationWhitelistTest {
 
   @Before
   public void setUp() {
-    TypeRegistry.init();
     Assume.assumeTrue("ObjectInputFilter is present in this JVM (post- 8.111)",
         hasObjectInputFilter());
     outputStream = new HeapDataOutputStream(Version.CURRENT);

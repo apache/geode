@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.util.stream.Collectors.joining;
+
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -112,7 +115,7 @@ public class ListGatewayCommand extends InternalGfshCommand {
     return result;
   }
 
-  private void accumulateListGatewayResult(CompositeResultData crd,
+  protected void accumulateListGatewayResult(CompositeResultData crd,
       Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans,
       Map<String, GatewayReceiverMXBean> gatewayReceiverBeans) {
     if (!gatewaySenderBeans.isEmpty()) {
@@ -147,7 +150,7 @@ public class ListGatewayCommand extends InternalGfshCommand {
         gatewayReceiverData.accumulate(CliStrings.RESULT_SENDERS_COUNT,
             entry.getValue().getClientConnectionCount());
         gatewayReceiverData.accumulate(CliStrings.RESULT_SENDER_CONNECTED,
-            entry.getValue().getConnectedGatewaySenders());
+            Arrays.stream(entry.getValue().getConnectedGatewaySenders()).collect(joining(", ")));
       }
     }
   }

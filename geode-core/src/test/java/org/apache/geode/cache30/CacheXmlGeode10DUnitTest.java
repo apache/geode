@@ -31,7 +31,6 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;

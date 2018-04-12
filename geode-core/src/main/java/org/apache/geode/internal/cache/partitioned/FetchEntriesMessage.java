@@ -105,16 +105,17 @@ public class FetchEntriesMessage extends PartitionMessage {
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException, ForceReattemptException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "FetchEntriesMessage operateOnRegion: {}", pr.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "FetchEntriesMessage operateOnRegion: {}",
+          pr.getFullPath());
     }
 
     PartitionedRegionDataStore ds = pr.getDataStore();
     BucketRegion entries = null;
     if (ds != null) {
       entries = ds.handleRemoteGetEntries(this.bucketId);
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "FetchKeysMessage send keys back using processorId: {}",
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "FetchKeysMessage send keys back using processorId: {}",
             getProcessorId());
       }
     } else {
@@ -357,16 +358,16 @@ public class FetchEntriesMessage extends PartitionMessage {
       FetchEntriesResponse processor = (FetchEntriesResponse) p;
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "FetchEntriesReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "FetchEntriesReplyMessage processor not found");
         }
         return;
       }
 
       processor.processChunk(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
 
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
@@ -497,7 +498,7 @@ public class FetchEntriesMessage extends PartitionMessage {
       // of this message, we'll need to handle failover in this processor class and track results
       // differently.
 
-      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
+      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM_VERBOSE);
 
       boolean doneProcessing = false;
 
@@ -550,7 +551,7 @@ public class FetchEntriesMessage extends PartitionMessage {
               doneProcessing = true;
             }
             if (isDebugEnabled) {
-              logger.trace(LogMarker.DM,
+              logger.trace(LogMarker.DM_VERBOSE,
                   "{} chunksProcessed={},lastChunkReceived={},chunksExpected={},done={}", this,
                   chunksProcessed, lastChunkReceived, chunksExpected, doneProcessing);
             }

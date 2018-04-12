@@ -14,10 +14,8 @@
  */
 package org.apache.geode.cache30;
 
-import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.geode.cache.Declarable;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializer;

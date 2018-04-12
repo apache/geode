@@ -19,7 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.offheap.StoredObject;
 
@@ -67,8 +66,8 @@ public class PageEntry {
   }
 
   public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
-    key = InternalDataSerializer.readUserObject(in);
-    value = InternalDataSerializer.readUserObject(in);
+    key = DataSerializer.readObject(in);
+    value = DataSerializer.readObject(in);
   }
 
   @Override

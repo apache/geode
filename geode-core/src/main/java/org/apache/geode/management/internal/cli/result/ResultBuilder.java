@@ -157,10 +157,6 @@ public class ResultBuilder {
     return new CompositeResultData();
   }
 
-  public static <T extends CliJsonSerializable> ObjectResultData<T> createObjectResultData() {
-    return new ObjectResultData<>();
-  }
-
   /**
    * Creates a {@link InfoResultData} object to start building result that is required to be shown
    * as an information without any specific format.
@@ -239,8 +235,6 @@ public class ResultBuilder {
         resultData = new ErrorResultData(data);
       } else if (ResultData.TYPE_COMPOSITE.equals(contentType)) {
         resultData = new CompositeResultData(data);
-      } else if (ResultData.TYPE_OBJECT.equals(contentType)) {
-        resultData = new ObjectResultData<>(data);
       } else {
         ErrorResultData errorResultData = new ErrorResultData();
         errorResultData.addLine("Can not detect result type, unknown response format: " + json);
@@ -378,37 +372,6 @@ public class ResultBuilder {
 
         public CompositeResultData addSeparator(char buildSeparatorFrom) {
           throw new UnsupportedOperationException("This is read only result data");
-        }
-      };
-    } else if (ResultData.TYPE_OBJECT.equals(contentType)) {
-      final ObjectResultData<?> wrapped = (ObjectResultData<?>) resultData;
-      wrapperResultData = new ObjectResultData<CliJsonSerializable>() {
-        @Override
-        public ResultData addAsFile(String fileName, byte[] data, int fileType, String message,
-            boolean addTimeStampToName) {
-          throw new UnsupportedOperationException("This is read only result data");
-        }
-
-        @Override
-        public ResultData addAsFile(String fileName, String fileContents, String message,
-            boolean addTimeStampToName) {
-          throw new UnsupportedOperationException("This is read only result data");
-        }
-
-        @Override
-        public ObjectResultData<CliJsonSerializable> addCollection(
-            Collection<CliJsonSerializable> infoBeans) {
-          throw new UnsupportedOperationException("This is read only result data");
-        }
-
-        @Override
-        public ObjectResultData<CliJsonSerializable> addObject(CliJsonSerializable infoBean) {
-          throw new UnsupportedOperationException("This is read only result data");
-        }
-
-        @Override
-        public List<CliJsonSerializable> getAllObjects() {
-          return wrapped.getAllObjects();
         }
       };
     } else {

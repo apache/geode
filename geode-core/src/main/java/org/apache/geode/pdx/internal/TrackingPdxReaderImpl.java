@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxUnreadFields;
 import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
 import org.apache.geode.pdx.internal.AutoSerializableManager.PdxFieldWrapper;

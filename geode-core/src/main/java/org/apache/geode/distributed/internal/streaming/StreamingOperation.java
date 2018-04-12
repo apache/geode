@@ -33,9 +33,7 @@ import org.apache.geode.GemFireRethrowable;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.PRQueryTraceInfo;
 import org.apache.geode.cache.query.internal.QueryMonitor;
@@ -62,7 +60,6 @@ import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * StreamingOperation is an abstraction for sending messages to multiple (or single) recipient
@@ -554,7 +551,7 @@ public abstract class StreamingOperation {
               lowMemoryDetected = true;
               break;
             }
-            Object o = InternalDataSerializer.readUserObject(in);
+            Object o = DataSerializer.readObject(in);
             if (isQueryMessageProcessor && elementType != null && elementType.isStructType()) {
               boolean convertToStruct = isSenderAbove_8_1;
               if (convertToStruct && i == 0) {

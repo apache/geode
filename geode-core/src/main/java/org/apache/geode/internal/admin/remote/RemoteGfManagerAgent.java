@@ -854,8 +854,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
         try {
           handleJoined(member);
         } catch (OperationCancelledException ex) {
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "join cancelled by departure");
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "join cancelled by departure");
           }
         }
       }
@@ -863,16 +863,6 @@ class RemoteGfManagerAgent implements GfManagerAgent {
       this.initialized = true;
     } // sync
   }
-
-  // /**
-  // * Returns whether or not there are any members of the distributed
-  // * system.
-  // */
-  // private boolean membersExist() {
-  // // removed synchronized(members) {
-  // // removed synchronized (managers) {
-  // return this.members.size() > 0 || this.managers.size() > 0;
-  // }
 
   /**
    * Returns the thread group in which admin threads should run. This thread group handles uncaught
@@ -1172,8 +1162,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     }
 
     public void shutDown() {
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "JoinProcessor: shutting down");
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "JoinProcessor: shutting down");
       }
       this.shutDown = true;
       this.interrupt();
@@ -1184,14 +1174,10 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     }
 
     private void resumeHandling() {
-      // if (this.shutDown) {
-      // return;
-      // }
-
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "JoinProcessor: resuming.  Is alive? {}", this.isAlive());
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "JoinProcessor: resuming.  Is alive? {}",
+            this.isAlive());
       }
-      // Assert.assertTrue(this.isAlive());
 
       // unpause if paused during a cancel...
       this.paused = false;
@@ -1220,7 +1206,6 @@ class RemoteGfManagerAgent implements GfManagerAgent {
       boolean noPendingJoins = false;
       OUTER: while (!this.shutDown) {
         SystemFailure.checkFailure();
-        // Thread.interrupted(); // clear the interrupted flag
         try {
           if (!RemoteGfManagerAgent.this.isListening()) {
             shutDown();
@@ -1233,16 +1218,15 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
           // if paused OR no pendingJoins then just wait...
           if (this.paused || noPendingJoins) {
-            if (logger.isTraceEnabled(LogMarker.DM)) {
-              logger.trace(LogMarker.DM, "JoinProcessor is about to wait...");
+            if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+              logger.trace(LogMarker.DM_VERBOSE, "JoinProcessor is about to wait...");
             }
-            // Thread.interrupted(); // clear the interrupted flag
             synchronized (this.lock) {
               this.lock.wait();
             }
           }
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "JoinProcessor has woken up...");
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "JoinProcessor has woken up...");
           }
           if (this.paused)
             continue;
@@ -1250,13 +1234,15 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           // if no join was already in process or if aborted, get a new one...
           if (this.id == null) {
             List pendingJoinsRef = RemoteGfManagerAgent.this.pendingJoins;
-            if (logger.isTraceEnabled(LogMarker.DM)) {
-              logger.trace(LogMarker.DM, "JoinProcessor pendingJoins: {}", pendingJoinsRef.size());
+            if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+              logger.trace(LogMarker.DM_VERBOSE, "JoinProcessor pendingJoins: {}",
+                  pendingJoinsRef.size());
             }
             if (pendingJoinsRef.size() > 0) {
               this.id = (InternalDistributedMember) pendingJoinsRef.get(0);
-              if (logger.isTraceEnabled(LogMarker.DM)) {
-                logger.trace(LogMarker.DM, "JoinProcessor got a membership event for {}", this.id);
+              if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+                logger.trace(LogMarker.DM_VERBOSE, "JoinProcessor got a membership event for {}",
+                    this.id);
               }
             }
           }
@@ -1265,8 +1251,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
           // process the join...
           if (this.id != null) {
-            if (logger.isTraceEnabled(LogMarker.DM)) {
-              logger.trace(LogMarker.DM, "JoinProcessor handling join for {}", this.id);
+            if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+              logger.trace(LogMarker.DM_VERBOSE, "JoinProcessor handling join for {}", this.id);
             }
             try {
               RemoteGfManagerAgent.this.handleJoined(this.id);
@@ -1281,8 +1267,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           break;
         } catch (InterruptedException ignore) {
           // When this thread is "paused", it is interrupted
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "JoinProcessor has been interrupted...");
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "JoinProcessor has been interrupted...");
           }
           if (shutDown) {
             break;
@@ -1303,12 +1289,11 @@ class RemoteGfManagerAgent implements GfManagerAgent {
             noPendingJoins = false;
             continue;
           }
-          // logger.warning("Unexpected thread interrupt", ignore);
           break; // Panic!
 
         } catch (OperationCancelledException ex) {
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "join cancelled by departure");
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "join cancelled by departure");
           }
           continue;
 
@@ -1326,8 +1311,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           SystemFailure.checkFailure();
           for (Throwable cause = e.getCause(); cause != null; cause = cause.getCause()) {
             if (cause instanceof InterruptedException) {
-              if (logger.isTraceEnabled(LogMarker.DM)) {
-                logger.trace(LogMarker.DM, "JoinProcessor has been interrupted...");
+              if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+                logger.trace(LogMarker.DM_VERBOSE, "JoinProcessor has been interrupted...");
               }
               continue OUTER;
             }

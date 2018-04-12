@@ -156,8 +156,8 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   @Override
   protected boolean operateOnPartitionedRegion(final ClusterDistributionManager dm,
       PartitionedRegion r, long startTime) throws ForceReattemptException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "GetMessage operateOnRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "GetMessage operateOnRegion: {}", r.getFullPath());
     }
 
     PartitionedRegionDataStore ds = r.getDataStore();
@@ -196,16 +196,13 @@ public class GetMessage extends PartitionMessageWithDirectReply {
                   sde)),
               r, startTime);
           return false;
-        } catch (PrimaryBucketException pbe) {
+        } catch (PrimaryBucketException | DataLocationException pbe) {
           sendReply(getSender(), getProcessorId(), dm, new ReplyException(pbe), r, startTime);
-          return false;
-        } catch (DataLocationException e) {
-          sendReply(getSender(), getProcessorId(), dm, new ReplyException(e), r, startTime);
           return false;
         }
 
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.debug(
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.debug(LogMarker.DM_VERBOSE,
               "GetMessage sending serialized value {} back via GetReplyMessage using processorId: {}",
               valueBytes, getProcessorId());
         }
@@ -241,8 +238,8 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.key = InternalDataSerializer.readUserObject(in);
-    this.cbArg = InternalDataSerializer.readUserObject(in);
+    this.key = DataSerializer.readObject(in);
+    this.cbArg = DataSerializer.readObject(in);
     this.context = DataSerializer.readObject(in);
     this.returnTombstones = in.readBoolean();
   }
@@ -396,10 +393,10 @@ public class GetMessage extends PartitionMessageWithDirectReply {
      */
     @Override
     public void process(final DistributionManager dm, ReplyProcessor21 processor) {
-      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
+      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM_VERBOSE);
       final long startTime = getTimestamp();
       if (isDebugEnabled) {
-        logger.trace(LogMarker.DM,
+        logger.trace(LogMarker.DM_VERBOSE,
             "GetReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
@@ -550,8 +547,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
                   return CachedDeserializableFactory.create(reply.valueInBytes,
                       getDistributionManager().getCache());
                 } else {
-                  return BlobHelper.deserializeBlob(reply.valueInBytes, reply.remoteVersion, null,
-                      true);
+                  return BlobHelper.deserializeBlob(reply.valueInBytes, reply.remoteVersion, null);
                 }
               } else {
                 return null;

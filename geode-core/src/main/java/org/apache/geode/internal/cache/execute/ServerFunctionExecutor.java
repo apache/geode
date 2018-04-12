@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
 
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.ExecuteFunctionNoAckOp;

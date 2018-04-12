@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -30,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -153,11 +151,12 @@ public class ExecuteFunctionOnMemberRequestOperationHandlerJUnitTest {
     final FunctionAPI.ExecuteFunctionOnMemberRequest request =
         FunctionAPI.ExecuteFunctionOnMemberRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .addMemberName(TEST_MEMBER1).build();
-    Authorizer authorizer = mock(Authorizer.class);
-    doThrow(new NotAuthorizedException("we should catch this")).when(authorizer)
-        .authorize(ResourcePermissions.DATA_WRITE);
+    SecurityService securityService = mock(SecurityService.class);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new NotAuthorizedException("we should catch this")).when(securityService)
+        .authorize(Mockito.eq(ResourcePermissions.DATA_WRITE), any());
     ServerMessageExecutionContext context = new ServerMessageExecutionContext(cacheStub,
-        mock(ProtobufClientStatistics.class), null, authorizer);
+        mock(ProtobufClientStatistics.class), securityService);;
     expectedException.expect(NotAuthorizedException.class);
     operationHandler.process(serializationService, request, context);
   }
@@ -174,7 +173,7 @@ public class ExecuteFunctionOnMemberRequestOperationHandlerJUnitTest {
   }
 
   private ServerMessageExecutionContext mockedMessageExecutionContext() {
-    return new ServerMessageExecutionContext(cacheStub, mock(ProtobufClientStatistics.class), null,
-        new NoSecurityAuthorizer());
+    return new ServerMessageExecutionContext(cacheStub, mock(ProtobufClientStatistics.class),
+        mock(SecurityService.class));
   }
 }

@@ -534,8 +534,9 @@ public class DistributionAdvisor {
     try {
       return doPutProfile(newProfile, forceProfile);
     } finally {
-      if (logger.isTraceEnabled(LogMarker.DA)) {
-        logger.trace(LogMarker.DA, "putProfile exiting {}", toStringWithProfiles());
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+        logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE, "putProfile exiting {}",
+            toStringWithProfiles());
       }
     }
   }
@@ -568,8 +569,9 @@ public class DistributionAdvisor {
     if (!forceProfile) {
       // ensure member is in distributed system view
       if (!isCurrentMember(newProfile)) {
-        if (logger.isTraceEnabled(LogMarker.DA)) {
-          logger.trace(LogMarker.DA, "putProfile: ignoring {}; not in current view for {}",
+        if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+          logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+              "putProfile: ignoring {}; not in current view for {}",
               newProfile.getDistributedMember(), getAdvisee().getFullPath());
         }
 
@@ -583,8 +585,8 @@ public class DistributionAdvisor {
     if (removedSerialNumber != null
         && !isNewerSerialNumber(newProfile.getSerialNumber(), removedSerialNumber.intValue())) {
       // removedProfile exists and newProfile is NOT newer so do nothing
-      if (logger.isTraceEnabled(LogMarker.DA)) {
-        logger.trace(LogMarker.DA,
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+        logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
             "putProfile: Skipping putProfile: {} is not newer than serialNumber {} for {}",
             newProfile, removedSerialNumber, getAdvisee().getFullPath());
       }
@@ -593,16 +595,17 @@ public class DistributionAdvisor {
 
     // compare newProfile to oldProfile if one is found
     Profile oldProfile = getProfile(newProfile.getId());
-    final boolean isDebugEnabled_DA = logger.isTraceEnabled(LogMarker.DA);
-    if (isDebugEnabled_DA) {
-      logger.trace(LogMarker.DA,
+    final boolean isTraceEnabled_DistributionAdvisor =
+        logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE);
+    if (isTraceEnabled_DistributionAdvisor) {
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
           "putProfile: Updating existing profile: {} with new profile: {} for {}", oldProfile,
           newProfile, getAdvisee().getFullPath());
     }
     if (oldProfile != null && !isNewerProfile(newProfile, oldProfile)) {
       // oldProfile exists and newProfile is NOT newer so do nothing
-      if (isDebugEnabled_DA) {
-        logger.trace(LogMarker.DA,
+      if (isTraceEnabled_DistributionAdvisor) {
+        logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
             "putProfile: Ignoring {} because it's older than or same as {} for {}", newProfile,
             oldProfile, getAdvisee().getFullPath());
       }
@@ -616,9 +619,9 @@ public class DistributionAdvisor {
       } else {
         if (!membershipClosed) {
           membershipVersion++;
-          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-            logger.trace(LogMarker.STATE_FLUSH_OP, "StateFlush incremented membership version: {}",
-                membershipVersion);
+          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+            logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
+                "StateFlush incremented membership version: {}", membershipVersion);
           }
           newProfile.initialMembershipVersion = membershipVersion;
           synchronized (this.opCountLock) {
@@ -631,8 +634,9 @@ public class DistributionAdvisor {
       forceNewMembershipVersion();
     }
 
-    if (isDebugEnabled_DA) {
-      logger.trace(LogMarker.DA, "DistributionAdvisor ({}) putProfile: {}", this, newProfile);
+    if (isTraceEnabled_DistributionAdvisor) {
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+          "DistributionAdvisor ({}) putProfile: {}", this, newProfile);
     }
     boolean doAddOrUpdate = evaluateProfiles(newProfile, oldProfile);
     if (!doAddOrUpdate) {
@@ -652,8 +656,6 @@ public class DistributionAdvisor {
   /**
    * A callback to sub-classes for extra validation logic
    *
-   * @param oldProfile
-   * @param newProfile
    * @return true if the change from old to new is valid
    */
   protected boolean evaluateProfiles(Profile newProfile, Profile oldProfile) {
@@ -724,15 +726,15 @@ public class DistributionAdvisor {
   public synchronized void forceNewMembershipVersion() {
     if (!membershipClosed) {
       membershipVersion++;
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-        logger.trace(LogMarker.STATE_FLUSH_OP, "StateFlush forced new membership version: {}",
-            membershipVersion);
+      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
+            "StateFlush forced new membership version: {}", membershipVersion);
       }
       synchronized (this.opCountLock) {
         previousVersionOpCount += currentVersionOpCount;
         currentVersionOpCount = 0;
-        if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_STATE_FLUSH_OP)) {
-          logger.trace(LogMarker.DISTRIBUTION_STATE_FLUSH_OP,
+        if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE)) {
+          logger.trace(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE,
               "advisor for {} forced new membership version to {} previousOpCount={}", getAdvisee(),
               membershipVersion, previousVersionOpCount);
         }
@@ -749,15 +751,15 @@ public class DistributionAdvisor {
    * @since GemFire 5.1
    */
   public synchronized long startOperation() {
-    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_STATE_FLUSH_OP)) {
-      logger.trace(LogMarker.DISTRIBUTION_STATE_FLUSH_OP,
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE)) {
+      logger.trace(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE,
           "startOperation() op count is now {} in view version {}", currentVersionOpCount + 1,
           membershipVersion);
     }
     synchronized (this.opCountLock) {
       currentVersionOpCount++;
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-        logger.trace(LogMarker.STATE_FLUSH_OP, "StateFlush current opcount incremented: {}",
+      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "StateFlush current opcount incremented: {}",
             currentVersionOpCount);
       }
     }
@@ -775,15 +777,15 @@ public class DistributionAdvisor {
     synchronized (this.opCountLock) {
       if (version == membershipVersion) {
         currentVersionOpCount--;
-        if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-          logger.trace(LogMarker.STATE_FLUSH_OP, "StateFlush current opcount deccremented: {}",
-              currentVersionOpCount);
+        if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+          logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
+              "StateFlush current opcount deccremented: {}", currentVersionOpCount);
         }
       } else {
         previousVersionOpCount--;
-        if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-          logger.trace(LogMarker.STATE_FLUSH_OP, "StateFlush previous opcount incremented: {}",
-              previousVersionOpCount);
+        if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+          logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
+              "StateFlush previous opcount incremented: {}", previousVersionOpCount);
         }
       }
     }
@@ -812,7 +814,8 @@ public class DistributionAdvisor {
     long warnTime = startTime + timeout;
     long quitTime = warnTime + timeout - 1000L;
     boolean warned = false;
-    final boolean isDebugEnabled_STATE_FLUSH_OP = logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP);
+    final boolean isDebugEnabled_STATE_FLUSH_OP =
+        logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE);
     while (true) {
       long opCount;
       synchronized (this.opCountLock) {
@@ -825,8 +828,8 @@ public class DistributionAdvisor {
       // must not terminate due to cache closure until that happens.
       // See bug 34361 comment 79
       if (isDebugEnabled_STATE_FLUSH_OP) {
-        logger.trace(LogMarker.STATE_FLUSH_OP, "Waiting for current operations to finish({})",
-            opCount);
+        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
+            "Waiting for current operations to finish({})", opCount);
       }
       try {
         Thread.sleep(50);
@@ -847,7 +850,7 @@ public class DistributionAdvisor {
     }
     if (this.membershipClosed) {
       if (isDebugEnabled_STATE_FLUSH_OP) {
-        logger.trace(LogMarker.STATE_FLUSH_OP,
+        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
             "State Flush stopped waiting for operations to distribute because advisor has been closed");
       }
     }
@@ -884,21 +887,23 @@ public class DistributionAdvisor {
    * @return true if it was being tracked
    */
   private boolean basicRemoveId(ProfileId memberId, boolean crashed, boolean destroyed) {
-    final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DA);
+    final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE);
     if (isDebugEnabled) {
-      logger.trace(LogMarker.DA, "DistributionAdvisor ({}) removeId {}", this, memberId);
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE, "DistributionAdvisor ({}) removeId {}",
+          this, memberId);
     }
 
     Profile profileRemoved = basicRemoveMemberId(memberId);
     if (profileRemoved == null) {
       if (isDebugEnabled) {
-        logger.trace(LogMarker.DA, "DistributionAdvisor.removeId: no profile to remove for {}",
-            memberId);
+        logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+            "DistributionAdvisor.removeId: no profile to remove for {}", memberId);
       }
       return false;
     }
     if (isDebugEnabled) {
-      logger.trace(LogMarker.DA, "DistributionAdvisor.removeId: removed profile for {}", memberId);
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+          "DistributionAdvisor.removeId: removed profile for {}", memberId);
     }
     profileRemoved(profileRemoved);
     notifyListenersProfileRemoved(profileRemoved, destroyed);
@@ -933,8 +938,9 @@ public class DistributionAdvisor {
     try {
       result = doRemoveId(memberId, crashed, destroyed, fromMembershipListener);
     } finally {
-      if (logger.isTraceEnabled(LogMarker.DA)) {
-        logger.trace(LogMarker.DA, "removeId {} exiting {}", memberId, toStringWithProfiles());
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+        logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE, "removeId {} exiting {}", memberId,
+            toStringWithProfiles());
       }
     }
     return result;
@@ -942,10 +948,10 @@ public class DistributionAdvisor {
 
   private boolean doRemoveId(ProfileId memberId, boolean crashed, boolean destroyed,
       boolean fromMembershipListener) {
-    final boolean isDebugEnabled_DA = logger.isTraceEnabled(LogMarker.DA);
+    final boolean isDebugEnabled_DA = logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE);
     if (isDebugEnabled_DA) {
-      logger.trace(LogMarker.DA, "removeId: removing member {} from resource {}", memberId,
-          getAdvisee().getFullPath());
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+          "removeId: removing member {} from resource {}", memberId, getAdvisee().getFullPath());
     }
     synchronized (this) {
       // If the member has disappeared, completely remove
@@ -958,7 +964,8 @@ public class DistributionAdvisor {
         while (profileToRemove != null) {
           result = true;
           if (isDebugEnabled_DA) {
-            logger.trace(LogMarker.DA, "removeId: tracking removal of {}", profileToRemove);
+            logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE, "removeId: tracking removal of {}",
+                profileToRemove);
           }
           this.removedProfiles.put(profileToRemove.getDistributedMember(),
               Integer.valueOf(profileToRemove.getSerialNumber()));
@@ -987,8 +994,8 @@ public class DistributionAdvisor {
    */
   public boolean removeIdWithSerial(InternalDistributedMember memberId, int serialNum,
       boolean regionDestroyed) {
-    if (logger.isTraceEnabled(LogMarker.DA)) {
-      logger.trace(LogMarker.DA,
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
           "removeIdWithSerial: removing member {} with serial {} from resource {}", memberId,
           serialNum, getAdvisee().getName());
     }
@@ -1006,9 +1013,9 @@ public class DistributionAdvisor {
    */
   private synchronized boolean updateRemovedProfiles(InternalDistributedMember memberId,
       int serialNum, boolean regionDestroyed) {
-    final boolean isDebugEnabled_DA = logger.isTraceEnabled(LogMarker.DA);
+    final boolean isDebugEnabled_DA = logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE);
     if (isDebugEnabled_DA) {
-      logger.trace(LogMarker.DA,
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
           "updateRemovedProfiles: ensure member {} with serial {} is removed from region {}",
           memberId, serialNum, getAdvisee().getFullPath());
     }
@@ -1022,7 +1029,7 @@ public class DistributionAdvisor {
       if (profileToRemove != null) {
         if (isNewerSerialNumber(profileToRemove.serialNumber, serialNum)) {
           if (isDebugEnabled_DA) {
-            logger.trace(LogMarker.DA,
+            logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
                 "updateRemovedProfiles: member {} has profile {} which is newer than serial {}",
                 memberId, profileToRemove, serialNum);
           }
@@ -1042,7 +1049,7 @@ public class DistributionAdvisor {
         Integer oldSerial = (Integer) this.removedProfiles.get(memberId);
         if (oldSerial != null && isNewerSerialNumber(oldSerial.intValue(), serialNum)) {
           if (isDebugEnabled_DA) {
-            logger.trace(LogMarker.DA,
+            logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
                 "updateRemovedProfiles: member {} sent removal of serial {} but we hae already removed {}",
                 memberId, serialNum, oldSerial);
           }
@@ -1052,7 +1059,7 @@ public class DistributionAdvisor {
 
       if (isNews) {
         if (isDebugEnabled_DA) {
-          logger.trace(LogMarker.DA,
+          logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
               "updateRemovedProfiles: adding serial {} for member {} to removedProfiles", serialNum,
               memberId);
         }
@@ -1069,7 +1076,8 @@ public class DistributionAdvisor {
     else {
       // If the member has disappeared, completely remove (garbage collect)
       if (isDebugEnabled_DA) {
-        logger.trace(LogMarker.DA, "updateRemovedProfiles: garbage collecting member {}", memberId);
+        logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+            "updateRemovedProfiles: garbage collecting member {}", memberId);
       }
       this.removedProfiles.remove(memberId);
 
@@ -1078,7 +1086,8 @@ public class DistributionAdvisor {
     }
 
     if (isDebugEnabled_DA) {
-      logger.trace(LogMarker.DA, "updateRemovedProfiles: removedId = {}", removedId);
+      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE, "updateRemovedProfiles: removedId = {}",
+          removedId);
     }
 
     return removedId;
@@ -1094,18 +1103,6 @@ public class DistributionAdvisor {
     return (indexOfMemberId(memberId) > -1);
   }
 
-  // /**
-  // * get the profile for a specific member
-  // * @since GemFire 5.1
-  // * @return the Profile or null
-  // */
-  // public synchronized Profile getProfile(InternalDistributedMember memberId) {
-  // int index = indexOfMemberId(memberId);
-  // if (index >= 0) {
-  // return profiles[index];
-  // }
-  // return null;
-  // }
 
   public synchronized int getNumProfiles() {
     return this.numActiveProfiles;

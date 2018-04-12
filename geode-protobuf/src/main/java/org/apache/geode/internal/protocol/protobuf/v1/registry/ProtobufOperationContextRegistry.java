@@ -18,7 +18,6 @@ package org.apache.geode.internal.protocol.protobuf.v1.registry;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
@@ -40,7 +39,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.operations.PutAllRequestOp
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutIfAbsentRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.RemoveRequestOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.operations.security.AuthenticationRequestOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.security.HandshakeRequestOperationHandler;
 
 @Experimental
 public class ProtobufOperationContextRegistry {
@@ -57,10 +56,10 @@ public class ProtobufOperationContextRegistry {
   private Map<MessageTypeCase, ProtobufOperationContext> generateContexts() {
     final Map<MessageTypeCase, ProtobufOperationContext> operationContexts = new HashMap<>();
 
-    operationContexts.put(MessageTypeCase.AUTHENTICATIONREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Message::getAuthenticationRequest,
-            new AuthenticationRequestOperationHandler(),
-            opsResp -> ClientProtocol.Message.newBuilder().setAuthenticationResponse(opsResp)));
+    operationContexts.put(MessageTypeCase.HANDSHAKEREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getHandshakeRequest,
+            new HandshakeRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setHandshakeResponse(opsResp)));
 
     operationContexts.put(MessageTypeCase.DISCONNECTCLIENTREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getDisconnectClientRequest,

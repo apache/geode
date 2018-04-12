@@ -25,24 +25,18 @@ subprojects {
         exclude '**/generated-src/**'
       }
 
+      // As the method name suggests, bump this number if any of the below "custom" rules change.
+      // Spotless will not run on unchanged files unless this number changes.
+      bumpThisNumberIfACustomStepChanges(0)
+
       removeUnusedImports()
+
       custom 'Remove commented-out import statements', {
         it.replaceAll(/\n\/\/ import .*?;.*/, '')
       }
 
-      custom 'End files with a single blank line', {
-        it.replaceAll(/\s+$/, '\n')
-      }
-
-      // Removes end-of-line whitespace
-      trimTrailingWhitespace()
-
       // Enforce style import order
       importOrderFile "${project(':geode-core').projectDir}/../etc/eclipseOrganizeImports.importorder"
-
-      // The formatter is relative to geode-core and not the root project as the root project would change
-      // if Geode and submodules are included as part of a different gradle project.
-      eclipseFormatFile "${project(':geode-core').projectDir}/../etc/eclipse-java-google-style.xml"
 
       // Enforce style modifier order
       custom 'Modifier ordering', {
@@ -71,6 +65,18 @@ subprojects {
         }
         )
       }
+
+
+      // Notes on eclipse formatter version:
+      // 4.6.3 is consistent with existing / previous behavior.
+      // 4.7.1 works, but had different default whitespace rules, notably with mid-ternary linebreak.
+      // 4.7.2 exists but is currently incompatible with our style file, raising NPEs.
+
+      // The format file is relative to geode-core and not the root project as the root project would change
+      // if Geode and submodules are included as part of a different gradle project.
+      eclipse('4.6.3').configFile "${project(':geode-core').projectDir}/../etc/eclipse-java-google-style.xml"
+      trimTrailingWhitespace()
+      endWithNewline()
     }
   }
 }

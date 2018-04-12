@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
@@ -39,7 +37,6 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.HeapDataOutputStream.LongUpdater;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 /**
@@ -299,7 +296,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
         Object[] fields = DataSerializer.readObjectArray(in);
         this.data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
       } else {
-        E element = InternalDataSerializer.readUserObject(in);
+        E element = DataSerializer.readObject(in);
         this.data.add(element);
       }
       --numLeft;

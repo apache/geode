@@ -59,7 +59,7 @@ public class CachedDeserializableFactory {
   private static boolean isPdxEncoded(byte[] v) {
     // assert v != null;
     if (v.length > 0) {
-      return v[0] == DSCODE.PDX;
+      return v[0] == DSCODE.PDX.toByte();
     }
     return false;
   }

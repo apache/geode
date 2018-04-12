@@ -21,8 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -43,7 +40,6 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
-import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.security.NotAuthorizedException;
@@ -63,6 +59,7 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
       LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse user) {
     // Start server
     int serverPort = dataStore1.invoke(() -> startCacheServer());
+    dataStore1.invoke(() -> createRegionIndexAndData());
 
     // Start client
     accessor.invoke(() -> startClient(user.getUserName(), serverPort));
@@ -70,6 +67,14 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
     // Attempt query
     accessor.invoke(
         () -> executeTextSearch(user.getExpectAuthorizationError(), user.getExpectedResponse()));
+  }
+
+  protected void createRegionIndexAndData() {
+    Cache cache = getCache();
+    LuceneService luceneService = LuceneServiceProvider.get(cache);
+    luceneService.createIndexFactory().addField("field1").create(INDEX_NAME, REGION_NAME);
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    region.put("key", new org.apache.geode.cache.lucene.test.TestObject("hello", "world"));
   }
 
   private int startCacheServer() throws IOException {
@@ -81,12 +86,6 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
     final CacheServer server = cache.addCacheServer();
     server.setPort(0);
     server.start();
-    LuceneService luceneService = LuceneServiceProvider.get(cache);
-    luceneService.createIndexFactory().addField("field1").create(INDEX_NAME, REGION_NAME);
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-
-    region.put("key", new org.apache.geode.cache.lucene.test.TestObject("hello", "world"));
-
     return server.getPort();
   }
 

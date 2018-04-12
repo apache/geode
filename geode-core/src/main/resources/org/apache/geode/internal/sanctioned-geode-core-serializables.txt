@@ -471,6 +471,7 @@ org/apache/geode/management/cli/CommandProcessingException,true,-139877952163957
 org/apache/geode/management/cli/CommandServiceException,true,7316102209844678329
 org/apache/geode/management/cli/Result$Status,false,code:int
 org/apache/geode/management/internal/BackupStatusImpl,true,3704172840296221840,backedUpDiskStores:java/util/Map,offlineDiskStores:java/util/Set
+org/apache/geode/management/internal/ContextAwareSSLRMIClientSocketFactory,true,8159615071011918570
 org/apache/geode/management/internal/JmxManagerLocator$StartJmxManagerFunction,true,-2860286061903069789
 org/apache/geode/management/internal/ManagementAgent$GemFireRMIServerSocketFactory,true,-811909050641332716,bindAddr:java/net/InetAddress
 org/apache/geode/management/internal/ManagementFunction,true,1,mbeanServer:javax/management/MBeanServer,notificationHub:org/apache/geode/management/internal/NotificationHub

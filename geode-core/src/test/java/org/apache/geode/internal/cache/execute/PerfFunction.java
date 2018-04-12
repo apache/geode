@@ -14,9 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;

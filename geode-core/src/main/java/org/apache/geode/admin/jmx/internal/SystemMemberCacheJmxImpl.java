@@ -37,7 +37,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.InternalLogWriter;
 
 /**
  * MBean representation of {@link org.apache.geode.admin.SystemMemberCache}.

@@ -282,7 +282,7 @@ public class ChunkedMessage extends Message {
   public void sendHeader() throws IOException {
     if (this.socket != null) {
       synchronized (getCommBuffer()) {
-        getHeaderBytesForWrite();
+        getDSCODEsForWrite();
         flushBuffer();
         // Darrel says: I see no need for the following os.flush() call
         // so I've deadcoded it for performance.
@@ -353,7 +353,7 @@ public class ChunkedMessage extends Message {
   /**
    * Converts the header of this message into a <code>byte</code> array using a {@link ByteBuffer}.
    */
-  protected void getHeaderBytesForWrite() {
+  protected void getDSCODEsForWrite() {
     final ByteBuffer cb = getCommBuffer();
     cb.clear();
     cb.putInt(this.messageType);

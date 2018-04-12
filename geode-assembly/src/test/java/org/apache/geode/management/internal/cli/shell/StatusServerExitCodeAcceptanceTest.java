@@ -18,18 +18,13 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.ExitCode;

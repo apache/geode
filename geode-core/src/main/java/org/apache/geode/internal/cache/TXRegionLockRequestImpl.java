@@ -121,14 +121,14 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   private Set<Object> readEntryKeySet(final int size, final DataInput in)
       throws IOException, ClassNotFoundException {
 
-    if (logger.isTraceEnabled()) {
-      logger.trace(LogMarker.SERIALIZER, "Reading HashSet with size {}", size);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading HashSet with size {}", size);
     }
 
     final HashSet<Object> set = new HashSet<Object>(size);
     Object key;
     for (int i = 0; i < size; i++) {
-      key = InternalDataSerializer.readUserObject(in);
+      key = DataSerializer.readObject(in);
       set.add(key);
     }
 

@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.ha;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 

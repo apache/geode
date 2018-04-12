@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor.MessageKey;
-import org.apache.geode.internal.util.PluckStacks;
 
 /**
  * This class holds a graph of dependencies between objects

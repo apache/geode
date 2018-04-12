@@ -26,14 +26,12 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
@@ -43,7 +41,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 

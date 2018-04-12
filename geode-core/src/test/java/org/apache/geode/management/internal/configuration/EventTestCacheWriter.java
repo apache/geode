@@ -18,10 +18,8 @@ package org.apache.geode.management.internal.configuration;
 
 import java.io.Serializable;
 
-import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 
 public class EventTestCacheWriter extends CacheWriterAdapter implements Serializable {

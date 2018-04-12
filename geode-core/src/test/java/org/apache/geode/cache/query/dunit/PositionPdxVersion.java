@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.*;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;

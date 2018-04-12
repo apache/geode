@@ -26,12 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.stubbing.Answer;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DSClock;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;

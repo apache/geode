@@ -33,7 +33,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -96,7 +95,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.key = InternalDataSerializer.readUserObject(in);
+    this.key = DataSerializer.readObject(in);
   }
 
   @Override
@@ -113,15 +112,15 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
     try {
       RegionEntry re = r.getRegionEntry(key);
       if (re == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "RemoteFetchVersionMessage did not find entry for key:{}",
-              key);
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
+              "RemoteFetchVersionMessage did not find entry for key:{}", key);
         }
         r.checkEntryNotFound(key);
       }
       tag = re.getVersionStamp().asVersionTag();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.debug("RemoteFetchVersionMessage for key:{} returning tag:{}", key, tag);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace("RemoteFetchVersionMessage for key:{} returning tag:{}", key, tag);
       }
       FetchVersionReplyMessage.send(getSender(), processorId, tag, dm);
 
@@ -156,10 +155,10 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
     @Override
     public void process(DistributionManager dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
+      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM_VERBOSE);
 
       if (isDebugEnabled) {
-        logger.trace(LogMarker.DM,
+        logger.trace(LogMarker.DM_VERBOSE,
             "FetchVersionReplyMessage process invoking reply processor with processorId:{}",
             this.processorId);
       }
@@ -173,7 +172,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
       processor.process(this);
 
       if (isDebugEnabled) {
-        logger.trace(LogMarker.DM, "{}  Processed  {}", processor, this);
+        logger.trace(LogMarker.DM_VERBOSE, "{}  Processed  {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
@@ -214,8 +213,8 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
         if (msg instanceof FetchVersionReplyMessage) {
           FetchVersionReplyMessage reply = (FetchVersionReplyMessage) msg;
           this.tag = reply.tag;
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "FetchVersionResponse return tag is {}", this.tag);
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "FetchVersionResponse return tag is {}", this.tag);
           }
         }
       } finally {

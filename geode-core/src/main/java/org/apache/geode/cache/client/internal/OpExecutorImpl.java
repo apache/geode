@@ -539,8 +539,8 @@ public class OpExecutorImpl implements ExecutablePool {
     QueueConnections connections = queueManager.getAllConnections();
 
     List backups = connections.getBackups();
-    if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-      logger.trace(LogMarker.BRIDGE_SERVER, "sending {} to backups: {}", op, backups);
+    if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+      logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "sending {} to backups: {}", op, backups);
     }
     for (int i = backups.size() - 1; i >= 0; i--) {
       Connection conn = (Connection) backups.get(i);
@@ -555,13 +555,13 @@ public class OpExecutorImpl implements ExecutablePool {
     HashSet attemptedPrimaries = new HashSet();
     while (true) {
       try {
-        if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-          logger.trace(LogMarker.BRIDGE_SERVER, "sending {} to primary: {}", op, primary);
+        if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+          logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "sending {} to primary: {}", op, primary);
         }
         return executeWithPossibleReAuthentication(primary, op);
       } catch (Exception e) {
-        if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-          logger.trace(LogMarker.BRIDGE_SERVER, "caught exception sending to primary {}",
+        if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+          logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "caught exception sending to primary {}",
               e.getMessage(), e);
         }
         boolean finalAttempt = !attemptedPrimaries.add(primary.getServer());

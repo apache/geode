@@ -24,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;

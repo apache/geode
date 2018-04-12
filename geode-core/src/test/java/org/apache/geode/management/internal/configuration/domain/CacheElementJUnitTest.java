@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.configuration.domain;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.LinkedHashMap;

@@ -40,8 +40,7 @@ class DataSourceManager {
   private void close(JdbcDataSource dataSource) {
     try {
       dataSource.close();
-    } catch (Exception e) {
-      // TODO ignored for now; should it be logged?
+    } catch (Exception ignore) {
     }
   }
 }

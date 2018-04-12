@@ -181,15 +181,15 @@ public class DistTXRollbackMessage extends TXMessage {
     @Override
     public void process(final DistributionManager dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "DistTXRollbackReplyMessage process invoking reply processor with processorId:{}",
             this.processorId);
       }
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "DistTXRollbackReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "DistTXRollbackReplyMessage processor not found");
         }
         return;
       }

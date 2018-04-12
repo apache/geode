@@ -38,7 +38,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -86,7 +85,7 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
   @Test
   public void authorizedClientCanGetServersIfSecurityIsEnabled() throws Throwable {
     ClientProtocol.Message authorization = ClientProtocol.Message.newBuilder()
-        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+        .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
             .putCredentials("security-username", "cluster").putCredentials("security-password",
                 "cluster"))
         .build();
@@ -100,7 +99,7 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
 
       ClientProtocol.Message authorizationResponse =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
-      assertEquals(true, authorizationResponse.getAuthenticationResponse().getAuthenticated());
+      assertEquals(true, authorizationResponse.getHandshakeResponse().getAuthenticated());
       protobufProtocolSerializer.serialize(GetServerRequestMessage, socket.getOutputStream());
 
       ClientProtocol.Message GetServerResponseMessage =

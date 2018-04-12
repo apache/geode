@@ -393,9 +393,9 @@ public abstract class PartitionMessage extends DistributionMessage
                   .toLocalizedString());
         }
       }
-      if (logger.isTraceEnabled(LogMarker.DM) && t instanceof RuntimeException) {
-        logger.trace(LogMarker.DM, "Exception caught while processing message: {}", t.getMessage(),
-            t);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && t instanceof RuntimeException) {
+        logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message: {}",
+            t.getMessage(), t);
       }
     } finally {
       if (sendReply) {
@@ -466,8 +466,8 @@ public abstract class PartitionMessage extends DistributionMessage
     this.setFilterInfo(filterRoutingInfo);
     Set failures1 = null;
     if (!adjunctRecipients.isEmpty()) {
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "Relaying partition message to other processes for listener notification");
       }
       resetRecipients();

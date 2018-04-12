@@ -106,21 +106,6 @@ public class GfJsonObject {
     return this;
   }
 
-  public GfJsonObject accumulateAsJSONObject(String key, Object value) throws GfJsonException {
-    JSONObject val = new JSONObject(value);
-    try {
-      if (jsonObject.has(key)) {
-        jsonObject.append(key, val);
-      } else {
-        // first time always add JSONArray for accumulate - for convenience
-        jsonObject.put(key, new JSONArray().put(val));
-      }
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
-    }
-    return this;
-  }
-
   /**
    *
    * @param key

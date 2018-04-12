@@ -30,7 +30,6 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
-import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -363,7 +362,7 @@ public class HARegion extends DistributedRegion {
     Assert.assertTrue(!hasServerProxy());
     CacheLoader loader = basicGetLoader();
     if (loader != null) {
-      value = callCacheLoader(loader, key, aCallbackArgument);
+      value = callCacheLoader(loader, key, aCallbackArgument, preferCD);
 
       if (value != null) {
         try {

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.authentication;
 
+import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 
 /**
@@ -22,8 +23,6 @@ import org.apache.geode.security.ResourcePermission;
 public class NotLoggedInAuthorizer implements Authorizer {
   @Override
   public void authorize(ResourcePermission permission) {
-
-    throw new IllegalStateException("User has not yet logged in");
-
+    throw new NotAuthorizedException("User has not yet logged in");
   }
 }

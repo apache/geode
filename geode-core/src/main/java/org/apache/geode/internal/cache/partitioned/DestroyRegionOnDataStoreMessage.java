@@ -24,7 +24,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -78,8 +77,9 @@ public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
 
 
     org.apache.logging.log4j.Logger logger = pr.getLogger();
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace("DestroyRegionOnDataStore operateOnRegion: " + pr.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE,
+          "DestroyRegionOnDataStore operateOnRegion: " + pr.getFullPath());
     }
     pr.destroyRegion(callbackArg);
     return true;
@@ -97,7 +97,7 @@ public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
   @Override
   public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    callbackArg = InternalDataSerializer.readUserObject(in);
+    callbackArg = DataSerializer.readObject(in);
   }
 
   @Override

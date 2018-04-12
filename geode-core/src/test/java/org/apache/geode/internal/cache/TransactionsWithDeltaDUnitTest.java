@@ -23,7 +23,6 @@ import static org.junit.Assert.*;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Iterator;
 
 import org.junit.Test;

@@ -19,15 +19,10 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexNameConflictException;
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.RegionNotFoundException;
-import org.apache.geode.cache.query.functional.GroupByTestImpl;
 import org.apache.geode.cache.query.functional.GroupByTestInterface;
-import org.apache.geode.cache.query.functional.NonDistinctOrderByTestImplementation;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;

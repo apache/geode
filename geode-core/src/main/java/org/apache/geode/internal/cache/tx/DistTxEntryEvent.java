@@ -101,14 +101,14 @@ public class DistTxEntryEvent extends EntryEventImpl {
     this.eventID = (EventID) DataSerializer.readObject(in);
     this.regionName = DataSerializer.readString(in);
     this.op = Operation.fromOrdinal(in.readByte());
-    Object key = InternalDataSerializer.readUserObject(in);
+    Object key = DataSerializer.readObject(in);
     Integer bucketId = DataSerializer.readInteger(in);
     this.keyInfo = new DistTxKeyInfo(key, null/*
                                                * value [DISTTX} TODO see if required
                                                */, null/*
                                                        * callbackarg [DISTTX] TODO
                                                        */, bucketId);
-    basicSetNewValue(InternalDataSerializer.readUserObject(in), true);
+    basicSetNewValue(DataSerializer.readObject(in), true);
 
     byte flags = DataSerializer.readByte(in);
 

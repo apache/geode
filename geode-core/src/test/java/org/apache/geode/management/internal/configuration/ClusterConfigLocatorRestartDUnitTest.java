@@ -29,7 +29,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -46,6 +45,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
 
   @Test
   public void serverRestartsAfterLocatorReconnects() throws Exception {
+    IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
+
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "5000");
     MemberVM locator0 = rule.startLocatorVM(0, props);
@@ -73,6 +74,7 @@ public class ClusterConfigLocatorRestartDUnitTest {
   public void serverRestartsAfterOneLocatorDies() throws Exception {
     IgnoredException.addIgnoredException("This member is no longer in the membership view");
     IgnoredException.addIgnoredException("This node is no longer in the membership view");
+    IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
 
     // Otherwise we get a graceful shutdown...
     Host.getHost(0).getVM(0).invoke(() -> {

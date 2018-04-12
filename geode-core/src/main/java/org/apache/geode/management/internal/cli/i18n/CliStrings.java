@@ -2410,7 +2410,8 @@ public class CliStrings {
   public static final String START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM =
       "load-cluster-configuration-from-dir";
   public static final String START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM__HELP =
-      "When \" " + START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM
+      "Deprecated: Since Geode 1.6, use import cluster-configuration command instead. When \" "
+          + START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM
           + " \" is set to true, the locator loads the cluster configuration from the \""
           + InternalClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME + "\" directory.";
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR = "cluster-config-dir";
@@ -2891,7 +2892,7 @@ public class CliStrings {
   public static final String HEADER_GATEWAY_RECEIVER = "GatewayReceiver";
   public static final String RESULT_PORT = "Port";
   public static final String RESULT_SENDERS_COUNT = "Sender Count";
-  public static final String RESULT_SENDER_CONNECTED = "Sender's Connected";
+  public static final String RESULT_SENDER_CONNECTED = "Senders Connected";
   public static final String SECTION_GATEWAY_SENDER_AVAILABLE = "Available GatewaySender Section";
   public static final String SECTION_GATEWAY_SENDER_NOT_AVAILABLE =
       "Not Available GatewaySender Section";

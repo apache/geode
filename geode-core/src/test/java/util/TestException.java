@@ -14,7 +14,6 @@
  */
 package util;
 
-import java.lang.Error;
 
 public class TestException extends Error {
 
