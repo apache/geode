@@ -19,14 +19,16 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWOR
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.test.dunit.DistributedTestUtils.crashDistributedSystem;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.test.dunit.VM.getHostName;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Properties;
 import java.util.Set;
@@ -50,26 +52,25 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage.ManageBucketReplyMessage;
-import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * Test to make sure that we can handle a crash of the member directing bucket creation.
- *
- * BucketCreationRequesterCrashHARegressionTest
+ * Verifies that new bucket does not hang after requester crashes.
  *
  * <p>
  * TRAC #41733: Hang in BucketAdvisor.waitForPrimaryMember
  */
 @Category(DistributedTest.class)
-public class BucketCreationRequesterCrashHARegressionTest extends CacheTestCase {
+@SuppressWarnings("serial")
+public class BucketCreationCrashRegressionTest implements Serializable {
 
   private String uniqueName;
   private String hostName;
@@ -79,6 +80,12 @@ public class BucketCreationRequesterCrashHARegressionTest extends CacheTestCase 
   private VM server1;
   private VM server2;
   private VM locator;
+
+  @Rule
+  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
 
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
@@ -91,12 +98,12 @@ public class BucketCreationRequesterCrashHARegressionTest extends CacheTestCase 
 
   @Before
   public void setUp() throws Exception {
-    server1 = getHost(0).getVM(0);
-    server2 = getHost(0).getVM(1);
-    locator = getHost(0).getVM(2);
+    server1 = getVM(0);
+    server2 = getVM(1);
+    locator = getVM(2);
 
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
-    hostName = NetworkUtils.getServerHostName(server1.getHost());
+    hostName = getHostName();
     locatorLog = new File(temporaryFolder.newFolder(uniqueName), "locator.log");
 
     locatorPort = locator.invoke(() -> startLocator());
@@ -106,9 +113,8 @@ public class BucketCreationRequesterCrashHARegressionTest extends CacheTestCase 
     server2.invoke(() -> createServerCache());
 
     // cluster should ONLY have 3 members (our 2 servers and 1 locator)
-    assertThat(server1.invoke(
-        () -> getCache().getDistributionManager().getDistributionManagerIdsIncludingAdmin()))
-            .hasSize(3);
+    assertThat(server1.invoke(() -> cacheRule.getCache().getDistributionManager()
+        .getDistributionManagerIdsIncludingAdmin())).hasSize(3);
 
     addIgnoredException(ForcedDisconnectException.class);
   }
@@ -119,8 +125,6 @@ public class BucketCreationRequesterCrashHARegressionTest extends CacheTestCase 
     invokeInEveryVM(() -> {
       DistributionMessageObserver.setInstance(null);
     });
-
-    disconnectAllFromDS();
   }
 
   /**
@@ -199,7 +203,7 @@ public class BucketCreationRequesterCrashHARegressionTest extends CacheTestCase 
   }
 
   private void createServerCache() {
-    getCache(createServerConfig());
+    cacheRule.createCache(createServerConfig());
   }
 
   private void createPartitionedRegion() {
@@ -210,11 +214,11 @@ public class BucketCreationRequesterCrashHARegressionTest extends CacheTestCase 
     af.setDataPolicy(DataPolicy.PARTITION);
     af.setPartitionAttributes(paf.create());
 
-    getCache().createRegion(uniqueName, af.create());
+    cacheRule.getCache().createRegion(uniqueName, af.create());
   }
 
   private void putData(final int startKey, final int endKey, final String value) {
-    Region<Integer, String> region = getCache().getRegion(uniqueName);
+    Region<Integer, String> region = cacheRule.getCache().getRegion(uniqueName);
 
     for (int i = startKey; i < endKey; i++) {
       region.put(i, value);
@@ -222,7 +226,7 @@ public class BucketCreationRequesterCrashHARegressionTest extends CacheTestCase 
   }
 
   private Set<Integer> getBucketList() {
-    PartitionedRegion region = (PartitionedRegion) getCache().getRegion(uniqueName);
+    PartitionedRegion region = (PartitionedRegion) cacheRule.getCache().getRegion(uniqueName);
     return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
   }
 
@@ -233,7 +237,7 @@ public class BucketCreationRequesterCrashHARegressionTest extends CacheTestCase 
   }
 
   private void crashServer() {
-    crashDistributedSystem(getSystem());
+    crashDistributedSystem(cacheRule.getSystem());
   }
 
   private class RunnableBeforeProcessMessageObserver extends DistributionMessageObserver {
