@@ -1311,8 +1311,6 @@ public class Cluster extends Thread {
       return this.localMaxMemory;
     }
 
-    /**
-     */
     public void setLocalMaxMemory(int localMaxMemory) {
       this.localMaxMemory = localMaxMemory;
     }
