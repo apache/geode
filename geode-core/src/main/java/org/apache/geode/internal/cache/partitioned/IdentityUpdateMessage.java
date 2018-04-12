@@ -60,8 +60,8 @@ public class IdentityUpdateMessage extends DistributionMessage implements Messag
   @Override
   protected void process(ClusterDistributionManager dm) {
     try {
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{}: processing message {}", getClass().getName(), this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{}: processing message {}", getClass().getName(), this);
       }
 
       IdentityRequestMessage.setLatestId(this.newId);

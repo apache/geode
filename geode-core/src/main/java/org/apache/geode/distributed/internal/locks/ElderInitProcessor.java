@@ -152,8 +152,8 @@ public class ElderInitProcessor extends ReplyProcessor21 {
       ElderInitMessage msg = new ElderInitMessage();
       msg.processorId = proc.getProcessorId();
       msg.setRecipients(others);
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "ElderInitMessage sending {} to {}", msg, others);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "ElderInitMessage sending {} to {}", msg, others);
       }
       dm.putOutgoing(msg);
     }
@@ -179,22 +179,18 @@ public class ElderInitProcessor extends ReplyProcessor21 {
         GrantorRequestProcessor.readyForElderRecovery(dm.getSystem(), this.getSender(), null);
         DLockService.recoverRmtElder(grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
         reply(dm, grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
-      } else if (dm.getOtherNormalDistributionManagerIds().isEmpty()) { // bug 38690
-                                                                        // Either we're alone (and
-                                                                        // received a message from
-                                                                        // an unknown member)
-                                                                        // or else we haven't yet
-                                                                        // processed a view, In
-                                                                        // either case, we clearly
-                                                                        // don't have any grantors,
-                                                                        // so we return empty lists.
-        logger.info(LogMarker.DLS,
+      } else if (dm.getOtherNormalDistributionManagerIds().isEmpty()) {
+        // Either we're alone (and received a message from an unknown member) or else we haven't
+        // yet processed a view. In either case, we clearly don't have any grantors,
+        // so we return empty lists.
+
+        logger.info(LogMarker.DLS_MARKER,
             LocalizedMessage.create(
                 LocalizedStrings.ElderInitProcessor__0_RETURNING_EMPTY_LISTS_BECAUSE_I_KNOW_OF_NO_OTHER_MEMBERS,
                 this));
         reply(dm, grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
-      } else { // TODO make this fine level?
-        logger.info(LogMarker.DLS, LocalizedMessage.create(
+      } else {
+        logger.info(LogMarker.DLS_MARKER, LocalizedMessage.create(
             LocalizedStrings.ElderInitProcessor_0_DISREGARDING_REQUEST_FROM_DEPARTED_MEMBER, this));
       }
     }

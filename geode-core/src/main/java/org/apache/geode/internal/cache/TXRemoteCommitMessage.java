@@ -187,15 +187,15 @@ public class TXRemoteCommitMessage extends TXMessage {
     @Override
     public void process(final DistributionManager dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "TXRemoteCommitReply process invoking reply processor with processorId:{}",
             this.processorId);
       }
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "TXRemoteCommitReply processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "TXRemoteCommitReply processor not found");
         }
         return;
       }

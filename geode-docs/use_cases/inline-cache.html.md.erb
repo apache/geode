@@ -1,0 +1,44 @@
+---
+title: The Inline Cache
+---
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+An inline cache holds region entries for a client application.
+
+## Description of an Inline Cache
+
+A cache is formed from a region within a <%=vars.product_name%> cluster,
+and the cache sits between the client application and a
+backing data store.
+
+<img src="../images/inline-cache.png" id="inline-cache-png" class="image" />
+
+The client application's cache lookup is a region get
+operation, and a cache write is a region put operation. 
+
+When the cache (region) has the requested region entry,
+it quickly responds with the value for a lookup operation.
+This is a cache hit.
+If the requested region entry is not in the region,
+it is a cache miss,
+and code that has been deployed to the server acquires the
+entry from the data store.
+The acquired region entry is written to the region
+such that future lookups will cause a cache hit.
+
+## Implementation and Configuration

@@ -15,6 +15,10 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import java.util.Properties;
+
+import org.apache.shiro.subject.Subject;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
@@ -23,8 +27,12 @@ import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocatorImpl;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.NotLoggedInAuthorizer;
+import org.apache.geode.internal.protocol.protobuf.v1.authentication.ShiroAuthorizer;
+import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.protocol.serialization.ValueSerializer;
 
 @Experimental
 public class LocatorMessageExecutionContext extends MessageExecutionContext {
@@ -32,16 +40,17 @@ public class LocatorMessageExecutionContext extends MessageExecutionContext {
   private AuthorizingLocator authorizingLocator;
 
   public LocatorMessageExecutionContext(Locator locator, ClientStatistics statistics,
-      ProtobufConnectionStateProcessor initialProtobufConnectionStateProcessor,
-      Authorizer authorizer) {
-    super(statistics, initialProtobufConnectionStateProcessor);
+      SecurityService securityService) {
+    super(statistics, securityService);
     this.locator = locator;
+    Authorizer authorizer = securityService.isIntegratedSecurity() ? new NotLoggedInAuthorizer()
+        : new NoSecurityAuthorizer();
     this.authorizingLocator = new AuthorizingLocatorImpl(locator, authorizer);
   }
 
   @Override
   public AuthorizingCache getAuthorizingCache() throws InvalidExecutionContextException {
-    setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
+    setState(new TerminateConnection());
     throw new InvalidExecutionContextException(
         "Operations on the locator should not to try to operate on a server");
   }
@@ -52,7 +61,14 @@ public class LocatorMessageExecutionContext extends MessageExecutionContext {
   }
 
   @Override
-  public void setAuthorizer(Authorizer authorizer) {
-    this.authorizingLocator = new AuthorizingLocatorImpl(locator, authorizer);
+  public void authenticate(Properties properties) {
+    Subject subject = securityService.login(properties);
+    this.authorizingLocator =
+        new AuthorizingLocatorImpl(locator, new ShiroAuthorizer(securityService, subject));
+  }
+
+  @Override
+  public void setValueSerializer(ValueSerializer valueSerializer) {
+    // Do nothing, locator messages don't need a value serializer
   }
 }

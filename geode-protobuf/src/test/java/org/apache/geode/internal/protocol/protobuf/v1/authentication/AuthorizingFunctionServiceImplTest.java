@@ -17,9 +17,7 @@ package org.apache.geode.internal.protocol.protobuf.v1.authentication;
 import static org.apache.geode.security.ResourcePermission.ALL;
 import static org.apache.geode.security.ResourcePermission.Operation.WRITE;
 import static org.apache.geode.security.ResourcePermission.Resource.CLUSTER;
-import static org.apache.geode.security.ResourcePermission.Resource.DATA;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -29,7 +27,6 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Collections;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

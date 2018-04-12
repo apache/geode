@@ -58,10 +58,7 @@ public class DumpBucketsMessage extends PartitionMessage {
         new DumpBucketsMessage(recipients, r.getPRId(), p, validateOnly, onlyBuckets);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
-    /* Set failures = */ r.getDistributionManager().putOutgoing(m);
-    // if (failures != null && failures.size() > 0) {
-    // throw new PartitionedRegionCommunicationException("Failed sending ", m);
-    // }
+    r.getDistributionManager().putOutgoing(m);
     return p;
   }
 
@@ -69,8 +66,9 @@ public class DumpBucketsMessage extends PartitionMessage {
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException {
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "DumpBucketsMessage operateOnRegion: {}", pr.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "DumpBucketsMessage operateOnRegion: {}",
+          pr.getFullPath());
     }
 
     PartitionedRegionDataStore ds = pr.getDataStore();
@@ -80,8 +78,8 @@ public class DumpBucketsMessage extends PartitionMessage {
       } else {
         ds.dumpEntries(this.validateOnly);
       }
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} dumped buckets", getClass().getName());
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} dumped buckets", getClass().getName());
       }
     }
     return true;

@@ -170,6 +170,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
 
     createIndexAndRebalance(regionTestType, createIndex, true);
 
+    waitForFlushBeforeExecuteTextSearch(dataStore3, 60000);
     executeTextSearch(dataStore3, "world", "text", NUM_BUCKETS);
 
   }

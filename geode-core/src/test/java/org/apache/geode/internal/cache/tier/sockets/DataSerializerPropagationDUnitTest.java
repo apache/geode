@@ -14,14 +14,21 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -41,7 +48,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -60,9 +66,9 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({DistributedTest.class, ClientServerTest.class, FlakyTest.class})
+@Category({DistributedTest.class, ClientServerTest.class, SerializationTest.class})
 public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCase {
   private static Cache cache = null;
 
@@ -413,7 +419,8 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
         // Invoke getAll
         Region region = cache.getRegion(REGION_NAME);
         // Verify result size is correct
-        assertEquals(20, region.get(1));
+        Awaitility.await().atMost(10, TimeUnit.SECONDS)
+            .until(() -> assertEquals(20, region.get(1)));
       }
     });
   }
@@ -637,6 +644,8 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
   public void testLazyLoadingOfDataSerializersWith2ClientsN2Servers() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
+
+    client2.bounce();
 
     client1.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));

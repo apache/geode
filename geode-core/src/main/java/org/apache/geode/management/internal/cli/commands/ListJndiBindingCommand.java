@@ -58,14 +58,18 @@ public class ListJndiBindingCommand extends InternalGfshCommand {
         (InternalClusterConfigurationService) getConfigurationService();
     if (ccService != null) {
       configTable = resultSection.addTable();
-      configTable.setHeader("Configured JNDI bindings: ");
       // we don't support creating jndi binding with random group name yet
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       List<JndiBindingsType.JndiBinding> jndiBindings = cacheConfig.getJndiBindings();
-      for (JndiBindingsType.JndiBinding jndiBinding : jndiBindings) {
-        configTable.accumulate("Group Name", "cluster");
-        configTable.accumulate("JNDI Name", jndiBinding.getJndiName());
-        configTable.accumulate("JDBC Driver Class", jndiBinding.getJdbcDriverClass());
+      if (jndiBindings.size() == 0) {
+        configTable.setHeader("No JNDI-bindings found in cluster configuration");
+      } else {
+        configTable.setHeader("Configured JNDI bindings: ");
+        for (JndiBindingsType.JndiBinding jndiBinding : jndiBindings) {
+          configTable.accumulate("Group Name", "cluster");
+          configTable.accumulate("JNDI Name", jndiBinding.getJndiName());
+          configTable.accumulate("JDBC Driver Class", jndiBinding.getJdbcDriverClass());
+        }
       }
     }
 
@@ -75,12 +79,14 @@ public class ListJndiBindingCommand extends InternalGfshCommand {
       if (configTable == null) {
         return ResultBuilder.createUserErrorResult("No members found");
       }
+      configTable.setFooter("No members found");
       return ResultBuilder.buildResult(resultData);
     }
 
     memberTable = resultSection.addTable();
-    memberTable.setHeader("Active JNDI bindings found on each member: ");
     List<CliFunctionResult> rc = executeAndGetFunctionResult(LIST_BINDING_FUNCTION, null, members);
+
+    memberTable.setHeader("Active JNDI bindings found on each member: ");
     for (CliFunctionResult oneResult : rc) {
       Serializable[] serializables = oneResult.getSerializables();
       for (int i = 0; i < serializables.length; i += 2) {
@@ -89,7 +95,6 @@ public class ListJndiBindingCommand extends InternalGfshCommand {
         memberTable.accumulate("JDBC Driver Class", serializables[i + 1]);
       }
     }
-
     return ResultBuilder.buildResult(resultData);
   }
 }

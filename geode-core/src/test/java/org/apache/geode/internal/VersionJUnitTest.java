@@ -20,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.UnsupportedVersionException;
+import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -34,6 +36,12 @@ public class VersionJUnitTest {
     compare(Version.GFE_81, Version.GFE_70);
     compare(Version.GFE_81, Version.GFE_71);
     compare(Version.GFE_81, Version.GFE_80);
+    compare(Version.GFE_82, Version.GFE_81);
+    compare(Version.GEODE_110, Version.GFE_82);
+    compare(Version.GEODE_120, Version.GEODE_111);
+    compare(Version.GEODE_130, Version.GEODE_120);
+    compare(Version.GEODE_140, Version.GEODE_130);
+    compare(Version.GEODE_150, Version.GEODE_140);
   }
 
   private void compare(Version later, Version earlier) {
@@ -52,5 +60,19 @@ public class VersionJUnitTest {
     assertTrue(Version.GFE_61.isPre65());
     assertFalse(Version.GFE_65.isPre65());
     assertFalse(Version.GFE_70.isPre65());
+  }
+
+  @Test
+  public void testCommandMapContainsAllVersions() {
+    for (Version version : Version.getAllVersions()) {
+      org.junit.Assert.assertNotNull(
+          "Please add a commnd set for " + version + " of Geode to CommandInitializer",
+          CommandInitializer.getCommands(version));
+    }
+  }
+
+  @Test
+  public void testFromOrdinalForCurrentVersionSucceeds() throws UnsupportedVersionException {
+    Version.fromOrdinal(Version.CURRENT_ORDINAL, true);
   }
 }

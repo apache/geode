@@ -117,8 +117,9 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
       msg.newGrantorSerialNumber = newGrantorSerialNumber;
       msg.processorId = proc.getProcessorId();
       msg.setRecipient(oldGrantor);
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "DeposeGrantorMessage sending {} to {}", msg, oldGrantor);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "DeposeGrantorMessage sending {} to {}", msg,
+            oldGrantor);
       }
       dm.putOutgoing(msg);
     }

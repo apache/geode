@@ -37,11 +37,11 @@ public class ManagedEntityControllerFactory {
   static ManagedEntityController createManagedEntityController(
       final AdminDistributedSystem system) {
     if (isEnabledManagedEntityController()) {
-      logger.info(LogMarker.CONFIG,
+      logger.info(LogMarker.CONFIG_MARKER,
           "Local and remote OS command invocations are enabled for the Admin API.");
       return createEnabledManagedEntityController(system);
     } else {
-      logger.info(LogMarker.CONFIG,
+      logger.info(LogMarker.CONFIG_MARKER,
           "Local and remote OS command invocations are disabled for the Admin API.");
       return new DisabledManagedEntityController();
     }

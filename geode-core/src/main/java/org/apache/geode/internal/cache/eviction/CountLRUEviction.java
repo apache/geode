@@ -87,8 +87,7 @@ public class CountLRUEviction extends AbstractEvictionController {
   @Override
   public int entrySize(Object key, Object value) {
 
-    if (Token.isRemoved(value) /* && (value != Token.TOMBSTONE) */) { // un-comment to make
-                                                                      // tombstones visible
+    if (Token.isRemoved(value)) {
       // bug #42228 - lruEntryDestroy removes an entry from the LRU, but if
       // it is subsequently resurrected we want the new entry to generate a delta
       return 0;

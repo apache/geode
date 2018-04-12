@@ -168,22 +168,22 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "DeposePrimaryBucketReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "DeposePrimaryBucketReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "DeposePrimaryBucketReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
@@ -228,11 +228,11 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
         if (msg instanceof DeposePrimaryBucketReplyMessage) {
           DeposePrimaryBucketReplyMessage reply = (DeposePrimaryBucketReplyMessage) msg;
           if (reply.isSuccess()) {
-            if (logger.isTraceEnabled(LogMarker.DM)) {
-              logger.trace(LogMarker.DM, "DeposePrimaryBucketResponse return OK");
+            if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+              logger.trace(LogMarker.DM_VERBOSE, "DeposePrimaryBucketResponse return OK");
             }
-          } else if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "DeposePrimaryBucketResponse return NOT_PRIMARY");
+          } else if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "DeposePrimaryBucketResponse return NOT_PRIMARY");
           }
         }
       } finally {

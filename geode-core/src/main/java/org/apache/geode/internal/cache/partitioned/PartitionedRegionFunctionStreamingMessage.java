@@ -77,8 +77,8 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM,
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE,
           "PartitionedRegionFunctionResultStreamerMessage operateOnRegion: {}", r.getFullPath());
     }
 

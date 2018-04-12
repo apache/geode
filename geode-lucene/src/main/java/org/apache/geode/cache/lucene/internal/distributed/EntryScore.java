@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 /**
@@ -74,7 +73,7 @@ public class EntryScore<K> implements DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    key = InternalDataSerializer.readUserObject(in);
+    key = DataSerializer.readObject(in);
     score = in.readFloat();
   }
 }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -31,7 +32,9 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.AbstractRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -181,10 +184,29 @@ public class RegionAlterFunction implements InternalFunction {
       }
     }
 
-    // Alter Gateway Sender Ids
     final Set<String> newGatewaySenderIds = regionAlterArgs.getGatewaySenderIds();
-    if (newGatewaySenderIds != null) {
+    final Set<String> newAsyncEventQueueIds = regionAlterArgs.getAsyncEventQueueIds();
 
+
+    if (region instanceof PartitionedRegion) {
+      Set<String> senderIds = new HashSet<>();
+      if (newGatewaySenderIds != null) {
+        validateParallelGatewaySenderIDs((PartitionedRegion) region, newGatewaySenderIds);
+        senderIds.addAll(newGatewaySenderIds);
+      } else if (region.getGatewaySenderIds() != null) {
+        senderIds.addAll(region.getAllGatewaySenderIds());
+      }
+      if (newAsyncEventQueueIds != null) {
+        validateParallelGatewaySenderIDs((PartitionedRegion) region, newAsyncEventQueueIds);
+        senderIds.addAll(newAsyncEventQueueIds);
+      } else if (region.getAsyncEventQueueIds() != null) {
+        senderIds.addAll(region.getAsyncEventQueueIds());
+      }
+      ((PartitionedRegion) region).updatePRConfigWithNewSetOfGatewaySenders(senderIds);
+    }
+
+    // Alter Gateway Sender Ids
+    if (newGatewaySenderIds != null) {
       // Remove old gateway sender ids that aren't in the new list
       Set<String> oldGatewaySenderIds = region.getGatewaySenderIds();
       if (!oldGatewaySenderIds.isEmpty()) {
@@ -208,7 +230,6 @@ public class RegionAlterFunction implements InternalFunction {
     }
 
     // Alter Async Queue Ids
-    final Set<String> newAsyncEventQueueIds = regionAlterArgs.getAsyncEventQueueIds();
     if (newAsyncEventQueueIds != null) {
 
       // Remove old async event queue ids that aren't in the new list
@@ -283,6 +304,16 @@ public class RegionAlterFunction implements InternalFunction {
     }
 
     return region;
+  }
+
+  private void validateParallelGatewaySenderIDs(PartitionedRegion region,
+      Set<String> newGatewaySenderIds) {
+    try {
+      Set<String> parallelSenders = region.filterOutNonParallelGatewaySenders(newGatewaySenderIds);
+      region.validateParallelGatewaySenderIds(parallelSenders);
+    } catch (PRLocallyDestroyedException e) {
+      throw new IllegalStateException("Partitioned Region not found registered", e);
+    }
   }
 
   @SuppressWarnings("unchecked")

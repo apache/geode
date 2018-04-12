@@ -261,7 +261,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
           // If the underlying object is a byte[], we can't wrap it in a
           // CachedDeserializable. Somewhere along the line the header bytes
           // get lost and we start seeing serialization problems.
-          if (data.length > 0 && data[0] == DSCODE.BYTE_ARRAY) {
+          if (data.length > 0 && data[0] == DSCODE.BYTE_ARRAY.toByte()) {
             // It would be faster to use System.arraycopy() directly but since
             // length field is variable it's probably safest and simplest to
             // keep the logic in the InternalDataSerializer.

@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -65,12 +64,11 @@ public class SqlHandler {
     try (Connection connection = getConnection(connectionConfig)) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
           regionMapping.getRegionToTableName());
-      String realTableName = tableMetaData.getTableName();
-      List<ColumnValue> columnList =
-          getColumnToValueList(tableMetaData, regionMapping, key, null, Operation.GET);
+      EntryColumnData entryColumnData =
+          getEntryColumnData(tableMetaData, regionMapping, key, null, Operation.GET);
       try (PreparedStatement statement =
-          getPreparedStatement(connection, columnList, realTableName, Operation.GET)) {
-        try (ResultSet resultSet = executeReadQuery(statement, columnList)) {
+          getPreparedStatement(connection, tableMetaData, entryColumnData, Operation.GET)) {
+        try (ResultSet resultSet = executeReadQuery(statement, entryColumnData)) {
           InternalCache cache = (InternalCache) region.getRegionService();
           SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
               new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, tableMetaData);
@@ -81,9 +79,9 @@ public class SqlHandler {
     return result;
   }
 
-  private ResultSet executeReadQuery(PreparedStatement statement, List<ColumnValue> columnList)
+  private ResultSet executeReadQuery(PreparedStatement statement, EntryColumnData entryColumnData)
       throws SQLException {
-    setValuesInStatement(statement, columnList);
+    setValuesInStatement(statement, entryColumnData);
     return statement.executeQuery();
   }
 
@@ -106,38 +104,49 @@ public class SqlHandler {
     return connectionConfig;
   }
 
-  private void setValuesInStatement(PreparedStatement statement, List<ColumnValue> columnList)
+  private void setValuesInStatement(PreparedStatement statement, EntryColumnData entryColumnData)
       throws SQLException {
     int index = 0;
-    for (ColumnValue columnValue : columnList) {
+    for (ColumnData columnData : entryColumnData.getEntryValueColumnData()) {
       index++;
-      Object value = columnValue.getValue();
-      if (value instanceof Character) {
-        value = ((Character) value).toString();
-      } else if (value instanceof Date) {
-        Date jdkDate = (Date) value;
-        switch (columnValue.getDataType()) {
-          case Types.DATE:
-            value = new java.sql.Date(jdkDate.getTime());
-            break;
-          case Types.TIME:
-          case Types.TIME_WITH_TIMEZONE:
-            value = new java.sql.Time(jdkDate.getTime());
-            break;
-          case Types.TIMESTAMP:
-          case Types.TIMESTAMP_WITH_TIMEZONE:
-            value = new java.sql.Timestamp(jdkDate.getTime());
-            break;
-          default:
-            // no conversion needed
-            break;
-        }
+      setValueOnStatement(statement, index, columnData);
+    }
+
+    ColumnData keyColumnData = entryColumnData.getEntryKeyColumnData();
+    index++;
+    setValueOnStatement(statement, index, keyColumnData);
+  }
+
+  private void setValueOnStatement(PreparedStatement statement, int index, ColumnData columnData)
+      throws SQLException {
+    Object value = columnData.getValue();
+    if (value instanceof Character) {
+      Character character = ((Character) value);
+      // if null character, set to null string instead of a string with the null character
+      value = character == Character.valueOf((char) 0) ? null : character.toString();
+    } else if (value instanceof Date) {
+      Date jdkDate = (Date) value;
+      switch (columnData.getDataType()) {
+        case Types.DATE:
+          value = new java.sql.Date(jdkDate.getTime());
+          break;
+        case Types.TIME:
+        case Types.TIME_WITH_TIMEZONE:
+          value = new java.sql.Time(jdkDate.getTime());
+          break;
+        case Types.TIMESTAMP:
+        case Types.TIMESTAMP_WITH_TIMEZONE:
+          value = new java.sql.Timestamp(jdkDate.getTime());
+          break;
+        default:
+          // no conversion needed
+          break;
       }
-      if (value == null) {
-        statement.setNull(index, columnValue.getDataType());
-      } else {
-        statement.setObject(index, value);
-      }
+    }
+    if (value == null) {
+      statement.setNull(index, columnData.getDataType());
+    } else {
+      statement.setObject(index, value);
     }
   }
 
@@ -153,13 +162,12 @@ public class SqlHandler {
     try (Connection connection = getConnection(connectionConfig)) {
       TableMetaDataView tableMetaData = this.tableMetaDataManager.getTableMetaDataView(connection,
           regionMapping.getRegionToTableName());
-      String realTableName = tableMetaData.getTableName();
-      List<ColumnValue> columnList =
-          getColumnToValueList(tableMetaData, regionMapping, key, value, operation);
+      EntryColumnData entryColumnData =
+          getEntryColumnData(tableMetaData, regionMapping, key, value, operation);
       int updateCount = 0;
       try (PreparedStatement statement =
-          getPreparedStatement(connection, columnList, realTableName, operation)) {
-        updateCount = executeWriteStatement(statement, columnList);
+          getPreparedStatement(connection, tableMetaData, entryColumnData, operation)) {
+        updateCount = executeWriteStatement(statement, entryColumnData);
       } catch (SQLException e) {
         if (operation.isDestroy()) {
           throw e;
@@ -174,8 +182,8 @@ public class SqlHandler {
       if (updateCount <= 0) {
         Operation upsertOp = getOppositeOperation(operation);
         try (PreparedStatement upsertStatement =
-            getPreparedStatement(connection, columnList, realTableName, upsertOp)) {
-          updateCount = executeWriteStatement(upsertStatement, columnList);
+            getPreparedStatement(connection, tableMetaData, entryColumnData, upsertOp)) {
+          updateCount = executeWriteStatement(upsertStatement, entryColumnData);
         }
       }
 
@@ -187,60 +195,62 @@ public class SqlHandler {
     return operation.isUpdate() ? Operation.CREATE : Operation.UPDATE;
   }
 
-  private int executeWriteStatement(PreparedStatement statement, List<ColumnValue> columnList)
+  private int executeWriteStatement(PreparedStatement statement, EntryColumnData entryColumnData)
       throws SQLException {
-    setValuesInStatement(statement, columnList);
+    setValuesInStatement(statement, entryColumnData);
     return statement.executeUpdate();
   }
 
   private PreparedStatement getPreparedStatement(Connection connection,
-      List<ColumnValue> columnList, String tableName, Operation operation) throws SQLException {
-    String sqlStr = getSqlString(tableName, columnList, operation);
+      TableMetaDataView tableMetaData, EntryColumnData entryColumnData, Operation operation)
+      throws SQLException {
+    String sqlStr = getSqlString(tableMetaData, entryColumnData, operation);
     return connection.prepareStatement(sqlStr);
   }
 
-  private String getSqlString(String tableName, List<ColumnValue> columnList, Operation operation) {
-    SqlStatementFactory statementFactory = new SqlStatementFactory();
+  private String getSqlString(TableMetaDataView tableMetaData, EntryColumnData entryColumnData,
+      Operation operation) {
+    SqlStatementFactory statementFactory =
+        new SqlStatementFactory(tableMetaData.getIdentifierQuoteString());
+    String tableName = tableMetaData.getTableName();
     if (operation.isCreate()) {
-      return statementFactory.createInsertSqlString(tableName, columnList);
+      return statementFactory.createInsertSqlString(tableName, entryColumnData);
     } else if (operation.isUpdate()) {
-      return statementFactory.createUpdateSqlString(tableName, columnList);
+      return statementFactory.createUpdateSqlString(tableName, entryColumnData);
     } else if (operation.isDestroy()) {
-      return statementFactory.createDestroySqlString(tableName, columnList);
+      return statementFactory.createDestroySqlString(tableName, entryColumnData);
     } else if (operation.isGet()) {
-      return statementFactory.createSelectQueryString(tableName, columnList);
+      return statementFactory.createSelectQueryString(tableName, entryColumnData);
     } else {
       throw new InternalGemFireException("unsupported operation " + operation);
     }
   }
 
-  <K> List<ColumnValue> getColumnToValueList(TableMetaDataView tableMetaData,
+  <K> EntryColumnData getEntryColumnData(TableMetaDataView tableMetaData,
       RegionMapping regionMapping, K key, PdxInstance value, Operation operation) {
     String keyColumnName = tableMetaData.getKeyColumnName();
-    ColumnValue keyColumnValue =
-        new ColumnValue(true, keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
+    ColumnData keyColumnData =
+        new ColumnData(keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
+    List<ColumnData> valueColumnData = null;
 
-    if (operation.isDestroy() || operation.isGet()) {
-      return Collections.singletonList(keyColumnValue);
+    if (operation.isCreate() || operation.isUpdate()) {
+      valueColumnData = createColumnDataList(tableMetaData, regionMapping, value);
     }
 
-    List<ColumnValue> result = createColumnValueList(tableMetaData, regionMapping, value);
-    result.add(keyColumnValue);
-    return result;
+    return new EntryColumnData(keyColumnData, valueColumnData);
   }
 
-  private List<ColumnValue> createColumnValueList(TableMetaDataView tableMetaData,
+  private List<ColumnData> createColumnDataList(TableMetaDataView tableMetaData,
       RegionMapping regionMapping, PdxInstance value) {
-    final String keyColumnName = tableMetaData.getKeyColumnName();
-    List<ColumnValue> result = new ArrayList<>();
+    List<ColumnData> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
       String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);
-      if (columnName.equalsIgnoreCase(keyColumnName)) {
+      if (tableMetaData.getKeyColumnName().equals(columnName)) {
         continue;
       }
-      ColumnValue columnValue = new ColumnValue(false, columnName, value.getField(fieldName),
+      ColumnData columnData = new ColumnData(columnName, value.getField(fieldName),
           tableMetaData.getColumnDataType(columnName));
-      result.add(columnValue);
+      result.add(columnData);
     }
     return result;
   }

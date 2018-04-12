@@ -14,14 +14,24 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -170,26 +180,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   public ReentrantReadWriteLock getInitializationLock() {
     return initializationLock;
   }
-
-  /**
-   * Does a get that attempts to not fault values in from disk or make the entry the most recent in
-   * the LRU.
-   */
-  /*
-   * protected Object optimalGet(Object k) { // Get the object at that key (to remove the index).
-   * Object object = null; try { object = getValueInVM(k); // OFFHEAP deserialize if (object ==
-   * null) { // must be on disk // fault it in w/o putting it back in the region object =
-   * getValueOnDiskOrBuffer(k); if (object == null) { // try memory one more time in case it was
-   * already faulted back in object = getValueInVM(k); // OFFHEAP deserialize if (object == null) {
-   * // if we get this far give up and just do a get object = get(k); } else { if (object instanceof
-   * CachedDeserializable) { object = ((CachedDeserializable)object).getDeserializedValue( this,
-   * this.getRegionEntry(k)); } } } } else { if (object instanceof CachedDeserializable) { object =
-   * ((CachedDeserializable)object).getDeserializedValue(this, this.getRegionEntry(k)); } } } catch
-   * (EntryNotFoundException ok) { // just return null; } if (object == Token.TOMBSTONE) { object =
-   * null; }
-   *
-   * return object; }
-   */
 
   public void destroyKey(Object key) throws ForceReattemptException {
     if (logger.isDebugEnabled()) {

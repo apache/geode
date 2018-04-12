@@ -155,7 +155,7 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
 
   @Override
   public boolean isClientInterested(ClientProxyMembershipID clientId) {
-    return Acceptor.VERSION.compareTo(Version.GFE_70) >= 0;
+    return true;
   }
 
   @Override

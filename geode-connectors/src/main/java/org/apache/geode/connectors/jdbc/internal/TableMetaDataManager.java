@@ -46,7 +46,11 @@ public class TableMetaDataManager {
       try (ResultSet tables = metaData.getTables(null, null, "%", null)) {
         String realTableName = getTableNameFromMetaData(tableName, tables);
         String key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
-        result = new TableMetaData(realTableName, key);
+        String quoteString = metaData.getIdentifierQuoteString();
+        if (quoteString == null) {
+          quoteString = "";
+        }
+        result = new TableMetaData(realTableName, key, quoteString);
         getDataTypesFromMetaData(realTableName, metaData, result);
       }
     } catch (SQLException e) {

@@ -39,7 +39,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InitialImageOperation;
@@ -159,8 +158,9 @@ public class FetchKeysMessage extends PartitionMessage {
       try {
         Set keys =
             ds.handleRemoteGetKeys(this.bucketId, interestType, interestArg, allowTombstones);
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.debug("FetchKeysMessage sending {} keys back using processorId: : {}", keys.size(),
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
+              "FetchKeysMessage sending {} keys back using processorId: : {}", keys.size(),
               getProcessorId(), keys);
         }
         r.getPrStats().endPartitionMessagesProcessing(startTime);
@@ -385,16 +385,16 @@ public class FetchKeysMessage extends PartitionMessage {
       FetchKeysResponse processor = (FetchKeysResponse) p;
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "FetchKeysReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "FetchKeysReplyMessage processor not found");
         }
         return;
       }
 
       processor.processChunk(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
 
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
@@ -489,19 +489,17 @@ public class FetchKeysMessage extends PartitionMessage {
         try {
           ByteArrayInputStream byteStream = new ByteArrayInputStream(msg.chunk);
           DataInputStream in = new DataInputStream(byteStream);
-          InternalDataSerializer.doWithPdxReadSerialized(() -> {
-            while (in.available() > 0) {
-              Object key = DataSerializer.readObject(in);
-              if (key != null) {
-                synchronized (returnValue) {
-                  returnValue.add(key);
-                }
-              } else {
-                // null should signal the end of the set of keys
-                Assert.assertTrue(in.available() == 0);
+          while (in.available() > 0) {
+            Object key = DataSerializer.readObject(in);
+            if (key != null) {
+              synchronized (returnValue) {
+                returnValue.add(key);
               }
+            } else {
+              // null should signal the end of the set of keys
+              Assert.assertTrue(in.available() == 0);
             }
-          });
+          }
 
           synchronized (this.endLock) {
             chunksProcessed = chunksProcessed + 1;
@@ -514,9 +512,10 @@ public class FetchKeysMessage extends PartitionMessage {
             if (lastChunkReceived && (chunksExpected == chunksProcessed)) {
               doneProcessing = true;
             }
-            if (logger.isTraceEnabled(LogMarker.DM)) {
-              logger.debug("{} chunksProcessed={},lastChunkReceived={},chunksExpected={},done={}",
-                  this, chunksProcessed, lastChunkReceived, chunksExpected, doneProcessing);
+            if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+              logger.trace(LogMarker.DM_VERBOSE,
+                  "{} chunksProcessed={},lastChunkReceived={},chunksExpected={},done={}", this,
+                  chunksProcessed, lastChunkReceived, chunksExpected, doneProcessing);
             }
           }
         } catch (Exception e) {

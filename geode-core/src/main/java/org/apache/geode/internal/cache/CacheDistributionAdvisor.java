@@ -370,7 +370,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       boolean persistent) {
     initializationGate();
 
-    if (logger.isTraceEnabled(LogMarker.DA)) {
+    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
       dumpProfiles("AdviseInitialImage");
     }
 
@@ -845,7 +845,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
     private void writeSet(Set<?> set, DataOutput out) throws IOException {
       // to fix bug 47205 always serialize the Set as a HashSet.
-      out.writeByte(DSCODE.HASH_SET);
+      out.writeByte(DSCODE.HASH_SET.toByte());
       InternalDataSerializer.writeSet(set, out);
     }
 

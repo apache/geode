@@ -351,8 +351,8 @@ public class DistributedEventTracker implements EventTracker {
       }
       // log at fine because partitioned regions can send event multiple times
       // during normal operation during bucket region initialization
-      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER)) {
-        logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER,
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE)) {
+        logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE,
             "Cache encountered replay of event with ID {}.  Highest recorded for this source is {}",
             eventID, evh.getLastSequenceNumber());
       }
@@ -391,9 +391,9 @@ public class DistributedEventTracker implements EventTracker {
       }
       // log at fine because partitioned regions can send event multiple times
       // during normal operation during bucket region initialization
-      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER)
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE)
           && evh.getVersionTag() == null) {
-        logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER,
+        logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE,
             "Could not recover version tag.  Found event holder with no version tag for {}",
             eventID);
       }

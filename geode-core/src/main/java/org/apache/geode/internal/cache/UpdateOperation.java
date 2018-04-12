@@ -359,7 +359,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
       } else {
         this.eventId = null;
       }
-      this.key = InternalDataSerializer.readUserObject(in);
+      this.key = DataSerializer.readObject(in);
 
       this.deserializationPolicy = (byte) (extraFlags & DESERIALIZATION_POLICY_MASK);
       if (hasDelta()) {

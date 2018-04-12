@@ -127,6 +127,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
       MemberStarterRule.disconnectDSIfAny();
 
       // stop all the clientsVM before stop all the memberVM
+      occupiedVMs.values().forEach(x -> x.stopVMIfNotLocator(true));
       occupiedVMs.values().forEach(x -> x.stopVM(true));
 
       // delete any file under root dir

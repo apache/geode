@@ -33,7 +33,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 
 @Experimental
 public class GetServerOperationHandler
@@ -54,8 +54,7 @@ public class GetServerOperationHandler
     // note: an empty string is okay - the ServerLocator code checks for this
     String serverGroup = request.getServerGroup();
 
-    messageExecutionContext
-        .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
+    messageExecutionContext.setState(new TerminateConnection());
 
     ServerLocation serverLocation =
         messageExecutionContext.getAuthorizingLocator().findServer(excludedServers, serverGroup);

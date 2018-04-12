@@ -31,7 +31,6 @@ public interface ResultData {
   String TYPE_COMPOSITE = "composite";
   String TYPE_ERROR = "error";
   String TYPE_INFO = "info";
-  String TYPE_OBJECT = "object";
   String TYPE_TABULAR = "table";
 
   String getHeader();
