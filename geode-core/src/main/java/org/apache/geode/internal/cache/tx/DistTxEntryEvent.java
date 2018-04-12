@@ -122,8 +122,6 @@ public class DistTxEntryEvent extends EntryEventImpl {
   }
 
   /**
-   * @param out
-   * @throws IOException
    */
   private void putAllToData(DataOutput out) throws IOException {
     DataSerializer.writeInteger(this.putAllOp.putAllDataSize, out);
@@ -147,9 +145,6 @@ public class DistTxEntryEvent extends EntryEventImpl {
   }
 
   /**
-   * @param in
-   * @throws IOException
-   * @throws ClassNotFoundException
    */
   private void putAllFromData(DataInput in) throws IOException, ClassNotFoundException {
     int putAllSize = DataSerializer.readInteger(in);
@@ -178,8 +173,6 @@ public class DistTxEntryEvent extends EntryEventImpl {
   }
 
   /**
-   * @param out
-   * @throws IOException
    */
   private void removeAllToData(DataOutput out) throws IOException {
     DataSerializer.writeInteger(this.removeAllOp.removeAllDataSize, out);
@@ -205,9 +198,6 @@ public class DistTxEntryEvent extends EntryEventImpl {
   }
 
   /**
-   * @param in
-   * @throws IOException
-   * @throws ClassNotFoundException
    */
   private void removeAllFromData(DataInput in) throws IOException, ClassNotFoundException {
     int removeAllSize = DataSerializer.readInteger(in);

@@ -641,7 +641,6 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
      * transmit them as nulls to cut costs, but have to do the swap on the receiving end (in the
      * client)
      *
-     * @param sender
      */
     public void replaceNullIDs(DistributedMember sender) {
       for (VersionTag versionTag : this) {
@@ -838,7 +837,6 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
    * Create PutAllPRMessage for notify only (to adjunct nodes)
    *
    * @param bucketId create message to send to this bucket
-   * @return PutAllPRMessage
    */
   public PutAllPRMessage createPRMessagesNotifyOnly(int bucketId) {
     final EntryEventImpl event = getBaseEvent();
@@ -1026,7 +1024,6 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
    * version tags are gathered from local operations and remote operation responses. This method
    * gathers all of them and stores them in the given list.
    *
-   * @param list
    */
   protected void fillVersionedObjectList(VersionedObjectList list) {
     for (PutAllEntryData entry : this.putAllData) {
@@ -1118,13 +1115,6 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     /**
      * create an event for a PutAllEntryData element
      *
-     * @param entry
-     * @param sender
-     * @param context
-     * @param rgn
-     * @param possibleDuplicate
-     * @param needsRouting
-     * @param callbackArg
      * @return the event to be used in applying the element
      */
     @Retained

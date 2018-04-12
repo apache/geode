@@ -73,7 +73,6 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   private final Set<RegionQueue> queues;
 
   /**
-   * @param sender
    */
   public ConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender) {
     super(LoggingThreadGroup

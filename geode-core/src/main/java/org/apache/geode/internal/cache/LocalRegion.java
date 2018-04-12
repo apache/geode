@@ -1808,7 +1808,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * @return boolean
    */
   protected boolean isClosed() {
     return this.cache.isClosed();
@@ -4645,7 +4644,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Called by a thread that is doing region initialization. Causes the initialization Latch to be
    * bypassed by this thread.
    *
-   * @return oldLevel
    */
   public static int setThreadInitLevelRequirement(int level) {
     int oldLevel = threadInitLevelRequirement();

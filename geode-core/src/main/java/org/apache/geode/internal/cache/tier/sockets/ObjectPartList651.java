@@ -39,8 +39,6 @@ public class ObjectPartList651 extends ObjectPartList {
   }
 
   /**
-   * @param maximumchunksize
-   * @param b
    */
   public ObjectPartList651(int maximumchunksize, boolean b) {
     super(maximumchunksize, b);

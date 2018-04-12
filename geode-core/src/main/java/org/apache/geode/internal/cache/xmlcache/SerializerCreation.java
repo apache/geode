@@ -43,8 +43,6 @@ public class SerializerCreation {
     private Class m_class;
 
     /**
-     * @param c
-     * @param classId
      */
     public InstantiatorImpl(Class<? extends DataSerializable> c, int classId) {
       super(c, classId);

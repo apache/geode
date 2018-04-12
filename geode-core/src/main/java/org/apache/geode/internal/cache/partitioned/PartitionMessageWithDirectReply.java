@@ -71,7 +71,6 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
   }
 
   /**
-   * @param original
    */
   public PartitionMessageWithDirectReply(PartitionMessageWithDirectReply original,
       EntryEventImpl event) {

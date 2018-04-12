@@ -73,8 +73,6 @@ public class HAContainerMap implements HAContainerWrapper {
   }
 
   /**
-   * @param key
-   * @return Object
    */
   public Object getKey(Object key) {
     Entry entry = (Entry) map.get(key);

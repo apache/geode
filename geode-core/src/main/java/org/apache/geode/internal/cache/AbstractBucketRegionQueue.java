@@ -372,10 +372,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * sure that the value is in the Bucket before the eventSeqNumQueue is available for
    * peek/remove/take from other thread.
    *
-   * @param key
-   * @param value
    * @return boolean which shows whether the operation was successful or not.
-   * @throws ForceReattemptException
    */
   public boolean addToQueue(Object key, Object value) throws ForceReattemptException {
 
@@ -490,7 +487,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   /**
    *
-   * @param key
    */
   public void addToFailedBatchRemovalMessageKeys(Object key) {
     failedBatchRemovalMessageKeys.add(key);

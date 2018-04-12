@@ -39,7 +39,6 @@ public class TransactionalOperation {
     REMOVE_ALL;
 
     /**
-     * @param op
      * @return true if the key associated with this op should be locked on clients locally; false
      *         otherwise
      */

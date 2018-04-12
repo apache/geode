@@ -214,7 +214,6 @@ public class PoolManagerImpl {
   }
 
   /**
-   * @param instantiator
    */
   public static void allPoolsRegisterInstantiator(Instantiator instantiator) {
     Instantiator[] instantiators = new Instantiator[1];

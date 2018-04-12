@@ -146,8 +146,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   private int batchSize;
 
   /**
-   * @param createThreadGroup
-   * @param string
    */
   public AbstractGatewaySenderEventProcessor(LoggingThreadGroup createThreadGroup, String string,
       GatewaySender sender) {
@@ -896,7 +894,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   /**
    * Mark all PDX types as requiring dispatch so that they will be sent over the connection again.
    *
-   * @param remotePdxSize
    */
   public void checkIfPdxNeedsResend(int remotePdxSize) {
     InternalCache cache = this.sender.getCache();

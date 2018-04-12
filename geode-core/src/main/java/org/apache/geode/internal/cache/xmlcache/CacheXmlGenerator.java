@@ -849,7 +849,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Generates the <code>serializer-registration</code> element.
    *
-   * @throws SAXException
    */
   private void generateSerializerRegistration() throws SAXException {
     final SerializerCreation sc = this.creation.getSerializerCreation();
@@ -883,7 +882,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   }
 
   /**
-   * @throws SAXException
    */
   private void generateFunctionService() throws SAXException {
     Collection<Function> functions = Collections.emptyList();

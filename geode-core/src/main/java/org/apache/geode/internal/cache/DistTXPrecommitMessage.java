@@ -392,7 +392,6 @@ public class DistTXPrecommitMessage extends TXMessage {
      * Determine if the commit processing was incomplete, if so throw a detailed exception
      * indicating the source of the problem
      *
-     * @param msgMap
      */
     public void handlePotentialCommitFailure(
         HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap) {
@@ -440,8 +439,6 @@ public class DistTXPrecommitMessage extends TXMessage {
     /**
      * Protected by (this)
      *
-     * @param member
-     * @param exceptions
      */
     public void addExceptionsFromMember(InternalDistributedMember member, Set exceptions) {
       for (Iterator iter = exceptions.iterator(); iter.hasNext();) {

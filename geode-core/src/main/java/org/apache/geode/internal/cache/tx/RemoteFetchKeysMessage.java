@@ -90,8 +90,6 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
   }
 
   /**
-   * @param currRegion
-   * @param target
    * @return the response
    */
   public static FetchKeysResponse send(LocalRegion currRegion, DistributedMember target) {
@@ -375,7 +373,6 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     }
 
     /**
-     * @param msg
      * @return true if done processing
      */
     boolean processChunk(RemoteFetchKeysReplyMessage msg) {

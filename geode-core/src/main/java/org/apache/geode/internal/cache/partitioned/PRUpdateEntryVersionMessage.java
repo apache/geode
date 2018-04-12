@@ -74,9 +74,6 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   public PRUpdateEntryVersionMessage() {}
 
   /**
-   * @param recipients
-   * @param regionId
-   * @param processor
    */
   public PRUpdateEntryVersionMessage(Collection<InternalDistributedMember> recipients, int regionId,
       DirectReplyProcessor processor) {
@@ -84,10 +81,6 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   }
 
   /**
-   * @param recipients
-   * @param regionId
-   * @param processor
-   * @param event
    */
   public PRUpdateEntryVersionMessage(Set recipients, int regionId, DirectReplyProcessor processor,
       EntryEventImpl event) {
@@ -200,7 +193,6 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
    * Assists the toString method in reporting the contents of this message
    *
    * @see PartitionMessage#toString()
-   * @param buff
    */
 
   @Override

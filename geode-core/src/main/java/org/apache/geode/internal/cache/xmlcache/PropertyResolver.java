@@ -36,8 +36,6 @@ public interface PropertyResolver {
    * is found then {@link IllegalFormatException} would be thrown based on
    * <code>ignoreUnresolvedProperties</code> flag being set by {@link CacheXmlParser}.
    *
-   * @param replaceString
-   * @return resolvedString
    */
   String resolveReplaceString(String replaceString);
 

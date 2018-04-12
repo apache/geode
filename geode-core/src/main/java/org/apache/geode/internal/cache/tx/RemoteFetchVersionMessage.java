@@ -62,9 +62,6 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
   /**
    * Send RemoteFetchVersionMessage to the recipient for the given key
    *
-   * @param recipient
-   * @param r
-   * @param key
    * @return the processor used to fetch the VersionTag for the key
    * @throws RemoteOperationException if the member is no longer available
    */

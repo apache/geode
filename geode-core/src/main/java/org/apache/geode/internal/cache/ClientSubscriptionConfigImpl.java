@@ -154,7 +154,6 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   /**
    * Sets the disk store name for overflow
    *
-   * @param diskStoreName
    * @since GemFire prPersistSprint2
    */
   public void setDiskStoreName(String diskStoreName) {

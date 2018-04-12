@@ -43,7 +43,6 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
   private static final Logger logger = LogService.getLogger();
 
   /**
-   * @param event
    */
   public UpdateEntryVersionOperation(CacheEvent event) {
     super(event);

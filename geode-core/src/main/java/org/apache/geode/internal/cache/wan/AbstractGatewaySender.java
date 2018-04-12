@@ -821,8 +821,6 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
   /**
    * Check if this event can be distributed by senders.
    *
-   * @param event
-   * @param stats
    * @return boolean True if the event is allowed.
    */
   private boolean checkForDistribution(EntryEventImpl event, GatewaySenderStats stats) {
@@ -1061,7 +1059,6 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
    * Removes the EntryEventImpl, whose tailKey matches with the provided tailKey, from
    * tmpQueueEvents.
    *
-   * @param tailKey
    */
   public boolean removeFromTempQueueEvents(Object tailKey) {
     synchronized (this.queuedEventsSync) {
@@ -1226,7 +1223,6 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
   }
 
   /**
-   * @param clonedEvent
    */
   protected abstract void setModifiedEventId(EntryEventImpl clonedEvent);
 

@@ -71,7 +71,6 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
    * This contructor should only be used for cloning a RegionVersionHolder or initializing and
    * invalid version holder (with version -1)
    *
-   * @param ver
    */
   public RegionVersionHolder(long ver) {
     this.version = ver;
@@ -749,7 +748,6 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
    * Canonicalize an ordered set of exceptions. In the canonical form, none of the RVVExceptions
    * have any received versions.
    *
-   * @param exceptions
    * @return The canonicalized set of exceptions.
    */
   protected List<RVVException> canonicalExceptions(List<RVVException> exceptions) {

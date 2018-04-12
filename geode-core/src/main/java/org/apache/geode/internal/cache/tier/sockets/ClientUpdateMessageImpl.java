@@ -336,7 +336,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    *        if conflation is not enabled, or it could be a conflated value if conflation is enabled.
    * @return a <code>Message</code> generated from the fields of this
    *         <code>ClientUpdateMessage</code>
-   * @throws IOException
    * @see org.apache.geode.internal.cache.tier.sockets.Message
    */
 
@@ -1010,7 +1009,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * Returns the cqs for the given client.
    *
-   * @return cqNames
    */
   public String[] getCqs(ClientProxyMembershipID clientId) {
     String[] cqNames = null;
@@ -1031,8 +1029,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * Add cqs for the given client.
    *
-   * @param clientId
-   * @param filteredCqs
    */
   public void addClientCqs(ClientProxyMembershipID clientId, CqNameToOp filteredCqs) {
     if (this._clientCqs == null) {
@@ -1089,7 +1085,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
   /**
-   * @param eventId
    * @see HAEventWrapper#fromData(DataInput)
    * @see HAContainerRegion#get(Object)
    */
@@ -1100,7 +1095,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
   /**
-   * @param clientCqs
    * @see HAEventWrapper#fromData(DataInput)
    * @see HAContainerRegion#get(Object)
    */

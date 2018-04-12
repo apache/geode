@@ -3836,7 +3836,6 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Executes function on all bucket nodes
    *
-   * @return ResultCollector
    * @since GemFire 6.0
    */
   private ResultCollector executeOnAllBuckets(final Function function,
@@ -4830,7 +4829,6 @@ public class PartitionedRegion extends LocalRegion
   /**
    * This method returns Partitioned Region data store associated with this Partitioned Region
    *
-   * @return PartitionedRegionDataStore
    */
   public PartitionedRegionDataStore getDataStore() {
     return this.dataStore;
@@ -5036,7 +5034,6 @@ public class PartitionedRegion extends LocalRegion
    * This method returns PartitionedRegion associated with a PartitionedRegion ID from prIdToPR map.
    *
    * @param prid Partitioned Region ID
-   * @return PartitionedRegion
    */
   public static PartitionedRegion getPRFromId(int prid) throws PRLocallyDestroyedException {
     final Object o;
@@ -5113,7 +5110,6 @@ public class PartitionedRegion extends LocalRegion
   /**
    * This method returns prId
    *
-   * @return partitionedRegionId
    */
   public int getPRId() {
     return this.partitionedRegionId;
@@ -5133,7 +5129,6 @@ public class PartitionedRegion extends LocalRegion
   /**
    * This method returns total number of buckets for this PR
    *
-   * @return totalNumberOfBuckets
    */
   public int getTotalNumberOfBuckets() {
 
@@ -6612,7 +6607,6 @@ public class PartitionedRegion extends LocalRegion
    * Returns the lockname used by Distributed Lock service to clean the
    * {@code allPartitionedRegions}.
    *
-   * @return String
    */
   private String getLockNameForBucket2NodeModification(int bucketID) {
     return (getRegionIdentifier() + ":" + bucketID);
@@ -8188,7 +8182,6 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Returns the a PartitionedIndex on this partitioned region.
    *
-   * @return Index
    */
   public PartitionedIndex getIndex(String indexName) {
     Iterator iter = this.indexes.values().iterator();

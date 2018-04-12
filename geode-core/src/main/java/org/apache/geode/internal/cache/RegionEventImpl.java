@@ -71,11 +71,6 @@ public class RegionEventImpl
   /**
    * Constructor which does not generate EventID
    *
-   * @param region
-   * @param op
-   * @param callbackArgument
-   * @param originRemote
-   * @param distributedMember
    */
   public RegionEventImpl(Region region, Operation op, Object callbackArgument, boolean originRemote,
       DistributedMember distributedMember) {
@@ -99,11 +94,6 @@ public class RegionEventImpl
   /**
    * Constructor which uses the eventID passed
    *
-   * @param region
-   * @param op
-   * @param callbackArgument
-   * @param originRemote
-   * @param distributedMember
    * @param eventID EventID used to create the RegionEvent
    */
   public RegionEventImpl(Region region, Operation op, Object callbackArgument, boolean originRemote,
@@ -242,7 +232,6 @@ public class RegionEventImpl
   /**
    * Returns the Operation type.
    *
-   * @return eventType
    */
   public EnumListenerEvent getEventType() {
     return this.eventType;
@@ -251,7 +240,6 @@ public class RegionEventImpl
   /**
    * Sets the operation type.
    *
-   * @param eventType
    */
   public void setEventType(EnumListenerEvent eventType) {
     this.eventType = eventType;

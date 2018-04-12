@@ -507,7 +507,6 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * It removes the first key from the queue.
    *
    * @return Returns the key for which value was destroyed.
-   * @throws ForceReattemptException
    */
   public Object remove() throws ForceReattemptException {
     Object key = this.eventSeqNumDeque.removeFirst();
@@ -521,8 +520,6 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * It removes the first key from the queue.
    *
    * @return Returns the value.
-   * @throws InterruptedException
-   * @throws ForceReattemptException
    */
   public Object take() throws InterruptedException, ForceReattemptException {
     throw new UnsupportedOperationException();

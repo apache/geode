@@ -105,17 +105,12 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
       boolean forceNewEntry);
 
   /**
-   * @param region
-   * @param keyInfo
-   * @param allowTombstones
    * @return a Region.Entry if it exists either in committed state or in transactional state,
    *         otherwise returns null
    */
   Entry getEntry(final KeyInfo keyInfo, final LocalRegion region, boolean allowTombstones);
 
   /**
-   * @param keyInfo
-   * @param localRegion
    * @param updateStats TODO
    */
   Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
@@ -147,7 +142,6 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
   /**
    *
-   * @param state
    * @return true if transaction is in progress and the given state has the same identity as this
    *         instance
    */

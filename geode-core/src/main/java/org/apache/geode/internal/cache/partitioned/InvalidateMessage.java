@@ -148,8 +148,6 @@ public class InvalidateMessage extends DestroyMessage {
    * It is very important that this message does NOT cause any deadlocks as the sender will wait
    * indefinitely for the acknowledgement
    *
-   * @throws EntryExistsException
-   * @throws DataLocationException
    */
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,

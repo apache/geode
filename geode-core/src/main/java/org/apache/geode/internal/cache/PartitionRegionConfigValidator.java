@@ -454,7 +454,6 @@ public class PartitionRegionConfigValidator {
   }
 
   /**
-   * @param prconf
    */
   public void validateFixedPABetweenDataStores(PartitionRegionConfig prconf) {
     boolean isDataStore = this.pr.localMaxMemory > 0;

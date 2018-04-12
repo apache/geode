@@ -31,7 +31,6 @@ public class PartitionedRegionBucketMgmtHelper {
   /**
    *
    * @param b Bucket to evaluate
-   * @param moveSource
    * @return true if it is allowed to be recovered
    * @since GemFire 5.9
    */

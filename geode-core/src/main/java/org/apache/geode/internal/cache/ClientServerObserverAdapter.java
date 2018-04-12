@@ -56,7 +56,6 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
   /**
    * Invoked before sending an instantiator message to server
    *
-   * @param eventId
    */
   public void beforeSendingToServer(EventID eventId) {
 
@@ -65,7 +64,6 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
   /**
    * Invoked after sending an instantiator message to server
    *
-   * @param eventId
    */
   public void afterReceivingFromServer(EventID eventId) {
 
@@ -81,7 +79,6 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
   /**
    * Invoked after Message is created
    *
-   * @param msg
    */
   public void afterMessageCreation(Message msg) {
 

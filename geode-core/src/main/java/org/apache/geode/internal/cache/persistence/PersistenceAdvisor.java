@@ -141,7 +141,6 @@ public interface PersistenceAdvisor {
   /**
    * Check to see if the other members know about the current member .
    *
-   * @param replicates
    * @throws ConflictingPersistentDataException if the other members were not part of the same
    *         distributed system as the persistent data on in this VM.
    * @return true if we detected that we actually have the same data on disk as another member.
@@ -157,7 +156,6 @@ public interface PersistenceAdvisor {
    *
    * This method will block until the latest member is online.
    *
-   * @param recoverFromDisk
    * @throws ConflictingPersistentDataException if there are active members which are not based on
    *         the state that is persisted in this member.
    */

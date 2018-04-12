@@ -73,7 +73,6 @@ public class DistributedClearOperation extends DistributedCacheOperation {
    * obtain locks on version generation in other members have them do a state-flush back to this
    * member
    *
-   * @param recipients
    */
   public static void lockAndFlushToOthers(RegionEventImpl regionEvent,
       Set<InternalDistributedMember> recipients) {
@@ -111,7 +110,6 @@ public class DistributedClearOperation extends DistributedCacheOperation {
   /**
    * Creates new instance of DistributedClearOperation
    *
-   * @param recipients
    */
   private DistributedClearOperation(OperationType op, RegionEventImpl event,
       RegionVersionVector rvv, Set<InternalDistributedMember> recipients) {

@@ -307,7 +307,6 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     }
 
     /**
-     * @param notReceivedMembers
      */
     public void removeFailedSenders(Set notReceivedMembers) {
       for (Iterator i = notReceivedMembers.iterator(); i.hasNext();) {

@@ -66,7 +66,6 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
    * Sets <code>propertyOverridden</code> with one of the constants specified in this
    * {@link CacheXmlPropertyResolver} class.
    *
-   * @param propertyOverridden
    */
   public void setPropertyOverridden(int propertyOverridden) {
     this.propertyOverridden = propertyOverridden;
@@ -86,8 +85,6 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
    * is found then {@link IllegalArgumentException} would be thrown based on
    * <code>ignoreUnresolvedProperties</code> flag being set by {@link CacheXmlParser}.
    *
-   * @param replaceString
-   * @return resolvedString
    */
   public String resolveReplaceString(String replaceString) {
     String replacement = null;
@@ -107,10 +104,6 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
   }
 
   /**
-   * @param stringWithPrefixAndSuffix
-   * @param prefix
-   * @param suffix
-   * @return string
    */
   public String processUnresolvableString(String stringWithPrefixAndSuffix, String prefix,
       String suffix) {

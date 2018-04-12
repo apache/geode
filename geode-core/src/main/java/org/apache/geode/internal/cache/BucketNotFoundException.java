@@ -26,7 +26,6 @@ public class BucketNotFoundException extends ForceReattemptException {
   private static final long serialVersionUID = 2898657229184289911L;
 
   /**
-   * @param message
    */
   public BucketNotFoundException(String message) {
     super(message);

@@ -235,7 +235,6 @@ public class InitialImageOperation {
    *
    * @param recipientSet list of candidates to fetch from
    * @param targetReinitialized true if candidate should wait until initialized before responding
-   * @param advice
    * @param recoveredRVV recovered rvv
    * @return true if succeeded to get image
    * @throws org.apache.geode.cache.TimeoutException
@@ -761,7 +760,6 @@ public class InitialImageOperation {
   /**
    * transfer interest/cq registrations from the image provider to this VM
    *
-   * @param recipient
    * @return whether the operation succeeded in transferring anything
    */
   private boolean requestFilterInfo(InternalDistributedMember recipient) {
@@ -1889,7 +1887,6 @@ public class InitialImageOperation {
      *
      * @param versionVector requester's region version vector
      * @param unfinishedKeys keys of unfinished operation (persistent region only)
-     * @param flowControl
      * @return true if finished all chunks, false if stopped early
      */
     protected boolean chunkEntries(DistributedRegion rgn, int chunkSizeInBytes,
@@ -3194,7 +3191,6 @@ public class InitialImageOperation {
      * transmit them as nulls to cut costs, but have to do the swap on the receiving end (in the
      * client)
      *
-     * @param sender
      */
     public void replaceNullIDs(DistributedMember sender) {
       for (VersionTag versionTag : versionTags) {
@@ -3683,7 +3679,6 @@ public class InitialImageOperation {
     /**
      * Registers the filters associated with this client on current cache region.
      *
-     * @param region
      */
     public void registerFilters(LocalRegion region) {
       CacheClientNotifier ccn = CacheClientNotifier.getInstance();

@@ -65,7 +65,6 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
   }
 
   /**
-   * @param object
    */
   public StoreAllCachedDeserializable(Object object) {
     this.objValue = object;

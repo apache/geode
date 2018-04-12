@@ -322,7 +322,6 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   /**
    * Callers should have already verified that debug output is enabled.
    *
-   * @param infoMsg
    */
   public void dump(String infoMsg) {
     storage.getOnlineMembers();

@@ -1931,8 +1931,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    *
    * @throws CacheXmlException Something goes wrong while instantiating or initializing the
    *         declarable
-   * @param cache
-   * @param stack
    */
   public static Declarable createDeclarable(CacheCreation cache, Stack<Object> stack) {
     Properties props = new Properties();
@@ -2114,10 +2112,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * <code>region-attributes</code>. Allow any combination of attributes to be provided. Use the
    * default values for any attribute that is not provided.
    *
-   * @param atts
    */
   /**
-   * @param atts
    */
   private void startLRUEntryCount(Attributes atts) {
     final String maximum = atts.getValue(MAXIMUM);
@@ -2139,7 +2135,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * the attributes to be missing. Store the attributes on the stack anticipating the declaration of
    * an {@link ObjectSizer}.
    *
-   * @param atts
    */
   private void startLRUMemorySize(Attributes atts) {
     String lruAction = atts.getValue(ACTION);
@@ -2184,7 +2179,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * Create an <code>lru-heap-percentage</code> eviction controller, assigning it to the enclosed
    * <code>region-attributes</code>
    *
-   * @param atts
    */
   private void startLRUHeapPercentage(Attributes atts) {
     final String lruAction = atts.getValue(ACTION);
@@ -2871,7 +2865,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   /**
    * Add a marker string to look for when in endPartitionProperties
    *
-   * @param atts
    * @param localOrGlobal either the string LOCAL_PROPERTIES or GLOBAL_PROPERTIES
    */
   private void startPartitionProperties(Attributes atts, String localOrGlobal) {

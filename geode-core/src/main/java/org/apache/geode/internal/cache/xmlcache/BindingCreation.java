@@ -41,7 +41,6 @@ public class BindingCreation {
   /**
    * This function returns the VendorSpecific data Map
    *
-   * @return List
    */
   List getVendorSpecificList() {
     return this.vendorSpecificList;
@@ -50,7 +49,6 @@ public class BindingCreation {
   /**
    * This function returns the Gemfire Specific data Map
    *
-   * @return Map
    */
   Map getGFSpecificMap() {
     return this.gfSpecific;

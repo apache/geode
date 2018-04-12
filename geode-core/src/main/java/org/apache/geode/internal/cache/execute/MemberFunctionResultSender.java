@@ -59,8 +59,6 @@ public class MemberFunctionResultSender implements InternalResultSender {
   /**
    * Have to combine next two construcotr in one and make a new class which will send Results back.
    *
-   * @param msg
-   * @param dm
    */
   public MemberFunctionResultSender(DistributionManager dm, MemberFunctionStreamingMessage msg,
       Function function) {
@@ -73,8 +71,6 @@ public class MemberFunctionResultSender implements InternalResultSender {
   /**
    * Have to combine next two construcotr in one and make a new class which will send Results back.
    *
-   * @param dm
-   * @param rc
    */
   public MemberFunctionResultSender(DistributionManager dm, ResultCollector rc, Function function,
       boolean onlyLocal, boolean onlyRemote, ServerToClientFunctionResultSender sender) {
