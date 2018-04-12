@@ -14,7 +14,10 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,29 +26,25 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of the {@link VM} class.
  */
 @Category(DistributedTest.class)
-@SuppressWarnings("serial")
-public class VMDUnitTest extends JUnit4DistributedTestCase {
+@SuppressWarnings({"serial", "unused"})
+public class VMDistributedTest extends DistributedTestCase {
 
   private static final AtomicInteger COUNTER = new AtomicInteger();
   private static final boolean BOOLEAN_VALUE = true;
   private static final byte BYTE_VALUE = (byte) 40;
   private static final long LONG_VALUE = 42L;
   private static final String STRING_VALUE = "BLAH BLAH BLAH";
-
-  public VMDUnitTest() {
-    super();
-  }
 
   @Test
   public void testInvokeStaticBoolean() {
@@ -165,6 +164,7 @@ public class VMDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static class InvokeRunnable implements SerializableRunnableIF {
+    @Override
     public void run() {
       throw new BasicTestException();
     }
@@ -191,19 +191,19 @@ public class VMDUnitTest extends JUnit4DistributedTestCase {
     private final AtomicInteger val;
 
     public VMTestObject(int init) {
-      this.val = new AtomicInteger(init);
+      val = new AtomicInteger(init);
     }
 
     public Integer get() {
-      return new Integer(this.val.get());
+      return new Integer(val.get());
     }
 
     public Integer incrementAndGet() {
-      return new Integer(this.val.incrementAndGet());
+      return new Integer(val.incrementAndGet());
     }
 
     public void set(Integer newVal) {
-      this.val.set(newVal.intValue());
+      val.set(newVal.intValue());
     }
   }
 }

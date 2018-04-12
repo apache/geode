@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -39,8 +38,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @SuppressWarnings("serial")
 public class CacheRuleBuilderDistributedTest {
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Test
   public void defaultDoesNothing() throws Exception {

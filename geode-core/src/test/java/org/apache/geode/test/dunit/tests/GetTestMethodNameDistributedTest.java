@@ -14,11 +14,9 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMCount;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,34 +24,30 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- * Verifies that overriding {@code getDistributedSystemProperties} results in
- * {@code disconnectAllFromDS} during tear down.
- */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class OverridingGetPropertiesDisconnectsAllDUnitTest extends DistributedTestCase {
+public class GetTestMethodNameDistributedTest extends DistributedTestCase {
 
-  @Override
-  public final void preTearDownAssertions() throws Exception {
-    invokeInEveryVM(() -> assertNotNull(basicGetSystem()));
-  }
-
-  @Override
-  public final void postTearDownAssertions() throws Exception {
-    invokeInEveryVM(() -> assertNull(basicGetSystem()));
-  }
-
-  @Override
-  public Properties getDistributedSystemProperties() {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    return props;
+  @Test
+  public void testGetTestMethodName() {
+    assertGetTestMethodName("testGetTestMethodName");
   }
 
   @Test
-  public void testDisconnects() throws Exception {
-    invokeInEveryVM(() -> assertFalse(getDistributedSystemProperties().isEmpty()));
-    invokeInEveryVM(() -> assertNotNull(getSystem()));
+  public void testGetTestMethodNameChanges() {
+    assertGetTestMethodName("testGetTestMethodNameChanges");
+  }
+
+  @Test
+  public void testGetTestMethodNameInAllVMs() {
+    assertGetTestMethodName("testGetTestMethodNameInAllVMs");
+
+    for (int vmIndex = 0; vmIndex < getVMCount(); vmIndex++) {
+      getVM(vmIndex).invoke(() -> assertGetTestMethodName("testGetTestMethodNameInAllVMs"));
+    }
+  }
+
+  private void assertGetTestMethodName(final String expected) {
+    assertThat(getTestMethodName()).isEqualTo(expected);
   }
 }
