@@ -15,6 +15,7 @@
 package org.apache.geode.test.dunit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -164,7 +165,7 @@ public class DistributedTestUtils {
    * Returns a {@link ConfigurationProperties#LOCATORS} string for the standard dunit locator.
    */
   public static String getLocators() {
-    return Host.getHost(0).getHostName() + "[" + getLocatorPort() + "]";
+    return getHostName() + "[" + getLocatorPort() + "]";
   }
 
   public static void unregisterAllDataSerializersFromAllVms() {
