@@ -37,8 +37,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 // TODO:TEST clean this up and add assertions
-/**
- */
 @Category({IntegrationTest.class, OQLQueryTest.class})
 public class NegativeNumberQueriesJUnitTest {
 

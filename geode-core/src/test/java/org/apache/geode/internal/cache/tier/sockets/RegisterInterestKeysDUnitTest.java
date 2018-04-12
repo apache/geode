@@ -200,9 +200,6 @@ public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
   }
 
 
-  /**
-   *
-   */
   public static void registerKeysK1() {
     try {
       Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);

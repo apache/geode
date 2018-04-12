@@ -34,9 +34,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
-/**
- *
- */
 public class CqQueryTestListener implements CqStatusListener {
   protected final LogWriter logger;
   protected volatile int eventCreateCount = 0;

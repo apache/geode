@@ -57,8 +57,6 @@ public class PartitionedRegionLoaderWriterDUnitTest extends JUnit4CacheTestCase 
 
   private static Cache cache;
 
-  /**
-   */
   public PartitionedRegionLoaderWriterDUnitTest() {
     super();
   }

@@ -32,9 +32,6 @@ import javax.swing.*;
  */
 public class SequenceDiagram extends JPanel {
 
-  /**
-  *
-  */
   private static final Color HIGHLIGHT_COLOR = Color.RED;
 
   private final List<String> lineNames;

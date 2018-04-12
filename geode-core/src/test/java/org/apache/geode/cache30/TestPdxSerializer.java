@@ -23,9 +23,6 @@ import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.PdxWriter;
 
-/**
- *
- */
 public class TestPdxSerializer implements PdxSerializer, Declarable2 {
 
   private Properties properties;

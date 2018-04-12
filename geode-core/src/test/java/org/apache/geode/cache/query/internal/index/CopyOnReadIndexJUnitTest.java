@@ -31,10 +31,6 @@ import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-/**
- *
- *
- */
 @Category({IntegrationTest.class, OQLIndexTest.class})
 public class CopyOnReadIndexJUnitTest {
 
@@ -301,9 +297,6 @@ public class CopyOnReadIndexJUnitTest {
         objectsAndResultsMultiplier, true, true);
   }
 
-  /**
-   *
-   */
   private void helpExecuteQueriesCopyOnRead(String[] queries, int[] expectedResults, int numObjects,
       int objectsAndResultsMultiplier, boolean hasIndex, boolean isPR) throws Exception {
     Region region = utils.getCache().getRegion("/" + regionName);
@@ -318,9 +311,6 @@ public class CopyOnReadIndexJUnitTest {
     }
   }
 
-  /**
-   *
-   */
   private void helpExecuteQueriesCopyOnReadFalse(String[] queries, int[] expectedResults,
       int numObjects, int objectsAndResultsMultiplier, boolean hasIndex, boolean isPR)
       throws Exception {

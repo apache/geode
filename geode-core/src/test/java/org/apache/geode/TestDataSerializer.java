@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode;
 
 import java.io.DataInput;
@@ -23,9 +20,6 @@ import java.io.IOException;
 
 import org.apache.geode.internal.cache.tier.sockets.DataSerializerPropagationDUnitTest;
 
-/**
- *
- */
 public class TestDataSerializer extends DataSerializer {
 
   static {

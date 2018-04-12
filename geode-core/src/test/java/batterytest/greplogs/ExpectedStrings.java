@@ -12,18 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package batterytest.greplogs;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-/**
- *
- */
 public class ExpectedStrings {
 
   private ExpectedStrings() {}

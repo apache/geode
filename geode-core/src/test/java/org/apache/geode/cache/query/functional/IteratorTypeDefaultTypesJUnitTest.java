@@ -18,9 +18,6 @@
  * Created on April 12, 2005, 3:52 PM
  */
 
-/**
- *
- */
 package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.fail;

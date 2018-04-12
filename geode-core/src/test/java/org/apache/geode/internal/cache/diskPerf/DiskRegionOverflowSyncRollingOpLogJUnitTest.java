@@ -177,9 +177,6 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends DiskRegionTesti
 
   }
 
-  /**
-   *
-   */
   protected EvictionCounters getLRUStats(Region region1) {
     return ((LocalRegion) region1).getEvictionController().getCounters();
 

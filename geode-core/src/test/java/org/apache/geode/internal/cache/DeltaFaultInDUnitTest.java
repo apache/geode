@@ -43,8 +43,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
 
 
-  /**
-   */
   public DeltaFaultInDUnitTest() {
     super();
   }

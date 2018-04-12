@@ -62,9 +62,6 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- *
- */
 @Category({DistributedTest.class, ClientServerTest.class})
 public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
 

@@ -46,9 +46,6 @@ import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class PartitionedRegionStatsJUnitTest {
   private static final File DISK_DIR = new File("PRStatsTest");

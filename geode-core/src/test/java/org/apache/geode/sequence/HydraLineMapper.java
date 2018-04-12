@@ -27,9 +27,6 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.sequence.LineMapper;
 
-/**
- *
- */
 public class HydraLineMapper implements LineMapper {
   private static final Pattern VM_NAME_PATTERN = Pattern.compile("(vm_\\d+).*_(\\d+)(_end)?\\.log");
   private static final Pattern DISK_DIR_PATTERN = Pattern.compile("vm_(\\d+).*_disk_1");

@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
@@ -67,8 +64,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   protected IgnoredException expectedEx;
   static Object giiSyncObject = new Object();
 
-  /**
-   */
   public GIIDeltaDUnitTest() {
     super();
   }

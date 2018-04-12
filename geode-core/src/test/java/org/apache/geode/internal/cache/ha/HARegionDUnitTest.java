@@ -221,11 +221,6 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
 
   // private static int counter = 0;
 
-  /**
-   *
-   *
-   */
-
   public static void createRegionQueue() throws Exception {
     HARegionDUnitTest test = new HARegionDUnitTest();
     cache = test.createCache();

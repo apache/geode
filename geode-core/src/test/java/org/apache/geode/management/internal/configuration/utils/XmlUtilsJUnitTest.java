@@ -115,9 +115,6 @@ public class XmlUtilsJUnitTest {
     assertEquals(0, schemaLocationMap.size());
   }
 
-  /**
-   *
-   */
   @Test
   public void testQuerySingleElement() throws Exception {
     final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(

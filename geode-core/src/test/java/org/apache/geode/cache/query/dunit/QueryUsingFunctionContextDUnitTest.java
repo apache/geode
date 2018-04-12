@@ -290,9 +290,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  /**
-   *
-   */
   @Test
   public void testQueriesWithFilterKeysOnPRLocalAndRemote() {
 
@@ -328,9 +325,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  /**
-  *
-  */
   @Test
   public void testQueriesWithFilterKeysOnPRLocalAndRemoteWithBucketDestroy() {
 
@@ -393,9 +387,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  /**
-   *
-   */
   @Test
   public void testQueriesWithFilterKeysOnPRWithBucketDestroy() {
     IgnoredException.addIgnoredException("QueryInvocationTargetException");

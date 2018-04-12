@@ -25,9 +25,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher.MasterRemote;
 
-/**
- *
- */
 public class ChildVM {
 
   private static boolean stopMainLoop = false;

@@ -814,8 +814,6 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     return doRebalance(simulate, manager, null, null);
   }
 
-  /**
-   */
   private RebalanceResults doRebalance(final boolean simulate, ResourceManager manager,
       Set<String> includes, Set<String> excludes) {
     RebalanceResults results = null;

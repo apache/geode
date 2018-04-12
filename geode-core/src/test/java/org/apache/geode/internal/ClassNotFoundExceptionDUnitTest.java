@@ -51,14 +51,9 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- *
- */
 @Category(DistributedTest.class)
 public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
 
-  /**
-   */
   public ClassNotFoundExceptionDUnitTest() {
     super();
   }

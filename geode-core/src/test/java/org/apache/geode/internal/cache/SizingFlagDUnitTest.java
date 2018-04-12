@@ -69,8 +69,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
 
-  /**
-   */
   public SizingFlagDUnitTest() {
     super();
   }
@@ -647,8 +645,6 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  /**
-   */
   private long getSizeFromPRStats(VM vm0) {
     return (Long) vm0.invoke(new SerializableCallable() {
 

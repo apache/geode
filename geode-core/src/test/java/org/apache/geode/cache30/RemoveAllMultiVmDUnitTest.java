@@ -46,9 +46,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- *
- */
 @Category(DistributedTest.class)
 public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: reformat
 

@@ -46,8 +46,6 @@ import org.apache.geode.internal.sequencelog.model.GraphID;
 import org.apache.geode.internal.sequencelog.model.GraphSet;
 import org.apache.geode.internal.sequencelog.model.Vertex;
 
-/**
- */
 public class GemfireSequenceDisplay {
 
   private JLabel selectedGraphsLabel;
@@ -300,8 +298,6 @@ public class GemfireSequenceDisplay {
     return graphs;
   }
 
-  /**
-   */
   private static LineMapper getLineMapper(File[] files) {
     if (HydraLineMapper.isInHydraRun(files)) {
       return new HydraLineMapper(files);

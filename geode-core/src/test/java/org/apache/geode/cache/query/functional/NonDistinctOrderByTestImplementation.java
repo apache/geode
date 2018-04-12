@@ -47,10 +47,6 @@ import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.types.ObjectType;
 
-/**
- *
- *
- */
 public abstract class NonDistinctOrderByTestImplementation {
 
   @Before

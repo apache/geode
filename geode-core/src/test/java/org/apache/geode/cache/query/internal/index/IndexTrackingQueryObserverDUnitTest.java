@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.cache.query.internal.index;
 
 import static org.junit.Assert.*;
@@ -55,9 +52,6 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-/**
- *
- */
 @Category({DistributedTest.class, OQLIndexTest.class})
 public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
 

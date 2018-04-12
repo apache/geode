@@ -33,9 +33,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class AtomicStatsJUnitTest {
 

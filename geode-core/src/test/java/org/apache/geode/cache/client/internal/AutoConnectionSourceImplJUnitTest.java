@@ -78,9 +78,6 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @SuppressWarnings("deprecation")
 @Category({IntegrationTest.class, ClientServerTest.class})
 public class AutoConnectionSourceImplJUnitTest {
