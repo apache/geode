@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
 import java.io.IOException;
@@ -1225,6 +1226,27 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
+  public void updatePRConfigWithNewSetOfGatewaySenders(Set<String> gatewaySendersToAdd) {
+    PartitionRegionHelper.assignBucketsToPartitions(this);
+    PartitionRegionConfig prConfig = this.prRoot.get(getRegionIdentifier());
+    prConfig.setGatewaySenderIds(gatewaySendersToAdd);
+    updatePRConfig(prConfig, false);
+  }
+
+  public void updatePRConfigWithNewGatewaySender(String aeqId) {
+    PartitionRegionHelper.assignBucketsToPartitions(this);
+    PartitionRegionConfig prConfig = this.prRoot.get(getRegionIdentifier());
+    Set<String> newGateWayIds;
+    if (prConfig.getGatewaySenderIds() != null) {
+      newGateWayIds = new HashSet<>(prConfig.getGatewaySenderIds());
+    } else {
+      newGateWayIds = new HashSet<>();
+    }
+    newGateWayIds.add(aeqId);
+    prConfig.setGatewaySenderIds(newGateWayIds);
+    updatePRConfig(prConfig, false);
+  }
+
   public void removeGatewaySenderId(String gatewaySenderId) {
     super.removeGatewaySenderId(gatewaySenderId);
     new UpdateAttributesProcessor(this).distribute();
@@ -1347,7 +1369,7 @@ public class PartitionedRegion extends LocalRegion
       prConfig = this.prRoot.get(getRegionIdentifier());
 
       if (prConfig == null) {
-        validateParalleGatewaySenderIds();
+        validateParallelGatewaySenderIds();
         this.partitionedRegionId = generatePRId(getSystem());
         prConfig = new PartitionRegionConfig(this.partitionedRegionId, this.getFullPath(),
             prAttribs, this.getScope(), getAttributes().getEvictionAttributes(),
@@ -1454,10 +1476,35 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  public void validateParalleGatewaySenderIds() throws PRLocallyDestroyedException {
-    for (String senderId : this.getParallelGatewaySenderIds()) {
+  public void validateParallelGatewaySenderIds() throws PRLocallyDestroyedException {
+    validateParallelGatewaySenderIds(this.getParallelGatewaySenderIds());
+  }
+
+  /*
+   * filterOutNonParallelGatewaySenders takes in a set of gateway sender IDs and returns
+   * a set of parallel gateway senders present in the input set.
+   */
+  public Set<String> filterOutNonParallelGatewaySenders(Set<String> senderIds) {
+    Set<String> allParallelSenders = cache.getAllGatewaySenders().parallelStream()
+        .filter(GatewaySender::isParallel).map(GatewaySender::getId).collect(toSet());
+    Set<String> parallelSenders = new HashSet<>();
+    senderIds.parallelStream().forEach(gatewaySenderId -> {
+      if (allParallelSenders.contains(gatewaySenderId)) {
+        parallelSenders.add(gatewaySenderId);
+      }
+    });
+    return parallelSenders;
+  }
+
+  public void validateParallelGatewaySenderIds(Set<String> parallelGatewaySenderIds)
+      throws PRLocallyDestroyedException {
+    for (String senderId : parallelGatewaySenderIds) {
       for (PartitionRegionConfig config : this.prRoot.values()) {
         if (config.getGatewaySenderIds().contains(senderId)) {
+          if (this.getFullPath().equals(config.getFullPath())) {
+            // The sender is already attached to this region
+            continue;
+          }
           Map<String, PartitionedRegion> colocationMap =
               ColocationHelper.getAllColocationRegions(this);
           if (!colocationMap.isEmpty()) {
@@ -9922,7 +9969,6 @@ public class PartitionedRegion extends LocalRegion
     Set<Integer> allBuckets = userPR.getDataStore().getAllLocalBucketIds();
     Set<Integer> allBucketsClone = new HashSet<Integer>();
     allBucketsClone.addAll(allBuckets);
-
     while (allBucketsClone.size() != 0) {
       logger.debug(
           "Need to wait until partitionedRegionQueue <<{}>> is loaded with all the buckets",
