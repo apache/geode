@@ -2437,13 +2437,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           logger.info("Failed to create index {} on region {} with exception: {}",
               icd.getIndexName(), this.getFullPath(), ex);
 
-          // Check if the region index creation is from cache.xml, in that case throw exception.
-          // Other case is when bucket regions are created dynamically, in that case ignore the
-          // exception.
-          if (internalRegionArgs.getDeclarativeIndexCreation()) {
-            throw new InternalGemFireError(LocalizedStrings.GemFireCache_INDEX_CREATION_EXCEPTION_1
-                .toLocalizedString(icd.getIndexName(), this.getFullPath()), ex);
-          }
         }
       }
     } finally {
