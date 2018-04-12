@@ -36,7 +36,6 @@ public class ConnectionProviderException extends GemFireCheckedException {
   }
 
   /**
-   * @param message
    */
   public ConnectionProviderException(String message) {
     super(message);

@@ -147,9 +147,6 @@ public abstract class StorageCommand extends AbstractCommand {
    * 60*60*24*30 (number of seconds in 30 days); if the number sent by a client is larger than that,
    * the server will consider it to be real Unix time value rather than an offset from current time.
    *
-   * @param key
-   * @param p_expTime
-   * @param cache
    */
   private void scheduleExpiration(final Object key, long p_expTime, final Cache cache) {
     long expTime = p_expTime;
@@ -179,8 +176,6 @@ public abstract class StorageCommand extends AbstractCommand {
   /**
    * reschedules expiration for a key only if one was previously scheduled
    *
-   * @param key
-   * @param newExpTime
    * @return true if successfully rescheduled, false otherwise
    */
   public static boolean rescheduleExpiration(Cache cache, Object key, int newExpTime) {

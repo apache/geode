@@ -102,8 +102,6 @@ public class InternalInstantiator {
   /**
    * Actually registers an {@code Instantiator} with the data serialization framework.
    *
-   * @param instantiator
-   * @param distribute
    * @throws IllegalArgumentException If the instantiator has an id of zero
    * @throws IllegalStateException The instantiator cannot be registered
    */
@@ -216,7 +214,6 @@ public class InternalInstantiator {
   /**
    * Sends Instantiator registration message to one of the servers
    *
-   * @param instantiator
    */
   private static void sendRegistrationMessageToServers(Instantiator instantiator) {
     PoolManagerImpl.allPoolsRegisterInstantiator(instantiator);
@@ -225,7 +222,6 @@ public class InternalInstantiator {
   /**
    * Sends Instantiator registration message to one of the servers
    *
-   * @param holder
    */
   private static void sendRegistrationMessageToServers(InstantiatorAttributesHolder holder) {
     PoolManagerImpl.allPoolsRegisterInstantiator(holder);

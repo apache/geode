@@ -31,7 +31,6 @@ public class PoolException extends GemFireCheckedException {
   }
 
   /**
-   * @param message
    */
   public PoolException(String message) {
     super(message);

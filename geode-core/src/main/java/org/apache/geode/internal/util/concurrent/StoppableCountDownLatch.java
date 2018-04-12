@@ -56,7 +56,6 @@ public class StoppableCountDownLatch {
   }
 
   /**
-   * @throws InterruptedException
    */
   public void await() throws InterruptedException {
     for (;;) {

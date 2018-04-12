@@ -29,9 +29,6 @@ public interface CommandProcessor {
 
   /**
    *
-   * @param reader
-   * @param protocol
-   * @param cache
    */
   ByteBuffer processCommand(RequestReader reader, Protocol protocol, Cache cache);
 

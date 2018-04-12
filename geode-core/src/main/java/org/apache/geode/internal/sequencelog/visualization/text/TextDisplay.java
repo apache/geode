@@ -31,8 +31,6 @@ import org.apache.geode.internal.sequencelog.model.GraphReaderCallback;
 public class TextDisplay {
 
   /**
-   * @param args
-   * @throws IOException
    */
   public static void main(String[] args) throws IOException {
     File[] files;

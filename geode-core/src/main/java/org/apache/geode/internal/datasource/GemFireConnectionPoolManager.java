@@ -66,7 +66,6 @@ public class GemFireConnectionPoolManager implements ConnectionProvider, Seriali
   /**
    * Returns the connection to the pool and the closes it.
    *
-   * @param connectionObject
    *
    */
   public void returnAndExpireConnection(Object connectionObject) {
@@ -81,7 +80,6 @@ public class GemFireConnectionPoolManager implements ConnectionProvider, Seriali
   /**
    * Return connection to pool
    *
-   * @param connectionObject
    */
   public void returnConnection(Object connectionObject) {
     connPoolCache.returnPooledConnectionToPool(connectionObject);

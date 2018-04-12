@@ -59,7 +59,6 @@ public class ManagedPoolCacheImpl extends AbstractPoolCache {
    * Creates a new connection for the managed connection pool.
    *
    * @return the managed connection from the EIS as ManagedConnection object.
-   * @throws PoolException
    */
   @Override
   public Object getNewPoolConnection() throws PoolException {

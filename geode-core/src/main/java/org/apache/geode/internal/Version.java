@@ -272,7 +272,6 @@ public class Version implements Comparable<Version> {
   /**
    * return the version corresponding to the given ordinal, or CURRENT if the ordinal isn't valid
    *
-   * @param ordinal
    * @return the corresponding ordinal
    */
   public static Version fromOrdinalOrCurrent(short ordinal) {

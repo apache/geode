@@ -59,8 +59,6 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * jdk 1.6
    *
    * @param iface - a Class defining an interface.
-   * @throws SQLException
-   * @return boolean
    */
   public boolean isWrapperFor(Class iface) throws SQLException {
     return true;
@@ -71,7 +69,6 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * required by jdk 1.6
    *
    * @param iface - a Class defining an interface.
-   * @throws SQLException
    * @return java.lang.Object
    */
 
@@ -84,7 +81,6 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    *
    * @param xaDS The XADataSource object for the database driver.
    * @param configs - The ConfiguredDataSourceProperties containing the datasource properties.
-   * @throws SQLException
    */
   public GemFireTransactionDataSource(XADataSource xaDS, ConfiguredDataSourceProperties configs)
       throws SQLException {
@@ -110,7 +106,6 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * Implementation of datasource function. This method is used to get the connection from the pool.
    * Default user name and password will be used.
    *
-   * @throws SQLException
    * @return ???
    */
   @Override
@@ -139,7 +134,6 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    *
    * @param clUsername The username for the database connection.
    * @param clPassword The password for the database connection.
-   * @throws SQLException
    * @return ???
    */
   @Override
@@ -225,7 +219,6 @@ public class GemFireTransactionDataSource extends AbstractDataSource
   /**
    * gets the connection from the pool
    *
-   * @param poolC
    * @return ???
    */
   protected Connection getSQLConnection(PooledConnection poolC) throws SQLException {
