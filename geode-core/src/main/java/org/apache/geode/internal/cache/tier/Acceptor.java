@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier;
 
 import java.io.IOException;
 
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 
 /**

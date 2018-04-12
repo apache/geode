@@ -113,7 +113,6 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
-import org.apache.geode.cache.client.internal.ClientSideHandshakeImpl;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.PoolImpl;

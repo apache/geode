@@ -27,7 +27,6 @@ import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.VersionException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.i18n.LocalizedStrings;

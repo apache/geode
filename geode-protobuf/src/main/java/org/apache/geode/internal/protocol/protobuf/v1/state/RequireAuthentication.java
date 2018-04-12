@@ -14,17 +14,12 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.state;
 
-import java.util.Properties;
 
-import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.security.HandshakeRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.AuthenticationFailedException;
 
 public class RequireAuthentication implements ConnectionState {
 
