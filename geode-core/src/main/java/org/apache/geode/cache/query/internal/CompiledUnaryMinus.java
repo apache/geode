@@ -33,7 +33,6 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
 
   /**
    *
-   * @param value
    */
   public CompiledUnaryMinus(CompiledValue value) {
     _value = value;
@@ -46,15 +45,12 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
   }
 
   /**
-   * @return int
    */
   public int getType() {
     return LITERAL_sum;
   }
 
   /**
-   * @param context
-   * @return Object
    */
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
@@ -72,9 +68,6 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
 
   /**
    *
-   * @param obj
-   * @return Object
-   * @throws TypeMismatchException
    */
   private Object minus(Object obj) throws TypeMismatchException {
 

@@ -273,9 +273,6 @@ public class DefaultQueryService implements InternalQueryService {
    *        be created
    * @param context ExecutionContext
    * @return IndexData object
-   * @throws NameResolutionException
-   * @throws TypeMismatchException
-   * @throws AmbiguousNameException
    */
   public IndexData getIndex(String regionPath, String[] definitions, IndexType indexType,
       CompiledValue indexedExpression, ExecutionContext context)
@@ -330,9 +327,6 @@ public class DefaultQueryService implements InternalQueryService {
    *        be created
    * @param context ExecutionContext object
    * @return IndexData object
-   * @throws NameResolutionException
-   * @throws TypeMismatchException
-   * @throws AmbiguousNameException
    */
   public IndexData getBestMatchIndex(String regionPath, String definitions[], IndexType indexType,
       CompiledValue indexedExpression, ExecutionContext context)
@@ -770,7 +764,6 @@ public class DefaultQueryService implements InternalQueryService {
   }
 
   /**
-   * @return CqService
    */
   public CqService getCqService() throws CqException {
     CqService service = cache.getCqService();

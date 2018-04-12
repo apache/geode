@@ -163,7 +163,6 @@ public class PartitionAttributesFactory<K, V> {
    *
    * @param redundantCopies the number of redundant bucket copies, limited to values 0, 1, 2 and 3.
    *
-   * @return this
    */
   public PartitionAttributesFactory<K, V> setRedundantCopies(int redundantCopies) {
     this.partitionAttributes.setRedundantCopies(redundantCopies);
@@ -269,8 +268,6 @@ public class PartitionAttributesFactory<K, V> {
   /**
    * adds a PartitionListener for the partitioned region.
    *
-   * @param listener
-   * @return PartitionAttributeFactory
    * @since GemFire 6.5
    */
   public PartitionAttributesFactory<K, V> addPartitionListener(PartitionListener listener) {
@@ -291,7 +288,6 @@ public class PartitionAttributesFactory<K, V> {
    * provide, behaves. There are currently no non-deprecated local properties.
    *
    * @deprecated use {@link #setLocalMaxMemory(int)} in GemFire 5.1 and later releases
-   * @param localProps
    * @return PartitionAttributeFactory.
    *
    */
@@ -313,7 +309,6 @@ public class PartitionAttributesFactory<K, V> {
    *
    * @deprecated use {@link #setTotalMaxMemory(long)} and {@link #setTotalNumBuckets(int)} in
    *             GemFire 5.1 and later releases
-   * @param globalProps
    * @return PartitionAttributeFactory.
    *
    * @see #GLOBAL_MAX_MEMORY_PROPERTY

@@ -270,9 +270,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the blockingTimeoutSeconds property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getBlockingTimeoutSeconds() {
@@ -282,9 +281,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the blockingTimeoutSeconds property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setBlockingTimeoutSeconds(String value) {
@@ -294,9 +292,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the connPooledDatasourceClass property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getConnPooledDatasourceClass() {
@@ -306,9 +303,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the connPooledDatasourceClass property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setConnPooledDatasourceClass(String value) {
@@ -318,9 +314,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the connectionUrl property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getConnectionUrl() {
@@ -330,9 +325,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the connectionUrl property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setConnectionUrl(String value) {
@@ -342,9 +336,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the idleTimeoutSeconds property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getIdleTimeoutSeconds() {
@@ -354,9 +347,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the idleTimeoutSeconds property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setIdleTimeoutSeconds(String value) {
@@ -366,9 +358,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the initPoolSize property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getInitPoolSize() {
@@ -378,9 +369,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the initPoolSize property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setInitPoolSize(String value) {
@@ -390,9 +380,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the jdbcDriverClass property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getJdbcDriverClass() {
@@ -402,9 +391,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the jdbcDriverClass property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setJdbcDriverClass(String value) {
@@ -414,9 +402,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the jndiName property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getJndiName() {
@@ -426,9 +413,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the jndiName property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setJndiName(String value) {
@@ -438,9 +424,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the loginTimeoutSeconds property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getLoginTimeoutSeconds() {
@@ -450,9 +435,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the loginTimeoutSeconds property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setLoginTimeoutSeconds(String value) {
@@ -462,9 +446,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the managedConnFactoryClass property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getManagedConnFactoryClass() {
@@ -474,9 +457,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the managedConnFactoryClass property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setManagedConnFactoryClass(String value) {
@@ -486,9 +468,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the maxPoolSize property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getMaxPoolSize() {
@@ -498,9 +479,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the maxPoolSize property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setMaxPoolSize(String value) {
@@ -510,9 +490,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the password property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getPassword() {
@@ -522,9 +501,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the password property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setPassword(String value) {
@@ -534,9 +512,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the transactionType property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getTransactionType() {
@@ -546,9 +523,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the transactionType property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setTransactionType(String value) {
@@ -558,9 +534,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the type property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getType() {
@@ -570,9 +545,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the type property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setType(String value) {
@@ -582,9 +556,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the userName property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getUserName() {
@@ -594,9 +567,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the userName property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setUserName(String value) {
@@ -606,9 +578,8 @@ public class JndiBindingsType {
     /**
      * Gets the value of the xaDatasourceClass property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getXaDatasourceClass() {
@@ -618,9 +589,8 @@ public class JndiBindingsType {
     /**
      * Sets the value of the xaDatasourceClass property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setXaDatasourceClass(String value) {
@@ -692,9 +662,8 @@ public class JndiBindingsType {
       /**
        * Gets the value of the configPropertyName property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getName() {
@@ -704,9 +673,8 @@ public class JndiBindingsType {
       /**
        * Sets the value of the configPropertyName property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setName(String value) {
@@ -716,9 +684,8 @@ public class JndiBindingsType {
       /**
        * Gets the value of the configPropertyType property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getType() {
@@ -728,9 +695,8 @@ public class JndiBindingsType {
       /**
        * Sets the value of the configPropertyType property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setType(String value) {
@@ -740,9 +706,8 @@ public class JndiBindingsType {
       /**
        * Gets the value of the configPropertyValue property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getValue() {
@@ -752,9 +717,8 @@ public class JndiBindingsType {
       /**
        * Sets the value of the configPropertyValue property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setValue(String value) {

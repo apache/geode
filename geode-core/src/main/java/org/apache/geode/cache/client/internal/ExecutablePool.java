@@ -154,7 +154,6 @@ public interface ExecutablePool {
    * All subsequent operations by this thread will be performed on the given ServerLocation. Used
    * for resuming suspended transactions.
    *
-   * @param serverLocation
    * @since GemFire 6.6
    */
   void setServerAffinityLocation(ServerLocation serverLocation);

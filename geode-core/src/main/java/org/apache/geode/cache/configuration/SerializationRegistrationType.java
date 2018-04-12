@@ -185,9 +185,8 @@ public class SerializationRegistrationType {
     /**
      * Gets the value of the className property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getClassName() {
@@ -197,9 +196,8 @@ public class SerializationRegistrationType {
     /**
      * Sets the value of the className property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setClassName(String value) {
@@ -209,9 +207,8 @@ public class SerializationRegistrationType {
     /**
      * Gets the value of the id property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getId() {
@@ -221,9 +218,8 @@ public class SerializationRegistrationType {
     /**
      * Sets the value of the id property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setId(String value) {
@@ -265,9 +261,8 @@ public class SerializationRegistrationType {
     /**
      * Gets the value of the className property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getClassName() {
@@ -277,9 +272,8 @@ public class SerializationRegistrationType {
     /**
      * Sets the value of the className property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setClassName(String value) {

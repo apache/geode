@@ -91,9 +91,8 @@ public class PdxType {
   /**
    * Gets the value of the pdxSerializer property.
    *
-   * @return
-   *         possible object is
-   *         {@link PdxType.PdxSerializer }
+   * possible object is
+   * {@link PdxType.PdxSerializer }
    *
    */
   public PdxType.PdxSerializer getPdxSerializer() {
@@ -103,9 +102,8 @@ public class PdxType {
   /**
    * Sets the value of the pdxSerializer property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link PdxType.PdxSerializer }
+   * allowed object is
+   * {@link PdxType.PdxSerializer }
    *
    */
   public void setPdxSerializer(PdxType.PdxSerializer value) {
@@ -115,9 +113,8 @@ public class PdxType {
   /**
    * Gets the value of the readSerialized property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isReadSerialized() {
@@ -127,9 +124,8 @@ public class PdxType {
   /**
    * Sets the value of the readSerialized property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setReadSerialized(Boolean value) {
@@ -139,9 +135,8 @@ public class PdxType {
   /**
    * Gets the value of the ignoreUnreadFields property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isIgnoreUnreadFields() {
@@ -151,9 +146,8 @@ public class PdxType {
   /**
    * Sets the value of the ignoreUnreadFields property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setIgnoreUnreadFields(Boolean value) {
@@ -163,9 +157,8 @@ public class PdxType {
   /**
    * Gets the value of the persistent property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isPersistent() {
@@ -175,9 +168,8 @@ public class PdxType {
   /**
    * Sets the value of the persistent property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setPersistent(Boolean value) {
@@ -187,9 +179,8 @@ public class PdxType {
   /**
    * Gets the value of the diskStoreName property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getDiskStoreName() {
@@ -199,9 +190,8 @@ public class PdxType {
   /**
    * Sets the value of the diskStoreName property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setDiskStoreName(String value) {
@@ -244,9 +234,8 @@ public class PdxType {
     /**
      * Gets the value of the className property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getClassName() {
@@ -256,9 +245,8 @@ public class PdxType {
     /**
      * Sets the value of the className property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setClassName(String value) {

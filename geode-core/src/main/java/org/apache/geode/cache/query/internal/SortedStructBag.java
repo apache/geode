@@ -40,8 +40,6 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param nullAtStart
    */
   public SortedStructBag(Comparator<Object[]> comparator, boolean nullAtStart) {
     super(comparator, nullAtStart);
@@ -51,9 +49,6 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param elementType
-   * @param nullAtStart
    */
   public SortedStructBag(Comparator<Object[]> comparator, StructType elementType,
       boolean nullAtStart) {
@@ -63,10 +58,6 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param elementType
-   * @param stats
-   * @param nullAtStart
    */
   public SortedStructBag(Comparator<Object[]> comparator, ObjectType elementType,
       CachePerfStats stats, boolean nullAtStart) {
@@ -77,9 +68,6 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param stats
-   * @param nullAtStart
    */
   public SortedStructBag(Comparator<Object[]> comparator, CachePerfStats stats,
       boolean nullAtStart) {

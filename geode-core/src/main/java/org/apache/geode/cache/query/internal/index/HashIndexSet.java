@@ -177,8 +177,6 @@ public class HashIndexSet implements Set {
   /**
    * Locates index slot of object using the provided key (in this case we are passing in old key)
    *
-   * @param key
-   * @param obj
    * @return the indexSlot of the given key/object combination
    */
   protected int index(Object key, Object obj, int ignoreThisSlot) {
@@ -261,10 +259,8 @@ public class HashIndexSet implements Set {
   /**
    * Add an object using the hash value of the provided indexKey
    *
-   * @param indexKey
    * @param obj the object to add
    * @return true if object has been added
-   * @throws TypeMismatchException
    */
   public synchronized int add(Object indexKey, Object obj) throws TypeMismatchException {
     if (indexKey == null) {
@@ -456,7 +452,6 @@ public class HashIndexSet implements Set {
   /**
    *
    * @param key assumed to not be null, rather needs to be NULL token
-   * @param obj
    * @param newIndexSlot if inplace modification occurs with out having a reversemap we end up
    *        scanning the entire index. We want to remove the region entry from the index slot but
    *        not the newly added (correct) slot. Rather only the "old/wrong" slot

@@ -69,7 +69,6 @@ public class CqStateImpl implements CqState {
   /**
    * Sets the state of CQ.
    *
-   * @param state
    */
   public void setState(int state) {
     this.state = state;

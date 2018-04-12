@@ -145,7 +145,6 @@ public class CompiledComparison extends AbstractCompiledValue
    * are iter operands. In such cases , the iter operands will be evaluated while expanding/cutting
    * down the index resultset
    *
-   * @return SelectResults
    */
   @Override
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults,

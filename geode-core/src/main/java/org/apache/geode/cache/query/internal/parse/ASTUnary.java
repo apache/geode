@@ -28,7 +28,6 @@ public class ASTUnary extends GemFireAST {
 
   /**
    *
-   * @param t
    */
   public ASTUnary(Token t) {
     super(t);

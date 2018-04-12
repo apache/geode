@@ -267,21 +267,16 @@ public interface QueryObserver {
 
   /**
    *
-   * @param preProjectionAppliedResult
    */
   void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionAppliedResult);
 
   /**
    *
-   * @param sr1
-   * @param sr2
    */
   void invokedQueryUtilsUnion(SelectResults sr1, SelectResults sr2);
 
   /**
    *
-   * @param sr1
-   * @param sr2
    */
   void invokedQueryUtilsIntersection(SelectResults sr1, SelectResults sr2);
 

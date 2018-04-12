@@ -70,21 +70,18 @@ public interface GatewaySenderFactory {
   /**
    * Sets the disk store name for overflow or persistence
    *
-   * @param name
    */
   GatewaySenderFactory setDiskStoreName(String name);
 
   /**
    * Sets the number of dispatcher thread. Default number of dispatcher threads is 5.
    *
-   * @param numThreads
    */
   GatewaySenderFactory setDispatcherThreads(int numThreads);
 
   /**
    * Sets <code>OrderPolicy</code> for this GatewaySender. Default order policy is KEY.
    *
-   * @param policy
    */
   GatewaySenderFactory setOrderPolicy(OrderPolicy policy);
 
@@ -161,14 +158,12 @@ public interface GatewaySenderFactory {
   /**
    * Removes the provided <code>GatewayEventFilter</code> from this GatewaySender.
    *
-   * @param filter
    */
   GatewaySenderFactory removeGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Removes the provided <code>GatewayTransportFilter</code> from this GatewaySender.
    *
-   * @param filter
    */
   GatewaySenderFactory removeGatewayTransportFilter(GatewayTransportFilter filter);
 

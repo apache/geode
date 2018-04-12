@@ -79,7 +79,6 @@ public class AuthenticateUserOp {
    * @param location The ServerLocation instance whose connection instance will be used to perform
    *        the operation.
    * @param pool The connection pool to use for this operation.
-   * @param securityProps
    * @return Object unique user-id.
    */
   public static Object executeOn(ServerLocation location, ExecutablePool pool,

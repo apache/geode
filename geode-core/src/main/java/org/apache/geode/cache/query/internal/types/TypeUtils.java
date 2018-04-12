@@ -93,10 +93,6 @@ public class TypeUtils implements OQLLexerTokenTypes {
 
     /**
      *
-     * @param temporalResult
-     * @param comparator
-     * @return
-     * @throws IllegalArgumentException
      */
     protected Boolean applyComparator(int temporalResult, int comparator)
         throws IllegalArgumentException {
@@ -121,10 +117,6 @@ public class TypeUtils implements OQLLexerTokenTypes {
 
     /**
      *
-     * @param object1Class
-     * @param object2Class
-     * @param comparator
-     * @return
      */
     public static ComparisonStrategy get(Class object1Class, Class object2Class, int comparator)
         throws TypeMismatchException {
@@ -159,12 +151,6 @@ public class TypeUtils implements OQLLexerTokenTypes {
     /**
      * Executes the comparison strategy.
      *
-     * @param object1
-     * @param object2
-     * @param comparator
-     * @return
-     * @throws TypeMismatchException
-     * @throws ClassCastException
      */
     public abstract Boolean execute(Object object1, Object object2, int comparator)
         throws TypeMismatchException, ClassCastException;
@@ -369,7 +355,6 @@ public class TypeUtils implements OQLLexerTokenTypes {
    * Return the {@link org.apache.geode.cache.query.types.ObjectType} corresponding to the specified
    * Class.
    *
-   * @param cls
    * @return the internal ObjectType implementation that represents the specified class.
    */
   public static ObjectType getObjectType(Class cls) {
@@ -403,7 +388,6 @@ public class TypeUtils implements OQLLexerTokenTypes {
    * Return a fixed {@link org.apache.geode.cache.query.types.ObjectType} representing a Region
    * Entry.
    *
-   * @param rgn
    * @return the internal ObjectType implementation that represents a the region entry class.
    */
   public static ObjectType getRegionEntryType(Region rgn) {
@@ -414,9 +398,6 @@ public class TypeUtils implements OQLLexerTokenTypes {
   /**
    * Compare two booleans.
    *
-   * @param obj1
-   * @param obj2
-   * @param compOp
    * @return a boolean indicating the result of applying the comparison operator on the arguments.
    * @throws TypeMismatchException When either one of the arguments is not a Boolean, or the
    *         comparison operator is not supported.
@@ -442,9 +423,6 @@ public class TypeUtils implements OQLLexerTokenTypes {
 
   /**
    *
-   * @param obj1
-   * @param obj2
-   * @param compOp
    * @return a Boolean, or null if UNDEFINED.
    */
   private static Boolean nullCompare(Object obj1, Object obj2, int compOp) {
@@ -478,13 +456,9 @@ public class TypeUtils implements OQLLexerTokenTypes {
   /**
    * Compares two objects using the operator
    *
-   * @param obj1
-   * @param obj2
-   * @param compOp
    * @return boolean;<br>
    *         {@link Undefined} if either of the operands is {@link Undefined} or if either of the
    *         operands is Null and operator is other than == or !=
-   * @throws TypeMismatchException
    */
   public static Object compare(Object obj1, Object obj2, int compOp) throws TypeMismatchException {
     // Check for nulls first.

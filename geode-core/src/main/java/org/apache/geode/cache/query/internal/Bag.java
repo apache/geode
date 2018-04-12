@@ -345,8 +345,6 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
   /**
    *
-   * @param out
-   * @throws IOException
    */
   void writeNumNulls(DataOutput out) throws IOException {
     out.writeInt(this.numNulls);
@@ -354,8 +352,6 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
   /**
    *
-   * @param in
-   * @throws IOException
    */
   void readNumNulls(DataInput in) throws IOException {
     this.numNulls = in.readInt();
