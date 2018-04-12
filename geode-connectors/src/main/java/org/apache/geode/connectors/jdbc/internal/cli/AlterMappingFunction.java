@@ -21,18 +21,18 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingNotFoundException;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.management.internal.cli.functions.CliFunctionExecutionResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 @Experimental
 public class AlterMappingFunction
-    extends JdbcCliFunction<ConnectorService.RegionMapping, CliFunctionExecutionResult> {
+    extends JdbcCliFunction<ConnectorService.RegionMapping, CliFunctionResult> {
 
   AlterMappingFunction() {
     super();
   }
 
   @Override
-  CliFunctionExecutionResult getFunctionResult(JdbcConnectorService service,
+  CliFunctionResult getFunctionResult(JdbcConnectorService service,
       FunctionContext<ConnectorService.RegionMapping> context) throws Exception {
     ConnectorService.RegionMapping mapping = context.getArguments();
     ConnectorService.RegionMapping existingMapping =
@@ -47,7 +47,7 @@ public class AlterMappingFunction
     service.replaceRegionMapping(alteredMapping);
 
     // output
-    return new CliFunctionExecutionResult(context.getMemberName(), alteredMapping, null);
+    return new CliFunctionResult(context.getMemberName(), alteredMapping, null);
   }
 
   ConnectorService.RegionMapping alterRegionMapping(ConnectorService.RegionMapping regionMapping,
@@ -65,9 +65,9 @@ public class AlterMappingFunction
     if (!regionMapping.isFieldMappingModified()) {
       fieldMappings = existingMapping.getFieldMapping();
     }
-    ConnectorService.RegionMapping alteredMapping =
-        new ConnectorService.RegionMapping(existingMapping.getRegionName(), pdxClassName, table,
-            connectionName, keyInValue, fieldMappings);
+    ConnectorService.RegionMapping alteredMapping = new ConnectorService.RegionMapping(
+        existingMapping.getRegionName(), pdxClassName, table, connectionName, keyInValue);
+    alteredMapping.getFieldMapping().addAll(fieldMappings);
     return alteredMapping;
   }
 

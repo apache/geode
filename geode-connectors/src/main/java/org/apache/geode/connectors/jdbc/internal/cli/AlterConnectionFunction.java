@@ -19,18 +19,18 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigNotFoundException;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.management.internal.cli.functions.CliFunctionExecutionResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 @Experimental
 public class AlterConnectionFunction
-    extends JdbcCliFunction<ConnectorService.Connection, CliFunctionExecutionResult> {
+    extends JdbcCliFunction<ConnectorService.Connection, CliFunctionResult> {
 
   AlterConnectionFunction() {
     super();
   }
 
   @Override
-  CliFunctionExecutionResult getFunctionResult(JdbcConnectorService service,
+  CliFunctionResult getFunctionResult(JdbcConnectorService service,
       FunctionContext<ConnectorService.Connection> context) throws Exception {
     ConnectorService.Connection connectionConfig = context.getArguments();
     ConnectorService.Connection existingConfig =
@@ -45,7 +45,7 @@ public class AlterConnectionFunction
         alterConnectionConfig(connectionConfig, existingConfig);
     service.replaceConnectionConfig(alteredConfig);
 
-    return new CliFunctionExecutionResult(context.getMemberName(), alteredConfig, null);
+    return new CliFunctionResult(context.getMemberName(), alteredConfig, null);
   }
 
   /**

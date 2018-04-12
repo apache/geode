@@ -20,7 +20,6 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.CliFunctionExecutionResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
@@ -213,35 +212,11 @@ public class ResultBuilder {
     return ResultBuilder.buildResult(tabularData);
   }
 
-  public static CommandResult buildExecutionResult(List<CliFunctionExecutionResult> functionResults,
-      String header, String footer) {
-    TabularResultData tabularData = ResultBuilder.createTabularResultData();
-    boolean success = false;
-    for (CliFunctionExecutionResult result : functionResults) {
-      tabularData.accumulate("Member", result.getMemberName());
-      tabularData.accumulate("Status", result.getMessage());
-      // if one member returns back successful results, the command results in success
-      if (result.isSuccessful()) {
-        success = true;
-      }
-    }
-
-    if (header != null) {
-      tabularData.setHeader(header);
-    }
-    if (footer != null) {
-      tabularData.setFooter(footer);
-    }
-
-    tabularData.setStatus(success ? Result.Status.OK : Result.Status.ERROR);
-    return ResultBuilder.buildResult(tabularData);
-  }
-
 
   /**
    * Prepare Result from JSON. Type of result is expected to there in the JSON as 'contentType'
    * which should be one of {@link ResultData#TYPE_TABULAR}, {@link ResultData#TYPE_COMPOSITE},
-   * {@link ResultData#TYPE_INFO}, {@link ResultData#TYPE_ERROR}, {@link ResultData#TYPE_OBJECT}.
+   * {@link ResultData#TYPE_INFO}, {@link ResultData#TYPE_ERROR}.
    *
    * @param gfJsonObject GemFire JSON Object to use to prepare Result
    */

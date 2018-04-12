@@ -28,7 +28,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
-import org.apache.geode.management.internal.cli.functions.CliFunctionExecutionResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -74,12 +74,8 @@ public class AlterConnectionCommand extends GfshCommand {
           help = ALTER_CONNECTION__PARAMS__HELP) String[] params) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
-    ConnectorService.Connection newConnection = new ConnectorService.Connection();
-    newConnection.setUser(user);
-    newConnection.setPassword(password);
-    newConnection.setUrl(url);
-    newConnection.setName(name);
-    newConnection.setParameters(params);
+    ConnectorService.Connection newConnection =
+        new ConnectorService.Connection(name, url, user, password, params);
 
     ClusterConfigurationService ccService = getConfigurationService();
 
@@ -98,20 +94,19 @@ public class AlterConnectionCommand extends GfshCommand {
     }
 
     // action
-    List<CliFunctionExecutionResult> results = executeAndGetFunctionExecutionResult(
-        new AlterConnectionFunction(), newConnection, targetMembers);
+    List<CliFunctionResult> results =
+        executeAndGetFunctionResult(new AlterConnectionFunction(), newConnection, targetMembers);
 
     // update the cc with the merged connection returned from the server
     boolean persisted = false;
-    if (ccService != null
-        && results.stream().filter(CliFunctionExecutionResult::isSuccessful).count() > 0) {
+    if (ccService != null && results.stream().filter(CliFunctionResult::isSuccessful).count() > 0) {
       ConnectorService service =
           ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
       if (service == null) {
         service = new ConnectorService();
       }
-      CliFunctionExecutionResult successResult =
-          results.stream().filter(CliFunctionExecutionResult::isSuccessful).findAny().get();
+      CliFunctionResult successResult =
+          results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
       ConnectorService.Connection mergedConnection =
           (ConnectorService.Connection) successResult.getResultObject();
       ccService.removeFromList(service.getConnection(), name);
@@ -120,7 +115,7 @@ public class AlterConnectionCommand extends GfshCommand {
       persisted = true;
     }
 
-    CommandResult commandResult = ResultBuilder.buildExecutionResult(results, EXPERIMENTAL, null);
+    CommandResult commandResult = ResultBuilder.buildResult(results, EXPERIMENTAL, null);
     commandResult.setCommandPersisted(persisted);
     return commandResult;
   }

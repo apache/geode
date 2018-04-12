@@ -50,9 +50,7 @@ public class JdbcConnectorServiceTest {
     config = mock(ConnectorService.Connection.class);
     mapping = mock(ConnectorService.RegionMapping.class);
     config2 = mock(ConnectorService.Connection.class);
-    Map<String, String> parameters = new HashMap<>();
-    parameters.put("key1", "value1");
-    parameters.put("key2", "value2");
+    String[] parameters = new String[] {"key1:value1", "key2:value2"};
     configToAlter = new ConnectorService.Connection(TEST_CONFIG_NAME, "originalUrl", "originalUser",
         "originalPassword", parameters);
 

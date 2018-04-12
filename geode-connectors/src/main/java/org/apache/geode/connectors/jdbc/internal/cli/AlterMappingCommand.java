@@ -28,7 +28,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
-import org.apache.geode.management.internal.cli.functions.CliFunctionExecutionResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -102,20 +102,19 @@ public class AlterMappingCommand extends InternalGfshCommand {
     }
 
     // action
-    List<CliFunctionExecutionResult> results =
-        executeAndGetFunctionExecutionResult(new AlterMappingFunction(), newMapping, targetMembers);
+    List<CliFunctionResult> results =
+        executeAndGetFunctionResult(new AlterMappingFunction(), newMapping, targetMembers);
 
     boolean persisted = false;
     // update the cc with the merged connection returned from the server
-    if (ccService != null
-        && results.stream().filter(CliFunctionExecutionResult::isSuccessful).count() > 0) {
+    if (ccService != null && results.stream().filter(CliFunctionResult::isSuccessful).count() > 0) {
       ConnectorService service =
           ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
       if (service == null) {
         service = new ConnectorService();
       }
-      CliFunctionExecutionResult successResult =
-          results.stream().filter(CliFunctionExecutionResult::isSuccessful).findAny().get();
+      CliFunctionResult successResult =
+          results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
       ConnectorService.RegionMapping mergedMapping =
           (ConnectorService.RegionMapping) successResult.getResultObject();
       ccService.removeFromList(service.getRegionMapping(), connectionName);
@@ -124,7 +123,7 @@ public class AlterMappingCommand extends InternalGfshCommand {
       persisted = true;
     }
 
-    CommandResult commandResult = ResultBuilder.buildExecutionResult(results, EXPERIMENTAL, null);
+    CommandResult commandResult = ResultBuilder.buildResult(results, EXPERIMENTAL, null);
     commandResult.setCommandPersisted(persisted);
     return commandResult;
   }

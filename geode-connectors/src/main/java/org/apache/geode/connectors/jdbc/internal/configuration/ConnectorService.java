@@ -270,15 +270,6 @@ public class ConnectorService implements CacheElement {
       setParameters(parameters);
     }
 
-    public Connection(String name, String url, String user, String password,
-        Map<String, String> parameterMap) {
-      this.name = name;
-      this.url = url;
-      this.user = user;
-      this.password = password;
-      setParameters(parameterMap);
-    }
-
     /**
      * Gets the value of the name property.
      *
@@ -529,36 +520,6 @@ public class ConnectorService implements CacheElement {
       this.primaryKeyInValue = primaryKeyInValue;
     }
 
-    public RegionMapping(String regionName, String pdxClassName, String tableName,
-        String connectionConfigName, Boolean primaryKeyInValue, List<FieldMapping> fieldMappings) {
-      this.regionName = regionName;
-      this.pdxClassName = pdxClassName;
-      this.tableName = tableName;
-      this.connectionConfigName = connectionConfigName;
-      this.primaryKeyInValue = primaryKeyInValue;
-      this.fieldMapping = fieldMappings;
-      if (fieldMappings != null) {
-        fieldMappingModified = true;
-      }
-    }
-
-    @TestingOnly
-    public RegionMapping(String regionName, String pdxClassName, String tableName,
-        String connectionConfigName, Boolean primaryKeyInValue,
-        Map<String, String> configuredFieldToColumnMap) {
-      this.regionName = regionName;
-      this.pdxClassName = pdxClassName;
-      this.tableName = tableName;
-      this.connectionConfigName = connectionConfigName;
-      this.primaryKeyInValue = primaryKeyInValue;
-      if (configuredFieldToColumnMap != null) {
-        this.fieldMapping = configuredFieldToColumnMap.keySet().stream()
-            .map(key -> new FieldMapping(key, configuredFieldToColumnMap.get(key)))
-            .collect(Collectors.toList());
-        this.fieldMappingModified = true;
-      }
-    }
-
     public void setFieldMapping(String[] mappings) {
       if (mappings != null) {
         this.fieldMapping =
@@ -778,6 +739,10 @@ public class ConnectorService implements CacheElement {
           : that.connectionConfigName != null) {
         return false;
       }
+      if (fieldMapping != null ? !fieldMapping.equals(that.fieldMapping)
+          : that.fieldMapping != null) {
+        return false;
+      }
       return true;
     }
 
@@ -865,6 +830,24 @@ public class ConnectorService implements CacheElement {
         this.columnName = value;
       }
 
+      @Override
+      public boolean equals(Object o) {
+        if (this == o)
+          return true;
+        if (o == null || getClass() != o.getClass())
+          return false;
+        FieldMapping that = (FieldMapping) o;
+        return Objects.equals(fieldName, that.fieldName)
+            && Objects.equals(columnName, that.columnName);
+      }
+
+      @Override
+      public int hashCode() {
+        int result = fieldName != null ? fieldName.hashCode() : 0;
+        result = 31 * result + (columnName != null ? columnName.hashCode() : 0);
+
+        return result;
+      }
     }
   }
 }

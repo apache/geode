@@ -74,11 +74,9 @@ public class AlterMappingFunctionTest {
 
     regionMapping = new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null);
     existingMapping = new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null);
-    Map<String, String> mappings = new HashMap<>();
-    mappings.put("field1", "column1");
-    mappings.put("field2", "column2");
-    mappingToAlter = new ConnectorService.RegionMapping(REGION_NAME, "pdxClass", "myTable",
-        "connection", true, mappings);
+    mappingToAlter =
+        new ConnectorService.RegionMapping(REGION_NAME, "pdxClass", "myTable", "connection", true);
+    mappingToAlter.setFieldMapping(new String[] {"field1:column1", "field2:column2"});
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
@@ -218,11 +216,10 @@ public class AlterMappingFunctionTest {
 
   @Test
   public void alterRegionMappingFieldMappings() {
-    Map<String, String> newMappings = new HashMap<>();
-    newMappings.put("field5", "column5");
-    newMappings.put("field6", "column6");
     ConnectorService.RegionMapping newConfigValues =
-        new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null, newMappings);
+        new ConnectorService.RegionMapping(REGION_NAME, null, null, null, null);
+    newConfigValues.setFieldMapping(new String[] {"field5:column5", "field6:column6"});
+
 
     ConnectorService.RegionMapping alteredConfig =
         function.alterRegionMapping(newConfigValues, mappingToAlter);
@@ -235,10 +232,10 @@ public class AlterMappingFunctionTest {
     List<ConnectorService.RegionMapping.FieldMapping> fieldMappings =
         alteredConfig.getFieldMapping();
     assertThat(fieldMappings).hasSize(2);
-    assertThat(fieldMappings.get(0).getFieldName()).isEqualTo("field6");
-    assertThat(fieldMappings.get(0).getColumnName()).isEqualTo("column6");
-    assertThat(fieldMappings.get(1).getFieldName()).isEqualTo("field5");
-    assertThat(fieldMappings.get(1).getColumnName()).isEqualTo("column5");
+    assertThat(fieldMappings)
+        .contains(new ConnectorService.RegionMapping.FieldMapping("field5", "column5"));
+    assertThat(fieldMappings)
+        .contains(new ConnectorService.RegionMapping.FieldMapping("field6", "column6"));
   }
 
   @Test

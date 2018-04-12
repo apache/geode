@@ -36,7 +36,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.functions.CliFunctionExecutionResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -44,8 +44,8 @@ import org.apache.geode.test.junit.rules.GfshParserRule;
 public class AlterConnectionCommandTest {
   public static final String COMMAND = "alter jdbc-connection --name=name ";
   private AlterConnectionCommand command;
-  private List<CliFunctionExecutionResult> results;
-  private CliFunctionExecutionResult result;
+  private List<CliFunctionResult> results;
+  private CliFunctionResult result;
   private ClusterConfigurationService ccService;
 
   @ClassRule
@@ -56,11 +56,11 @@ public class AlterConnectionCommandTest {
     results = new ArrayList<>();
     command = spy(AlterConnectionCommand.class);
     doReturn(Collections.EMPTY_SET).when(command).getMembers(any(), any());
-    doReturn(results).when(command).executeAndGetFunctionExecutionResult(any(), any(), any());
-    result = mock(CliFunctionExecutionResult.class);
+    doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
+    result = mock(CliFunctionResult.class);
     when(result.isSuccessful()).thenReturn(true);
-    when(result.getMemberName()).thenReturn("memberName");
-    when(result.getMessage()).thenReturn("message");
+    when(result.getMemberIdOrName()).thenReturn("memberName");
+    when(result.getStatus()).thenReturn("message");
     ccService = mock(InternalClusterConfigurationService.class);
     doReturn(ccService).when(command).getConfigurationService();
   }
@@ -94,14 +94,14 @@ public class AlterConnectionCommandTest {
     doReturn(null).when(command).getConfigurationService();
     results.add(result);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess();
-    verify(command).executeAndGetFunctionExecutionResult(any(), any(), any());
+    verify(command).executeAndGetFunctionResult(any(), any(), any());
   }
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("connection with name 'name' does not exist.");
-    verify(command, times(0)).executeAndGetFunctionExecutionResult(any(), any(), any());
+    verify(command, times(0)).executeAndGetFunctionResult(any(), any(), any());
   }
 
   @Test
@@ -110,7 +110,7 @@ public class AlterConnectionCommandTest {
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("connection with name 'name' does not exist.");
-    verify(command, times(0)).executeAndGetFunctionExecutionResult(any(), any(), any());
+    verify(command, times(0)).executeAndGetFunctionResult(any(), any(), any());
   }
 
   @Test
@@ -126,7 +126,7 @@ public class AlterConnectionCommandTest {
     results.add(result);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError();
-    verify(command).executeAndGetFunctionExecutionResult(any(), any(), any());
+    verify(command).executeAndGetFunctionResult(any(), any(), any());
   }
 
   @Test
@@ -142,6 +142,6 @@ public class AlterConnectionCommandTest {
     results.add(result);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess();
-    verify(command).executeAndGetFunctionExecutionResult(any(), any(), any());
+    verify(command).executeAndGetFunctionResult(any(), any(), any());
   }
 }

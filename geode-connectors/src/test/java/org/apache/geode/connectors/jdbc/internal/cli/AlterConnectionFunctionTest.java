@@ -73,9 +73,7 @@ public class AlterConnectionFunctionTest {
         new ConnectorService.Connection(CONNECTION_NAME, null, null, null, (String) null);
     existingConfig =
         new ConnectorService.Connection(CONNECTION_NAME, null, null, null, (String) null);
-    Map<String, String> parameters = new HashMap<>();
-    parameters.put("key1", "value1");
-    parameters.put("key2", "value2");
+    String[] parameters = {"key1:value1", "key2:value2"};
     configToAlter = new ConnectorService.Connection(CONNECTION_NAME, "originalUrl", "originalUser",
         "originalPassword", parameters);
 
@@ -188,9 +186,7 @@ public class AlterConnectionFunctionTest {
 
   @Test
   public void alterConnectionConfigParameters() {
-    Map<String, String> newParameters = new HashMap<>();
-    newParameters.put("key1", "anotherValue1");
-    newParameters.put("key8", "value8");
+    String[] newParameters = new String[] {"key1:anotherValue1", "key8:value8"};
     ConnectorService.Connection newConfigValues =
         new ConnectorService.Connection(CONNECTION_NAME, null, null, null, newParameters);
 

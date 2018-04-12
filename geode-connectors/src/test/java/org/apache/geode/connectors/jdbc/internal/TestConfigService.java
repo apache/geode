@@ -56,7 +56,7 @@ public class TestConfigService {
   private static ConnectorService.RegionMapping createRegionMapping(String pdxClassName,
       boolean primaryKeyInValue) {
     return new ConnectorService.RegionMapping(REGION_NAME, pdxClassName, REGION_TABLE_NAME,
-        CONNECTION_CONFIG_NAME, primaryKeyInValue, Collections.emptyMap());
+        CONNECTION_CONFIG_NAME, primaryKeyInValue);
   }
 
   private static ConnectorService.Connection createConnectionConfig(String connectionUrl) {
