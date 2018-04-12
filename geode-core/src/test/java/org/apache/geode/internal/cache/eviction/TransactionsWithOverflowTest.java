@@ -33,7 +33,6 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.VMLRURegionMap;
-import org.apache.geode.pdx.PdxInitializationException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**

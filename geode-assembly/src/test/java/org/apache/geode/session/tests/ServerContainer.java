@@ -29,7 +29,6 @@ import org.codehaus.cargo.container.State;
 import org.codehaus.cargo.container.configuration.ConfigurationType;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.deployable.WAR;
-import org.codehaus.cargo.container.jetty.JettyPropertySet;
 import org.codehaus.cargo.container.property.GeneralPropertySet;
 import org.codehaus.cargo.container.property.LoggingLevel;
 import org.codehaus.cargo.container.property.ServletPropertySet;

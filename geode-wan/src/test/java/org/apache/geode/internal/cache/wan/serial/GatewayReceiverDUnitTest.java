@@ -15,8 +15,6 @@
 package org.apache.geode.internal.cache.wan.serial;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -25,7 +23,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -34,7 +31,6 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;

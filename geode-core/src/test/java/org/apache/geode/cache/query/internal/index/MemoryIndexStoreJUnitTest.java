@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

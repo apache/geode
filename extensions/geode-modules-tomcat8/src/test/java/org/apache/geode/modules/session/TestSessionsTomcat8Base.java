@@ -30,8 +30,6 @@ import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
 import org.apache.catalina.core.StandardWrapper;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;

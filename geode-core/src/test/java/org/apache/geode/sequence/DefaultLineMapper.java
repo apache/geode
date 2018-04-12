@@ -17,7 +17,6 @@ package org.apache.geode.sequence;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.geode.sequence.LineMapper;
 
 /**
  * A lifeline mapper that just returns a shortened version of a member id.

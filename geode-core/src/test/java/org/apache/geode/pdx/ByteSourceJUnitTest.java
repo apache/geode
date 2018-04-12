@@ -35,7 +35,6 @@ import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({IntegrationTest.class, SerializationTest.class})
 public class ByteSourceJUnitTest {

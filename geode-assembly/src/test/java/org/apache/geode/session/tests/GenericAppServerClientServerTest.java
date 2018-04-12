@@ -28,10 +28,8 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.modules.session.functions.GetSessionCount;
-import org.apache.geode.modules.util.RegionHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 

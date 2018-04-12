@@ -17,13 +17,8 @@ package org.apache.geode.cache.execute;
 
 import static org.junit.Assert.*;
 
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.Serializable;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +27,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.util.test.TestUtil;
 

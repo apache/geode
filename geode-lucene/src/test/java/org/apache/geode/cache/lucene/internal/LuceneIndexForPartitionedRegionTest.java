@@ -17,8 +17,6 @@ package org.apache.geode.cache.lucene.internal;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Properties;
-
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;

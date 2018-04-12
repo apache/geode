@@ -20,7 +20,6 @@ import java.util.Properties;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;

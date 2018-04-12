@@ -32,7 +32,6 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)

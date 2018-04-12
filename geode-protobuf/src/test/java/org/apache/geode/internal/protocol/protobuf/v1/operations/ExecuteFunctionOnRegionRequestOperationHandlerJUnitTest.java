@@ -14,13 +14,9 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,12 +41,9 @@ import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**

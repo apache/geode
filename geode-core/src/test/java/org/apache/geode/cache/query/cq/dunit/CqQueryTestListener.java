@@ -15,10 +15,8 @@
 package org.apache.geode.cache.query.cq.dunit;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -27,10 +25,8 @@ import org.awaitility.Awaitility;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqStatusListener;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 

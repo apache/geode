@@ -17,13 +17,10 @@ package org.apache.geode.internal.util;
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +36,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.ExportStackTraceCommand;
 import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
@@ -48,7 +44,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category(DistributedTest.class)
 public class PluckStacksDUnitTest extends JUnit4CacheTestCase {

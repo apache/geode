@@ -18,14 +18,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.LocalDataSet;
-import org.apache.geode.internal.cache.PartitionedRegion;
 
 public class LocalDataSetFunction extends FunctionAdapter {
 
