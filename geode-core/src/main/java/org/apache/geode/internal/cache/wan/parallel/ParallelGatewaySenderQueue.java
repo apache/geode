@@ -1112,7 +1112,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   // This method may need synchronization in case it is used by
   // ConcurrentParallelGatewaySender
-  public void addRemovedEvent(PartitionedRegion prQ, int bucketId, Object key) {
+  protected void addRemovedEvent(PartitionedRegion prQ, int bucketId, Object key) {
     StoppableReentrantLock lock = buckToDispatchLock;
     if (lock != null) {
       lock.lock();
@@ -1130,6 +1130,21 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       } finally {
         lock.unlock();
       }
+    }
+  }
+
+  public void sendQueueRemovalMesssageForDroppedEvent(PartitionedRegion prQ, int bucketId,
+      Object key) {
+    final HashMap<String, Map<Integer, List>> temp = new HashMap<String, Map<Integer, List>>();
+    Map bucketIdToDispatchedKeys = new ConcurrentHashMap();
+    temp.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
+    addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
+    Set<InternalDistributedMember> recipients =
+        removalThread.getAllRecipients(sender.getCache(), temp);
+    if (!recipients.isEmpty()) {
+      ParallelQueueRemovalMessage pqrm = new ParallelQueueRemovalMessage(temp);
+      pqrm.setRecipients(recipients);
+      sender.getCache().getInternalDistributedSystem().getDistributionManager().putOutgoing(pqrm);
     }
   }
 
