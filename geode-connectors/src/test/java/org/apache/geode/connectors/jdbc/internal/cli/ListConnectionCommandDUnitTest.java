@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand.LIST_JDBC_CONNECTION;
 import static org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand.LIST_OF_CONNECTIONS;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
@@ -25,10 +24,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
-import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -65,10 +60,12 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void listsOneConnection() throws Exception {
-    server.invoke(() -> createOneConnection());
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
+  public void listsOneConnection() {
+    String conn1 =
+        "create jdbc-connection --name=name --url=url --user=user --password=pass --params=param1:value1,param2:value2";
+    gfsh.executeAndAssertThat(conn1).statusIsSuccess();
 
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
     commandResultAssert.statusIsSuccess();
@@ -77,10 +74,18 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void listsMultipleConnections() throws Exception {
-    server.invoke(() -> createNConnections(3));
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
+  public void listsMultipleConnections() {
+    String conn1 =
+        "create jdbc-connection --name=name-1 --url=url --user=user --password=pass --params=param1:value1,param2:value2";
+    gfsh.executeAndAssertThat(conn1).statusIsSuccess();
+    String conn2 =
+        "create jdbc-connection --name=name-2 --url=url --user=user --password=pass --params=param1:value1,param2:value2";
+    gfsh.executeAndAssertThat(conn2).statusIsSuccess();
+    String conn3 =
+        "create jdbc-connection --name=name-3 --url=url --user=user --password=pass --params=param1:value1,param2:value2";
+    gfsh.executeAndAssertThat(conn3).statusIsSuccess();
 
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
     commandResultAssert.statusIsSuccess();
@@ -90,7 +95,7 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void reportsNoConnectionsFound() throws Exception {
+  public void reportsNoConnectionsFound() {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
@@ -98,24 +103,4 @@ public class ListConnectionCommandDUnitTest implements Serializable {
     commandResultAssert.statusIsSuccess();
     commandResultAssert.containsOutput("No connections found");
   }
-
-  private void createOneConnection() throws ConnectionConfigExistsException {
-    InternalCache cache = ClusterStartupRule.getCache();
-    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-
-    service.createConnectionConfig(new ConnectionConfigBuilder().withName(connectionName).build());
-
-    assertThat(service.getConnectionConfig(connectionName)).isNotNull();
-  }
-
-  private void createNConnections(int N) throws ConnectionConfigExistsException {
-    InternalCache cache = ClusterStartupRule.getCache();
-    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    for (int i = 1; i <= N; i++) {
-      String name = connectionName + "-" + i;
-      service.createConnectionConfig(new ConnectionConfigBuilder().withName(name).build());
-      assertThat(service.getConnectionConfig(name)).isNotNull();
-    }
-  }
-
 }

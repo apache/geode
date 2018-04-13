@@ -14,17 +14,13 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
@@ -48,26 +44,21 @@ public class ListMappingCommand extends InternalGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public Result listMapping() {
 
-    // input
-    Set<DistributedMember> targetMembers = getMembers(null, null);
-    if (targetMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+    ClusterConfigurationService ccService = getConfigurationService();
+    if (ccService == null) {
+      return ResultBuilder.createInfoResult("cluster configuration service is not running");
     }
 
-    // action
-    ResultCollector<RegionMapping, List<RegionMapping[]>> resultCollector =
-        execute(new ListMappingFunction(), targetMembers.iterator().next());
+    ConnectorService service =
+        ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
+    if (service == null) {
+      return ResultBuilder.createInfoResult(EXPERIMENTAL + "\n" + NO_MAPPINGS_FOUND);
+    }
 
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean mappingsExist = fillTabularResultData(resultCollector, tabularResultData);
+    boolean mappingsExist = fillTabularResultData(service.getRegionMapping(), tabularResultData);
     return createResult(tabularResultData, mappingsExist);
-  }
-
-  ResultCollector<RegionMapping, List<RegionMapping[]>> execute(ListMappingFunction function,
-      DistributedMember targetMember) {
-    return (ResultCollector<RegionMapping, List<RegionMapping[]>>) executeFunction(function, null,
-        targetMember);
   }
 
   private Result createResult(TabularResultData tabularResultData, boolean mappingsExist) {
@@ -82,25 +73,11 @@ public class ListMappingCommand extends InternalGfshCommand {
   /**
    * Returns true if any connections exist
    */
-  private boolean fillTabularResultData(
-      ResultCollector<RegionMapping, List<RegionMapping[]>> resultCollector,
+  private boolean fillTabularResultData(List<ConnectorService.RegionMapping> mappings,
       TabularResultData tabularResultData) {
-    Set<RegionMapping> regionMappings = new HashSet<>();
-
-    for (Object resultObject : resultCollector.getResult()) {
-      if (resultObject instanceof RegionMapping[]) {
-        regionMappings.addAll(Arrays.asList((RegionMapping[]) resultObject));
-      } else if (resultObject instanceof Throwable) {
-        throw new IllegalStateException((Throwable) resultObject);
-      } else {
-        throw new IllegalStateException(resultObject.getClass().getName());
-      }
-    }
-
-    for (RegionMapping mapping : regionMappings) {
+    for (ConnectorService.RegionMapping mapping : mappings) {
       tabularResultData.accumulate(LIST_OF_MAPPINGS, mapping.getRegionName());
     }
-
-    return !regionMappings.isEmpty();
+    return !mappings.isEmpty();
   }
 }

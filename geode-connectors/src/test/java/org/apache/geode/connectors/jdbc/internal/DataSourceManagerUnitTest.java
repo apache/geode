@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -35,8 +36,8 @@ public class DataSourceManagerUnitTest {
   private JdbcDataSource dataSource;
   private JdbcDataSource dataSource2;
 
-  private ConnectionConfiguration connectionConfig;
-  private ConnectionConfiguration connectionConfig2;
+  private ConnectorService.Connection connectionConfig;
+  private ConnectorService.Connection connectionConfig2;
 
   @Before
   public void setup() throws Exception {
@@ -44,8 +45,10 @@ public class DataSourceManagerUnitTest {
     JdbcDataSourceFactory dataSourceFactory = mock(JdbcDataSourceFactory.class);
     when(dataSourceFactory.create(any())).thenReturn(dataSource);
     manager = new DataSourceManager(dataSourceFactory);
-    connectionConfig = new ConnectionConfiguration("dataSource1", "url", null, null, null);
-    connectionConfig2 = new ConnectionConfiguration("dataSource2", "url", null, null, null);
+    connectionConfig =
+        new ConnectorService.Connection("dataSource1", "url", null, null, (String[]) null);
+    connectionConfig2 =
+        new ConnectorService.Connection("dataSource2", "url", null, null, (String[]) null);
 
     dataSource2 = mock(JdbcDataSource.class);
     doThrow(new Exception()).when(dataSource2).close();

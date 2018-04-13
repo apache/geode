@@ -34,8 +34,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 
 import org.junit.Before;
@@ -45,11 +43,8 @@ import org.xml.sax.Attributes;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheXmlException;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -134,7 +129,7 @@ public class ElementTypeTest {
 
     CONNECTION.startElement(stack, attributes);
 
-    ConnectionConfiguration config = ((ConnectionConfigBuilder) stack.pop()).build();
+    ConnectorService.Connection config = (ConnectorService.Connection) stack.pop();
     assertThat(config.getName()).isEqualTo("connectionName");
     assertThat(config.getUrl()).isEqualTo("url");
     assertThat(config.getUser()).isEqualTo("username");
@@ -153,23 +148,20 @@ public class ElementTypeTest {
 
     CONNECTION.startElement(stack, attributes);
 
-    ConnectionConfiguration config = ((ConnectionConfigBuilder) stack.pop()).build();
+    ConnectorService.Connection config = (ConnectorService.Connection) stack.pop();
     assertThat(config.getName()).isEqualTo("connectionName");
     assertThat(config.getUrl()).isEqualTo("url");
     assertThat(config.getUser()).isNull();
     assertThat(config.getPassword()).isNull();
-    Map<String, String> expectedParams = new HashMap<>();
-    expectedParams.put("key1", "value1");
-    expectedParams.put("key2", "value2");
-    assertThat(config.getParameters()).isEqualTo(expectedParams);
+    assertThat(config.getParameters()).isEqualTo("key1:value1,key2:value2");
   }
 
   @Test
   public void endElementConnection() {
-    ConnectionConfigBuilder builder = mock(ConnectionConfigBuilder.class);
+    ConnectorService.Connection connection = mock(ConnectorService.Connection.class);
     JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
     stack.push(serviceConfiguration);
-    stack.push(builder);
+    stack.push(connection);
 
     CONNECTION.endElement(stack);
 
@@ -196,7 +188,7 @@ public class ElementTypeTest {
 
     ElementType.REGION_MAPPING.startElement(stack, attributes);
 
-    RegionMapping regionMapping = ((RegionMappingBuilder) stack.pop()).build();
+    ConnectorService.RegionMapping regionMapping = (ConnectorService.RegionMapping) stack.pop();
     assertThat(regionMapping.getRegionName()).isEqualTo("region");
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("connectionName");
     assertThat(regionMapping.getTableName()).isEqualTo("table");
@@ -206,10 +198,10 @@ public class ElementTypeTest {
 
   @Test
   public void endElementRegionMapping() {
-    RegionMappingBuilder builder = mock(RegionMappingBuilder.class);
+    ConnectorService.RegionMapping mapping = mock(ConnectorService.RegionMapping.class);
     JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
     stack.push(serviceConfiguration);
-    stack.push(builder);
+    stack.push(mapping);
 
     ElementType.REGION_MAPPING.endElement(stack);
 
@@ -227,28 +219,28 @@ public class ElementTypeTest {
 
   @Test
   public void startElementFieldMapping() {
-    RegionMappingBuilder builder = new RegionMappingBuilder();
-    stack.push(builder);
+    ConnectorService.RegionMapping mapping = new ConnectorService.RegionMapping();
+    stack.push(mapping);
     when(attributes.getValue(FIELD_NAME)).thenReturn("fieldName");
     when(attributes.getValue(COLUMN_NAME)).thenReturn("columnName");
 
     ElementType.FIELD_MAPPING.startElement(stack, attributes);
 
-    RegionMapping regionMapping = ((RegionMappingBuilder) stack.pop()).build();
-    assertThat(regionMapping.getColumnNameForField("fieldName", mock(TableMetaDataView.class)))
+    ConnectorService.RegionMapping mapping1 = (ConnectorService.RegionMapping) stack.pop();
+    assertThat(mapping1.getColumnNameForField("fieldName", mock(TableMetaDataView.class)))
         .isEqualTo("columnName");
   }
 
   @Test
   public void endElementFieldMapping() {
-    RegionMappingBuilder builder = mock(RegionMappingBuilder.class);
+    ConnectorService.RegionMapping mapping = mock(ConnectorService.RegionMapping.class);
     JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
     stack.push(serviceConfiguration);
-    stack.push(builder);
+    stack.push(mapping);
 
     ElementType.FIELD_MAPPING.endElement(stack);
 
     assertThat(stack.size()).isEqualTo(2);
-    verifyZeroInteractions(builder);
+    verifyZeroInteractions(mapping);
   }
 }
