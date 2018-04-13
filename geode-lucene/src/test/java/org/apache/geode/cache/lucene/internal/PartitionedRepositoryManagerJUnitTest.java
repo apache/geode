@@ -288,7 +288,6 @@ public class PartitionedRepositoryManagerJUnitTest {
     repoManager.getRepositories(ctx);
   }
 
-  @Ignore
   @Test
   public void queryOnlyWhenIndexIsAvailable() throws Exception {
     setUpMockBucket(0);
