@@ -1027,7 +1027,6 @@ public class WANTestBase extends DistributedTestCase {
   /**
    * Returns a Map that contains the count for number of bridge server and number of Receivers.
    *
-   * @return Map
    */
   public static Map getCacheServers() {
     List cacheServers = cache.getCacheServers();
@@ -2784,8 +2783,6 @@ public class WANTestBase extends DistributedTestCase {
    * remains below a specified limit value. This validation will suffice for testing of pause/stop
    * operations.
    *
-   * @param regionName
-   * @param regionSizeLimit
    */
   public static void validateRegionSizeRemainsSame(String regionName, final int regionSizeLimit) {
     final Region r = cache.getRegion(Region.SEPARATOR + regionName);
@@ -3353,7 +3350,6 @@ public class WANTestBase extends DistributedTestCase {
   /**
    * Test methods for sender operations
    *
-   * @param senderId
    */
   public static void verifySenderPausedState(String senderId) {
     GatewaySender sender = cache.getGatewaySender(senderId);

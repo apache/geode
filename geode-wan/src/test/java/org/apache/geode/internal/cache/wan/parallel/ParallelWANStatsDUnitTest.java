@@ -296,7 +296,6 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
    * 1 region and sender configured on local site and 1 region and a receiver configured on remote
    * site. Puts to the local region are in progress. Remote region is destroyed in the middle.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationWithRemoteRegionDestroy() throws Exception {

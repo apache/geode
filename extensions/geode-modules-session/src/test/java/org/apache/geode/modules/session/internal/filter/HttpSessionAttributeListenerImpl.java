@@ -18,9 +18,6 @@ package org.apache.geode.modules.session.internal.filter;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 
-/**
- *
- */
 public class HttpSessionAttributeListenerImpl extends AbstractListener
     implements HttpSessionAttributeListener {
 

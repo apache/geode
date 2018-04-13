@@ -29,9 +29,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-/**
- *
- */
 @Category({DistributedTest.class, WanTest.class})
 public class ParallelWANConflationDUnitTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
@@ -79,7 +76,6 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
    * conflation in batch. yet did find any way to ascertain that the vents in the batch will always
    * be conflated.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationBatchConflation() throws Exception {
