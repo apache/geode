@@ -14,10 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.json;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -305,6 +307,17 @@ public class GfJsonObject {
     } catch (JSONException e) {
       throw new GfJsonException(e.getMessage());
     }
+  }
+
+  public List<String> getArrayValues(String key) {
+    List<String> result = new ArrayList<>();
+    JSONArray jsonArray = jsonObject.getJSONArray(key);
+
+    for (int i = 0; i < jsonArray.length(); i++) {
+      result.add(jsonArray.getString(i));
+    }
+
+    return result;
   }
 
   private static Object extractInternalForGfJsonOrReturnSame(Object value) {

@@ -69,7 +69,7 @@ public class CreateDefinedIndexesCommandTest {
   public void noDefinitions() throws Exception {
     result = gfshParser.executeCommandWithInstance(command, "create defined indexes");
     assertThat(result.getStatus()).isEqualTo(OK);
-    assertThat(result.getContent().toString()).contains("No indexes defined");
+    assertThat(result.getContentAsString()).contains("No indexes defined");
   }
 
   @Test
@@ -79,7 +79,7 @@ public class CreateDefinedIndexesCommandTest {
     doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
     result = gfshParser.executeCommandWithInstance(command, "create defined indexes");
     assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getContent().toString()).contains("No Members Found");
+    assertThat(result.getContentAsString()).contains("No Members Found");
   }
 
   @Test
@@ -122,7 +122,7 @@ public class CreateDefinedIndexesCommandTest {
     assertThat(result.getStatus()).isEqualTo(OK);
     assertThat(result.failedToPersist()).isFalse();
     verify(command, Mockito.times(1)).persistClusterConfiguration(any(), any());
-    assertThat(result.getContent().toString()).contains("Indexes successfully created");
+    assertThat(result.getContentAsString()).contains("Indexes successfully created");
   }
 
   @Test
@@ -164,6 +164,6 @@ public class CreateDefinedIndexesCommandTest {
     // The command will receive 4 results from 2 members, but we need to persist only 2 (#regions)
     // of them.
     verify(command, Mockito.times(2)).persistClusterConfiguration(any(), any());
-    assertThat(result.getContent().toString()).contains("Indexes successfully created");
+    assertThat(result.getContentAsString()).contains("Indexes successfully created");
   }
 }
