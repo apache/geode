@@ -47,12 +47,13 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * Extracted from {@link PRQueryDistributedTest}.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLQueryTest.class})
 @SuppressWarnings("serial")
 public class PRQueryWithOrderByDistributedTest implements Serializable {
 
