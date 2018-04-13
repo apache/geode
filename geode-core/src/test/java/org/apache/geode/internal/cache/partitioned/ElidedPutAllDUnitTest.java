@@ -44,9 +44,6 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 
-/**
- *
- */
 @Category(DistributedTest.class)
 public class ElidedPutAllDUnitTest extends JUnit4CacheTestCase {
 

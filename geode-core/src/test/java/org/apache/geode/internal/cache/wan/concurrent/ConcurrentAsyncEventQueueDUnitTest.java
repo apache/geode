@@ -27,9 +27,6 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- *
- */
 @Category({DistributedTest.class, AEQTest.class})
 public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {
 

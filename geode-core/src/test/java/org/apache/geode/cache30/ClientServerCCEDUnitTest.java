@@ -112,7 +112,6 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
    * the same key in a region which, in the servers, has Scope.GLOBAL. There should be no conflation
    * and each operation should obtain a lock.
    *
-   * @throws Exception
    */
   @Test
   public void testClientEventsAreNotConflatedByGlobalRegionOnServer() throws Exception {

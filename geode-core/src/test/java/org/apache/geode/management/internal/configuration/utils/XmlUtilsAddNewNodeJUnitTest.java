@@ -91,8 +91,6 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>name</code> attribute, <code>region</code>. It should be added after other
    * <code>region</code> elements.
    *
-   * @throws Exception
-   * @throws XPathExpressionException
    * @since GemFire 8.1
    */
   @Test
@@ -144,7 +142,6 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * not have a name or id attribute, <code>jndi-bindings</code>. It should be added between
    * <code>pdx</code> and <code>region</code> elements.
    *
-   * @throws Exception
    * @since GemFire 8.1
    */
   @Test
@@ -181,7 +178,6 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * collision with test:region, it should not collide with the similarly named cache:region
    * element.
    *
-   * @throws Exception
    * @since GemFire 8.1
    */
   @Test
@@ -221,7 +217,6 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>name</code> attribute, <code>region</code>. It should replace existing
    * <code>region</code> element with same <code>name</code>.
    *
-   * @throws Exception
    * @since GemFire 8.1
    */
   @Test
@@ -256,7 +251,6 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with {@link CacheXml} element that does
    * not have a name or id attribute, <code>pdx</code>. It should replace <code>pdx</code> element.
    *
-   * @throws Exception
    * @since GemFire 8.1
    */
   @Test
@@ -291,7 +285,6 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * have a name or id attribute, <code>test:cache</code>. It should replace the existing
    * <code>test:cache</code> element.
    *
-   * @throws Exception
    * @since GemFire 8.1
    */
   @Test
@@ -328,7 +321,6 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>name</code> attribute, <code>region</code>. It should remove existing <code>region</code>
    * element with same <code>name</code>.
    *
-   * @throws Exception
    * @since GemFire 8.1
    */
   @Test
@@ -358,7 +350,6 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * not have a name or id attribute, <code>pdx</code>. It should remove the existing
    * <code>pdx</code> element.
    *
-   * @throws Exception
    * @since GemFire 8.1
    */
   @Test
@@ -387,7 +378,6 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * have a name or id attribute, <code>test:cache</code>. It should remove the existing
    * <code>test:cache</code> element.
    *
-   * @throws Exception
    * @since GemFire 8.1
    */
   @Test

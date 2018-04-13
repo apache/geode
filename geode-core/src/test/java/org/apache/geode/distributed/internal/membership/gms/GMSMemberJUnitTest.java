@@ -195,7 +195,6 @@ public class GMSMemberJUnitTest {
    * This must be backward-compatible with Geode 1.0 (Version.GFE_90)
    * </p>
    *
-   * @throws Exception
    */
   @Test
   public void testGMSMemberBackwardCompatibility() throws Exception {

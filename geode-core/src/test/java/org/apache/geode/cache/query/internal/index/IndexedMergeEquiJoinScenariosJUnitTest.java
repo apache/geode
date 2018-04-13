@@ -48,9 +48,6 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, OQLIndexTest.class})
 public class IndexedMergeEquiJoinScenariosJUnitTest {
 

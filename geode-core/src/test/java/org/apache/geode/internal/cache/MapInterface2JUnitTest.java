@@ -42,10 +42,6 @@ import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- *
- *
- */
 @Category(IntegrationTest.class)
 public class MapInterface2JUnitTest {
 

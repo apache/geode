@@ -18,9 +18,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-/**
- *
- */
 public class Order implements Serializable {
   private static final long serialVersionUID = 2049641616996906290L;
   private String id;
@@ -54,24 +51,14 @@ public class Order implements Serializable {
     this.items = items;
   }
 
-  /**
-   * @param item
-   */
   public void addItem(Item item) {
     this.items.add(item);
   }
 
-  /**
-   *
-   */
   public Order() {
     this.items = new ArrayList<Item>();
   }
 
-  /**
-   * @param id
-   * @param items
-   */
   public Order(String id, Collection<Item> items) {
     super();
     this.id = id;

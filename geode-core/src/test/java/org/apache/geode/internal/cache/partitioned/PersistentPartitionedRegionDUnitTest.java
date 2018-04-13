@@ -236,7 +236,6 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**
    * Test to make sure that we can recover from a complete system shutdown with redundancy 0
    *
-   * @throws Throwable
    */
   @Test
   public void testTotalRecoverRedundancy0() throws Throwable {
@@ -246,7 +245,6 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**
    * Test to make sure that we can recover from a complete system shutdown with redundancy 1
    *
-   * @throws Throwable
    */
   @Test
   public void testTotalRecoverRedundancy1() throws Throwable {
@@ -919,7 +917,6 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**
    * Test to make sure that we recreate a bucket if a member is revoked
    *
-   * @throws Throwable
    */
   @Test
   public void testRevokedMemberRedundancy1() throws Throwable {
@@ -997,7 +994,6 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * Test to make sure that we recreate a bucket if a member is revoked, and that we do it
    * immediately if recovery delay is set to 0.
    *
-   * @throws Throwable
    */
   @Test
   public void testRevokedMemberRedundancy1ImmediateRecovery() throws Throwable {
@@ -1809,7 +1805,6 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * A test to make sure that we allow the PR to be used after at least one copy of every bucket is
    * recovered, but before the secondaries are initialized.
    *
-   * @throws Throwable
    */
   @Test
   public void testAllowRegionUseBeforeRedundancyRecovery() throws Throwable {
@@ -1981,7 +1976,6 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * In this test case, we bring the GII down before we bring the source back up, to make sure the
    * source still discovers that the GII target is no longer hosting the bucket.
    *
-   * @throws InterruptedException
    */
   @Test
   public void testCrashDuringBucketGII2() throws InterruptedException {

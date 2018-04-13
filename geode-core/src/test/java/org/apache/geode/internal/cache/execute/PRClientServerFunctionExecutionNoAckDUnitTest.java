@@ -36,9 +36,6 @@ import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 @Category({DistributedTest.class, ClientServerTest.class, FunctionServiceTest.class})
 public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServerTestBase {
-  /**
-   *
-   */
   private static final String TEST_FUNCTION1 = TestFunction.TEST_FUNCTION1;
 
   Boolean isByName = null;

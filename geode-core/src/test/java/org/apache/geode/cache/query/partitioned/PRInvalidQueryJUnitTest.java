@@ -47,8 +47,6 @@ public class PRInvalidQueryJUnitTest {
   /**
    * Populates the region with the Objects stores in the data Object array.
    *
-   * @param region
-   * @param data
    */
   private void populateData(Region region, Object[] data) {
     logger.info("PRInvalidQueryJUnitTest#populateData: Populating Data to the region");

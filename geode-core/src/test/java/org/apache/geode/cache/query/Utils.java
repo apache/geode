@@ -29,9 +29,6 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache.query.data.Position;
 
-/**
- *
- */
 public class Utils {
   public static String printResult(Object r) {
     StringBuffer sb = new StringBuffer();

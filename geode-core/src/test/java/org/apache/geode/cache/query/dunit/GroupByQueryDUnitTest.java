@@ -44,10 +44,6 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-/**
- *
- *
- */
 @Category({DistributedTest.class, OQLQueryTest.class})
 public class GroupByQueryDUnitTest extends JUnit4CacheTestCase {
 

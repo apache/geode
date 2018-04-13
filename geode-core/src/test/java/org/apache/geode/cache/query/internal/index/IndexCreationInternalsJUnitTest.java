@@ -46,9 +46,6 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, OQLIndexTest.class})
 public class IndexCreationInternalsJUnitTest {
   protected String childThreadName1 = "";

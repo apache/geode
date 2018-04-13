@@ -319,7 +319,6 @@ public class GMSJoinLeaveJUnitTest {
   /**
    * prepares and install a view
    *
-   * @throws IOException
    */
   private void prepareAndInstallView(InternalDistributedMember coordinator,
       List<InternalDistributedMember> members) throws IOException {
@@ -866,7 +865,6 @@ public class GMSJoinLeaveJUnitTest {
    * If a locator is started and sends out a view to take control of the cluster another member that
    * is also in the process of sending out a view should relinquish control to the new locator.
    *
-   * @throws Exception
    */
   @Test
   public void testCoordinatorGetsConflictingViewFromLocator() throws Exception {

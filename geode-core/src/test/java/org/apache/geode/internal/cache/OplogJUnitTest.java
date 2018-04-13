@@ -466,8 +466,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 
   }
 
-  /**
-   */
   @Test
   public void testConflation() throws Exception {
 

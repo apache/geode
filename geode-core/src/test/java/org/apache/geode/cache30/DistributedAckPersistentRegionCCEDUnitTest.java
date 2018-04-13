@@ -13,9 +13,6 @@
  * the License.
  */
 
-/**
- *
- */
 package org.apache.geode.cache30;
 
 import org.junit.Ignore;

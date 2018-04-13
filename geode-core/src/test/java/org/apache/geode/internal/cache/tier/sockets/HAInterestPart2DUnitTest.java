@@ -260,7 +260,6 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * Bug Test for Bug # 35945 A java level Deadlock between acquireConnection and RegionEntry during
    * processRecoveredEndpoint by Dead Server Monitor Thread.
    *
-   * @throws Exception
    */
   @Test
   public void testBug35945() throws Exception {

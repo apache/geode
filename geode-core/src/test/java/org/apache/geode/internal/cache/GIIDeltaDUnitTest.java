@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
@@ -67,9 +64,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   protected IgnoredException expectedEx;
   static Object giiSyncObject = new Object();
 
-  /**
-   * @param name
-   */
   public GIIDeltaDUnitTest() {
     super();
   }
@@ -1921,7 +1915,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * Test the case where a member has an untrusted RVV and still initializes from the local data.
    * See bug 48066
    *
-   * @throws Throwable
    */
   @Test
   public void testRecoverFromUntrustedRVV() throws Throwable {
@@ -1997,7 +1990,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * Test case to make sure that if a tombstone GC occurs during a full GII, we still have the
    * correct RVV on the GII recipient at the end.
    *
-   * @throws Throwable
    */
   @Category(FlakyTest.class) // GEODE-1137: orphaned AsyncInvocations, time sensitive, GC,
                              // waitForCriterion, thread unsafe test hooks/observers, expiration

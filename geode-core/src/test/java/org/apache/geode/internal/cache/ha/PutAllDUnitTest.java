@@ -338,7 +338,6 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
    * entry (on the client side) and returns the eventId stored in the map 6) verifies the equality
    * of the two event ids
    *
-   * @throws Exception
    */
   @Test
   public void testPutAll() throws Exception {

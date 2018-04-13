@@ -30,9 +30,6 @@ import org.apache.geode.cache.query.CqStatusListener;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
-/**
- *
- */
 public class CqQueryTestListener implements CqStatusListener {
   protected final LogWriter logger;
   protected volatile int eventCreateCount = 0;

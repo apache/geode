@@ -24,9 +24,6 @@ package org.apache.geode.cache.query.data;
 import java.io.*;
 import java.util.Set;
 
-/**
- *
- */
 public class District implements Serializable {
   public String name;
   public Set cities;
