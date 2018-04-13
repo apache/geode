@@ -53,7 +53,7 @@ public class GetClusterConfigurationFunction implements InternalFunction {
             clusterConfigurationService.createConfigurationResponse(groups);
         context.getResultSender().lastResult(response);
       } catch (Exception exception) {
-        logger.error("Unable to retrieve the cluster configuration", exception);
+        logger.warn("Unable to retrieve the cluster configuration", exception);
         context.getResultSender().lastResult(exception);
       }
     } else {
