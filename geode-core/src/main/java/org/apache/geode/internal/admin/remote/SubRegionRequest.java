@@ -43,7 +43,6 @@ public class SubRegionRequest extends RegionAdminRequest {
   /**
    * Must return a proper response to this request.
    *
-   * @param dm
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {

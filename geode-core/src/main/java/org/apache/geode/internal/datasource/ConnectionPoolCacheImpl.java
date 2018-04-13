@@ -71,7 +71,6 @@ public class ConnectionPoolCacheImpl extends AbstractPoolCache {
    * Creates a new connection for the pool.
    *
    * @return the connection from the database as Object.
-   * @throws PoolException
    */
   @Override
   public Object getNewPoolConnection() throws PoolException {

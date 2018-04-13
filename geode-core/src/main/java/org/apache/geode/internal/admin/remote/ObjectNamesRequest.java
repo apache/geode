@@ -45,7 +45,6 @@ public class ObjectNamesRequest extends RegionAdminRequest implements Cancellabl
   /**
    * Must return a proper response to this request.
    *
-   * @param dm
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {

@@ -37,9 +37,6 @@ import java.util.concurrent.TimeUnit;
 public class ReentrantSemaphore extends Semaphore {
   private final ThreadLocal<Integer> holdCount = new ThreadLocal<Integer>();
 
-  /**
-   * @param permits
-   */
   public ReentrantSemaphore(int permits) {
     super(permits);
   }

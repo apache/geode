@@ -233,7 +233,6 @@ public class AvailablePort {
   /**
    * Test to see if a given port is available port on all interfaces on this host.
    *
-   * @param port
    * @return true of if the port is free on all interfaces
    */
   private static boolean testAllInterfaces(int port) {

@@ -40,9 +40,6 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
 
   public SingleAttrDefinitionImpl() {}
 
-  /**
-   * @param statisticInfo
-   */
   public SingleAttrDefinitionImpl(String name, StatisticInfo statisticInfo) {
     super();
     this.statisticInfo = statisticInfo;

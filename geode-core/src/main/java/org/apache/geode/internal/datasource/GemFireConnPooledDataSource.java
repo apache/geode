@@ -48,7 +48,6 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    *
    * @param connPoolDS The ConnectionPoolDataSource object for the database driver.
    * @param configs The ConfiguredDataSourceProperties containing the datasource properties.
-   * @throws SQLException
    */
 
 
@@ -57,7 +56,6 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * jdk 1.6
    *
    * @param iface - a Class defining an interface.
-   * @throws SQLException
    */
   public boolean isWrapperFor(Class iface) throws SQLException {
     return true;
@@ -90,7 +88,6 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * Implementation of datasource interface function. This method is used to get the connection from
    * the pool. Default user name and password will be used.
    *
-   * @throws SQLException
    * @return ???
    */
   @Override
@@ -115,7 +112,6 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    *
    * @param clUsername The username for the database connection.
    * @param clPassword The password for the database connection.
-   * @throws SQLException
    * @return ???
    */
   @Override
@@ -128,7 +124,6 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * Implementation of call back function from ConnectionEventListener interface. This callback will
    * be invoked on connection close event.
    *
-   * @param event
    */
   public void connectionClosed(ConnectionEvent event) {
     if (isActive) {
@@ -148,7 +143,6 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * Implementation of call back function from ConnectionEventListener interface. This callback will
    * be invoked on connection error event.
    *
-   * @param event
    */
   public void connectionErrorOccurred(ConnectionEvent event) {
     if (isActive) {
@@ -184,7 +178,6 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
   /**
    * gets tha connection from the pool
    *
-   * @param poolC
    * @return ???
    */
   protected Connection getSQLConnection(PooledConnection poolC) throws SQLException {

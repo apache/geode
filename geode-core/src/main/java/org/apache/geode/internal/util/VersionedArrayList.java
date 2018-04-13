@@ -58,7 +58,6 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   /**
    * Constructor.
    *
-   * @param size
    */
   public VersionedArrayList(int size) {
     this.list = new ArrayList<Node>(size);
@@ -76,7 +75,6 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * ensure that the iterator of the list doesn't get ConcurrentModificationException.
    *
    * @see java.util.ConcurrentModificationException
-   * @param obj
    */
   public synchronized void add(Node obj) {
 
@@ -122,7 +120,6 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   /**
    * Returns the size of the list.
    *
-   * @return int
    */
   public synchronized int size() {
     return this.list.size();
@@ -131,7 +128,6 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   /**
    * Returns true if obj is present in the list otherwise false.
    *
-   * @param obj
    * @return true if obj is present in the list
    */
   public boolean contains(Node obj) {
@@ -147,8 +143,6 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   /**
    * Returns Object at index i.
    *
-   * @param i
-   * @return Object
    */
   public Object get(int i) {
     final List<Node> l;
@@ -161,8 +155,6 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   /**
    * Returns the index of Object if present, else -1.
    *
-   * @param obj
-   * @return int
    */
   public int indexOf(Object obj) {
     final List<Node> l;
@@ -175,7 +167,6 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   /**
    * Returns a copy of the arraylist contained.
    *
-   * @return ArrayList
    */
   public Set<Node> getListCopy() {
     final List<Node> l;

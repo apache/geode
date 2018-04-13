@@ -14,10 +14,6 @@
  */
 package org.apache.geode.internal.memcached.commands;
 
-/**
- *
- *
- */
 public class SetQCommand extends SetCommand {
 
   @Override
