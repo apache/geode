@@ -34,7 +34,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import junitparams.JUnitParamsRunner;
 import org.junit.Before;

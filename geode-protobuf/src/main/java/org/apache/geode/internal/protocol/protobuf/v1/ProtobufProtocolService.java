@@ -23,8 +23,6 @@ import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NotLoggedInAuthorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.state.RequireVersion;
 import org.apache.geode.internal.security.SecurityService;
 
 public class ProtobufProtocolService implements ClientProtocolService {
