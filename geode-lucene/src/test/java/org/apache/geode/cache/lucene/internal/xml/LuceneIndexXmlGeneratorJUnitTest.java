@@ -28,7 +28,6 @@ import org.mockito.ArgumentCaptor;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 
-import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
@@ -43,7 +42,7 @@ public class LuceneIndexXmlGeneratorJUnitTest {
    */
   @Test
   public void generateWithFields() throws Exception {
-    LuceneIndex index = mock(LuceneIndex.class);
+    LuceneIndexCreation index = mock(LuceneIndexCreation.class);
     when(index.getName()).thenReturn("index");
     String[] fields = new String[] {"field1", "field2"};
     when(index.getFieldNames()).thenReturn(fields);
@@ -79,7 +78,7 @@ public class LuceneIndexXmlGeneratorJUnitTest {
    */
   @Test
   public void generateWithSerializer() throws Exception {
-    LuceneIndex index = mock(LuceneIndex.class);
+    LuceneIndexCreation index = mock(LuceneIndexCreation.class);
     LuceneSerializer mySerializer =
         mock(LuceneSerializer.class, withSettings().extraInterfaces(Declarable2.class));
     Properties props = new Properties();
