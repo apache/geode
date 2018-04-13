@@ -547,7 +547,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
    * Creates a ConfigurationResponse based on the configRequest, configuration response contains the
    * requested shared configuration This method locks the ClusterConfigurationService
    */
-  public ConfigurationResponse createConfigurationResponse(Set<String> groups) throws IOException {
+  public ConfigurationResponse createConfigurationResponse(Set<String> groups) {
     ConfigurationResponse configResponse = null;
 
     boolean isLocked = lockSharedConfiguration();
