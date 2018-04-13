@@ -26,7 +26,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.SerializationUtils;

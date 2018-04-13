@@ -17,8 +17,6 @@ package org.apache.geode.connectors.jdbc.internal;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
-
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
