@@ -311,10 +311,12 @@ public class GfJsonObject {
 
   public List<String> getArrayValues(String key) {
     List<String> result = new ArrayList<>();
-    JSONArray jsonArray = jsonObject.getJSONArray(key);
+    if (jsonObject.has(key)) {
+      JSONArray jsonArray = jsonObject.getJSONArray(key);
 
-    for (int i = 0; i < jsonArray.length(); i++) {
-      result.add(jsonArray.getString(i));
+      for (int i = 0; i < jsonArray.length(); i++) {
+        result.add(jsonArray.getString(i));
+      }
     }
 
     return result;
