@@ -44,10 +44,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
-/**
- *
- *
- */
 @Category(IntegrationTest.class)
 public class ConnectionPoolingJUnitTest {
   private static final Logger logger = LogService.getLogger();

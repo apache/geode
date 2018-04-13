@@ -399,8 +399,6 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Accessed by reflection. DO NOT REMOVE
    *
-   * @param i
-   * @return
    */
   public static Integer get_count_testFairness(Integer i) {
     return new Integer(count_testFairness[i.intValue()]);
@@ -427,8 +425,6 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Accessed via reflection. DO NOT REMOVE
    *
-   * @param serviceName
-   * @return
    */
   public static InternalDistributedMember identifyLockGrantor(String serviceName) {
     DLockService service = (DLockService) DistributedLockService.getServiceNamed(serviceName);
@@ -442,8 +438,6 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Accessed via reflection. DO NOT REMOVE.
    *
-   * @param serviceName
-   * @return
    */
   public static Boolean isLockGrantor(String serviceName) {
     DLockService service = (DLockService) DistributedLockService.getServiceNamed(serviceName);
@@ -456,7 +450,6 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Accessed via reflection. DO NOT REMOVE.
    *
-   * @param serviceName
    */
   protected static void becomeLockGrantor(String serviceName) {
     DLockService service = (DLockService) DistributedLockService.getServiceNamed(serviceName);
@@ -2332,9 +2325,6 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Accessed via reflection. DO NOT REMOVE
    *
-   * @param serviceName
-   * @param name
-   * @return
    */
   protected static Boolean lock(String serviceName, Object name) {
     DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);

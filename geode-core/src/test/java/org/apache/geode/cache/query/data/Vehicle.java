@@ -20,10 +20,6 @@
 
 package org.apache.geode.cache.query.data;
 
-/**
- *
- */
-
 // Added for the Test IUMRCompositeIteratorTest
 public class Vehicle {
   public String[] arr;

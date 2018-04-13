@@ -80,7 +80,6 @@ public class MemoryAllocatorFillPatternJUnitTest {
   /**
    * This tests the fill pattern for a single tiny Chunk allocation.
    *
-   * @throws Exception
    */
   @Test
   public void testFillPatternBasicForTinyAllocations() throws Exception {
@@ -90,7 +89,6 @@ public class MemoryAllocatorFillPatternJUnitTest {
   /**
    * This tests the fill pattern for a single huge Chunk allocation.
    *
-   * @throws Exception
    */
   @Test
   public void testFillPatternBasicForHugeAllocations() throws Exception {
@@ -145,7 +143,6 @@ public class MemoryAllocatorFillPatternJUnitTest {
    * This tests that fill validation is working properly on newly created fragments after a
    * defragmentation.
    *
-   * @throws Exception
    */
   @Test
   public void testFillPatternAfterDefragmentation() throws Exception {

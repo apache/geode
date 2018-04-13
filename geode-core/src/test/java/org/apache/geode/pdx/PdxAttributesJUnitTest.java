@@ -57,9 +57,6 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, SerializationTest.class})
 public class PdxAttributesJUnitTest {
 
@@ -386,7 +383,6 @@ public class PdxAttributesJUnitTest {
   /**
    * Test that loner VMs lazily determine if they are a client or a peer.
    *
-   * @throws Exception
    */
   @Test
   public void testLazyLoner() throws Exception {

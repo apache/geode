@@ -38,11 +38,13 @@ import org.apache.geode.security.ResourcePermission;
 public class DestroyJndiBindingCommand extends InternalGfshCommand {
   static final String DESTROY_JNDIBINDING = "destroy jndi-binding";
   static final String DESTROY_JNDIBINDING__HELP =
-      "Destroy a jndi binding that holds the configuration for the XA datasource.";
+      "Destroy a JNDI binding that holds the configuration for an XA datasource.";
   static final String JNDI_NAME = "name";
   static final String JNDI_NAME__HELP = "Name of the binding to be destroyed.";
   static final String IFEXISTS_HELP =
-      "Skip the destroy operation when a jndi binding with the same name does not exists. Without specifying this option, this command execution results into an error.";
+      "Skip the destroy operation when the specified JNDI binding does "
+          + "not exist. Without this option, an error results from the specification "
+          + "of a JNDI binding that does not exist.";
 
   @CliCommand(value = DESTROY_JNDIBINDING, help = DESTROY_JNDIBINDING__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)

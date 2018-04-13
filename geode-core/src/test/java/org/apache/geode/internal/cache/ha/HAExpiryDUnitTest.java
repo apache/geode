@@ -172,7 +172,6 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
   /**
    * This function checks the regionqueue size before expiration. size should be > 0.
    *
-   * @throws Exception
    */
   public static void checkSizeBeforeExpiration() throws Exception {
     HARegion regionForQueue = (HARegion) cache
@@ -198,7 +197,6 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
   /**
    * This function checks the regionqueue size After expiration. size should be = 0.
    *
-   * @throws Exception
    */
   public static void checkSizeAfterExpiration() throws Exception {
 

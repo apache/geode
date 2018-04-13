@@ -56,9 +56,6 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- *
- */
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
 

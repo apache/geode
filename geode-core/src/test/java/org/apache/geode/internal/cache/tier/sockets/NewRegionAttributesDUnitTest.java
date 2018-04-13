@@ -126,7 +126,6 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * Creates cache instance
    *
    * @param props - properties of the distributed system
-   * @return cache
    * @throws Exception - thrown if any problem occurs while connecting to distributed system or
    *         creating cache
    */

@@ -296,7 +296,6 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create client with 3 regions each with a unique listener
    *
-   * @throws Exception
    */
   public static void createClientCache(String host, Integer port, /* String nbs, */
       String name) throws Exception {
@@ -406,7 +405,6 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create a server cache and start the server
    *
-   * @throws Exception
    */
   public static Integer createServerCache() throws Exception {
     ClientInterestNotifyDUnitTest test = new ClientInterestNotifyDUnitTest();

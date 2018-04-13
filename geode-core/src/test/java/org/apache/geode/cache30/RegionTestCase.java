@@ -250,7 +250,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   /**
    * Indicate whether subregions are supported
    *
-   * @return
    */
   protected boolean supportsSubregions() {
     return true;
@@ -3364,7 +3363,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   /**
    * Verify that accessing an entry resets its idle time
    *
-   * @throws Exception
    */
   @Test
   public void testEntryIdleReset() throws Exception {

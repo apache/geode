@@ -48,7 +48,6 @@ public class MembershipManagerHelper {
    * Note that part of beSickMember's processing is to interrupt and stop any reader threads. A slow
    * listener in a reader thread should eat this interrupt.
    *
-   * @param sys
    */
   public static void beSickMember(DistributedSystem sys) {
     ((Manager) getMembershipManager(sys)).beSick();

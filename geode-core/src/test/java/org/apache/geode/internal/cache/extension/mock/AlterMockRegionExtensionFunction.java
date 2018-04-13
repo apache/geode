@@ -96,9 +96,6 @@ public class AlterMockRegionExtensionFunction implements Function, DataSerializa
   }
 
   /**
-   * @param regionName
-   * @param value
-   * @return
    * @since GemFire 8.1
    */
   public static Object[] toArgs(final String regionName, final String value) {

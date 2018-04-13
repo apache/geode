@@ -35,7 +35,6 @@ class Jitter {
    * <code>intervalMillis</code> milliseconds. If jittering is disabled then the value returned will
    * be equal to intervalMillis.
    *
-   * @param intervalMillis
    * @return adjust milliseconds to use as interval for WaitCriteria polling
    */
   static long jitterInterval(long intervalMillis) {

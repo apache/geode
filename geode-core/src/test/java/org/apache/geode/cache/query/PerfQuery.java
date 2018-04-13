@@ -34,9 +34,6 @@ import org.apache.geode.cache.query.internal.ResultsSet;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.NanoTimer;
 
-/**
- *
- */
 public class PerfQuery {
   private static int NUM_ITERATIONS = 20000;
 

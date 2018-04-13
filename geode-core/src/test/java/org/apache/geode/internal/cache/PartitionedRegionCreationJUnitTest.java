@@ -312,7 +312,6 @@ public class PartitionedRegionCreationJUnitTest {
    * (4) Test if PARTITIONED_REGION_CONFIG_NAME exist and isDistributedAck and the mirror type is
    * MirrorType.KEYS_VALUES.
    *
-   * @throws RegionExistsException
    */
   @Test
   public void test002PartionedRegionInitialization() throws RegionExistsException {

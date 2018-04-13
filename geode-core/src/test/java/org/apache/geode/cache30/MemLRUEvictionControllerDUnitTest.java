@@ -144,7 +144,6 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   /**
    * Make sure that we only size a class the first time we see the class instance.
    *
-   * @throws CacheException
    */
   @Test
   public void testSizeClassesOnce() throws CacheException {
@@ -229,7 +228,6 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    * Validate that a custom {@link ObjectSizer} is called, configured propertly, and actually limits
    * the size of the <code>Region</code>.
    *
-   * @throws Exception
    */
   @Test
   public void testCustomObjectSizer() throws Exception {

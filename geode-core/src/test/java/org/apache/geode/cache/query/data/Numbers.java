@@ -20,9 +20,6 @@
 
 package org.apache.geode.cache.query.data;
 
-/**
- *
- */
 import java.io.Serializable;
 
 public class Numbers implements Serializable {

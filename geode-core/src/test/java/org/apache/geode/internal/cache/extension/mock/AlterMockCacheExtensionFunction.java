@@ -83,8 +83,6 @@ public class AlterMockCacheExtensionFunction implements Function, DataSerializab
   }
 
   /**
-   * @param value
-   * @return
    * @since GemFire 8.1
    */
   public static Object[] toArgs(final String value) {

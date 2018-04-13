@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.partitioned;
 
 import static org.junit.Assert.*;
@@ -69,9 +66,6 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
   VM datastore1;
   VM datastore2;
 
-  /**
-   * @param name
-   */
   public PartitionResolverDUnitTest() {
     super();
   }

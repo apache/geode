@@ -87,7 +87,6 @@ public class TombstoneCreationJUnitTest {
    * before a Destroy thread gets it. The Destroy thread did not apply its operation but threw an
    * EntryNotFoundException. It is supposed to create a Tombstone.
    *
-   * @throws Exception
    */
   @Test
   public void testConcurrentCreateAndDestroy() throws Exception {

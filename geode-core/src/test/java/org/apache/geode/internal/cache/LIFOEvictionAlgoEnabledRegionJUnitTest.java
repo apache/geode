@@ -75,7 +75,6 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   /**
    * Method for intializing the VM and create region with LIFO attached
    *
-   * @throws Exception
    */
   private static void initializeVM() throws Exception {
     Properties props = new Properties();
