@@ -40,16 +40,6 @@ public class OriginalServerConnection extends ServerConnection {
    * Creates a new <code>ServerConnection</code> that processes messages received from an edge
    * client over a given <code>Socket</code>.
    *
-   * @param socket
-   * @param internalCache
-   * @param helper
-   * @param stats
-   * @param hsTimeout
-   * @param socketBufferSize
-   * @param communicationModeStr
-   * @param communicationMode
-   * @param acceptor
-   * @param securityService
    */
   public OriginalServerConnection(Socket socket, InternalCache internalCache,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,

@@ -112,7 +112,6 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /**
    * Parameterized constructor.
    *
-   * @param event
    */
   public HAEventWrapper(ClientUpdateMessage event) {
     this.regionName = event.getRegionName();
@@ -124,9 +123,6 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     this.clientCqs = ((ClientUpdateMessageImpl) event).getClientCqs();
   }
 
-  /**
-   * @param eventId
-   */
   public HAEventWrapper(EventID eventId) {
     this.eventIdentifier = eventId;
     this.clientUpdateMessage = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE,

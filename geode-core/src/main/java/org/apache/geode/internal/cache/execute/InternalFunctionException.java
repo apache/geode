@@ -44,7 +44,6 @@ public class InternalFunctionException extends FunctionException {
   /**
    * Creates new internal function exception with given error message.
    *
-   * @param msg
    */
   public InternalFunctionException(String msg) {
     super(msg);
@@ -53,8 +52,6 @@ public class InternalFunctionException extends FunctionException {
   /**
    * Creates new internal function exception with given error message and optional nested exception.
    *
-   * @param msg
-   * @param cause
    */
   public InternalFunctionException(String msg, Throwable cause) {
     super(msg, cause);
@@ -63,7 +60,6 @@ public class InternalFunctionException extends FunctionException {
   /**
    * Creates new internal function exception given throwable as a cause and source of error message.
    *
-   * @param cause
    */
   public InternalFunctionException(Throwable cause) {
     super(cause);

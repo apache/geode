@@ -35,10 +35,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
-/**
- *
- *
- */
 public class PartitionRegionConfigValidator {
 
   private static final Logger logger = LogService.getLogger();
@@ -453,9 +449,6 @@ public class PartitionRegionConfigValidator {
     }
   }
 
-  /**
-   * @param prconf
-   */
   public void validateFixedPABetweenDataStores(PartitionRegionConfig prconf) {
     boolean isDataStore = this.pr.localMaxMemory > 0;
     boolean isFixedPR = this.pr.fixedPAttrs != null;

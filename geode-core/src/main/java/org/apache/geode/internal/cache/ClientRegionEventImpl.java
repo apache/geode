@@ -44,11 +44,6 @@ public class ClientRegionEventImpl extends RegionEventImpl {
   /**
    * To be called from the Distributed Message without setting EventID
    *
-   * @param region
-   * @param op
-   * @param callbackArgument
-   * @param originRemote
-   * @param distributedMember
    */
   public ClientRegionEventImpl(LocalRegion region, Operation op, Object callbackArgument,
       boolean originRemote, DistributedMember distributedMember, ClientProxyMembershipID contx) {

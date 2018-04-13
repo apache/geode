@@ -610,7 +610,6 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
    * Create RemoveAllPRMessage for notify only (to adjunct nodes)
    *
    * @param bucketId create message to send to this bucket
-   * @return RemoveAllPRMessage
    */
   public RemoveAllPRMessage createPRMessagesNotifyOnly(int bucketId) {
     final EntryEventImpl event = getBaseEvent();
@@ -798,7 +797,6 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
    * version tags are gathered from local operations and remote operation responses. This method
    * gathers all of them and stores them in the given list.
    *
-   * @param list
    */
   protected void fillVersionedObjectList(VersionedObjectList list) {
     for (RemoveAllEntryData entry : this.removeAllData) {
@@ -906,13 +904,6 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     /**
      * create an event for a RemoveAllEntryData element
      *
-     * @param entry
-     * @param sender
-     * @param context
-     * @param rgn
-     * @param possibleDuplicate
-     * @param needsRouting
-     * @param callbackArg
      * @return the event to be used in applying the element
      */
     @Retained

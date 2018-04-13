@@ -70,9 +70,6 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
     this.processor = processor;
   }
 
-  /**
-   * @param original
-   */
   public PartitionMessageWithDirectReply(PartitionMessageWithDirectReply original,
       EntryEventImpl event) {
     super(original);

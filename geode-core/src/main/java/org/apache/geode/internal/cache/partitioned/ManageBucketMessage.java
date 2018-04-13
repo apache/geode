@@ -191,7 +191,6 @@ public class ManageBucketMessage extends PartitionMessage {
    * Assists the toString method in reporting the contents of this message
    *
    * @see PartitionMessage#toString()
-   * @param buff
    */
   @Override
   protected void appendFields(StringBuilder buff) {

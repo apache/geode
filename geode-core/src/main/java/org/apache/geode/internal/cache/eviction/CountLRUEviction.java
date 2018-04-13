@@ -36,7 +36,6 @@ public class CountLRUEviction extends AbstractEvictionController {
   /**
    * Creates an LRU capacity controller that allows the given number of maximum entries.
    *
-   * @param evictionCounters
    *
    * @param maximumEntries The maximum number of entries allowed in the region whose capacity this
    *        controller controls. Once there are {@code capacity} entries in a region, this

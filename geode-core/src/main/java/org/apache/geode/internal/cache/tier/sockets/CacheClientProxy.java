@@ -1540,7 +1540,6 @@ public class CacheClientProxy implements ClientSession {
   /**
    * Delivers the message to the client representing this client proxy.
    *
-   * @param conflatable
    */
   protected void deliverMessage(Conflatable conflatable) {
     ThreadState state = this.securityService.bindSubject(this.subject);
@@ -1673,7 +1672,6 @@ public class CacheClientProxy implements ClientSession {
    * Initializes the message dispatcher thread. The <code>MessageDispatcher</code> processes the
    * message queue.
    *
-   * @throws CacheException
    */
   public void initializeMessageDispatcher() throws CacheException {
     this.messageDispatcherInit = true; // Initialization process.
@@ -2249,7 +2247,6 @@ public class CacheClientProxy implements ClientSession {
      * @param proxy The <code>CacheClientProxy</code> for which this dispatcher is processing
      *        messages
      * @param name thread name for this dispatcher
-     * @throws CacheException
      */
     protected MessageDispatcher(CacheClientProxy proxy, String name) throws CacheException {
       super(LoggingThreadGroup.createThreadGroup(name, logger), name);
@@ -2702,7 +2699,6 @@ public class CacheClientProxy implements ClientSession {
      *
      * @param clientMessage The <code>ClientMessage</code> to send to the client
      *
-     * @throws IOException
      */
     protected boolean dispatchMessage(ClientMessage clientMessage) throws IOException {
       boolean isDispatched = false;

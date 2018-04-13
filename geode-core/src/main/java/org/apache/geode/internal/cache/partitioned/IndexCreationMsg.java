@@ -533,7 +533,6 @@ public class IndexCreationMsg extends PartitionMessage {
     /**
      * Returns a map of index names and number of buckets indexed
      *
-     * @return indexBucketsMap
      */
     public Map<String, Integer> getIndexBucketsMap() {
       return this.indexBucketsMap;

@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
@@ -53,9 +50,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 
-/**
- *
- */
 public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   private static final Logger logger = LogService.getLogger();
@@ -502,7 +496,6 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * It removes the first key from the queue.
    *
    * @return Returns the key for which value was destroyed.
-   * @throws ForceReattemptException
    */
   public Object remove() throws ForceReattemptException {
     Object key = this.eventSeqNumDeque.removeFirst();
@@ -516,8 +509,6 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * It removes the first key from the queue.
    *
    * @return Returns the value.
-   * @throws InterruptedException
-   * @throws ForceReattemptException
    */
   public Object take() throws InterruptedException, ForceReattemptException {
     throw new UnsupportedOperationException();

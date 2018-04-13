@@ -14,10 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-/**
- *
- *
- */
 public interface TxEntryFactory {
   /**
    * Creates an instance of TXEntry.

@@ -19,9 +19,6 @@ import java.util.Set;
 
 import org.apache.geode.cache.Region;
 
-/**
- *
- */
 public class FilterByPath implements RegionFilter {
 
   private final Set<String> included;

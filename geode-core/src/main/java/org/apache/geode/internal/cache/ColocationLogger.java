@@ -86,7 +86,6 @@ public class ColocationLogger implements Runnable {
    * Writes a log entry every SLEEP_PERIOD when there are missing colocated child regions for this
    * region.
    *
-   * @throws InterruptedException
    */
   private void run2() throws InterruptedException {
     boolean firstLogIteration = true;
@@ -144,7 +143,6 @@ public class ColocationLogger implements Runnable {
    * method performs an on-demand update of the list so if called between logging intervals the
    * returned list is current.
    *
-   * @return missingChildren
    */
   public List<String> updateAndGetMissingChildRegions() {
     synchronized (loggerLock) {

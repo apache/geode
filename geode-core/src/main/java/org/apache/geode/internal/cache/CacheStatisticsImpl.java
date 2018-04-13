@@ -18,10 +18,6 @@ package org.apache.geode.internal.cache;
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 
-/**
- *
- *
- */
 class CacheStatisticsImpl implements CacheStatistics {
   private final InternalRegion region;
   private final RegionEntry regionEntry;

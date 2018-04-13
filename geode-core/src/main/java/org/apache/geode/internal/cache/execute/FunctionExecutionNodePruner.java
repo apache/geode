@@ -32,10 +32,6 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- *
- *
- */
 public class FunctionExecutionNodePruner {
   public static final Logger logger = LogService.getLogger();
 

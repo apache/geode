@@ -50,9 +50,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.process.StartupStatus;
 import org.apache.geode.internal.util.TransformUtils;
 
-/**
- *
- */
 public class PersistenceAdvisorImpl implements PersistenceAdvisor {
 
   private static final Logger logger = LogService.getLogger();

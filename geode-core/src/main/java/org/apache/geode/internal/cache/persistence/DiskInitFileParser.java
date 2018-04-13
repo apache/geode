@@ -47,9 +47,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
-/**
- *
- */
 public class DiskInitFileParser {
   private static final Logger logger = LogService.getLogger();
 

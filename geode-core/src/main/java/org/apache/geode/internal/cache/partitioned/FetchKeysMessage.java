@@ -111,11 +111,6 @@ public class FetchKeysMessage extends PartitionMessage {
 
   /**
    *
-   * @param recipient
-   * @param r
-   * @param bucketId
-   * @param itype
-   * @param arg
    * @return the FetchKeysResponse
    * @throws ForceReattemptException if the peer is no longer available
    */

@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tx;
 
 import java.io.ByteArrayInputStream;
@@ -90,8 +87,6 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
   }
 
   /**
-   * @param currRegion
-   * @param target
    * @return the response
    */
   public static FetchKeysResponse send(LocalRegion currRegion, DistributedMember target) {
@@ -375,7 +370,6 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     }
 
     /**
-     * @param msg
      * @return true if done processing
      */
     boolean processChunk(RemoteFetchKeysReplyMessage msg) {

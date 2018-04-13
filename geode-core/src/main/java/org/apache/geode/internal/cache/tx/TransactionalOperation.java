@@ -19,9 +19,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-/**
- *
- */
 public class TransactionalOperation {
   public static enum ServerRegionOperation {
     CONTAINS_KEY,
@@ -39,7 +36,6 @@ public class TransactionalOperation {
     REMOVE_ALL;
 
     /**
-     * @param op
      * @return true if the key associated with this op should be locked on clients locally; false
      *         otherwise
      */

@@ -655,7 +655,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   /**
    * Generates the name for the client subscription using the given id.
    *
-   * @return String
    * @since GemFire 5.7
    */
   public static String generateNameForClientMsgsRegion(int id) {
