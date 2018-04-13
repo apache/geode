@@ -107,9 +107,6 @@ public class ClusterMembersRGraphService implements PulseService {
    * cluster. This function create json based on the relation of physical host and members related
    * to it.
    *
-   * @param cluster
-   * @param host
-   * @param port
    * @return Array list of JSON objects for required fields of members in cluster
    */
   private ObjectNode getPhysicalServerJson(Cluster cluster, String host, String port) {
@@ -264,7 +261,6 @@ public class ClusterMembersRGraphService implements PulseService {
    *
    * @param member Member
    * @param memberState i.e Severe, Error, Warning or Normal
-   * @return
    */
   private String getMemberNodeType(Cluster.Member member, String memberState) {
     String memberNodeType = "";
@@ -293,7 +289,6 @@ public class ClusterMembersRGraphService implements PulseService {
    * function used for getting list of all the alerts and save the member names in respective error,
    * warning and severe alert lists
    *
-   * @param cluster
    */
   private void updateAlertLists(Cluster cluster) {
 

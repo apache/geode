@@ -136,8 +136,6 @@ public class PulseController {
   /**
    * Method isUserLoggedIn Check whether user is logged in or not.
    *
-   * @param request
-   * @return boolean
    */
   protected boolean isUserLoggedIn(HttpServletRequest request) {
     return null != request.getUserPrincipal();
@@ -265,7 +263,6 @@ public class PulseController {
   /**
    * This method creates json for list of cluster regions
    *
-   * @param cluster
    * @return ArrayNode JSON array
    */
   private ArrayNode getRegionsJson(Cluster cluster) {

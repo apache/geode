@@ -73,8 +73,6 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
   /**
    * For WAN 70 Exchange the locator information within the distributed system
    *
-   * @param config
-   * @param hostnameForClients
    */
   private void exchangeLocalLocators(int port, DistributionConfigImpl config,
       LocatorMembershipListener locatorListener, final String hostnameForClients) {
@@ -105,8 +103,6 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
   /**
    * For WAN 70 Exchange the locator information across the distributed systems (sites)
    *
-   * @param config
-   * @param hostnameForClients
    */
   private void exchangeRemoteLocators(int port, DistributionConfigImpl config,
       LocatorMembershipListener locatorListener, final String hostnameForClients) {

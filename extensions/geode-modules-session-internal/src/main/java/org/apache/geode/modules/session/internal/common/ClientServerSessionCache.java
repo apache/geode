@@ -55,8 +55,6 @@ public class ClientServerSessionCache extends AbstractSessionCache {
   /**
    * Constructor
    *
-   * @param cache
-   * @param properties
    */
   public ClientServerSessionCache(ClientCache cache, Map<CacheProperty, Object> properties) {
     super();

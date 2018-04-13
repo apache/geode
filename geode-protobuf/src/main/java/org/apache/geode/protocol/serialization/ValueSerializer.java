@@ -76,7 +76,6 @@ public interface ValueSerializer {
    * Initialize this serializer. This method is called when a new connection is established that
    * requests this format.
    *
-   * @param cache
    */
   void init(Cache cache);
 
@@ -90,7 +89,6 @@ public interface ValueSerializer {
    * True if this serializer wants to serialize all values, including primitives like
    * numbers and strings that can be sent as one of the options in EncodedValue.
    *
-   * @return
    */
   default boolean supportsPrimitives() {
     return false;

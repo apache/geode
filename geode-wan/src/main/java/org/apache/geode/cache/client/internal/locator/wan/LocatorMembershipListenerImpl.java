@@ -69,7 +69,6 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
    * When the new locator is added to remote locator metadata, inform all other locators in remote
    * locator metadata about the new locator so that they can update their remote locator metadata.
    *
-   * @param locator
    */
 
   public void locatorJoined(final int distributedSystemId, final DistributionLocatorId locator,
@@ -155,7 +154,6 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
    * invoked to inform about the this newly added locator to all other locators available in remote
    * locator metadata. As a response, remote locator metadata is sent.
    *
-   * @param request
    */
   private synchronized Object updateAllLocatorInfo(RemoteLocatorJoinRequest request) {
     int distributedSystemId = request.getDistributedSystemId();
