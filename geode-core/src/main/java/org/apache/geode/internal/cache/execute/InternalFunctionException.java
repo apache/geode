@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 

@@ -16,7 +16,6 @@ package org.apache.geode.cache.execute;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.lang.Identifiable;

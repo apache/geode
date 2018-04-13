@@ -26,7 +26,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -417,7 +419,8 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
         // Invoke getAll
         Region region = cache.getRegion(REGION_NAME);
         // Verify result size is correct
-        assertEquals(20, region.get(1));
+        Awaitility.await().atMost(10, TimeUnit.SECONDS)
+            .until(() -> assertEquals(20, region.get(1)));
       }
     });
   }

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tx;
 
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.geode.cache.CacheClosedException;

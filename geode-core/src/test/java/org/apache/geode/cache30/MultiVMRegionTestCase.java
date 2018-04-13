@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENFORCE_UNIQUE_HOST;
 import static org.apache.geode.internal.lang.ThrowableUtils.*;
 import static org.apache.geode.test.dunit.Assert.*;
 import static org.junit.Assume.*;

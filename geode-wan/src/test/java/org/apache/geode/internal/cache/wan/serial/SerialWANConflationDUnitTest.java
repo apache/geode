@@ -19,13 +19,10 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.internal.cache.wan.WANTestBase;
-import org.apache.geode.test.junit.categories.WanTest;
 
 
 public class SerialWANConflationDUnitTest extends WANTestBase {

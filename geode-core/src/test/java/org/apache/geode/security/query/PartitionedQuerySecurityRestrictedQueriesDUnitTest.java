@@ -14,7 +14,6 @@
  */
 package org.apache.geode.security.query;
 
-import junitparams.JUnitParamsRunner;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

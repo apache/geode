@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.ha;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;

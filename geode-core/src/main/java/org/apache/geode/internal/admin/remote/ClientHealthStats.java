@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.management.internal.beans.CacheServerBridge;
 
 /**
  * Bean class act as container for client stats

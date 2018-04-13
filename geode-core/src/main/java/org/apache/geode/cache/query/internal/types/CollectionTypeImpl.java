@@ -22,7 +22,6 @@ import java.util.*;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.internal.NWayMergeResults;
 import org.apache.geode.cache.query.internal.Ordered;
 import org.apache.geode.cache.query.internal.ResultsSet;
 import org.apache.geode.cache.query.internal.SortedResultSet;

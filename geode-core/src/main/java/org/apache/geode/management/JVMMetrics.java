@@ -17,7 +17,6 @@ package org.apache.geode.management;
 import java.beans.ConstructorProperties;
 import java.io.Serializable;
 
-import org.apache.geode.cache.Region;
 
 
 /**

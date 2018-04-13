@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.shell.jline;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import jline.UnixTerminal;

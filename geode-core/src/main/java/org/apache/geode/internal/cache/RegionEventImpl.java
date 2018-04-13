@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.ClassNotFoundException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.*;

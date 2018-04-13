@@ -17,10 +17,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import java.util.List;
 
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.internal.cache.tier.Command;
 

@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
 
-import io.netty.util.internal.StringUtil;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.cache.FixedPartitionAttributes;

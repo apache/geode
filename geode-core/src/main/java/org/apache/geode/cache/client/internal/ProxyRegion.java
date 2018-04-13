@@ -25,7 +25,6 @@ import java.util.concurrent.locks.Lock;
 
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheStatistics;
 import org.apache.geode.cache.CacheWriterException;

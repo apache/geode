@@ -15,8 +15,6 @@
 package org.apache.geode.management.internal.cli.util;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;

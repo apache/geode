@@ -14,21 +14,13 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import static org.junit.Assert.assertEquals;
 
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.query.CqQuery;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.security.query.UserPermissions;
-import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;

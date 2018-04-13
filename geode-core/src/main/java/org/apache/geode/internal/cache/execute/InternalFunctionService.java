@@ -23,7 +23,6 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.internal.FunctionServiceManager;
-import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
