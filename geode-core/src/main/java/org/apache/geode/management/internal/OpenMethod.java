@@ -41,7 +41,6 @@ public class OpenMethod {
   /**
    * Static method to get the OpenMethod
    *
-   * @param m
    * @return an open method
    */
   static OpenMethod from(Method m) {

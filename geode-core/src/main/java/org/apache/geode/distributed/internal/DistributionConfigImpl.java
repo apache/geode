@@ -1089,7 +1089,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * Here we will validate the correctness of the set properties as per the CheckAttributeChecker
    * annotations defined in #AbstractDistributionConfig
    *
-   * @param props
    */
   private void validateConfigurationProperties(final HashMap props) {
     for (Object o : props.keySet()) {

@@ -293,7 +293,6 @@ public interface LogWriter {
   /**
    * A mechanism for accessing the abstraction layer used for internationalization.
    *
-   * @return LogWriterI18n
    */
   LogWriterI18n convertToLogWriterI18n();
 }

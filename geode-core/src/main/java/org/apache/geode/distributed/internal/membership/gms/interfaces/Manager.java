@@ -44,7 +44,6 @@ public interface Manager extends Service, MessageHandler {
   /**
    * initiates a Forced Disconnect, shutting down the distributed system and closing the cache
    *
-   * @param reason
    */
   void forceDisconnect(String reason);
 
@@ -56,8 +55,6 @@ public interface Manager extends Service, MessageHandler {
   /**
    * Notifies the manager that a member has contacted us who is not in the current membership view
    *
-   * @param mbr
-   * @param birthTime
    */
   void addSurpriseMemberForTesting(DistributedMember mbr, long birthTime);
 
@@ -66,7 +63,6 @@ public interface Manager extends Service, MessageHandler {
    * the distributed system and we should no longer process requests from it. Shunned status
    * eventually times out.
    *
-   * @param mbr
    * @return true if the member is shunned
    */
   boolean isShunned(DistributedMember mbr);

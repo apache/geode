@@ -1439,7 +1439,6 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
    * This method can be used to get an alert definition.
    *
    * @param alertDefinition StatAlertDefinition to retrieve
-   * @return StatAlertDefinition
    * @since GemFire 5.7
    */
   public StatAlertDefinition getAlertDefinition(StatAlertDefinition alertDefinition) {

@@ -43,7 +43,6 @@ public interface Delta {
    *
    * Any delta state should be reset in this method.
    *
-   * @throws IOException
    */
   void toDelta(DataOutput out) throws IOException;
 
@@ -54,8 +53,6 @@ public interface Delta {
    * cannot be applied to the object. GemFire automatically handles an {@link InvalidDeltaException}
    * by reattempting the update by sending the full application object.
    *
-   * @throws IOException
-   * @throws InvalidDeltaException
    */
   void fromDelta(DataInput in) throws IOException, InvalidDeltaException;
 }

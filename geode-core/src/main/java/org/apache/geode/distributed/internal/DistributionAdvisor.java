@@ -262,7 +262,6 @@ public class DistributionAdvisor {
   /**
    * determine whether a delta-gii synchronization should be performed for this lost member
    *
-   * @param id
    * @return true if a delta-gii should be performed
    */
   public boolean shouldSyncForCrashedMember(InternalDistributedMember id) {
@@ -707,8 +706,6 @@ public class DistributionAdvisor {
   /**
    * Compare two serial numbers
    *
-   * @param newSerialNumber
-   * @param oldSerialNumber
    * @return return true if the first serial number (newSerialNumber) is more recent
    */
   public static boolean isNewerSerialNumber(int newSerialNumber, int oldSerialNumber) {
@@ -927,7 +924,6 @@ public class DistributionAdvisor {
    *
    * @param memberId the member whose profile should be removed
    * @param crashed true if the member crashed
-   * @param destroyed
    * @param fromMembershipListener true if this call is a result of MembershipEvent invocation
    *        (fixes #42000)
    * @return true when the profile was removed, false otherwise

@@ -89,7 +89,6 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
    * when a member departs.
    *
    * @throws ReplyException the exception passed back in reply
-   * @throws InterruptedException
    * @throws ReliableReplyException when a member departs
    */
   public void waitForReliableDelivery()
@@ -100,9 +99,6 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
   /**
    * @see #waitForReliableDelivery()
    * @param msecs the number of milliseconds to wait for replies
-   * @throws ReplyException
-   * @throws InterruptedException
-   * @throws ReliableReplyException
    */
   public void waitForReliableDelivery(long msecs)
       throws ReplyException, InterruptedException, ReliableReplyException {

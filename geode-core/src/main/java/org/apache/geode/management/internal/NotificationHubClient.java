@@ -46,7 +46,6 @@ public class NotificationHubClient {
    *
    * it does not throw any exception. it will capture all exception and log a warning
    *
-   * @param event
    */
   public void sendNotification(EntryEvent<NotificationKey, Notification> event) {
 

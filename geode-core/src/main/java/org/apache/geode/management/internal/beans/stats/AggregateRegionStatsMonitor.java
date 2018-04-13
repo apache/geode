@@ -27,10 +27,6 @@ import org.apache.geode.internal.statistics.ValueMonitor;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor.DefaultHashMap;
 
 
-/**
- *
- *
- */
 public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
 
 
@@ -169,7 +165,6 @@ public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
      * Remove last sample value from the aggregate. Last Sampled value can be obtained from the
      * DefaultHashMap for the disk
      *
-     * @param stats
      */
     public void decreaseParStats(Statistics stats) {
       synchronized (statsMap) {

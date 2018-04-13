@@ -759,7 +759,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * Test hook for delaying the creation of new views. This should be invoked before this member
    * becomes coordinator and creates its ViewCreator thread.
    *
-   * @param millis
    */
   public void delayViewCreationForTest(int millis) {
     requestCollectionInterval = millis;
@@ -1483,7 +1482,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /**
    * Sends a message declaring a network partition to the members of the given view via Messenger
    *
-   * @param view
    */
   void sendNetworkPartitionMessage(NetView view) {
     List<InternalDistributedMember> recipients = new ArrayList<>(view.getMembers());
@@ -1826,7 +1824,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /***
    * test method
    *
-   * @return ViewReplyProcessor
    */
   protected ViewReplyProcessor getPrepareViewReplyProcessor() {
     return prepareProcessor;
@@ -2080,7 +2077,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      * All views should be sent by the ViewCreator thread, so if this member becomes coordinator it
      * may have an initial view to transmit that announces the removal of the former coordinator to
      *
-     * @param newView
      * @param leaving - members leaving in this view
      * @param removals - members crashed in this view
      */
@@ -2328,7 +2324,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      * Create a new membership view and send it to members (including crashed members). Returns
      * false if the view cannot be prepared successfully, true otherwise
      *
-     * @throws InterruptedException
      */
     void createAndSendView(List<DistributionMessage> requests)
         throws InterruptedException, ViewAbandonedException {
@@ -2471,7 +2466,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     /**
      * This handles the 2-phase installation of the view
      *
-     * @throws InterruptedException
      */
     void prepareAndSendView(NetView newView, List<InternalDistributedMember> joinReqs,
         Set<InternalDistributedMember> leaveReqs, Set<InternalDistributedMember> removalReqs)
@@ -2628,7 +2622,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      * performs health checks on the collection of members, removing any that are found to be
      * healthy
      *
-     * @param suspects
      */
     private void removeHealthyMembers(final Set<InternalDistributedMember> suspects)
         throws InterruptedException {

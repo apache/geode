@@ -89,9 +89,6 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
   /**
    * GatewayReceiver creation happens here.
    *
-   * @param cache
-   * @param gatewayReceiverCreateArgs
-   * @return GatewayReceiver
    */
   GatewayReceiver createGatewayReceiver(Cache cache,
       GatewayReceiverFunctionArgs gatewayReceiverCreateArgs)

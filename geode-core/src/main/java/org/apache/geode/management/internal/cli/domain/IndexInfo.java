@@ -39,8 +39,6 @@ public class IndexInfo implements Serializable {
   /***
    * Used for passing index information for destroying index.
    *
-   * @param indexName
-   * @param regionPath
    */
   public IndexInfo(String indexName, String regionPath) {
     this.indexName = indexName;
