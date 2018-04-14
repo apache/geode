@@ -65,6 +65,9 @@ public interface ClusterConfigurationService {
   default <T extends CacheElement> T getCustomCacheElement(String group, String id,
       Class<T> classT) {
     CacheConfig cacheConfig = getCacheConfig(group);
+    if (cacheConfig == null) {
+      return null;
+    }
     return findCustomCacheElement(cacheConfig, id, classT);
   }
 
