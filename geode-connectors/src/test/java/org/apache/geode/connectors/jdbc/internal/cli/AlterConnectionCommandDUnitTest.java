@@ -33,8 +33,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -65,6 +65,7 @@ public class AlterConnectionCommandDUnitTest {
     server = startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    // gfsh.executeAndAssertThat("create region --name=/Foo --type=REPLICATE").statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_CONNECTION);
     csb.addOption(CREATE_CONNECTION__NAME, "name");
@@ -86,7 +87,6 @@ public class AlterConnectionCommandDUnitTest {
     csb.addOption(ALTER_CONNECTION__PARAMS, "Key1:Value1,Key22:Value22");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
           .getCacheXmlContent();
@@ -95,7 +95,7 @@ public class AlterConnectionCommandDUnitTest {
 
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      ConnectionConfiguration config =
+      ConnectorService.Connection config =
           cache.getService(JdbcConnectorService.class).getConnectionConfig("name");
       assertThat(config.getUrl()).isEqualTo("newUrl");
       assertThat(config.getUser()).isEqualTo("newUsername");
@@ -124,7 +124,19 @@ public class AlterConnectionCommandDUnitTest {
 
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      ConnectionConfiguration config =
+      ConnectorService.Connection config =
+          cache.getService(JdbcConnectorService.class).getConnectionConfig("name");
+      assertThat(config.getUrl()).isNull();
+      assertThat(config.getUser()).isNull();
+      assertThat(config.getPassword()).isNull();
+      assertThat(config.getConnectionProperties()).hasSize(0);
+    });
+
+    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
+
+    server2.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      ConnectorService.Connection config =
           cache.getService(JdbcConnectorService.class).getConnectionConfig("name");
       assertThat(config.getUrl()).isNull();
       assertThat(config.getUser()).isNull();

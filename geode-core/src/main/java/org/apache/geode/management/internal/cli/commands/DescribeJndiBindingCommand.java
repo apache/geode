@@ -55,6 +55,10 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
         (InternalClusterConfigurationService) getConfigurationService();
     if (ccService != null) {
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
+      if (cacheConfig == null) {
+        return ResultBuilder
+            .createUserErrorResult(String.format("JNDI binding : %s not found", bindingName));
+      }
       List<JndiBindingsType.JndiBinding> jndiBindings = cacheConfig.getJndiBindings();
 
       if (jndiBindings.stream().noneMatch(b -> b.getJndiName().equals(bindingName)

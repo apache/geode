@@ -2069,8 +2069,8 @@ fromData,41
 toData,41
 
 org/apache/geode/management/internal/cli/functions/CliFunctionResult,4
-fromData,61
-fromDataPre_GFE_8_0_0_0,34
+fromData,58
+fromDataPre_GFE_8_0_0_0,31
 toData,49
 toDataPre_GFE_8_0_0_0,25
 

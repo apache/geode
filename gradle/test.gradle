@@ -105,7 +105,7 @@ subprojects {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.UnitTest'
     }
-    
+
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
@@ -122,7 +122,7 @@ subprojects {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
   }
-  
+
   task distributedTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
@@ -130,12 +130,12 @@ subprojects {
     }
     forkEvery 1
   }
-  
+
   task flakyTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
-    
+
     forkEvery 1
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
@@ -345,15 +345,15 @@ subprojects {
         //force tests to be run every time by
         //saying the results are never up to date
         outputs.upToDateWhen { false }
-    
+
         def resultsDir = TestPropertiesWriter.testResultsDir(buildDir, test.name)
         workingDir resultsDir.absolutePath
-        
+
         reports.html.destination = file "$buildDir/reports/$name"
         testLogging {
           exceptionFormat = 'full'
         }
-        
+
         maxHeapSize '768m'
 //        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea',"-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps"]
         jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
@@ -371,6 +371,12 @@ subprojects {
         def log4jLocation = System.getProperty('log4j.configurationFile')
         if (log4jLocation != null) {
           systemProperty 'log4j.configurationFile', log4jLocation
+        }
+
+        // The distributed tests seem to need to use /tmp directly,
+        // so exclude them from using the supplied temp directory.
+        if (! test.name.contains("distributed")) {
+          systemProperty 'java.io.tmpdir', System.getProperty('java.io.tmpdir')
         }
 
         def eol = System.getProperty('line.separator')

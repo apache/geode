@@ -44,9 +44,6 @@ public class PartitionedRegionTestHelper
    * This method creates a partitioned region with all the default values. The cache created is a
    * loner, so this is only suitable for single VM tests.
    *
-   * @param regionname
-   * @return region
-   * @throws RegionExistsException
    */
 
   public static Region createPartionedRegion(String regionname) throws RegionExistsException {
@@ -179,9 +176,6 @@ public class PartitionedRegionTestHelper
   /**
    * This function is used to create serializable object for the partition region test.
    *
-   * @param name
-   * @param id
-   * @return
    */
   public static SerializableObject createPRSerializableObject(String name, int id) {
     Object obj = new SerializableObject(name, id);
@@ -193,7 +187,6 @@ public class PartitionedRegionTestHelper
    * This method creates cache. The cache created is a loner, so this is only suitable for single VM
    * tests.
    *
-   * @return
    */
   public static synchronized InternalCache createCache() {
     if (cache == null) {
@@ -227,8 +220,6 @@ public class PartitionedRegionTestHelper
   /**
    * This method is used to return existing region.
    *
-   * @param PRName
-   * @return
    */
   public static Region getExistingRegion(String PRName) {
     createCache();
@@ -239,7 +230,6 @@ public class PartitionedRegionTestHelper
    * Gets the log writer for the The cache created is a loner, so this is only suitable for single
    * VM tests.
    *
-   * @return LogWriter
    */
   public static LogWriter getLogger() {
     return createCache().getLogger();

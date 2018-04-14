@@ -111,7 +111,6 @@ public class GFSnapshot {
    *
    * @param snapshot the snapshot file
    * @param region the region name
-   * @param cache
    * @return the callback to allow the invoker to provide the snapshot entries
    * @throws IOException error writing the snapshot file
    */

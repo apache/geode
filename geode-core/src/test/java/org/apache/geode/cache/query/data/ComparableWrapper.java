@@ -23,9 +23,6 @@ package org.apache.geode.cache.query.data;
 
 import java.io.Serializable;
 
-/**
- *
- */
 public class ComparableWrapper implements Comparable, Serializable {
   private int val;
 

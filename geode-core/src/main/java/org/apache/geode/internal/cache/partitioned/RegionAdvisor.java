@@ -449,7 +449,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   /**
    * Iterates over all buckets and marks them sick if the given member hosts the bucket.
    *
-   * @param member
    * @param sick true if the bucket should be marked sick, false if healthy
    */
   public void markBucketsOnMember(DistributedMember member, boolean sick) {
@@ -488,9 +487,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * throws LowMemoryException if the given bucket is hosted on a member which has crossed the
    * ResourceManager threshold.
    *
-   * @param bucketId
    * @param key for bucketId used in exception
-   * @throws LowMemoryException
    */
   public void checkIfBucketSick(final int bucketId, final Object key) throws LowMemoryException {
     if (MemoryThresholds.isLowMemoryExceptionDisabled()) {
@@ -841,7 +838,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * Returns the list of all FixedPartitionAttributes defined across all members of given
    * partitioned region for a given FixedPartitionAttributes
    *
-   * @param fpa
    * @return the list of same partitions defined on other nodes(can be primary or secondary)
    */
   public List<FixedPartitionAttributesImpl> adviseSameFPAs(final FixedPartitionAttributesImpl fpa) {
@@ -900,7 +896,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   /**
    * TODO remove this when Primary Bucket impl. is permanently in place
    *
-   * @param limitNodeList
    * @return the node??
    */
   public Node adviseSmallestDataStore(final List limitNodeList) {
@@ -1210,7 +1205,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * Get the most recent primary node for the bucketId. Returns null if no primary can be found
    * within {@link DistributionConfig#getMemberTimeout}.
    *
-   * @param bucketId
    * @return the Node managing the primary copy of the bucket
    */
   public InternalDistributedMember getPrimaryMemberForBucket(int bucketId) {

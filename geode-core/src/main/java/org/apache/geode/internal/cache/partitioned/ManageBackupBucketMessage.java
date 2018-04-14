@@ -96,7 +96,6 @@ public class ManageBackupBucketMessage extends PartitionMessage {
    * @param r the PartitionedRegion to which the bucket belongs
    * @param bucketId the unique identifier of the bucket
    * @param isRebalance true if directed by full rebalance operation
-   * @param replaceOfflineData
    * @param moveSource If this is a bucket move.
    * @param forceCreation ignore checks which may cause the bucket not to be created
    * @return the processor used to fetch the returned Node if any
@@ -194,7 +193,6 @@ public class ManageBackupBucketMessage extends PartitionMessage {
    * Assists the toString method in reporting the contents of this message
    *
    * @see PartitionMessage#toString()
-   * @param buff
    */
   @Override
   protected void appendFields(StringBuilder buff) {

@@ -121,7 +121,6 @@ public class HARegion extends DistributedRegion {
   /**
    * void implementation over-riding the method to allow localDestroy on mirrored regions
    *
-   * @param event
    */
   @Override
   protected void checkIfReplicatedAndLocalDestroy(EntryEventImpl event) {}
@@ -245,10 +244,7 @@ public class HARegion extends DistributedRegion {
    * @param cache the cache that owns this region
    * @param ra attributes of the region
    * @return an instance of an HARegion
-   * @throws TimeoutException
    * @throws RegionExistsException if a region of the same name exists in the same Cache
-   * @throws IOException
-   * @throws ClassNotFoundException
    */
   public static HARegion getInstance(String regionName, InternalCache cache, HARegionQueue hrq,
       RegionAttributes ra)
@@ -456,9 +452,7 @@ public class HARegion extends DistributedRegion {
    * Record cache event state for a potential initial image provider. This is used to install event
    * state when the sender is selected as initial image provider.
    *
-   * @param sender
    *
-   * @param eventState
    */
   @Override
   public void recordEventState(InternalDistributedMember sender, Map eventState) {
@@ -485,9 +479,6 @@ public class HARegion extends DistributedRegion {
 
   /** HARegions have their own advisors so that interest registration state can be tracked */
   public static class HARegionAdvisor extends CacheDistributionAdvisor {
-    /**
-     * @param region
-     */
     private HARegionAdvisor(CacheDistributionAdvisee region) {
       super(region);
     }

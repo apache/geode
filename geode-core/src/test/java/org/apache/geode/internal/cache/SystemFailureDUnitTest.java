@@ -90,8 +90,6 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
   /**
    * @see OutOfMemoryError
-   * @throws CacheException
-   * @throws InterruptedException
    */
   @Ignore("TODO")
   @Test
@@ -112,8 +110,6 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
   /**
    * @see OutOfMemoryError
-   * @throws CacheException
-   * @throws InterruptedException
    */
   @Ignore("TODO")
   @Test
@@ -135,8 +131,6 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
   /**
    * @see OutOfMemoryError
-   * @throws CacheException
-   * @throws InterruptedException
    */
   @Ignore("TODO")
   @Test
@@ -158,8 +152,6 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
   /**
    * @see InternalError
-   * @throws CacheException
-   * @throws InterruptedException
    */
   @Ignore("TODO")
   @Test
@@ -179,8 +171,6 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
   /**
    * @see UnknownError
-   * @throws CacheException
-   * @throws InterruptedException
    */
   @Ignore("TODO")
   @Test

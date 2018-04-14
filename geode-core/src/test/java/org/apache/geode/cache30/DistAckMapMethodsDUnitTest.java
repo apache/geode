@@ -390,11 +390,6 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
 
 
   // following is the implementation of the methods of Map to use in dunit test cases.
-  /*
-   *
-   *
-   */
-
   public static Object putMethod(Object ob) {
     Object obj = null;
     try {

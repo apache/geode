@@ -312,7 +312,6 @@ public class PRHARedundancyProvider {
    *
    * @param bucketId The bucket we are working on
    * @param newBucketSize size to create it
-   * @param excludedMembers
    * @param alreadyUsed members who already seem to have the bucket
    * @param timeOut point at which to fail
    * @param allStores the set of data stores to choose from
@@ -1053,10 +1052,7 @@ public class PRHARedundancyProvider {
    * Creates bucket with ID bucketId on targetNode. This method will also create the bucket for all
    * of the child colocated PRs.
    *
-   * @param bucketId
-   * @param targetNMember
    * @param isRebalance true if bucket creation is directed by rebalancing
-   * @param replaceOfflineData
    * @return true if the bucket was sucessfully created
    */
   public boolean createBackupBucketOnMember(final int bucketId,
@@ -1157,9 +1153,6 @@ public class PRHARedundancyProvider {
   /**
    * Creates bucket with ID bucketId on targetNode.
    *
-   * @param bucketId
-   * @param targetNMember
-   * @param newBucketSize
    * @param forceCreation inform the targetMember it must attempt host the bucket, appropriately
    *        ignoring it's maximums
    * @return a response object
@@ -1258,9 +1251,6 @@ public class PRHARedundancyProvider {
    * case of primary it returns the same node whereas in case of secondary it will return the least
    * loaded datastore which is hosting the bucketid.
    *
-   * @param alreadyUsed
-   * @param bucketId
-   * @param prName
    * @return InternalDistributedMember colocated data store
    * @since GemFire 5.8Beta
    */
@@ -2166,7 +2156,6 @@ public class PRHARedundancyProvider {
      * @param expectedCount the number of bucket owners to wait for
      * @param expectedOwners the list of owners used when a departure is detected
      * @return if no problematic departures are detected, the primary
-     * @throws InterruptedException
      */
     public BucketMembershipObserverResults waitForOwnersGetPrimary(final int expectedCount,
         final Collection<InternalDistributedMember> expectedOwners, String partitionName)

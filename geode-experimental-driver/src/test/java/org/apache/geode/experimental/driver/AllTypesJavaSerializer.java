@@ -14,15 +14,7 @@
  */
 package org.apache.geode.experimental.driver;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
-import com.google.protobuf.ByteString;
-
-import org.apache.geode.cache.Cache;
 
 public class AllTypesJavaSerializer extends JavaSerializer {
   public AllTypesJavaSerializer() {}

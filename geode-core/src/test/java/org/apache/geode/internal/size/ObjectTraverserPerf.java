@@ -23,9 +23,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 
-/**
- *
- */
 public class ObjectTraverserPerf {
 
   private static final int ITERATIONS = 1000;

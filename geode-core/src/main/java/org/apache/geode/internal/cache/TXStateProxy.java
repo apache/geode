@@ -57,7 +57,6 @@ public interface TXStateProxy extends TXStateInterface {
    * establishes the synchronization thread used for client/server beforeCompletion/afterCompletion
    * processing
    *
-   * @param sync
    */
   void setSynchronizationRunnable(TXSynchronizationRunnable sync);
 
@@ -89,7 +88,6 @@ public interface TXStateProxy extends TXStateInterface {
    * single transaction. It becomes necessary to set the progress flag when the second request
    * arrives. When the requeset is processed, progress flag must be reset. see bug 43350
    *
-   * @param progress
    */
   void setInProgress(boolean progress);
 

@@ -35,9 +35,6 @@ import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.VersionSource;
 
-/**
- *
- */
 public class DistributedTombstoneOperation extends DistributedCacheOperation {
   private enum TOperation {
     GC,

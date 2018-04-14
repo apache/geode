@@ -80,8 +80,6 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create cache
    *
-   * @return
-   * @throws Exception
    */
   private InternalCache createCache() throws Exception {
     Properties props = new Properties();
@@ -207,7 +205,6 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create a client with 2 regions sharing a common writer
    *
-   * @throws Exception
    */
 
   public static void createRegion() throws Exception {
@@ -222,12 +219,6 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
   private static HARegionQueue hrq = null;
 
   // private static int counter = 0;
-
-  /**
-   *
-   *
-   * @throws Exception
-   */
 
   public static void createRegionQueue() throws Exception {
     HARegionDUnitTest test = new HARegionDUnitTest();

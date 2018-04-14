@@ -20,20 +20,18 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
-
 
 public class DestroyConnectionCommand extends InternalGfshCommand {
   static final String DESTROY_CONNECTION = "destroy jdbc-connection";
@@ -41,8 +39,6 @@ public class DestroyConnectionCommand extends InternalGfshCommand {
   static final String DESTROY_CONNECTION__NAME = "name";
   static final String DESTROY_CONNECTION__NAME__HELP =
       "Name of the jdbc connection to be destroyed.";
-
-  private static final String ERROR_PREFIX = "ERROR: ";
 
   @CliCommand(value = DESTROY_CONNECTION, help = DESTROY_CONNECTION__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -55,58 +51,27 @@ public class DestroyConnectionCommand extends InternalGfshCommand {
     Set<DistributedMember> targetMembers = getMembers(null, null);
 
     // action
-    ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
-        execute(new DestroyConnectionFunction(), name, targetMembers);
+    List<CliFunctionResult> results =
+        executeAndGetFunctionResult(new DestroyConnectionFunction(), name, targetMembers);
 
-    // output
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
-    Result result = ResultBuilder.buildResult(tabularResultData);
-    updateClusterConfiguration(result, xmlEntity);
-    return result;
-  }
+    boolean persisted = false;
+    ClusterConfigurationService ccService = getConfigurationService();
 
-  ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
-      DestroyConnectionFunction function, String connectionName,
-      Set<DistributedMember> targetMembers) {
-    return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
-        connectionName, targetMembers);
-  }
-
-  private XmlEntity fillTabularResultData(
-      ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector,
-      TabularResultData tabularResultData) {
-    XmlEntity xmlEntity = null;
-
-    for (CliFunctionResult oneResult : resultCollector.getResult()) {
-      if (oneResult.isSuccessful()) {
-        xmlEntity = addSuccessToResults(tabularResultData, oneResult);
-      } else {
-        addErrorToResults(tabularResultData, oneResult);
+    if (ccService != null && results.stream().filter(CliFunctionResult::isSuccessful).count() > 0) {
+      ConnectorService service =
+          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
+      if (service != null) {
+        ConnectorService.Connection conn =
+            ccService.findIdentifiable(service.getConnection(), name);
+        service.getConnection().remove(conn);
+        ccService.saveCustomCacheElement("cluster", service);
+        persisted = true;
       }
     }
 
-    return xmlEntity;
-  }
+    CommandResult commandResult = ResultBuilder.buildResult(results);
+    commandResult.setCommandPersisted(persisted);
 
-  private XmlEntity addSuccessToResults(TabularResultData tabularResultData,
-      CliFunctionResult oneResult) {
-    tabularResultData.accumulate("Member", oneResult.getMemberIdOrName());
-    tabularResultData.accumulate("Status", oneResult.getMessage());
-    return oneResult.getXmlEntity();
-  }
-
-  private void addErrorToResults(TabularResultData tabularResultData, CliFunctionResult oneResult) {
-    tabularResultData.accumulate("Member", oneResult.getMemberIdOrName());
-    tabularResultData.accumulate("Status", ERROR_PREFIX + oneResult.getMessage());
-    tabularResultData.setStatus(Result.Status.ERROR);
-  }
-
-  private void updateClusterConfiguration(final Result result, final XmlEntity xmlEntity) {
-    if (xmlEntity != null) {
-      persistClusterConfiguration(result,
-          () -> ((InternalClusterConfigurationService) getConfigurationService())
-              .addXmlEntity(xmlEntity, null));
-    }
+    return commandResult;
   }
 }

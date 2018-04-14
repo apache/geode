@@ -298,7 +298,6 @@ public class ClientHealthMonitor {
    * that is inherited from the TXManagerImpl. If that setting is non-positive we expire the states
    * immediately
    *
-   * @param proxyID
    */
   private void expireTXStates(ClientProxyMembershipID proxyID) {
     final TXManagerImpl txMgr = (TXManagerImpl) this._cache.getCacheTransactionManager();

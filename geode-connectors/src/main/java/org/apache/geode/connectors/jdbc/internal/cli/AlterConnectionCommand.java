@@ -20,24 +20,21 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-
-public class AlterConnectionCommand extends InternalGfshCommand {
+public class AlterConnectionCommand extends GfshCommand {
   static final String ALTER_JDBC_CONNECTION = "alter jdbc-connection";
   static final String ALTER_JDBC_CONNECTION__HELP =
       "Alter properties for an existing jdbc connection.";
@@ -56,8 +53,6 @@ public class AlterConnectionCommand extends InternalGfshCommand {
   static final String ALTER_CONNECTION__PARAMS__HELP =
       "New additional parameters to use when connecting to the database. This replaces all previously existing parameters.";
 
-  private static final String ERROR_PREFIX = "ERROR: ";
-
   @CliCommand(value = ALTER_JDBC_CONNECTION, help = ALTER_JDBC_CONNECTION__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -75,68 +70,49 @@ public class AlterConnectionCommand extends InternalGfshCommand {
           help = ALTER_CONNECTION__PARAMS__HELP) String[] params) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
-    ConnectionConfiguration configuration = getArguments(name, url, user, password, params);
+    ConnectorService.Connection newConnection =
+        new ConnectorService.Connection(name, url, user, password, params);
 
-    // action
-    ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
-        execute(new AlterConnectionFunction(), configuration, targetMembers);
+    ClusterConfigurationService ccService = getConfigurationService();
 
-    // output
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
-    Result result = ResultBuilder.buildResult(tabularResultData);
-    updateClusterConfiguration(result, xmlEntity);
-    return result;
-  }
-
-  ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
-      AlterConnectionFunction function, ConnectionConfiguration configuration,
-      Set<DistributedMember> targetMembers) {
-    return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
-        configuration, targetMembers);
-  }
-
-  private ConnectionConfiguration getArguments(String name, String url, String user,
-      String password, String[] params) {
-    ConnectionConfigBuilder builder = new ConnectionConfigBuilder().withName(name).withUrl(url)
-        .withUser(user).withPassword(password).withParameters(params);
-    return builder.build();
-  }
-
-  private XmlEntity fillTabularResultData(
-      ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector,
-      TabularResultData tabularResultData) {
-    XmlEntity xmlEntity = null;
-
-    for (CliFunctionResult oneResult : resultCollector.getResult()) {
-      if (oneResult.isSuccessful()) {
-        xmlEntity = addSuccessToResults(tabularResultData, oneResult);
-      } else {
-        addErrorToResults(tabularResultData, oneResult);
+    // if cc is running, you can only alter connection available in cc service.
+    if (ccService != null) {
+      // search for the connection that has this id to see if it exists
+      ConnectorService service =
+          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
+      if (service == null) {
+        throw new EntityNotFoundException("connection with name '" + name + "' does not exist.");
+      }
+      ConnectorService.Connection conn = ccService.findIdentifiable(service.getConnection(), name);
+      if (conn == null) {
+        throw new EntityNotFoundException("connection with name '" + name + "' does not exist.");
       }
     }
 
-    return xmlEntity;
-  }
+    // action
+    List<CliFunctionResult> results =
+        executeAndGetFunctionResult(new AlterConnectionFunction(), newConnection, targetMembers);
 
-  private XmlEntity addSuccessToResults(TabularResultData tabularResultData,
-      CliFunctionResult oneResult) {
-    tabularResultData.accumulate("Member", oneResult.getMemberIdOrName());
-    tabularResultData.accumulate("Status", oneResult.getMessage());
-    return oneResult.getXmlEntity();
-  }
-
-  private void addErrorToResults(TabularResultData tabularResultData, CliFunctionResult oneResult) {
-    tabularResultData.accumulate("Member", oneResult.getMemberIdOrName());
-    tabularResultData.accumulate("Status", ERROR_PREFIX + oneResult.getMessage());
-    tabularResultData.setStatus(Result.Status.ERROR);
-  }
-
-  private void updateClusterConfiguration(final Result result, final XmlEntity xmlEntity) {
-    if (xmlEntity != null) {
-      persistClusterConfiguration(result,
-          () -> ((InternalClusterConfigurationService) getConfigurationService())
-              .addXmlEntity(xmlEntity, null));
+    // update the cc with the merged connection returned from the server
+    boolean persisted = false;
+    if (ccService != null && results.stream().filter(CliFunctionResult::isSuccessful).count() > 0) {
+      ConnectorService service =
+          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
+      if (service == null) {
+        service = new ConnectorService();
+      }
+      CliFunctionResult successResult =
+          results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
+      ConnectorService.Connection mergedConnection =
+          (ConnectorService.Connection) successResult.getResultObject();
+      ccService.removeFromList(service.getConnection(), name);
+      service.getConnection().add(mergedConnection);
+      ccService.saveCustomCacheElement("cluster", service);
+      persisted = true;
     }
+
+    CommandResult commandResult = ResultBuilder.buildResult(results);
+    commandResult.setCommandPersisted(persisted);
+    return commandResult;
   }
 }

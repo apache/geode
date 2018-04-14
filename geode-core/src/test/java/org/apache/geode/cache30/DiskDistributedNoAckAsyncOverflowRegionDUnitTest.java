@@ -26,10 +26,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- *
- *
- */
 @Category(DistributedTest.class)
 public class DiskDistributedNoAckAsyncOverflowRegionDUnitTest
     extends DiskDistributedNoAckRegionTestCase {

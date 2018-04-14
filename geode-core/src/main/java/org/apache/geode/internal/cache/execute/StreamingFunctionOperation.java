@@ -26,8 +26,6 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-/**
- */
 public abstract class StreamingFunctionOperation {
 
   protected final InternalDistributedSystem sys;

@@ -21,16 +21,20 @@ import static org.apache.geode.internal.config.JAXBServiceTest.setBasicValues;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.config.JAXBServiceTest;
@@ -50,7 +54,7 @@ public class InternalClusterConfigurationServiceTest {
   public void setUp() throws Exception {
     service = spy(InternalClusterConfigurationService.class);
     configuration = new Configuration("cluster");
-    doReturn(configuration).when(service).getConfiguration(any());
+    doReturn(configuration).when(service).getConfiguration("cluster");
     doReturn(mock(Region.class)).when(service).getConfigurationRegion();
     doReturn(true).when(service).lockSharedConfiguration();
     doNothing().when(service).unlockSharedConfiguration();
@@ -165,5 +169,30 @@ public class InternalClusterConfigurationServiceTest {
     service.deleteCustomRegionElement("cluster", "testRegion", "elementOne", ElementOne.class);
     System.out.println(configuration.getCacheXmlContent());
     assertThat(configuration.getCacheXmlContent()).doesNotContain("custom-one>");
+  }
+
+  @Test
+  public void getNonExistingGroupConfigShouldReturnNull() {
+    assertThat(service.getCacheConfig("non-existing-group")).isNull();
+  }
+
+  @Test
+  public void getExistingGroupConfigShouldReturnNullIfNoXml() {
+    Configuration groupConfig = new Configuration("some-new-group");
+    doReturn(groupConfig).when(service).getConfiguration("some-new-group");
+    CacheConfig groupCacheConfig = service.getCacheConfig("some-new-group");
+    assertThat(groupCacheConfig).isNull();
+  }
+
+  @Test
+  public void updateShouldInsertIfNotExist() {
+    doCallRealMethod().when(service).updateCacheConfig(any(), any());
+    doCallRealMethod().when(service).getCacheConfig(any());
+    Region region = mock(Region.class);
+    doReturn(region).when(service).getConfigurationRegion();
+
+    service.updateCacheConfig("non-existing-group", cc -> cc);
+
+    verify(region).put(eq("non-existing-group"), any());
   }
 }

@@ -235,7 +235,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   /**
    * test that puts in a server are rejected when a remote VM crosses critical threshold
    *
-   * @throws Exception
    */
   private void doDistributedRegionRemotePutRejection(boolean localDestroy, boolean cacheClose)
       throws Exception {
@@ -339,7 +338,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   /**
    * test that puts in a client are rejected when a remote VM crosses critical threshold
    *
-   * @throws Exception
    */
   @Test
   public void testDistributedRegionRemoteClientPutRejection() throws Exception {
@@ -383,7 +381,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    * test that disabling threshold does not cause remote event and remote DISABLED events are
    * delivered
    *
-   * @throws Exception
    */
   @Test
   public void testDisabledThresholds() throws Exception {
@@ -437,7 +434,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   /**
    * Make sure appropriate events are delivered when moving between states.
    *
-   * @throws Exception
    */
   @Test
   public void testEventDelivery() throws Exception {
@@ -1517,7 +1513,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    * events useWaitCriterion must be true
    *
    * @param vm the vm where verification should take place
-   * @param state
    * @param value the expected value
    * @param useWaitCriterion must be true for remote events
    */
@@ -1817,7 +1812,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    * Test that LocalRegion cache Loads are not stored in the Region if the VM is in a critical
    * state, then test that they are allowed once the VM is no longer critical
    *
-   * @throws Exception
    */
   @Test
   public void testLRLoadRejection() throws Exception {
@@ -1943,7 +1937,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    * the local VM is in a critical state. Once the VM has moved to a safe state then test that they
    * are allowed.
    *
-   * @throws Exception
    */
   @Test
   public void testDRLoadRejection() throws Exception {
@@ -2156,7 +2149,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    * Test that a Partitioned Region loader invocation is rejected if the VM with the bucket is in a
    * critical state.
    *
-   * @throws Exception
    */
   @Test
   public void testPRLoadRejection() throws Exception {

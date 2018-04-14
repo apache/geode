@@ -27,8 +27,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -80,7 +80,7 @@ public class CreateConnectionCommandDUnitTest {
 
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      ConnectionConfiguration config =
+      ConnectorService.Connection config =
           cache.getService(JdbcConnectorService.class).getConnectionConfig("name");
       assertThat(config.getUrl()).isEqualTo("url");
       assertThat(config.getUser()).isEqualTo("username");

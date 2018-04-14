@@ -451,7 +451,6 @@ public abstract class AbstractExecution implements InternalExecution {
    * Returns the function attributes defined by the functionId, returns null if no function is found
    * for the specified functionId
    *
-   * @param functionId
    * @return byte[]
    * @throws FunctionException if functionID passed is null
    * @since GemFire 6.6

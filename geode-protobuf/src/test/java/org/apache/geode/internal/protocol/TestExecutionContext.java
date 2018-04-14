@@ -22,8 +22,6 @@ import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorMessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.state.AcceptMessages;
 import org.apache.geode.internal.security.SecurityService;
 
 public class TestExecutionContext {

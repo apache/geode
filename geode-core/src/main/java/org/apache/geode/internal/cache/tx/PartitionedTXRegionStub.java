@@ -269,7 +269,6 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
   /**
-   * @param e
    * @return true if the cause of the FRE is a BucketNotFoundException
    */
   private boolean isBucketNotFoundException(ForceReattemptException e) {

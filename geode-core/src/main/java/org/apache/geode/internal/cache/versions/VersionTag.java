@@ -216,7 +216,6 @@ public abstract class VersionTag<T extends VersionSource>
   /**
    * Set canonical ID objects into this version tag using the DM's cache of IDs
    *
-   * @param distributionManager
    */
   public void setCanonicalIDs(DistributionManager distributionManager) {}
 
@@ -271,7 +270,6 @@ public abstract class VersionTag<T extends VersionSource>
   /**
    * set or clear the flag that this tag was blessed by a conflict resolver
    *
-   * @param flag
    * @return this tag
    */
   public VersionTag setAllowedByResolver(boolean flag) {
@@ -299,7 +297,6 @@ public abstract class VersionTag<T extends VersionSource>
    * replace null member IDs with the given identifier. This is used to incorporate version
    * information into the cache that has been received from another VM
    *
-   * @param id
    */
   public void replaceNullIDs(VersionSource id) {
     if (this.memberID == null) {
@@ -456,7 +453,6 @@ public abstract class VersionTag<T extends VersionSource>
   /**
    * Creates a version tag of the appropriate type, based on the member id
    *
-   * @param memberId
    */
   public static VersionTag create(VersionSource memberId) {
     VersionTag tag;

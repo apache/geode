@@ -290,9 +290,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  /**
-   *
-   */
   @Test
   public void testQueriesWithFilterKeysOnPRLocalAndRemote() {
 
@@ -328,9 +325,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  /**
-  *
-  */
   @Test
   public void testQueriesWithFilterKeysOnPRLocalAndRemoteWithBucketDestroy() {
 
@@ -393,9 +387,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  /**
-   *
-   */
   @Test
   public void testQueriesWithFilterKeysOnPRWithBucketDestroy() {
     IgnoredException.addIgnoredException("QueryInvocationTargetException");
@@ -913,9 +904,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
   /**
    * Run query using a function executed by client on a region on server with filter.
    *
-   * @param function
-   * @param regionName
-   * @param filter
    * @return ArrayList of results
    */
   public static ArrayList runQueryOnClientUsingFunction(Function function, String regionName,
@@ -959,9 +947,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
   /**
    * Runs a {@link LocalDataSet} query on a single server.
    *
-   * @param func
-   * @param filter
-   * @param query
    * @return results in a List
    */
   private ArrayList runLDSQueryOnClientUsingFunc(Function func, Set filter, String query) {
@@ -1010,10 +995,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
   /**
    * This function puts portfolio objects into the created Region (PR or Local) *
    *
-   * @param regionName
-   * @param portfolio
-   * @param to
-   * @param from
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRPuts(final String regionName,

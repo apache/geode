@@ -77,10 +77,6 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   /**
    * Have to combine next two constructor in one and make a new class which will send Results back.
    *
-   * @param msg
-   * @param dm
-   * @param pr
-   * @param time
    */
   public PartitionedRegionFunctionResultSender(DistributionManager dm, PartitionedRegion pr,
       long time, PartitionedRegionFunctionStreamingMessage msg, Function function,
@@ -98,10 +94,6 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   /**
    * Have to combine next two constructor in one and make a new class which will send Results back.
    *
-   * @param dm
-   * @param partitionedRegion
-   * @param time
-   * @param rc
    */
   public PartitionedRegionFunctionResultSender(DistributionManager dm,
       PartitionedRegion partitionedRegion, long time, ResultCollector rc,

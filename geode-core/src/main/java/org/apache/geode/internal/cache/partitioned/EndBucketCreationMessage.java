@@ -54,7 +54,6 @@ public class EndBucketCreationMessage extends PartitionMessage {
   /**
    * Sends a message to make the recipient primary for the bucket.
    *
-   * @param acceptedMembers
    *
    * @param newPrimary the member to to become primary
    * @param pr the PartitionedRegion of the bucket

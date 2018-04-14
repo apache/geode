@@ -45,9 +45,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- *
- */
 @Category(DistributedTest.class)
 public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
 
@@ -57,9 +54,6 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
   private static int origNumChunks = InitialImageOperation.CHUNK_PERMITS;
   protected static FlowControlObserver observer;
 
-  /**
-   * @param name
-   */
   public GIIFlowControlDUnitTest() {
     super();
   }

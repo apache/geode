@@ -293,8 +293,6 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
    * @param filterInfo all client routing information
    * @param r the region affected by the event
    * @param event the event that prompted this action
-   * @param ifNew
-   * @param ifOld
    * @param processor the processor to reply to
    * @return members that could not be notified
    */

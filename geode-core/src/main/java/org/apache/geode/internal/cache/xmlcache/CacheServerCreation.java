@@ -53,8 +53,6 @@ public class CacheServerCreation extends AbstractCacheServer {
   /**
    * Constructor for retaining bridge server information during auto-reconnect
    *
-   * @param cache
-   * @param other
    */
   public CacheServerCreation(InternalCache cache, CacheServer other) {
     super(cache);
@@ -195,7 +193,6 @@ public class CacheServerCreation extends AbstractCacheServer {
    * compare returning <code>true</code>. If a port is specified, return the proper comparison.
    *
    * @param other CacheServer
-   * @return
    */
   private boolean isCacheServerPortEquals(CacheServer other) {
     return (this.getPort() == 0) ? true : this.getPort() == other.getPort();
