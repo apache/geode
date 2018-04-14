@@ -65,7 +65,6 @@ public class AlterConnectionCommandDUnitTest {
     server = startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
-    // gfsh.executeAndAssertThat("create region --name=/Foo --type=REPLICATE").statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_CONNECTION);
     csb.addOption(CREATE_CONNECTION__NAME, "name");
