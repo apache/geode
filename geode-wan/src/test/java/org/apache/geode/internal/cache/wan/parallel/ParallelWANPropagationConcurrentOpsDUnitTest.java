@@ -41,7 +41,6 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
    * Normal propagation scenario test case for a PR with only one bucket. This has been added for
    * bug# 44284.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationWithSingleBucketPR() throws Exception {
@@ -105,7 +104,6 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
    * Normal propagation scenario test case for a PR with less number of buckets. Buckets have been
    * kept to 10 for this test. This has been added for bug# 44287.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationWithLowNumberOfBuckets() throws Exception {

@@ -126,8 +126,6 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    *
    * @param agent Admin Agent instance
    * @throws OperationsException if ObjectName can't be formed for this MBean
-   * @throws MBeanRegistrationException
-   * @throws AdminException
    */
   MemberInfoWithStatsMBean(Agent agent)
       throws OperationsException, MBeanRegistrationException, AdminException {
@@ -320,9 +318,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    *
-   * @param memberId
    * @return SystemMemberJmx instance for given memberId
-   * @throws AdminException
    */
   private SystemMemberJmx findMember(String memberId) throws AdminException {
     SystemMemberJmx foundMember = null;
@@ -651,9 +647,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    *
-   * @param memberId
    * @return All the required details for a member with given memberId
-   * @throws OperationsException
    */
   public Map<String, Object> getMemberDetails(String memberId) throws OperationsException {
     Map<String, Object> allDetails = new TreeMap<String, Object>();
@@ -747,7 +741,6 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    *
-   * @param snapshot
    * @return Map of client details
    */
   @SuppressWarnings("rawtypes")

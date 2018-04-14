@@ -89,7 +89,6 @@ public class StatArchiveHandler implements SampleHandler {
   /**
    * Initializes the stat archiver with nanosTimeStamp.
    *
-   * @param nanosTimeStamp
    */
   public void initialize(long nanosTimeStamp) {
     changeArchiveFile(false, nanosTimeStamp);
@@ -99,7 +98,6 @@ public class StatArchiveHandler implements SampleHandler {
   /**
    * Closes any {@link StatArchiveWriter} currently in use by this handler.
    *
-   * @throws GemFireException
    */
   public void close() throws GemFireException {
     synchronized (this) {
@@ -266,7 +264,6 @@ public class StatArchiveHandler implements SampleHandler {
    * {@link StatArchiveHandlerConfig#getArchiveDiskSpaceLimit() disk space limit}.
    *
    * @param newFile the new archive file to use or "" to disable archiving
-   * @param nanosTimeStamp
    */
   protected void changeArchiveFile(File newFile, long nanosTimeStamp) {
     changeArchiveFile(newFile, true, nanosTimeStamp);
@@ -291,7 +288,6 @@ public class StatArchiveHandler implements SampleHandler {
    * @param resetHandler true if the handler should reset itself with the SampleCollector in order
    *        to receive allocation notifications about all resource types and instances
    *
-   * @param nanosTimeStamp
    */
   private void changeArchiveFile(boolean resetHandler, long nanosTimeStamp) {
     changeArchiveFile(this.config.getArchiveFileName(), resetHandler, nanosTimeStamp);
@@ -309,9 +305,6 @@ public class StatArchiveHandler implements SampleHandler {
    * removing and re-adding itself in order to receive allocation notifications about all resource
    * types and instances.
    *
-   * @param newFile
-   * @param resetHandler
-   * @param nanosTimeStamp
    */
   private void changeArchiveFile(File newFile, boolean resetHandler, long nanosTimeStamp) {
     final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE);

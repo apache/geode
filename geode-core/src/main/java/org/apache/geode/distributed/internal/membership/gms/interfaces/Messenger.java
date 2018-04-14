@@ -86,7 +86,6 @@ public interface Messenger extends Service {
   /**
    * Get the public key of member.
    *
-   * @param mbr
    * @return byte[] public key for member
    */
   byte[] getPublicKey(InternalDistributedMember mbr);
@@ -94,8 +93,6 @@ public interface Messenger extends Service {
   /**
    * Set public key of member.
    *
-   * @param publickey
-   * @param mbr
    */
 
   void setPublicKey(byte[] publickey, InternalDistributedMember mbr);
@@ -103,7 +100,6 @@ public interface Messenger extends Service {
   /**
    * Set cluster key in local member.Memebr calls when it gets cluster key in join response
    *
-   * @param clusterSecretKey
    */
   void setClusterSecretKey(byte[] clusterSecretKey);
 

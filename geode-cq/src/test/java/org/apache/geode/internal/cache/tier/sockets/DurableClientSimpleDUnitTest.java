@@ -2500,7 +2500,6 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
    * Test functionality to close the cq and drain all events from the ha queue from the server This
    * draining should not affect events that still have register interest
    *
-   * @throws Exception
    */
   @Test
   public void testCloseAllCqsAndDrainEvents() throws Exception {

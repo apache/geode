@@ -78,7 +78,6 @@ public class ValueWrapper implements DataSerializable {
    * get and replace, use ValueWrapper instances from this method which only uses cas version. note
    * that equals and hashCode of this class have also been changed to only use the cas version.
    *
-   * @param cas
    * @return an instance with null value
    */
   public static ValueWrapper getDummyValue(long cas) {

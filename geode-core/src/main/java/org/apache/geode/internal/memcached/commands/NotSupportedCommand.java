@@ -21,9 +21,6 @@ import org.apache.geode.internal.memcached.RequestReader;
 import org.apache.geode.internal.memcached.ResponseStatus;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
-/**
- *
- */
 public class NotSupportedCommand extends AbstractCommand {
 
   @Override

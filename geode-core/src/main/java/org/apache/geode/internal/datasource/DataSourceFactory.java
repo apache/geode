@@ -59,7 +59,6 @@ public class DataSourceFactory {
    * This function returns the Basic datasource without any pooling.
    *
    * @param configMap a map containing configurations required for datasource.
-   * @throws DataSourceCreateException
    * @return ??
    */
   public static DataSource getSimpleDataSource(Map configMap) throws DataSourceCreateException {
@@ -95,10 +94,7 @@ public class DataSourceFactory {
    * This function creats a data dource from the ManagedConnectionFactory class using the
    * connectionManager.
    *
-   * @param configMap
-   * @param props
    * @return javax.sql.DataSource
-   * @throws DataSourceCreateException
    */
   public static ClientConnectionFactoryWrapper getManagedDataSource(Map configMap,
       List<ConfigProperty> props) throws DataSourceCreateException {
@@ -151,7 +147,6 @@ public class DataSourceFactory {
    * This function returns the datasource with connection pooling.
    *
    * @param configMap a map containing configurations required for datasource.
-   * @throws DataSourceCreateException
    * @return ???
    */
   public static DataSource getPooledDataSource(Map configMap, List<ConfigProperty> props)
@@ -186,7 +181,6 @@ public class DataSourceFactory {
    * capabilities.
    *
    * @param configMap a map containing configurations required for datasource.
-   * @throws DataSourceCreateException
    * @return ???
    */
   public static DataSource getTranxDataSource(Map configMap, List<ConfigProperty> props)
@@ -226,7 +220,6 @@ public class DataSourceFactory {
    * Creates ConfiguredDataSourceProperties from map.
    *
    * @param configMap a map containing configurations required for datasource.
-   * @return ConfiguredDataSourceProperties
    */
   private static ConfiguredDataSourceProperties createDataSourceProperties(Map configMap) {
     ConfiguredDataSourceProperties configs = new ConfiguredDataSourceProperties();

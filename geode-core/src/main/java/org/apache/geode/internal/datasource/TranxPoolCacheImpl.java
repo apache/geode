@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.datasource;
 
-/**
- */
 import java.sql.SQLException;
 
 import javax.sql.ConnectionEventListener;
@@ -49,9 +47,6 @@ public class TranxPoolCacheImpl extends AbstractPoolCache {
     initializePool();
   }
 
-  /**
-   *
-   */
   @Override
   void destroyPooledConnection(Object connectionObject) {
     try {

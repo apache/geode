@@ -18,9 +18,6 @@ import java.io.Serializable;
 
 import org.apache.geode.internal.sequencelog.GraphType;
 
-/**
- *
- */
 public class GraphID implements Comparable<GraphID>, Serializable {
 
   public final GraphType type;

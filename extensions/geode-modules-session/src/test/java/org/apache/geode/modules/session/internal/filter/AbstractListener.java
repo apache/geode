@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/**
- */
 public abstract class AbstractListener {
 
   protected final List<ListenerEventType> events = new ArrayList<ListenerEventType>();

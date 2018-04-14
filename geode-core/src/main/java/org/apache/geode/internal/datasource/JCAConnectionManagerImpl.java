@@ -81,7 +81,6 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
    *
    * @param javax.resource.spi.ConnectionRequestInfo
    *
-   * @throws ResourceException
    */
   public Object allocateConnection(ManagedConnectionFactory mcf, ConnectionRequestInfo reqInfo)
       throws ResourceException {

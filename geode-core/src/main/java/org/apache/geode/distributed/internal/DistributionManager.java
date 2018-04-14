@@ -184,7 +184,6 @@ public interface DistributionManager extends ReplySender {
   /**
    * Sends a message
    *
-   * @param msg
    * @return recipients who did not receive the message
    */
   Set putOutgoing(DistributionMessage msg);

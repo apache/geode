@@ -101,7 +101,6 @@ public class ClusterSelectedRegionService implements PulseService {
   /**
    * Create JSON for selected cluster region
    *
-   * @param cluster
    * @return ObjectNode Array List
    */
   private ObjectNode getSelectedRegionJson(Cluster cluster, String selectedRegionFullPath) {

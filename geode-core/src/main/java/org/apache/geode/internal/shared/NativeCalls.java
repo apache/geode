@@ -420,7 +420,6 @@ public abstract class NativeCalls {
    * Linux impls create temporary timespec object and marshals that for invoking native api.
    * Shouldn't be used if to be called too many times, instead jni implementation is more desirable.
    *
-   * @param clock_id
    * @return nanosecond precision performance counter.
    */
   public long nanoTime(int clock_id) {

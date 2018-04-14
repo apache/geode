@@ -39,10 +39,6 @@ public class StatisticInfoImpl implements StatisticInfo {
 
   protected transient StatisticDescriptor descriptor;
 
-  /**
-   * @param statistics
-   * @param descriptor
-   */
   public StatisticInfoImpl(Statistics statistics, StatisticDescriptor descriptor) {
     super();
     this.statistics = statistics;

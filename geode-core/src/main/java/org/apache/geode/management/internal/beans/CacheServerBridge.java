@@ -535,7 +535,6 @@ public class CacheServerBridge extends ServerBridge {
   /**
    * closes a continuous query and releases all the resources associated with it.
    *
-   * @param queryName
    */
   public void closeContinuousQuery(String queryName) throws Exception {
     CqService cqService = cache.getCqService();
@@ -559,7 +558,6 @@ public class CacheServerBridge extends ServerBridge {
   /**
    * Execute a continuous query
    *
-   * @param queryName
    */
   public void executeContinuousQuery(String queryName) throws Exception {
     CqService cqService = cache.getCqService();
@@ -581,7 +579,6 @@ public class CacheServerBridge extends ServerBridge {
   /**
    * Stops a given query witout releasing any of the resources associated with it.
    *
-   * @param queryName
    */
   public void stopContinuousQuery(String queryName) throws Exception {
     CqService cqService = cache.getCqService();
@@ -606,7 +603,6 @@ public class CacheServerBridge extends ServerBridge {
   /**
    * remove a given index
    *
-   * @param indexName
    */
   public void removeIndex(String indexName) throws Exception {
     try {

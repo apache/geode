@@ -45,7 +45,6 @@ public class CompositeResultData extends AbstractResultData {
 
   /**
    *
-   * @param headerText
    * @return this CompositeResultData
    * @throws ResultDataException If the value is non-finite number or if the key is null.
    */
@@ -55,7 +54,6 @@ public class CompositeResultData extends AbstractResultData {
 
   /**
    *
-   * @param footerText
    * @return this CompositeResultData
    * @throws ResultDataException If the value is non-finite number or if the key is null.
    */

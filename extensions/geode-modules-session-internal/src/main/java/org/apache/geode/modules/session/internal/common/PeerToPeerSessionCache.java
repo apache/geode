@@ -51,8 +51,6 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
   /**
    * Constructor
    *
-   * @param cache
-   * @param properties
    */
   public PeerToPeerSessionCache(Cache cache, Map<CacheProperty, Object> properties) {
     super();
@@ -138,7 +136,6 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
   /**
    * Create a local region fronting the main region.
    *
-   * @return
    */
   private Region<String, HttpSession> createOrRetrieveLocalRegion() {
     // Attempt to retrieve the fronting region

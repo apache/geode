@@ -1641,7 +1641,6 @@ public class DLockGrantor {
    * <p>
    * Synchronizes on suspendLock.
    *
-   * @param value
    */
   public void setDebugHandleSuspendTimeouts(int value) {
     synchronized (suspendLock) {

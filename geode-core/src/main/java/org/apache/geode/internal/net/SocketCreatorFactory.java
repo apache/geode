@@ -127,11 +127,6 @@ public class SocketCreatorFactory {
   /**
    * This a legacy SocketCreator initializer.
    *
-   * @param useSSL
-   * @param needClientAuth
-   * @param protocols
-   * @param ciphers
-   * @param gfsecurityProps
    *
    * @return SocketCreator for the defined properties
    *

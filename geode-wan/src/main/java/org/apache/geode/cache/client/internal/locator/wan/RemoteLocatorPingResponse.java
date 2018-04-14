@@ -21,9 +21,6 @@ import java.io.IOException;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 
-/**
- *
- */
 public class RemoteLocatorPingResponse implements DataSerializableFixedID {
 
 

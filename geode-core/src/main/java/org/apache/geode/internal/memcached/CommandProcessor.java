@@ -27,12 +27,6 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
  */
 public interface CommandProcessor {
 
-  /**
-   *
-   * @param reader
-   * @param protocol
-   * @param cache
-   */
   ByteBuffer processCommand(RequestReader reader, Protocol protocol, Cache cache);
 
 }
