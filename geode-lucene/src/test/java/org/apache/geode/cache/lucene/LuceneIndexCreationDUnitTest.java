@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static junitparams.JUnitParamsRunner.$;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS;
@@ -380,7 +379,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   }
 
   protected Object[] getXmlAndExceptionMessages() {
-    return $(
+    return new Object[] {
         new Object[] {"verifyDifferentFieldsFails", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS},
         new Object[] {"verifyDifferentFieldAnalyzerSizesFails1",
             CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS_2},
@@ -398,7 +397,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
         new Object[] {"verifyDifferentIndexesFails1",
             CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_1},
         new Object[] {"verifyDifferentIndexesFails2",
-            CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2});
+            CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2}};
   }
 
   @Test

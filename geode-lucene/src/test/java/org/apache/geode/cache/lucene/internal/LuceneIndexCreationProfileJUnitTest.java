@@ -61,11 +61,11 @@ public class LuceneIndexCreationProfileJUnitTest {
   }
 
   private Object[] getSerializationProfiles() {
-    return $(new Object[] {getOneFieldLuceneIndexCreationProfile()},
+    return new Object[] {new Object[] {getOneFieldLuceneIndexCreationProfile()},
         new Object[] {getTwoFieldLuceneIndexCreationProfile()},
         new Object[] {getTwoAnalyzersLuceneIndexCreationProfile()},
         new Object[] {getDummySerializerCreationProfile()},
-        new Object[] {getNullField1AnalyzerLuceneIndexCreationProfile()});
+        new Object[] {getNullField1AnalyzerLuceneIndexCreationProfile()}};
   }
 
   @Test

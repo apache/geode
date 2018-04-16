@@ -20,6 +20,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -48,13 +49,12 @@ import org.apache.geode.internal.logging.LogService;
  * This class is a bit misnamed. It really has more with pushing a DistributionAdvisee's profile out
  * to others and, optionally if <code>profileExchange</code>, fetching the profile of anyone who
  * excepts the pushed profile.
- *
  */
 public class UpdateAttributesProcessor {
   private static final Logger logger = LogService.getLogger();
 
   protected final DistributionAdvisee advisee;
-  private boolean profileExchange = false;
+
   /**
    * If true then sender is telling receiver to remove the sender's profile. No profile exchange is
    * needed in this case.
@@ -62,9 +62,10 @@ public class UpdateAttributesProcessor {
    * @since GemFire 5.7
    */
   private boolean removeProfile = false;
-  private ReplyProcessor21 processor;
 
-  /** Creates a new instance of UpdateAttributesProcessor */
+  /**
+   * Creates a new instance of UpdateAttributesProcessor
+   */
   public UpdateAttributesProcessor(DistributionAdvisee da) {
     this(da, false);
   }
@@ -93,11 +94,11 @@ public class UpdateAttributesProcessor {
    * @param exchangeProfiles true if we want to receive profile replies
    */
   public void distribute(boolean exchangeProfiles) {
-    sendProfileUpdate(exchangeProfiles);
-    waitForProfileResponse();
+    ReplyProcessor21 processor = sendProfileUpdate(exchangeProfiles);
+    waitForProfileResponse(processor);
   }
 
-  public void waitForProfileResponse() {
+  public void waitForProfileResponse(ReplyProcessor21 processor) {
     if (processor == null) {
       return;
     }
@@ -115,10 +116,9 @@ public class UpdateAttributesProcessor {
     }
   }
 
-  public void sendProfileUpdate(boolean exchangeProfiles) {
+  private ReplyProcessor21 sendProfileUpdate(boolean exchangeProfiles) {
     DistributionManager mgr = this.advisee.getDistributionManager();
     DistributionAdvisor advisor = this.advisee.getDistributionAdvisor();
-    this.profileExchange = exchangeProfiles;
 
     // if this is not intended for the purpose of exchanging profiles but
     // the advisor is uninitialized, then just exchange profiles anyway
@@ -130,51 +130,43 @@ public class UpdateAttributesProcessor {
         if (!advisor.isInitialized()) {
           // no need to tell the other guy we are going away since
           // never got initialized.
-          return;
+          return null;
         }
       } else if (advisor.initializationGate()) {
         // it just did the profile exchange so we are done
-        return;
+        return null;
       }
     }
 
-    final Set recipients;
-    if (this.removeProfile) {
-      recipients = advisor.adviseProfileRemove();
-    } else if (exchangeProfiles) {
-      recipients = advisor.adviseProfileExchange();
-    } else {
-      recipients = advisor.adviseProfileUpdate();
-    }
-
+    final Set recipients = determineRecipients(exchangeProfiles, advisor);
     if (recipients.isEmpty()) {
-      return;
+      return null;
     }
-
-    ReplyProcessor21 processor = null;
-    // Scope scope = this.region.scope;
 
     // always require an ack to prevent misordering of messages
     InternalDistributedSystem system = this.advisee.getSystem();
-    processor = new UpdateAttributesReplyProcessor(system, recipients);
-    UpdateAttributesMessage message = getUpdateAttributesMessage(processor, recipients);
+    UpdateAttributesReplyProcessor replyProcessor =
+        new UpdateAttributesReplyProcessor(system, recipients);
+    UpdateAttributesMessage message = getUpdateAttributesMessage(replyProcessor, exchangeProfiles);
     mgr.putOutgoing(message);
-    this.processor = processor;
+    return replyProcessor;
   }
 
-
-  UpdateAttributesMessage getUpdateAttributesMessage(ReplyProcessor21 processor, Set recipients) {
-
-    UpdateAttributesMessage msg = new UpdateAttributesMessage();
-    msg.adviseePath = this.advisee.getFullPath();
-    msg.setRecipients(recipients);
-    if (processor != null) {
-      msg.processorId = processor.getProcessorId();
+  private Set determineRecipients(boolean exchangeProfiles, DistributionAdvisor advisor) {
+    if (this.removeProfile) {
+      return advisor.adviseProfileRemove();
+    } else if (exchangeProfiles) {
+      return advisor.adviseProfileExchange();
+    } else {
+      return advisor.adviseProfileUpdate();
     }
-    msg.profile = this.advisee.getProfile();
-    msg.exchangeProfiles = this.profileExchange;
-    msg.removeProfile = this.removeProfile;
-    return msg;
+  }
+
+  private UpdateAttributesMessage getUpdateAttributesMessage(
+      UpdateAttributesReplyProcessor processor, boolean exchangeProfiles) {
+    return new UpdateAttributesMessage(this.advisee.getFullPath(), processor.getRecipients(),
+        processor.getProcessorId(), this.advisee.getProfile(), exchangeProfiles,
+        this.removeProfile);
   }
 
   class UpdateAttributesReplyProcessor extends ReplyProcessor21 {
@@ -236,12 +228,9 @@ public class UpdateAttributesProcessor {
         if (msg instanceof ProfilesReplyMessage) {
           ProfilesReplyMessage reply = (ProfilesReplyMessage) msg;
           if (reply.profiles != null) {
-            for (int i = 0; i < reply.profiles.length; i++) {
-              // @todo Add putProfiles to DistributionAdvisor to do this
-              // with one call atomically?
-              UpdateAttributesProcessor.this.advisee.getDistributionAdvisor()
-                  .putProfile(reply.profiles[i]);
-            }
+            Arrays.stream(reply.profiles)
+                .forEach((profile) -> UpdateAttributesProcessor.this.advisee
+                    .getDistributionAdvisor().putProfile(profile));
           }
         } else if (msg instanceof ProfileReplyMessage) {
           ProfileReplyMessage reply = (ProfileReplyMessage) msg;
@@ -254,17 +243,32 @@ public class UpdateAttributesProcessor {
         super.process(msg);
       }
     }
-  }
 
+    public Collection getRecipients() {
+      return Arrays.asList(members);
+    }
+  }
 
   public static class UpdateAttributesMessage extends HighPriorityDistributionMessage
       implements MessageWithReply {
 
-    protected String adviseePath;
-    protected int processorId = 0;
+    String adviseePath;
+    protected int processorId;
     protected Profile profile;
-    protected boolean exchangeProfiles = false;
-    protected boolean removeProfile = false;
+    boolean exchangeProfiles;
+    boolean removeProfile;
+
+    public UpdateAttributesMessage() {}
+
+    public UpdateAttributesMessage(String adviseePath, Collection recipients, int processorId,
+        Profile profile, boolean exchangeProfiles, boolean removeProfile) {
+      this.adviseePath = adviseePath;
+      this.setRecipients(recipients);
+      this.processorId = processorId;
+      this.profile = profile;
+      this.exchangeProfiles = exchangeProfiles;
+      this.removeProfile = removeProfile;
+    }
 
     @Override
     public int getProcessorId() {
@@ -284,7 +288,7 @@ public class UpdateAttributesProcessor {
       try {
         if (this.profile != null) {
           if (this.exchangeProfiles) {
-            replyProfiles = new ArrayList<Profile>();
+            replyProfiles = new ArrayList<>();
           }
           this.profile.processIncoming(dm, this.adviseePath, this.removeProfile,
               this.exchangeProfiles, replyProfiles);
@@ -330,7 +334,7 @@ public class UpdateAttributesProcessor {
     @Override
     public String toString() {
       StringBuilder buff = new StringBuilder();
-      buff.append("UpdateAttributesMessage (adviseePath=");
+      buff.append(this.getClass().getName() + " (adviseePath=");
       buff.append(this.adviseePath);
       buff.append("; processorId=");
       buff.append(this.processorId);
@@ -373,7 +377,6 @@ public class UpdateAttributesProcessor {
       out.writeBoolean(this.removeProfile);
     }
   }
-
 
   public static class ProfileReplyMessage extends ReplyMessage {
     Profile profile;
@@ -439,6 +442,7 @@ public class UpdateAttributesProcessor {
     }
 
   }
+
   /**
    * Used to return multiple profiles
    *
@@ -465,12 +469,10 @@ public class UpdateAttributesProcessor {
     }
 
 
-
     @Override
     public int getDSFID() {
       return PROFILES_REPLY_MESSAGE;
     }
-
 
 
     @Override
@@ -507,6 +509,7 @@ public class UpdateAttributesProcessor {
       final StringBuilder buff = new StringBuilder();
       buff.append("ProfilesReplyMessage");
       buff.append(" (processorId=");
+
       buff.append(super.processorId);
       if (this.profiles != null) {
         buff.append("; profiles=");

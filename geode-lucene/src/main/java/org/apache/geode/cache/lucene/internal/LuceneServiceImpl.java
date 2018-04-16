@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +70,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CacheService;
+import org.apache.geode.internal.cache.IncompatibleCacheServiceProfileException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PrimaryBucketException;
@@ -140,7 +140,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   public void beforeRegionDestroyed(Region region) {
     List<LuceneIndex> indexes = getIndexes(region.getFullPath());
     if (!indexes.isEmpty()) {
-      String indexNames = indexes.stream().map(i -> i.getName()).collect(Collectors.joining(","));
+      String indexNames =
+          indexes.stream().map(LuceneIndex::getName).collect(Collectors.joining(","));
       throw new IllegalStateException(
           LocalizedStrings.LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED
               .toLocalizedString(region.getFullPath(), indexNames));
@@ -244,8 +245,15 @@ public class LuceneServiceImpl implements InternalLuceneService {
       LuceneSerializer serializer) {
     validateRegionAttributes(region.getAttributes());
 
-    region.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName, regionPath, fields,
-        analyzer, fieldAnalyzers, serializer));
+    LuceneIndexCreationProfile profile = new LuceneIndexCreationProfile(indexName, regionPath,
+        fields, analyzer, fieldAnalyzers, serializer);
+    try {
+      region.addCacheServiceProfile(profile);
+    } catch (IncompatibleCacheServiceProfileException e) {
+      logger.error(e);
+      region.removeCacheServiceProfile(profile);
+      throw new IllegalStateException(e);
+    }
 
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     region.updatePRConfigWithNewGatewaySender(aeqId);
@@ -266,9 +274,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
       PartitionedRepositoryManager repositoryManager =
           (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
       Set<Integer> primaryBucketIds = userRegion.getDataStore().getAllLocalPrimaryBucketIds();
-      Iterator primaryBucketIterator = primaryBucketIds.iterator();
-      while (primaryBucketIterator.hasNext()) {
-        int primaryBucketId = (Integer) primaryBucketIterator.next();
+      for (Integer primaryBucketId : primaryBucketIds) {
         try {
           BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(primaryBucketId);
           if (userBucket == null) {

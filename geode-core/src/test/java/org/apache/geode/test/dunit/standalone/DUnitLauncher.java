@@ -149,6 +149,15 @@ public class DUnitLauncher {
   /**
    * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
    */
+  public static void launchIfNeeded(int vmCount) {
+    NUM_VMS = vmCount;
+    launchIfNeeded();
+  }
+
+
+  /**
+   * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
+   */
   public static void launchIfNeeded() {
     if (System.getProperties().contains(VM_NUM_PARAM)) {
       // we're a dunit child vm, do nothing.
@@ -164,14 +173,6 @@ public class DUnitLauncher {
     }
 
     Host.setAllVMsToCurrentVersion();
-  }
-
-  /**
-   * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
-   */
-  public static void launchIfNeeded(int vmCount) {
-    NUM_VMS = vmCount;
-    launchIfNeeded();
   }
 
   /**

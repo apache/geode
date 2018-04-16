@@ -265,6 +265,7 @@ import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.UpdateEntryVersionOperation.UpdateEntryVersionMessage;
 import org.apache.geode.internal.cache.UpdateOperation;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
+import org.apache.geode.internal.cache.ValidateCacheServerProfileProcessor;
 import org.apache.geode.internal.cache.backup.AbortBackupRequest;
 import org.apache.geode.internal.cache.backup.BackupResponse;
 import org.apache.geode.internal.cache.backup.FinishBackupRequest;
@@ -451,7 +452,9 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFIDTypes();
   }
 
-  /** Register the constructor for a fixed ID class. */
+  /**
+   * Register the constructor for a fixed ID class.
+   */
   public static void registerDSFID(int dsfid, Class dsfidClass) {
     try {
       Constructor<?> cons = dsfidClass.getConstructor((Class[]) null);
@@ -874,12 +877,12 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(END_BUCKET_CREATION_MESSAGE, EndBucketCreationMessage.class);
     registerDSFID(PREPARE_BACKUP_REQUEST, PrepareBackupRequest.class);
     registerDSFID(BACKUP_RESPONSE, BackupResponse.class); // in older versions this was
-                                                          // FinishBackupResponse which is
-                                                          // compatible
+    // FinishBackupResponse which is
+    // compatible
     registerDSFID(FINISH_BACKUP_REQUEST, FinishBackupRequest.class);
     registerDSFID(FINISH_BACKUP_RESPONSE, BackupResponse.class); // for backwards compatibility map
-                                                                 // FINISH_BACKUP_RESPONSE to
-                                                                 // BackupResponse
+    // FINISH_BACKUP_RESPONSE to
+    // BackupResponse
     registerDSFID(COMPACT_REQUEST, CompactRequest.class);
     registerDSFID(COMPACT_RESPONSE, CompactResponse.class);
     registerDSFID(FLOW_CONTROL_PERMIT_MESSAGE, FlowControlPermitMessage.class);
@@ -937,6 +940,11 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_ENTRY,
         GatewaySenderQueueEntrySynchronizationOperation.GatewaySenderQueueEntrySynchronizationEntry.class);
     registerDSFID(ABORT_BACKUP_REQUEST, AbortBackupRequest.class);
+
+    registerDSFID(VALIDATE_CACHE_PROFILE_MESSAGE,
+        ValidateCacheServerProfileProcessor.ValidateCacheProfileMessage.class);
+    registerDSFID(VALIDATE_CACHE_SERVER_REPLY_MESSAGE,
+        ValidateCacheServerProfileProcessor.ValidateCacheServerProfileReplyMessage.class);
   }
 
   /**
@@ -1009,8 +1017,8 @@ public class DSFIDFactory implements DataSerializableFixedID {
     }
   }
 
-
   ////////////////// Reading Internal Objects /////////////////
+
   /**
    * Reads an instance of <code>IpAddress</code> from a <code>DataInput</code>.
    *

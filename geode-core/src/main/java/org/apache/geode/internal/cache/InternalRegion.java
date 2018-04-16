@@ -150,8 +150,6 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
       InternalRegionArguments internalRegionArgs)
       throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException;
 
-  void addCacheServiceProfile(CacheServiceProfile profile);
-
   void setEvictionMaximum(int maximum);
 
   /**
@@ -375,4 +373,9 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   Object getIMSync();
 
   IndexManager setIndexManager(IndexManager idxMgr);
+
+  void addCacheServiceProfile(CacheServiceProfile profile)
+      throws IncompatibleCacheServiceProfileException;
+
+  void removeCacheServiceProfile(CacheServiceProfile profile);
 }

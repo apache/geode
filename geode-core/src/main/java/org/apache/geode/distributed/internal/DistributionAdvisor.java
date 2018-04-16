@@ -1176,8 +1176,9 @@ public class DistributionAdvisor {
     DistributionAdvisee advisee = getAdvisee();
     do {
       advisee = advisee.getParentAdvisee();
-      if (advisee == null)
+      if (advisee == null) {
         return getDefaultDistributionMembers();
+      }
       advisor = advisee.getDistributionAdvisor();
     } while (!advisor.isInitialized());
     // do not call adviseGeneric because we don't want to trigger another
@@ -1276,7 +1277,7 @@ public class DistributionAdvisor {
   protected void profileRemoved(Profile profile) {}
 
   /** All advise methods go through this method */
-  protected Set<InternalDistributedMember> adviseFilter(Filter f) {
+  protected Set<InternalDistributedMember> adviseFilter(Filter filter) {
     initializationGate();
     if (disabled) {
       if (logger.isDebugEnabled()) {
@@ -1286,11 +1287,10 @@ public class DistributionAdvisor {
     }
     Set<InternalDistributedMember> recipients = null;
     Profile[] locProfiles = this.profiles; // grab current profiles
-    for (int i = 0; i < locProfiles.length; i++) {
-      Profile profile = locProfiles[i];
-      if (f == null || f.include(profile)) {
+    for (Profile profile : locProfiles) {
+      if (filter == null || filter.include(profile)) {
         if (recipients == null) {
-          recipients = new HashSet<InternalDistributedMember>();
+          recipients = new HashSet<>();
         }
         recipients.add(profile.getDistributedMember());
       }
