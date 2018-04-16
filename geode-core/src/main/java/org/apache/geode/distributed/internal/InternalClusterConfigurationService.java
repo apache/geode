@@ -547,7 +547,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
    * Creates a ConfigurationResponse based on the configRequest, configuration response contains the
    * requested shared configuration This method locks the ClusterConfigurationService
    */
-  public ConfigurationResponse createConfigurationResponse(Set<String> groups) throws IOException {
+  public ConfigurationResponse createConfigurationResponse(Set<String> groups) {
     ConfigurationResponse configResponse = null;
 
     boolean isLocked = lockSharedConfiguration();
@@ -834,10 +834,16 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     if (group == null) {
       group = CLUSTER_CONFIG;
     }
-    String xmlContent = getConfiguration(group).getCacheXmlContent();
-    if (xmlContent == null || xmlContent.isEmpty()) {
-      xmlContent = generateInitialXmlContent();
+    Configuration configuration = getConfiguration(group);
+    if (configuration == null) {
+      return null;
     }
+    String xmlContent = configuration.getCacheXmlContent();
+    // group existed, so we should create a blank one to start with
+    if (xmlContent == null || xmlContent.isEmpty()) {
+      return null;
+    }
+
     return jaxbService.unMarshall(xmlContent);
   }
 
@@ -849,12 +855,18 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     lockSharedConfiguration();
     try {
       CacheConfig cacheConfig = getCacheConfig(group);
+      if (cacheConfig == null) {
+        cacheConfig = new CacheConfig("1.0");
+      }
       cacheConfig = mutator.apply(cacheConfig);
       if (cacheConfig == null) {
         // mutator returns a null config, indicating no change needs to be persisted
         return;
       }
       Configuration configuration = getConfiguration(group);
+      if (configuration == null) {
+        configuration = new Configuration(group);
+      }
       configuration.setCacheXmlContent(jaxbService.marshall(cacheConfig));
       getConfigurationRegion().put(group, configuration);
     } finally {

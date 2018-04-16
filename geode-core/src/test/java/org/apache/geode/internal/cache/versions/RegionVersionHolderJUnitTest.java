@@ -1854,9 +1854,6 @@ public class RegionVersionHolderJUnitTest {
    * Return true if bs1 dominates bs2 - meaning that at least all of the bits set in bs2 are set in
    * bs1.
    *
-   * @param bs1
-   * @param bs2
-   * @return
    */
   private boolean dominates(BitSet bs1, BitSet bs2) {
     // bs1 dominates bs2 if it has set at least all of the bits in bs1.

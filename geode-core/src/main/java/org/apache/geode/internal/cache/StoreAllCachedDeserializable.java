@@ -64,9 +64,6 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
     this.objValue = EntryEventImpl.deserialize(this.value);
   }
 
-  /**
-   * @param object
-   */
   public StoreAllCachedDeserializable(Object object) {
     this.objValue = object;
     this.value = EntryEventImpl.serialize(object);

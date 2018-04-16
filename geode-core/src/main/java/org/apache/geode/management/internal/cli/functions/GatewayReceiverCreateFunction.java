@@ -107,7 +107,7 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
   }
 
   /** GatewayReceiver creation happens here. */
-  private GatewayReceiver createGatewayReceiver(Cache cache,
+  GatewayReceiver createGatewayReceiver(Cache cache,
       GatewayReceiverFunctionArgs gatewayReceiverCreateArgs)
       throws IllegalAccessException, InstantiationException, ClassNotFoundException {
 

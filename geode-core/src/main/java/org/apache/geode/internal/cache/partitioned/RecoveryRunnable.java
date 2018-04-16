@@ -28,9 +28,6 @@ public abstract class RecoveryRunnable implements Runnable {
 
   protected final PRHARedundancyProvider redundancyProvider;
 
-  /**
-   * @param prhaRedundancyProvider
-   */
   public RecoveryRunnable(PRHARedundancyProvider prhaRedundancyProvider) {
     redundancyProvider = prhaRedundancyProvider;
   }

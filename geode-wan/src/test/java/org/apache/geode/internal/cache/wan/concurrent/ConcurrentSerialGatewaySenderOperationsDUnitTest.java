@@ -18,7 +18,6 @@ import static org.junit.Assert.*;
 
 import java.util.Set;
 
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewaySender;
@@ -27,14 +26,9 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderOperationsDUnitTest;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-/**
- *
- */
 @Category({DistributedTest.class, WanTest.class})
 public class ConcurrentSerialGatewaySenderOperationsDUnitTest
     extends SerialGatewaySenderOperationsDUnitTest {

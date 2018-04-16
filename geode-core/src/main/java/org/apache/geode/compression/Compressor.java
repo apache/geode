@@ -28,7 +28,6 @@ public interface Compressor {
    *
    * @return A compressed version of the input parameter.
    *
-   * @throws CompressionException
    */
   byte[] compress(byte[] input);
 
@@ -39,7 +38,6 @@ public interface Compressor {
    *
    * @return an uncompressed version of compressed input byte array data.
    *
-   * @throws CompressionException
    */
   byte[] decompress(byte[] input);
 }

@@ -21,7 +21,6 @@ import java.io.IOException;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
-import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 
 @SuppressWarnings("serial")

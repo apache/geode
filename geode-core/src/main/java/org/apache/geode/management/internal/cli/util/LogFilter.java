@@ -16,9 +16,7 @@
 
 package org.apache.geode.management.internal.cli.util;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

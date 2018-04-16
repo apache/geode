@@ -88,7 +88,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
-import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -2402,7 +2401,6 @@ public class InternalDistributedSystem extends DistributedSystem
     /**
      * Invoked after the connection to the distributed system has been disconnected
      *
-     * @param sys
      */
     void onShutdown(InternalDistributedSystem sys);
   }

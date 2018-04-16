@@ -40,9 +40,6 @@ import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, SerializationTest.class})
 public class PdxInstanceJUnitTest {
 

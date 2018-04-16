@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.shell.jline;
 
-import org.springframework.shell.core.JLineLogHandler;
 
 /**
  * Overrides jline.History to add History without newline characters.

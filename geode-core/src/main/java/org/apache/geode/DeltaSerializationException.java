@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode;
 
 /**
@@ -32,24 +29,14 @@ public class DeltaSerializationException extends RuntimeException {
    */
   public DeltaSerializationException() {}
 
-  /**
-   * @param message
-   */
   public DeltaSerializationException(String message) {
     super(message);
   }
 
-  /**
-   * @param cause
-   */
   public DeltaSerializationException(Throwable cause) {
     super(cause);
   }
 
-  /**
-   * @param message
-   * @param cause
-   */
   public DeltaSerializationException(String message, Throwable cause) {
     super(message, cause);
   }

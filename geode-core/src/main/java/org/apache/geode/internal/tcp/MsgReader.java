@@ -62,9 +62,6 @@ public abstract class MsgReader {
    * Block until you can read a message. Returns null if the message was a message chunk.
    *
    * @return the message, or null if we only received a chunk of the message
-   * @throws ClassNotFoundException
-   * @throws IOException
-   * @throws InterruptedException
    */
   public DistributionMessage readMessage(Header header)
       throws IOException, ClassNotFoundException, InterruptedException {

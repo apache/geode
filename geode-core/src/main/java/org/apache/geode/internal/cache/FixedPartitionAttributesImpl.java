@@ -32,9 +32,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 
 public class FixedPartitionAttributesImpl extends FixedPartitionAttributes
     implements DataSerializable {
-  /**
-   *
-   */
   private static final long serialVersionUID = 7435010874879693776L;
 
   /**

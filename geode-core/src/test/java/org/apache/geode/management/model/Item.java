@@ -16,9 +16,6 @@ package org.apache.geode.management.model;
 
 import java.io.Serializable;
 
-/**
- *
- */
 public class Item implements Serializable {
   private static final long serialVersionUID = -1174387683312780907L;
   private Order order;
@@ -67,16 +64,8 @@ public class Item implements Serializable {
     this.itemDescription = itemDescription;
   }
 
-  /**
-   *
-   */
   public Item() {}
 
-  /**
-   * @param order
-   * @param itemId
-   * @param itemDescription
-   */
   public Item(Order order, String itemId, String itemDescription) {
     super();
     this.order = order;

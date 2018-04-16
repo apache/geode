@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 

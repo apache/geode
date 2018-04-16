@@ -48,9 +48,6 @@ import org.apache.geode.internal.cache.tx.RemoteOperationMessage.RemoteOperation
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
-/**
- *
- */
 public class DistTXRollbackMessage extends TXMessage {
 
   private static final Logger logger = LogService.getLogger();

@@ -37,7 +37,6 @@ import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.cq.CqQueryImpl;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -53,7 +52,6 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -91,7 +89,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
    * of InterestList the events are not sent back to the client if its the originator, this is not
    * true for cq.
    *
-   * @throws Exception
    */
   @Test
   public void testClientWithFeederAndCQ() throws Exception {
@@ -129,7 +126,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ Fail over/HA with redundancy level set.
    *
-   * @throws Exception
    */
   @Test
   public void testCQHAWithState() throws Exception {
@@ -254,7 +250,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests propogation of invalidates and destorys to the clients. Bug 37242.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithDestroysAndInvalidates() throws Exception {
@@ -383,7 +378,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ when region is populated with net load.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithLoad() throws Exception {
@@ -436,7 +430,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ when entries are evicted from region.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithEviction() throws Exception {
@@ -509,7 +502,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ with ConnectionPool.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithConnectionPool() throws Exception {
@@ -571,7 +563,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ with BridgeClient.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithBridgeClient() throws Exception {
@@ -630,7 +621,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ with ConnectionPool.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithPool() throws Exception {
@@ -688,7 +678,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ with establishCallBackConnection.
    *
-   * @throws Exception
    */
   @Test
   public void testCQWithEstablishCallBackConnection() throws Exception {
@@ -756,7 +745,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
    * Test for: Region destroy, calls close on the server. Region clear triggers cqEvent with query
    * op region clear. Region invalidate triggers cqEvent with query op region invalidate.
    *
-   * @throws Exception
    */
   @Test
   public void testRegionEvents() throws Exception {
@@ -838,7 +826,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
    * not be reflected in the query result set thus making the query data and region data
    * inconsistent.
    *
-   * @throws Exception
    */
   @Test
   public void testEventsDuringQueryExecution() throws Exception {
@@ -974,7 +961,6 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
    * is implemented) A third thread will be awaken and release the latch in the testhook for TC1 to
    * complete.
    *
-   * @throws Exception
    */
   @Test
   public void testMultipleExecuteWithInitialResults() throws Exception {

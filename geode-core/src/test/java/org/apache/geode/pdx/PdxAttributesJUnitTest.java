@@ -49,7 +49,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.pdx.PdxInitializationException;
 import org.apache.geode.pdx.SimpleClass.SimpleEnum;
 import org.apache.geode.pdx.internal.EnumId;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -58,9 +57,6 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, SerializationTest.class})
 public class PdxAttributesJUnitTest {
 
@@ -387,7 +383,6 @@ public class PdxAttributesJUnitTest {
   /**
    * Test that loner VMs lazily determine if they are a client or a peer.
    *
-   * @throws Exception
    */
   @Test
   public void testLazyLoner() throws Exception {

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+
 /**
  * Given a ConnnectionConfiguration create a JdbcDataSource.
  */
@@ -21,5 +23,5 @@ interface JdbcDataSourceFactory {
   /**
    * Given a ConnnectionConfiguration create and return a JdbcDataSource
    */
-  JdbcDataSource create(ConnectionConfiguration configuration);
+  JdbcDataSource create(ConnectorService.Connection configuration);
 }

@@ -543,10 +543,6 @@ public class QueryDataInconsistencyDUnitTest extends JUnit4CacheTestCase {
   /**
    * This function puts portfolio objects into the created Region (PR or Local) *
    *
-   * @param regionName
-   * @param portfolio
-   * @param to
-   * @param from
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRPuts(final String regionName,

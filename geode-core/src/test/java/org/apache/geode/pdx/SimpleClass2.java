@@ -14,9 +14,6 @@
  */
 package org.apache.geode.pdx;
 
-/**
- *
- */
 public class SimpleClass2 extends SimpleClass {
 
   public SimpleClass2() {

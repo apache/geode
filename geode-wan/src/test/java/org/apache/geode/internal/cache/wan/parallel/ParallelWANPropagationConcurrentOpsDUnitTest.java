@@ -25,9 +25,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
@@ -44,7 +41,6 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
    * Normal propagation scenario test case for a PR with only one bucket. This has been added for
    * bug# 44284.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationWithSingleBucketPR() throws Exception {
@@ -108,7 +104,6 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
    * Normal propagation scenario test case for a PR with less number of buckets. Buckets have been
    * kept to 10 for this test. This has been added for bug# 44287.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationWithLowNumberOfBuckets() throws Exception {

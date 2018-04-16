@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
 
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.ExecuteFunctionNoAckOp;
@@ -34,10 +33,6 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- *
- *
- */
 public class ServerFunctionExecutor extends AbstractExecution {
 
   private PoolImpl pool;

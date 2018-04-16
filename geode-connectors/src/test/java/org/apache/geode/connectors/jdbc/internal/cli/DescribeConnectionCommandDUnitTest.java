@@ -14,9 +14,14 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__PARAMS;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__PASSWORD;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__URL;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__USER;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand.DESCRIBE_CONNECTION;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand.DESCRIBE_CONNECTION__NAME;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
@@ -25,10 +30,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
-import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -63,9 +64,17 @@ public class DescribeConnectionCommandDUnitTest implements Serializable {
 
   @Test
   public void describesExistingConnection() {
-    server.invoke(this::createConnection);
-    CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_CONNECTION)
-        .addOption(DESCRIBE_CONNECTION__NAME, CONNECTION_NAME);
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_CONNECTION);
+    csb.addOption(CREATE_CONNECTION__NAME, CONNECTION_NAME);
+    csb.addOption(CREATE_CONNECTION__URL, "myUrl");
+    csb.addOption(CREATE_CONNECTION__USER, "username");
+    csb.addOption(CREATE_CONNECTION__PASSWORD, "secret");
+    csb.addOption(CREATE_CONNECTION__PARAMS, "key1:value1,key2:value2");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(DESCRIBE_CONNECTION).addOption(DESCRIBE_CONNECTION__NAME,
+        CONNECTION_NAME);
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
@@ -88,22 +97,8 @@ public class DescribeConnectionCommandDUnitTest implements Serializable {
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert
-        .containsOutput(String.format("Connection named '%s' not found", "nonExisting"));
+    commandResultAssert.statusIsError();
+    commandResultAssert.containsOutput(
+        String.format("(Experimental) \n" + "connection named 'nonExisting' not found"));
   }
-
-  private void createConnection() throws ConnectionConfigExistsException {
-    InternalCache cache = ClusterStartupRule.getCache();
-    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-
-    String[] params = new String[] {"key1:value1", "key2:value2"};
-    service.createConnectionConfig(
-        new ConnectionConfigBuilder().withName(CONNECTION_NAME).withUrl("myUrl")
-            .withUser("username").withPassword("secret").withParameters(params).build());
-
-    assertThat(service.getConnectionConfig(CONNECTION_NAME)).isNotNull();
-  }
-
-
 }

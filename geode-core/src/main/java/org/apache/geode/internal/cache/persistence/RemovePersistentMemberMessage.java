@@ -42,9 +42,6 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- *
- */
 public class RemovePersistentMemberMessage extends HighPriorityDistributionMessage
     implements MessageWithReply {
 

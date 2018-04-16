@@ -20,10 +20,6 @@
 
 package org.apache.geode.internal.jta;
 
-/**
- *
- */
-
 import java.sql.*;
 import java.util.*;
 

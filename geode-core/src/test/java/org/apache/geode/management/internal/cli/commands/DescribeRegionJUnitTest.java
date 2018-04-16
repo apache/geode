@@ -36,8 +36,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.domain.RegionDescriptionPerMember;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -104,12 +102,14 @@ public class DescribeRegionJUnitTest {
         gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess()
             .doesNotContainOutput("Non-Default Attributes Specific To");
 
-    GfJsonObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
-    GfJsonObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
+    Map<String, List<String>> shared =
+        commandAssert.getCommandResult().getMapFromTableContent(0, 0, 0);
+    Map<String, List<String>> memberSpecific =
+        commandAssert.getCommandResult().getMapFromTableContent(0, 1, 0);
 
-    assertThat(shared.toString()).contains("regKey", "regVal", "evictKey", "evictVal", "partKey",
-        "partVal");
-    assertThat(unique.toString()).isEqualTo("{}");
+    assertThat(shared.get("Name")).contains("regKey", "evictKey", "partKey");
+    assertThat(shared.get("Value")).contains("regVal", "evictVal", "partVal");
+    assertThat(memberSpecific).isEmpty();
   }
 
   @Test
@@ -133,12 +133,14 @@ public class DescribeRegionJUnitTest {
         gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess()
             .doesNotContainOutput("Non-Default Attributes Specific To");
 
-    GfJsonObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
-    GfJsonObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
+    Map<String, List<String>> shared =
+        commandAssert.getCommandResult().getMapFromTableContent(0, 0, 0);
+    Map<String, List<String>> memberSpecific =
+        commandAssert.getCommandResult().getMapFromTableContent(0, 1, 0);
 
-    assertThat(shared.toString()).contains("regKey", "regVal", "evictKey", "evictVal", "partKey",
-        "partVal");
-    assertThat(unique.toString()).isEqualTo("{}");
+    assertThat(shared.get("Name")).contains("regKey", "evictKey", "partKey");
+    assertThat(shared.get("Value")).contains("regVal", "evictVal", "partVal");
+    assertThat(memberSpecific).isEmpty();
   }
 
   @Test
@@ -169,20 +171,22 @@ public class DescribeRegionJUnitTest {
     CommandResultAssert commandAssert =
         gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess();
 
-    GfJsonObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
-    GfJsonObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
+    Map<String, List<String>> shared =
+        commandAssert.getCommandResult().getMapFromTableContent(0, 0, 0);
+    Map<String, List<String>> memberSpecific =
+        commandAssert.getCommandResult().getMapFromTableContent(0, 1, 0);
 
-    assertThat(shared.toString()).contains("Eviction", "sharedEvictionKey", "sharedEvictionValue");
-    assertThat(unique.toString()).contains("sharedPartitionKey", "uniquePartitionValue_A",
-        "uniqueRegionKey_A", "uniqueRegionValue_A", "sharedPartitionKey", "uniquePartitionValue_B",
-        "uniqueRegionKey_B", "uniqueRegionValue_B");
+    assertThat(shared.get("Type")).containsExactly("Eviction");
+    assertThat(shared.get("Name")).containsExactly("sharedEvictionKey");
+    assertThat(shared.get("Value")).containsExactly("sharedEvictionValue");
+
+    assertThat(memberSpecific.get("Member")).containsExactly("mockA", "", "mockB", "");
+    assertThat(memberSpecific.get("Type")).containsExactly("Region", "Partition", "Region",
+        "Partition");
+    assertThat(memberSpecific.get("Name")).containsExactly("uniqueRegionKey_A",
+        "sharedPartitionKey", "uniqueRegionKey_B", "sharedPartitionKey");
+    assertThat(memberSpecific.get("Value")).containsExactly("uniqueRegionValue_A",
+        "uniquePartitionValue_A", "uniqueRegionValue_B", "uniquePartitionValue_B");
   }
 
-  private GfJsonObject getSharedAttributedJson(CommandResult commandResult) {
-    return commandResult.getTableContent(0, 0, 0);
-  }
-
-  private GfJsonObject getMemberSpecificAttributeJson(CommandResult commandResult) {
-    return commandResult.getTableContent(0, 1, 0);
-  }
 }

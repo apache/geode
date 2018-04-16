@@ -53,9 +53,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
-/**
- *
- */
 public class DistTXPrecommitMessage extends TXMessage {
 
   private static final Logger logger = LogService.getLogger();
@@ -392,7 +389,6 @@ public class DistTXPrecommitMessage extends TXMessage {
      * Determine if the commit processing was incomplete, if so throw a detailed exception
      * indicating the source of the problem
      *
-     * @param msgMap
      */
     public void handlePotentialCommitFailure(
         HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap) {
@@ -440,8 +436,6 @@ public class DistTXPrecommitMessage extends TXMessage {
     /**
      * Protected by (this)
      *
-     * @param member
-     * @param exceptions
      */
     public void addExceptionsFromMember(InternalDistributedMember member, Set exceptions) {
       for (Iterator iter = exceptions.iterator(); iter.hasNext();) {

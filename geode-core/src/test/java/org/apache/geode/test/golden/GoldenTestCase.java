@@ -69,7 +69,6 @@ public abstract class GoldenTestCase {
   /**
    * Override this for additional set up.
    *
-   * @throws Exception
    */
   public void subSetUp() throws Exception {
     // override me
@@ -78,7 +77,6 @@ public abstract class GoldenTestCase {
   /**
    * Override this for additional tear down after destroying all processes and printing output.
    *
-   * @throws Exception
    */
   public void subTearDown() throws Exception {
     // override me

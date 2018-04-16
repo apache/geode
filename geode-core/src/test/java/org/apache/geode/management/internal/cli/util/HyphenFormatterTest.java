@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.cli.util;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

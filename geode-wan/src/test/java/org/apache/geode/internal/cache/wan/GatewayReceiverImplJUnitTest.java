@@ -32,7 +32,6 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.categories.WanTest;
 
 @Category(UnitTest.class)
 public class GatewayReceiverImplJUnitTest {

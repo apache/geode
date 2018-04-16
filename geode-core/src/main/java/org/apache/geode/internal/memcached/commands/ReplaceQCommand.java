@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.memcached.commands;
 
-/**
- *
- */
 public class ReplaceQCommand extends ReplaceCommand {
 
   @Override

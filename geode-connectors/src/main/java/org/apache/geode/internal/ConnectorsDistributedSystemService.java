@@ -20,8 +20,6 @@ import java.util.Collection;
 
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.InternalDataSerializer;
 
 public class ConnectorsDistributedSystemService implements DistributedSystemService {
   @Override

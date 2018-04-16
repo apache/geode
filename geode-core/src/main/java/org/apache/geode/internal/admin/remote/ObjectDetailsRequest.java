@@ -57,7 +57,6 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
   /**
    * Must return a proper response to this request.
    *
-   * @param dm
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {

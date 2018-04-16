@@ -1375,7 +1375,6 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * This the dunit test for the bug no : 36969
    *
-   * @throws Exception
    */
 
   @Test

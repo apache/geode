@@ -23,10 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;

@@ -14,12 +14,10 @@
  */
 package org.apache.geode.cache.query.data;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;

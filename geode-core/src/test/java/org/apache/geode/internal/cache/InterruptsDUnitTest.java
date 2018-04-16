@@ -68,7 +68,6 @@ public class InterruptsDUnitTest extends JUnit4CacheTestCase {
   /**
    * A simple test case that we are actually persisting with a PR.
    *
-   * @throws Throwable
    */
   @Test
   public void testDRPutWithInterrupt() throws Throwable {

@@ -19,13 +19,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -36,23 +34,21 @@ public class JdbcConnectorServiceTest {
   private static final String TEST_CONFIG_NAME = "testConfig";
   private static final String TEST_REGION_NAME = "testRegion";
 
-  private ConnectionConfiguration config;
-  private ConnectionConfiguration config2;
-  private ConnectionConfiguration configToAlter;
-  private RegionMapping mapping;
+  private ConnectorService.Connection config;
+  private ConnectorService.Connection config2;
+  private ConnectorService.Connection configToAlter;
+  private ConnectorService.RegionMapping mapping;
 
   private JdbcConnectorServiceImpl service;
 
   @Before
   public void setUp() throws Exception {
     InternalCache cache = mock(InternalCache.class);
-    config = mock(ConnectionConfiguration.class);
-    mapping = mock(RegionMapping.class);
-    config2 = mock(ConnectionConfiguration.class);
-    Map<String, String> parameters = new HashMap<>();
-    parameters.put("key1", "value1");
-    parameters.put("key2", "value2");
-    configToAlter = new ConnectionConfiguration(TEST_CONFIG_NAME, "originalUrl", "originalUser",
+    config = mock(ConnectorService.Connection.class);
+    mapping = mock(ConnectorService.RegionMapping.class);
+    config2 = mock(ConnectorService.Connection.class);
+    String[] parameters = new String[] {"key1:value1", "key2:value2"};
+    configToAlter = new ConnectorService.Connection(TEST_CONFIG_NAME, "originalUrl", "originalUser",
         "originalPassword", parameters);
 
     when(cache.getExtensionPoint()).thenReturn(mock(ExtensionPoint.class));

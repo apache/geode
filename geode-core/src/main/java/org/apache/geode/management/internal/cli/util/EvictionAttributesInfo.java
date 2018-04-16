@@ -15,8 +15,6 @@
 package org.apache.geode.management.internal.cli.util;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
@@ -24,9 +22,6 @@ import org.apache.geode.cache.EvictionAttributes;
 
 public class EvictionAttributesInfo implements Serializable {
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
   private String evictionAction = "";
   private String evictionAlgorithm = "";

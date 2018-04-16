@@ -33,7 +33,6 @@ public interface Driver {
    * connected.
    *
    * @return Set of strings of names that uniquely identify regions.
-   * @throws IOException
    */
   Set<String> getRegionNames() throws IOException;
 

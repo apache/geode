@@ -26,7 +26,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
-import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
@@ -78,7 +77,6 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
   /**
    * Returns if corresponding receiver WAN site of this GatewaySender has GemfireVersion > 7.0.1
    *
-   * @param disp
    * @return true if remote site Gemfire Version is >= 7.0.1
    */
   private boolean shouldSendVersionEvents(GatewaySenderEventDispatcher disp)

@@ -24,7 +24,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.gatewaydelta.AbstractGatewayDeltaEvent;
-import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 
 @SuppressWarnings("serial")

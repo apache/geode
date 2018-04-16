@@ -17,12 +17,8 @@ package org.apache.geode.sequence;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.*;
 
@@ -32,9 +28,6 @@ import javax.swing.*;
  */
 public class SequenceDiagram extends JPanel {
 
-  /**
-  *
-  */
   private static final Color HIGHLIGHT_COLOR = Color.RED;
 
   private final List<String> lineNames;

@@ -14,14 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.CONNECTION_SERVICE;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlGenerator.PREFIX;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAME;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAMESPACE;
-import static org.apache.geode.internal.cache.xmlcache.CacheXml.CACHE;
-
-import java.io.Serializable;
-
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -60,8 +52,7 @@ class FunctionContextArgumentProvider {
    * Returns XmlEntity for JdbcConnectorServiceXmlGenerator snippet of cache xml
    */
   static XmlEntity createXmlEntity(FunctionContext<?> context) {
-    return new XmlEntity(createCacheProvider(context), CACHE, PREFIX, NAMESPACE,
-        CONNECTION_SERVICE.getTypeName(), NAME, CONNECTION_SERVICE.getTypeName());
+    return null;
   }
 
   private static XmlEntity.CacheProvider createCacheProvider(FunctionContext<?> context) {

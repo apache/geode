@@ -25,7 +25,6 @@ import java.net.Socket;
 import com.google.protobuf.MessageLite;
 
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;

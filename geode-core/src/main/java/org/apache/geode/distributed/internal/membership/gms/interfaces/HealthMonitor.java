@@ -22,15 +22,12 @@ public interface HealthMonitor extends Service {
   /**
    * Note that this member has been contacted by the given member
    *
-   * @param sender
    */
   void contactedBy(InternalDistributedMember sender);
 
   /**
    * initiate, asynchronously, suspicion that the member is no longer available
    *
-   * @param mbr
-   * @param reason
    */
   void suspect(InternalDistributedMember mbr, String reason);
 
@@ -38,7 +35,6 @@ public interface HealthMonitor extends Service {
    * Check on the health of the given member, initiating suspicion if it fails. Return true if the
    * member is found to be available, false if it isn't.
    *
-   * @param mbr
    * @param reason the reason this check is being performed
    * @param initiateRemoval if the member should be removed if it is not available
    */

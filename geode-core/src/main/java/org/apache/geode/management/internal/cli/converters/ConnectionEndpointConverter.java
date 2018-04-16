@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.management.internal.cli.converters;
 
 import java.util.List;
@@ -25,9 +22,6 @@ import org.springframework.shell.core.MethodTarget;
 
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 
-/**
- *
- */
 public class ConnectionEndpointConverter implements Converter<ConnectionEndpoint> {
   // Defaults
   static final String DEFAULT_JMX_HOST = "localhost";

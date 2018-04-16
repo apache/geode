@@ -14,12 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.domain;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**

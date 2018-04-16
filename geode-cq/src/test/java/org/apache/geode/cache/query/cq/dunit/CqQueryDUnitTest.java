@@ -1647,7 +1647,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for InterestList and CQ registered from same clients.
    *
-   * @throws Exception
    */
   @Test
   public void testInterestListAndCQs() throws Exception {
@@ -1807,7 +1806,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ register and UnRegister.
    *
-   * @throws Exception
    */
   @Test
   public void testCQStopExecute() throws Exception {
@@ -1881,7 +1879,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ Attributes Mutator functions
    *
-   * @throws Exception
    */
   @Test
   public void testCQAttributesMutator() throws Exception {
@@ -1954,7 +1951,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ register and UnRegister.
    *
-   * @throws Exception
    */
   @Test
   public void testCQCreateClose() throws Exception {
@@ -2549,7 +2545,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for stopping and restarting CQs.
    *
-   * @throws Exception
    */
   @Test
   public void testEnableDisableCQ() throws Exception {
@@ -2669,7 +2664,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for Complex queries.
    *
-   * @throws Exception
    */
   @Test
   public void testQuery() throws Exception {
@@ -2712,7 +2706,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ Fail over.
    *
-   * @throws Exception
    */
   @Test
   public void testCQFailOver() throws Exception {
@@ -2800,7 +2793,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ Fail over/HA with redundancy level set.
    *
-   * @throws Exception
    */
   @Test
   public void testCQHA() throws Exception {
@@ -2899,7 +2891,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
    * Test without CQs. This was added after an exception encountered with CQService, when there was
    * no CQService intiated.
    *
-   * @throws Exception
    */
   @Test
   public void testWithoutCQs() throws Exception {
@@ -3071,7 +3062,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests execution of queries with NULL in where clause like where ID = NULL etc.
    *
-   * @throws Exception
    */
   @Test
   public void testQueryWithNULLInWhereClause() throws Exception {
@@ -3119,7 +3109,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests execution of queries with NULL in where clause like where ID = NULL etc.
    *
-   * @throws Exception
    */
   @Test
   public void testForSupportedRegionAttributes() throws Exception {
@@ -3218,9 +3207,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  /**
-   *
-   */
   @Test
   public void testCQWhereCondOnShort() throws Exception {
 
@@ -3251,9 +3237,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     closeServer(server);
   }
 
-  /**
-   *
-   */
   @Test
   public void testCQEquals() throws Exception {
 
@@ -3306,9 +3289,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     closeServer(server);
   }
 
-  /**
-   *
-   */
   @Test
   public void testCQEqualsWithIndex() throws Exception {
 

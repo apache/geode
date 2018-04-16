@@ -39,10 +39,6 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 
-/****
- *
- *
- */
 public class GetMemberConfigInformationFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
@@ -195,8 +191,6 @@ public class GetMemberConfigInformationFunction implements InternalFunction {
   /****
    * Removes the default values from the attributesMap based on defaultAttributesMap
    *
-   * @param attributesMap
-   * @param defaultAttributesMap
    */
   private void removeDefaults(Map<String, String> attributesMap,
       Map<String, String> defaultAttributesMap) {

@@ -39,8 +39,6 @@ public class ObjectTraverser {
    * @param visitor a visitor to visit each node
    * @param includeStatics if true, the first time we see a new object type, we will visit all of
    *        the static fields.
-   * @throws IllegalArgumentException
-   * @throws IllegalAccessException
    */
   public static void breadthFirstSearch(Object root, Visitor visitor, boolean includeStatics)
       throws IllegalArgumentException, IllegalAccessException {

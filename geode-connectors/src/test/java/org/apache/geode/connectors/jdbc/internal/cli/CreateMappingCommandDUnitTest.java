@@ -23,13 +23,15 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -84,14 +86,18 @@ public class CreateMappingCommandDUnitTest {
 
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      RegionMapping mapping =
+      ConnectorService.RegionMapping mapping =
           cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxClassName()).isEqualTo("myPdxClass");
       assertThat(mapping.isPrimaryKeyInValue()).isEqualTo(true);
-      assertThat(mapping.getFieldToColumnMap()).containsEntry("field1", "column1")
-          .containsEntry("field2", "column2");
+      List<ConnectorService.RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
+      assertThat(fieldMappings).hasSize(2);
+      assertThat(fieldMappings.get(0).getFieldName()).isEqualTo("field1");
+      assertThat(fieldMappings.get(0).getColumnName()).isEqualTo("column1");
+      assertThat(fieldMappings.get(1).getFieldName()).isEqualTo("field2");
+      assertThat(fieldMappings.get(1).getColumnName()).isEqualTo("column2");
     });
   }
 
@@ -114,14 +120,18 @@ public class CreateMappingCommandDUnitTest {
 
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      RegionMapping mapping =
+      ConnectorService.RegionMapping mapping =
           cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxClassName()).isEqualTo("myPdxClass");
       assertThat(mapping.isPrimaryKeyInValue()).isEqualTo(false);
-      assertThat(mapping.getFieldToColumnMap()).containsEntry("field1", "column1")
-          .containsEntry("field2", "column2");
+      List<ConnectorService.RegionMapping.FieldMapping> fieldMappings = mapping.getFieldMapping();
+      assertThat(fieldMappings).hasSize(2);
+      assertThat(fieldMappings.get(0).getFieldName()).isEqualTo("field1");
+      assertThat(fieldMappings.get(0).getColumnName()).isEqualTo("column1");
+      assertThat(fieldMappings.get(1).getFieldName()).isEqualTo("field2");
+      assertThat(fieldMappings.get(1).getColumnName()).isEqualTo("column2");
     });
   }
 

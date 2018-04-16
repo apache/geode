@@ -41,7 +41,6 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
    *
    * The test ensures that put is not done twice by using a alreadyComeHere boolean.
    *
-   * @param region
    */
   void putBeforeFlush(final Region region) {
     alreadyComeHere = false;
@@ -73,7 +72,6 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
    *
    *
    *
-   * @param region
    */
   void getBeforeFlush(final Region region) {
     alreadyComeHere = false;
@@ -100,7 +98,6 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
   /**
    * the entry which is about to be flushed is deleted
    *
-   * @param region
    */
   void delBeforeFlush(final Region region) {
     alreadyComeHere = false;
@@ -146,7 +143,6 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
    * thread. A 3000 ms wait is done to ensure that the separate thread has successfully closed the
    * region
    *
-   * @param region
    */
   void closeBeforeFlush(final Region region) {
     hasBeenNotified = false;
@@ -190,7 +186,6 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
    * A region close is done after flush is over. The close is done in a separate thread and a 3000
    * ms wait is put to ensure that the separate thread has closed the region
    *
-   * @param region
    */
   void closeAfterFlush(final Region region) {
     hasBeenNotified = false;

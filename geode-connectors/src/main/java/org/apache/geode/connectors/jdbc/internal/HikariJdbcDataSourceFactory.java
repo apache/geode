@@ -14,8 +14,10 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+
 class HikariJdbcDataSourceFactory implements JdbcDataSourceFactory {
-  public JdbcDataSource create(ConnectionConfiguration configuration) {
+  public JdbcDataSource create(ConnectorService.Connection configuration) {
     return new HikariJdbcDataSource(configuration);
   }
 }

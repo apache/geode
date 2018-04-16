@@ -45,12 +45,10 @@ import org.apache.geode.internal.cache.RegionMap;
 import org.apache.geode.internal.cache.TestNonSizerObject;
 import org.apache.geode.internal.cache.TestObjectSizerImpl;
 import org.apache.geode.internal.cache.entries.AbstractLRURegionEntry;
-import org.apache.geode.internal.cache.eviction.HeapLRUController;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)

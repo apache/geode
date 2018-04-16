@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;

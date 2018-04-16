@@ -25,9 +25,6 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
 
-/**
- *
- */
 public class Invalidate70 extends Invalidate {
 
   private static final Invalidate70 singleton = new Invalidate70();

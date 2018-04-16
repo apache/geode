@@ -190,7 +190,6 @@ public interface MembershipManager {
    * Returns true if remoteId is an existing member, otherwise waits till timeout. Returns false if
    * remoteId is not confirmed to be a member.
    *
-   * @param remoteId
    * @return true if membership is confirmed, else timeout and false
    */
   boolean waitForNewMember(InternalDistributedMember remoteId);

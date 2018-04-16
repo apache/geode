@@ -36,7 +36,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;

@@ -25,7 +25,6 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -1912,17 +1911,13 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
   }
 
   /*
-   * @param vm
    *
-   * @param cqName
    *
-   * @param numEvents
    *
    * @param numEventsToWaitFor most times will be the same as numEvents, but there are times where
    * we want to wait for an event we know is not coming just to be sure an event actually isnt
    * received
    *
-   * @param secondsToWait
    */
   protected void checkCqListenerEvents(VM vm, final String cqName, final int numEvents,
       final int numEventsToWaitFor, final int secondsToWait) {

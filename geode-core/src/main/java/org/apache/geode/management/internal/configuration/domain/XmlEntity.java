@@ -18,7 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -538,7 +537,6 @@ public class XmlEntity implements VersionedDataSerializable {
      *
      * You are required to at least call {@link #withType(String)}.
      *
-     * @return XmlEntity
      * @since GemFire 8.1
      */
     public XmlEntity build() {

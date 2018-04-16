@@ -40,9 +40,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.util.test.TestUtil;
 
-/**
- *
- */
 public class CacheUtils {
   public static DistributedSystem ds;
   static Cache cache;

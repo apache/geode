@@ -180,7 +180,6 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create a client with 2 regions sharing a common writer
    *
-   * @throws Exception
    */
 
   public static void createClientCache1CommonWriter(String host, Integer port) throws Exception {
@@ -197,7 +196,6 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create a client with 2 regions sharing a common writer
    *
-   * @throws Exception
    */
 
 
@@ -216,7 +214,6 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create client 2 with 2 regions with sharing a common writer and having a common listener
    *
-   * @throws Exception
    */
   public static void createClientCache2CommonWriter(String host, Integer port) throws Exception {
     ConflationDUnitTest test = new ConflationDUnitTest();
@@ -309,7 +306,6 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create a client with 2 regions each having its own writer
    *
-   * @throws Exception
    */
 
   public static void createClientCache1UniqueWriter(String host, Integer port) throws Exception {
@@ -328,7 +324,6 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create client 2 with 2 regions each with a unique writer but both having a common listener
    *
-   * @throws Exception
    */
   public static void createClientCache2UniqueWriter(String host, Integer port) throws Exception {
     ConflationDUnitTest test = new ConflationDUnitTest();
@@ -553,7 +548,6 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create a server cache and start the server
    *
-   * @throws Exception
    */
   public static Integer createServerCache() throws Exception {
     ConflationDUnitTest test = new ConflationDUnitTest();

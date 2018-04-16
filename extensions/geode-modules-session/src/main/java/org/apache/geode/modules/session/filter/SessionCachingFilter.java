@@ -472,8 +472,6 @@ public class SessionCachingFilter implements Filter {
   /**
    * This is where all the initialization happens.
    *
-   * @param config
-   * @throws ServletException
    */
   @Override
   public void init(final FilterConfig config) {

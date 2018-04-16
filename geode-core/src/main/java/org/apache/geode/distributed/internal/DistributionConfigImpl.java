@@ -73,7 +73,6 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1090,7 +1089,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * Here we will validate the correctness of the set properties as per the CheckAttributeChecker
    * annotations defined in #AbstractDistributionConfig
    *
-   * @param props
    */
   private void validateConfigurationProperties(final HashMap props) {
     for (Object o : props.keySet()) {

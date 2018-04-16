@@ -31,9 +31,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.offheap.OffHeapHelper;
-import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**

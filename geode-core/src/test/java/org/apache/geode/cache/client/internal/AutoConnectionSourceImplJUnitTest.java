@@ -75,12 +75,8 @@ import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @SuppressWarnings("deprecation")
 @Category({IntegrationTest.class, ClientServerTest.class})
 public class AutoConnectionSourceImplJUnitTest {
@@ -302,7 +298,6 @@ public class AutoConnectionSourceImplJUnitTest {
   /**
    * This tests that discovery works even after one of two locators was shut down
    *
-   * @throws Exception
    */
   @Test
   public void test_DiscoverLocators_whenOneLocatorWasShutdown() throws Exception {

@@ -1117,7 +1117,6 @@ public class Message {
    * socket
    *
    * @param timeoutMillis timeout setting for reading the header (0 = no timeout)
-   * @throws IOException
    */
   public void receiveWithHeaderReadTimeout(int timeoutMillis) throws IOException {
     if (this.socket != null) {

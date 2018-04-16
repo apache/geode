@@ -18,8 +18,6 @@ package org.apache.geode.modules.session.internal.filter;
 import javax.servlet.ServletRequestAttributeEvent;
 import javax.servlet.ServletRequestAttributeListener;
 
-/**
- */
 public class ServletRequestAttributeListenerImpl extends AbstractListener
     implements ServletRequestAttributeListener {
 
