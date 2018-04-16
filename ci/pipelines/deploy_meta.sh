@@ -19,8 +19,21 @@ GEODE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-")
 TARGET=geode
 GEODE_FORK=${1:-apache}
+TEAM=$(fly targets | grep ^${TARGET} | awk '{print $3}')
+
+PUBLIC=true
 
 echo "Deploying pipline for ${GEODE_FORK}/${GEODE_BRANCH}"
 
+if [ "${TEAM}" = "staging" ]; then
+  PUBLIC=false
+fi
+
 set -x
-fly -t ${TARGET} set-pipeline -p meta-${SANITIZED_GEODE_BRANCH} -c meta.yml --var geode-build-branch=${GEODE_BRANCH} --var geode-fork=${GEODE_FORK}
+fly -t ${TARGET} set-pipeline \
+  -p meta-${SANITIZED_GEODE_BRANCH} \
+  -c meta.yml \
+  --var geode-build-branch=${GEODE_BRANCH} \
+  --var geode-fork=${GEODE_FORK} \
+  --var concourse-team=${TEAM} \
+  --yaml-var public-pipelines=${PUBLIC}
