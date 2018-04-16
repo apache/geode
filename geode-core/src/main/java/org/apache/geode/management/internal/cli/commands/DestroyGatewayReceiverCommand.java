@@ -73,7 +73,7 @@ public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
         onGroups = new String[] {"cluster"};
       }
       Arrays.stream(onGroups).forEach(group -> service.updateCacheConfig(group, cc -> {
-        if (cc == null) {
+        if (cc == null || cc.getGatewayReceiver() == null) {
           if (!ifExists) {
             result.setStatus(Result.Status.ERROR);
           }
