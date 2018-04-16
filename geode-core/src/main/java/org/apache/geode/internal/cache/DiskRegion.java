@@ -430,7 +430,6 @@ public class DiskRegion extends AbstractDiskRegion {
   /**
    * Get serialized form of data off the disk
    *
-   * @param id
    * @since GemFire 5.7
    */
   public Object getSerializedData(DiskId id) {

@@ -52,7 +52,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -309,7 +308,6 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    * Create two regions, one a "feed" that performs transactions which are replicated to a region
    * with an Entry LRU set to one Asserts that the LRU rules are observed
    *
-   * @throws Exception
    */
   @Test
   public void testReplicationAndTransactions() throws Exception {

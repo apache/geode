@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UTFDataFormatException;
-import java.io.UnsupportedEncodingException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -104,7 +103,6 @@ public class CacheServerHelper {
   /**
    * The logic used here is based on java's DataInputStream.writeUTF() from the version 1.6.0_10.
    *
-   * @param s
    * @return byte[]
    */
   public static byte[] toUTF(String s) {
@@ -115,8 +113,6 @@ public class CacheServerHelper {
   /**
    * The logic used here is based on java's DataInputStream.readUTF() from the version 1.6.0_10.
    *
-   * @param bytearr
-   * @return String
    */
   public static String fromUTF(byte[] bytearr) {
     int utflen = bytearr.length;

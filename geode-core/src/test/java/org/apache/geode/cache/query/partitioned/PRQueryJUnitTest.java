@@ -60,7 +60,6 @@ public class PRQueryJUnitTest {
    * 1. Creates a PR with redundancy=0 on a single VM. 2. Puts some test Objects in cache. 3. Fires
    * queries on the data and verifies the result.
    *
-   * @throws Exception
    */
   @Test
   public void testQueryOnSingleDataStore() throws Exception {
@@ -176,8 +175,6 @@ public class PRQueryJUnitTest {
   /**
    * Populates the region with the Objects stores in the data Object array.
    *
-   * @param region
-   * @param data
    */
   private void populateData(Region region, Object[] data) {
     for (int j = 0; j < data.length; j++) {

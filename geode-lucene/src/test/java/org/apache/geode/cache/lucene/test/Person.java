@@ -15,8 +15,6 @@
 package org.apache.geode.cache.lucene.test;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
 
 public class Person implements Serializable {
   private String name;

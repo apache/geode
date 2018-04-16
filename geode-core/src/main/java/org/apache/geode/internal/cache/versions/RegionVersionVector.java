@@ -293,7 +293,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /**
    * locks against new version generation and returns the current region version number
    *
-   * @param regionPath
    */
   public long lockForClear(String regionPath, DistributionManager dm,
       InternalDistributedMember locker) {
@@ -323,7 +322,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * This schedules a thread that owns the version-generation write-lock for this vector. The method
    * unlockVersionGeneration notifies the thread to release the lock and terminate its run.
    *
-   * @param regionPath
    * @param dm the distribution manager - used to obtain an executor to hold the thread
    * @param locker the member requesting the lock (currently not used)
    */
@@ -725,7 +723,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * current version holder if it dominates the version holder we already have. This method will
    * called once for each oplog we recover.
    *
-   * @param latestOplog
    */
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ML_SYNC_ON_FIELD_TO_GUARD_CHANGING_THAT_FIELD",
@@ -871,7 +868,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * This marks the given entry as departed, making it eligible to be removed during an operation
    * like DistributedRegion.synchronizeWith()
    *
-   * @param id
    */
   protected void markDepartedMember(T id) {
     synchronized (this.memberToVersion) {
@@ -887,7 +883,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * its Region that have not been removed from the argument's Region. If this is the case, then a
    * delta GII may leave entries in the other RVV's Region that should be deleted.
    *
-   * @param other
    * @return true if there have been tombstone removals in this vector's Region that were not done
    *         in the argument's region
    */
@@ -1089,8 +1084,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * Remove any exceptions for the given member that are older than the given version. This is used
    * after a synchronization operation to get rid of unneeded history.
    *
-   * @param mbr
-   * @param version
    */
   public void removeExceptionsFor(DistributedMember mbr, long version) {
     RegionVersionHolder<T> holder = this.memberToVersion.get(mbr);
@@ -1141,7 +1134,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * after deserializing a version tag or RVV the IDs in it should be replaced with references to
    * IDs returned by this method. This vastly reduces the memory footprint of tags/stamps/rvvs
    *
-   * @param id
    * @return the canonical reference
    */
   public T getCanonicalId(T id) {
@@ -1240,8 +1232,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * region-version of any tombstone reaped. Any older versions are then immediately eligible for
    * reaping.
    *
-   * @param mbr
-   * @param regionVersion
    */
   public void recordGCVersion(T mbr, long regionVersion) {
     if (mbr == null) {
@@ -1275,7 +1265,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /**
    * record all of the GC versions in the given vector
    *
-   * @param other
    */
   public void recordGCVersions(RegionVersionVector<T> other) {
     assert other.memberToGCVersion != null : "incoming gc version set is null";
@@ -1290,8 +1279,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * that a clear or GC has been received that should have wiped out the operation this version
    * stamp represents, but this operation had not yet been received
    *
-   * @param mbr
-   * @param gcVersion
    * @return true if the given version should be rejected
    */
   public boolean isTombstoneTooOld(T mbr, long gcVersion) {

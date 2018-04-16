@@ -71,7 +71,6 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    * @param eventListner The event listner for the database connections.
    * @param configs The ConfiguredDataSourceProperties object containing the configuration for the
    *        pool.
-   * @throws PoolException
    */
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "SC_START_IN_CTOR",
       justification = "the thread started is a cleanup thread and is not active until there is a timeout tx")
@@ -116,12 +115,10 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    *
    * @param user The username for the database connection
    * @param pass The password for the database connection
-   * @throws SQLException
    *
-   *         public abstract void checkCredentials(String user, String pass)
+   *        public abstract void checkCredentials(String user, String pass)
    */
   /**
-   * @throws PoolException
    * @return ???
    */
   public abstract Object getNewPoolConnection() throws PoolException;
@@ -173,7 +170,6 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
   /**
    * Expires connection in the available pool.
    *
-   * @param connectionObject
    */
   abstract void destroyPooledConnection(Object connectionObject);
 
@@ -232,7 +228,6 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    * this iteslf guarantees that atleast one connection expired so the current thread can safely
    * demand one new connection.
    *
-   * @throws PoolException
    * @return Object connection object from the pool.
    */
   public Object getPooledConnectionFromPool() throws PoolException {
@@ -290,7 +285,6 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
   /**
    * Returns the max pool limit.
    *
-   * @return int
    */
   public int getMaxLimit() {
     return MAX_LIMIT;
@@ -301,7 +295,6 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    * block where the lock is taken on this.availableCache
    *
    * @param now Current time in milliseconds
-   * @throws PoolException
    * @return Object Connection object from the pool.
    */
   private Object checkOutConnection(long now) throws PoolException {

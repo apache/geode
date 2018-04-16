@@ -761,14 +761,9 @@ public class SocketCreator {
    * Creates or bind server socket to a random port selected from tcp-port-range which is same as
    * membership-port-range.
    *
-   * @param ba
-   * @param backlog
-   * @param isBindAddress
-   * @param tcpBufferSize
    *
    * @return Returns the new server socket.
    *
-   * @throws IOException
    */
   public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
       boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange)
@@ -781,15 +776,10 @@ public class SocketCreator {
    * Creates or bind server socket to a random port selected from tcp-port-range which is same as
    * membership-port-range.
    *
-   * @param ba
-   * @param backlog
-   * @param isBindAddress
-   * @param tcpBufferSize
    * @param sslConnection whether to connect using SSL
    *
    * @return Returns the new server socket.
    *
-   * @throws IOException
    */
   public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
       boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange,
@@ -1178,7 +1168,6 @@ public class SocketCreator {
   /**
    * This method uses JNDI to look up an address in DNS and return its name
    *
-   * @param addr
    *
    * @return the host name associated with the address or null if lookup isn't possible or there is
    *         no host name for this address

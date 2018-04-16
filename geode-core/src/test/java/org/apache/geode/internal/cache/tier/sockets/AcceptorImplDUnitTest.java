@@ -232,7 +232,6 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    *
-   * @param cache
    * @return the cache's Acceptor, if there is exactly one CacheServer. Otherwise null.
    */
   public AcceptorImpl getAcceptorImplFromCache(GemFireCache cache) {

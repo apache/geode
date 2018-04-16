@@ -14,8 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.xml;
 
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAMESPACE;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -26,12 +24,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -39,70 +34,25 @@ public class JdbcServiceConfigurationTest {
 
   private InternalCache cache;
   private JdbcConnectorService service;
-  private ConnectionConfiguration connection1;
-  private ConnectionConfiguration connection2;
-  private RegionMapping mapping1;
-  private RegionMapping mapping2;
+  private ConnectorService.Connection connection1;
+  private ConnectorService.Connection connection2;
+  private ConnectorService.RegionMapping mapping1;
+  private ConnectorService.RegionMapping mapping2;
 
   private JdbcServiceConfiguration configuration;
 
   @Before
   public void setUp() throws Exception {
-    connection1 = mock(ConnectionConfiguration.class);
-    connection2 = mock(ConnectionConfiguration.class);
-    mapping1 = mock(RegionMapping.class);
-    mapping2 = mock(RegionMapping.class);
+    connection1 = mock(ConnectorService.Connection.class);
+    connection2 = mock(ConnectorService.Connection.class);
+    mapping1 = mock(ConnectorService.RegionMapping.class);
+    mapping2 = mock(ConnectorService.RegionMapping.class);
     service = mock(JdbcConnectorService.class);
     cache = mock(InternalCache.class);
 
     when(cache.getService(JdbcConnectorService.class)).thenReturn(service);
 
     configuration = new JdbcServiceConfiguration();
-  }
-
-  @Test
-  public void getXmlGeneratorReturnsJdbcConnectorServiceXmlGenerator() throws Exception {
-    XmlGenerator<Cache> generator = configuration.getXmlGenerator();
-
-    assertThat(generator).isInstanceOf(JdbcConnectorServiceXmlGenerator.class);
-  }
-
-  @Test
-  public void getXmlGeneratorReturnsGeneratorWithJdbcConnectorNamespace() throws Exception {
-    XmlGenerator<Cache> generator = configuration.getXmlGenerator();
-
-    assertThat(generator.getNamespaceUri()).isEqualTo(NAMESPACE);
-  }
-
-  @Test
-  public void getXmlGeneratorReturnsEmptyGeneratorByDefault() throws Exception {
-    JdbcConnectorServiceXmlGenerator generator =
-        (JdbcConnectorServiceXmlGenerator) configuration.getXmlGenerator();
-
-    assertThat(generator.getConnections()).isEmpty();
-    assertThat(generator.getMappings()).isEmpty();
-  }
-
-  @Test
-  public void getXmlGeneratorWithConnections() throws Exception {
-    configuration.addConnectionConfig(connection1);
-    configuration.addConnectionConfig(connection2);
-
-    JdbcConnectorServiceXmlGenerator generator =
-        (JdbcConnectorServiceXmlGenerator) configuration.getXmlGenerator();
-
-    assertThat(generator.getConnections()).containsExactly(connection1, connection2);
-  }
-
-  @Test
-  public void getXmlGeneratorWithRegionMappings() throws Exception {
-    configuration.addRegionMapping(mapping1);
-    configuration.addRegionMapping(mapping2);
-
-    JdbcConnectorServiceXmlGenerator generator =
-        (JdbcConnectorServiceXmlGenerator) configuration.getXmlGenerator();
-
-    assertThat(generator.getMappings()).containsExactly(mapping1, mapping2);
   }
 
   @Test

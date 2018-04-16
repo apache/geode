@@ -23,7 +23,6 @@ import java.io.DataInput;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.tx.RemotePutAllMessage;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

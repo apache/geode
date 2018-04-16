@@ -153,7 +153,6 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
    * a server may have null IDs because they were operations performed by that server. We transmit
    * them as nulls to cut costs, but have to do the swap on the receiving end (in the client)
    *
-   * @param sender
    */
   public void replaceNullIDs(DistributedMember sender) {
     for (VersionTag versionTag : versionTags) {
@@ -172,9 +171,6 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
    * Add a part for a destroyed or missing entry. If the version tag is not null this represents a
    * tombstone.
    *
-   * @param key
-   * @param value
-   * @param version
    */
   public void addObjectPartForAbsentKey(Object key, Object value, VersionTag version) {
     addPart(key, value, KEY_NOT_AT_SERVER, version);
@@ -237,7 +233,6 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
   /**
    * save the current key/tag pairs in the given map
    *
-   * @param vault
    */
   public void saveVersions(Map<Object, VersionTag> vault) {
     Iterator it = this.iterator();

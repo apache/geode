@@ -67,7 +67,6 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
    *
    * @param recipients the members to fetch PartitionMemberDetails from
    * @param region the PartitionedRegion to fetch member details for
-   * @param fetchOfflineMembers
    * @return the processor used to fetch the PartitionMemberDetails
    */
   public static FetchPartitionDetailsResponse send(Set<InternalDistributedMember> recipients,
@@ -188,7 +187,6 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     /**
      * Send an ack
      *
-     * @param offlineDetails
      */
     public static void send(InternalDistributedMember recipient, int processorId,
         PartitionMemberInfoImpl details, DistributionManager dm,

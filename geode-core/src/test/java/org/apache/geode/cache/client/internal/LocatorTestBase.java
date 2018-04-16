@@ -57,9 +57,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
-/**
- *
- */
 public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   protected static final String CACHE_KEY = "CACHE";
   protected static final String LOCATOR_KEY = "LOCATOR";

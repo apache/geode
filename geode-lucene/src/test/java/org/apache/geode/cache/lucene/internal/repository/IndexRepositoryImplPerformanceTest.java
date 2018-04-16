@@ -149,7 +149,6 @@ public class IndexRepositoryImplPerformanceTest {
   /**
    * Test our full lucene index implementation
    *
-   * @throws Exception
    */
   @Test
   public void testLuceneIndex() throws Exception {

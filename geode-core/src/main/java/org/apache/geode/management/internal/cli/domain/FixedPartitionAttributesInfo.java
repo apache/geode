@@ -16,16 +16,12 @@ package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
 
-import io.netty.util.internal.StringUtil;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.cache.FixedPartitionAttributes;
 
 public class FixedPartitionAttributesInfo implements Serializable {
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
   private boolean isPrimary;
   private String partitionName;

@@ -903,7 +903,6 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   /**
    * verify that 10 orders are created for each customer
    *
-   * @throws ClassNotFoundException
    */
   public static void validatePRTXInCacheListener() throws ClassNotFoundException {
     PartitionedRegion customerPartitionedregion = null;

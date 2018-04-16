@@ -341,7 +341,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * and returns {@link org.apache.geode.cache.Operation#LOCAL_LOAD_CREATE} for
    * {@link CacheEvent#getOperation()}
    *
-   * @param r
    * @return fake entry event
    */
   protected static EntryEvent createFakeyEntryEvent(final Region r) {
@@ -709,7 +708,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * value and one client connected to each server reading values. If the bug exists, the clients
    * will get null sometimes.
    *
-   * @throws InterruptedException
    */
   @Test
   public void test003Bug36684() throws CacheException, InterruptedException {
@@ -3116,7 +3114,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Accessed by reflection DO NOT REMOVE
    *
-   * @return
    */
   protected static int getCacheServerPort() {
     return bridgeServerPort;
@@ -4332,7 +4329,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * Note: This test re-creates Distributed Systems for its own purposes and uses a Loner
    * distributed systems to isolate the Bridge Client.
    *
-   * @throws Exception
    */
   @Test
   public void test028DynamicRegionCreation() throws Exception {
@@ -5396,7 +5392,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test that the "notify by subscription" attribute is unique for each BridgeServer and Gateway
    *
-   * @throws Exception
    */
   /*
    * public void test035NotifyBySubscriptionIsolation() throws Exception { final String name =

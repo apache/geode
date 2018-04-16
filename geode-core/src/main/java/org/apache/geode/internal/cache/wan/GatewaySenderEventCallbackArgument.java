@@ -18,9 +18,7 @@ package org.apache.geode.internal.cache.wan;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 

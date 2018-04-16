@@ -120,7 +120,6 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
    * {@link org.apache.geode.internal.cache.Node}. The <code>IdentityResponse</code> is used to
    * fetch the highest current identity value.
    *
-   * @param recipients
    * @return the response object to wait upon
    */
   public static IdentityResponse send(Set recipients, InternalDistributedSystem is) {

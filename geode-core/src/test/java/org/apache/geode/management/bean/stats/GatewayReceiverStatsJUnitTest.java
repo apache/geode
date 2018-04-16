@@ -17,7 +17,6 @@ package org.apache.geode.management.bean.stats;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -26,8 +25,6 @@ import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.management.internal.beans.GatewayReceiverMBeanBridge;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- */
 @Category(IntegrationTest.class)
 public class GatewayReceiverStatsJUnitTest extends MBeanStatsTestCase {
 

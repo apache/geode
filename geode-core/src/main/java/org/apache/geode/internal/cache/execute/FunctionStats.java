@@ -439,7 +439,6 @@ public class FunctionStats {
    * Increments the "_functionExecutionException" and decrements "_functionExecutionsRunningId" and
    * decrement "_functionExecutionHasResultRunningId"
    *
-   * @param haveResult
    */
   public void endFunctionExecutionWithException(boolean haveResult) {
     // Decrement function Executions running.

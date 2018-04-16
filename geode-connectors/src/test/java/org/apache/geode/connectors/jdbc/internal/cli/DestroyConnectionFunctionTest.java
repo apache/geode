@@ -31,9 +31,8 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -48,7 +47,7 @@ public class DestroyConnectionFunctionTest {
   private DestroyConnectionFunction function;
   private FunctionContext<String> context;
   private ResultSender<Object> resultSender;
-  private ConnectionConfiguration configuration;
+  private ConnectorService.Connection configuration;
   private JdbcConnectorService service;
 
   @Before
@@ -67,7 +66,7 @@ public class DestroyConnectionFunctionTest {
     when(context.getArguments()).thenReturn(connectionName);
     when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
 
-    configuration = new ConnectionConfigBuilder().build();
+    configuration = new ConnectorService.Connection();
 
     function = new DestroyConnectionFunction();
   }

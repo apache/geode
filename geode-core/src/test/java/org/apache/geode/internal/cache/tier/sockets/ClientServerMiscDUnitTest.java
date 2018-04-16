@@ -684,7 +684,6 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
    * to both of the regions Region interests AL_KEYS on both the regions,
    * notify-by-subscription=true . The CCP should have both the regions in interest list.
    *
-   * @throws Exception
    */
 
   @Test
@@ -733,7 +732,6 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
    * Disconnect DS1. Create a DistributedSystem (DS2). Create a Region with pool, it attempts to
    * register interest using DS2 memberid, gets NPE.
    *
-   * @throws Exception
    */
   @Test
   public void testSystemCanBeCycledWithAnInitializedPool() throws Exception {

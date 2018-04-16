@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.junit.BeforeClass;
@@ -26,9 +27,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
-import org.apache.geode.management.internal.cli.json.GfJsonArray;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
@@ -60,7 +58,7 @@ public class ListJndiBindingCommandDUnitTest {
   }
 
   @Test
-  public void listJndiBinding() throws GfJsonException {
+  public void listJndiBinding() {
     gfsh.executeAndAssertThat(
         "create jndi-binding --name=jndi1 --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
@@ -74,10 +72,10 @@ public class ListJndiBindingCommandDUnitTest {
         .tableHasRowCount("Group Name", 1);
 
     // member table
-    GfJsonObject memberTableContent = commandResultAssert.getCommandResult().getTableContent(0, 1);
-    GfJsonArray jndi_names = memberTableContent.getJSONArray("JNDI Name");
-    assertThat(jndi_names.size()).isEqualTo(3);
-    assertThat(GfJsonArray.toStringArray(jndi_names)).containsExactlyInAnyOrder("java:jndi1",
-        "java:UserTransaction", "java:TransactionManager");
+    List<String> jndiNames =
+        commandResultAssert.getCommandResult().getColumnFromTableContent("JNDI Name", 0, 1);
+    assertThat(jndiNames.size()).isEqualTo(3);
+    assertThat(jndiNames).containsExactlyInAnyOrder("java:jndi1", "java:UserTransaction",
+        "java:TransactionManager");
   }
 }

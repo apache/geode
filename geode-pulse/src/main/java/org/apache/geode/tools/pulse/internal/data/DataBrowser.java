@@ -87,7 +87,6 @@ public class DataBrowser {
    *
    * @param userId Logged in user's Unique Id
    * @param queryId Unique Id of Query to be deleted
-   * @return boolean
    */
   public boolean deleteQueryById(String userId, String queryId) {
 

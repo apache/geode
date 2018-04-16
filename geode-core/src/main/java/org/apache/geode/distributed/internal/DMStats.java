@@ -561,7 +561,6 @@ public interface DMStats {
   /**
    * increment/decrement the number of thread-owned receivers with the given domino count
    *
-   * @param value
    * @param dominoCount thread-owned connection chain count
    */
   void incThreadOwnedReceivers(long value, int dominoCount);

@@ -21,17 +21,16 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -55,58 +54,26 @@ public class DestroyMappingCommand extends InternalGfshCommand {
     Set<DistributedMember> targetMembers = getMembers(null, null);
 
     // action
-    ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
-        execute(new DestroyMappingFunction(), regionName, targetMembers);
+    List<CliFunctionResult> results =
+        executeAndGetFunctionResult(new DestroyMappingFunction(), regionName, targetMembers);
 
     // output
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
-    tabularResultData.setHeader(EXPERIMENTAL);
-    Result result = ResultBuilder.buildResult(tabularResultData);
-    updateClusterConfiguration(result, xmlEntity);
-    return result;
-  }
+    boolean persisted = false;
+    ClusterConfigurationService ccService = getConfigurationService();
 
-  ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
-      DestroyMappingFunction function, String regionName, Set<DistributedMember> targetMembers) {
-    return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
-        regionName, targetMembers);
-  }
-
-  private XmlEntity fillTabularResultData(
-      ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector,
-      TabularResultData tabularResultData) {
-    XmlEntity xmlEntity = null;
-
-    for (CliFunctionResult oneResult : resultCollector.getResult()) {
-      if (oneResult.isSuccessful()) {
-        xmlEntity = addSuccessToResults(tabularResultData, oneResult);
-      } else {
-        addErrorToResults(tabularResultData, oneResult);
+    if (ccService != null && results.stream().filter(CliFunctionResult::isSuccessful).count() > 0) {
+      ConnectorService service =
+          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
+      if (service != null) {
+        ccService.removeFromList(service.getRegionMapping(), regionName);
+        ccService.saveCustomCacheElement("cluster", service);
+        persisted = true;
       }
     }
 
-    return xmlEntity;
-  }
+    CommandResult commandResult = ResultBuilder.buildResult(results, EXPERIMENTAL, null);
+    commandResult.setCommandPersisted(persisted);
 
-  private XmlEntity addSuccessToResults(TabularResultData tabularResultData,
-      CliFunctionResult oneResult) {
-    tabularResultData.accumulate("Member", oneResult.getMemberIdOrName());
-    tabularResultData.accumulate("Status", oneResult.getMessage());
-    return oneResult.getXmlEntity();
-  }
-
-  private void addErrorToResults(TabularResultData tabularResultData, CliFunctionResult oneResult) {
-    tabularResultData.accumulate("Member", oneResult.getMemberIdOrName());
-    tabularResultData.accumulate("Status", ERROR_PREFIX + oneResult.getMessage());
-    tabularResultData.setStatus(Result.Status.ERROR);
-  }
-
-  private void updateClusterConfiguration(final Result result, final XmlEntity xmlEntity) {
-    if (xmlEntity != null) {
-      persistClusterConfiguration(result,
-          () -> ((InternalClusterConfigurationService) getConfigurationService())
-              .addXmlEntity(xmlEntity, null));
-    }
+    return commandResult;
   }
 }

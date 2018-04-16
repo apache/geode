@@ -30,9 +30,6 @@ public class DataSourceCreateException extends GemFireCheckedException {
     super();
   }
 
-  /**
-   * @param message
-   */
   public DataSourceCreateException(String message) {
     super(message);
   }

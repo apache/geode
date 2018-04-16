@@ -301,7 +301,6 @@ public class JNDIInvoker {
   /**
    * Initialises the GemFire context. This is called when no external JNDI Context is found.
    *
-   * @throws NamingException
    */
   private static void initializeGemFireContext() throws NamingException {
     Hashtable table = new Hashtable();
@@ -392,7 +391,6 @@ public class JNDIInvoker {
   /**
    * returns the GemFire TransactionManager.
    *
-   * @return TransactionManager
    */
   public static TransactionManager getTransactionManager() {
     return transactionManager;

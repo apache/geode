@@ -32,8 +32,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- */
 @Category(IntegrationTest.class)
 public class UserTransactionImplJUnitTest {
 

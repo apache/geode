@@ -32,8 +32,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -48,7 +47,7 @@ public class DestroyMappingCommandFunctionTest {
   private DestroyMappingFunction function;
   private FunctionContext<String> context;
   private ResultSender<Object> resultSender;
-  private RegionMapping mapping;
+  private ConnectorService.RegionMapping mapping;
   private JdbcConnectorService service;
 
   @Before
@@ -67,7 +66,7 @@ public class DestroyMappingCommandFunctionTest {
     when(context.getArguments()).thenReturn(regionName);
     when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
 
-    mapping = new RegionMappingBuilder().build();
+    mapping = new ConnectorService.RegionMapping();
 
     function = new DestroyMappingFunction();
   }

@@ -52,10 +52,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-/**
- *
- *
- */
 @Category({IntegrationTest.class, OQLQueryTest.class})
 public class CompiledJunctionInternalsJUnitTest {
 

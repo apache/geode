@@ -25,14 +25,11 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockSettings;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
-import org.apache.geode.cache.lucene.test.LuceneDeclarable2TestSerializer;
-import org.apache.geode.cache.lucene.test.LuceneTestSerializer;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.test.junit.categories.LuceneTest;

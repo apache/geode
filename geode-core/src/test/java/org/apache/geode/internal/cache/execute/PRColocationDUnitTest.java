@@ -1278,7 +1278,6 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
    * Member 2: PR2 is not colocated <br>
    * Should throw IllegalStateException
    *
-   * @throws Throwable
    */
   @Test
   public void testColocationPartitionedRegionWithNullColocationSpecifiedOnOneNode()
@@ -1427,7 +1426,6 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
   /**
    * Confirm that the redundancy must be the same for colocated partitioned regions
    *
-   * @throws Exception
    */
   @Test
   public void testRedundancyRestriction() throws Exception {
@@ -1462,7 +1460,6 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
    * Tests to make sure that a VM will not make copies of any buckets for a region until all of the
    * colocated regions are created.
    *
-   * @throws Throwable
    */
   @Test
   public void testColocatedPRRedundancyRecovery() throws Throwable {
@@ -1779,7 +1776,6 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
    * A parent region is populated with buckets. Then the child region is created simultaneously on
    * several nodes.
    *
-   * @throws Throwable
    */
   @Test
   public void testSimulaneousChildRegionCreation() throws Throwable {

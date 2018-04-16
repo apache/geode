@@ -21,7 +21,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 
 import java.util.Properties;
-import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -71,7 +70,6 @@ public class TXManagerImplJUnitTest {
   /**
    * two threads suspend and resume a single transaction, while making changes.
    *
-   * @throws Exception
    */
   @Test
   public void testSuspendResume() throws Exception {
@@ -255,7 +253,6 @@ public class TXManagerImplJUnitTest {
   /**
    * test that timeout of Long.MAX_VALUE does not return immediately
    *
-   * @throws Exception
    */
   @Test
   public void testWaitForever() throws Exception {

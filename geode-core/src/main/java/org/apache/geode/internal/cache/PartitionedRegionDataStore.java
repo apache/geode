@@ -214,9 +214,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   /**
    * This method creates a PartitionedRegionDataStore be invoking the PRDS Constructor.
    *
-   * @param cache
-   * @param pr
-   * @param pa
    * @return @throws PartitionedRegionException
    */
   static PartitionedRegionDataStore createDataStore(Cache cache, PartitionedRegion pr,
@@ -272,8 +269,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * Try to grab buckets for all the colocated regions /* In case we can't grab buckets there is no
    * going back
    *
-   * @param creationRequestor
-   * @param isDiskRecovery
    */
 
   protected CreateBucketResult grabFreeBucketRecursively(final int bucketId,
@@ -331,7 +326,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @param moveSource Where we are moving the bucket from, if this is a move.
    * @param forceCreation avoid any checks (with in reason) which might prevent bucket creation
    * @param isRebalance true if bucket creation is directed by rebalancing
-   * @param replaceOffineData
    * @return true if successful
    */
   CreateBucketResult grabFreeBucket(final int possiblyFreeBucketId, final DistributedMember sender,
@@ -653,7 +647,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * This method creates bucket regions, based on redundancy level. If redundancy level is: a) = 1
    * it creates a local region b) >1 it creates a distributed region
    *
-   * @param bucketId
    * @return @throws CacheException
    */
   private BucketRegion createBucketRegion(int bucketId) {
@@ -1105,7 +1098,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   /**
    * Return the size in bytes for a given bucket.
    *
-   * @param bucketId
    * @return size in bytes
    */
   public long getBucketSize(int bucketId) {
@@ -1123,10 +1115,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   /**
    * Querys the buckets in this data store for query specified by queryPredicate.
    *
-   * @param query
    * @param parameters the parameters to be used to execute the query
    * @param buckets to be queried
-   * @param resultCollector
    * @throws QueryException TODO-javadocs
    */
   /*
@@ -1377,7 +1367,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * cleans up the localBucketRegion map to avoid any stale references to locally destroyed bucket
    * region.
    *
-   * @param removeBucketMapping
    */
   void cleanUp(boolean removeBucketMapping, boolean removeFromDisk) {
     if (logger.isDebugEnabled()) {
@@ -1756,7 +1745,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @param key optional for error reporting; if none, no key available.
    * @param bucketId the bucket to fetch
    * @return the region
-   * @throws ForceReattemptException
    */
   public BucketRegion getInitializedBucketForId(Object key, Integer bucketId)
       throws ForceReattemptException {
@@ -1820,10 +1808,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * Fetch a BucketRegion, but do not return until it is initialized and the primary is known.
    *
    * @see #getInitializedBucketForId(Object, Integer)
-   * @param key
-   * @param bucketId
    * @return the initialized region
-   * @throws ForceReattemptException
    */
   public BucketRegion getInitializedBucketWithKnownPrimaryForId(Object key, Integer bucketId)
       throws ForceReattemptException {
@@ -1947,7 +1932,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * Returns value corresponding to this key.
    *
    * @param key the key to look for
-   * @param preferCD
    * @param requestingClient the client making the request, or null
    * @param clientEvent client's event (for returning version tag)
    * @param returnTombstones whether tombstones should be returned
@@ -1968,7 +1952,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * Returns value corresponding to this key.
    *
    * @param key the key to look for
-   * @param preferCD
    * @param requestingClient the client making the request, or null
    * @param clientEvent client's event (for returning version tag)
    * @param returnTombstones whether tombstones should be returned
@@ -2125,9 +2108,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   /**
    * Handle a remote request for keys for the provided bucketId
    *
-   * @param bucketId
-   * @param interestType
-   * @param interestArg
    * @param allowTombstones whether to return destroyed entries
    * @return The <code>Set</code> of keys for bucketId or {@link Collections#EMPTY_SET}if no keys
    *         are present
@@ -2174,7 +2154,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * avoiding making copies of the returned set. The returned set can and should reflect concurrent
    * changes (no ConcurrentModificationExceptions).
    *
-   * @param bucketId
    * @param allowTombstones whether to include destroyed entries in the result
    * @return The <code>Set</code> of keys for bucketId or {@link Collections#EMPTY_SET} if no keys
    *         are present
@@ -2400,7 +2379,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   /**
    * This calculates size of all the primary bucket regions for the list of bucketIds.
    *
-   * @param bucketIds
    * @return the size of all the primary bucket regions for the list of bucketIds.
    */
   public Map<Integer, SizeEntry> getSizeLocallyForBuckets(Collection<Integer> bucketIds) {
@@ -2837,7 +2815,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    *
    * @param br the bucket that we are trying to operate on
    * @param isOriginRemote true the event we are processing has a remote origin.
-   * @param rde
    *
    */
   public void checkRegionDestroyedOnBucket(final BucketRegion br, final boolean isOriginRemote,
@@ -2938,7 +2915,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   /**
    * Checks consistency of bucket and meta data before attempting to grab the bucket.
    *
-   * @param buckId
    * @return false if bucket should not be grabbed, else true. TODO prpersist - move this to
    *         BucketRegion
    */

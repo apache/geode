@@ -303,7 +303,7 @@ public class ClusterConfigurationLoader {
     return response;
   }
 
-  private ConfigurationResponse requestConfigurationFromOneLocator(
+  protected ConfigurationResponse requestConfigurationFromOneLocator(
       InternalDistributedMember locator, Set<String> groups) {
     ConfigurationResponse configResponse = null;
 

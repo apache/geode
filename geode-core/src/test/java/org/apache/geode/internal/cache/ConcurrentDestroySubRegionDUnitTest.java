@@ -25,19 +25,14 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- *
- */
 @Category(DistributedTest.class)
 public class ConcurrentDestroySubRegionDUnitTest extends JUnit4CacheTestCase {
 
@@ -49,9 +44,6 @@ public class ConcurrentDestroySubRegionDUnitTest extends JUnit4CacheTestCase {
     disconnectAllFromDS();
   }
 
-  /**
-   * @param name
-   */
   public ConcurrentDestroySubRegionDUnitTest() {
     super();
   }

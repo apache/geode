@@ -608,7 +608,6 @@ public class NativeCallsJNAImpl {
      * Get the file store type of a path. for example, /dev/sdd1(store name) /w2-gst-dev40d(mount
      * point) ext4(type)
      *
-     * @param path
      * @return file store type
      */
     public String getFileStoreType(final String path) {

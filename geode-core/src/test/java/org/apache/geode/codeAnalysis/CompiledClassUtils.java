@@ -42,7 +42,6 @@ public class CompiledClassUtils {
    * Parse the given class files and return a map of name->Dclass. Any IO exceptions are consumed by
    * this method and written to stderr.
    *
-   * @param classFiles
    * @return the parsed classes
    */
   public static Map<String, CompiledClass> parseClassFiles(List<File> classFiles) {

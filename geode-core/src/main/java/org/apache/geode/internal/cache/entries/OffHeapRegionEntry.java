@@ -27,7 +27,6 @@ public interface OffHeapRegionEntry extends RegionEntry, Releasable {
   /**
    * OFF_HEAP_FIELD_READER
    *
-   * @return OFF_HEAP_ADDRESS
    */
   long getAddress();
 

@@ -46,10 +46,6 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-/**
- *
- *
- */
 @Category({IntegrationTest.class, OQLQueryTest.class})
 public class ExecutionContextJUnitTest {
   boolean failure = false;

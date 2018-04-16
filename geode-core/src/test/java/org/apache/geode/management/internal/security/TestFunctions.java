@@ -21,7 +21,6 @@ import static org.apache.geode.security.ResourcePermission.Resource.DATA;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;

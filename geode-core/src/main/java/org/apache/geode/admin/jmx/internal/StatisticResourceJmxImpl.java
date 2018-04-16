@@ -23,7 +23,6 @@ import org.apache.commons.modeler.ManagedBean;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.Statistic;

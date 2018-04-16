@@ -27,7 +27,6 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -39,7 +38,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -82,7 +80,6 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
   /**
    * Sanity check using two peers sharing a replicated region.
    *
-   * @throws Exception
    */
   @Test
   public void testReplicateRegion() throws Exception {
@@ -98,7 +95,6 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
   /**
    * Sanity check for two peers sharing a persisted replicated region.
    *
-   * @throws Exception
    */
   @Test
   public void testReplicatePersistentRegion() throws Exception {

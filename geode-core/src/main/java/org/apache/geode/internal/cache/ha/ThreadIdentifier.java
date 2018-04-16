@@ -21,14 +21,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.logging.LogService;
 
 /**
  * Class identifying a Thread uniquely across the distributed system. It is composed of two fields
@@ -259,7 +255,6 @@ public class ThreadIdentifier implements DataSerializable {
   /**
    * Checks if the input thread id is a WAN_TYPE thread id
    *
-   * @param tid
    * @return whether the input thread id is a WAN_TYPE thread id
    */
   public static boolean isWanTypeThreadID(long tid) {
@@ -308,7 +303,6 @@ public class ThreadIdentifier implements DataSerializable {
   /**
    * checks to see if the membership id of this identifier is the same as in the argument
    *
-   * @param other
    * @return whether the two IDs are from the same member
    */
   public boolean isSameMember(ThreadIdentifier other) {

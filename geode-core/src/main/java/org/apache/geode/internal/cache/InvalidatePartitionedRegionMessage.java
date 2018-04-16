@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -30,16 +27,10 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 
-/**
- *
- */
 public class InvalidatePartitionedRegionMessage extends PartitionMessage {
 
   private Object callbackArg;
 
-  /**
-   *
-   */
   public InvalidatePartitionedRegionMessage() {}
 
   public InvalidatePartitionedRegionMessage(Set recipients, Object callbackArg, PartitionedRegion r,

@@ -1860,7 +1860,6 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   /**
    * Get the port that the standard dunit locator is listening on.
    *
-   * @return
    */
   public static String getDUnitLocatorAddress() {
     return Host.getHost(0).getHostName();

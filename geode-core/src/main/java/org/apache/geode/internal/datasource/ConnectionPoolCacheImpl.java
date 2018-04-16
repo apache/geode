@@ -27,9 +27,7 @@ import javax.sql.PooledConnection;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.logging.LogService;
 
 public class ConnectionPoolCacheImpl extends AbstractPoolCache {
@@ -73,7 +71,6 @@ public class ConnectionPoolCacheImpl extends AbstractPoolCache {
    * Creates a new connection for the pool.
    *
    * @return the connection from the database as Object.
-   * @throws PoolException
    */
   @Override
   public Object getNewPoolConnection() throws PoolException {

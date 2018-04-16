@@ -109,7 +109,6 @@ public class MemoryAllocatorFillPatternIntegrationTest {
    * tiny Chunks for one minute. This, of course, exercises many aspects of the MemoryAllocatorImpl
    * and its helper classes.
    *
-   * @throws Exception
    */
   @Test
   public void testFillPatternAdvancedForTinyAllocations() throws Exception {
@@ -131,7 +130,6 @@ public class MemoryAllocatorFillPatternIntegrationTest {
    * huge Chunks for one minute. This, of course, exercises many aspects of the MemoryAllocatorImpl
    * and its helper classes.
    *
-   * @throws Exception
    */
   @Test
   public void testFillPatternAdvancedForHugeAllocations() throws Exception {

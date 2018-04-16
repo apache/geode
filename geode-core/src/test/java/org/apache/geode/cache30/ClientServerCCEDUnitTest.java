@@ -36,7 +36,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.ExpirationAction;
@@ -113,7 +112,6 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
    * the same key in a region which, in the servers, has Scope.GLOBAL. There should be no conflation
    * and each operation should obtain a lock.
    *
-   * @throws Exception
    */
   @Test
   public void testClientEventsAreNotConflatedByGlobalRegionOnServer() throws Exception {

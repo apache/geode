@@ -63,7 +63,6 @@ public interface NetMember extends Comparable<NetMember> {
    * Set whether this member ID is preferred for coordinator. This is mostly useful for unit tests
    * because it does not distribute this status to other members in the distributed system.
    *
-   * @param preferred
    */
   void setPreferredForCoordinator(boolean preferred);
 

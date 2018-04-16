@@ -23,10 +23,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- *
- *
- */
 public class FunctionStreamingOrderedReplyMessage extends FunctionStreamingReplyMessage {
   private static final Logger logger = LogService.getLogger();
 

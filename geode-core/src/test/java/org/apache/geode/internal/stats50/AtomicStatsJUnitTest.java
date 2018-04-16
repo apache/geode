@@ -33,9 +33,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class AtomicStatsJUnitTest {
 
@@ -43,7 +40,6 @@ public class AtomicStatsJUnitTest {
    * Test for bug 41340. Do two gets at the same time of a dirty stat, and make sure we get the
    * correct value for the stat.
    *
-   * @throws Throwable
    */
   @Test
   public void testConcurrentGets() throws Throwable {

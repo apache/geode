@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import java.util.List;
 
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.distributed.internal.ServerLocation;

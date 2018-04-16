@@ -240,10 +240,6 @@ public class JsonUtil {
   /**
    * This is used in Put command this method uses HashSet as default implementation
    *
-   * @param value
-   * @param parameterType
-   * @return setValue
-   * @throws GfJsonException
    */
   @SuppressWarnings({"rawtypes", "unchecked"})
   private static Object toSet(Object value, Class<?> parameterType) throws GfJsonException {

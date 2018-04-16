@@ -849,7 +849,6 @@ public class PartitionedRegionHelper {
   /**
    * Utility method to print a collection.
    *
-   * @return String
    */
   public static String printCollection(Collection c) {
     if (c != null) {

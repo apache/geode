@@ -30,7 +30,6 @@ public interface NotificationBroadCasterProxy extends NotificationBroadcaster {
   /**
    * send the notification to registered clients
    *
-   * @param notification
    */
   void sendNotification(Notification notification);
 }

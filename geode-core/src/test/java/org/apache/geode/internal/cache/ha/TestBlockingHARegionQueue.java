@@ -18,7 +18,6 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
@@ -52,8 +51,6 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
   /**
    * Does a put and a notifyAll() multiple threads can possibly be waiting on this queue to put
    *
-   * @throws CacheException
-   * @throws InterruptedException
    *
    * @return boolean whether object was successfully put onto the queue
    */
@@ -76,7 +73,6 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
    * blocking peek. This method will not return till it has acquired a legitimate object from teh
    * queue.
    *
-   * @throws InterruptedException
    */
 
   public Object peek() throws InterruptedException {

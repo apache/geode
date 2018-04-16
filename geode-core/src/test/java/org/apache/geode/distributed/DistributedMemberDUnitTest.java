@@ -253,7 +253,6 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
    *
    * This test ensures that a partial ID (with no "name") is equal to its equivalent non-partial ID.
    *
-   * @throws Exception
    */
   @Test
   public void testMemberNameIgnoredInPartialID() throws Exception {
@@ -273,7 +272,6 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
    * This test ensures that the membership manager can detect and replace a partial ID with one that
    * is not partial
    *
-   * @throws Exception
    */
   @Test
   public void testPartialIDInMessageReplacedWithFullID() throws Exception {

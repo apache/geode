@@ -125,7 +125,6 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Wait for acknowledgment from client, verify creation time is correct
    *
-   * @throws Exception
    */
   public static void waitForClientAck() throws Exception {
     final long maxWaitTime = 30000;

@@ -16,8 +16,6 @@ package org.apache.geode.internal.cache.snapshot;
 
 import java.io.File;
 
-import org.apache.logging.log4j.LogManager;
-
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;

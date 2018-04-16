@@ -432,7 +432,6 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
   /**
    * The {@code SessionManager} injects this when creating a new session.
    *
-   * @param attributes
    */
   public void setAttributes(AbstractSessionAttributes attributes) {
     this.attributes = attributes;

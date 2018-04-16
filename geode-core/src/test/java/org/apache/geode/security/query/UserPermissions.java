@@ -14,17 +14,9 @@
  */
 package org.apache.geode.security.query;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import org.apache.geode.cache.query.internal.RestrictedMethodInvocationAuthorizer;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.TestSecurityManager;
 
 public class UserPermissions {

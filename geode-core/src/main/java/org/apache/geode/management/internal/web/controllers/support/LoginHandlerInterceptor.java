@@ -124,7 +124,6 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter
    * This is used to pass attributes into the Spring/Jetty environment from the instantiating Geode
    * environment.
    *
-   * @param servletContext
    */
   @Override
   public void setServletContext(ServletContext servletContext) {

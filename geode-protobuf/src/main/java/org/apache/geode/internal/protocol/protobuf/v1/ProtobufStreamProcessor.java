@@ -49,7 +49,7 @@ public class ProtobufStreamProcessor {
     try {
       processOneMessage(inputStream, outputStream, executionContext);
     } catch (InvalidProtocolMessageException e) {
-      logger.info(e);
+      logger.info("Invalid message", e);
       throw new IOException(e);
     }
   }

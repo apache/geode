@@ -301,7 +301,6 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Prepopulate the client with the entries that will be done by cache-servers
    *
-   * @throws Exception
    */
   public static void prepopulateClient() throws Exception {
     doEntryOperations(primaryPrefix);

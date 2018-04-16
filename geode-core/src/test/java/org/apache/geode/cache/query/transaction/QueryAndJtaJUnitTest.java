@@ -268,7 +268,6 @@ public class QueryAndJtaJUnitTest {
   /**
    * verify that queries on indexes work with transaction
    *
-   * @throws Exception
    */
   @Test
   public void testIndexOnCommitForPut() throws Exception {

@@ -499,7 +499,6 @@ public class CliUtil {
    *        function.
    * @param targetMembers Set of members on which the function is to be executed.
    *
-   * @return ResultCollector
    */
   public static ResultCollector<?, ?> executeFunction(final Function function, Object args,
       final Set<DistributedMember> targetMembers) {

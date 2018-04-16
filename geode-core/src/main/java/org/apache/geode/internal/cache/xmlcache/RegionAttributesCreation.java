@@ -308,8 +308,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   /**
    * returns true if two long[] are equal
    *
-   * @param array1
-   * @param array2
    * @return true if equal
    */
   private boolean equal(long[] array1, long[] array2) {
@@ -328,8 +326,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   /**
    * returns true if two int[] are equal
    *
-   * @param array1
-   * @param array2
    * @return true if equal
    */
   private boolean equal(int[] array1, int[] array2) {
@@ -1010,7 +1006,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   /**
    * Checks if directories exist
    *
-   * @param diskDirs
    */
   private void checkIfDirectoriesExist(File[] diskDirs) {
     for (int i = 0; i < diskDirs.length; i++) {

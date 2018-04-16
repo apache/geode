@@ -26,9 +26,6 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 
 public class DiskStoreValidater {
-  /**
-   * @param args
-   */
   public static void main(String[] args) {
     if (args.length < 2 || args.length > 2) {
       throw new IllegalArgumentException("Requires only 2  arguments : <DiskStore> <Dirs>");

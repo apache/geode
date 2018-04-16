@@ -30,21 +30,18 @@ public interface IndexRepository {
   /**
    * Create a new entry in the lucene index
    *
-   * @throws IOException
    */
   void create(Object key, Object value) throws IOException;
 
   /**
    * Update the entries in the lucene index
    *
-   * @throws IOException
    */
   void update(Object key, Object value) throws IOException;
 
   /**
    * Delete the entries in the lucene index
    *
-   * @throws IOException
    */
   void delete(Object key) throws IOException;
 
@@ -52,18 +49,15 @@ public interface IndexRepository {
    * Query the index index repository, passing the results to the collector Only the documents with
    * the top scores, up to the limit, will be passed to the collector, in order of score.
    *
-   * @param query
    * @param limit the maximum number of hits to return
    * @param collector the class to aggregate the hits
    *
-   * @throws IOException
    */
   void query(Query query, int limit, IndexResultCollector collector) throws IOException;
 
   /**
    * Commit the changes to all lucene index
    *
-   * @throws IOException
    */
   void commit() throws IOException;
 

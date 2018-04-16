@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Level;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.UnmodifiableConfigurationException;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**

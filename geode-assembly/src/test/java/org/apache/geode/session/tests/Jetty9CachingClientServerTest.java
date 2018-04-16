@@ -18,17 +18,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpSession;
 
-import org.awaitility.Awaitility;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.modules.session.functions.GetSessionCount;
 import org.apache.geode.test.dunit.DUnitEnv;
 
 /**

@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
@@ -154,7 +151,6 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   /**
    * Sets the disk store name for overflow
    *
-   * @param diskStoreName
    * @since GemFire prPersistSprint2
    */
   public void setDiskStoreName(String diskStoreName) {

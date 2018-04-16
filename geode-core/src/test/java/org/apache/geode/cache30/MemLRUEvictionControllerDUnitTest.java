@@ -38,7 +38,6 @@ import org.apache.geode.internal.cache.eviction.MemoryLRUController;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.size.WellKnownClassSizer;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -145,7 +144,6 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   /**
    * Make sure that we only size a class the first time we see the class instance.
    *
-   * @throws CacheException
    */
   @Test
   public void testSizeClassesOnce() throws CacheException {
@@ -230,7 +228,6 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    * Validate that a custom {@link ObjectSizer} is called, configured propertly, and actually limits
    * the size of the <code>Region</code>.
    *
-   * @throws Exception
    */
   @Test
   public void testCustomObjectSizer() throws Exception {

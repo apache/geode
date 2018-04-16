@@ -672,7 +672,6 @@ public class CacheClientNotifier {
   /**
    * Adds or updates entry in the dispatched message map when client sends an ack.
    *
-   * @return success
    */
   public boolean processDispatchedMessage(ClientProxyMembershipID proxyId, EventID eid) {
     boolean success = false;

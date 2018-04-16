@@ -17,20 +17,11 @@ package org.apache.geode.distributed.internal.membership.gms.messenger;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.math.BigInteger;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-
-import javax.crypto.KeyAgreement;
-import javax.crypto.Mac;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.DHParameterSpec;
 
 import org.junit.Assert;
 import org.junit.Rule;

@@ -22,9 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-/**
- *
- */
 public class HelpBlock {
   private String data = null;
   private List<HelpBlock> children = new ArrayList<>();

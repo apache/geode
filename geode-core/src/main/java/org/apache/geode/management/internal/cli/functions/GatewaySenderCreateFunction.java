@@ -68,9 +68,6 @@ public class GatewaySenderCreateFunction implements InternalFunction {
   /**
    * Creates the GatewaySender with given configuration.
    *
-   * @param cache
-   * @param gatewaySenderCreateArgs
-   * @return GatewaySender
    */
   private GatewaySender createGatewaySender(Cache cache,
       GatewaySenderFunctionArgs gatewaySenderCreateArgs) {

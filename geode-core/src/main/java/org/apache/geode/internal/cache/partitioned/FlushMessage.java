@@ -110,9 +110,6 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
    * operations originating from the primary {@link Scope#DISTRIBUTED_NO_ACK do not require an
    * acknowldgement}
    *
-   * @param primary
-   * @param p
-   * @param bucketId
    * @return a processor on which to wait for the flush operation to complete
    */
   public static ReplyProcessor21 send(InternalDistributedMember primary, PartitionedRegion p,

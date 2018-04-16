@@ -89,7 +89,6 @@ public interface AuthInitialize extends CacheCallback {
 
   /**
    *
-   * @param securityProps
    * @return the credentials to be used. It needs to contain "security-username" and
    *         "security-password"
    * @deprecated in Geode 1.3. Never called by the product. Use {@link #getCredentials(Properties

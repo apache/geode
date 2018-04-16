@@ -238,10 +238,6 @@ public class GemFireMemcachedServer {
     this.cache.close();
   }
 
-  /**
-   *
-   * @param args
-   */
   public static void main(String[] args) {
     int port = getPort(args);
     GemFireMemcachedServer server = new GemFireMemcachedServer(port);

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.pdx;
 
-import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 

@@ -113,7 +113,6 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
-import org.apache.geode.cache.client.internal.ClientSideHandshakeImpl;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -1807,9 +1806,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return new NonTXEntry(re);
   }
 
-  /**
-   * @return boolean
-   */
   protected boolean isClosed() {
     return this.cache.isClosed();
   }
@@ -2437,13 +2433,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           logger.info("Failed to create index {} on region {} with exception: {}",
               icd.getIndexName(), this.getFullPath(), ex);
 
-          // Check if the region index creation is from cache.xml, in that case throw exception.
-          // Other case is when bucket regions are created dynamically, in that case ignore the
-          // exception.
-          if (internalRegionArgs.getDeclarativeIndexCreation()) {
-            throw new InternalGemFireError(LocalizedStrings.GemFireCache_INDEX_CREATION_EXCEPTION_1
-                .toLocalizedString(icd.getIndexName(), this.getFullPath()), ex);
-          }
         }
       }
     } finally {
@@ -4645,7 +4634,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Called by a thread that is doing region initialization. Causes the initialization Latch to be
    * bypassed by this thread.
    *
-   * @return oldLevel
    */
   public static int setThreadInitLevelRequirement(int level) {
     int oldLevel = threadInitLevelRequirement();
@@ -7320,11 +7308,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         }
       }
     }
-  }
-
-  void cleanUpOnIncompleteOp(EntryEventImpl event, RegionEntry regionEntry) {
-    // Ok to remove entry as index has not been modified yet by the operation
-    this.entries.removeEntry(event.getKey(), regionEntry, false);
   }
 
   public static void validateRegionName(String name, InternalRegionArguments internalRegionArgs) {

@@ -31,7 +31,6 @@ public interface ProxyInterface {
   /**
    * Sets the last refreshed time for the proxy
    *
-   * @param lastRefreshedTime
    */
   void setLastRefreshedTime(long lastRefreshedTime);
 

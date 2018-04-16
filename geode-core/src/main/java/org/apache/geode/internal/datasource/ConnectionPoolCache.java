@@ -25,7 +25,6 @@ public interface ConnectionPoolCache {
    * used for making the conections.
    *
    * @return Object - connection from the pool.
-   * @throws PoolException
    */
   Object getPooledConnectionFromPool() throws PoolException;
 

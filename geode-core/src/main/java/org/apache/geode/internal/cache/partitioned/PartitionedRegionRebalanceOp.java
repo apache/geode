@@ -430,8 +430,6 @@ public class PartitionedRegionRebalanceOp {
    * Build a model of the load on the partitioned region, which can determine which buckets to move,
    * etc.
    *
-   * @param detailsMap
-   * @param resourceManager
    */
   private PartitionedRegionLoadModel buildModel(BucketOperator operator,
       Map<PartitionedRegion, InternalPRInfo> detailsMap, InternalResourceManager resourceManager) {

@@ -61,7 +61,6 @@ public class HostAddress {
    * AutoConnectionSourceImpl for client has retry logic; This way client will not make DNS query
    * each time
    *
-   * @return InetSocketAddress
    */
   public InetSocketAddress getSocketInetAddressNoLookup() {
     return this.socketInetAddress;

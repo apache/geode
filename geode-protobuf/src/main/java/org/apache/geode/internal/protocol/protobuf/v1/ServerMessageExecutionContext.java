@@ -30,7 +30,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizing
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.NotLoggedInAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.authentication.ShiroAuthorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.protocol.serialization.ValueSerializer;
 
