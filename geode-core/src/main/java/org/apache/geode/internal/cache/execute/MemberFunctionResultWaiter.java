@@ -25,10 +25,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.MemberFunctionStreamingMessage;
 
-/**
- *
- *
- */
 public class MemberFunctionResultWaiter extends StreamingFunctionOperation {
 
   public MemberFunctionResultWaiter(InternalDistributedSystem sys, ResultCollector rc,

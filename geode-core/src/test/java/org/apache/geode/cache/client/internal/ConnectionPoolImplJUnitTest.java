@@ -43,9 +43,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, ClientServerTest.class})
 public class ConnectionPoolImplJUnitTest {
 

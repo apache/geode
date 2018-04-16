@@ -137,8 +137,6 @@ public class TcpClient {
    *
    * @return the reply
    *
-   * @throws IOException
-   * @throws ClassNotFoundException
    */
   public Object requestToServer(InetAddress addr, int port, Object request, int timeout)
       throws IOException, ClassNotFoundException {
@@ -157,8 +155,6 @@ public class TcpClient {
    *
    * @return the reply
    *
-   * @throws IOException
-   * @throws ClassNotFoundException
    */
   public Object requestToServer(InetAddress addr, int port, Object request, int timeout,
       boolean replyExpected) throws IOException, ClassNotFoundException {
@@ -181,8 +177,6 @@ public class TcpClient {
    *
    * @return The reply, or null if no reply is expected
    *
-   * @throws IOException
-   * @throws ClassNotFoundException
    */
   public Object requestToServer(InetSocketAddress ipAddr, Object request, int timeout,
       boolean replyExpected) throws IOException, ClassNotFoundException {

@@ -14,17 +14,12 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
@@ -34,11 +29,10 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
+
 public class ListConnectionCommand extends InternalGfshCommand {
   static final String LIST_JDBC_CONNECTION = "list jdbc-connections";
-  static final String LIST_JDBC_CONNECTION__HELP =
-      EXPERIMENTAL + "Display jdbc connections for all members.";
+  static final String LIST_JDBC_CONNECTION__HELP = "Display jdbc connections for all members.";
 
   static final String LIST_OF_CONNECTIONS = "List of connections";
   static final String NO_CONNECTIONS_FOUND = "No connections found";
@@ -49,59 +43,39 @@ public class ListConnectionCommand extends InternalGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public Result listConnection() {
 
-    // input
-    Set<DistributedMember> targetMembers = getMembers(null, null);
-    if (targetMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+    ClusterConfigurationService ccService = getConfigurationService();
+    if (ccService == null) {
+      return ResultBuilder.createInfoResult("cluster configuration service is not running");
     }
 
-    // action
-    ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>> resultCollector =
-        execute(new ListConnectionFunction(), targetMembers.iterator().next());
+    ConnectorService service =
+        ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
+    if (service == null) {
+      return ResultBuilder.createInfoResult(NO_CONNECTIONS_FOUND);
+    }
 
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean connectionsExist = fillTabularResultData(resultCollector, tabularResultData);
+    boolean connectionsExist = fillTabularResultData(service.getConnection(), tabularResultData);
     return createResult(tabularResultData, connectionsExist);
-  }
-
-  ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>> execute(
-      ListConnectionFunction function, DistributedMember targetMember) {
-    return (ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>>) executeFunction(
-        function, null, targetMember);
   }
 
   private Result createResult(TabularResultData tabularResultData, boolean connectionsExist) {
     if (connectionsExist) {
-      tabularResultData.setHeader(EXPERIMENTAL);
       return ResultBuilder.buildResult(tabularResultData);
     } else {
-      return ResultBuilder.createInfoResult(EXPERIMENTAL + "\n" + NO_CONNECTIONS_FOUND);
+      return ResultBuilder.createInfoResult(NO_CONNECTIONS_FOUND);
     }
   }
 
   /**
    * Returns true if any connections exist
    */
-  private boolean fillTabularResultData(
-      ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>> resultCollector,
+  private boolean fillTabularResultData(List<ConnectorService.Connection> connections,
       TabularResultData tabularResultData) {
-    Set<ConnectionConfiguration> connectionConfigs = new HashSet<>();
-
-    for (Object resultObject : resultCollector.getResult()) {
-      if (resultObject instanceof ConnectionConfiguration[]) {
-        connectionConfigs.addAll(Arrays.asList((ConnectionConfiguration[]) resultObject));
-      } else if (resultObject instanceof Throwable) {
-        throw new IllegalStateException((Throwable) resultObject);
-      } else {
-        throw new IllegalStateException(resultObject.getClass().getName());
-      }
-    }
-
-    for (ConnectionConfiguration connectionConfig : connectionConfigs) {
+    for (ConnectorService.Connection connectionConfig : connections) {
       tabularResultData.accumulate(LIST_OF_CONNECTIONS, connectionConfig.getName());
     }
-
-    return !connectionConfigs.isEmpty();
+    return !connections.isEmpty();
   }
 }

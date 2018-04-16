@@ -60,9 +60,6 @@ public class ClientServerTransactionCCEDUnitTest extends ClientServerTransaction
     IgnoredException.addIgnoredException("Socket Closed");
   }
 
-  /**
-   *
-   */
   private static final long serialVersionUID = -6785438240204988439L;
 
   public ClientServerTransactionCCEDUnitTest() {

@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.*;
@@ -183,7 +180,6 @@ public class SelectToDateJUnitTest {
   /**
    * Each month will have exactly 20 entries with a matching date Code borrowed from shobhit's test
    *
-   * @throws ParseException
    */
   private void createLocalRegion() throws ParseException {
     Cache cache = CacheUtils.getCache();

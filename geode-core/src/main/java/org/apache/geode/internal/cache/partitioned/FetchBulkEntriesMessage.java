@@ -105,7 +105,6 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
    * @param r the PartitionedRegion that contains the bucket
    * @param bucketIds the identity of the buckets that contain the entries to be returned
    * @param regex the regular expression to be evaluated for selecting keys
-   * @param allowTombstones
    * @return the processor used to read the returned entries
    * @throws ForceReattemptException if the peer is no longer available
    */

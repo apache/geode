@@ -74,7 +74,6 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
   /**
    * Creates a new RedundancyLogger.
    *
-   * @param prhaRedundancyProvider
    */
   public RedundancyLogger(PRHARedundancyProvider prhaRedundancyProvider) {
     super(prhaRedundancyProvider);

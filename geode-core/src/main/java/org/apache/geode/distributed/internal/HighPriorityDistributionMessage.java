@@ -15,9 +15,6 @@
 
 package org.apache.geode.distributed.internal;
 
-/**
- *
- */
 public abstract class HighPriorityDistributionMessage extends DistributionMessage {
 
   @Override

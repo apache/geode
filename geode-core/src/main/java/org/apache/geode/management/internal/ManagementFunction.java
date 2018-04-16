@@ -60,7 +60,6 @@ public class ManagementFunction implements InternalFunction {
   /**
    * Public constructor
    *
-   * @param notifHub
    */
   public ManagementFunction(NotificationHub notifHub) {
     this.notificationHub = notifHub;

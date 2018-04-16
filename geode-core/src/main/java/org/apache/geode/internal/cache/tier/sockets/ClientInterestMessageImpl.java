@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.*;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;

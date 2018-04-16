@@ -54,7 +54,6 @@ public interface InternalCacheEvent extends CacheEvent {
   /**
    * Returns the Operation type.
    *
-   * @return eventType
    */
   EnumListenerEvent getEventType();
 

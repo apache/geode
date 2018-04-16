@@ -204,9 +204,6 @@ public class MsgStreamer extends OutputStream
   /**
    * set connections to be "in use" and schedule alert tasks
    *
-   * @param startTime
-   * @param ackTimeout
-   * @param ackSDTimeout
    */
   public void reserveConnections(long startTime, long ackTimeout, long ackSDTimeout) {
     for (Iterator it = cons.iterator(); it.hasNext();) {

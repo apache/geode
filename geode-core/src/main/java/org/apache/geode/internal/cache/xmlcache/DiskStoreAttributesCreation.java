@@ -102,8 +102,6 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
   /**
    * returns true if two long[] are equal
    *
-   * @param array1
-   * @param array2
    * @return true if equal
    */
   private boolean equal(long[] array1, long[] array2) {
@@ -122,8 +120,6 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
   /**
    * returns true if two int[] are equal
    *
-   * @param array1
-   * @param array2
    * @return true if equal
    */
   private boolean equal(int[] array1, int[] array2) {
@@ -315,7 +311,6 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
   /**
    * Checks if directories exist
    *
-   * @param disk_dirs
    */
   private void checkIfDirectoriesExist(File[] disk_dirs) {
     // for (int i=0; i < disk_dirs.length; i++) {

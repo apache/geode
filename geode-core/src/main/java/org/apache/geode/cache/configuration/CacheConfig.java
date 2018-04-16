@@ -327,6 +327,12 @@ public class CacheConfig {
   @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
   protected String version;
 
+  public CacheConfig() {}
+
+  public CacheConfig(String version) {
+    this.version = version;
+  }
+
   /**
    * Gets the value of the cacheTransactionManager property.
    *

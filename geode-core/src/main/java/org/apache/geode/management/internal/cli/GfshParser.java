@@ -217,9 +217,7 @@ public class GfshParser extends SimpleParser {
    *
    * With these limitations, we will need to overwrite this command with some customization
    *
-   * @param userInput
    * @param cursor this input is ignored, we always move the cursor to the end of the userInput
-   * @param candidates
    * @return the cursor point at which the candidate string will begin, this is important if you
    *         have only one candidate, cause tabbing will use it to complete the string for you.
    */

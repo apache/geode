@@ -14,10 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.json;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -87,8 +89,6 @@ public class GfJsonObject {
 
   /**
    *
-   * @param key
-   * @param value
    * @return this GfJsonObject
    * @throws GfJsonException If the key is null OR if the value is non-finite number
    */
@@ -108,8 +108,6 @@ public class GfJsonObject {
 
   /**
    *
-   * @param key
-   * @param value
    * @return this GfJsonObject
    * @throws GfJsonException - If the key is null or if the current value associated with the key is
    *         not a JSONArray.
@@ -166,7 +164,6 @@ public class GfJsonObject {
 
   /**
    *
-   * @param key
    * @return this GfJsonObject
    * @throws GfJsonException If there is a syntax error while preparing GfJsonArray.
    */
@@ -195,8 +192,6 @@ public class GfJsonObject {
 
   /**
    *
-   * @param key
-   * @param value
    * @return this GfJsonObject object
    * @throws GfJsonException If the value is non-finite number or if the key is null.
    */
@@ -225,8 +220,6 @@ public class GfJsonObject {
 
   /**
    *
-   * @param key
-   * @param value
    * @return this GfJsonObject
    * @throws GfJsonException If the value is a non-finite number.
    */
@@ -241,8 +234,6 @@ public class GfJsonObject {
 
   /**
    *
-   * @param key
-   * @param value
    * @return this GfJsonObject
    * @throws GfJsonException If the value is a non-finite number.
    */
@@ -307,7 +298,6 @@ public class GfJsonObject {
 
   /**
    *
-   * @param indentFactor
    * @return this GfJsonObject
    * @throws GfJsonException If the object contains an invalid number.
    */
@@ -317,6 +307,19 @@ public class GfJsonObject {
     } catch (JSONException e) {
       throw new GfJsonException(e.getMessage());
     }
+  }
+
+  public List<String> getArrayValues(String key) {
+    List<String> result = new ArrayList<>();
+    if (jsonObject.has(key)) {
+      JSONArray jsonArray = jsonObject.getJSONArray(key);
+
+      for (int i = 0; i < jsonArray.length(); i++) {
+        result.add(jsonArray.getString(i));
+      }
+    }
+
+    return result;
   }
 
   private static Object extractInternalForGfJsonOrReturnSame(Object value) {

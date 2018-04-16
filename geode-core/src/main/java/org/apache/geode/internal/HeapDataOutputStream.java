@@ -136,7 +136,6 @@ public class HeapDataOutputStream extends OutputStream
    * Construct a HeapDataOutputStream which uses the byte array provided as its underlying
    * ByteBuffer
    *
-   * @param bytes
    */
   public HeapDataOutputStream(byte[] bytes) {
     int len = bytes.length;
@@ -463,7 +462,6 @@ public class HeapDataOutputStream extends OutputStream
    * wrapper. However the filled byte array may or may not be the same as that used for seeding ,
    * depending upon whether the data got accommodated in the original byte buffer or not.
    *
-   * @param wrapper
    */
   // Asif
   public void sendTo(BytesAndBitsForCompactor wrapper, byte userBits) {

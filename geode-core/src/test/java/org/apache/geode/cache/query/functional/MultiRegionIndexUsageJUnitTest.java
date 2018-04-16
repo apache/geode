@@ -42,8 +42,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 // TODO:TEST clean this up and add assertions
-/**
- */
 @Category({IntegrationTest.class, OQLIndexTest.class})
 public class MultiRegionIndexUsageJUnitTest {
 

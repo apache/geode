@@ -643,7 +643,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     }
 
     /**
-     * @param bits
      * @return true if the serialized message has a persistentID
      */
     private boolean hasPersistentID(int bits) {

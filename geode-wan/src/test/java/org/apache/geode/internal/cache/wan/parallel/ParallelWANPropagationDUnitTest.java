@@ -133,7 +133,6 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
   /**
    * Normal happy scenario test case.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagation() throws Exception {
@@ -234,7 +233,6 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
   /**
    * Normal happy scenario test case2.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationPutBeforeSenderStart() throws Exception {
@@ -279,7 +277,6 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    * again. Puts are done to local site. Expected: Remote site should receive all the events put
    * after the local site was built back.
    *
-   * @throws Exception
    */
   @Category({FlakyTest.class, WanTest.class})
   @Test
@@ -408,7 +405,6 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    *
    * Validate that events for parent region reaches remote site.
    *
-   * @throws Exception
    */
 
   @Test
@@ -800,7 +796,6 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    * There was a bug that all destroy events were being put into different buckets of sender queue
    * against the key 0. Bug# 44304
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationWithDestroy() throws Exception {
@@ -871,7 +866,6 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
   /**
    * Normal happy scenario test case. But with Tx operations
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationTxOperations() throws Exception {

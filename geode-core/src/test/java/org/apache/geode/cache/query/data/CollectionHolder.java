@@ -26,9 +26,6 @@ import java.util.Arrays;
 
 import org.apache.geode.*;
 
-/**
- *
- */
 public class CollectionHolder implements Serializable, DataSerializable {
 
   public String[] arr;

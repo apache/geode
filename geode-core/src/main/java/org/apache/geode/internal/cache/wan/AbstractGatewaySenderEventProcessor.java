@@ -145,10 +145,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
    */
   private int batchSize;
 
-  /**
-   * @param createThreadGroup
-   * @param string
-   */
   public AbstractGatewaySenderEventProcessor(LoggingThreadGroup createThreadGroup, String string,
       GatewaySender sender) {
     super(createThreadGroup, string);
@@ -304,7 +300,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
           (ParallelGatewaySenderQueue) cpgsq.getQueueByBucket(bucketId);
       boolean isPrimary = prQ.getRegionAdvisor().getBucketAdvisor(bucketId).isPrimary();
       if (isPrimary) {
-        pgsq.addRemovedEvent(prQ, bucketId, shadowKey);
+        pgsq.sendQueueRemovalMesssageForDroppedEvent(prQ, bucketId, shadowKey);
         this.sender.getStatistics().incEventsNotQueuedAtYetRunningPrimarySender();
         if (logger.isDebugEnabled()) {
           logger.debug("register dropped event for primary queue. BucketId is " + bucketId
@@ -896,7 +892,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   /**
    * Mark all PDX types as requiring dispatch so that they will be sent over the connection again.
    *
-   * @param remotePdxSize
    */
   public void checkIfPdxNeedsResend(int remotePdxSize) {
     InternalCache cache = this.sender.getCache();

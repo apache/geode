@@ -56,7 +56,6 @@ public class Member implements Comparable<Member> {
   }
 
   /**
-   * @param bucket
    * @param sourceMember the member we will be moving this bucket off of
    * @param checkZone true if we should not put two copies of a bucket on two nodes with the same
    *        IP address.

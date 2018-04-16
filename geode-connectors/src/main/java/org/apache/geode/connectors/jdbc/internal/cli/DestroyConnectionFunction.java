@@ -14,14 +14,13 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-@Experimental
+
 public class DestroyConnectionFunction extends JdbcCliFunction<String, CliFunctionResult> {
 
   DestroyConnectionFunction() {
@@ -45,7 +44,7 @@ public class DestroyConnectionFunction extends JdbcCliFunction<String, CliFuncti
    * @return true if the connection was found and destroyed
    */
   boolean destroyConnectionConfig(JdbcConnectorService service, String connectionName) {
-    ConnectionConfiguration connectionConfig = service.getConnectionConfig(connectionName);
+    ConnectorService.Connection connectionConfig = service.getConnectionConfig(connectionName);
     if (connectionConfig != null) {
       service.destroyConnectionConfig(connectionName);
       return true;

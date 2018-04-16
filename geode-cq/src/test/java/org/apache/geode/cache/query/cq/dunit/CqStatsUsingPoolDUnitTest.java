@@ -248,7 +248,6 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ and CQ Service Statistics
    *
-   * @throws Exception
    */
   @Test
   public void testCQStatistics() throws Exception {
@@ -337,7 +336,6 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ Service Statistics
    *
-   * @throws Exception
    */
   @Test
   public void testCQServiceStatistics() throws Exception {

@@ -27,7 +27,6 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jmock.auto.Auto;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +35,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.Version;

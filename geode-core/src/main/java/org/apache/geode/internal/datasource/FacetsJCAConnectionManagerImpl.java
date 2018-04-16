@@ -92,7 +92,6 @@ public class FacetsJCAConnectionManagerImpl
    *
    * @param javax.resource.spi.ConnectionRequestInfo
    *
-   * @throws ResourceException
    */
   public Object allocateConnection(ManagedConnectionFactory mcf, ConnectionRequestInfo reqInfo)
       throws ResourceException {

@@ -218,7 +218,6 @@ public class StatAlertsManager {
    *
    * TODO never called
    *
-   * @param refreshAtFixedRate
    */
   public synchronized void setRefreshAtFixedRate(boolean refreshAtFixedRate) {
     this.refreshAtFixedRate = refreshAtFixedRate;

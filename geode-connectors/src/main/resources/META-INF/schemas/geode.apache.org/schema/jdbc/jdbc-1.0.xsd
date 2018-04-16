@@ -17,15 +17,10 @@
   -->
 <xsd:schema
         targetNamespace="http://geode.apache.org/schema/jdbc"
-        xmlns:gf="http://geode.apache.org/schema/cache"
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         elementFormDefault="qualified"
         attributeFormDefault="unqualified"
         version="1.0">
-
-    <xsd:import
-            namespace="http://geode.apache.org/schema/cache"
-            schemaLocation="http://geode.apache.org/schema/cache/cache-1.0.xsd"/>
 
     <xsd:annotation>
         <xsd:documentation><![CDATA[

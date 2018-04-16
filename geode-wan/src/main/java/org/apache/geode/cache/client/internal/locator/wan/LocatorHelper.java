@@ -35,10 +35,6 @@ public class LocatorHelper {
    * This methods add the given locator to allLocatorInfoMap. It also invokes a locatorlistener to
    * inform other locators in allLocatorInfoMap about this newly added locator.
    *
-   * @param distributedSystemId
-   * @param locator
-   * @param locatorListener
-   * @param sourceLocator
    */
   public static boolean addLocator(int distributedSystemId, DistributionLocatorId locator,
       LocatorMembershipListener locatorListener, DistributionLocatorId sourceLocator) {
@@ -68,9 +64,6 @@ public class LocatorHelper {
    * This methods decides whether the given locator is server locator, if so then add this locator
    * in allServerLocatorsInfo map.
    *
-   * @param distributedSystemId
-   * @param locatorListener
-   * @param locator
    */
   private static void addServerLocator(Integer distributedSystemId,
       LocatorMembershipListener locatorListener, DistributionLocatorId locator) {
@@ -90,8 +83,6 @@ public class LocatorHelper {
   /**
    * This method adds the map of locatorsinfo sent by other locator to this locator's allLocatorInfo
    *
-   * @param locators
-   * @param locatorListener
    */
   public static boolean addExchangedLocators(Map<Integer, Set<DistributionLocatorId>> locators,
       LocatorMembershipListener locatorListener) {

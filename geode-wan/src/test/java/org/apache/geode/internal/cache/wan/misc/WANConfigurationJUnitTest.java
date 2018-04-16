@@ -50,9 +50,7 @@ public class WANConfigurationJUnitTest {
   /**
    * Test to validate that the sender can not be started without configuring locator
    *
-   * @throws IOException
    *
-   * @throws IOException
    */
   @Test
   public void test_GatewaySender_without_Locator() throws IOException {

@@ -92,8 +92,6 @@ public class DestroyMockRegionExtensionFunction implements Function, DataSeriali
   }
 
   /**
-   * @param regionName
-   * @return
    * @since GemFire 8.1
    */
   public static Object[] toArgs(final String regionName) {

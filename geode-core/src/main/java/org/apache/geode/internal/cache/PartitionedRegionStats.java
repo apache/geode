@@ -578,7 +578,6 @@ public class PartitionedRegionStats {
   /**
    * This method sets the end time for putAll and updates the counters
    *
-   * @param start
    */
   public void endPutAll(long start) {
     endPutAll(start, 1);
@@ -615,8 +614,6 @@ public class PartitionedRegionStats {
   /**
    * This method sets the end time for putAll and updates the counters
    *
-   * @param start
-   * @param numInc
    */
   public void endPutAll(long start, int numInc) {
     if (CachePerfStats.enableClockStats) {
@@ -965,8 +962,6 @@ public class PartitionedRegionStats {
   /**
    * This method sets the end time for update and updates the counters
    *
-   * @param start
-   * @param numInc
    */
   public void endGetEntry(long start, int numInc) {
     if (CachePerfStats.enableClockStats) {

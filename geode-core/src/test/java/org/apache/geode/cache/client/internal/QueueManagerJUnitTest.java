@@ -50,9 +50,6 @@ import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, ClientServerTest.class})
 public class QueueManagerJUnitTest {
 

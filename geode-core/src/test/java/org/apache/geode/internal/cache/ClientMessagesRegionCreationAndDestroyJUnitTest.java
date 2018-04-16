@@ -67,7 +67,6 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
   /**
    * Create and attach bridge server to cache
    *
-   * @throws IOException
    */
 
   private void attachBridgeServer() throws IOException {

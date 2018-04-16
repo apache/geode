@@ -255,7 +255,6 @@ public class ThreadIdentifier implements DataSerializable {
   /**
    * Checks if the input thread id is a WAN_TYPE thread id
    *
-   * @param tid
    * @return whether the input thread id is a WAN_TYPE thread id
    */
   public static boolean isWanTypeThreadID(long tid) {
@@ -304,7 +303,6 @@ public class ThreadIdentifier implements DataSerializable {
   /**
    * checks to see if the membership id of this identifier is the same as in the argument
    *
-   * @param other
    * @return whether the two IDs are from the same member
    */
   public boolean isSameMember(ThreadIdentifier other) {

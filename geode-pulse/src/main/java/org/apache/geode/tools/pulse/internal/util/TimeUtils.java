@@ -32,7 +32,6 @@ public class TimeUtils {
    * and seconds
    *
    * @param longMilliSecs Time in milliseconds.
-   * @return String
    */
   public static String convertTimeMillisecondsToHMS(long longMilliSecs) {
 
@@ -75,7 +74,6 @@ public class TimeUtils {
    * seconds
    *
    * @param longSecs Time in seconds.
-   * @return String
    */
   public static String convertTimeSecondsToHMS(long longSecs) {
 

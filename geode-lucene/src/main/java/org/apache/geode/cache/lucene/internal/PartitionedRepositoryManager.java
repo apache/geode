@@ -92,7 +92,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
           waitingThreadPoolFromDM.execute(() -> {
             try {
               getRepository(userBucket.getId());
-            } catch (BucketNotFoundException | LuceneIndexDestroyedException e) {
+            } catch (Exception e) {
               logger.debug("Lucene Index creation in progress.", e);
             }
           });

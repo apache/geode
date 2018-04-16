@@ -827,7 +827,6 @@ public final class SystemFailure {
    * (instead of generating another OutOfMemoryError), so we have to make do with whatever Error we
    * have, instead of wrapping it with one pertinent to the current context. See bug 38394.
    *
-   * @throws Error
    */
   private static void throwFailure() throws InternalGemFireError, Error {
     if (failure != null)

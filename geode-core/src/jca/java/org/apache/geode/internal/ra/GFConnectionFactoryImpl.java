@@ -22,10 +22,6 @@ import javax.resource.spi.ManagedConnectionFactory;
 
 import org.apache.geode.ra.GFConnectionFactory;
 
-/**
- *
- *
- */
 public class GFConnectionFactoryImpl implements GFConnectionFactory {
   private final ConnectionManager cm;
 

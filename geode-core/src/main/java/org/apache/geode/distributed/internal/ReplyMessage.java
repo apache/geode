@@ -203,10 +203,6 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
     }
   }
 
-  /**
-   * @param dm
-   * @param processor
-   */
   public void process(final DistributionManager dm, ReplyProcessor21 processor) {
     if (processor == null)
       return;

@@ -49,7 +49,6 @@ public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
    * Testing the isRemote flag which could be inconsistent when bind queries are being executed in
    * multiple threads. Bug #49662 is caused because of this inconsistent behavior.
    *
-   * @throws Exception
    */
   @Test
   public void testIsRemoteFlagForRemoteQueries() throws Exception {

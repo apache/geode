@@ -18,9 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-/**
- *
- */
 public enum PersistentMemberState {
   OFFLINE, ONLINE, EQUAL, REVOKED;
 

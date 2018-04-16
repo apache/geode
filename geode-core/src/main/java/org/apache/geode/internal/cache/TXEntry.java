@@ -28,9 +28,6 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 /** ******************* Class Entry ***************************************** */
 
 public class TXEntry implements Region.Entry {
-  /**
-   *
-   */
   private final LocalRegion localRegion;
 
   protected final KeyInfo keyInfo;

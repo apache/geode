@@ -40,9 +40,6 @@ import org.apache.geode.modules.session.installer.args.ArgumentValues;
 import org.apache.geode.modules.session.installer.args.UnknownArgumentHandler;
 import org.apache.geode.modules.session.installer.args.UsageException;
 
-/**
- *
- */
 public class Installer {
 
   private static final String GEMFIRE_FILTER_CLASS =

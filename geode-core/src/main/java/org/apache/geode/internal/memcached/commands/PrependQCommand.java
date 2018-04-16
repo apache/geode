@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.memcached.commands;
 
-/**
- *
- */
 public class PrependQCommand extends PrependCommand {
 
   @Override

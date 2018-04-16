@@ -774,9 +774,6 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
   /**
    * This method creates the server cache
    *
-   * @param maxThreads
-   * @return
-   * @throws Exception
    */
   public static Integer createServerCacheTwo(Integer maxThreads) throws Exception {
     new DataSerializerPropagationDUnitTest().createCache(new Properties());
@@ -798,9 +795,6 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
   /**
    * This method creates the server cache
    *
-   * @param maxThreads
-   * @return
-   * @throws Exception
    */
   public static Integer createServerCacheOne(Integer maxThreads) throws Exception {
     new DataSerializerPropagationDUnitTest().createCache(new Properties());
@@ -834,7 +828,6 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
   /**
    * sets the EventId value in the VM
    *
-   * @param eventID
    */
   public static void setEventId(EventID eventID) {
     eventId = eventID;

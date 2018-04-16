@@ -266,7 +266,6 @@ public class MemoryThresholds {
    *
    * @param in DataInput from which to read the data
    * @return a new instance of Thresholds
-   * @throws IOException
    */
   public static MemoryThresholds fromData(DataInput in) throws IOException {
     long maxMemoryBytes = in.readLong();
@@ -279,7 +278,6 @@ public class MemoryThresholds {
    * Write the state of this to the DataOutput
    *
    * @param out DataOutput on which to write internal state
-   * @throws IOException
    */
   public void toData(DataOutput out) throws IOException {
     out.writeLong(this.maxMemoryBytes);

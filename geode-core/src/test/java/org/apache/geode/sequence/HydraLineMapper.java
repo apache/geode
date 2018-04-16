@@ -26,9 +26,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-/**
- *
- */
 public class HydraLineMapper implements LineMapper {
   private static final Pattern VM_NAME_PATTERN = Pattern.compile("(vm_\\d+).*_(\\d+)(_end)?\\.log");
   private static final Pattern DISK_DIR_PATTERN = Pattern.compile("vm_(\\d+).*_disk_1");

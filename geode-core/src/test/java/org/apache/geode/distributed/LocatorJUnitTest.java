@@ -110,7 +110,6 @@ public class LocatorJUnitTest {
   /**
    * GEODE-4176: locator creates "locator0view.dat" file when started with port 0
    *
-   * @throws Exception
    */
   @Test
   public void testThatLocatorDoesNotCreateFileWithZeroPort() throws Exception {

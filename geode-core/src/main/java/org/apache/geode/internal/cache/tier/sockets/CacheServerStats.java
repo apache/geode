@@ -232,8 +232,6 @@ public class CacheServerStats implements MessageStats {
    * Add a convinience method to pass in a StatisticsFactory for Statistics construction. Helpful
    * for local Statistics operations
    *
-   * @param statisticsFactory
-   * @param ownerName
    */
   public CacheServerStats(StatisticsFactory statisticsFactory, String ownerName, String typeName,
       StatisticDescriptor[] descriptors) {

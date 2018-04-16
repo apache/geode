@@ -25,10 +25,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedRegionFunctionStreamingMessage;
 
-/**
- *
- *
- */
 public class DistributedRegionFunctionResultWaiter extends StreamingFunctionOperation {
 
   private Set filter;

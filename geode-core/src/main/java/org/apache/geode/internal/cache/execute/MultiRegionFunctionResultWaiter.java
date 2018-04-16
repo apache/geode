@@ -26,10 +26,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.MemberFunctionStreamingMessage;
 
-/**
- *
- *
- */
 public class MultiRegionFunctionResultWaiter extends StreamingFunctionOperation {
 
   private Map<InternalDistributedMember, Set<String>> memberToRegions = null;;

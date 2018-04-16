@@ -203,8 +203,6 @@ public class PRQueryDUnitHelper implements Serializable {
   /**
    * This function creates a appropriate region PR given the scope & the redundancy parameters *
    *
-   * @param regionName
-   * @param redundancy
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRCreate(final String regionName,
@@ -246,10 +244,6 @@ public class PRQueryDUnitHelper implements Serializable {
    * This function creates a colocated pair of PR's given the scope & the redundancy parameters for
    * the parent *
    *
-   * @param regionName
-   * @param redundancy
-   * @param constraint
-   * @param makePersistent
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForColocatedPRCreate(
@@ -313,10 +307,6 @@ public class PRQueryDUnitHelper implements Serializable {
    * This function creates the parent region of colocated pair of PR's given the scope & the
    * redundancy parameters for the parent *
    *
-   * @param regionName
-   * @param redundancy
-   * @param constraint
-   * @param makePersistent
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForColocatedParentCreate(
@@ -374,10 +364,6 @@ public class PRQueryDUnitHelper implements Serializable {
    * This function creates the parent region of colocated pair of PR's given the scope & the
    * redundancy parameters for the parent *
    *
-   * @param regionName
-   * @param redundancy
-   * @param constraint
-   * @param isPersistent
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForColocatedChildCreate(
@@ -515,9 +501,6 @@ public class PRQueryDUnitHelper implements Serializable {
   /**
    * This function creates a colocated region PR given the oher colocated region.
    *
-   * @param regionName
-   * @param redundancy
-   * @param coloRegionName
    * @return cacheSerializable object
    */
 
@@ -567,10 +550,6 @@ public class PRQueryDUnitHelper implements Serializable {
   /**
    * This function puts portfolio objects into the created Region (PR or Local) *
    *
-   * @param regionName
-   * @param portfolio
-   * @param to
-   * @param from
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRPuts(final String regionName,
@@ -593,9 +572,6 @@ public class PRQueryDUnitHelper implements Serializable {
    * like, invalidate, destroy and create are performed in random manner based on
    * {@link Random#nextInt(int)}.
    *
-   * @param regionName
-   * @param to
-   * @param from
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRRandomOps(
@@ -655,10 +631,6 @@ public class PRQueryDUnitHelper implements Serializable {
   /**
    * This function puts portfolio objects into the created Region (PR or Local) *
    *
-   * @param regionName
-   * @param portfolio
-   * @param to
-   * @param from
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRDuplicatePuts(
@@ -678,10 +650,6 @@ public class PRQueryDUnitHelper implements Serializable {
   /**
    * This function puts portfolio objects into the created Region (PR or Local) *
    *
-   * @param regionName
-   * @param portfolio
-   * @param to
-   * @param from
    * @return cacheSerializable object
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRPutsKeyValue(
@@ -1437,7 +1405,6 @@ public class PRQueryDUnitHelper implements Serializable {
   /**
    * This function creates a Accessor node region on the given PR given the scope parameter.
    *
-   * @param regionName
    * @return cacheSerializable object
    */
 
@@ -1534,7 +1501,6 @@ public class PRQueryDUnitHelper implements Serializable {
    * same query on the local region <br>
    * 3. Compares the appropriate resultSet <br>
    *
-   * @param regionName
    *
    *
    * @return cacheSerializable object
@@ -1816,7 +1782,6 @@ public class PRQueryDUnitHelper implements Serializable {
    * Creats a partiotioned region using an xml file descriptions.
    *
    *
-   * @return CacheSerializable
    *
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRCreate(
@@ -1922,7 +1887,6 @@ public class PRQueryDUnitHelper implements Serializable {
    * Cacheserializable runnable which removes all the index on a partitioned region
    *
    * @param name name of the partitioned regions
-   * @return CacheSerializableRunnable
    */
 
   public CacheSerializableRunnable getCacheSerializableRunnableForRemoveIndex(final String name,

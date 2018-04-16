@@ -75,7 +75,6 @@ public class NotificationHub {
   /**
    * Adds a NotificationHubListener
    *
-   * @param objectName
    */
   public void addHubNotificationListener(String memberName, ObjectName objectName) {
 
@@ -100,7 +99,6 @@ public class NotificationHub {
   /**
    * Removes a NotificationHubListener
    *
-   * @param objectName
    */
   public void removeHubNotificationListener(String memberName, ObjectName objectName) {
     try {

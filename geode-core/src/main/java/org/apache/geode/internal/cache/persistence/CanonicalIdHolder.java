@@ -72,7 +72,6 @@ public class CanonicalIdHolder {
   /**
    * Create an id of the given object.
    *
-   * @param object
    * @return the id generated for this object.
    */
   public int createId(Object object) {

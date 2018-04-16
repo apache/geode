@@ -403,7 +403,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Test to verify GEODE-2138
    *
-   * @throws IOException
    */
   @Test
   public void testVersionTitleForStartServerAndLocator() throws IOException {

@@ -38,7 +38,6 @@ public class LocatorLoadSnapshotIntegrationTest {
    * A basic test of concurrent functionality. Starts a number of threads making requests and
    * expects the load to be balanced between three servers.
    *
-   * @throws InterruptedException
    */
   @Test
   public void testConcurrentBalancing() throws InterruptedException {

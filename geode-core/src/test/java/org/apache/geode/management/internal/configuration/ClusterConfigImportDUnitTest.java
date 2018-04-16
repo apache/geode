@@ -80,7 +80,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
         .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("existing regions: " + regionName);
+    assertThat(result.getContentAsString()).contains("existing regions: " + regionName);
   }
 
   @Test
@@ -92,9 +92,9 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
 
     CommandResult result = gfshConnector
         .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
-    assertThat(result.getContent().toString())
+    assertThat(result.getContentAsString())
         .contains("Successfully applied the imported cluster configuration on server-1");
-    assertThat(result.getContent().toString())
+    assertThat(result.getContentAsString())
         .contains("Successfully applied the imported cluster configuration on server-2");
     new ClusterConfig(CLUSTER).verify(server1);
     new ClusterConfig(CLUSTER, GROUP2).verify(server2);

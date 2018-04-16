@@ -82,8 +82,6 @@ public class MBeanProxyInfoRepository {
   /**
    * Finds the proxy instance by {@link javax.management.ObjectName}
    *
-   * @param objectName
-   * @param interfaceClass
    * @return instance of proxy
    */
   protected <T> T findProxyByName(ObjectName objectName, Class<T> interfaceClass) {
@@ -105,7 +103,6 @@ public class MBeanProxyInfoRepository {
   /**
    * Finds the proxy instance by {@link javax.management.ObjectName}
    *
-   * @param objectName
    * @return instance of proxy
    */
   protected ProxyInfo findProxyInfo(ObjectName objectName) {

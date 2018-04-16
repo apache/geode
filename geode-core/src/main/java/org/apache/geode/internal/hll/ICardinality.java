@@ -56,7 +56,6 @@ public interface ICardinality {
 
   /**
    * @return byte[]
-   * @throws IOException
    */
   byte[] getBytes() throws IOException;
 

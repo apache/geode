@@ -349,7 +349,6 @@ public class RemoveIndexesMessage extends PartitionMessage {
     /**
      * Waits for the response from the members for remove indexes call on this system.
      *
-     * @throws ForceReattemptException
      */
     public RemoveIndexesResult waitForResults() throws CacheException, ForceReattemptException {
       waitForCacheException();

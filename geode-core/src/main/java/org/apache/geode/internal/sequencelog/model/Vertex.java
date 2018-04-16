@@ -16,9 +16,6 @@ package org.apache.geode.internal.sequencelog.model;
 
 import java.util.SortedMap;
 
-/**
- *
- */
 public class Vertex implements Comparable<Vertex> {
 
   private final Graph graph;

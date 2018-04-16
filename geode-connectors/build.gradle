@@ -17,7 +17,8 @@
 
 repositories {
     maven {
-        url 'https://dl.bintray.com/palantir/releases' // docker-compose-rule is published on bintray
+        url 'https://dl.bintray.com/palantir/releases'
+        // docker-compose-rule is published on bintray
     }
 }
 

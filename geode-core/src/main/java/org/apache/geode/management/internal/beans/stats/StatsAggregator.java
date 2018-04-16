@@ -24,10 +24,6 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.management.internal.ManagementConstants;
 
-/**
- *
- *
- */
 public class StatsAggregator {
 
   private Map<String, Class<?>> typeMap;

@@ -26,10 +26,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 
-/**
- *
- *
- */
 public class InvalidateRegionOperation extends DistributedCacheOperation {
 
   /** Creates new instance of InvalidateRegionOperation */

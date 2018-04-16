@@ -147,7 +147,6 @@ public interface LuceneService {
   /**
    * returns the cache to which the LuceneService belongs
    *
-   * @return Cache
    */
   Cache getCache();
 

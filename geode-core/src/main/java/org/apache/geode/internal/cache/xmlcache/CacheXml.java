@@ -769,7 +769,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    * Given a public id, attempt to resolve it to a DTD. Returns an <code>InputSoure</code> for the
    * DTD.
    *
-   * @throws IOException
    */
   public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId)
       throws SAXException, IOException {
@@ -864,11 +863,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /**
    * Resolve entity using discovered {@link EntityResolver2}s.
    *
-   * @param publicId
-   * @param systemId
    * @return {@link InputSource} for resolved entity if found, otherwise null.
-   * @throws IOException
-   * @throws SAXException
    * @since GemFire 8.1
    */
   private InputSource resolveEntityByEntityResolvers(String name, String publicId, String baseURI,
@@ -908,8 +903,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
 
   /**
    *
-   * @param attributes
-   * @param name
    * @return String value for named attribute or null if attribute not defined.
    * @since GemFire 8.1
    */
@@ -919,9 +912,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
 
   /**
    *
-   * @param attributes
-   * @param name
-   * @param defaultValue
    * @return String value for named attribute or <code>defaultValue</code> if attribute not defined.
    * @since GemFire 8.1
    */
@@ -936,8 +926,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
 
   /**
    *
-   * @param attributes
-   * @param name
    * @return Integer value for named attribute or null if attribute not defined.
    * @since GemFire 8.1
    */
@@ -947,9 +935,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
 
   /**
    *
-   * @param attributes
-   * @param name
-   * @param defaultValue
    * @return Integer value for named attribute or <code>defaultValue</code> if attribute not
    *         defined.
    * @since GemFire 8.1
@@ -965,8 +950,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
 
   /**
    *
-   * @param attributes
-   * @param name
    * @return Boolean value for named attribute or null if attribute not defined.
    * @since GemFire 8.1
    */
@@ -976,9 +959,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
 
   /**
    *
-   * @param attributes
-   * @param name
-   * @param defaultValue
    * @return Boolean value for named attribute or <code>defaultValue</code> if attribute not
    *         defined.
    * @since GemFire 8.1
@@ -994,9 +974,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
 
   /**
    *
-   * @param attributes
-   * @param name
-   * @param clazz
    * @return Enum value for named attribute or null if attribute not defined.
    * @since GemFire 8.1
    */
@@ -1007,10 +984,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
 
   /**
    *
-   * @param attributes
-   * @param name
-   * @param clazz
-   * @param defaultValue
    * @return Enum value for named attribute or <code>defaultValue</code> if attribute not defined.
    * @since GemFire 8.1
    */
