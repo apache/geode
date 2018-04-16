@@ -111,12 +111,75 @@ public class PdxInstanceImplTest {
   }
 
   @Test
+  public void testToStringForIntegerArray() {
+    PdxInstance instance =
+        PdxInstanceFactoryImpl.newCreator("testToStringForIntegerArray", false, cache)
+            .writeObjectArray("integerArrayField", new Integer[] {new Integer(37), new Integer(42)})
+            .create();
+    assertEquals("testToStringForIntegerArray]{integerArrayField=[37, 42]}",
+        substringAfter(instance.toString(), ","));
+  }
+
+  @Test
+  public void testToStringForShortArray() {
+    PdxInstance instance =
+        PdxInstanceFactoryImpl.newCreator("testToStringForShortArray", false, cache)
+            .writeShortArray("shortArrayField", new short[] {37, 42}).create();
+    assertEquals("testToStringForShortArray]{shortArrayField=[37, 42]}",
+        substringAfter(instance.toString(), ","));
+  }
+
+  @Test
   public void testToStringForIntArray() {
     PdxInstance instance =
         PdxInstanceFactoryImpl.newCreator("testToStringForIntArray", false, cache)
-            .writeObjectArray("intArrayField", new Integer[] {new Integer(37), new Integer(42)})
-            .create();
+            .writeIntArray("intArrayField", new int[] {37, 42}).create();
     assertEquals("testToStringForIntArray]{intArrayField=[37, 42]}",
+        substringAfter(instance.toString(), ","));
+  }
+
+  @Test
+  public void testToStringForLongArray() {
+    PdxInstance instance =
+        PdxInstanceFactoryImpl.newCreator("testToStringForLongArray", false, cache)
+            .writeLongArray("longArrayField", new long[] {37L, 42L}).create();
+    assertEquals("testToStringForLongArray]{longArrayField=[37, 42]}",
+        substringAfter(instance.toString(), ","));
+  }
+
+  @Test
+  public void testToStringForCharArray() {
+    PdxInstance instance =
+        PdxInstanceFactoryImpl.newCreator("testToStringForCharArray", false, cache)
+            .writeCharArray("charArrayField", new char[] {'o', 'k'}).create();
+    assertEquals("testToStringForCharArray]{charArrayField=[o, k]}",
+        substringAfter(instance.toString(), ","));
+  }
+
+  @Test
+  public void testToStringForFloatArray() {
+    PdxInstance instance =
+        PdxInstanceFactoryImpl.newCreator("testToStringForFloatArray", false, cache)
+            .writeFloatArray("floatArrayField", new float[] {3.14159F, 2.71828F}).create();
+    assertEquals("testToStringForFloatArray]{floatArrayField=[3.14159, 2.71828]}",
+        substringAfter(instance.toString(), ","));
+  }
+
+  @Test
+  public void testToStringForDoubleArray() {
+    PdxInstance instance =
+        PdxInstanceFactoryImpl.newCreator("testToStringForDoubleArray", false, cache)
+            .writeDoubleArray("doubleArrayField", new double[] {3.14159, 2.71828}).create();
+    assertEquals("testToStringForDoubleArray]{doubleArrayField=[3.14159, 2.71828]}",
+        substringAfter(instance.toString(), ","));
+  }
+
+  @Test
+  public void testToStringForBooleanArray() {
+    PdxInstance instance =
+        PdxInstanceFactoryImpl.newCreator("testToStringForBooleanArray", false, cache)
+            .writeBooleanArray("booleanArrayField", new boolean[] {false, true}).create();
+    assertEquals("testToStringForBooleanArray]{booleanArrayField=[false, true]}",
         substringAfter(instance.toString(), ","));
   }
 

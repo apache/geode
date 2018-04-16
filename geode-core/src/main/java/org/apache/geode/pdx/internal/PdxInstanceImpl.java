@@ -469,7 +469,23 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
         if (value instanceof byte[]) {
           result.append(Hex.toHex((byte[]) value));
         } else if (value.getClass().isArray()) {
-          result.append(Arrays.deepToString((Object[]) value));
+          if (value instanceof short[]) {
+            result.append(Arrays.toString((short[]) value));
+          } else if (value instanceof int[]) {
+            result.append(Arrays.toString((int[]) value));
+          } else if (value instanceof long[]) {
+            result.append(Arrays.toString((long[]) value));
+          } else if (value instanceof char[]) {
+            result.append(Arrays.toString((char[]) value));
+          } else if (value instanceof float[]) {
+            result.append(Arrays.toString((float[]) value));
+          } else if (value instanceof double[]) {
+            result.append(Arrays.toString((double[]) value));
+          } else if (value instanceof boolean[]) {
+            result.append(Arrays.toString((boolean[]) value));
+          } else {
+            result.append(Arrays.deepToString((Object[]) value));
+          }
         } else {
           result.append(value);
         }
