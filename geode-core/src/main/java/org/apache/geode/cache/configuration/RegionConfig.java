@@ -167,6 +167,13 @@ public class RegionConfig implements CacheElement {
   @XmlAttribute(name = "refid")
   protected String refid;
 
+  public RegionConfig() {}
+
+  public RegionConfig(String name, String refid) {
+    this.name = name;
+    this.refid = refid;
+  }
+
   /**
    * Gets the value of the regionAttributes property.
    *
@@ -678,13 +685,7 @@ public class RegionConfig implements CacheElement {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"functional", "primaryKey"})
-  public static class Index {
-
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected RegionConfig.Index.Functional functional;
-    @XmlElement(name = "primary-key", namespace = "http://geode.apache.org/schema/cache")
-    protected RegionConfig.Index.PrimaryKey primaryKey;
+  public static class Index implements CacheElement {
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")
@@ -696,51 +697,7 @@ public class RegionConfig implements CacheElement {
     @XmlAttribute(name = "key-index")
     protected Boolean keyIndex;
     @XmlAttribute(name = "type")
-    protected String type;
-
-    /**
-     * Gets the value of the functional property.
-     *
-     * possible object is
-     * {@link RegionConfig.Index.Functional }
-     *
-     */
-    public RegionConfig.Index.Functional getFunctional() {
-      return functional;
-    }
-
-    /**
-     * Sets the value of the functional property.
-     *
-     * allowed object is
-     * {@link RegionConfig.Index.Functional }
-     *
-     */
-    public void setFunctional(RegionConfig.Index.Functional value) {
-      this.functional = value;
-    }
-
-    /**
-     * Gets the value of the primaryKey property.
-     *
-     * possible object is
-     * {@link RegionConfig.Index.PrimaryKey }
-     *
-     */
-    public RegionConfig.Index.PrimaryKey getPrimaryKey() {
-      return primaryKey;
-    }
-
-    /**
-     * Sets the value of the primaryKey property.
-     *
-     * allowed object is
-     * {@link RegionConfig.Index.PrimaryKey }
-     *
-     */
-    public void setPrimaryKey(RegionConfig.Index.PrimaryKey value) {
-      this.primaryKey = value;
-    }
+    protected String type; // for non-key index type, range or hash
 
     /**
      * Gets the value of the name property.
@@ -875,161 +832,17 @@ public class RegionConfig implements CacheElement {
      *
      */
     public void setType(String value) {
-      this.type = value;
+      if ("range".equalsIgnoreCase(value) || "hash".equalsIgnoreCase(value)) {
+        this.type = value.toLowerCase();
+      } else {
+        throw new IllegalArgumentException("Invalid index type " + value);
+      }
     }
 
-
-    /**
-     * <p>
-     * Java class for anonymous complex type.
-     *
-     * <p>
-     * The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="expression" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *       &lt;attribute name="from-clause" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *       &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     *
-     *
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "")
-    public static class Functional {
-
-      @XmlAttribute(name = "expression", required = true)
-      protected String expression;
-      @XmlAttribute(name = "from-clause", required = true)
-      protected String fromClause;
-      @XmlAttribute(name = "imports")
-      protected String imports;
-
-      /**
-       * Gets the value of the expression property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getExpression() {
-        return expression;
-      }
-
-      /**
-       * Sets the value of the expression property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setExpression(String value) {
-        this.expression = value;
-      }
-
-      /**
-       * Gets the value of the fromClause property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getFromClause() {
-        return fromClause;
-      }
-
-      /**
-       * Sets the value of the fromClause property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setFromClause(String value) {
-        this.fromClause = value;
-      }
-
-      /**
-       * Gets the value of the imports property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getImports() {
-        return imports;
-      }
-
-      /**
-       * Sets the value of the imports property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setImports(String value) {
-        this.imports = value;
-      }
-
+    @Override
+    public String getId() {
+      return getName();
     }
-
-
-    /**
-     * <p>
-     * Java class for anonymous complex type.
-     *
-     * <p>
-     * The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="field" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     *
-     *
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "")
-    public static class PrimaryKey {
-
-      @XmlAttribute(name = "field", required = true)
-      protected String field;
-
-      /**
-       * Gets the value of the field property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getField() {
-        return field;
-      }
-
-      /**
-       * Sets the value of the field property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setField(String value) {
-        this.field = value;
-      }
-
-    }
-
   }
 
 }

@@ -78,7 +78,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       synchronized (mutex) {
         Assert.isTrue(isReadyForCommands(), "Not yet ready for commands");
 
-        return new CommandExecutor().execute(parseResult);
+        return new CommandExecutor().execute((GfshParseResult) parseResult);
       }
     }
 

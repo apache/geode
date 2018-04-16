@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Region;
 import org.apache.geode.lang.Identifiable;
 
 @Experimental
@@ -36,6 +37,13 @@ public interface CacheElement extends Identifiable<String>, Serializable {
   }
 
   static RegionConfig findRegionConfiguration(CacheConfig cacheConfig, String regionPath) {
+    if (cacheConfig == null) {
+      return null;
+    }
+
+    if (regionPath.startsWith(Region.SEPARATOR)) {
+      regionPath = regionPath.substring(1);
+    }
     return findElement(cacheConfig.getRegion(), regionPath);
   }
 

@@ -129,6 +129,7 @@ org/apache/geode/cache/configuration/RegionAttributesIndexUpdateType,false,value
 org/apache/geode/cache/configuration/RegionAttributesMirrorType,false,value:java/lang/String
 org/apache/geode/cache/configuration/RegionAttributesScope,false,value:java/lang/String
 org/apache/geode/cache/configuration/RegionConfig,false,entry:java/util/List,index:java/util/List,name:java/lang/String,refid:java/lang/String,region:java/util/List,regionAttributes:java/util/List,regionElements:java/util/List
+org/apache/geode/cache/configuration/RegionConfig$Index,false,expression:java/lang/String,fromClause:java/lang/String,imports:java/lang/String,keyIndex:java/lang/Boolean,name:java/lang/String,type:java/lang/String
 org/apache/geode/cache/execute/EmptyRegionFunctionException,true,1
 org/apache/geode/cache/execute/FunctionAdapter,true,-4891043890440825485
 org/apache/geode/cache/execute/FunctionException,true,4893171227542647452
