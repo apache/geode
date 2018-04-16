@@ -31,6 +31,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
@@ -124,6 +125,6 @@ public class OnlineCommandProcessor {
           .createUserErrorResult(command + " can not be executed only from server side");
     }
 
-    return (Result) commandExecutor.execute(parseResult);
+    return (Result) commandExecutor.execute((GfshParseResult) parseResult);
   }
 }
