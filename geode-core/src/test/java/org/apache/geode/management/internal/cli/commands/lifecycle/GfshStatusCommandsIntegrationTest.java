@@ -56,14 +56,14 @@ public class GfshStatusCommandsIntegrationTest {
   public void statusLocatorWithBadPortReportsNotResponding() throws Exception {
     CommandResult result = gfsh.executeCommand("status locator --host=localhost --port="
         + String.valueOf(locator.getLocator().getPort() - 1));
-    assertThat(result.getContent().getString("message")).contains("not responding");
+    assertThat(result.getMessageFromContent()).contains("not responding");
   }
 
   @Test
   public void statusLocatorWithActivePortReportsOnline() throws Exception {
     CommandResult result = gfsh.executeCommand(
         "status locator --host=localhost --port=" + String.valueOf(locator.getLocator().getPort()));
-    assertThat(result.getContent().getString("message")).contains("is currently online");
+    assertThat(result.getMessageFromContent()).contains("is currently online");
   }
 
   @Test
@@ -71,7 +71,7 @@ public class GfshStatusCommandsIntegrationTest {
     File serverDir = new File(temporaryFolder.getRoot(), "serverDir");
     serverDir.mkdirs();
     CommandResult result = gfsh.executeCommand("status server");
-    assertThat(result.getContent().getString("message")).contains("not responding");
+    assertThat(result.getMessageFromContent()).contains("not responding");
   }
 
   @Test
@@ -79,6 +79,6 @@ public class GfshStatusCommandsIntegrationTest {
     File serverDir = new File(temporaryFolder.getRoot(), "serverDir");
     serverDir.mkdirs();
     CommandResult result = gfsh.executeCommand("status server --dir=" + serverDir.toString());
-    assertThat(result.getContent().getString("message")).contains("not responding");
+    assertThat(result.getMessageFromContent()).contains("not responding");
   }
 }

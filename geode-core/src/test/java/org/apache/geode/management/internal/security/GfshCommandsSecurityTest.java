@@ -137,7 +137,7 @@ public class GfshCommandsSecurityTest {
 
       // for permitted commands, if any error happens, it's not an Unauthorized error
       if (result.getStatus() == Result.Status.ERROR) {
-        assertThat(result.getContent().toString()).doesNotContain("not authorized");
+        assertThat(result.getContentAsString()).doesNotContain("not authorized");
       }
     }
 
@@ -152,7 +152,7 @@ public class GfshCommandsSecurityTest {
       // for some commands there are pre execution checks to check for user input error, will skip
       // those commands
       if (errorCode == ResultBuilder.ERRORCODE_USER_ERROR) {
-        LogService.getLogger().info("Skip user error: " + result.getContent());
+        LogService.getLogger().info("Skip user error: " + result.getContentAsString());
         continue;
       }
 
@@ -178,7 +178,7 @@ public class GfshCommandsSecurityTest {
     CommandResult result =
         gfshConnection.executeCommand("create disk-store --name=disk1 --dir=disk1");
 
-    assertThat(result.getContent().toString()).contains("not authorized for CLUSTER:MANAGE:DISK");
+    assertThat(result.getContentAsString()).contains("not authorized for CLUSTER:MANAGE:DISK");
   }
 
   @Test
@@ -195,7 +195,7 @@ public class GfshCommandsSecurityTest {
     CommandResult result =
         gfshConnection.executeCommand("create region --name=region2 --type=PARTITION_PERSISTENT");
 
-    assertThat(result.getContent().toString()).contains("not authorized for CLUSTER:WRITE:DISK");
+    assertThat(result.getContentAsString()).contains("not authorized for CLUSTER:WRITE:DISK");
   }
 
   @Test
@@ -204,7 +204,7 @@ public class GfshCommandsSecurityTest {
     CommandResult result =
         gfshConnection.executeCommand("create region --name=region2 --type=PARTITION_PERSISTENT");
 
-    assertThat(result.getContent().toString()).contains("not authorized for DATA:MANAGE");
+    assertThat(result.getContentAsString()).contains("not authorized for DATA:MANAGE");
   }
 
 }
