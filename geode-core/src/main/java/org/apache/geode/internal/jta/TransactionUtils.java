@@ -31,7 +31,6 @@ public class TransactionUtils {
    * Returns the logWriter associated with the existing DistributedSystem. If DS is null then the
    * PureLogWriter is returned
    *
-   * @return LogWriterI18n
    */
   public static LogWriterI18n getLogWriterI18n() {
     if (dslogWriter != null) {
@@ -48,7 +47,6 @@ public class TransactionUtils {
    * To be used by mapTransaction method of JNDIInvoker to set the dsLogwriter before the binding of
    * the datasources
    *
-   * @param logWriter
    */
   public static void setLogWriter(LogWriterI18n logWriter) {
     dslogWriter = logWriter;

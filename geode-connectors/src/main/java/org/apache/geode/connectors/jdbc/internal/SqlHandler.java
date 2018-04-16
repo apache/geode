@@ -28,6 +28,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -48,7 +49,7 @@ public class SqlHandler {
     manager.close();
   }
 
-  Connection getConnection(ConnectionConfiguration config) throws SQLException {
+  Connection getConnection(ConnectorService.Connection config) throws SQLException {
     return manager.getOrCreateDataSource(config).getConnection();
   }
 
@@ -57,8 +58,8 @@ public class SqlHandler {
       throw new IllegalArgumentException("Key for query cannot be null");
     }
 
-    RegionMapping regionMapping = getMappingForRegion(region.getName());
-    ConnectionConfiguration connectionConfig =
+    ConnectorService.RegionMapping regionMapping = getMappingForRegion(region.getName());
+    ConnectorService.Connection connectionConfig =
         getConnectionConfig(regionMapping.getConnectionConfigName());
     PdxInstance result;
     try (Connection connection = getConnection(connectionConfig)) {
@@ -85,8 +86,9 @@ public class SqlHandler {
     return statement.executeQuery();
   }
 
-  private RegionMapping getMappingForRegion(String regionName) {
-    RegionMapping regionMapping = this.configService.getMappingForRegion(regionName);
+  private ConnectorService.RegionMapping getMappingForRegion(String regionName) {
+    ConnectorService.RegionMapping regionMapping =
+        this.configService.getMappingForRegion(regionName);
     if (regionMapping == null) {
       throw new JdbcConnectorException("JDBC mapping for region " + regionName
           + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
@@ -94,8 +96,8 @@ public class SqlHandler {
     return regionMapping;
   }
 
-  private ConnectionConfiguration getConnectionConfig(String connectionConfigName) {
-    ConnectionConfiguration connectionConfig =
+  private ConnectorService.Connection getConnectionConfig(String connectionConfigName) {
+    ConnectorService.Connection connectionConfig =
         this.configService.getConnectionConfig(connectionConfigName);
     if (connectionConfig == null) {
       throw new JdbcConnectorException("JDBC connection with name " + connectionConfigName
@@ -155,8 +157,8 @@ public class SqlHandler {
     if (value == null && operation != Operation.DESTROY) {
       throw new IllegalArgumentException("PdxInstance cannot be null for non-destroy operations");
     }
-    RegionMapping regionMapping = getMappingForRegion(region.getName());
-    ConnectionConfiguration connectionConfig =
+    ConnectorService.RegionMapping regionMapping = getMappingForRegion(region.getName());
+    ConnectorService.Connection connectionConfig =
         getConnectionConfig(regionMapping.getConnectionConfigName());
 
     try (Connection connection = getConnection(connectionConfig)) {
@@ -227,7 +229,7 @@ public class SqlHandler {
   }
 
   <K> EntryColumnData getEntryColumnData(TableMetaDataView tableMetaData,
-      RegionMapping regionMapping, K key, PdxInstance value, Operation operation) {
+      ConnectorService.RegionMapping regionMapping, K key, PdxInstance value, Operation operation) {
     String keyColumnName = tableMetaData.getKeyColumnName();
     ColumnData keyColumnData =
         new ColumnData(keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
@@ -241,7 +243,7 @@ public class SqlHandler {
   }
 
   private List<ColumnData> createColumnDataList(TableMetaDataView tableMetaData,
-      RegionMapping regionMapping, PdxInstance value) {
+      ConnectorService.RegionMapping regionMapping, PdxInstance value) {
     List<ColumnData> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
       String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);

@@ -557,7 +557,6 @@ public class SystemAdmin {
    * this is a test hook to allow us to drive SystemAdmin functions without invoking main(), which
    * can call System.exit().
    *
-   * @param props
    */
   public static void setDistributedSystemProperties(Properties props) {
     propertyOption = props;

@@ -41,9 +41,6 @@ import org.apache.geode.management.internal.cli.domain.MemberInformation;
  */
 
 public class GetMemberInformationFunction implements InternalFunction {
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
 
   @Override

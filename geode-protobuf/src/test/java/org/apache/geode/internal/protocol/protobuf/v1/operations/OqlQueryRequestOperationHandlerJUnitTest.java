@@ -43,7 +43,6 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;

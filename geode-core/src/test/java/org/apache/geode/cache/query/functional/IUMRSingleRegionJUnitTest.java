@@ -40,8 +40,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-/**
- */
 @Category({IntegrationTest.class, OQLIndexTest.class})
 public class IUMRSingleRegionJUnitTest {
 

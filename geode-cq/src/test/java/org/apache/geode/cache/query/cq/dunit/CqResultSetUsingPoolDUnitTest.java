@@ -32,7 +32,6 @@ import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.query.internal.cq.ServerCQImpl;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -43,7 +42,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
@@ -127,7 +125,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResults() throws Exception {
@@ -182,7 +179,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set with Compact Range Index.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsWithCompactRangeIndex() throws Exception {
@@ -227,7 +223,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set with Range Index.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsWithRangeIndex() throws Exception {
@@ -286,7 +281,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsOnPR() throws Exception {
@@ -343,7 +337,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set with Compact Range Index.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsWithCompactRangeIndexOnPR() throws Exception {
@@ -392,7 +385,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set with Range Index.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsWithRangeIndexOnPR() throws Exception {
@@ -465,7 +457,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsCaching() throws Exception {
@@ -587,7 +578,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsCachingForMultipleCQs() throws Exception {
@@ -714,7 +704,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsCachingForPR() throws Exception {
@@ -810,7 +799,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Set caching for destroy events.
    *
-   * @throws Exception
    */
   @Test
   public void testCqResultsCachingForDestroyEventsOnPR() throws Exception {
@@ -929,7 +917,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests CQ Result Caching with CQ Failover.
    *
-   * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-1251
   @Test

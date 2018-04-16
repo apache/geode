@@ -143,7 +143,6 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
   /**
    * Normal scenario in which the sender is paused in between.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationSenderPause() throws Exception {
@@ -206,7 +205,6 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
   /**
    * Normal scenario in which a paused sender is resumed.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationSenderResume() throws Exception {
@@ -284,7 +282,6 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * resume is only valid for pause. If a sender which is stopped is resumed, it will not be started
    * again.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationSenderResumeNegativeScenario() throws Exception {
@@ -344,7 +341,6 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
   /**
    * Normal scenario in which a sender is stopped.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationSenderStop() throws Exception {
@@ -505,7 +501,6 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * case in the way that when the sender is starting from stopped state, puts are simultaneously
    * happening on the region by another thread.
    *
-   * @throws Exception
    */
   @Ignore("Bug47553")
   @Test
@@ -601,7 +596,6 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
   /**
    * Normal scenario in which a sender is stopped and then started again on accessor node.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationSenderStartAfterStopOnAccessorNode() throws Throwable {

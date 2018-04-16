@@ -83,7 +83,6 @@ import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
@@ -223,10 +222,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   /** Attributes that define this Region as a PartitionedRegion */
   protected PartitionAttributes partitionAttributes;
 
-  protected EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
-
-  protected EvictionAttributesMutator evictionAttributesMutator =
-      new EvictionAttributesMutatorImpl(this, this.evictionAttributes);
+  private final EvictionAttributesImpl evictionAttributes;
 
   /** The membership attributes defining required roles functionality */
   protected MembershipAttributes membershipAttributes;
@@ -272,7 +268,105 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     this.isPdxTypesRegion = PeerTypeRegistration.REGION_NAME.equals(regionName);
     this.lastAccessedTime = new AtomicLong(cacheTimeMillis());
     this.lastModifiedTime = new AtomicLong(this.lastAccessedTime.get());
-    setAttributes(attrs, regionName, internalRegionArgs);
+    this.dataPolicy = attrs.getDataPolicy(); // do this one first
+    this.scope = attrs.getScope();
+
+    this.offHeap = attrs.getOffHeap();
+
+    // fix bug #52033 by invoking setOffHeap now (localMaxMemory may now be the temporary
+    // placeholder for off-heap until DistributedSystem is created
+    // found non-null PartitionAttributes and offHeap is true so let's setOffHeap on PA now
+    PartitionAttributes<?, ?> partitionAttributes1 = attrs.getPartitionAttributes();
+    if (this.offHeap && partitionAttributes1 != null) {
+      PartitionAttributesImpl impl = (PartitionAttributesImpl) partitionAttributes1;
+      impl.setOffHeap(true);
+    }
+
+    evictionAttributes = new EvictionAttributesImpl(attrs.getEvictionAttributes());
+    if (attrs.getPartitionAttributes() != null && this.evictionAttributes != null
+        && this.evictionAttributes.getAlgorithm().isLRUMemory()
+        && attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && this.evictionAttributes
+            .getMaximum() != attrs.getPartitionAttributes().getLocalMaxMemory()) {
+      logger.warn(LocalizedMessage.create(LocalizedStrings.Mem_LRU_Eviction_Attribute_Reset,
+          new Object[] {regionName, this.evictionAttributes.getMaximum(),
+              attrs.getPartitionAttributes().getLocalMaxMemory()}));
+      this.evictionAttributes.setMaximum(attrs.getPartitionAttributes().getLocalMaxMemory());
+    }
+
+    storeCacheListenersField(attrs.getCacheListeners());
+    assignCacheLoader(attrs.getCacheLoader());
+    assignCacheWriter(attrs.getCacheWriter());
+    this.regionTimeToLive = attrs.getRegionTimeToLive().getTimeout();
+    this.regionTimeToLiveExpirationAction = attrs.getRegionTimeToLive().getAction();
+    setRegionTimeToLiveAtts();
+    this.regionIdleTimeout = attrs.getRegionIdleTimeout().getTimeout();
+    this.regionIdleTimeoutExpirationAction = attrs.getRegionIdleTimeout().getAction();
+    setRegionIdleTimeoutAttributes();
+    this.entryTimeToLive = attrs.getEntryTimeToLive().getTimeout();
+    this.entryTimeToLiveExpirationAction = attrs.getEntryTimeToLive().getAction();
+    setEntryTimeToLiveAttributes();
+    this.customEntryTimeToLive = attrs.getCustomEntryTimeToLive();
+    this.entryIdleTimeout = attrs.getEntryIdleTimeout().getTimeout();
+    this.entryIdleTimeoutExpirationAction = attrs.getEntryIdleTimeout().getAction();
+    setEntryIdleTimeoutAttributes();
+    this.customEntryIdleTimeout = attrs.getCustomEntryIdleTimeout();
+    updateEntryExpiryPossible();
+    this.statisticsEnabled = attrs.getStatisticsEnabled();
+    this.ignoreJTA = attrs.getIgnoreJTA();
+    this.isLockGrantor = attrs.isLockGrantor();
+    this.keyConstraint = attrs.getKeyConstraint();
+    this.valueConstraint = attrs.getValueConstraint();
+    this.initialCapacity = attrs.getInitialCapacity();
+    this.loadFactor = attrs.getLoadFactor();
+    this.concurrencyLevel = attrs.getConcurrencyLevel();
+    this.setConcurrencyChecksEnabled(
+        attrs.getConcurrencyChecksEnabled() && supportsConcurrencyChecks());
+    this.earlyAck = attrs.getEarlyAck();
+    this.gatewaySenderIds = attrs.getGatewaySenderIds();
+    this.asyncEventQueueIds = attrs.getAsyncEventQueueIds();
+    initializeVisibleAsyncEventQueueIds(internalRegionArgs);
+    setAllGatewaySenderIds();
+    this.enableSubscriptionConflation = attrs.getEnableSubscriptionConflation();
+    this.publisher = attrs.getPublisher();
+    this.enableAsyncConflation = attrs.getEnableAsyncConflation();
+    this.indexMaintenanceSynchronous = attrs.getIndexMaintenanceSynchronous();
+    this.mcastEnabled = attrs.getMulticastEnabled();
+    this.partitionAttributes = attrs.getPartitionAttributes();
+    this.membershipAttributes = attrs.getMembershipAttributes();
+    this.subscriptionAttributes = attrs.getSubscriptionAttributes();
+    this.cloningEnable = attrs.getCloningEnabled();
+    this.poolName = attrs.getPoolName();
+    if (this.poolName != null) {
+      PoolImpl cp = getPool();
+      if (cp == null) {
+        throw new IllegalStateException(
+            LocalizedStrings.AbstractRegion_THE_CONNECTION_POOL_0_HAS_NOT_BEEN_CREATED
+                .toLocalizedString(this.poolName));
+      }
+      cp.attach();
+      if (cp.getMultiuserAuthentication() && !this.getDataPolicy().isEmpty()) {
+        throw new IllegalStateException(
+            "Region must have empty data-policy " + "when multiuser-authentication is true.");
+      }
+    }
+
+    this.diskStoreName = attrs.getDiskStoreName();
+    this.isDiskSynchronous = attrs.isDiskSynchronous();
+    if (this.diskStoreName == null) {
+      this.diskWriteAttributes = attrs.getDiskWriteAttributes();
+      this.isDiskSynchronous = this.diskWriteAttributes.isSynchronous(); // fixes bug 41313
+      this.diskDirs = attrs.getDiskDirs();
+      this.diskSizes = attrs.getDiskDirSizes();
+    }
+
+    this.compressor = attrs.getCompressor();
+    // enable concurrency checks for persistent regions
+    if (!attrs.getConcurrencyChecksEnabled() && attrs.getDataPolicy().withPersistence()
+        && supportsConcurrencyChecks()) {
+      throw new IllegalStateException(
+          LocalizedStrings.AttributesFactory_CONCURRENCY_CHECKS_MUST_BE_ENABLED
+              .toLocalizedString());
+    }
   }
 
   @TestingOnly
@@ -282,6 +376,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     this.isPdxTypesRegion = false;
     this.lastAccessedTime = new AtomicLong(0);
     this.lastModifiedTime = new AtomicLong(0);
+    evictionAttributes = new EvictionAttributesImpl();
   }
 
   /**
@@ -1527,109 +1622,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return this.evictionAttributes != null && !this.evictionAttributes.getAlgorithm().isNone();
   }
 
-  private void setAttributes(RegionAttributes attrs, String regionName,
-      InternalRegionArguments internalRegionArgs) {
-    this.dataPolicy = attrs.getDataPolicy(); // do this one first
-    this.scope = attrs.getScope();
-
-    this.offHeap = attrs.getOffHeap();
-
-    // fix bug #52033 by invoking setOffHeap now (localMaxMemory may now be the temporary
-    // placeholder for off-heap until DistributedSystem is created
-    // found non-null PartitionAttributes and offHeap is true so let's setOffHeap on PA now
-    PartitionAttributes<?, ?> partitionAttributes = attrs.getPartitionAttributes();
-    if (this.offHeap && partitionAttributes != null) {
-      PartitionAttributesImpl impl = (PartitionAttributesImpl) partitionAttributes;
-      impl.setOffHeap(true);
-    }
-
-    this.evictionAttributes = new EvictionAttributesImpl(attrs.getEvictionAttributes());
-    if (attrs.getPartitionAttributes() != null && this.evictionAttributes != null
-        && this.evictionAttributes.getAlgorithm().isLRUMemory()
-        && attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && this.evictionAttributes
-            .getMaximum() != attrs.getPartitionAttributes().getLocalMaxMemory()) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.Mem_LRU_Eviction_Attribute_Reset,
-          new Object[] {regionName, this.evictionAttributes.getMaximum(),
-              attrs.getPartitionAttributes().getLocalMaxMemory()}));
-      this.evictionAttributes.setMaximum(attrs.getPartitionAttributes().getLocalMaxMemory());
-    }
-
-    storeCacheListenersField(attrs.getCacheListeners());
-    assignCacheLoader(attrs.getCacheLoader());
-    assignCacheWriter(attrs.getCacheWriter());
-    this.regionTimeToLive = attrs.getRegionTimeToLive().getTimeout();
-    this.regionTimeToLiveExpirationAction = attrs.getRegionTimeToLive().getAction();
-    setRegionTimeToLiveAtts();
-    this.regionIdleTimeout = attrs.getRegionIdleTimeout().getTimeout();
-    this.regionIdleTimeoutExpirationAction = attrs.getRegionIdleTimeout().getAction();
-    setRegionIdleTimeoutAttributes();
-    this.entryTimeToLive = attrs.getEntryTimeToLive().getTimeout();
-    this.entryTimeToLiveExpirationAction = attrs.getEntryTimeToLive().getAction();
-    setEntryTimeToLiveAttributes();
-    this.customEntryTimeToLive = attrs.getCustomEntryTimeToLive();
-    this.entryIdleTimeout = attrs.getEntryIdleTimeout().getTimeout();
-    this.entryIdleTimeoutExpirationAction = attrs.getEntryIdleTimeout().getAction();
-    setEntryIdleTimeoutAttributes();
-    this.customEntryIdleTimeout = attrs.getCustomEntryIdleTimeout();
-    updateEntryExpiryPossible();
-    this.statisticsEnabled = attrs.getStatisticsEnabled();
-    this.ignoreJTA = attrs.getIgnoreJTA();
-    this.isLockGrantor = attrs.isLockGrantor();
-    this.keyConstraint = attrs.getKeyConstraint();
-    this.valueConstraint = attrs.getValueConstraint();
-    this.initialCapacity = attrs.getInitialCapacity();
-    this.loadFactor = attrs.getLoadFactor();
-    this.concurrencyLevel = attrs.getConcurrencyLevel();
-    this.setConcurrencyChecksEnabled(
-        attrs.getConcurrencyChecksEnabled() && supportsConcurrencyChecks());
-    this.earlyAck = attrs.getEarlyAck();
-    this.gatewaySenderIds = attrs.getGatewaySenderIds();
-    this.asyncEventQueueIds = attrs.getAsyncEventQueueIds();
-    initializeVisibleAsyncEventQueueIds(internalRegionArgs);
-    setAllGatewaySenderIds();
-    this.enableSubscriptionConflation = attrs.getEnableSubscriptionConflation();
-    this.publisher = attrs.getPublisher();
-    this.enableAsyncConflation = attrs.getEnableAsyncConflation();
-    this.indexMaintenanceSynchronous = attrs.getIndexMaintenanceSynchronous();
-    this.mcastEnabled = attrs.getMulticastEnabled();
-    this.partitionAttributes = attrs.getPartitionAttributes();
-    this.membershipAttributes = attrs.getMembershipAttributes();
-    this.subscriptionAttributes = attrs.getSubscriptionAttributes();
-    this.cloningEnable = attrs.getCloningEnabled();
-    this.poolName = attrs.getPoolName();
-    if (this.poolName != null) {
-      PoolImpl cp = getPool();
-      if (cp == null) {
-        throw new IllegalStateException(
-            LocalizedStrings.AbstractRegion_THE_CONNECTION_POOL_0_HAS_NOT_BEEN_CREATED
-                .toLocalizedString(this.poolName));
-      }
-      cp.attach();
-      if (cp.getMultiuserAuthentication() && !this.getDataPolicy().isEmpty()) {
-        throw new IllegalStateException(
-            "Region must have empty data-policy " + "when multiuser-authentication is true.");
-      }
-    }
-
-    this.diskStoreName = attrs.getDiskStoreName();
-    this.isDiskSynchronous = attrs.isDiskSynchronous();
-    if (this.diskStoreName == null) {
-      this.diskWriteAttributes = attrs.getDiskWriteAttributes();
-      this.isDiskSynchronous = this.diskWriteAttributes.isSynchronous(); // fixes bug 41313
-      this.diskDirs = attrs.getDiskDirs();
-      this.diskSizes = attrs.getDiskDirSizes();
-    }
-
-    this.compressor = attrs.getCompressor();
-    // enable concurrency checks for persistent regions
-    if (!attrs.getConcurrencyChecksEnabled() && attrs.getDataPolicy().withPersistence()
-        && supportsConcurrencyChecks()) {
-      throw new IllegalStateException(
-          LocalizedStrings.AttributesFactory_CONCURRENCY_CHECKS_MUST_BE_ENABLED
-              .toLocalizedString());
-    }
-  }
-
   /** is this a region that supports versioning? */
   public abstract boolean supportsConcurrencyChecks();
 
@@ -1674,7 +1666,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public EvictionAttributesMutator getEvictionAttributesMutator() {
-    return this.evictionAttributesMutator;
+    return new EvictionAttributesMutatorImpl(this, this.evictionAttributes);
   }
 
   /**

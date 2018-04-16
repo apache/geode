@@ -20,8 +20,6 @@
  */
 
 
-/**
- */
 package org.apache.geode.cache.query.functional;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;

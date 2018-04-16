@@ -25,10 +25,6 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 
-/**
- *
- *
- */
 public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
   private byte[][] serializedDataSerializer;
 
@@ -62,7 +58,6 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
    *        if conflation is not enabled, or it could be a conflated value if conflation is enabled.
    * @return a <code>Message</code> generated from the fields of this
    *         <code>ClientDataSerializerMessage</code>
-   * @throws IOException
    * @see org.apache.geode.internal.cache.tier.sockets.Message
    */
   @Override

@@ -74,7 +74,6 @@ public class PRQueryRegionClosedJUnitTest {
    * 4. Create another Thread and call Region#close() on the PR region.<br>
    *
    *
-   * @throws Exception
    */
   @Test
   public void testQueryingWithRegionClose() throws Exception {
@@ -225,8 +224,6 @@ public class PRQueryRegionClosedJUnitTest {
   /**
    * Populates the region with the Objects stores in the data Object array.
    *
-   * @param region
-   * @param data
    */
   private void populateData(Region region, Object[] data) {
     logger.info("PRQueryRegionClosedJUnitTest#populateData: Populating Data in the PR Region ");

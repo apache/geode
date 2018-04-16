@@ -352,7 +352,6 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
      * De-seralize the value, if the value isn't already a byte array, this method should be called
      * in the context of the requesting thread for the best scalability
      *
-     * @param preferCD
      * @see EntryEventImpl#deserialize(byte[])
      * @return the value object
      */

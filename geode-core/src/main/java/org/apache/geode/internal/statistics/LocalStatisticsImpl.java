@@ -16,9 +16,6 @@ package org.apache.geode.internal.statistics;
 
 import org.apache.geode.*;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.statistics.StatisticsImpl;
-import org.apache.geode.internal.statistics.StatisticsManager;
-import org.apache.geode.internal.statistics.StatisticsTypeImpl;
 
 /**
  * An implementation of {@link Statistics} that stores its statistics in local java memory.

@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.assertEquals;
@@ -53,9 +50,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, OQLQueryTest.class})
 public class LimitClauseJUnitTest {
 
@@ -1770,9 +1764,7 @@ public class LimitClauseJUnitTest {
   /*
    * helper method to test against a compact range index
    *
-   * @param query
    *
-   * @throws Exception
    */
   private SelectResults helpTestIndexForQuery(String query, String indexedExpression,
       String regionPath, Object[] params) throws Exception {

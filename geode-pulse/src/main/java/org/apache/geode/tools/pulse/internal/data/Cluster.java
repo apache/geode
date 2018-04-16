@@ -17,26 +17,14 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
@@ -47,7 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.remote.JMXConnector;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -1311,9 +1298,6 @@ public class Cluster extends Thread {
       return this.localMaxMemory;
     }
 
-    /**
-     * @param localMaxMemory
-     */
     public void setLocalMaxMemory(int localMaxMemory) {
       this.localMaxMemory = localMaxMemory;
     }
@@ -2886,7 +2870,6 @@ public class Cluster extends Thread {
    * '-'
    *
    *
-   * @param memberKey
    * @return the Member for a given key
    */
   public Cluster.Member getMember(String memberKey) {

@@ -30,7 +30,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.management.EvictionAttributesData;
 import org.apache.geode.management.FixedPartitionAttributesData;
 import org.apache.geode.management.MembershipAttributesData;
@@ -395,7 +394,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return float
    */
   public float getPutLocalRate() {
     return ManagementConstants.NOT_AVAILABLE_FLOAT;
@@ -404,7 +402,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return float
    */
   public float getPutRemoteRate() {
     return ManagementConstants.NOT_AVAILABLE_FLOAT;
@@ -413,7 +410,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return long
    */
   public long getPutRemoteAvgLatency() {
     return ManagementConstants.NOT_AVAILABLE_LONG;
@@ -422,7 +418,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return long
    */
   public long getPutRemoteLatency() {
     return ManagementConstants.NOT_AVAILABLE_LONG;
@@ -431,7 +426,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getActualRedundancy() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -440,7 +434,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getAvgBucketSize() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -449,7 +442,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getBucketCount() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -462,7 +454,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getNumBucketsWithoutRedundancy() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -471,7 +462,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getPrimaryBucketCount() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -480,7 +470,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getTotalBucketSize() {
     return ManagementConstants.NOT_AVAILABLE_INT;

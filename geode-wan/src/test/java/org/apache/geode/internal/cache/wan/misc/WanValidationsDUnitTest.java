@@ -37,10 +37,7 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({DistributedTest.class, WanTest.class})
@@ -98,14 +95,13 @@ public class WanValidationsDUnitTest extends WANTestBase {
   /**
    * Validate that ParallelGatewaySender can be added to Distributed region
    *
-   * @throws Exception
    *
    *
-   *         Below test is disabled intentionally Replicated region with Parallel Async Event queue
-   *         is not supported. Test is added for the same
-   *         ReplicatedRegion_ParallelWANPropagationDUnitTest#test_DR_PGS_1Nodes_Put_Receiver
+   * Below test is disabled intentionally Replicated region with Parallel Async Event queue
+   * is not supported. Test is added for the same
+   * ReplicatedRegion_ParallelWANPropagationDUnitTest#test_DR_PGS_1Nodes_Put_Receiver
    *
-   *         We are gone support this configuration in upcoming releases
+   * We are gone support this configuration in upcoming releases
    */
 
   @Ignore("Bug51491")
@@ -230,7 +226,6 @@ public class WanValidationsDUnitTest extends WANTestBase {
   /**
    * Test to make sure that same parallel gateway sender id can be used by 2 different PRs
    *
-   * @throws Exception
    */
   @Ignore
   @Test
@@ -293,7 +288,6 @@ public class WanValidationsDUnitTest extends WANTestBase {
    * Validate that if Colocated partitioned region doesn't want to add a PGS even if its parent has
    * one then it is fine
    *
-   * @throws Exception
    */
 
   @Test
@@ -321,7 +315,6 @@ public class WanValidationsDUnitTest extends WANTestBase {
   /**
    * Validate that if Colocated partitioned region has a subset of PGS then it is fine.
    *
-   * @throws Exception
    */
 
   @Test
@@ -350,7 +343,6 @@ public class WanValidationsDUnitTest extends WANTestBase {
   /**
    * Validate that if Colocated partitioned region has a superset of PGS then Exception is thrown.
    *
-   * @throws Exception
    */
 
   @Test

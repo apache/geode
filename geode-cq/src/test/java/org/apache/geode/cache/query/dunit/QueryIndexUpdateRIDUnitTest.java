@@ -138,7 +138,6 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
    * Tests overlap keys between client region and server region to verify the server region values
    * are synched with client region on register interest.
    *
-   * @throws Exception
    */
   @Test
   public void testClientIndexUpdateWithRIOnOverlapKeys() throws Exception {
@@ -280,7 +279,6 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
    * This test tests the RegionClearedException Path in AbsractRegionMap while doing
    * initialImagePut() during registerInterest on client.
    *
-   * @throws Exception
    */
   @Test
   public void testClientIndexUpdateWithRIOnClearedRegion() throws Exception {
@@ -623,10 +621,6 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   /**
    * Creates Init Values. start specifies the start index from which key no would start.
    *
-   * @param vm
-   * @param regionName
-   * @param size
-   * @param start
    */
   public void createValues(VM vm, final String regionName, final int size, final int start) {
     vm.invoke(new CacheSerializableRunnable("Create values") {
@@ -703,10 +697,6 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
    * Validates a query result with client region values if region is not null, otherwise verifies
    * the size only.
    *
-   * @param vm
-   * @param query
-   * @param resultSize
-   * @param region
    */
   public void validateQueryOnIndexWithRegion(VM vm, final String query, final int resultSize,
       final String region) {

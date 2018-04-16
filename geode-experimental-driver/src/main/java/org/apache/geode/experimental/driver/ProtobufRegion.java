@@ -55,7 +55,6 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
    * <code>socket</code> to a GemFire server.
    *
    * @param name String that uniquely identifies the region.
-   * @param valueEncoder
    */
   ProtobufRegion(String name, ProtobufChannel channel, ValueEncoder valueEncoder) {
     this.name = name;

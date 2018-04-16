@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.ha;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -45,9 +42,6 @@ public class HARegionQueueAttributes {
 
   private int expiryTime = DEFAULT_EXPIRY_TIME;
 
-  /**
-   *
-   */
   private int blockingQueueCapacity =
       Integer.getInteger(BLOCKING_QUEUE_CAPACITY, DEFAULT_BLOCKING_QUEUE_CAPACITY).intValue();
 

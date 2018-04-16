@@ -2553,7 +2553,6 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
    * populated. This map is used to search a field for a class in different versions (PdxTypes) This
    * test verifies that the map is being updated by the cacheListener
    *
-   * @throws CacheException
    */
   @Test
   public void testLocalMapInPeerTypePdxRegistry() throws CacheException {
@@ -2684,7 +2683,6 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
   /**
    * Test to query a field that is not present in the Pdx object but has a get method
    *
-   * @throws CacheException
    */
   @Test
   public void testPdxInstanceWithMethodButNoField() throws CacheException {
@@ -2831,7 +2829,6 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
    * Test to query a field that is not present in the Pdx object but is present in some other
    * version of the pdx instance
    *
-   * @throws CacheException
    */
   @Test
   public void testPdxInstanceFieldInOtherVersion() throws CacheException {
@@ -3069,7 +3066,6 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
    * client1 had registered interest to server2, hence gets the pdx objects for both versions Test
    * local query on client1 Test if client1 fetched pdxtypes from server
    *
-   * @throws CacheException
    */
   @Test
   public void testClientForFieldInOtherVersion() throws CacheException {
@@ -3208,7 +3204,6 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
    * Test to query a field that is not present in the Pdx object Also the implicit method is absent
    * in the class
    *
-   * @throws CacheException
    */
   @Test
   public void testPdxInstanceNoFieldNoMethod() throws CacheException {
@@ -3299,7 +3294,6 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
    * Test query execution when default values of {@link FieldType} are used. This happens when one
    * version of Pdx object does not have a field but other version has.
    *
-   * @throws Exception
    */
   @Test
   public void testDefaultValuesInPdxFieldTypes() throws Exception {

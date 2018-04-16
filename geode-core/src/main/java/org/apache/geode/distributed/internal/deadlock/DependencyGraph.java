@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor.MessageKey;
-import org.apache.geode.internal.util.PluckStacks;
 
 /**
  * This class holds a graph of dependencies between objects
@@ -133,7 +132,6 @@ public class DependencyGraph implements Serializable {
    * This returns a collection of top-level threads and their path to the given object. The object
    * name is some substring of the toString of the object
    *
-   * @param objectName
    */
   public List<DependencyGraph> findDependenciesWith(String objectName) {
 

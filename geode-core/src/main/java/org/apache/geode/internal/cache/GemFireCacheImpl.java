@@ -1028,7 +1028,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Used by Hydra tests to get handle of Rest Agent
    *
-   * @return RestAgent
    */
   @Override
   public RestAgent getRestAgent() {

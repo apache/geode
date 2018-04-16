@@ -24,9 +24,6 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.sequencelog.GraphType;
 import org.apache.geode.internal.sequencelog.model.GraphSet;
 
-/**
- *
- */
 public class GraphReader {
 
   private File[] files;

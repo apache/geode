@@ -33,8 +33,6 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -1517,7 +1515,6 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * Test for bug 50120 see if we can recover after deleting the parallel gateway sender files and
    * not recoverying the sender when we have a persistent PR.
    *
-   * @throws Throwable
    */
   @Test
   public void testRemoveGatewayFromPersistentRegionOnRestart() throws Throwable {

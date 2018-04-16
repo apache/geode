@@ -38,9 +38,6 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.SecurityService;
 
-/**
- *
- */
 public class ExecuteFunction70 extends ExecuteFunction66 {
 
   private static final ExecuteFunction70 singleton = new ExecuteFunction70();

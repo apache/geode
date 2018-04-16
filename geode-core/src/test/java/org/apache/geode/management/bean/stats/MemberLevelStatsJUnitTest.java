@@ -41,8 +41,6 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.MemberMBeanBridge;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- */
 @Category(IntegrationTest.class)
 public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
   @Rule

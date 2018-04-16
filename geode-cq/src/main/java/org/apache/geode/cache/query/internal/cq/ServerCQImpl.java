@@ -482,7 +482,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   /**
    * Get CacheClientNotifier of this CqQuery.
    *
-   * @return CacheClientNotifier
    */
   public CacheClientNotifier getCacheClientNotifier() {
     return this.ccn;

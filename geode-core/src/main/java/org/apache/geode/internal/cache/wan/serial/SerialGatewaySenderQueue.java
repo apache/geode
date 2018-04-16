@@ -665,8 +665,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   /**
    * returns true if key a is before key b. This test handles keys that have wrapped around
    *
-   * @param a
-   * @param b
    */
   private boolean before(long a, long b) {
     // a is before b if a < b or a>b and a MAXIMUM_KEY/2 larger than b
@@ -690,7 +688,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   /**
    * Finds the next object after the last key peeked
    *
-   * @throws CacheException
    */
   private Long getCurrentKey() {
     long currentKey;
@@ -769,7 +766,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * will be stored.
    *
    * @return the value of the tail key
-   * @throws CacheException
    */
   private long getTailKey() throws CacheException {
     long tlKey;
@@ -794,7 +790,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   /**
    * Increments the value of the tail key by one.
    *
-   * @throws CacheException
    */
   private void incrementTailKey() throws CacheException {
     this.tailKey.set(inc(this.tailKey.get()));
@@ -815,7 +810,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * SerialGatewaySender.handleFailover. So there's a possibility we can consolidate that code with
    * this method and iterate over the region once.
    *
-   * @throws CacheException
    */
   private void initializeKeys() throws CacheException {
     if (tailKey.get() != -1) {
@@ -878,7 +872,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * queue.
    *
    * @return the value of the head key
-   * @throws CacheException
    */
   private long getHeadKey() throws CacheException {
     long hKey;
@@ -902,7 +895,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   /**
    * Increments the value of the head key by one.
    *
-   * @throws CacheException
    */
   private void updateHeadKey(long destroyedKey) throws CacheException {
     this.headKey = inc(destroyedKey);
@@ -1055,7 +1047,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     /**
      * Constructor : Creates and initializes the thread
      *
-     * @param c
      */
     public BatchRemovalThread(InternalCache c) {
       this.setDaemon(true);

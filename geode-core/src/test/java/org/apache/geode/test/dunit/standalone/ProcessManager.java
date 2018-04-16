@@ -41,9 +41,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.VM;
 
-/**
- *
- */
 public class ProcessManager {
   private int namingPort;
   private Map<Integer, ProcessHolder> processes = new HashMap<>();

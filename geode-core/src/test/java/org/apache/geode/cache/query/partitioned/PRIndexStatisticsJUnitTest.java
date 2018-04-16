@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.cache.query.partitioned;
 
 import static org.junit.Assert.assertEquals;
@@ -42,9 +39,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, OQLIndexTest.class})
 public class PRIndexStatisticsJUnitTest {
 
@@ -103,7 +97,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test RenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForRangeIndex() throws Exception {
@@ -173,7 +166,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test CompactRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactRangeIndex() throws Exception {
@@ -243,7 +235,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test CompactMapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactMapRangeIndex() throws Exception {
@@ -315,7 +306,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForMapRangeIndex() throws Exception {
@@ -391,7 +381,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test RenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForRangeIndexBeforeRegionCreation() throws Exception {
@@ -469,7 +458,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test CompactRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactRangeIndexBeforeRegionCreation() throws Exception {
@@ -546,7 +534,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForCompactMapRangeIndexBeforeRegionCreation() throws Exception {
@@ -627,7 +614,6 @@ public class PRIndexStatisticsJUnitTest {
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
    *
-   * @throws Exception
    */
   @Test
   public void testStatsForMapRangeIndexBeforeRegionCreation() throws Exception {

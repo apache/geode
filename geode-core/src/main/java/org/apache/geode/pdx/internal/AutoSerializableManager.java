@@ -176,7 +176,6 @@ public class AutoSerializableManager {
    * Helper method to determine whether the class of a given object is a class which we are
    * interested in (de)serializing.
    *
-   * @param obj
    *
    * @return true if the object should be considered for serialization or false otherwise
    */
@@ -2123,7 +2122,6 @@ public class AutoSerializableManager {
    *
    * @param matches a map containing the
    *
-   * @param
    */
   private boolean fieldMatches(Field field, String className, List<String[]> matches) {
     String fieldName = field.getName();

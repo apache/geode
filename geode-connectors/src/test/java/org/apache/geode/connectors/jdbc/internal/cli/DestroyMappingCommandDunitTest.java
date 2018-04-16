@@ -14,6 +14,13 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__FIELD_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand.DESTROY_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand.DESTROY_MAPPING__REGION_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,9 +33,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -63,9 +68,17 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
-    server.invoke(() -> createRegionMapping());
-
     gfsh.connectAndVerify(locator);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
+    csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
+    csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   @Test
@@ -83,19 +96,9 @@ public class DestroyMappingCommandDunitTest implements Serializable {
 
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      RegionMapping mapping =
+      ConnectorService.RegionMapping mapping =
           cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
       assertThat(mapping).isNull();
     });
   }
-
-  private void createRegionMapping() throws RegionMappingExistsException {
-    InternalCache cache = ClusterStartupRule.getCache();
-    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-
-    service.createRegionMapping(new RegionMappingBuilder().withRegionName(regionName).build());
-
-    assertThat(service.getMappingForRegion(regionName)).isNotNull();
-  }
-
 }

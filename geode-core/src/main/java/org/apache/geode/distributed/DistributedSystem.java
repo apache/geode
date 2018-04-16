@@ -732,7 +732,6 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * Wait for the DistributedSystem to finish reconnecting to the system and recreate the cache.
    *
    * @param time amount of time to wait, or -1 to wait forever
-   * @param units
    * @return true if the system was reconnected
    * @throws InterruptedException if the thread is interrupted while waiting
    */

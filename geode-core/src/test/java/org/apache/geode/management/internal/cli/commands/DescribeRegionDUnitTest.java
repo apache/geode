@@ -19,8 +19,8 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 
-import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -38,7 +38,6 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
@@ -171,18 +170,16 @@ public class DescribeRegionDUnitTest {
     CommandResult result = gfsh.executeAndAssertThat("describe region --name=" + PR1)
         .statusIsSuccess().getCommandResult();
 
-    JSONObject table = result.getTableContent(0, 0, 0).getInternalJsonObject();
-    List<String> names = CommandResult.toList(table.getJSONArray("Name"));
+    List<String> names = result.getColumnFromTableContent("Name", 0, 0, 0);
     assertThat(names).containsOnlyOnce(RegionAttributesNames.ENTRY_IDLE_TIME_CUSTOM_EXPIRY);
 
-    List<String> values = CommandResult.toList(table.getJSONArray("Value"));
+    List<String> values = result.getColumnFromTableContent("Value", 0, 0, 0);
     assertThat(values).containsOnlyOnce(TestCustomIdleExpiry.class.getName());
 
-    table = result.getTableContent(0, 1, 0).getInternalJsonObject();
-    names = CommandResult.toList(table.getJSONArray("Name"));
+    names = result.getColumnFromTableContent("Name", 0, 1, 0);
     assertThat(names).containsOnlyOnce(RegionAttributesNames.ENTRY_TIME_TO_LIVE_CUSTOM_EXPIRY);
 
-    values = CommandResult.toList(table.getJSONArray("Value"));
+    values = result.getColumnFromTableContent("Value", 0, 1, 0);
     assertThat(values).containsOnlyOnce(TestCustomTTLExpiry.class.getName());
   }
 
@@ -217,31 +214,29 @@ public class DescribeRegionDUnitTest {
     CommandResult commandResult =
         gfsh.executeAndAssertThat(command).statusIsSuccess().getCommandResult();
 
-    GfJsonObject hostingMembersRegionDesc = getMembersRegionDesc(commandResult, "Hosting Members");
-    GfJsonObject hostingMembersTableContent = hostingMembersRegionDesc
-        .getJSONObject("__sections__-0").getJSONObject("__tables__-0").getJSONObject("content");
+    Map<String, String> hostingMembers = commandResult.getMapFromSection("1");
+    Map<String, List<String>> hostingMembersTable =
+        commandResult.getMapFromTableContent("1", "0", "0");
 
-    GfJsonObject accessorsRegionDesc = getMembersRegionDesc(commandResult, "Accessor Members");
-    GfJsonObject accessorsTableContent = accessorsRegionDesc.getJSONObject("__sections__-0")
-        .getJSONObject("__tables__-0").getJSONObject("content");
+    assertThat(hostingMembers.get("Name")).isEqualTo(HOSTING_AND_ACCESSOR_REGION_NAME);
+    assertThat(hostingMembers.get("Data Policy")).isEqualTo("partition");
+    assertThat(hostingMembers.get("Hosting Members")).contains("server-1", "server-2", "server-3",
+        "server-4");
+    assertThat(hostingMembersTable.get("Type")).contains("Region");
+    assertThat(hostingMembersTable.get("Name")).contains("data-policy", "size");
+    assertThat(hostingMembersTable.get("Value")).contains("PARTITION", "0");
 
-    assertThat(hostingMembersRegionDesc.get("Name").toString())
-        .contains(HOSTING_AND_ACCESSOR_REGION_NAME);
-    assertThat(hostingMembersRegionDesc.get("Data Policy").toString()).contains("partition");
-    assertThat(hostingMembersRegionDesc.get("Hosting Members").toString()).contains("server-1",
-        "server-2", "server-3", "server-4");
-    assertThat(hostingMembersTableContent.get("Type").toString()).contains("Region");
-    assertThat(hostingMembersTableContent.get("Name").toString()).contains("data-policy", "size");
-    assertThat(hostingMembersTableContent.get("Value").toString()).contains("PARTITION", "0");
+    Map<String, String> accessorMembers = commandResult.getMapFromSection("0");
+    Map<String, List<String>> accessorMembersTable =
+        commandResult.getMapFromTableContent("0", "0", "0");
 
-    assertThat(accessorsRegionDesc.get("Name").toString())
-        .contains(HOSTING_AND_ACCESSOR_REGION_NAME);
-    assertThat(accessorsRegionDesc.get("Data Policy").toString()).contains("partition");
-    assertThat(accessorsRegionDesc.get("Accessor Members").toString()).contains("server-5");
-    assertThat(accessorsTableContent.get("Type").toString()).contains("Region", "Partition");
-    assertThat(accessorsTableContent.get("Name").toString()).contains("data-policy", "size",
+    assertThat(accessorMembers.get("Name")).isEqualTo(HOSTING_AND_ACCESSOR_REGION_NAME);
+    assertThat(accessorMembers.get("Data Policy")).isEqualTo("partition");
+    assertThat(accessorMembers.get("Accessor Members")).isEqualTo("server-5");
+    assertThat(accessorMembersTable.get("Type")).contains("Region", "Partition");
+    assertThat(accessorMembersTable.get("Name")).contains("data-policy", "size",
         "local-max-memory");
-    assertThat(accessorsTableContent.get("Value").toString()).contains("PARTITION", "0", "0");
+    assertThat(accessorMembersTable.get("Value")).contains("PARTITION", "0", "0");
   }
 
   private static void createHostingAndAccessorRegion() {
@@ -255,13 +250,6 @@ public class DescribeRegionDUnitTest {
       cache.createRegionFactory(RegionShortcut.PARTITION_PROXY)
           .create(HOSTING_AND_ACCESSOR_REGION_NAME);
     });
-  }
-
-  private GfJsonObject getMembersRegionDesc(CommandResult commandResult, String memberType) {
-    if (commandResult.getContent().getJSONObject("__sections__-0").has(memberType))
-      return commandResult.getContent().getJSONObject("__sections__-0");
-    else
-      return commandResult.getContent().getJSONObject("__sections__-1");
   }
 
   private static void createLocalRegion(final String regionName) {

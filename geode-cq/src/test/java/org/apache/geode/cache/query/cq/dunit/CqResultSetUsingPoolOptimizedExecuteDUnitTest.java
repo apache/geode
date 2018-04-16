@@ -25,7 +25,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.CqServiceImpl;
@@ -41,8 +40,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -75,7 +72,6 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
    * Tests CQ Result Caching with CQ Failover. When EXECUTE_QUERY_DURING_INIT is false and new
    * server calls execute during HA the results cache is not initialized.
    *
-   * @throws Exception
    */
   @Override
   @Test

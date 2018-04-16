@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
@@ -33,8 +32,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -63,9 +60,6 @@ public class ClientServerTransactionCCEDUnitTest extends ClientServerTransaction
     IgnoredException.addIgnoredException("Socket Closed");
   }
 
-  /**
-   *
-   */
   private static final long serialVersionUID = -6785438240204988439L;
 
   public ClientServerTransactionCCEDUnitTest() {

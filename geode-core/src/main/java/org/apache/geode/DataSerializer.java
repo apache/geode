@@ -3179,7 +3179,6 @@ public abstract class DataSerializer {
    *
    * @see #readEnum(Class, DataInput)
    * @since GemFire 6.5
-   * @throws IOException
    */
   public static void writeEnum(Enum e, DataOutput out) throws IOException {
 

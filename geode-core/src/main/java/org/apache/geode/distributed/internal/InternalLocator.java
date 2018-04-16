@@ -179,7 +179,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   private volatile Thread restartThread;
 
-  boolean isSharedConfigurationEnabled() {
+  public boolean isSharedConfigurationEnabled() {
     return this.config.getEnableClusterConfiguration();
   }
 

@@ -20,8 +20,11 @@ import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +32,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.CompositeResultData;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -56,6 +63,390 @@ public class WANClusterConfigurationDUnitTest {
   public void before() throws Exception {
     locator = clusterStartupRule.startLocatorVM(3);
   }
+
+  @Test
+  public void whenAlteringNoncolocatedRegionsWithTheSameParallelSenderIdThenFailure()
+      throws Exception {
+    addIgnoredException("could not get remote locator");
+    addIgnoredException("cannot have the same parallel gateway sender id");
+
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locator);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test2");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test2");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError();
+  }
+
+  @Test
+  public void whenAlteringOneRegionsWithDifferentParallelSenderIdThenSuccess() throws Exception {
+    addIgnoredException("could not get remote locator");
+    addIgnoredException("cannot have the same parallel gateway sender id");
+
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locator);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny,ln");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+  @Test
+  public void whenAlteringOneRegionsWithDifferentParallelSenderIdsAfterItWasAlreadySetWithOneOfTheNewSenderThenSuccess()
+      throws Exception {
+    addIgnoredException("could not get remote locator");
+    addIgnoredException("cannot have the same parallel gateway sender id");
+
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locator);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny,ln");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+
+  @Test
+  public void whenAlteringOneRegionsWithDifferentParallelSenderIdAfterItWasAlreadyCreatedWithDifferentSenderThenSuccess()
+      throws Exception {
+    addIgnoredException("could not get remote locator");
+    addIgnoredException("cannot have the same parallel gateway sender id");
+    addIgnoredException("Could not execute \"list gateways\"");
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locator);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    waitTillAllGatewaySendersAreReady();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__GATEWAYSENDERID, "ny");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ln");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+  private void waitTillAllGatewaySendersAreReady() {
+    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
+      CommandStringBuilder csb2 = new CommandStringBuilder(CliStrings.LIST_GATEWAY);
+      CommandResult cmdResult = gfsh.executeCommand(csb2.toString());
+      assertThat(cmdResult).isNotNull();
+      assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+      TabularResultData tableSenderResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+      List<String> senders =
+          tableSenderResultData.retrieveAllValues(CliStrings.RESULT_GATEWAY_SENDER_ID);
+      assertThat(senders).hasSize(4);
+    });
+  }
+
+
+  @Test
+  public void whenAlteringOneRegionsWithDifferentParallelSenderIdAfterItWasSetWithOneSenderThenSuccess()
+      throws Exception {
+    addIgnoredException("could not get remote locator");
+    addIgnoredException("cannot have the same parallel gateway sender id");
+
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locator);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ln");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+  @Test
+  public void whenAlteringNoncolocatedRegionsWithTheSameSerialSenderIdThenSuccess()
+      throws Exception {
+    addIgnoredException("could not get remote locator");
+    addIgnoredException("cannot have the same parallel gateway sender id");
+
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locator);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test2");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test2");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+  @Test
+  public void whenAlteringNoncolocatedRegionsWithDifferentSerialGatewayIDThenSuccess()
+      throws Exception {
+    addIgnoredException("could not get remote locator");
+    addIgnoredException("cannot have the same parallel gateway sender id");
+
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locator);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test2");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test2");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ln");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+
+  @Test
+  public void whenAlteringNoncolocatedRegionsWithDifferentParallelGatewayIDThenSuccess()
+      throws Exception {
+    addIgnoredException("could not get remote locator");
+    addIgnoredException("cannot have the same parallel gateway sender id");
+
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locator);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test2");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test2");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ln");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+  @Test
+  public void whenAlteringColocatedRegionsWithSameParallelGatewayIDThenSuccess() throws Exception {
+    addIgnoredException("could not get remote locator");
+    addIgnoredException("cannot have the same parallel gateway sender id");
+
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    MemberVM server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locator);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test2");
+    csb.addOption(CliStrings.CREATE_REGION__COLOCATEDWITH, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test2");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
 
   @Test
   public void testCreateGatewaySenderReceiver() throws Exception {

@@ -18,7 +18,6 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -38,7 +37,6 @@ import org.apache.geode.cache.query.internal.cq.CqServiceImpl;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.query.internal.cq.ServerCQImpl;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -49,7 +47,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
@@ -82,7 +79,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests the cq performance.
    *
-   * @throws Exception
    */
   @Ignore("perf")
   @Test
@@ -193,7 +189,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for maintaining keys for update optimization.
    *
-   * @throws Exception
    */
   @Test
   public void testKeyMaintainance() throws Exception {
@@ -415,7 +410,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
    * Test for common CQs. To test the changes relating to, executing CQ only once for all similar
    * CQs.
    *
-   * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-1164: random ports, thread sleeps, time sensitive, eats
                              // exceptions (fixed 1), async behavior
@@ -518,7 +512,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
    * Test for common CQs. To test the changes relating to, executing CQ only once for all similar
    * CQs.
    *
-   * @throws Exception
    */
   @Test
   public void testMatchingCQWithMultipleClients() throws Exception {
@@ -822,7 +815,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for CQ Fail over.
    *
-   * @throws Exception
    */
   @Test
   public void testMatchingCQsOnDataNodeWithMultipleServers() throws Exception {
@@ -876,7 +868,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
   /**
    * Performance test for Matching CQ optimization changes.
    *
-   * @throws Exception
    */
   @Ignore("perf")
   @Test

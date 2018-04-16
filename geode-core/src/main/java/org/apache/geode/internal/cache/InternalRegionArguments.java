@@ -64,7 +64,6 @@ public class InternalRegionArguments {
 
   private Object userAttribute = null;
   private List indexes;
-  private boolean declarativeIndexCreation;
 
   private Map<String, CacheServiceProfile> cacheServiceProfiles;
 
@@ -285,15 +284,6 @@ public class InternalRegionArguments {
 
   public List getIndexes() {
     return this.indexes;
-  }
-
-  public InternalRegionArguments setDeclarativeIndexCreation(boolean value) {
-    this.declarativeIndexCreation = value;
-    return this;
-  }
-
-  public boolean getDeclarativeIndexCreation() {
-    return this.declarativeIndexCreation;
   }
 
   public InternalRegionArguments addCacheServiceProfile(CacheServiceProfile profile) {

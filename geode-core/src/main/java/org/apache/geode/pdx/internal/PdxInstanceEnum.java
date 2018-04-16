@@ -16,7 +16,6 @@ package org.apache.geode.pdx.internal;
 
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +30,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
-import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 
 /**
  * Used to represent an enum value as a PdxInstance

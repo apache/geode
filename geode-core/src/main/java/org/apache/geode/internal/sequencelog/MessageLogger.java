@@ -17,9 +17,6 @@ package org.apache.geode.internal.sequencelog;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-/**
- *
- */
 public class MessageLogger {
 
   public static final SequenceLogger LOGGER = SequenceLoggerImpl.getInstance();

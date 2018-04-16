@@ -15,16 +15,12 @@
 package org.apache.geode.internal.cache.ha;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * @since GemFire 5.7
@@ -72,10 +68,6 @@ public class HAContainerMap implements HAContainerWrapper {
     return haRegionNameToProxy.remove(haName);
   }
 
-  /**
-   * @param key
-   * @return Object
-   */
   public Object getKey(Object key) {
     Entry entry = (Entry) map.get(key);
     return (entry == null) ? null : entry.getKey();

@@ -49,7 +49,6 @@ public interface XmlGenerator<T> {
    * Generate XML configuration to the given {@link CacheXmlGenerator}.
    *
    * @param cacheXmlGenerator to generate configuration to.
-   * @throws SAXException
    * @since GemFire 8.1
    */
   void generate(CacheXmlGenerator cacheXmlGenerator) throws SAXException;

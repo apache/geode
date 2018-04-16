@@ -465,7 +465,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * @throws QueryException if data loss is detected during the query, when the number of retries
    *         has exceeded the system wide maximum, or when there are logic errors that cause bucket
    *         data to be omitted from the results.
-   * @throws InterruptedException
    */
   public SelectResults queryBuckets(final TestHook th) throws QueryException, InterruptedException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -778,7 +777,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   /**
    * Adds all counts from all member buckets to cumulative results.
    *
-   * @param limit
    */
   private void addTotalCountForMemberToResults(int limit) {
     int count = 0;
@@ -848,7 +846,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   }
 
   /**
-   * @param bucketIdsToConsider
    * @return Map of {@link InternalDistributedMember} to {@link ArrayList} of Integers
    */
   private Map<InternalDistributedMember, List<Integer>> buildNodeToBucketMapForBuckets(

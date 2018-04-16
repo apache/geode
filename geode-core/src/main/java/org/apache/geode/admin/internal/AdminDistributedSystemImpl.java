@@ -1914,7 +1914,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    *
    * @param durableClientId - durable-id of the client
    * @return array of CacheServer(s) having the queue for the durable client
-   * @throws AdminException
    *
    * @since GemFire 5.6
    */
@@ -1972,7 +1971,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    * TODO: remove this static method during reimplementation of
    * {@link SystemMemberCacheEventProcessor}
    *
-   * @return AdminDistributedSystem
    */
   public static AdminDistributedSystemImpl getConnectedInstance() {
     synchronized (CONNECTION_SYNC) {
@@ -2297,7 +2295,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   /**
    * Shutdown all members.
    *
-   * @param dm
    * @param timeout the amount of time (in ms) to spending trying to shutdown the members
    *        gracefully. After this time period, the members will be forceable shut down. If the
    *        timeout is exceeded, persistent recovery after the shutdown may need to do a GII. -1

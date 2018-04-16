@@ -17,9 +17,6 @@ package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.*;
 
-/**
- *
- */
 class RegionTTLExpiryTask extends RegionExpiryTask {
 
   /** Creates a new instance of RegionTTLExpiryTask */

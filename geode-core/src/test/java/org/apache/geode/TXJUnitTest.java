@@ -6782,7 +6782,6 @@ public class TXJUnitTest {
   /**
    * make sure that we do not expose BucketRegion on transactionListener events
    *
-   * @throws Exception
    */
   @Test
   public void testInternalRegionNotExposed() throws Exception {
@@ -6814,7 +6813,6 @@ public class TXJUnitTest {
   /**
    * make sure that we throw an UnsupportedOperationInTransactionException
    *
-   * @throws Exception
    */
   @Test
   public void testPutAllSupported() throws Exception {
@@ -6844,7 +6842,6 @@ public class TXJUnitTest {
   /**
    * make sure that we throw an UnsupportedOperationInTransactionException
    *
-   * @throws Exception
    */
   @Test
   public void testGetAllSupported() throws Exception {
@@ -6872,7 +6869,6 @@ public class TXJUnitTest {
   /**
    * make sure that we throw an UnsupportedOperationInTransactionException
    *
-   * @throws Exception
    */
   @Test
   public void testDestroyRegionNotSupported() throws Exception {
@@ -6927,7 +6923,6 @@ public class TXJUnitTest {
   /**
    * make sure that we throw an UnsupportedOperationInTransactionException
    *
-   * @throws Exception
    */
   @Test
   public void testInvalidateRegionNotSupported() throws Exception {
@@ -6976,7 +6971,6 @@ public class TXJUnitTest {
   /**
    * make sure that we throw an UnsupportedOperationInTransactionException
    *
-   * @throws Exception
    */
   @Test
   public void testClearRegionNotSupported() throws Exception {

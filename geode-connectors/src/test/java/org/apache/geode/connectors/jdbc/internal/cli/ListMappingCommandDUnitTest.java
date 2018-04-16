@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand.LIST_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand.LIST_OF_MAPPINGS;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
@@ -25,10 +24,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -65,10 +60,13 @@ public class ListMappingCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void listsOneRegionMapping() throws Exception {
-    server.invoke(() -> createOneRegionMapping());
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
+  public void listsOneRegionMapping() {
+    String mapping = "create jdbc-mapping --region=testRegion --connection=connection "
+        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
+        + "--field-mapping=field1:column1,field2:column2";
+    gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
     commandResultAssert.statusIsSuccess();
@@ -77,10 +75,21 @@ public class ListMappingCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void listsMultipleRegionMappings() throws Exception {
-    server.invoke(() -> createNRegionMappings(3));
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
+  public void listsMultipleRegionMappings() {
+    String mapping1 = "create jdbc-mapping --region=testRegion-1 --connection=connection "
+        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
+        + "--field-mapping=field1:column1,field2:column2";
+    gfsh.executeAndAssertThat(mapping1).statusIsSuccess();
+    String mapping2 = "create jdbc-mapping --region=testRegion-2 --connection=connection "
+        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
+        + "--field-mapping=field1:column1,field2:column2";
+    gfsh.executeAndAssertThat(mapping2).statusIsSuccess();
+    String mapping3 = "create jdbc-mapping --region=testRegion-3 --connection=connection "
+        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
+        + "--field-mapping=field1:column1,field2:column2";
+    gfsh.executeAndAssertThat(mapping3).statusIsSuccess();
 
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
     commandResultAssert.statusIsSuccess();
@@ -90,7 +99,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void reportsNoRegionMappingsFound() throws Exception {
+  public void reportsNoRegionMappingsFound() {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
@@ -98,26 +107,4 @@ public class ListMappingCommandDUnitTest implements Serializable {
     commandResultAssert.statusIsSuccess();
     commandResultAssert.containsOutput("No mappings found");
   }
-
-  private void createOneRegionMapping() throws RegionMappingExistsException {
-    InternalCache cache = ClusterStartupRule.getCache();
-    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-
-    service.createRegionMapping(new RegionMappingBuilder().withRegionName(regionName)
-        .withPdxClassName("x.y.MyPdxClass").withPrimaryKeyInValue(true).build());
-
-    assertThat(service.getMappingForRegion(regionName)).isNotNull();
-  }
-
-  private void createNRegionMappings(int N) throws RegionMappingExistsException {
-    InternalCache cache = ClusterStartupRule.getCache();
-    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    for (int i = 1; i <= N; i++) {
-      String name = regionName + "-" + i;
-      service.createRegionMapping(new RegionMappingBuilder().withRegionName(name)
-          .withPdxClassName("x.y.MyPdxClass").withPrimaryKeyInValue(true).build());
-      assertThat(service.getMappingForRegion(name)).isNotNull();
-    }
-  }
-
 }

@@ -49,10 +49,6 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 
-/**
- *
- *
- */
 public abstract class OrderByTestImplementation {
 
   @Before

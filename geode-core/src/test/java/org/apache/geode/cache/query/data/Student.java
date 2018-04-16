@@ -23,10 +23,6 @@ package org.apache.geode.cache.query.data;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- *
- */
 public class Student {
 
   private static int counter = 0;

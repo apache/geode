@@ -33,7 +33,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.snapshot.SnapshotIterator;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -112,7 +111,6 @@ public class GFSnapshot {
    *
    * @param snapshot the snapshot file
    * @param region the region name
-   * @param cache
    * @return the callback to allow the invoker to provide the snapshot entries
    * @throws IOException error writing the snapshot file
    */

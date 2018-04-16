@@ -16,7 +16,6 @@ package org.apache.geode.codeAnalysis;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)

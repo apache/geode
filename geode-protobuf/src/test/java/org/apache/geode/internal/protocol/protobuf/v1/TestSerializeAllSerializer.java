@@ -14,14 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
-import java.io.IOException;
 
-import com.google.protobuf.ByteString;
-import org.junit.Test;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.protocol.serialization.ValueSerializer;
 
 /**
  * A value format for tests that uses DataSerializable as the serialization format

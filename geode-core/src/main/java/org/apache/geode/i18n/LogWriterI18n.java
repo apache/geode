@@ -444,7 +444,6 @@ public interface LogWriterI18n {
   /**
    * A mechanism for accessing the abstraction layer used for a plain logger.
    *
-   * @return LogWriter
    */
   LogWriter convertToLogWriter();
 }

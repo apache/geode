@@ -17,6 +17,8 @@ package org.apache.geode.connectors.jdbc.internal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+
 class DataSourceManager {
 
   private final JdbcDataSourceFactory jdbcDataSourceFactory;
@@ -26,7 +28,7 @@ class DataSourceManager {
     this.jdbcDataSourceFactory = jdbcDataSourceFactory;
   }
 
-  JdbcDataSource getOrCreateDataSource(ConnectionConfiguration config) {
+  JdbcDataSource getOrCreateDataSource(ConnectorService.Connection config) {
     return dataSourceMap.computeIfAbsent(config.getName(), k -> {
       return this.jdbcDataSourceFactory.create(config);
     });

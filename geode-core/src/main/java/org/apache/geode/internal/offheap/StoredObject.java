@@ -65,7 +65,6 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * readByteArray.
    *
    * @param out the data output to send this object to
-   * @throws IOException
    */
   void sendAsByteArray(DataOutput out) throws IOException;
 
@@ -76,7 +75,6 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * VMCachedDeserializable.
    *
    * @param out the data output to send this object to
-   * @throws IOException
    */
   void sendAsCachedDeserializable(DataOutput out) throws IOException;
 

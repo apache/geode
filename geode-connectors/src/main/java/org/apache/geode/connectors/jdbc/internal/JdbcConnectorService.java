@@ -17,34 +17,35 @@ package org.apache.geode.connectors.jdbc.internal;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.cache.extension.Extension;
 
 @Experimental
-public interface JdbcConnectorService extends Extension<Cache>, CacheService {
+public interface JdbcConnectorService extends CacheService {
 
-  void createConnectionConfig(ConnectionConfiguration config)
+  void createConnectionConfig(ConnectorService.Connection config)
       throws ConnectionConfigExistsException;
 
-  void replaceConnectionConfig(ConnectionConfiguration config)
+  void replaceConnectionConfig(ConnectorService.Connection config)
       throws ConnectionConfigNotFoundException;
 
   void destroyConnectionConfig(String connectionName);
 
-  ConnectionConfiguration getConnectionConfig(String connectionName);
+  ConnectorService.Connection getConnectionConfig(String connectionName);
 
-  Set<ConnectionConfiguration> getConnectionConfigs();
+  Set<ConnectorService.Connection> getConnectionConfigs();
 
-  void createRegionMapping(RegionMapping mapping) throws RegionMappingExistsException;
+  void createRegionMapping(ConnectorService.RegionMapping mapping)
+      throws RegionMappingExistsException;
 
-  void replaceRegionMapping(RegionMapping mapping) throws RegionMappingNotFoundException;
+  void replaceRegionMapping(ConnectorService.RegionMapping mapping)
+      throws RegionMappingNotFoundException;
 
   void destroyRegionMapping(String regionName);
 
-  RegionMapping getMappingForRegion(String regionName);
+  ConnectorService.RegionMapping getMappingForRegion(String regionName);
 
-  Set<RegionMapping> getRegionMappings();
+  Set<ConnectorService.RegionMapping> getRegionMappings();
 
   DataSourceManager getDataSourceManager();
 }

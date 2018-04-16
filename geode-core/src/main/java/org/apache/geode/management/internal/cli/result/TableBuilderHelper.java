@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.result;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.geode.management.internal.cli.shell.Gfsh;

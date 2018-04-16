@@ -41,7 +41,6 @@ public class RegionSizeRequest extends RegionAdminRequest implements Cancellable
   /**
    * Must return a proper response to this request.
    *
-   * @param dm
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {

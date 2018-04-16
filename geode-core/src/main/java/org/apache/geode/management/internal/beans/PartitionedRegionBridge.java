@@ -31,9 +31,6 @@ import org.apache.geode.management.internal.beans.stats.StatsKey;
 import org.apache.geode.management.internal.beans.stats.StatsLatency;
 import org.apache.geode.management.internal.beans.stats.StatsRate;
 
-/**
- *
- */
 public class PartitionedRegionBridge<K, V> extends RegionMBeanBridge<K, V> {
 
   private PartitionedRegionStats prStats;
@@ -281,7 +278,6 @@ public class PartitionedRegionBridge<K, V> extends RegionMBeanBridge<K, V> {
    * partition region entry count is taken from all primary bucket entry count. Ideally it should
    * come from stats. to be done in 8.0
    *
-   * @return long
    */
   @Override
   public long getEntryCount() {

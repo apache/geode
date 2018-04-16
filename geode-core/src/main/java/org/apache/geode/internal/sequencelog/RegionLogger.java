@@ -31,8 +31,6 @@ public class RegionLogger {
    * Log the creation of a region. This should only be called if the region was not recovered from
    * disk or GII'd from another member.
    *
-   * @param regionName
-   * @param source
    */
   public static void logCreate(String regionName, InternalDistributedMember source) {
     GRAPH_LOGGER.logTransition(GraphType.REGION, regionName, "create", "created", source, source);

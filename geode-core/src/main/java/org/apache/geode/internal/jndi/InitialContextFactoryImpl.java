@@ -61,7 +61,6 @@ public class InitialContextFactoryImpl implements InitialContextFactory {
    * application resource file (jndi.properties).
    * java.naming.factory.initial=org.apache.geode.internal.jndi.InitialContextFactoryImpl
    *
-   * @throws NamingException
    */
   public void setAsInitial() throws NamingException {
     // Preserve current set system props

@@ -102,8 +102,6 @@ public class DestroyIndexFunction implements InternalFunction {
 
   /***
    *
-   * @param name
-   * @param queryService
    * @return true if the index was found and removed/false if the index was not found.
    */
   private boolean removeIndexByName(String name, QueryService queryService) {

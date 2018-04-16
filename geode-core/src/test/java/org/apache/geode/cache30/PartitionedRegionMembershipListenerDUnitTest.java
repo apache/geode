@@ -20,10 +20,8 @@ package org.apache.geode.cache30;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -35,8 +33,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache30.RegionMembershipListenerDUnitTest.MyRML;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**

@@ -19,8 +19,6 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -35,7 +33,6 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 /**

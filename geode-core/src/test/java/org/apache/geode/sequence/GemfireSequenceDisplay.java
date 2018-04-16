@@ -46,8 +46,6 @@ import org.apache.geode.internal.sequencelog.model.GraphID;
 import org.apache.geode.internal.sequencelog.model.GraphSet;
 import org.apache.geode.internal.sequencelog.model.Vertex;
 
-/**
- */
 public class GemfireSequenceDisplay {
 
   private JLabel selectedGraphsLabel;
@@ -63,8 +61,6 @@ public class GemfireSequenceDisplay {
    * Create the GUI and show it. For thread safety, this method should be invoked from the
    * event-dispatching thread.
    *
-   * @param graphs
-   * @param lineMapper
    */
   private void createAndShowGUI(final GraphSet graphs, LineMapper lineMapper) {
     // Create and set up the window.
@@ -302,10 +298,6 @@ public class GemfireSequenceDisplay {
     return graphs;
   }
 
-  /**
-   * @param files
-   * @return
-   */
   private static LineMapper getLineMapper(File[] files) {
     if (HydraLineMapper.isInHydraRun(files)) {
       return new HydraLineMapper(files);

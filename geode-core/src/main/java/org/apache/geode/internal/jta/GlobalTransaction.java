@@ -616,8 +616,6 @@ public class GlobalTransaction {
    * Set the transaction TimeOut of the Global Transaction Asif : It returns the new expiry time for
    * the GTX.
    *
-   * @param seconds
-   * @throws SystemException
    */
   long setTransactionTimeoutForXARes(int seconds) throws SystemException {
 

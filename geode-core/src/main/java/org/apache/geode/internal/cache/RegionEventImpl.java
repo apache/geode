@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.ClassNotFoundException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.*;
@@ -71,11 +70,6 @@ public class RegionEventImpl
   /**
    * Constructor which does not generate EventID
    *
-   * @param region
-   * @param op
-   * @param callbackArgument
-   * @param originRemote
-   * @param distributedMember
    */
   public RegionEventImpl(Region region, Operation op, Object callbackArgument, boolean originRemote,
       DistributedMember distributedMember) {
@@ -99,11 +93,6 @@ public class RegionEventImpl
   /**
    * Constructor which uses the eventID passed
    *
-   * @param region
-   * @param op
-   * @param callbackArgument
-   * @param originRemote
-   * @param distributedMember
    * @param eventID EventID used to create the RegionEvent
    */
   public RegionEventImpl(Region region, Operation op, Object callbackArgument, boolean originRemote,
@@ -242,7 +231,6 @@ public class RegionEventImpl
   /**
    * Returns the Operation type.
    *
-   * @return eventType
    */
   public EnumListenerEvent getEventType() {
     return this.eventType;
@@ -251,7 +239,6 @@ public class RegionEventImpl
   /**
    * Sets the operation type.
    *
-   * @param eventType
    */
   public void setEventType(EnumListenerEvent eventType) {
     this.eventType = eventType;

@@ -149,7 +149,6 @@ public class DriverFactory {
    * Creates a driver configured to use all the locators about which this driver factory knows.
    *
    * @return New driver.
-   * @throws Exception
    */
   public Driver create() throws Exception {
     return new ProtobufDriver(locators, username, password, keyStorePath, trustStorePath, protocols,

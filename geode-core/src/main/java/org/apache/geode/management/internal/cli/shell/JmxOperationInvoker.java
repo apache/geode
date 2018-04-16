@@ -229,14 +229,9 @@ public class JmxOperationInvoker implements OperationInvoker {
   /**
    * JMX Specific operation invoke caller.
    *
-   * @param resource
-   * @param operationName
-   * @param params
-   * @param signature
    *
    * @return result of JMX Operation invocation
    *
-   * @throws JMXInvocationException
    */
   protected Object invoke(ObjectName resource, String operationName, Object[] params,
       String[] signature) throws JMXInvocationException {

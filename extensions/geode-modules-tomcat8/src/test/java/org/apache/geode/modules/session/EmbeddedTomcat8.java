@@ -30,10 +30,7 @@ import org.apache.catalina.authenticator.jaspic.AuthConfigFactoryImpl;
 import org.apache.catalina.authenticator.jaspic.SimpleAuthConfigProvider;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardEngine;
-import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.core.StandardService;
 import org.apache.catalina.core.StandardWrapper;
-import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.juli.logging.Log;
@@ -41,9 +38,6 @@ import org.apache.juli.logging.LogFactory;
 
 import org.apache.geode.modules.session.catalina.JvmRouteBinderValve;
 
-/**
- *
- */
 public class EmbeddedTomcat8 {
 
   private String contextPath = null;

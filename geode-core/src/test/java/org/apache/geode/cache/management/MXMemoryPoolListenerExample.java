@@ -49,9 +49,6 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
   private AtomicBoolean critical = new AtomicBoolean();
   private final LogWriter logger;
 
-  /**
-   * @param ds
-   */
   public MXMemoryPoolListenerExample(DistributedSystem ds) {
     this.logger = ds.getLogWriter();
   }
@@ -156,9 +153,6 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
       this.criticalState = critical;
     }
 
-    /**
-     * @param percentTenured
-     */
     public MemoryHog consumeMemory(final int percentTenured) {
       final long maxSecondsToRun = 180;
       final LogWriter logger = this.cache.getLogger();
