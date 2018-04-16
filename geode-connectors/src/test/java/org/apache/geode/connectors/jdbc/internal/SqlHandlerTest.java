@@ -113,7 +113,6 @@ public class SqlHandlerTest {
     when(regionMapping.getRegionToTableName()).thenReturn(TABLE_NAME);
     when(connectorService.getMappingForRegion(REGION_NAME)).thenReturn(regionMapping);
 
-
     when(manager.getOrCreateDataSource(any())).thenReturn(this.dataSource);
     when(dataSource.getConnection()).thenReturn(this.connection);
 

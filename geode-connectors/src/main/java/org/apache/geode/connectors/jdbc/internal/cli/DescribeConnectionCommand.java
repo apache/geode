@@ -23,7 +23,6 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionComm
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -37,11 +36,10 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
 public class DescribeConnectionCommand extends InternalGfshCommand {
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
   static final String DESCRIBE_CONNECTION__HELP =
-      EXPERIMENTAL + "Describe the specified jdbc connection found in cluster configuration.";
+      "Describe the specified jdbc connection found in cluster configuration.";
   static final String DESCRIBE_CONNECTION__NAME = "name";
   static final String DESCRIBE_CONNECTION__NAME__HELP =
       "Name of the jdbc connection to be described.";
@@ -64,19 +62,16 @@ public class DescribeConnectionCommand extends InternalGfshCommand {
     ConnectorService service =
         ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
     if (service == null) {
-      throw new EntityNotFoundException(
-          EXPERIMENTAL + "\n" + "connection named '" + name + "' not found");
+      throw new EntityNotFoundException("connection named '" + name + "' not found");
     }
     ConnectorService.Connection connection =
         ccService.findIdentifiable(service.getConnection(), name);
     if (connection == null) {
-      throw new EntityNotFoundException(
-          EXPERIMENTAL + "\n" + "connection named '" + name + "' not found");
+      throw new EntityNotFoundException("connection named '" + name + "' not found");
     }
 
     CompositeResultData resultData = ResultBuilder.createCompositeResultData();
     fillResultData(connection, resultData);
-    resultData.setHeader(EXPERIMENTAL);
     return ResultBuilder.buildResult(resultData);
   }
 

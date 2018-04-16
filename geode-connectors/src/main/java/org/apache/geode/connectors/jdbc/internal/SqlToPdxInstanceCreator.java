@@ -217,8 +217,7 @@ class SqlToPdxInstanceCreator {
   }
 
   /**
-   * If the given column contains a Blob returns its data as a byte array;
-   * otherwise return null.
+   * If the given column contains a Blob returns its data as a byte array; otherwise return null.
    *
    * @throws JdbcConnectorException if blob is too big to fit in a byte array
    */

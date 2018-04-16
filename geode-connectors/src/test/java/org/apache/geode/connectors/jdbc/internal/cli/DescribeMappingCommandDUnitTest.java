@@ -100,7 +100,6 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
     commandResultAssert.statusIsError();
-    commandResultAssert.containsOutput(
-        String.format("(Experimental) \n" + "mapping for region 'nonExisting' not found"));
+    commandResultAssert.containsOutput(String.format("mapping for region 'nonExisting' not found"));
   }
 }

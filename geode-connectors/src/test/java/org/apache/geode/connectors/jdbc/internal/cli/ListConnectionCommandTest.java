@@ -58,7 +58,7 @@ public class ListConnectionCommandTest {
   @Test
   public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("(Experimental) \\nNo connections found");
+        .containsOutput("No connections found");
   }
 
   @Test
@@ -66,7 +66,7 @@ public class ListConnectionCommandTest {
     ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("(Experimental) \\nNo connections found");
+        .containsOutput("No connections found");
   }
 
   @Test
