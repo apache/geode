@@ -25,7 +25,6 @@ import java.util.List;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
@@ -41,11 +40,9 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
 public class DescribeMappingCommand extends InternalGfshCommand {
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
-  static final String DESCRIBE_MAPPING__HELP =
-      EXPERIMENTAL + "Describe the jdbc mapping in cluster configuration";
+  static final String DESCRIBE_MAPPING__HELP = "Describe the jdbc mapping in cluster configuration";
   static final String DESCRIBE_MAPPING__REGION_NAME = "region";
   static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
       "Region name of the jdbc mapping to be described.";
@@ -92,19 +89,16 @@ public class DescribeMappingCommand extends InternalGfshCommand {
     ConnectorService service =
         ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
     if (service == null) {
-      throw new EntityNotFoundException(
-          EXPERIMENTAL + "\n" + "mapping for region '" + regionName + "' not found");
+      throw new EntityNotFoundException("mapping for region '" + regionName + "' not found");
     }
     ConnectorService.RegionMapping mapping =
         ccService.findIdentifiable(service.getRegionMapping(), regionName);
     if (mapping == null) {
-      throw new EntityNotFoundException(
-          EXPERIMENTAL + "\n" + "mapping for region '" + regionName + "' not found");
+      throw new EntityNotFoundException("mapping for region '" + regionName + "' not found");
     }
 
     CompositeResultData resultData = ResultBuilder.createCompositeResultData();
     fillResultData(mapping, resultData);
-    resultData.setHeader(EXPERIMENTAL);
     return ResultBuilder.buildResult(resultData);
   }
 
