@@ -43,7 +43,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  public static class TestDisconnectListener implements InternalDistributedSystem.DisconnectListener {
+  public static class TestDisconnectListener
+      implements InternalDistributedSystem.DisconnectListener {
     static int disconnectCount;
 
     public TestDisconnectListener() {
@@ -135,8 +136,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
   private void waitForLocatorToReconnect(MemberVM locator) {
     // Ensure that disconnect/reconnect sequence starts otherwise in the next await we might end up
     // with the initial locator instead of a newly created one.
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS).until(() -> locator.invoke(() ->
-        TestDisconnectListener.disconnectCount > 0));
+    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+        .until(() -> locator.invoke(() -> TestDisconnectListener.disconnectCount > 0));
 
     Awaitility.waitAtMost(30, TimeUnit.SECONDS).until(() -> locator.invoke(() -> {
       InternalLocator intLocator = InternalLocator.getLocator();
