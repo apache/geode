@@ -127,9 +127,6 @@ public interface CqService {
   /**
    * Called directly on server side.
    *
-   * @param cqName
-   * @param clientProxyId
-   * @throws CqException
    */
   void closeCq(String cqName, ClientProxyMembershipID clientProxyId) throws CqException;
 
@@ -148,15 +145,12 @@ public interface CqService {
   /**
    * Server side method.
    *
-   * @param clientProxyId
-   * @throws CqException
    */
   void closeClientCqs(ClientProxyMembershipID clientProxyId) throws CqException;
 
   /**
    * Returns all the CQs registered by the client.
    *
-   * @param clientProxyId
    * @return CQs registered by the client.
    */
   List<ServerCQ> getAllClientCqs(ClientProxyMembershipID clientProxyId);
@@ -164,7 +158,6 @@ public interface CqService {
   /**
    * Returns all the durable client CQs registered by the client.
    *
-   * @param clientProxyId
    * @return CQs registered by the client.
    */
   List<String> getAllDurableClientCqs(ClientProxyMembershipID clientProxyId) throws CqException;
@@ -174,8 +167,6 @@ public interface CqService {
    *
    * @param cqs list of cqs with the cq operation from the Server.
    * @param messageType base operation
-   * @param key
-   * @param value
    */
   void dispatchCqListeners(HashMap<String, Integer> cqs, int messageType, Object key, Object value,
       byte[] delta, QueueManager qManager, EventID eventId);
@@ -205,9 +196,6 @@ public interface CqService {
   /**
    * Called directly on server side.
    *
-   * @param cqName
-   * @param clientId
-   * @throws CqException
    */
   void stopCq(String cqName, ClientProxyMembershipID clientId) throws CqException;
 
@@ -215,7 +203,6 @@ public interface CqService {
    * Called directly on the server side.
    *
    * @param cqState new state
-   * @param cQuery
    */
   void resumeCQ(int cqState, ServerCQ cQuery);
 
@@ -227,17 +214,11 @@ public interface CqService {
    * Executes the given CqQuery, if the CqQuery for that name is not there it registers the one and
    * executes. This is called on the Server.
    *
-   * @param cqName
-   * @param queryString
-   * @param cqState
-   * @param clientProxyId
-   * @param ccn
    * @param manageEmptyRegions whether to update the 6.1 emptyRegions map held in the CCN
    * @param regionDataPolicy the data policy of the region associated with the query. This is only
    *        needed if manageEmptyRegions is true.
    * @param emptyRegionsMap map of empty regions.
    * @throws IllegalStateException if this is called at client side.
-   * @throws CqException
    */
   ServerCQ executeCq(String cqName, String queryString, int cqState,
       ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
@@ -247,8 +228,6 @@ public interface CqService {
   /**
    * Server side method. Closes non-durable CQs for the given client proxy id.
    *
-   * @param clientProxyId
-   * @throws CqException
    */
   void closeNonDurableClientCqs(ClientProxyMembershipID clientProxyId) throws CqException;
 

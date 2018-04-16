@@ -173,7 +173,6 @@ public abstract class AbstractOp implements Op {
    * Also, such an operation's <code>MessageType</code> must be added in the 'if' condition in
    * {@link ServerConnection#updateAndGetSecurityPart()}
    *
-   * @return boolean
    * @see AbstractOp#sendMessage(Connection)
    * @see ServerConnection#updateAndGetSecurityPart()
    */

@@ -65,7 +65,6 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
   /**
    * Returns the CqListener set with the CQ
    *
-   * @return CqListener
    */
   public CqListener getCqListener() {
     ArrayList<CqListener> listeners = this.cqListeners;

@@ -140,7 +140,6 @@ public class QCompiler implements OQLLexerTokenTypes {
   /**
    * Yogesh: compiles order by clause and push into the stack
    *
-   * @param numOfChildren
    */
   public void compileOrederByClause(int numOfChildren) {
     List list = new ArrayList();
@@ -163,7 +162,6 @@ public class QCompiler implements OQLLexerTokenTypes {
   /**
    * Yogesh: compiles sort criteria present in order by clause and push into the stack
    *
-   * @param sortCriterion
    */
   public void compileSortCriteria(String sortCriterion) {
 

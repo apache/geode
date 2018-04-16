@@ -167,7 +167,6 @@ public interface AttributesMutator<K, V> {
   /**
    * Sets cloning on region Note: off-heap regions always behave as if cloning is enabled.
    *
-   * @param cloningEnable
    * @since GemFire 6.1
    */
   void setCloningEnabled(boolean cloningEnable);
@@ -185,28 +184,24 @@ public interface AttributesMutator<K, V> {
    * Adds GatewaySenderId to the list of GatewaySenderIds of the region. If the GatewaySenderId is
    * not present on this VM then it will try to send it to other VM's
    *
-   * @param gatewaySenderId
    */
   void addGatewaySenderId(String gatewaySenderId);
 
   /**
    * Removes GatewaySenderId from the list of GatewaySenderIds of the region.
    *
-   * @param gatewaySenderId
    */
   void removeGatewaySenderId(String gatewaySenderId);
 
   /**
    * Adds AsyncEventQueueId to the list of AsyncEventQueueId of the region.
    *
-   * @param asyncEventQueueId
    */
   void addAsyncEventQueueId(String asyncEventQueueId);
 
   /**
    * Removes AsyncEventQueueId from the list of AsyncEventQueuesId of the region.
    *
-   * @param asyncEventQueueId
    */
   void removeAsyncEventQueueId(String asyncEventQueueId);
 }

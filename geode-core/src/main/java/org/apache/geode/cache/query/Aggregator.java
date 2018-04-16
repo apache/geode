@@ -25,7 +25,6 @@ public interface Aggregator {
   /**
    * Accumulate the next scalar value
    *
-   * @param value
    */
   void accumulate(Object value);
 

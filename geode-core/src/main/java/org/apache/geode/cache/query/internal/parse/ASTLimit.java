@@ -18,9 +18,6 @@ import antlr.*;
 
 import org.apache.geode.cache.query.internal.QCompiler;
 
-/**
- *
- */
 public class ASTLimit extends GemFireAST {
 
   public ASTLimit() {}

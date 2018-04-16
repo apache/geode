@@ -558,10 +558,6 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
-  /**
-   *
-   *
-   */
   class LimitIterator implements Iterator {
     private final Iterator iter;
 

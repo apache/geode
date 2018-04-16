@@ -178,8 +178,6 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
     }
   }
 
-  /**
-   */
   void createIntHashMap() {
     this.map = new ObjectIntHashMap(this.size - this.numNulls);
   }

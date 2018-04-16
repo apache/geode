@@ -60,8 +60,6 @@ public class FunctionService {
    * with DataPolicy.PARTITION, it executes on members where the data resides as specified by the
    * filter.
    *
-   * @param region
-   * @return Execution
    * @throws FunctionException if the region passed in is null
    * @since GemFire 6.0
    */
@@ -77,7 +75,6 @@ public class FunctionService {
    * thrown.
    *
    * @param pool from which to chose a server for execution
-   * @return Execution
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
@@ -91,7 +88,6 @@ public class FunctionService {
    * or executing the function on the server, an Exception will be thrown.
    *
    * @param pool the set of servers to execute the function
-   * @return Execution
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
@@ -108,7 +104,6 @@ public class FunctionService {
    *
    * @param regionService obtained from {@link ClientCacheFactory#create} or
    *        {@link ClientCache#createAuthenticatedView(Properties)}.
-   * @return Execution
    * @throws FunctionException if cache is null, is not on a client, or it does not have a default
    *         pool
    * @since GemFire 6.5
@@ -124,7 +119,6 @@ public class FunctionService {
    *
    * @param regionService obtained from {@link ClientCacheFactory#create} or
    *        {@link ClientCache#createAuthenticatedView(Properties)}.
-   * @return Execution
    * @throws FunctionException if cache is null, is not on a client, or it does not have a default
    *         pool
    * @since GemFire 6.5
@@ -140,7 +134,6 @@ public class FunctionService {
    * an Exception will be thrown.
    *
    * @param distributedMember defines a member in the distributed system
-   * @return Execution
    * @throws FunctionException if distributedMember is null
    * @since GemFire 7.0
    *
@@ -160,7 +153,6 @@ public class FunctionService {
    * @param groups optional list of GemFire configuration property "groups" (see
    *        <a href="../../distributed/DistributedSystem.html#groups"> <code>groups</code></a>) on
    *        which to execute the function. Function will be executed on all members of each group
-   * @return Execution
    *
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
@@ -190,7 +182,6 @@ public class FunctionService {
    *        <a href="../../distributed/DistributedSystem.html#groups"> <code>groups</code></a>) on
    *        which to execute the function. Function will be executed on one member of each group
    *
-   * @return Execution
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
@@ -202,8 +193,6 @@ public class FunctionService {
    * Returns the {@link Function} defined by the functionId, returns null if no function is found
    * for the specified functionId
    *
-   * @param functionId
-   * @return Function
    * @throws FunctionException if functionID passed is null
    * @since GemFire 6.0
    */

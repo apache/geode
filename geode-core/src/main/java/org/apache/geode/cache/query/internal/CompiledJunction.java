@@ -444,12 +444,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
    * ultimately dependent on more than one independent iterators cannot be assumed to be part of the
    * GroupJunction, even if one of independent iterator belongs to a different scope.
    *
-   * @param context
    * @return New combination of AbstractCompiledValue(s) in form of CompiledJunction.
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   OrganizedOperands organizeOperands(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {

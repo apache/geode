@@ -63,7 +63,6 @@ public interface CqServiceStatistics {
    * Get number of CQs on the given region. Active CQs and stopped CQs on this region are included
    * and closed CQs are not included.
    *
-   * @param regionFullPath
    * @return long number of CQs on the region.
    */
   long numCqsOnRegion(String regionFullPath);

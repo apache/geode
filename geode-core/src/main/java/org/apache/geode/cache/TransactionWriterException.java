@@ -27,9 +27,6 @@ package org.apache.geode.cache;
  */
 public class TransactionWriterException extends Exception {
 
-  /**
-   *
-   */
   private static final long serialVersionUID = -5557392877576634835L;
 
   public TransactionWriterException(String s) {

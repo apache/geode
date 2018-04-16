@@ -35,7 +35,6 @@ public interface InternalCqQuery extends CqQuery {
    * care of repository cleanup.
    *
    * @param sendRequestToServer true to send the request to server.
-   * @throws CqException
    */
   void close(boolean sendRequestToServer) throws CqClosedException, CqException;
 

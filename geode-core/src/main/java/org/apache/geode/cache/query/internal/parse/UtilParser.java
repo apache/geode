@@ -26,9 +26,6 @@ import antlr.*;
 import antlr.collections.*;
 import antlr.debug.misc.ASTFrame;
 
-/**
- *
- */
 public class UtilParser extends LLkParser {
 
   public UtilParser(int k_) {

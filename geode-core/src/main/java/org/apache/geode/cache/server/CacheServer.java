@@ -431,7 +431,6 @@ public interface CacheServer {
    * Get the ClientSubscriptionConfig for this cache server. See {@link ClientSubscriptionConfig}
    * for details on the client subscription configuration.
    *
-   * @return ClientSubscriptionConfig
    * @since GemFire 5.7
    */
   ClientSubscriptionConfig getClientSubscriptionConfig();

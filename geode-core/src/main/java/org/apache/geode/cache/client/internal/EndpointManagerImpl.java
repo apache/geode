@@ -35,9 +35,6 @@ import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 
-/**
- *
- */
 public class EndpointManagerImpl implements EndpointManager {
   private static final Logger logger = LogService.getLogger();
 
