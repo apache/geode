@@ -1,0 +1,108 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+
+jobs:
+- name: (( grab metadata.job.name ))
+  serial: false
+  public: true
+  plan:
+    - aggregate:
+      - get: geode
+        trigger: true
+        version: every
+        params:
+          fetch_merge: true
+          git:
+            depth: 100
+      - get: docker-geode-build-image
+        params:
+          rootfs: true
+    # Unmerged pull request SHA, for writing status into GitHub
+    - get: geode-unmerged-request
+      resource: geode
+      version: every
+      params:
+        fetch_merge: false
+    - aggregate:
+      - put: geode
+        params:
+          path: geode-unmerged-request
+          context: $BUILD_JOB_NAME
+          status: pending
+
+      - task: runtests
+        image: docker-geode-build-image
+        tags: (( grab metadata.job.size ))
+        privileged: true
+        timeout: (( grab metadata.job.timeout ))
+        config:
+          inputs:
+            - name: geode
+            - name: docker-geode-build-image
+          platform: linux
+          outputs:
+            - name: built-geode
+          params:
+            MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+            SERVICE_ACCOUNT: ((!concourse-gcp-account))
+            PUBLIC_BUCKET: ((!public-bucket))
+            PARALLEL_DUNIT: (( grab metadata.job.dunit.parallel ))
+            DUNIT_PARALLEL_FORKS: (( grab metadata.job.dunit.forks ))
+            CALL_STACK_TIMEOUT: (( grab metadata.job.call_stack_timeout ))
+          run:
+            args:
+            - (( grab metadata.job.gradle_task ))
+            - (( grab metadata.job.artifact_slug ))
+            path: geode/ci/scripts/test-run.sh
+        on_failure:
+          aggregate:
+          - put: geode
+            params:
+              path: geode-unmerged-request
+              status: failure
+              context: $BUILD_JOB_NAME
+          - put: send-notification-email
+            params:
+              subject: built-geode/subject
+              body: built-geode/body
+        on_success:
+          aggregate:
+          - put: geode
+            params:
+              path: geode-unmerged-request
+              context: $BUILD_JOB_NAME
+              status: success
+
+        ensure:
+          aggregate:
+          - task: archive-results
+            image: docker-geode-build-image
+            config:
+              inputs:
+                - name: geode
+                - name: built-geode
+              platform: linux
+              params:
+                MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+                SERVICE_ACCOUNT: ((!concourse-gcp-account))
+                PUBLIC_BUCKET: ((!public-bucket))
+              run:
+                args:
+                - (( grab metadata.job.gradle_task ))
+                - (( grab metadata.job.artifact_slug ))
+                path: geode/ci/scripts/test-archive.sh

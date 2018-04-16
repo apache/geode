@@ -1,0 +1,277 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+
+resource_types:
+  - name: gcs-resource
+    type: docker-image
+    source:
+      repository: frodenas/gcs-resource
+  - name: email
+    type: docker-image
+    source:
+      repository: pcfseceng/email-resource
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: jtarchie/pr
+
+resources:
+- name: docker-geode-build-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-name))
+    tag: latest
+
+- name: geode
+  type: pull-request
+  source:
+    access_token: ((!github-pr-access-token))
+    repo: (( concat metadata.geode-fork "/geode" ))
+    base: develop
+    ignore_paths:
+    - geode-docs/*
+    - geode-book/*
+
+- name: send-notification-email
+  type: email
+  source:
+    smtp:
+      host: ((!source-email-server))
+      port: "587"
+      username: ((!source-email-username))
+      password: ((!source-email-password))
+    from: ((!source-email-address))
+    to: [ ((!notification-email-address)) ]
+
+groups:
+- name: main
+  jobs:
+  - Build
+  - DistributedTest
+  - AcceptanceTest
+  - IntegrationTest
+  - FlakyTest
+  - UITests
+
+jobs:
+- name: Build
+  serial: false
+  public: true
+  plan:
+  - aggregate:
+    - get: geode
+      trigger: true
+      version: every
+      params:
+        fetch_merge: true
+        git:
+          depth: 100
+    - get: docker-geode-build-image
+      params:
+        rootfs: true
+  # Unmerged pull request SHA, for writing status into GitHub
+  - get: geode-unmerged-request
+    resource: geode
+    version: every
+    params:
+      fetch_merge: false
+  - aggregate:
+    - put: geode
+      params:
+        path: geode-unmerged-request
+        context: $BUILD_JOB_NAME
+        status: pending
+
+    - task: build
+      image: docker-geode-build-image
+      config:
+        platform: linux
+        inputs:
+        - name: geode
+        outputs:
+        - name: built-geode
+        - name: results
+        params:
+          MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+        run:
+          path: geode/ci/scripts/build.sh
+      on_failure:
+        aggregate:
+          - put: geode
+            params:
+              path: geode-unmerged-request
+              status: failure
+              context: $BUILD_JOB_NAME
+          - put: send-notification-email
+            params:
+              subject: results/subject
+              body: results/body
+      on_success:
+        aggregate:
+        - put: geode
+          params:
+            path: geode-unmerged-request
+            status: success
+            context: $BUILD_JOB_NAME
+
+- name: DistributedTest
+  serial: false
+  public: true
+  plan:
+  - aggregate:
+    - get: geode
+      trigger: true
+      version: every
+      params:
+        fetch_merge: true
+        git:
+          depth: 100
+    - get: docker-geode-build-image
+      params:
+        rootfs: true
+  # Unmerged pull request SHA, for writing status into GitHub
+  - get: geode-unmerged-request
+    resource: geode
+    version: every
+    params:
+      fetch_merge: false
+
+  - aggregate:
+    - put: geode
+      params:
+        path: geode-unmerged-request
+        context: $BUILD_JOB_NAME
+        status: pending
+
+    - task: run-distributed-core
+      image: docker-geode-build-image
+      tags: [large]
+      privileged: true
+      timeout: 8h
+      config:
+        inputs:
+          - name: geode
+          - name: docker-geode-build-image
+        platform: linux
+        outputs:
+          - name: built-geode
+        params:
+          MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+          PARALLEL_DUNIT: true
+          DUNIT_PARALLEL_FORKS: 7
+          CALL_STACK_TIMEOUT: 25200
+        run:
+          args:
+          - geode-core:distributedTest
+          - distributedtestcore
+          path: geode/ci/scripts/test-run.sh
+      on_failure:
+        aggregate:
+        - put: send-notification-email
+          params:
+            subject: built-geode/subject
+            body: built-geode/body
+
+      ensure:
+        aggregate:
+        - task: archive-results-core
+          image: docker-geode-build-image
+          config:
+            inputs:
+              - name: geode
+              - name: built-geode
+            platform: linux
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+            run:
+              args:
+              - geode-core:distributedTest
+              - distributedtestcore
+              path: geode/ci/scripts/test-archive.sh
+    - task: run-distributed-everything-else
+      image: docker-geode-build-image
+      tags: [large]
+      privileged: true
+      timeout: 8h
+      config:
+        inputs:
+          - name: geode
+          - name: docker-geode-build-image
+        platform: linux
+        outputs:
+          - name: built-geode
+        params:
+          MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+          PARALLEL_DUNIT: true
+          DUNIT_PARALLEL_FORKS: 7
+          CALL_STACK_TIMEOUT: 25200
+          GRADLE_TASK_OPTIONS: -x geode-core:distributedTest
+        run:
+          args:
+          - distributedTest
+          - distributedtesteverythingelse
+          path: geode/ci/scripts/test-run.sh
+      on_failure:
+        aggregate:
+          - put: send-notification-email
+            params:
+              subject: built-geode/subject
+              body: built-geode/body
+      ensure:
+        aggregate:
+        - task: archive-results-everythingelse
+          image: docker-geode-build-image
+          config:
+            inputs:
+              - name: geode
+              - name: built-geode
+            platform: linux
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+            run:
+              args:
+              - disitributedTest
+              - distributedtesteverythingelse
+              path: geode/ci/scripts/test-archive.sh
+    on_failure:
+      aggregate:
+      - put: geode
+        params:
+          path: geode-unmerged-request
+          status: failure
+          context: $BUILD_JOB_NAME
+    on_success:
+      aggregate:
+      - put: geode
+        params:
+          path: geode-unmerged-request
+          context: $BUILD_JOB_NAME
+          status: success
