@@ -26,7 +26,6 @@ import org.apache.lucene.index.IndexableField;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.lucene.FlatFormatSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerTestHelper;
 import org.apache.geode.cache.lucene.test.Customer;
 import org.apache.geode.cache.lucene.test.Page;

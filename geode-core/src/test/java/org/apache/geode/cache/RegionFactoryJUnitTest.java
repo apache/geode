@@ -396,7 +396,6 @@ public class RegionFactoryJUnitTest {
   /**
    * Ensure that the RegionFactory set methods mirrors those found in RegionAttributes
    *
-   * @throws Exception
    */
   @Test
   public void testAttributesFactoryConformance() throws Exception {

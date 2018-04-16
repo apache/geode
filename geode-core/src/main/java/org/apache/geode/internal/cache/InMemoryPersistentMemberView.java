@@ -26,9 +26,6 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.persistence.PersistentMemberState;
 import org.apache.geode.internal.cache.persistence.PersistentMemberView;
 
-/**
- *
- */
 public class InMemoryPersistentMemberView implements PersistentMemberView {
   private Map<PersistentMemberID, PersistentMemberState> members =
       new ConcurrentHashMap<PersistentMemberID, PersistentMemberState>();

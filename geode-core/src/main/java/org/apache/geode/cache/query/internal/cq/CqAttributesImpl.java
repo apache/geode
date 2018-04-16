@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal.cq;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -66,7 +65,6 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
   /**
    * Returns the CqListener set with the CQ
    *
-   * @return CqListener
    */
   public CqListener getCqListener() {
     ArrayList<CqListener> listeners = this.cqListeners;

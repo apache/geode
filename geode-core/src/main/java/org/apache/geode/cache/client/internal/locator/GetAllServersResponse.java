@@ -18,16 +18,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.DataSerializableFixedID;
 
-/**
- *
- *
- */
 public class GetAllServersResponse extends ServerLocationResponse {
 
   private ArrayList servers;

@@ -16,12 +16,7 @@ package org.apache.geode.security.query;
 
 import static org.junit.Assert.fail;
 
-import java.io.Serializable;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
 
 import junitparams.Parameters;
 import org.junit.Before;
@@ -30,14 +25,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.security.query.data.QueryTestObject;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;

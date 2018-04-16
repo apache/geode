@@ -56,8 +56,6 @@ public class PutOp {
    * @param key the entry key to do the put on
    * @param value the entry value to put
    * @param event the event for this put
-   * @param requireOldValue
-   * @param expectedOldValue
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
   public static Object execute(ExecutablePool pool, LocalRegion region, Object key, Object value,

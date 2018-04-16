@@ -14,7 +14,6 @@
  */
 package org.apache.geode.pdx.internal;
 
-import java.nio.ByteBuffer;
 
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;

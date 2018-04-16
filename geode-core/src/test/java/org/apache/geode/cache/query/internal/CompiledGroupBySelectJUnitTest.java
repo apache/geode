@@ -33,10 +33,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-/**
- *
- *
- */
 @Category({IntegrationTest.class, OQLQueryTest.class})
 public class CompiledGroupBySelectJUnitTest {
   private Region rgn;

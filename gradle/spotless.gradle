@@ -29,6 +29,8 @@ subprojects {
       // Spotless will not run on unchanged files unless this number changes.
       bumpThisNumberIfACustomStepChanges(2)
 
+      removeUnusedImports()
+
       custom 'Remove commented-out import statements', {
         it.replaceAll(/\n\/\/ import .*?;.*/, '')
       }

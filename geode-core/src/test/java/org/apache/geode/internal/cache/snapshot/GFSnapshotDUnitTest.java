@@ -44,7 +44,6 @@ import org.apache.geode.cache.snapshot.SnapshotReader;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;

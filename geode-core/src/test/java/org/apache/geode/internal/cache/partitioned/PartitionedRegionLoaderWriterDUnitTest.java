@@ -33,13 +33,11 @@ import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
@@ -57,9 +55,6 @@ public class PartitionedRegionLoaderWriterDUnitTest extends JUnit4CacheTestCase 
 
   private static Cache cache;
 
-  /**
-   * @param name
-   */
   public PartitionedRegionLoaderWriterDUnitTest() {
     super();
   }

@@ -42,9 +42,6 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-/**
- *
- */
 @Category({IntegrationTest.class, OQLQueryTest.class})
 public class IndependentOperandsInWhereClause2JUnitTest {
 

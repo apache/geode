@@ -30,7 +30,6 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({DistributedTest.class, WanTest.class})
@@ -315,7 +314,6 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
    * required.
    *
    *
-   * @throws Exception
    */
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {

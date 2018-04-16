@@ -433,7 +433,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    * that as the result netSearch failed, so all we can do at this point is do a load return result
    * from load
    *
-   * @param preferCD
    */
   private void searchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue,
       boolean preferCD) throws CacheLoaderException, TimeoutException {

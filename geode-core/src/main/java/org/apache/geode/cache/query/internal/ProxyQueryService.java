@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.client.internal.UserAttributes;

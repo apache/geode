@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.cache.query.internal.index;
 
 import static org.junit.Assert.*;
@@ -183,9 +180,6 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
     ThreadUtils.join(asyncInv1, 30 * 1000);
   }
 
-  /**
-   *
-   */
   @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPR() {
     Host host = Host.getHost(0);
@@ -290,9 +284,6 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
     ThreadUtils.join(asyncInv1, 30 * 1000);
   }
 
-  /**
-  *
-  */
   @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPersistentRR() {
     Host host = Host.getHost(0);
@@ -394,9 +385,6 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
     ThreadUtils.join(asyncInv1, 30 * 1000);
   }
 
-  /**
-  *
-  */
   @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPersistentPR() {
     Host host = Host.getHost(0);
@@ -498,9 +486,6 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
     ThreadUtils.join(asyncInv1, 30 * 1000);
   }
 
-  /**
-  *
-  */
   @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnNonOverflowRR() {
     Host host = Host.getHost(0);
@@ -596,9 +581,6 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
     ThreadUtils.join(asyncInv1, 30 * 1000);
   }
 
-  /**
-  *
-  */
   @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnOnNonOverflowPR() {
     Host host = Host.getHost(0);

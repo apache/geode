@@ -172,7 +172,6 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create client 2 with 2 regions each with a unique writer and unique listeners
    *
-   * @throws Exception
    */
   public static void createClientCache(String host, Integer port, String conflation)
       throws Exception {
@@ -383,7 +382,6 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * create a server cache and start the server
    *
-   * @throws Exception
    */
   public static Integer createServerCache() throws Exception {
     Properties props = new Properties();

@@ -17,15 +17,11 @@ package org.apache.geode.cache.client.internal.locator;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.DataSerializableFixedID;
 
-/**
- *
- */
 public class LocatorListResponse extends ServerLocationResponse {
   /** ArrayList of ServerLocations for controllers */
   private List<ServerLocation> controllers;

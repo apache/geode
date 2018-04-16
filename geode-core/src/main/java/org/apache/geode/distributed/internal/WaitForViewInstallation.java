@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.distributed.internal;
 
 import java.io.DataInput;
@@ -26,9 +23,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- *
- */
 public class WaitForViewInstallation extends HighPriorityDistributionMessage
     implements MessageWithReply {
 

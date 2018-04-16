@@ -83,11 +83,11 @@ public class ClusterConfigurationLoader {
    */
   public void deployJarsReceivedFromClusterConfiguration(ConfigurationResponse response)
       throws IOException, ClassNotFoundException {
-    logger.info("deploying jars received from cluster configuration");
     if (response == null) {
       return;
     }
 
+    logger.info("deploying jars received from cluster configuration");
     List<String> jarFileNames =
         response.getJarNames().values().stream().flatMap(Set::stream).collect(Collectors.toList());
 
@@ -303,7 +303,7 @@ public class ClusterConfigurationLoader {
     return response;
   }
 
-  private ConfigurationResponse requestConfigurationFromOneLocator(
+  protected ConfigurationResponse requestConfigurationFromOneLocator(
       InternalDistributedMember locator, Set<String> groups) {
     ConfigurationResponse configResponse = null;
 

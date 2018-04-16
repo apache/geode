@@ -70,9 +70,8 @@ public class CacheWriterType {
   /**
    * Gets the value of the className property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getClassName() {
@@ -82,9 +81,8 @@ public class CacheWriterType {
   /**
    * Sets the value of the className property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setClassName(String value) {

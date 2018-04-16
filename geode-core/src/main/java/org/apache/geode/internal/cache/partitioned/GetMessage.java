@@ -376,7 +376,6 @@ public class GetMessage extends PartitionMessageWithDirectReply {
      * @param val the raw value that will eventually be serialized
      * @param replySender distribution manager used to send the reply
      * @param versionTag the version of the object
-     * @throws ForceReattemptException
      */
     public static void send(InternalDistributedMember recipient, int processorId, RawValue val,
         ReplySender replySender, VersionTag versionTag) throws ForceReattemptException {
@@ -526,7 +525,6 @@ public class GetMessage extends PartitionMessageWithDirectReply {
      * De-seralize the value, if the value isn't already a byte array, this method should be called
      * in the context of the requesting thread for the best scalability
      *
-     * @param preferCD
      * @see EntryEventImpl#deserialize(byte[])
      * @return the value object
      */
@@ -576,7 +574,6 @@ public class GetMessage extends PartitionMessageWithDirectReply {
 
 
     /**
-     * @param preferCD
      * @return Object associated with the key that was sent in the get message
      * @throws ForceReattemptException if the peer is no longer available
      */

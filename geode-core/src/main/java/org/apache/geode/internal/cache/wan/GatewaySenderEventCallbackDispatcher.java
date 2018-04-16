@@ -141,7 +141,6 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
    *
    * @param events The <code>List</code> of events to send
    *
-   * @throws GatewaySenderException
    */
   protected boolean dispatchBatch(List events) throws GatewaySenderException {
     if (events.isEmpty()) {

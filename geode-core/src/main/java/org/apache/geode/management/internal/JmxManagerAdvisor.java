@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -158,8 +157,6 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     /**
      * Constructor used to send
      *
-     * @param recips
-     * @param p
      */
     private JmxManagerProfileMessage(final Set<InternalDistributedMember> recips,
         final JmxManagerProfile p) {
@@ -234,7 +231,6 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
      * Send profile to the provided members
      *
      * @param recips The recipients of the message
-     * @throws ReplyException
      */
     public static void send(final DistributionManager dm, Set<InternalDistributedMember> recips,
         JmxManagerProfile profile) {

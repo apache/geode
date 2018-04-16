@@ -144,9 +144,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    * Fills in the state (that is, adds entries and creates subregions) of a given
    * <code>Region</code> based on the description provided by this <code>RegionCreation</code>.
    *
-   * @throws TimeoutException
-   * @throws CacheWriterException
-   * @throws RegionExistsException
    */
   private void fillIn(Region region)
       throws TimeoutException, CacheWriterException, RegionExistsException {
@@ -224,9 +221,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    * Creates a root {@link Region} in a given <code>Cache</code> based on the description provided
    * by this <code>RegionCreation</code>.
    *
-   * @throws TimeoutException
-   * @throws CacheWriterException
-   * @throws RegionExistsException
    */
   void createRoot(Cache cache)
       throws TimeoutException, CacheWriterException, RegionExistsException {
@@ -260,7 +254,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    * Called by CacheXmlParser to add the IndexCreationData object to the list. It is called when
    * functional element is encounetered
    *
-   * @param icd
    */
   void addIndexData(IndexCreationData icd) {
     this.indexes.add(icd);
@@ -270,10 +263,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    * Creates a {@link Region} with the given parent using the description provided by this
    * <code>RegionCreation</code>.
    *
-   * @throws TimeoutException
-   * @throws CacheWriterException
-   * @throws RegionExistsException
-   * @throws IllegalStateException
    */
   void create(Region parent) throws TimeoutException, CacheWriterException, RegionExistsException {
 

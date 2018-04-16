@@ -22,7 +22,6 @@ package org.apache.geode.cache.query.internal.index;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.internal.DataSerializableFixedID;

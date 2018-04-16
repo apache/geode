@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.persistence;
 
 import java.io.DataInput;
@@ -23,7 +20,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
 
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionSource;
 

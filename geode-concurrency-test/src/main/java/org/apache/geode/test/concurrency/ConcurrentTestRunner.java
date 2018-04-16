@@ -14,13 +14,10 @@
  */
 package org.apache.geode.test.concurrency;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.AssertionFailedError;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.simple.SimpleLoggerContextFactory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.Description;

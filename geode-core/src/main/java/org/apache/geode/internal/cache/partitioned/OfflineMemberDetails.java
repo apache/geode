@@ -23,9 +23,6 @@ import java.util.Set;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
-/**
- *
- */
 public interface OfflineMemberDetails extends DataSerializable {
 
   OfflineMemberDetails EMPTY_DETAILS = new OfflineMemberDetails() {

@@ -166,9 +166,7 @@ public class PartitionedRegionLoadModel {
    * least as many members as child regions; it may have more. If the parent has more members than
    * child regions those members will be considered invalid.
    *
-   * @param region
    * @param memberDetailSet A set of details about each member.
-   * @param offlineDetails
    */
   public void addRegion(String region,
       Collection<? extends InternalPartitionDetails> memberDetailSet,

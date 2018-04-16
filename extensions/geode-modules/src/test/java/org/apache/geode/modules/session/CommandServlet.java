@@ -26,9 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-/**
- *
- */
 public class CommandServlet extends HttpServlet {
 
   private ServletContext context;
@@ -36,9 +33,6 @@ public class CommandServlet extends HttpServlet {
   /**
    * The standard servlet method overridden.
    *
-   * @param request
-   * @param response
-   * @throws IOException
    */
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -87,7 +81,6 @@ public class CommandServlet extends HttpServlet {
   /**
    * Save a reference to the ServletContext for later use.
    *
-   * @param config
    */
   @Override
   public void init(ServletConfig config) {

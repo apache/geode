@@ -1107,7 +1107,6 @@ public class HARegionQueue implements RegionQueue {
    * with the cq stats Expiry can call this for now as durable client expires would shut down the cq
    * anyways if anything goes wrong
    *
-   * @param position
    */
   private void destroyFromQueue(Object key) {
     Object event = this.region.get(key);
@@ -1686,7 +1685,6 @@ public class HARegionQueue implements RegionQueue {
   /**
    * Used for testing purposes only
    *
-   * @return Set
    */
   Set getAvalaibleIds() {
     acquireReadLock();
@@ -2752,7 +2750,6 @@ public class HARegionQueue implements RegionQueue {
      * put operations are not blocked while the QRM thread is iterating over the map contained in
      * MapWrapper & the put operations will continue using the new internal Ma.
      *
-     * @return List
      */
     protected List createMessageList() {
       Map.Entry entry = null;

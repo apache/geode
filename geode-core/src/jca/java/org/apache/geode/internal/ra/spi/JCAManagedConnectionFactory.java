@@ -26,10 +26,6 @@ import javax.security.auth.Subject;
 
 import org.apache.geode.internal.ra.GFConnectionFactoryImpl;
 
-/**
- *
- *
- */
 public class JCAManagedConnectionFactory implements ManagedConnectionFactory {
   private String productName;
 

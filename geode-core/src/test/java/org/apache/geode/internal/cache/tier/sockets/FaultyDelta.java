@@ -17,8 +17,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;

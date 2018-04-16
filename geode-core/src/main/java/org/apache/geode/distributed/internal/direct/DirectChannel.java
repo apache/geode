@@ -90,7 +90,6 @@ public class DirectChannel {
   /**
    * Callback to set the local address, must be done before this channel is used.
    *
-   * @param localAddr
    * @throws ConnectionException if the conduit has stopped
    */
   public void setLocalAddr(InternalDistributedMember localAddr) {
@@ -108,7 +107,6 @@ public class DirectChannel {
    * when the initial number of members is known, this method is invoked to ensure that connections
    * to those members can be established in a reasonable amount of time. See bug 39848
    *
-   * @param numberOfMembers
    */
   public void setMembershipSize(int numberOfMembers) {
     conduit.setMaximumHandshakePoolSize(numberOfMembers);
@@ -245,7 +243,6 @@ public class DirectChannel {
    * @param mgr - the membership manager
    * @param p_destinations - the list of addresses to send the message to.
    * @param msg - the message to send
-   * @param ackWaitThreshold
    * @param ackSAThreshold the severe alert threshold
    * @return number of bytes sent
    * @throws ConnectExceptions if message could not be send to its <code>destination</code>
@@ -265,7 +262,6 @@ public class DirectChannel {
    * @param mgr - the membership manager
    * @param p_destinations - the list of addresses to send the message to.
    * @param msg - the message to send
-   * @param ackWaitThreshold
    * @param ackSAThreshold the severe alert threshold
    * @return number of bytes sent
    * @throws ConnectExceptions if message could not be send to its <code>destination</code>
@@ -584,7 +580,6 @@ public class DirectChannel {
    * @param mgr - the membership manager
    * @param destinations - the address(es) to send the message to.
    * @param msg - the message to send
-   * @param ackWaitThreshold
    * @param ackSAThreshold severe alert threshold
    * @return number of bytes sent
    * @throws ConnectExceptions if message could not be send to one or more of the
@@ -663,9 +658,6 @@ public class DirectChannel {
    *
    * @param ackTimeout ack wait threshold
    * @param ackSATimeout severe alert threshold
-   * @param c
-   * @param processor
-   * @throws ConnectionException
    */
   private void handleAckTimeout(long ackTimeout, long ackSATimeout, Connection c,
       DirectReplyProcessor processor) throws ConnectionException {

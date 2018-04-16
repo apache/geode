@@ -14,14 +14,15 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__FIELD_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING__REGION_NAME;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
@@ -30,11 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -69,9 +65,18 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
   @Test
   public void describesExistingMapping() {
-    server.invoke(this::createMapping);
-    CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_MAPPING)
-        .addOption(DESCRIBE_MAPPING__REGION_NAME, REGION_NAME);
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__TABLE_NAME, "testTable");
+    csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
+    csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(DESCRIBE_MAPPING__REGION_NAME,
+        REGION_NAME);
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
@@ -94,24 +99,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert
-        .containsOutput(String.format("Mapping for region '%s' not found", "nonExisting"));
+    commandResultAssert.statusIsError();
+    commandResultAssert.containsOutput(String.format("mapping for region 'nonExisting' not found"));
   }
-
-  private void createMapping() throws RegionMappingExistsException {
-    InternalCache cache = ClusterStartupRule.getCache();
-    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-
-    String[] fieldMappings = new String[] {"field1:column1", "field2:column2"};
-    RegionMapping regionMapping = new RegionMappingBuilder().withRegionName(REGION_NAME)
-        .withConnectionConfigName("connection").withTableName("testTable")
-        .withPdxClassName("myPdxClass").withPrimaryKeyInValue(true)
-        .withFieldToColumnMappings(fieldMappings).build();
-    service.createRegionMapping(regionMapping);
-
-    assertThat(service.getMappingForRegion(REGION_NAME)).isNotNull();
-  }
-
-
 }

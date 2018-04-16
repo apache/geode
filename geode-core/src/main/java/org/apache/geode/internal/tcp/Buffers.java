@@ -23,9 +23,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.Assert;
 
-/**
- *
- */
 public class Buffers {
   /**
    * A list of soft references to byte buffers.

@@ -394,7 +394,6 @@ public class InternalResourceManager implements ResourceManager {
    * particular region. This observer is called even the "rebalancing" is actually redundancy
    * recovery for a particular region.
    *
-   * @param observer
    */
   public static void setResourceObserver(ResourceObserver observer) {
     if (observer == null) {
@@ -418,28 +417,24 @@ public class InternalResourceManager implements ResourceManager {
     /**
      * Indicates that rebalancing has started on a given region.
      *
-     * @param region
      */
     void rebalancingStarted(Region region);
 
     /**
      * Indicates that rebalancing has finished on a given region.
      *
-     * @param region
      */
     void rebalancingFinished(Region region);
 
     /**
      * Indicates that recovery has started on a given region.
      *
-     * @param region
      */
     void recoveryStarted(Region region);
 
     /**
      * Indicates that recovery has finished on a given region.
      *
-     * @param region
      */
     void recoveryFinished(Region region);
 
@@ -448,7 +443,6 @@ public class InternalResourceManager implements ResourceManager {
      * will not be executed because there is already an existing recovery operation waiting to
      * happen on this region.
      *
-     * @param region
      */
     void recoveryConflated(PartitionedRegion region);
 

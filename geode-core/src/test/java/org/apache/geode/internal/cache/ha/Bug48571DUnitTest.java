@@ -25,7 +25,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 

@@ -427,9 +427,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the keyConstraint property.
    *
-   * @return
-   *         possible object is
-   *         {@link Object }
+   * possible object is
+   * {@link Object }
    *
    */
   public Object getKeyConstraint() {
@@ -439,9 +438,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the keyConstraint property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Object }
+   * allowed object is
+   * {@link Object }
    *
    */
   public void setKeyConstraint(Object value) {
@@ -451,9 +449,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the valueConstraint property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getValueConstraint() {
@@ -463,9 +460,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the valueConstraint property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setValueConstraint(String value) {
@@ -475,9 +471,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the regionTimeToLive property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesType.RegionTimeToLive }
+   * possible object is
+   * {@link RegionAttributesType.RegionTimeToLive }
    *
    */
   public RegionAttributesType.RegionTimeToLive getRegionTimeToLive() {
@@ -487,9 +482,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the regionTimeToLive property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesType.RegionTimeToLive }
+   * allowed object is
+   * {@link RegionAttributesType.RegionTimeToLive }
    *
    */
   public void setRegionTimeToLive(RegionAttributesType.RegionTimeToLive value) {
@@ -499,9 +493,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the regionIdleTime property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesType.RegionIdleTime }
+   * possible object is
+   * {@link RegionAttributesType.RegionIdleTime }
    *
    */
   public RegionAttributesType.RegionIdleTime getRegionIdleTime() {
@@ -511,9 +504,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the regionIdleTime property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesType.RegionIdleTime }
+   * allowed object is
+   * {@link RegionAttributesType.RegionIdleTime }
    *
    */
   public void setRegionIdleTime(RegionAttributesType.RegionIdleTime value) {
@@ -523,9 +515,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the entryTimeToLive property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesType.EntryTimeToLive }
+   * possible object is
+   * {@link RegionAttributesType.EntryTimeToLive }
    *
    */
   public RegionAttributesType.EntryTimeToLive getEntryTimeToLive() {
@@ -535,9 +526,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the entryTimeToLive property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesType.EntryTimeToLive }
+   * allowed object is
+   * {@link RegionAttributesType.EntryTimeToLive }
    *
    */
   public void setEntryTimeToLive(RegionAttributesType.EntryTimeToLive value) {
@@ -547,9 +537,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the entryIdleTime property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesType.EntryIdleTime }
+   * possible object is
+   * {@link RegionAttributesType.EntryIdleTime }
    *
    */
   public RegionAttributesType.EntryIdleTime getEntryIdleTime() {
@@ -559,9 +548,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the entryIdleTime property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesType.EntryIdleTime }
+   * allowed object is
+   * {@link RegionAttributesType.EntryIdleTime }
    *
    */
   public void setEntryIdleTime(RegionAttributesType.EntryIdleTime value) {
@@ -571,9 +559,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the diskWriteAttributes property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesType.DiskWriteAttributes }
+   * possible object is
+   * {@link RegionAttributesType.DiskWriteAttributes }
    *
    */
   public RegionAttributesType.DiskWriteAttributes getDiskWriteAttributes() {
@@ -583,9 +570,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the diskWriteAttributes property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesType.DiskWriteAttributes }
+   * allowed object is
+   * {@link RegionAttributesType.DiskWriteAttributes }
    *
    */
   public void setDiskWriteAttributes(RegionAttributesType.DiskWriteAttributes value) {
@@ -595,9 +581,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the diskDirs property.
    *
-   * @return
-   *         possible object is
-   *         {@link DiskDirsType }
+   * possible object is
+   * {@link DiskDirsType }
    *
    */
   public DiskDirsType getDiskDirs() {
@@ -607,9 +592,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the diskDirs property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link DiskDirsType }
+   * allowed object is
+   * {@link DiskDirsType }
    *
    */
   public void setDiskDirs(DiskDirsType value) {
@@ -619,9 +603,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the partitionAttributes property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesType.PartitionAttributes }
+   * possible object is
+   * {@link RegionAttributesType.PartitionAttributes }
    *
    */
   public RegionAttributesType.PartitionAttributes getPartitionAttributes() {
@@ -631,9 +614,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the partitionAttributes property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesType.PartitionAttributes }
+   * allowed object is
+   * {@link RegionAttributesType.PartitionAttributes }
    *
    */
   public void setPartitionAttributes(RegionAttributesType.PartitionAttributes value) {
@@ -643,9 +625,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the membershipAttributes property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesType.MembershipAttributes }
+   * possible object is
+   * {@link RegionAttributesType.MembershipAttributes }
    *
    */
   public RegionAttributesType.MembershipAttributes getMembershipAttributes() {
@@ -655,9 +636,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the membershipAttributes property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesType.MembershipAttributes }
+   * allowed object is
+   * {@link RegionAttributesType.MembershipAttributes }
    *
    */
   public void setMembershipAttributes(RegionAttributesType.MembershipAttributes value) {
@@ -667,9 +647,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the subscriptionAttributes property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesType.SubscriptionAttributes }
+   * possible object is
+   * {@link RegionAttributesType.SubscriptionAttributes }
    *
    */
   public RegionAttributesType.SubscriptionAttributes getSubscriptionAttributes() {
@@ -679,9 +658,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the subscriptionAttributes property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesType.SubscriptionAttributes }
+   * allowed object is
+   * {@link RegionAttributesType.SubscriptionAttributes }
    *
    */
   public void setSubscriptionAttributes(RegionAttributesType.SubscriptionAttributes value) {
@@ -691,9 +669,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the cacheLoader property.
    *
-   * @return
-   *         possible object is
-   *         {@link CacheLoaderType }
+   * possible object is
+   * {@link CacheLoaderType }
    *
    */
   public CacheLoaderType getCacheLoader() {
@@ -703,9 +680,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the cacheLoader property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link CacheLoaderType }
+   * allowed object is
+   * {@link CacheLoaderType }
    *
    */
   public void setCacheLoader(CacheLoaderType value) {
@@ -715,9 +691,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the cacheWriter property.
    *
-   * @return
-   *         possible object is
-   *         {@link CacheWriterType }
+   * possible object is
+   * {@link CacheWriterType }
    *
    */
   public CacheWriterType getCacheWriter() {
@@ -727,9 +702,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the cacheWriter property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link CacheWriterType }
+   * allowed object is
+   * {@link CacheWriterType }
    *
    */
   public void setCacheWriter(CacheWriterType value) {
@@ -769,9 +743,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the compressor property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesType.Compressor }
+   * possible object is
+   * {@link RegionAttributesType.Compressor }
    *
    */
   public RegionAttributesType.Compressor getCompressor() {
@@ -781,9 +754,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the compressor property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesType.Compressor }
+   * allowed object is
+   * {@link RegionAttributesType.Compressor }
    *
    */
   public void setCompressor(RegionAttributesType.Compressor value) {
@@ -793,9 +765,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the evictionAttributes property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesType.EvictionAttributes }
+   * possible object is
+   * {@link RegionAttributesType.EvictionAttributes }
    *
    */
   public RegionAttributesType.EvictionAttributes getEvictionAttributes() {
@@ -805,9 +776,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the evictionAttributes property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesType.EvictionAttributes }
+   * allowed object is
+   * {@link RegionAttributesType.EvictionAttributes }
    *
    */
   public void setEvictionAttributes(RegionAttributesType.EvictionAttributes value) {
@@ -817,9 +787,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the concurrencyLevel property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getConcurrencyLevel() {
@@ -829,9 +798,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the concurrencyLevel property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setConcurrencyLevel(String value) {
@@ -841,9 +809,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the dataPolicy property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesDataPolicy }
+   * possible object is
+   * {@link RegionAttributesDataPolicy }
    *
    */
   public RegionAttributesDataPolicy getDataPolicy() {
@@ -853,9 +820,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the dataPolicy property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesDataPolicy }
+   * allowed object is
+   * {@link RegionAttributesDataPolicy }
    *
    */
   public void setDataPolicy(RegionAttributesDataPolicy value) {
@@ -865,9 +831,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the earlyAck property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isEarlyAck() {
@@ -877,9 +842,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the earlyAck property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setEarlyAck(Boolean value) {
@@ -889,9 +853,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the enableAsyncConflation property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isEnableAsyncConflation() {
@@ -901,9 +864,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the enableAsyncConflation property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setEnableAsyncConflation(Boolean value) {
@@ -913,9 +875,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the enableGateway property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isEnableGateway() {
@@ -925,9 +886,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the enableGateway property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setEnableGateway(Boolean value) {
@@ -937,9 +897,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the enableSubscriptionConflation property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isEnableSubscriptionConflation() {
@@ -949,9 +908,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the enableSubscriptionConflation property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setEnableSubscriptionConflation(Boolean value) {
@@ -961,9 +919,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the gatewaySenderIds property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getGatewaySenderIds() {
@@ -973,9 +930,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the gatewaySenderIds property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setGatewaySenderIds(String value) {
@@ -985,9 +941,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the asyncEventQueueIds property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getAsyncEventQueueIds() {
@@ -997,9 +952,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the asyncEventQueueIds property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setAsyncEventQueueIds(String value) {
@@ -1009,9 +963,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the hubId property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getHubId() {
@@ -1021,9 +974,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the hubId property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setHubId(String value) {
@@ -1033,9 +985,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the id property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getId() {
@@ -1045,9 +996,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the id property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setId(String value) {
@@ -1057,9 +1007,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the ignoreJta property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isIgnoreJta() {
@@ -1069,9 +1018,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the ignoreJta property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setIgnoreJta(Boolean value) {
@@ -1081,9 +1029,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the indexUpdateType property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesIndexUpdateType }
+   * possible object is
+   * {@link RegionAttributesIndexUpdateType }
    *
    */
   public RegionAttributesIndexUpdateType getIndexUpdateType() {
@@ -1093,9 +1040,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the indexUpdateType property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesIndexUpdateType }
+   * allowed object is
+   * {@link RegionAttributesIndexUpdateType }
    *
    */
   public void setIndexUpdateType(RegionAttributesIndexUpdateType value) {
@@ -1105,9 +1051,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the initialCapacity property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getInitialCapacity() {
@@ -1117,9 +1062,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the initialCapacity property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setInitialCapacity(String value) {
@@ -1129,9 +1073,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the isLockGrantor property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isIsLockGrantor() {
@@ -1141,9 +1084,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the isLockGrantor property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setIsLockGrantor(Boolean value) {
@@ -1153,9 +1095,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the loadFactor property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getLoadFactor() {
@@ -1165,9 +1106,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the loadFactor property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setLoadFactor(String value) {
@@ -1177,9 +1117,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the mirrorType property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesMirrorType }
+   * possible object is
+   * {@link RegionAttributesMirrorType }
    *
    */
   public RegionAttributesMirrorType getMirrorType() {
@@ -1189,9 +1128,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the mirrorType property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesMirrorType }
+   * allowed object is
+   * {@link RegionAttributesMirrorType }
    *
    */
   public void setMirrorType(RegionAttributesMirrorType value) {
@@ -1201,9 +1139,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the multicastEnabled property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isMulticastEnabled() {
@@ -1213,9 +1150,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the multicastEnabled property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setMulticastEnabled(Boolean value) {
@@ -1225,9 +1161,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the persistBackup property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isPersistBackup() {
@@ -1237,9 +1172,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the persistBackup property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setPersistBackup(Boolean value) {
@@ -1249,9 +1183,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the poolName property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getPoolName() {
@@ -1261,9 +1194,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the poolName property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setPoolName(String value) {
@@ -1273,9 +1205,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the diskStoreName property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getDiskStoreName() {
@@ -1285,9 +1216,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the diskStoreName property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setDiskStoreName(String value) {
@@ -1297,9 +1227,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the diskSynchronous property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isDiskSynchronous() {
@@ -1309,9 +1238,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the diskSynchronous property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setDiskSynchronous(Boolean value) {
@@ -1321,9 +1249,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the publisher property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isPublisher() {
@@ -1333,9 +1260,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the publisher property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setPublisher(Boolean value) {
@@ -1345,9 +1271,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the refid property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getRefid() {
@@ -1357,9 +1282,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the refid property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setRefid(String value) {
@@ -1369,9 +1293,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the scope property.
    *
-   * @return
-   *         possible object is
-   *         {@link RegionAttributesScope }
+   * possible object is
+   * {@link RegionAttributesScope }
    *
    */
   public RegionAttributesScope getScope() {
@@ -1381,9 +1304,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the scope property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link RegionAttributesScope }
+   * allowed object is
+   * {@link RegionAttributesScope }
    *
    */
   public void setScope(RegionAttributesScope value) {
@@ -1393,9 +1315,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the statisticsEnabled property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isStatisticsEnabled() {
@@ -1405,9 +1326,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the statisticsEnabled property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setStatisticsEnabled(Boolean value) {
@@ -1417,9 +1337,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the cloningEnabled property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isCloningEnabled() {
@@ -1429,9 +1348,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the cloningEnabled property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setCloningEnabled(Boolean value) {
@@ -1441,9 +1359,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the concurrencyChecksEnabled property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public boolean isConcurrencyChecksEnabled() {
@@ -1457,9 +1374,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the concurrencyChecksEnabled property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setConcurrencyChecksEnabled(Boolean value) {
@@ -1469,9 +1385,8 @@ public class RegionAttributesType {
   /**
    * Gets the value of the offHeap property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isOffHeap() {
@@ -1481,9 +1396,8 @@ public class RegionAttributesType {
   /**
    * Sets the value of the offHeap property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setOffHeap(Boolean value) {
@@ -1526,9 +1440,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the className property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getClassName() {
@@ -1538,9 +1451,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the className property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setClassName(String value) {
@@ -1612,9 +1524,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the className property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getClassName() {
@@ -1624,9 +1535,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the className property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setClassName(String value) {
@@ -1685,9 +1595,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the asynchronousWrites property.
      *
-     * @return
-     *         possible object is
-     *         {@link RegionAttributesType.DiskWriteAttributes.AsynchronousWrites }
+     * possible object is
+     * {@link RegionAttributesType.DiskWriteAttributes.AsynchronousWrites }
      *
      */
     public RegionAttributesType.DiskWriteAttributes.AsynchronousWrites getAsynchronousWrites() {
@@ -1697,9 +1606,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the asynchronousWrites property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link RegionAttributesType.DiskWriteAttributes.AsynchronousWrites }
+     * allowed object is
+     * {@link RegionAttributesType.DiskWriteAttributes.AsynchronousWrites }
      *
      */
     public void setAsynchronousWrites(
@@ -1710,9 +1618,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the synchronousWrites property.
      *
-     * @return
-     *         possible object is
-     *         {@link Object }
+     * possible object is
+     * {@link Object }
      *
      */
     public Object getSynchronousWrites() {
@@ -1722,9 +1629,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the synchronousWrites property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link Object }
+     * allowed object is
+     * {@link Object }
      *
      */
     public void setSynchronousWrites(Object value) {
@@ -1734,9 +1640,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the maxOplogSize property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getMaxOplogSize() {
@@ -1746,9 +1651,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the maxOplogSize property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setMaxOplogSize(String value) {
@@ -1758,9 +1662,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the rollOplogs property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getRollOplogs() {
@@ -1770,9 +1673,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the rollOplogs property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setRollOplogs(String value) {
@@ -1812,9 +1714,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the bytesThreshold property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getBytesThreshold() {
@@ -1824,9 +1725,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the bytesThreshold property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setBytesThreshold(String value) {
@@ -1836,9 +1736,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the timeInterval property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getTimeInterval() {
@@ -1848,9 +1747,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the timeInterval property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setTimeInterval(String value) {
@@ -1894,9 +1792,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the expirationAttributes property.
      *
-     * @return
-     *         possible object is
-     *         {@link ExpirationAttributesType }
+     * possible object is
+     * {@link ExpirationAttributesType }
      *
      */
     public ExpirationAttributesType getExpirationAttributes() {
@@ -1906,9 +1803,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the expirationAttributes property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link ExpirationAttributesType }
+     * allowed object is
+     * {@link ExpirationAttributesType }
      *
      */
     public void setExpirationAttributes(ExpirationAttributesType value) {
@@ -1950,9 +1846,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the expirationAttributes property.
      *
-     * @return
-     *         possible object is
-     *         {@link ExpirationAttributesType }
+     * possible object is
+     * {@link ExpirationAttributesType }
      *
      */
     public ExpirationAttributesType getExpirationAttributes() {
@@ -1962,9 +1857,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the expirationAttributes property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link ExpirationAttributesType }
+     * allowed object is
+     * {@link ExpirationAttributesType }
      *
      */
     public void setExpirationAttributes(ExpirationAttributesType value) {
@@ -2045,9 +1939,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the lruEntryCount property.
      *
-     * @return
-     *         possible object is
-     *         {@link RegionAttributesType.EvictionAttributes.LruEntryCount }
+     * possible object is
+     * {@link RegionAttributesType.EvictionAttributes.LruEntryCount }
      *
      */
     public RegionAttributesType.EvictionAttributes.LruEntryCount getLruEntryCount() {
@@ -2057,9 +1950,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the lruEntryCount property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link RegionAttributesType.EvictionAttributes.LruEntryCount }
+     * allowed object is
+     * {@link RegionAttributesType.EvictionAttributes.LruEntryCount }
      *
      */
     public void setLruEntryCount(RegionAttributesType.EvictionAttributes.LruEntryCount value) {
@@ -2069,9 +1961,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the lruHeapPercentage property.
      *
-     * @return
-     *         possible object is
-     *         {@link RegionAttributesType.EvictionAttributes.LruHeapPercentage }
+     * possible object is
+     * {@link RegionAttributesType.EvictionAttributes.LruHeapPercentage }
      *
      */
     public RegionAttributesType.EvictionAttributes.LruHeapPercentage getLruHeapPercentage() {
@@ -2081,9 +1972,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the lruHeapPercentage property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link RegionAttributesType.EvictionAttributes.LruHeapPercentage }
+     * allowed object is
+     * {@link RegionAttributesType.EvictionAttributes.LruHeapPercentage }
      *
      */
     public void setLruHeapPercentage(
@@ -2094,9 +1984,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the lruMemorySize property.
      *
-     * @return
-     *         possible object is
-     *         {@link RegionAttributesType.EvictionAttributes.LruMemorySize }
+     * possible object is
+     * {@link RegionAttributesType.EvictionAttributes.LruMemorySize }
      *
      */
     public RegionAttributesType.EvictionAttributes.LruMemorySize getLruMemorySize() {
@@ -2106,9 +1995,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the lruMemorySize property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link RegionAttributesType.EvictionAttributes.LruMemorySize }
+     * allowed object is
+     * {@link RegionAttributesType.EvictionAttributes.LruMemorySize }
      *
      */
     public void setLruMemorySize(RegionAttributesType.EvictionAttributes.LruMemorySize value) {
@@ -2148,9 +2036,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the action property.
        *
-       * @return
-       *         possible object is
-       *         {@link EnumActionDestroyOverflow }
+       * possible object is
+       * {@link EnumActionDestroyOverflow }
        *
        */
       public EnumActionDestroyOverflow getAction() {
@@ -2160,9 +2047,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the action property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link EnumActionDestroyOverflow }
+       * allowed object is
+       * {@link EnumActionDestroyOverflow }
        *
        */
       public void setAction(EnumActionDestroyOverflow value) {
@@ -2172,9 +2058,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the maximum property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getMaximum() {
@@ -2184,9 +2069,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the maximum property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setMaximum(String value) {
@@ -2233,9 +2117,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the className property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getClassName() {
@@ -2245,9 +2128,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the className property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setClassName(String value) {
@@ -2287,9 +2169,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the action property.
        *
-       * @return
-       *         possible object is
-       *         {@link EnumActionDestroyOverflow }
+       * possible object is
+       * {@link EnumActionDestroyOverflow }
        *
        */
       public EnumActionDestroyOverflow getAction() {
@@ -2299,9 +2180,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the action property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link EnumActionDestroyOverflow }
+       * allowed object is
+       * {@link EnumActionDestroyOverflow }
        *
        */
       public void setAction(EnumActionDestroyOverflow value) {
@@ -2351,9 +2231,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the className property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getClassName() {
@@ -2363,9 +2242,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the className property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setClassName(String value) {
@@ -2405,9 +2283,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the action property.
        *
-       * @return
-       *         possible object is
-       *         {@link EnumActionDestroyOverflow }
+       * possible object is
+       * {@link EnumActionDestroyOverflow }
        *
        */
       public EnumActionDestroyOverflow getAction() {
@@ -2417,9 +2294,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the action property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link EnumActionDestroyOverflow }
+       * allowed object is
+       * {@link EnumActionDestroyOverflow }
        *
        */
       public void setAction(EnumActionDestroyOverflow value) {
@@ -2429,9 +2305,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the maximum property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getMaximum() {
@@ -2441,9 +2316,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the maximum property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setMaximum(String value) {
@@ -2546,9 +2420,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the lossAction property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getLossAction() {
@@ -2558,9 +2431,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the lossAction property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setLossAction(String value) {
@@ -2570,9 +2442,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the resumptionAction property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getResumptionAction() {
@@ -2582,9 +2453,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the resumptionAction property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setResumptionAction(String value) {
@@ -2621,9 +2491,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the name property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getName() {
@@ -2633,9 +2502,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the name property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setName(String value) {
@@ -2740,9 +2608,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the partitionResolver property.
      *
-     * @return
-     *         possible object is
-     *         {@link RegionAttributesType.PartitionAttributes.PartitionResolver }
+     * possible object is
+     * {@link RegionAttributesType.PartitionAttributes.PartitionResolver }
      *
      */
     public RegionAttributesType.PartitionAttributes.PartitionResolver getPartitionResolver() {
@@ -2752,9 +2619,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the partitionResolver property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link RegionAttributesType.PartitionAttributes.PartitionResolver }
+     * allowed object is
+     * {@link RegionAttributesType.PartitionAttributes.PartitionResolver }
      *
      */
     public void setPartitionResolver(
@@ -2827,9 +2693,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the localMaxMemory property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getLocalMaxMemory() {
@@ -2839,9 +2704,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the localMaxMemory property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setLocalMaxMemory(String value) {
@@ -2851,9 +2715,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the recoveryDelay property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getRecoveryDelay() {
@@ -2863,9 +2726,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the recoveryDelay property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setRecoveryDelay(String value) {
@@ -2875,9 +2737,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the redundantCopies property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getRedundantCopies() {
@@ -2887,9 +2748,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the redundantCopies property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setRedundantCopies(String value) {
@@ -2899,9 +2759,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the startupRecoveryDelay property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getStartupRecoveryDelay() {
@@ -2911,9 +2770,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the startupRecoveryDelay property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setStartupRecoveryDelay(String value) {
@@ -2923,9 +2781,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the totalMaxMemory property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getTotalMaxMemory() {
@@ -2935,9 +2792,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the totalMaxMemory property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setTotalMaxMemory(String value) {
@@ -2947,9 +2803,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the totalNumBuckets property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getTotalNumBuckets() {
@@ -2959,9 +2814,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the totalNumBuckets property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setTotalNumBuckets(String value) {
@@ -2971,9 +2825,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the colocatedWith property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getColocatedWith() {
@@ -2983,9 +2836,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the colocatedWith property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setColocatedWith(String value) {
@@ -3028,9 +2880,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the partitionName property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getPartitionName() {
@@ -3040,9 +2891,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the partitionName property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setPartitionName(String value) {
@@ -3052,9 +2902,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the isPrimary property.
        *
-       * @return
-       *         possible object is
-       *         {@link Boolean }
+       * possible object is
+       * {@link Boolean }
        *
        */
       public Boolean isIsPrimary() {
@@ -3064,9 +2913,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the isPrimary property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link Boolean }
+       * allowed object is
+       * {@link Boolean }
        *
        */
       public void setIsPrimary(Boolean value) {
@@ -3076,9 +2924,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the numBuckets property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getNumBuckets() {
@@ -3088,9 +2935,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the numBuckets property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setNumBuckets(String value) {
@@ -3135,9 +2981,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the className property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getClassName() {
@@ -3147,9 +2992,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the className property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setClassName(String value) {
@@ -3227,9 +3071,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the className property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getClassName() {
@@ -3239,9 +3082,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the className property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setClassName(String value) {
@@ -3281,9 +3123,8 @@ public class RegionAttributesType {
       /**
        * Gets the value of the name property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getName() {
@@ -3293,9 +3134,8 @@ public class RegionAttributesType {
       /**
        * Sets the value of the name property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setName(String value) {
@@ -3339,9 +3179,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the expirationAttributes property.
      *
-     * @return
-     *         possible object is
-     *         {@link ExpirationAttributesType }
+     * possible object is
+     * {@link ExpirationAttributesType }
      *
      */
     public ExpirationAttributesType getExpirationAttributes() {
@@ -3351,9 +3190,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the expirationAttributes property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link ExpirationAttributesType }
+     * allowed object is
+     * {@link ExpirationAttributesType }
      *
      */
     public void setExpirationAttributes(ExpirationAttributesType value) {
@@ -3395,9 +3233,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the expirationAttributes property.
      *
-     * @return
-     *         possible object is
-     *         {@link ExpirationAttributesType }
+     * possible object is
+     * {@link ExpirationAttributesType }
      *
      */
     public ExpirationAttributesType getExpirationAttributes() {
@@ -3407,9 +3244,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the expirationAttributes property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link ExpirationAttributesType }
+     * allowed object is
+     * {@link ExpirationAttributesType }
      *
      */
     public void setExpirationAttributes(ExpirationAttributesType value) {
@@ -3455,9 +3291,8 @@ public class RegionAttributesType {
     /**
      * Gets the value of the interestPolicy property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getInterestPolicy() {
@@ -3467,9 +3302,8 @@ public class RegionAttributesType {
     /**
      * Sets the value of the interestPolicy property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setInterestPolicy(String value) {

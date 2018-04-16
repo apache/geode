@@ -204,7 +204,6 @@ public abstract class BaseServiceTest {
   /**
    * Print exception string to system.out
    *
-   * @param failed
    */
   protected static void logException(Exception failed) {
     StringWriter sw = new StringWriter();

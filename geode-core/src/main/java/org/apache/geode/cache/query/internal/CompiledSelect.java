@@ -50,7 +50,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
-import org.apache.geode.security.NotAuthorizedException;
 
 public class CompiledSelect extends AbstractCompiledValue {
 
@@ -1466,17 +1465,11 @@ public class CompiledSelect extends AbstractCompiledValue {
    *
    * It assumes the limit is either a CompiledBindArgument or a CompiledLiteral
    *
-   * @param bindArguments
    *
-   * @return
    *
-   * @throws FunctionDomainException
    *
-   * @throws TypeMismatchException
    *
-   * @throws NameResolutionException
    *
-   * @throws QueryInvocationTargetException
    */
   private Integer evaluateLimitValue(Object[] bindArguments) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {

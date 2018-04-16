@@ -76,7 +76,6 @@ public class PRQueryRegionDestroyedJUnitTest {
    * 4. Create another Thread and call Region#destroyRegion() on the PR region.<br>
    *
    *
-   * @throws Exception
    */
   @Test
   public void testQueryOnSingleDataStore() throws Exception {
@@ -223,8 +222,6 @@ public class PRQueryRegionDestroyedJUnitTest {
   /**
    * Populates the region with the Objects stores in the data Object array.
    *
-   * @param region
-   * @param data
    */
   private void populateData(Region region, Object[] data) {
     logger.info("PRQueryRegionDestroyedJUnitTest#populateData: Populating Data in the PR Region ");

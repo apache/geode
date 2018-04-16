@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
@@ -31,12 +32,12 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 
 class SqlToPdxInstanceCreator {
   private final InternalCache cache;
-  private final RegionMapping regionMapping;
+  private final ConnectorService.RegionMapping regionMapping;
   private final ResultSet resultSet;
   private final TableMetaDataView tableMetaData;
   private final PdxInstanceFactory factory;
 
-  public SqlToPdxInstanceCreator(InternalCache cache, RegionMapping regionMapping,
+  public SqlToPdxInstanceCreator(InternalCache cache, ConnectorService.RegionMapping regionMapping,
       ResultSet resultSet, TableMetaDataView tableMetaData) {
     this.cache = cache;
     this.regionMapping = regionMapping;
@@ -216,8 +217,7 @@ class SqlToPdxInstanceCreator {
   }
 
   /**
-   * If the given column contains a Blob returns its data as a byte array;
-   * otherwise return null.
+   * If the given column contains a Blob returns its data as a byte array; otherwise return null.
    *
    * @throws JdbcConnectorException if blob is too big to fit in a byte array
    */

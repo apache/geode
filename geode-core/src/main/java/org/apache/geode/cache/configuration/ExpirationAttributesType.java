@@ -93,9 +93,8 @@ public class ExpirationAttributesType {
   /**
    * Gets the value of the customExpiry property.
    *
-   * @return
-   *         possible object is
-   *         {@link ExpirationAttributesType.CustomExpiry }
+   * possible object is
+   * {@link ExpirationAttributesType.CustomExpiry }
    *
    */
   public ExpirationAttributesType.CustomExpiry getCustomExpiry() {
@@ -105,9 +104,8 @@ public class ExpirationAttributesType {
   /**
    * Sets the value of the customExpiry property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link ExpirationAttributesType.CustomExpiry }
+   * allowed object is
+   * {@link ExpirationAttributesType.CustomExpiry }
    *
    */
   public void setCustomExpiry(ExpirationAttributesType.CustomExpiry value) {
@@ -117,9 +115,8 @@ public class ExpirationAttributesType {
   /**
    * Gets the value of the action property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getAction() {
@@ -129,9 +126,8 @@ public class ExpirationAttributesType {
   /**
    * Sets the value of the action property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setAction(String value) {
@@ -141,9 +137,8 @@ public class ExpirationAttributesType {
   /**
    * Gets the value of the timeout property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getTimeout() {
@@ -153,9 +148,8 @@ public class ExpirationAttributesType {
   /**
    * Sets the value of the timeout property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setTimeout(String value) {
@@ -198,9 +192,8 @@ public class ExpirationAttributesType {
     /**
      * Gets the value of the className property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getClassName() {
@@ -210,9 +203,8 @@ public class ExpirationAttributesType {
     /**
      * Sets the value of the className property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setClassName(String value) {

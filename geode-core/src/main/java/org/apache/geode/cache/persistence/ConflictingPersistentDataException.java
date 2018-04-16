@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.persistence;
 
-import org.apache.geode.GemFireException;
 import org.apache.geode.cache.DiskAccessException;
 
 /**

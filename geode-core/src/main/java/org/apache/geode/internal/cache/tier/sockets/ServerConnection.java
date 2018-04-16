@@ -1150,7 +1150,6 @@ public abstract class ServerConnection implements Runnable {
    * MessageType of the messages (typically internal commands) which do not need to participate in
    * security should be added in the following if block.
    *
-   * @return Part
    * @see AbstractOp#processSecureBytes(Connection, Message)
    * @see AbstractOp#needsUserId()
    * @see AbstractOp#sendMessage(Connection)

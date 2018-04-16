@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -313,7 +312,6 @@ public class PartitionedRegionCreationJUnitTest {
    * (4) Test if PARTITIONED_REGION_CONFIG_NAME exist and isDistributedAck and the mirror type is
    * MirrorType.KEYS_VALUES.
    *
-   * @throws RegionExistsException
    */
   @Test
   public void test002PartionedRegionInitialization() throws RegionExistsException {

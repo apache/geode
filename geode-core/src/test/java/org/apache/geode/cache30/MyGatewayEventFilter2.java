@@ -16,7 +16,6 @@ package org.apache.geode.cache30;
 
 import java.util.Properties;
 
-import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.util.GatewayEvent;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;

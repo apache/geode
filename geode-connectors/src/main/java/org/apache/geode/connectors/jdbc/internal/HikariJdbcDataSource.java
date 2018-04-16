@@ -19,11 +19,13 @@ import java.sql.SQLException;
 
 import com.zaxxer.hikari.HikariDataSource;
 
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+
 class HikariJdbcDataSource implements JdbcDataSource {
 
   private final HikariDataSource delegate;
 
-  HikariJdbcDataSource(ConnectionConfiguration config) {
+  HikariJdbcDataSource(ConnectorService.Connection config) {
     HikariDataSource ds = new HikariDataSource();
     ds.setJdbcUrl(config.getUrl());
     ds.setUsername(config.getUser());

@@ -258,7 +258,6 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
    * @param attrs the attributes used to create the subregion
    * @param internalArgs if not null, then use the package protected creation mechanism
    * @return the subregion whose parent is the provided root
-   * @throws CacheException
    * @see Region#createSubregion(String, RegionAttributes)
    * @see LocalRegion#createSubregion(String, RegionAttributes, InternalRegionArguments)
    */

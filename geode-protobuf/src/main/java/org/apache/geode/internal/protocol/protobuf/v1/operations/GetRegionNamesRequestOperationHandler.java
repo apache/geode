@@ -15,10 +15,8 @@
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import java.util.Collection;
-import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;

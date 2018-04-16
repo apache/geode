@@ -31,7 +31,6 @@ public interface Filter {
   /**
    * Evaluates as a filter taking advantage of indexes if appropriate.
    *
-   * @return SelectResults
    */
   SelectResults filterEvaluate(ExecutionContext context, SelectResults iterationLimit)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
@@ -78,15 +77,8 @@ public interface Filter {
    *        iterators being that of CompositeGroupJunction. If the completeExpansion flag is true ,
    *        then this will be null as in that case , the position of iterators in the Results is
    *        decided by the actual order of iterators in the Query from clause .
-   * @param isIntersection
-   * @param conditioningNeeded
-   * @param evaluateProjection
    * @return Object of type SelectResults representing the Results obtained from evaluation of the
    *         condition
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   SelectResults filterEvaluate(ExecutionContext context, SelectResults iterationLimit,
       boolean completeExpansionNeeded, CompiledValue iterOperands, RuntimeIterator[] indpndntItrs,
@@ -103,10 +95,6 @@ public interface Filter {
    *        ignored
    * @return Object of type SelectResults representing the Results obtained from evaluation of the
    *         condition
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   SelectResults auxFilterEvaluate(ExecutionContext context, SelectResults intermediateResults)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
@@ -115,15 +103,6 @@ public interface Filter {
   int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
 
-  /**
-   *
-   * @param context
-   * @return boolean
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
-   */
   boolean isProjectionEvaluationAPossibility(ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException;
@@ -131,13 +110,6 @@ public interface Filter {
   /**
    * Only used by single base collection index
    *
-   * @param independentIter
-   * @param context
-   * @param completeExpnsNeeded
-   * @return boolean
-   * @throws AmbiguousNameException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
    */
   boolean isConditioningNeededForIndex(RuntimeIterator independentIter, ExecutionContext context,
       boolean completeExpnsNeeded)
@@ -145,14 +117,7 @@ public interface Filter {
 
   /**
    *
-   * @param comparedTo
-   * @param context
-   * @param thisSize
    * @return boolean true if this is the better filter as compared to the Filter passed as parameter
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   boolean isBetterFilter(Filter comparedTo, ExecutionContext context, int thisSize)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,

@@ -14,16 +14,18 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import org.apache.geode.annotations.Experimental;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-@Experimental
 public abstract class JdbcCliFunction<T1, T2> implements InternalFunction<T1> {
 
   private final transient ExceptionHandler exceptionHandler;
+  protected static Logger logger = LogService.getLogger();
 
   JdbcCliFunction() {
     this.exceptionHandler = new ExceptionHandler();
@@ -47,6 +49,7 @@ public abstract class JdbcCliFunction<T1, T2> implements InternalFunction<T1> {
       T2 result = getFunctionResult(service, context);
       context.getResultSender().lastResult(result);
     } catch (Exception e) {
+      logger.error(e.getMessage(), e);
       exceptionHandler.handleException(context, e);
     }
   }

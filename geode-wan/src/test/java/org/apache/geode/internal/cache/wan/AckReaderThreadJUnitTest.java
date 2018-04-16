@@ -20,7 +20,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -28,7 +27,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.categories.WanTest;
 
 @Category(UnitTest.class)
 public class AckReaderThreadJUnitTest {

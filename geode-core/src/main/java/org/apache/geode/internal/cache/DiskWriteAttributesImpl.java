@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.geode.cache.*;
@@ -134,7 +132,6 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * <li>byte-threshold = 0 bytes
    * </ul>
    *
-   * @param properties
    *
    * @throws IllegalArgumentException If any of the properties specified are not in the expected
    *         format.
@@ -216,8 +213,6 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * Verifys if the propertyString passed is a valid boolean value or null else throws an
    * IllegalArgument exception
    *
-   * @param propertyString
-   * @param property
    * @throws IllegalArgumentException if the property string passed does not represent a boolean or
    *         null
    *
@@ -234,8 +229,6 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * Verifys if the string passed, is in a number format which is acceptable and returns the long
    * value of the string.
    *
-   * @param propertyString
-   * @param property
    * @return the long value of the string
    */
   private long verifyLongInString(String propertyString, String property) {
@@ -261,8 +254,6 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * Verifys if the string passed, is in a number format which is acceptable and returns the int
    * value of the string.
    *
-   * @param propertyString
-   * @param property
    * @return the int value of the string
    */
   private int verifyPercentInString(String propertyString, String property) {

@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.execute;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -36,7 +35,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.TXManagerImpl;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;

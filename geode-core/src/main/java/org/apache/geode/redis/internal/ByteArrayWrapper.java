@@ -55,7 +55,6 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
   /**
    * Default constructor constructs a ValueWrapper and initialize the {@link #value}
    *
-   * @param value
    */
   public ByteArrayWrapper(byte[] value) {
     this.value = value;

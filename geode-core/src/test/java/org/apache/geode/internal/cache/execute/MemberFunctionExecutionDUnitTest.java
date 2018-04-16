@@ -88,7 +88,6 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test the execution of function on all memebers haveResults = true
    *
-   * @throws Exception
    */
   @Test
   public void testRemoteMultiKeyExecution() throws Exception {
@@ -134,7 +133,6 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test the execution of function on all memebers haveResults = true
    *
-   * @throws Exception
    */
   @Test
   public void testRemoteMultiKeyExecution_InlineFunction() throws Exception {
@@ -221,7 +219,6 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test the execution of function on all memebers haveResults = false
    *
-   * @throws Exception
    */
   @Test
   public void testRemoteMultiKeyExecutionNoResult() throws Exception {
@@ -232,7 +229,6 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test the execution of function on local memebers haveResults = true
    *
-   * @throws Exception
    */
   @Test
   public void testRemoteMultiKeyExecutiononLocalMember() throws Exception {
@@ -243,7 +239,6 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test the execution of function on local memebers haveResults = true
    *
-   * @throws Exception
    */
   @Test
   public void testRemoteMultiKeyExecutiononLocalMember_InlineFunction() throws Exception {
@@ -255,7 +250,6 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test the execution of function on other memebers haveResults = true
    *
-   * @throws Exception
    */
   @Test
   public void testRemoteMultiKeyExecutiononOtherMembers() throws Exception {
@@ -266,7 +260,6 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test the execution of function on other memebers haveResults = true
    *
-   * @throws Exception
    */
   @Test
   public void testRemoteMultiKeyExecutiononOtherMembers_InlineFunction() throws Exception {

@@ -26,8 +26,6 @@ import org.apache.geode.internal.cache.DiskStoreStats;
 import org.apache.geode.management.internal.beans.DiskStoreMBeanBridge;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- */
 @Category(IntegrationTest.class)
 public class DiskStatsJUnitTest extends MBeanStatsTestCase {
 

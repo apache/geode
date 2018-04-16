@@ -81,7 +81,6 @@ public class AddressManager extends Protocol {
    * update the logical->physical address cache in UDP, which doesn't seem to be updated by UDP when
    * processing responses from FIND_MBRS
    *
-   * @param pd
    */
   private void updateUDPCache(PingData pd) {
     if (setPingData == null && !warningLogged) {

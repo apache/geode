@@ -29,7 +29,6 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.logging.LogService;
 
 /**

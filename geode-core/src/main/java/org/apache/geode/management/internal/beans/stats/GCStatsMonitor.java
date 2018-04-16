@@ -15,15 +15,10 @@
 package org.apache.geode.management.internal.beans.stats;
 
 import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.statistics.StatisticId;
 import org.apache.geode.internal.statistics.StatisticNotFoundException;
 import org.apache.geode.internal.statistics.StatisticsNotification;
 
-/**
- *
- *
- */
 public class GCStatsMonitor extends MBeanStatsMonitor {
 
   private volatile long collections = 0;

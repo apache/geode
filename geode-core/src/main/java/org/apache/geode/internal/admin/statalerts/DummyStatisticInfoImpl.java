@@ -44,10 +44,6 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
 
   public DummyStatisticInfoImpl() {}
 
-  /**
-   * @param statisticsTextId
-   * @param statisticName
-   */
   public DummyStatisticInfoImpl(String statisticsTypeName, String statisticsTextId,
       String statisticName) {
     super();

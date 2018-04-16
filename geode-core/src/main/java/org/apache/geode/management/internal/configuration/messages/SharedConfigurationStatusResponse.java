@@ -19,19 +19,12 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 
-/*****
- *
- *
- */
 public class SharedConfigurationStatusResponse implements DataSerializable {
 
 

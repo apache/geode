@@ -164,14 +164,12 @@ public interface CacheObserver {
   /**
    * Invoked by the compactor thread just before deleting a compacted oplog
    *
-   * @param compactedOplog
    */
   void beforeDeletingCompactedOplog(Oplog compactedOplog);
 
   /**
    * Invoked just before deleting an empty oplog
    *
-   * @param emptyOplog
    */
   void beforeDeletingEmptyOplog(Oplog emptyOplog);
 

@@ -41,8 +41,6 @@ public class DefaultResultCollector implements ResultCollector {
   /**
    * Adds a single function execution result from a remote node to the ResultCollector
    *
-   * @param distributedMember
-   * @param resultOfSingleExecution
    */
   public synchronized void addResult(DistributedMember distributedMember,
       Object resultOfSingleExecution) {

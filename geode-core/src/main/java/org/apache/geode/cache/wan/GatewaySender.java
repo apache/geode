@@ -236,14 +236,12 @@ public interface GatewaySender {
   /**
    * Adds the provided <code>GatewayEventFilter</code> to this GatewaySender.
    *
-   * @param filter
    */
   void addGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Removes the provided <code>GatewayEventFilter</code> from this GatewaySender.
    *
-   * @param filter
    */
   void removeGatewayEventFilter(GatewayEventFilter filter);
 

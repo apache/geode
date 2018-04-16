@@ -1016,7 +1016,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   /**
    * Creates and connects to a <code>DistributedSystem</code>.
    *
-   * @param config
    */
   private AdminDistributedSystem createDistributedSystem(AgentConfigImpl config)
       throws org.apache.geode.admin.AdminException {

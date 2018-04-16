@@ -40,6 +40,7 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public abstract class GfshCommand implements CommandMarker {
+  public static final String EXPERIMENTAL = "(Experimental) ";
   private InternalCache cache;
 
   public boolean isConnectedAndReady() {

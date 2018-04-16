@@ -23,7 +23,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;

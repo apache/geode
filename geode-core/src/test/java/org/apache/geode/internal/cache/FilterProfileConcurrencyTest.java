@@ -34,9 +34,6 @@ import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.concurrency.ConcurrentTestRunner;
 import org.apache.geode.test.concurrency.ParallelExecutor;
-import org.apache.geode.test.concurrency.annotation.ConcurrentTestConfig;
-import org.apache.geode.test.concurrency.loop.LoopRunner;
-import org.apache.geode.test.concurrency.loop.LoopRunnerConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @RunWith(ConcurrentTestRunner.class)

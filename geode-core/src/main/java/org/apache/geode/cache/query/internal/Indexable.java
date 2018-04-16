@@ -30,9 +30,6 @@ public interface Indexable {
    *
    * @param context ExecutionContext object
    * @return IndexInfo object , if any, associated with the CompiledValue
-   * @throws TypeMismatchException
-   * @throws AmbiguousNameException
-   * @throws NameResolutionException
    */
   IndexInfo[] getIndexInfo(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException;

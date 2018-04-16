@@ -177,7 +177,6 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    * Takes an int which is supposed to be in megabytes and converts it to a long. This conversion
    * takes into account that multiplication can lead to Integer.MAX_VALUE being exceeded
    *
-   * @param megaBytes
    * @return the converted value
    */
   private long convertToBytes(int megaBytes) {

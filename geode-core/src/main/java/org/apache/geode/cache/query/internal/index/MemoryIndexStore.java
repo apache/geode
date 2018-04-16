@@ -38,7 +38,6 @@ import org.apache.geode.cache.query.internal.index.AbstractIndex.InternalIndexSt
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.internal.cache.CachedDeserializable;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -247,7 +246,6 @@ public class MemoryIndexStore implements IndexStore {
    * Find the old key by traversing the forward map in case of in-place update modification If not
    * found it means the value object was modified with same value. So oldKey is same as newKey.
    *
-   * @return oldKey
    */
   private Object getOldKey(Object newKey, RegionEntry entry) throws TypeMismatchException {
     for (Object mapEntry : valueToEntriesMap.entrySet()) {

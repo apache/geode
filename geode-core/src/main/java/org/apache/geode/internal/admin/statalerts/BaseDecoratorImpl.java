@@ -40,9 +40,6 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
     super();
   }
 
-  /**
-   * @param definition
-   */
   public BaseDecoratorImpl(StatAlertDefinition definition) {
     super();
     this._def = definition;

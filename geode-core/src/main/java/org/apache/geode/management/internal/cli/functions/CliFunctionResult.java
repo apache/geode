@@ -31,50 +31,50 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
   private String memberIdOrName;
   private Serializable[] serializables = new String[0];
-  private Throwable throwable;
+  private Object resultObject;
   private boolean successful;
   private XmlEntity xmlEntity;
   private byte[] byteData = new byte[0];
 
+  @Deprecated
   public CliFunctionResult() {}
 
+  @Deprecated
   public CliFunctionResult(final String memberIdOrName) {
     this.memberIdOrName = memberIdOrName;
-
     this.successful = true;
   }
 
+  @Deprecated
   public CliFunctionResult(final String memberIdOrName, final Serializable[] serializables) {
     this.memberIdOrName = memberIdOrName;
     this.serializables = serializables;
-
     this.successful = true;
   }
 
+  @Deprecated
   public CliFunctionResult(final String memberIdOrName, final XmlEntity xmlEntity) {
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
-
     this.successful = true;
   }
 
-
+  @Deprecated
   public CliFunctionResult(final String memberIdOrName, final XmlEntity xmlEntity,
       final Serializable[] serializables) {
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
     this.serializables = serializables;
-
     this.successful = true;
   }
 
+  @Deprecated
   public CliFunctionResult(final String memberIdOrName, XmlEntity xmlEntity, final String message) {
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
     if (message != null) {
       this.serializables = new String[] {message};
     }
-
     this.successful = true;
   }
 
@@ -87,21 +87,29 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     }
   }
 
-  public CliFunctionResult(final String memberIdOrName, final Throwable throwable,
+  public CliFunctionResult(final String memberIdOrName, final Object resultObject,
       final String message) {
     this.memberIdOrName = memberIdOrName;
-    this.throwable = throwable;
+    this.resultObject = resultObject;
     if (message != null) {
       this.serializables = new String[] {message};
     }
+    if (resultObject instanceof Throwable) {
+      this.successful = false;
+    } else {
+      this.successful = true;
+    }
+  }
 
-    this.successful = false;
+  public CliFunctionResult(final String memberIdOrName, final Object resultObject) {
+    this(memberIdOrName, resultObject, null);
   }
 
   public String getMemberIdOrName() {
     return this.memberIdOrName;
   }
 
+  @Deprecated
   public String getMessage() {
     if (this.serializables.length == 0 || !(this.serializables[0] instanceof String)) {
       return null;
@@ -118,24 +126,34 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     }
 
     String errorMessage = "ERROR: ";
-    if (message != null && (throwable == null || !throwable.getMessage().contains(message))) {
+    if (message != null
+        && (resultObject == null || !((Throwable) resultObject).getMessage().contains(message))) {
       errorMessage += message;
     }
 
-    if (throwable != null) {
-      errorMessage = errorMessage.trim() + " " + throwable.getClass().getName() + ": "
-          + throwable.getMessage();
+    if (resultObject != null) {
+      errorMessage = errorMessage.trim() + " " + ((Throwable) resultObject).getClass().getName()
+          + ": " + ((Throwable) resultObject).getMessage();
     }
 
     return errorMessage;
   }
 
+  @Deprecated
   public Serializable[] getSerializables() {
     return this.serializables;
   }
 
+  @Deprecated
   public Throwable getThrowable() {
-    return this.throwable;
+    if (successful) {
+      return null;
+    }
+    return ((Throwable) resultObject);
+  }
+
+  public Object getResultObject() {
+    return resultObject;
   }
 
   @Override
@@ -149,14 +167,14 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     DataSerializer.writePrimitiveBoolean(this.successful, out);
     DataSerializer.writeObject(this.xmlEntity, out);
     DataSerializer.writeObjectArray(this.serializables, out);
-    DataSerializer.writeObject(this.throwable, out);
+    DataSerializer.writeObject(this.resultObject, out);
     DataSerializer.writeByteArray(this.byteData, out);
   }
 
   public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
     DataSerializer.writeString(this.memberIdOrName, out);
     DataSerializer.writeObjectArray(this.serializables, out);
-    DataSerializer.writeObject(this.throwable, out);
+    DataSerializer.writeObject(this.resultObject, out);
   }
 
   @Override
@@ -165,13 +183,13 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.successful = DataSerializer.readPrimitiveBoolean(in);
     this.xmlEntity = DataSerializer.readObject(in);
     this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
-    this.throwable = DataSerializer.readObject(in);
+    this.resultObject = DataSerializer.readObject(in);
     this.byteData = DataSerializer.readByteArray(in);
   }
 
   public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
-    this.throwable = DataSerializer.readObject(in);
+    this.resultObject = DataSerializer.readObject(in);
     this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
   }
 
@@ -179,10 +197,12 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     return this.successful;
   }
 
+  @Deprecated
   public XmlEntity getXmlEntity() {
     return this.xmlEntity;
   }
 
+  @Deprecated
   public byte[] getByteData() {
     return this.byteData;
   }
@@ -230,7 +250,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   public String toString() {
     return "CliFunctionResult [memberId=" + this.memberIdOrName + ", successful=" + this.successful
         + ", xmlEntity=" + this.xmlEntity + ", serializables=" + Arrays.toString(this.serializables)
-        + ", throwable=" + this.throwable + ", byteData=" + Arrays.toString(this.byteData) + "]";
+        + ", throwable=" + this.resultObject + ", byteData=" + Arrays.toString(this.byteData) + "]";
   }
 
   /**

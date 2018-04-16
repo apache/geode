@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -37,9 +36,6 @@ import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
  */
 public class PartitionAttributesInfo implements Serializable {
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
   private int totalNumBuckets = 0;
   private int localMaxMemory = 0;

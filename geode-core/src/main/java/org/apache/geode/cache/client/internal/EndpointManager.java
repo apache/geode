@@ -38,7 +38,6 @@ public interface EndpointManager {
    * Indicate that a particular server has crashed. All of the listeners will be notified that the
    * server has crashed.
    *
-   * @param endpoint
    */
   void serverCrashed(Endpoint endpoint);
 

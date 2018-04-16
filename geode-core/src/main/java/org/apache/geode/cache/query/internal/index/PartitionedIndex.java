@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -412,7 +411,6 @@ public class PartitionedIndex extends AbstractIndex {
   /**
    * This will create extra {@link IndexStatistics} statistics for MapType PartitionedIndex.
    *
-   * @param indexName
    * @return new PartitionedIndexStatistics
    */
   protected InternalIndexStatistics createExplicitStats(String indexName) {

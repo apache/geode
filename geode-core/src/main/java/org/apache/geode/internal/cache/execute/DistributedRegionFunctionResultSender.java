@@ -50,8 +50,6 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
   /**
    * Have to combine next two construcotr in one and make a new class which will send Results back.
    *
-   * @param msg
-   * @param dm
    */
   public DistributedRegionFunctionResultSender(DistributionManager dm,
       DistributedRegionFunctionStreamingMessage msg, Function function) {

@@ -25,9 +25,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-/**
- *
- */
 public class State implements Serializable {
   public String name;
   public String zone;

@@ -231,7 +231,6 @@ public class GatewaySenderEventImpl
    * @param event The <code>CacheEvent</code> on which this <code>GatewayEventImpl</code> is based
    * @param substituteValue The value to be enqueued instead of the value in the event.
    *
-   * @throws IOException
    */
   @Retained
   public GatewaySenderEventImpl(EnumListenerEvent operation, CacheEvent event,
@@ -254,7 +253,6 @@ public class GatewaySenderEventImpl
    * @param substituteValue The value to be enqueued instead of the value in the event.
    * @param initialize Whether to initialize this instance
    *
-   * @throws IOException
    */
   @Retained
   public GatewaySenderEventImpl(EnumListenerEvent operation, CacheEvent ce, Object substituteValue,
@@ -1011,7 +1009,6 @@ public class GatewaySenderEventImpl
   /**
    * Return the EventSequenceID of the Event
    *
-   * @return EventSequenceID
    */
   public EventSequenceID getEventSequenceID() {
     return new EventSequenceID(id.getMembershipID(), id.getThreadID(), id.getSequenceID());

@@ -84,7 +84,6 @@ public class PRQueryCacheClosedJUnitTest {
    * 5. Recreates the cache after a delay of 1500ms
    *
    *
-   * @throws Exception
    */
   @Test
   public void testQueryOnSingleDataStoreWithCacheClose() throws Exception {
@@ -234,8 +233,6 @@ public class PRQueryCacheClosedJUnitTest {
   /**
    * Populates the region with the Objects stores in the data Object array.
    *
-   * @param region
-   * @param data
    */
   private void populateData(Region region, Object[] data) {
     logger.info("PRQueryCacheClosedJUnitTest#populateData: Populating Data in the PR Region ");

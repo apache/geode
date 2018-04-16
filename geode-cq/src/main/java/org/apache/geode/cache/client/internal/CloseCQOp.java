@@ -14,10 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.cache.client.internal.AbstractOp;
-import org.apache.geode.cache.client.internal.ConnectionStats;
 import org.apache.geode.cache.client.internal.CreateCQOp.CreateCQOpImpl;
-import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.internal.cache.tier.MessageType;
 
 /**

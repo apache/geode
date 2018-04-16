@@ -310,7 +310,6 @@ public interface Cache extends GemFireCache {
   /**
    * Creates {@link GatewaySenderFactory} for creating a SerialGatewaySender
    *
-   * @return SerialGatewaySenderFactory
    * @since GemFire 7.0
    */
   @Override
@@ -319,7 +318,6 @@ public interface Cache extends GemFireCache {
   /**
    * Creates {@link AsyncEventQueueFactory} for creating a AsyncEventQueue
    *
-   * @return AsyncEventQueueFactory
    * @since GemFire 7.0
    */
   AsyncEventQueueFactory createAsyncEventQueueFactory();
@@ -327,7 +325,6 @@ public interface Cache extends GemFireCache {
   /**
    * Creates {@link GatewayReceiverFactory} for creating a GatewayReceiver
    *
-   * @return GatewayReceiverFactory
    * @since GemFire 7.0
    */
   GatewayReceiverFactory createGatewayReceiverFactory();

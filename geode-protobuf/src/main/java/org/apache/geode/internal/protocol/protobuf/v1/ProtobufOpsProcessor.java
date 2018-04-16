@@ -77,13 +77,11 @@ public class ProtobufOpsProcessor {
       return operationContext.getOperationHandler().process(context.getSerializationService(),
           operationContext.getFromRequest().apply(request), context);
     } catch (InvalidExecutionContextException exception) {
-      logger.error("Invalid execution context found for operation {}", requestType);
-      logger.error(exception);
+      logger.error("Invalid execution context found for operation {}", requestType, exception);
       return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
           "Invalid execution context found for operation.");
     } catch (UnsupportedOperationException exception) {
-      logger.error("Unsupported operation exception for request {}", requestType);
-      logger.error(exception);
+      logger.error("Unsupported operation exception for request {}", requestType, exception);
       return Failure.of(BasicTypes.ErrorCode.UNSUPPORTED_OPERATION,
           "Unsupported operation:" + exception.getMessage());
     } catch (NotAuthorizedException e) {

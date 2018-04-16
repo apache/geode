@@ -60,14 +60,12 @@ public interface ClientServerObserver {
   /**
    * Invoked before sending an instantiator message to server
    *
-   * @param eventId
    */
   void beforeSendingToServer(EventID eventId);
 
   /**
    * Invoked after sending an instantiator message to server
    *
-   * @param eventId
    */
   void afterReceivingFromServer(EventID eventId);
 
@@ -79,7 +77,6 @@ public interface ClientServerObserver {
   /**
    * Invoked after Message is created
    *
-   * @param msg
    */
   void afterMessageCreation(Message msg);
 

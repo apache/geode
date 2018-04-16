@@ -70,9 +70,8 @@ public class ParameterType {
   /**
    * Gets the value of the string property.
    *
-   * @return
-   *         possible object is
-   *         {@link StringType }
+   * possible object is
+   * {@link StringType }
    *
    */
   public StringType getString() {
@@ -82,9 +81,8 @@ public class ParameterType {
   /**
    * Sets the value of the string property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link StringType }
+   * allowed object is
+   * {@link StringType }
    *
    */
   public void setString(StringType value) {
@@ -94,9 +92,8 @@ public class ParameterType {
   /**
    * Gets the value of the declarable property.
    *
-   * @return
-   *         possible object is
-   *         {@link DeclarableType }
+   * possible object is
+   * {@link DeclarableType }
    *
    */
   public DeclarableType getDeclarable() {
@@ -106,9 +103,8 @@ public class ParameterType {
   /**
    * Sets the value of the declarable property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link DeclarableType }
+   * allowed object is
+   * {@link DeclarableType }
    *
    */
   public void setDeclarable(DeclarableType value) {
@@ -118,9 +114,8 @@ public class ParameterType {
   /**
    * Gets the value of the name property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getName() {
@@ -130,9 +125,8 @@ public class ParameterType {
   /**
    * Sets the value of the name property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setName(String value) {

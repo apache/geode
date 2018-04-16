@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.admin;
 
-import java.lang.Math;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 

@@ -66,9 +66,8 @@ public class DiskDirType {
    * A "disk-dir" element specifies one of a region or diskstore's disk directories.
    *
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getContent() {
@@ -78,9 +77,8 @@ public class DiskDirType {
   /**
    * Sets the value of the content property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setContent(String value) {
@@ -90,9 +88,8 @@ public class DiskDirType {
   /**
    * Gets the value of the dirSize property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getDirSize() {
@@ -102,9 +99,8 @@ public class DiskDirType {
   /**
    * Sets the value of the dirSize property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setDirSize(String value) {

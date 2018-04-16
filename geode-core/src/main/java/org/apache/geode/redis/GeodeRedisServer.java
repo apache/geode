@@ -366,7 +366,6 @@ public class GeodeRedisServer {
    * Helper method to get the host name to bind to
    *
    * @return The InetAddress to bind to
-   * @throws UnknownHostException
    */
   private InetAddress getBindAddress() throws UnknownHostException {
     return this.bindAddress == null || this.bindAddress.isEmpty() ? SocketCreator.getLocalHost()
@@ -478,8 +477,6 @@ public class GeodeRedisServer {
    * Helper method to start the server listening for connections. The server is bound to the port
    * specified by {@link GeodeRedisServer#serverPort}
    *
-   * @throws IOException
-   * @throws InterruptedException
    */
   private void startRedisServer() throws IOException, InterruptedException {
     ThreadFactory selectorThreadFactory = new ThreadFactory() {

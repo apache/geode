@@ -122,9 +122,8 @@ public class CacheTransactionManagerType {
   /**
    * Gets the value of the transactionWriter property.
    *
-   * @return
-   *         possible object is
-   *         {@link CacheTransactionManagerType.TransactionWriter }
+   * possible object is
+   * {@link CacheTransactionManagerType.TransactionWriter }
    *
    */
   public CacheTransactionManagerType.TransactionWriter getTransactionWriter() {
@@ -134,9 +133,8 @@ public class CacheTransactionManagerType {
   /**
    * Sets the value of the transactionWriter property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link CacheTransactionManagerType.TransactionWriter }
+   * allowed object is
+   * {@link CacheTransactionManagerType.TransactionWriter }
    *
    */
   public void setTransactionWriter(CacheTransactionManagerType.TransactionWriter value) {
@@ -179,9 +177,8 @@ public class CacheTransactionManagerType {
     /**
      * Gets the value of the className property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getClassName() {
@@ -191,9 +188,8 @@ public class CacheTransactionManagerType {
     /**
      * Sets the value of the className property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setClassName(String value) {
@@ -268,9 +264,8 @@ public class CacheTransactionManagerType {
     /**
      * Gets the value of the className property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getClassName() {
@@ -280,9 +275,8 @@ public class CacheTransactionManagerType {
     /**
      * Sets the value of the className property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setClassName(String value) {

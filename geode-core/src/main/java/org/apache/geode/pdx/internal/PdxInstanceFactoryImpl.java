@@ -17,7 +17,6 @@ package org.apache.geode.pdx.internal;
 import java.util.Date;
 
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;

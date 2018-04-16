@@ -332,7 +332,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   /**
    * Gets the provider of Regions
    *
-   * @return Provider
    */
   public RegionProvider getRegionProvider() {
     return this.regionProvider;
@@ -341,7 +340,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   /**
    * Getter for manager to allow pausing and resuming transactions
    *
-   * @return Instance
    */
   public CacheTransactionManager getCacheTransactionManager() {
     return this.cache.getCacheTransactionManager();
@@ -350,7 +348,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   /**
    * Getter for logger
    *
-   * @return instance
    */
   public LogWriter getLogger() {
     return this.cache.getLogger();
@@ -359,16 +356,14 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   /**
    * Get the channel for this context
    *
-   * @return instance
    *
-   *         public Channel getChannel() { return this.channel; }
+   * public Channel getChannel() { return this.channel; }
    */
 
   /**
    * Get the authentication password, this will be same server wide. It is exposed here as opposed
    * to {@link GeodeRedisServer}.
    *
-   * @return password
    */
   public byte[] getAuthPwd() {
     return this.authPwd;
