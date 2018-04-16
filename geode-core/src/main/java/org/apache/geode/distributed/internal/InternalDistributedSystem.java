@@ -2610,6 +2610,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
     DistributionConfig oldConfig = ids.getConfig();
     Properties configProps = getProperties();
+    configProps.putAll(getSecurityProperties());
+
     int timeOut = oldConfig.getMaxWaitTimeForReconnect();
     int maxTries = oldConfig.getMaxNumReconnectTries();
 
