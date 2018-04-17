@@ -82,7 +82,7 @@ public class CreateRegionCommandTest {
   public void missingName() throws Exception {
     CommandResult result = parser.executeCommandWithInstance(command, "create region");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString()).contains("Invalid command");
+    assertThat(result.getMessageFromContent()).contains("Invalid command");
   }
 
   @Test
@@ -90,7 +90,7 @@ public class CreateRegionCommandTest {
     CommandResult result =
         parser.executeCommandWithInstance(command, "create region --name=region");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString())
+    assertThat(result.getMessageFromContent())
         .contains("One of \\\"type\\\" or \\\"template-region\\\" is required.");
   }
 
@@ -99,7 +99,7 @@ public class CreateRegionCommandTest {
     CommandResult result = parser.executeCommandWithInstance(command,
         "create region --name=region --type=REPLICATE --template-region=regionB");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString())
+    assertThat(result.getMessageFromContent())
         .contains("Only one of type & template-region can be specified.");
   }
 
@@ -108,7 +108,7 @@ public class CreateRegionCommandTest {
     CommandResult result = parser.executeCommandWithInstance(command,
         "create region --name=region --type=REPLICATE --eviction-action=invalidAction");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString())
+    assertThat(result.getMessageFromContent())
         .contains("eviction-action must be 'local-destroy' or 'overflow-to-disk'");
   }
 
@@ -117,7 +117,7 @@ public class CreateRegionCommandTest {
     CommandResult result = parser.executeCommandWithInstance(command,
         "create region --name=region --type=REPLICATE --eviction-max-memory=1000 --eviction-entry-count=200");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString())
+    assertThat(result.getMessageFromContent())
         .contains("eviction-max-memory and eviction-entry-count cannot both be specified.");
   }
 
@@ -126,7 +126,7 @@ public class CreateRegionCommandTest {
     CommandResult result = parser.executeCommandWithInstance(command,
         "create region --name=region --type=REPLICATE --eviction-max-memory=1000");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString()).contains("eviction-action must be specified.");
+    assertThat(result.getMessageFromContent()).contains("eviction-action must be specified.");
   }
 
   @Test
@@ -134,7 +134,7 @@ public class CreateRegionCommandTest {
     CommandResult result = parser.executeCommandWithInstance(command,
         "create region --name=region --type=REPLICATE --eviction-entry-count=1 --eviction-object-sizer=abc --eviction-action=local-destroy");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString())
+    assertThat(result.getMessageFromContent())
         .contains("eviction-object-sizer cannot be specified with eviction-entry-count");
   }
 
@@ -147,7 +147,7 @@ public class CreateRegionCommandTest {
     CommandResult result = parser.executeCommandWithInstance(command,
         "create region --name=region --template-region=regionA");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString())
+    assertThat(result.getMessageFromContent())
         .contains("Could not retrieve region attributes for given path");
   }
 
@@ -330,7 +330,7 @@ public class CreateRegionCommandTest {
     CommandResult result = parser.executeCommandWithInstance(command,
         "create region --name=region --type=REPLICATE --compressor=abc-def");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString()).contains("abc-def is an invalid Compressor.");
+    assertThat(result.getMessageFromContent()).contains("abc-def is an invalid Compressor.");
   }
 
   @Test
@@ -338,7 +338,7 @@ public class CreateRegionCommandTest {
     CommandResult result = parser.executeCommandWithInstance(command,
         "create region --name=region --type=REPLICATE --key-type=abc-def");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString()).contains("Invalid command");
+    assertThat(result.getMessageFromContent()).contains("Invalid command");
   }
 
   @Test
@@ -346,7 +346,7 @@ public class CreateRegionCommandTest {
     CommandResult result = parser.executeCommandWithInstance(command,
         "create region --name=region --type=REPLICATE --value-type=abc-def");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContentAsString()).contains("Invalid command");
+    assertThat(result.getMessageFromContent()).contains("Invalid command");
   }
 
   @Test

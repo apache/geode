@@ -64,14 +64,14 @@ public class CreateIndexCommandTest {
     result = gfshParser.executeCommandWithInstance(command,
         "create index --expression=abc --region=abc");
     assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getContentAsString()).contains("Invalid command");
+    assertThat(result.getMessageFromContent()).contains("Invalid command");
   }
 
   @Test
   public void missingExpression() throws Exception {
     result = gfshParser.executeCommandWithInstance(command, "create index --name=abc --region=abc");
     assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getContentAsString()).contains("Invalid command");
+    assertThat(result.getMessageFromContent()).contains("Invalid command");
   }
 
   @Test
@@ -79,7 +79,7 @@ public class CreateIndexCommandTest {
     result =
         gfshParser.executeCommandWithInstance(command, "create index --name=abc --expression=abc");
     assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getContentAsString()).contains("Invalid command");
+    assertThat(result.getMessageFromContent()).contains("Invalid command");
   }
 
   @Test
@@ -87,7 +87,7 @@ public class CreateIndexCommandTest {
     result = gfshParser.executeCommandWithInstance(command,
         "create index --name=abc --expression=abc --region=abc --type=abc");
     assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getContentAsString()).contains("Invalid command");
+    assertThat(result.getMessageFromContent()).contains("Invalid command");
   }
 
   @Test
@@ -96,7 +96,7 @@ public class CreateIndexCommandTest {
     result = gfshParser.executeCommandWithInstance(command,
         "create index --name=abc --expression=abc --region=abc --type=range");
     assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getContentAsString()).contains("No Members Found");
+    assertThat(result.getMessageFromContent()).contains("No Members Found");
   }
 
   @Test
@@ -105,7 +105,7 @@ public class CreateIndexCommandTest {
     result = gfshParser.executeCommandWithInstance(command,
         "create index --name=abc --expression=abc --region=abc --type=hash");
     assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getContentAsString()).contains("No Members Found");
+    assertThat(result.getMessageFromContent()).contains("No Members Found");
   }
 
   @Test
@@ -114,7 +114,7 @@ public class CreateIndexCommandTest {
     result = gfshParser.executeCommandWithInstance(command,
         "create index --name=abc --expression=abc --region=abc");
     assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getContentAsString()).contains("No Members Found");
+    assertThat(result.getMessageFromContent()).contains("No Members Found");
   }
 
   @Test
