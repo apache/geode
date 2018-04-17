@@ -55,11 +55,21 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
     regionTestType.createDataStore(getCache(), REGION_NAME);
   }
 
+  protected void createDataStore(RegionTestableType regionTestType) {
+    regionTestType.createDataStore(getCache(), REGION_NAME);
+  }
+
   protected void initAccessor(SerializableRunnableIF createIndex, RegionTestableType regionTestType)
       throws Exception {
     createIndex.run();
     regionTestType.createAccessor(getCache(), REGION_NAME);
   }
+
+  protected void createAccessor(RegionTestableType regionTestType) {
+    regionTestType.createAccessor(getCache(), REGION_NAME);
+  }
+
+
 
   protected void initDataStore(RegionTestableType regionTestType) throws Exception {
     regionTestType.createDataStore(getCache(), REGION_NAME);
