@@ -70,8 +70,11 @@ public class ProtobufServerConnection extends ServerConnection {
       InternalCache cache = getCache();
       cache.setReadSerializedForCurrentThread(true);
       try {
-        protocolProcessor.processMessage(inputStream, output);
-        output.flush();
+        try {
+          protocolProcessor.processMessage(inputStream, output);
+        } finally {
+          output.flush();
+        }
       } finally {
         cache.setReadSerializedForCurrentThread(false);
       }

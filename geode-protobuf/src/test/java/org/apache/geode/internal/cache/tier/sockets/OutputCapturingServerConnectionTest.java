@@ -21,6 +21,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -51,6 +52,8 @@ public class OutputCapturingServerConnectionTest {
     Socket socketMock = mock(Socket.class);
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
     when(socketMock.isClosed()).thenReturn(true);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    when(socketMock.getOutputStream()).thenReturn(outputStream);
 
     AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
     ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
