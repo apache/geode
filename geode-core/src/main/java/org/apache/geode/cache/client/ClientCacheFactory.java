@@ -537,6 +537,21 @@ public class ClientCacheFactory {
   }
 
   /**
+   * A server has an inactivity monitor that ensures a message is sent to a client at least once a
+   * minute (60,000 milliseconds). If a subscription timeout multipler is set in the client it
+   * enables timing out of the subscription feed with failover to another server.
+   * <p>
+   * A value of zero (the default) disables timeouts
+   * <p>
+   * The resulting timeout will be multiplied by 1.25 in order to avoid race conditions with the
+   * server sending its "ping" message.
+   */
+  public ClientCacheFactory setPoolSubscriptionTimeoutMultiplier(int multiplier) {
+    getPoolFactory().setSubscriptionTimeoutMultiplier(multiplier);
+    return this;
+  }
+
+  /**
    * Sets the messageTrackingTimeout attribute which is the time-to-live period, in milliseconds,
    * for subscription events the client has received from the server. It's used to minimize
    * duplicate events. Entries that have not been modified for this amount of time are expired from
