@@ -179,9 +179,8 @@ public class ConnectorService implements CacheElement {
   /**
    * Gets the value of the name property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getName() {
@@ -195,9 +194,8 @@ public class ConnectorService implements CacheElement {
   /**
    * Sets the value of the name property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setName(String value) {
@@ -270,9 +268,8 @@ public class ConnectorService implements CacheElement {
     /**
      * Gets the value of the name property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getName() {
@@ -282,9 +279,8 @@ public class ConnectorService implements CacheElement {
     /**
      * Sets the value of the name property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setName(String value) {
@@ -294,9 +290,8 @@ public class ConnectorService implements CacheElement {
     /**
      * Gets the value of the url property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getUrl() {
@@ -306,9 +301,8 @@ public class ConnectorService implements CacheElement {
     /**
      * Sets the value of the url property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setUrl(String value) {
@@ -318,9 +312,8 @@ public class ConnectorService implements CacheElement {
     /**
      * Gets the value of the user property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getUser() {
@@ -330,9 +323,8 @@ public class ConnectorService implements CacheElement {
     /**
      * Sets the value of the user property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setUser(String value) {
@@ -342,9 +334,8 @@ public class ConnectorService implements CacheElement {
     /**
      * Gets the value of the password property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getPassword() {
@@ -354,9 +345,8 @@ public class ConnectorService implements CacheElement {
     /**
      * Sets the value of the password property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setPassword(String value) {
@@ -366,9 +356,8 @@ public class ConnectorService implements CacheElement {
     /**
      * Gets the value of the parameters property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getParameters() {
@@ -378,9 +367,8 @@ public class ConnectorService implements CacheElement {
     /**
      * Sets the value of the parameters property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setParameters(String value) {
@@ -782,9 +770,8 @@ public class ConnectorService implements CacheElement {
       /**
        * Gets the value of the fieldName property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getFieldName() {
@@ -794,9 +781,8 @@ public class ConnectorService implements CacheElement {
       /**
        * Sets the value of the fieldName property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setFieldName(String value) {
@@ -806,9 +792,8 @@ public class ConnectorService implements CacheElement {
       /**
        * Gets the value of the columnName property.
        *
-       * @return
-       *         possible object is
-       *         {@link String }
+       * possible object is
+       * {@link String }
        *
        */
       public String getColumnName() {
@@ -818,9 +803,8 @@ public class ConnectorService implements CacheElement {
       /**
        * Sets the value of the columnName property.
        *
-       * @param value
-       *        allowed object is
-       *        {@link String }
+       * allowed object is
+       * {@link String }
        *
        */
       public void setColumnName(String value) {
