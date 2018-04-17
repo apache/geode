@@ -361,4 +361,11 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   Boolean getPdxReadSerializedOverride();
 
   void setPdxReadSerializedOverride(boolean pdxReadSerialized);
+
+  default void throwIfClient() {
+    if (isClient()) {
+      throw new UnsupportedOperationException("operation is not supported on a client cache");
+    }
+  }
+
 }

@@ -2965,9 +2965,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public <K, V> Region<K, V> createRegion(String name, RegionAttributes<K, V> aRegionAttributes)
       throws RegionExistsException, TimeoutException {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     return basicCreateRegion(name, aRegionAttributes);
   }
 
@@ -3214,11 +3212,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     synchronized (this.rootRegions) {
       for (Object region : this.rootRegions.values()) {
         InternalRegion internalRegion = (InternalRegion) region;
-        if (internalRegion.isSecret() || internalRegion.isUsedForMetaRegion()
-            || internalRegion instanceof HARegion
-            || internalRegion.isUsedForPartitionedRegionAdmin() || internalRegion
-                .isInternalRegion()/* internalRegion.isUsedForPartitionedRegionBucket() */) {
-          continue; // Skip administrative PartitionedRegions
+        if (internalRegion.isInternalRegion()) {
+          continue; // Skip internal regions
         }
         result.add(internalRegion);
         result.addAll(internalRegion.basicSubregions(true));
@@ -3392,7 +3387,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     synchronized (this.rootRegions) {
       for (InternalRegion region : this.rootRegions.values()) {
         // If this is an internal meta-region, don't return it to end user
-        if (region.isSecret() || region.isUsedForMetaRegion() || region instanceof HARegion
+        if (region.isSecret() || region.isUsedForMetaRegion()
             || !includePRAdminRegions && (region.isUsedForPartitionedRegionAdmin()
                 || region.isUsedForPartitionedRegionBucket())) {
           continue; // Skip administrative PartitionedRegions
@@ -3446,9 +3441,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void setLockTimeout(int seconds) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     this.stopper.checkCancelInProgress(null);
     this.lockTimeout = seconds;
   }
@@ -3460,9 +3453,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void setLockLease(int seconds) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     this.stopper.checkCancelInProgress(null);
     this.lockLease = seconds;
   }
@@ -3474,9 +3465,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void setSearchTimeout(int seconds) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     this.stopper.checkCancelInProgress(null);
     this.searchTimeout = seconds;
   }
@@ -3488,9 +3477,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void setMessageSyncInterval(int seconds) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     this.stopper.checkCancelInProgress(null);
     if (seconds < 0) {
       throw new IllegalArgumentException(
@@ -3798,9 +3785,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public CacheServer addCacheServer(boolean isGatewayReceiver) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     this.stopper.checkCancelInProgress(null);
 
     CacheServerImpl cacheServer = new CacheServerImpl(this, isGatewayReceiver);
@@ -3818,9 +3803,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void addGatewaySender(GatewaySender sender) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
 
     this.stopper.checkCancelInProgress(null);
 
@@ -3867,9 +3850,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void removeGatewaySender(GatewaySender sender) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
 
     this.stopper.checkCancelInProgress(null);
 
@@ -3891,9 +3872,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void addGatewayReceiver(GatewayReceiver receiver) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     this.stopper.checkCancelInProgress(null);
     synchronized (this.allGatewayReceiversLock) {
       Set<GatewayReceiver> newReceivers = new HashSet<>(this.allGatewayReceivers.size() + 1);
@@ -3906,9 +3885,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   public void removeGatewayReceiver(GatewayReceiver receiver) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     this.stopper.checkCancelInProgress(null);
     synchronized (this.allGatewayReceiversLock) {
       Set<GatewayReceiver> newReceivers = new HashSet<>(this.allGatewayReceivers.size() + 1);
@@ -3992,9 +3969,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void removeAsyncEventQueue(AsyncEventQueue asyncQueue) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     // first remove the gateway sender of the queue
     if (asyncQueue instanceof AsyncEventQueueImpl) {
       removeGatewaySender(((AsyncEventQueueImpl) asyncQueue).getSender());
@@ -4201,9 +4176,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void setIsServer(boolean isServer) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     this.stopper.checkCancelInProgress(null);
 
     this.isServer = isServer;
@@ -4642,11 +4615,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortcut) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    } else {
-      return new RegionFactoryImpl<>(this, shortcut);
-    }
+    throwIfClient();
+    return new RegionFactoryImpl<>(this, shortcut);
   }
 
   /**
@@ -4654,9 +4624,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory() {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     return new RegionFactoryImpl<>(this);
   }
 
@@ -4665,9 +4633,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(String regionAttributesId) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     return new RegionFactoryImpl<>(this, regionAttributesId);
   }
 
@@ -4676,9 +4642,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes) {
-    if (isClient()) {
-      throw new UnsupportedOperationException("operation is not supported on a client cache");
-    }
+    throwIfClient();
     return new RegionFactoryImpl<>(this, regionAttributes);
   }
 
