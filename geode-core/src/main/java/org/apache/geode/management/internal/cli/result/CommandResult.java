@@ -87,6 +87,10 @@ public class CommandResult implements Result {
     return this.status;
   }
 
+  public void setStatus(Status status) {
+    this.status = status;
+  }
+
   public ResultData getResultData() {
     return ResultBuilder.getReadOnlyResultData(resultData);
   }
