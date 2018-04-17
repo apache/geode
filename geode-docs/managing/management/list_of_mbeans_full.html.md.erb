@@ -207,14 +207,14 @@ An AsyncEventQueueMXBean provides access to an AsyncEventQueue, which represent 
 |--------------------|------------------------------------------------------------------------------------------------------------|
 | Scope              | Local                                                                                                      |
 | Proxied            | Yes                                                                                                        |
-| Object Name        | GemFire:type=Member,service=AsyncEventQueue=&lt;AsyncEventQueue&gt; ,member=&lt;name-or-dist-member-id&gt; |
+| Object Name        | GemFire:type=Member,service=AsyncEventQueue,queue=&lt;queue-id&gt;,member=&lt;name-or-dist-member-id&gt; |
 | Instances Per Node | 0..N                                                                                                       |
 
 See the `org.apache.geode.management.AsyncEventQueueMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_BB83107990D346F39271ACCC14CB84A0" class="no-quick-link"></a>LocatorMXBean
 
-A LocatorMXBean represents a locator .
+A LocatorMXBean represents a locator.
 
 **MBean Details**
 
@@ -241,3 +241,34 @@ The member's local view of existing Lucene indexes.
 | Instances Per Node | 0..1                                                                                        |
 
 See the `org.apache.geode.cache.lucene.management.LuceneServiceMXBean` JavaDocs for information on available MBean methods and attributes.
+
+## <a id="GatewaySenderMXBean" class="no-quick-link"></a>GatewaySenderMXBean
+
+A GatewaySenderMXBean represents a gateway sender.
+
+**MBean Details**
+
+|                    |                                                                                             |
+|--------------------|---------------------------------------------------------------------------------------------|
+| Scope              | Local                                                                                       |
+| Proxied            | Yes                                                                                         |
+| Object Name        | GemFire:type=Member,service=GatewaySender,gatewaySender=&lt;sender-id&gt;,member=&lt;name-or-dist-member-id&gt;|
+| Instances Per Node | 0..1                                                                                        |
+
+See the `org.apache.geode.management.GatewaySenderMXBean` JavaDocs for information on available MBean methods and attributes.
+
+## <a id="GatewayReceiverMXBean" class="no-quick-link"></a>GatewayReceiverMXBean
+
+A GatewayReceiverMXBean represents a gateway receiver.
+
+**MBean Details**
+
+|                    |                                                                                             |
+|--------------------|---------------------------------------------------------------------------------------------|
+| Scope              | Local                                                                                       |
+| Proxied            | Yes                                                                                         |
+| Object Name        | GemFire:type=Member,service=GatewayReceiver,member=&lt;name-or-dist-member-id&gt;|
+| Instances Per Node | 0..1                                                                                        |
+
+See the `org.apache.geode.management.GatewayReceiverMXBean` JavaDocs for information on available MBean methods and attributes.
+
