@@ -56,8 +56,8 @@ dependencies {
     exclude module: 'spring-beans'
   }
 
-  testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
-  testCompile project(path: ':geode-test', configuration: 'runtime')
+  testCompile project(path: ':geode-core', configuration: 'testOutput')
+  testCompile project(path: ':geode-test')
 
   provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   provided project(':geode-core')

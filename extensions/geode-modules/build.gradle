@@ -15,13 +15,6 @@
  * limitations under the License.
  */
 
-configurations {
-  testClassesOutput {
-    extendsFrom compile
-    description  'a dependency that exposes the compiled test classes'
-  }
-}
-
 dependencies {
   compile project(':geode-core')
 
@@ -37,10 +30,8 @@ dependencies {
   testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
   testRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 
-  testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
-  testCompile project(path: ':geode-test', configuration: 'runtime')
-
-  testClassesOutput sourceSets.test.output
+  testCompile project(path: ':geode-core', configuration: 'testOutput')
+  testCompile project(path: ':geode-test')
 }
 
 disableMavenPublishing()

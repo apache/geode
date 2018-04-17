@@ -19,8 +19,8 @@ dependencies {
     provided project(':geode-core')
     compile project(':geode-protobuf-messages')
 
-    testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
-    testCompile project(path: ':geode-test', configuration: 'runtime')
+    testCompile project(path: ':geode-core', configuration: 'testOutput')
+    testCompile project(path: ':geode-test')
 
     testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
     testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'

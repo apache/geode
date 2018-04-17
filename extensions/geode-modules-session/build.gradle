@@ -31,7 +31,7 @@ dependencies {
     exclude group: 'javax.servlet'
   }
 
-  testCompile project(path: ':geode-test', configuration: 'runtime')
+  testCompile project(path: ':geode-test')
 }
 
 jar {

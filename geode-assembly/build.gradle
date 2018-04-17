@@ -70,9 +70,9 @@ dependencies {
   archives project(':geode-rebalancer')
 
   testCompile project(':geode-pulse')
-  testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
-  testCompile project(path: ':geode-test', configuration: 'runtime')
-  testCompile project(path: ':geode-pulse', configuration: 'testClassesOutput')
+  testCompile project(path: ':geode-core', configuration: 'testOutput')
+  testCompile project(path: ':geode-test')
+  testCompile project(path: ':geode-pulse', configuration: 'testOutput')
   testCompile ('org.springframework:spring-web:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'

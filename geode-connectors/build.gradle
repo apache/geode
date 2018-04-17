@@ -34,8 +34,8 @@ dependencies {
     testCompile 'com.palantir.docker.compose:docker-compose-rule-junit4:0.31.1'
     testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
     testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
-    testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
-    testCompile project(path: ':geode-test', configuration: 'runtime')
+    testCompile project(path: ':geode-core', configuration: 'testOutput')
+    testCompile project(path: ':geode-test')
 }
 
 integrationTest.forkEvery 0

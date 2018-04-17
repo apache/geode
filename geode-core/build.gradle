@@ -137,8 +137,8 @@ dependencies {
   jcaCompile sourceSets.main.output
 
   // Test Dependencies
-  testCompile(project(path: ':geode-test', configuration: 'runtime')) {
-    exclude group: 'org.apache.geode', module:'geode-core'
+  testCompile(project(path: ':geode-test')) {
+    transitive = false
   }
 
   // External

@@ -18,6 +18,6 @@
 dependencies {
   provided project(':geode-core')
 
-  testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
-  testCompile project(path: ':geode-test', configuration: 'runtime')
+  testCompile project(path: ':geode-core', configuration: 'testOutput')
+  testCompile project(path: ':geode-test')
 }
