@@ -64,7 +64,6 @@ public class ListConnectionCommand extends InternalGfshCommand {
       Set<ConnectorService.Connection> connections =
           (Set<ConnectorService.Connection>) result.get(0);
       TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-      tabularResultData.setHeader(EXPERIMENTAL);
       boolean connectionsExist = fillTabularResultData(connections, tabularResultData);
 
       return createResult(tabularResultData, connectionsExist);

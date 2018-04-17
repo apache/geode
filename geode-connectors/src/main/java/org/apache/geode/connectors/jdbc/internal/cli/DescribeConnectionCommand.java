@@ -77,7 +77,6 @@ public class DescribeConnectionCommand extends InternalGfshCommand {
           (List<?>) executeFunction(new DescribeConnectionFunction(), name, member).getResult();
       ConnectorService.Connection connection = (ConnectorService.Connection) result.get(0);
       CompositeResultData resultData = ResultBuilder.createCompositeResultData();
-      resultData.setHeader(EXPERIMENTAL);
       fillResultData(connection, resultData);
 
       return ResultBuilder.buildResult(resultData);

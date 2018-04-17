@@ -16,12 +16,10 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.util.Set;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 
-@Experimental
 public class ListConnectionFunction
     extends JdbcCliFunction<Void, Set<ConnectorService.Connection>> {
 

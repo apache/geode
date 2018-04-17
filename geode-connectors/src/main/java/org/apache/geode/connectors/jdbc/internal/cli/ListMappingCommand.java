@@ -64,7 +64,6 @@ public class ListMappingCommand extends InternalGfshCommand {
       Set<ConnectorService.RegionMapping> mappings =
           (Set<ConnectorService.RegionMapping>) result.get(0);
       TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-      tabularResultData.setHeader(EXPERIMENTAL);
       boolean connectionsExist = fillTabularResultData(mappings, tabularResultData);
 
       return createResult(tabularResultData, connectionsExist);

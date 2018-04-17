@@ -73,7 +73,6 @@ public class DescribeMappingCommand extends InternalGfshCommand {
           (List<?>) executeFunction(new DescribeMappingFunction(), regionName, member).getResult();
       ConnectorService.RegionMapping mapping = (ConnectorService.RegionMapping) result.get(0);
       CompositeResultData resultData = ResultBuilder.createCompositeResultData();
-      resultData.setHeader(EXPERIMENTAL);
       fillResultData(mapping, resultData);
 
       return ResultBuilder.buildResult(resultData);
