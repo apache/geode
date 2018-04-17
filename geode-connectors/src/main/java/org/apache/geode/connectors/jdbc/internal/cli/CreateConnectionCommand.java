@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -111,5 +112,16 @@ public class CreateConnectionCommand extends InternalGfshCommand {
       }
       return ResultBuilder.createInfoResult("");
     }
+  }
+
+  @CliAvailabilityIndicator({AlterConnectionCommand.ALTER_JDBC_CONNECTION,
+      AlterMappingCommand.ALTER_MAPPING, CreateConnectionCommand.CREATE_CONNECTION,
+      CreateMappingCommand.CREATE_MAPPING, DescribeConnectionCommand.DESCRIBE_CONNECTION,
+      DescribeMappingCommand.DESCRIBE_MAPPING, DestroyConnectionCommand.DESTROY_CONNECTION,
+      DestroyMappingCommand.DESTROY_MAPPING, ListConnectionCommand.LIST_JDBC_CONNECTION,
+      ListMappingCommand.LIST_MAPPING})
+
+  public boolean available() {
+    return isOnlineCommandAvailable();
   }
 }

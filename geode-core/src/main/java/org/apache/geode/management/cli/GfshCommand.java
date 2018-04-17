@@ -48,6 +48,16 @@ public abstract class GfshCommand implements CommandMarker {
     return gfsh != null && gfsh.isConnectedAndReady();
   }
 
+  public boolean isOnlineCommandAvailable() {
+    Gfsh gfsh = Gfsh.getCurrentInstance();
+    // command should always be available on the server
+    if (gfsh == null) {
+      return true;
+    }
+    // if in gfshVM, only when gfsh is connected and ready
+    return gfsh.isConnectedAndReady();
+  }
+
   public void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, ResourcePermission.Target target) {
     cache.getSecurityService().authorize(resource, operation, target);

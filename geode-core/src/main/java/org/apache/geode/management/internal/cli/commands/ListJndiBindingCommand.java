@@ -40,7 +40,7 @@ import org.apache.geode.security.ResourcePermission;
 public class ListJndiBindingCommand extends InternalGfshCommand {
   private static final Logger logger = LogService.getLogger();
 
-  private static final String LIST_JNDIBINDING = "list jndi-binding";
+  public static final String LIST_JNDIBINDING = "list jndi-binding";
   private static final String LIST_JNDIBINDING__HELP =
       "List all jndi bindings, active and configured. An active binding is one that is bound to the server's jndi context (and also listed in the cluster config). A configured binding is one that is listed in the cluster config, but may not be active on the servers.";
   private static final Function LIST_BINDING_FUNCTION = new ListJndiBindingFunction();
