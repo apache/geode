@@ -2609,8 +2609,8 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     DistributionConfig oldConfig = ids.getConfig();
-    Properties configProps = getProperties();
-    configProps.putAll(getSecurityProperties());
+    Properties configProps = this.config.toProperties();
+    configProps.putAll(this.config.toSecurityProperties());
 
     int timeOut = oldConfig.getMaxWaitTimeForReconnect();
     int maxTries = oldConfig.getMaxNumReconnectTries();

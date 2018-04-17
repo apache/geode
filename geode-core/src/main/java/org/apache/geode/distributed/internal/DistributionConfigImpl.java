@@ -2340,6 +2340,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public Properties getSecurityProps() {
     Properties result = new Properties();
+    result.putAll(security);
+    return result;
+  }
+
+  @Override
+  public Properties toSecurityProperties() {
+    Properties result = new Properties();
     for (Object attName : security.keySet()) {
       if (attName instanceof String) {
         result.put(attName, getAttribute((String) attName));
