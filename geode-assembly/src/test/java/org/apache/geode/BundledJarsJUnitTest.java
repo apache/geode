@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -42,6 +43,7 @@ public class BundledJarsJUnitTest {
 
   private static final String VERSION_PATTERN = "[0-9-_.v]{3,}.*\\.jar$";
   private static final String GEODE_HOME = System.getenv("GEODE_HOME");
+  private static final String EXTENSIONS_SUBDIR = "extensions";
   private Set<String> expectedJars;
 
   @Before
@@ -54,7 +56,7 @@ public class BundledJarsJUnitTest {
 
   @Test
   public void verifyBundledJarsHaveNotChanged() throws IOException {
-    TreeMap<String, String> sortedJars = getBundledJars();
+    TreeMap<String, String> sortedJars = removeExtensionJars(getBundledJars());
     Stream<String> lines =
         sortedJars.entrySet().stream().map(entry -> removeVersion(entry.getKey()));
     Set<String> bundledJarNames = new TreeSet<>(lines.collect(Collectors.toSet()));
@@ -99,6 +101,19 @@ public class BundledJarsJUnitTest {
 
     sortedJars.keySet().removeIf(s -> s.startsWith("geode"));
     return sortedJars;
+  }
+
+  private TreeMap<String, String> removeExtensionJars(final TreeMap<String, String> bundledJars) {
+    File geodeHomeDirectory = new File(GEODE_HOME);
+    File extensionsDirectory = new File(geodeHomeDirectory, EXTENSIONS_SUBDIR);
+    final String extensionsPath = extensionsDirectory.getPath();
+
+    final Map<String, String> filteredJars = bundledJars.entrySet()
+        .stream()
+        .filter(entry -> !entry.getValue().startsWith(extensionsPath))
+        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+
+    return new TreeMap<>(filteredJars);
   }
 
   private String removeVersion(String name) {
