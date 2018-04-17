@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.InternalClusterConfigurationService
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -77,11 +78,14 @@ public class CreateGatewayReceiverCommand extends InternalGfshCommand {
           help = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilters,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS,
-          help = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS__HELP) String hostnameForSenders) {
+          help = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS__HELP) String hostnameForSenders,
 
-    GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs =
-        new GatewayReceiverFunctionArgs(manualStart, startPort, endPort, bindAddress,
-            socketBufferSize, maximumTimeBetweenPings, gatewayTransportFilters, hostnameForSenders);
+      @CliOption(key = {CliStrings.IFNOTEXISTS}, help = CliStrings.PUT__PUTIFNOTEXISTS__HELP,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") Boolean ifNotExists) {
+
+    GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs = new GatewayReceiverFunctionArgs(
+        manualStart, startPort, endPort, bindAddress, socketBufferSize, maximumTimeBetweenPings,
+        gatewayTransportFilters, hostnameForSenders, ifNotExists);
 
     Set<DistributedMember> membersToCreateGatewayReceiverOn = getMembers(onGroups, onMember);
 
@@ -90,9 +94,17 @@ public class CreateGatewayReceiverCommand extends InternalGfshCommand {
             gatewayReceiverFunctionArgs, membersToCreateGatewayReceiverOn);
 
     CommandResult result = ResultBuilder.buildResult(gatewayReceiverCreateResults);
+
     XmlEntity xmlEntity = findXmlEntity(gatewayReceiverCreateResults);
     // no xml needs to be updated, simply return
     if (xmlEntity == null) {
+      return result;
+    }
+
+    boolean allSuccessful = gatewayReceiverCreateResults.stream()
+        .map(CliFunctionResult::isSuccessful).reduce(true, (x, y) -> x && y);
+    if (!allSuccessful) {
+      result.setStatus(Status.ERROR);
       return result;
     }
 

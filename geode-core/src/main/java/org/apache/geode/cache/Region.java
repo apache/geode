@@ -1244,7 +1244,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * oplogs to be compressed and more space to be created.
    *
    * @since GemFire 5.1
-   * @throws DiskAccessException
    * @deprecated use {@link DiskStore#forceRoll} instead.
    */
   @Deprecated

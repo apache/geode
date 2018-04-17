@@ -24,7 +24,6 @@ public interface GatewayReceiverFactory {
    * Sets the start port for the <code>GatewayReceiver</code>. If set the GatewayReceiver will start
    * at one of the port between startPort and endPort. The default startPort 50505.
    *
-   * @param startPort
    */
   GatewayReceiverFactory setStartPort(int startPort);
 
@@ -32,7 +31,6 @@ public interface GatewayReceiverFactory {
    * Sets the end port for the GatewayReceiver. If set the GatewayReceiver will start at one of the
    * port between startPort and endPort. The default endPort 50605.
    *
-   * @param endPort
    */
   GatewayReceiverFactory setEndPort(int endPort);
 

@@ -37,10 +37,6 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 
-/**
- *
- *
- */
 public class CompiledAggregateFunction extends AbstractCompiledValue {
 
   private final CompiledValue expr;

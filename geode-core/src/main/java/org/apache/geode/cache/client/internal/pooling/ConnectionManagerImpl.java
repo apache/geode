@@ -134,7 +134,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * @param idleTimeout The amount of time to wait to expire idle connections. -1 means that idle
    *        connections are never expired.
    * @param lifetimeTimeout the lifetimeTimeout in ms.
-   * @param securityLogger
    */
   public ConnectionManagerImpl(String poolName, ConnectionFactory factory,
       EndpointManager endpointManager, int maxConnections, int minConnections, long idleTimeout,

@@ -228,7 +228,7 @@ public class GfshCommandRule extends DescribedExternalResource {
       throw new RuntimeException(e);
     }
     if (StringUtils.isBlank(gfsh.outputString) && result != null
-        && !result.getContentAsString().isEmpty()) {
+        && !result.getMessageFromContent().isEmpty()) {
       if (result.getStatus() == Result.Status.ERROR) {
         gfsh.outputString = result.toString();
       } else {

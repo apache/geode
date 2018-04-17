@@ -163,6 +163,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException(BatchException70.class.getName());
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());
     IgnoredException.addIgnoredException(IOException.class.getName());
+    IgnoredException.addIgnoredException(java.net.SocketException.class.getName());
 
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 10000));
 

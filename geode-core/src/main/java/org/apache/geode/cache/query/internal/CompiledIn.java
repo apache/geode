@@ -362,7 +362,6 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * are iter operands. In such cases , the iter operands will be evaluated while expanding/cutting
    * down the index resultset
    *
-   * @return SelectResults
    */
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults,
       boolean completeExpansionNeeded, CompiledValue iterOperands, RuntimeIterator[] indpndntItrs,

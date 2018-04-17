@@ -43,6 +43,20 @@ public class ClusterConfigLocatorRestartDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
+  public static class TestDisconnectListener
+      implements InternalDistributedSystem.DisconnectListener {
+    static int disconnectCount;
+
+    public TestDisconnectListener() {
+      disconnectCount = 0;
+    }
+
+    @Override
+    public void onDisconnect(InternalDistributedSystem sys) {
+      disconnectCount += 1;
+    }
+  }
+
   @Test
   public void serverRestartsAfterLocatorReconnects() throws Exception {
     IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
@@ -53,6 +67,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
 
     rule.startServerVM(1, props, locator0.getPort());
     MemberVM server2 = rule.startServerVM(2, props, locator0.getPort());
+
+    addDisconnectListener(locator0);
 
     server2.invokeAsync(() -> MembershipManagerHelper
         .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance()));
@@ -100,8 +116,6 @@ public class ClusterConfigLocatorRestartDUnitTest {
     server3.invokeAsync(() -> MembershipManagerHelper
         .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance()));
 
-    waitForLocatorToReconnect(locator1);
-
     rule.startServerVM(4, locator1.getPort(), locator0.getPort());
 
     gfsh.connectAndVerify(locator1);
@@ -111,7 +125,20 @@ public class ClusterConfigLocatorRestartDUnitTest {
             .tableHasColumnOnlyWithValues("Name", "locator-1", "server-2", "server-3", "server-4"));
   }
 
+  private void addDisconnectListener(MemberVM member) {
+    member.invoke(() -> {
+      InternalDistributedSystem ds =
+          (InternalDistributedSystem) InternalLocator.getLocator().getDistributedSystem();
+      ds.addDisconnectListener(new TestDisconnectListener());
+    });
+  }
+
   private void waitForLocatorToReconnect(MemberVM locator) {
+    // Ensure that disconnect/reconnect sequence starts otherwise in the next await we might end up
+    // with the initial locator instead of a newly created one.
+    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+        .until(() -> locator.invoke(() -> TestDisconnectListener.disconnectCount > 0));
+
     Awaitility.waitAtMost(30, TimeUnit.SECONDS).until(() -> locator.invoke(() -> {
       InternalLocator intLocator = InternalLocator.getLocator();
       return intLocator != null && intLocator.isSharedConfigurationRunning();

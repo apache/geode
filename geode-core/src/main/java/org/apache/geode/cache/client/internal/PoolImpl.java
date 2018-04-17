@@ -1537,8 +1537,6 @@ public class PoolImpl implements InternalPool {
    * If serverLocation is non-null, check if the the user is authenticated on that server. If not,
    * authenticate it and return.
    *
-   * @param serverLocation
-   * @param op
    */
   private void authenticateIfRequired(ServerLocation serverLocation, Op op) {
     if (this.multiuserSecureModeEnabled && op instanceof AbstractOp

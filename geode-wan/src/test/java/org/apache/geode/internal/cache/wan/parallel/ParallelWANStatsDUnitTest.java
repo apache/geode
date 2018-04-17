@@ -53,6 +53,156 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
   }
 
   @Test
+  public void testQueueSizeInSecondaryBucketRegionQueuesWithMemberRestart() throws Exception {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
+
+    createSendersWithConflation(lnPort);
+
+    createSenderPRs(1);
+
+    startPausedSenders();
+
+    createReceiverPR(vm2, 1);
+    putKeyValues();
+
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+    ArrayList<Integer> v6List =
+        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+    ArrayList<Integer> v7List =
+        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+
+    assertEquals(NUM_PUTS, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue
+                                                                                           // size
+    assertEquals(NUM_PUTS * 2, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
+    assertEquals(NUM_PUTS * 2, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
+                                                                                               // queued
+    assertEquals(0, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
+                                                                                    // distributed
+    assertEquals(NUM_PUTS, v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
+                                                                                               // queue
+                                                                                               // size
+
+    // stop vm7 to trigger rebalance and move some primary buckets
+    System.out.println("Current secondary queue sizes:" + v4List.get(10) + ":" + v5List.get(10)
+        + ":" + v6List.get(10) + ":" + v7List.get(10));
+    vm7.invoke(() -> WANTestBase.closeCache());
+    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> {
+      int v4secondarySize = vm4.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
+      int v5secondarySize = vm5.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
+      int v6secondarySize = vm6.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
+      assertEquals(NUM_PUTS, v4secondarySize + v5secondarySize + v6secondarySize); // secondary
+      // queue
+      // size
+    });
+    System.out.println("New secondary queue sizes:" + v4List.get(10) + ":" + v5List.get(10) + ":"
+        + v6List.get(10));
+
+    vm7.invoke(() -> WANTestBase.createCache(lnPort));
+    vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, true, false, null, true));
+    vm7.invoke(() -> WANTestBase.createPartitionedRegion(testName, "ln", 1, 10, isOffHeap()));
+    startSenderInVMs("ln", vm7);
+    vm7.invoke(() -> pauseSender("ln"));
+
+    v4List = (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+    v5List = (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+    v6List = (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+    v7List = (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+    assertEquals(NUM_PUTS, v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
+    // queue
+    // size
+    System.out.println("After restart vm7, secondary queue sizes:" + v4List.get(10) + ":"
+        + v5List.get(10) + ":" + v6List.get(10) + ":" + v7List.get(10));
+
+    vm4.invoke(() -> WANTestBase.resumeSender("ln"));
+    vm5.invoke(() -> WANTestBase.resumeSender("ln"));
+    vm6.invoke(() -> WANTestBase.resumeSender("ln"));
+    vm7.invoke(() -> WANTestBase.resumeSender("ln"));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(testName, NUM_PUTS));
+    vm2.invoke(() -> WANTestBase.checkGatewayReceiverStats(0, NUM_PUTS, NUM_PUTS));
+
+    vm4.invoke(() -> WANTestBase.checkQueueSize("ln", 0));
+
+    v4List = (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v5List = (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v6List = (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v7List = (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+
+    assertEquals(NUM_PUTS, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
+                                                                                           // distributed
+    assertEquals(0, v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
+                                                                                        // queue
+                                                                                        // size
+  }
+
+  // TODO: add a test without redudency for primary switch
+  @Test
+  public void testQueueSizeInSecondaryWithPrimarySwitch() throws Exception {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2);
+    createReceiverInVMs(vm2);
+
+    createSendersWithConflation(lnPort);
+
+    createSenderPRs(1);
+
+    startPausedSenders();
+
+    createReceiverPR(vm2, 1);
+
+    putKeyValues();
+
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+    ArrayList<Integer> v6List =
+        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+    ArrayList<Integer> v7List =
+        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", NUM_PUTS));
+
+    assertEquals(NUM_PUTS, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue
+                                                                                           // size
+    assertEquals(NUM_PUTS * 2, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
+    assertEquals(NUM_PUTS * 2, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
+                                                                                               // queued
+    assertEquals(0, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
+                                                                                    // distributed
+    assertEquals(NUM_PUTS, v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
+                                                                                               // queue
+                                                                                               // size
+
+    vm4.invoke(() -> WANTestBase.resumeSender("ln"));
+    vm5.invoke(() -> WANTestBase.resumeSender("ln"));
+    vm6.invoke(() -> WANTestBase.resumeSender("ln"));
+    vm7.invoke(() -> WANTestBase.resumeSender("ln"));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(testName, NUM_PUTS));
+    vm2.invoke(() -> WANTestBase.checkGatewayReceiverStats(0, NUM_PUTS, NUM_PUTS));
+
+    vm4.invoke(() -> WANTestBase.checkQueueSize("ln", 0));
+
+    v4List = (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v5List = (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v6List = (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v7List = (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+
+    assertEquals(NUM_PUTS, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
+                                                                                           // distributed
+    assertEquals(0, v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)); // secondary
+                                                                                        // queue
+                                                                                        // size
+  }
+
+  @Test
   public void testPartitionedRegionParallelPropagation_BeforeDispatch() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));

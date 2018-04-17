@@ -1392,7 +1392,6 @@ public class IndexManager {
    * Asif : Given a definition returns the canonicalized iterator name for the definition. If the
    * definition does not exist , null is returned
    *
-   * @return String
    */
   public String getCanonicalizedIteratorName(String definition) {
     return ((String) (this.canonicalizedIteratorNameMap.get(definition)));

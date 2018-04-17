@@ -50,11 +50,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * Extracted from {@link PRQueryDistributedTest}.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLIndexTest.class})
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class PRQueryWithIndexAndPdxDistributedTest implements Serializable {

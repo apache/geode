@@ -60,9 +60,8 @@ public class StringType {
   /**
    * Gets the value of the value property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getValue() {
@@ -72,9 +71,8 @@ public class StringType {
   /**
    * Sets the value of the value property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setValue(String value) {

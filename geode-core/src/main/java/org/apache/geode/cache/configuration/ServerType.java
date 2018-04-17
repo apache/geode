@@ -163,9 +163,8 @@ public class ServerType {
   /**
    * Gets the value of the clientSubscription property.
    *
-   * @return
-   *         possible object is
-   *         {@link ServerType.ClientSubscription }
+   * possible object is
+   * {@link ServerType.ClientSubscription }
    *
    */
   public ServerType.ClientSubscription getClientSubscription() {
@@ -175,9 +174,8 @@ public class ServerType {
   /**
    * Sets the value of the clientSubscription property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link ServerType.ClientSubscription }
+   * allowed object is
+   * {@link ServerType.ClientSubscription }
    *
    */
   public void setClientSubscription(ServerType.ClientSubscription value) {
@@ -187,9 +185,8 @@ public class ServerType {
   /**
    * Gets the value of the customLoadProbe property.
    *
-   * @return
-   *         possible object is
-   *         {@link ServerType.CustomLoadProbe }
+   * possible object is
+   * {@link ServerType.CustomLoadProbe }
    *
    */
   public ServerType.CustomLoadProbe getCustomLoadProbe() {
@@ -199,9 +196,8 @@ public class ServerType {
   /**
    * Sets the value of the customLoadProbe property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link ServerType.CustomLoadProbe }
+   * allowed object is
+   * {@link ServerType.CustomLoadProbe }
    *
    */
   public void setCustomLoadProbe(ServerType.CustomLoadProbe value) {
@@ -211,9 +207,8 @@ public class ServerType {
   /**
    * Gets the value of the bindAddress property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getBindAddress() {
@@ -223,9 +218,8 @@ public class ServerType {
   /**
    * Sets the value of the bindAddress property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setBindAddress(String value) {
@@ -235,9 +229,8 @@ public class ServerType {
   /**
    * Gets the value of the hostnameForClients property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getHostnameForClients() {
@@ -247,9 +240,8 @@ public class ServerType {
   /**
    * Sets the value of the hostnameForClients property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setHostnameForClients(String value) {
@@ -259,9 +251,8 @@ public class ServerType {
   /**
    * Gets the value of the maxConnections property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getMaxConnections() {
@@ -271,9 +262,8 @@ public class ServerType {
   /**
    * Sets the value of the maxConnections property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setMaxConnections(String value) {
@@ -283,9 +273,8 @@ public class ServerType {
   /**
    * Gets the value of the maximumMessageCount property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getMaximumMessageCount() {
@@ -295,9 +284,8 @@ public class ServerType {
   /**
    * Sets the value of the maximumMessageCount property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setMaximumMessageCount(String value) {
@@ -307,9 +295,8 @@ public class ServerType {
   /**
    * Gets the value of the maximumTimeBetweenPings property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getMaximumTimeBetweenPings() {
@@ -319,9 +306,8 @@ public class ServerType {
   /**
    * Sets the value of the maximumTimeBetweenPings property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setMaximumTimeBetweenPings(String value) {
@@ -331,9 +317,8 @@ public class ServerType {
   /**
    * Gets the value of the maxThreads property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getMaxThreads() {
@@ -343,9 +328,8 @@ public class ServerType {
   /**
    * Sets the value of the maxThreads property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setMaxThreads(String value) {
@@ -355,9 +339,8 @@ public class ServerType {
   /**
    * Gets the value of the messageTimeToLive property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getMessageTimeToLive() {
@@ -367,9 +350,8 @@ public class ServerType {
   /**
    * Sets the value of the messageTimeToLive property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setMessageTimeToLive(String value) {
@@ -379,9 +361,8 @@ public class ServerType {
   /**
    * Gets the value of the notifyBySubscription property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isNotifyBySubscription() {
@@ -391,9 +372,8 @@ public class ServerType {
   /**
    * Sets the value of the notifyBySubscription property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setNotifyBySubscription(Boolean value) {
@@ -403,9 +383,8 @@ public class ServerType {
   /**
    * Gets the value of the port property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getPort() {
@@ -415,9 +394,8 @@ public class ServerType {
   /**
    * Sets the value of the port property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setPort(String value) {
@@ -427,9 +405,8 @@ public class ServerType {
   /**
    * Gets the value of the socketBufferSize property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getSocketBufferSize() {
@@ -439,9 +416,8 @@ public class ServerType {
   /**
    * Sets the value of the socketBufferSize property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setSocketBufferSize(String value) {
@@ -451,9 +427,8 @@ public class ServerType {
   /**
    * Gets the value of the loadPollInterval property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getLoadPollInterval() {
@@ -463,9 +438,8 @@ public class ServerType {
   /**
    * Sets the value of the loadPollInterval property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setLoadPollInterval(String value) {
@@ -518,9 +492,8 @@ public class ServerType {
     /**
      * Gets the value of the evictionPolicy property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getEvictionPolicy() {
@@ -530,9 +503,8 @@ public class ServerType {
     /**
      * Sets the value of the evictionPolicy property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setEvictionPolicy(String value) {
@@ -542,9 +514,8 @@ public class ServerType {
     /**
      * Gets the value of the capacity property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getCapacity() {
@@ -554,9 +525,8 @@ public class ServerType {
     /**
      * Sets the value of the capacity property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setCapacity(String value) {
@@ -566,9 +536,8 @@ public class ServerType {
     /**
      * Gets the value of the diskStoreName property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getDiskStoreName() {
@@ -578,9 +547,8 @@ public class ServerType {
     /**
      * Sets the value of the diskStoreName property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setDiskStoreName(String value) {
@@ -590,9 +558,8 @@ public class ServerType {
     /**
      * Gets the value of the overflowDirectory property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getOverflowDirectory() {
@@ -602,9 +569,8 @@ public class ServerType {
     /**
      * Sets the value of the overflowDirectory property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setOverflowDirectory(String value) {
@@ -649,9 +615,8 @@ public class ServerType {
     /**
      * Gets the value of the className property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getClassName() {
@@ -661,9 +626,8 @@ public class ServerType {
     /**
      * Sets the value of the className property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setClassName(String value) {

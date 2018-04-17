@@ -46,6 +46,8 @@ public class GatewaySenderStats {
   protected static final String EVENT_QUEUE_TIME = "eventQueueTime";
   /** Name of the event queue size statistic */
   protected static final String EVENT_QUEUE_SIZE = "eventQueueSize";
+  /** Name of the event secondary queue size statistic */
+  protected static final String EVENT_SECONDARY_QUEUE_SIZE = "eventSecondaryQueueSize";
   /** Name of the event temporary queue size statistic */
   protected static final String TMP_EVENT_QUEUE_SIZE = "tempQueueSize";
   /** Name of the events distributed statistic */
@@ -104,6 +106,8 @@ public class GatewaySenderStats {
   protected static int eventQueueTimeId;
   /** Id of the event queue size statistic */
   protected static int eventQueueSizeId;
+  /** Id of the event in secondary queue size statistic */
+  protected static int eventSecondaryQueueSizeId;
   /** Id of the temp event queue size statistic */
   protected static int eventTmpQueueSizeId;
   /** Id of the events distributed statistic */
@@ -168,6 +172,8 @@ public class GatewaySenderStats {
             f.createLongCounter(EVENT_QUEUE_TIME, "Total time spent queueing events.",
                 "nanoseconds"),
             f.createIntGauge(EVENT_QUEUE_SIZE, "Size of the event queue.", "operations", false),
+            f.createIntGauge(EVENT_SECONDARY_QUEUE_SIZE, "Size of secondary event queue.",
+                "operations", false),
             f.createIntGauge(TMP_EVENT_QUEUE_SIZE, "Size of the temporary events.", "operations",
                 false),
             f.createIntCounter(EVENTS_NOT_QUEUED_CONFLATED,
@@ -238,6 +244,7 @@ public class GatewaySenderStats {
     eventsNotQueuedConflatedId = type.nameToId(EVENTS_NOT_QUEUED_CONFLATED);
     eventQueueTimeId = type.nameToId(EVENT_QUEUE_TIME);
     eventQueueSizeId = type.nameToId(EVENT_QUEUE_SIZE);
+    eventSecondaryQueueSizeId = type.nameToId(EVENT_SECONDARY_QUEUE_SIZE);
     eventTmpQueueSizeId = type.nameToId(TMP_EVENT_QUEUE_SIZE);
     eventsDistributedId = type.nameToId(EVENTS_DISTRIBUTED);
     eventsExceedingAlertThresholdId = type.nameToId(EVENTS_EXCEEDING_ALERT_THRESHOLD);
@@ -358,6 +365,15 @@ public class GatewaySenderStats {
   }
 
   /**
+   * Returns the current value of the "eventSecondaryQueueSize" stat.
+   *
+   * @return the current value of the "eventSecondaryQueueSize" stat
+   */
+  public int getEventSecondaryQueueSize() {
+    return this.stats.getInt(eventSecondaryQueueSizeId);
+  }
+
+  /**
    * Returns the current value of the "tempQueueSize" stat.
    *
    * @return the current value of the "tempQueueSize" stat.
@@ -462,6 +478,15 @@ public class GatewaySenderStats {
   }
 
   /**
+   * Sets the "eventSecondaryQueueSize" stat.
+   *
+   * @param size The size of the secondary queue
+   */
+  public void setSecondaryQueueSize(int size) {
+    this.stats.setInt(eventSecondaryQueueSizeId, size);
+  }
+
+  /**
    * Sets the "tempQueueSize" stat.
    *
    * @param size The size of the temp queue
@@ -476,6 +501,14 @@ public class GatewaySenderStats {
    */
   public void incQueueSize() {
     this.stats.incInt(eventQueueSizeId, 1);
+  }
+
+  /**
+   * Increments the "eventSecondaryQueueSize" stat by 1.
+   */
+  public void incSecondaryQueueSize() {
+    this.stats.incInt(eventSecondaryQueueSizeId, 1);
+    assert this.stats.getInt(eventSecondaryQueueSizeId) >= 0;
   }
 
   /**
@@ -495,6 +528,16 @@ public class GatewaySenderStats {
   }
 
   /**
+   * Increments the "eventSecondaryQueueSize" stat by given delta.
+   *
+   * @param delta an integer by which secondary queue size to be increased
+   */
+  public void incSecondaryQueueSize(int delta) {
+    this.stats.incInt(eventSecondaryQueueSizeId, delta);
+    assert this.stats.getInt(eventSecondaryQueueSizeId) >= 0;
+  }
+
+  /**
    * Increments the "tempQueueSize" stat by given delta.
    *
    * @param delta an integer by which temp queue size to be increased
@@ -511,6 +554,14 @@ public class GatewaySenderStats {
   }
 
   /**
+   * Decrements the "eventSecondaryQueueSize" stat by 1.
+   */
+  public void decSecondaryQueueSize() {
+    this.stats.incInt(eventSecondaryQueueSizeId, -1);
+    assert this.stats.getInt(eventSecondaryQueueSizeId) >= 0;
+  }
+
+  /**
    * Decrements the "tempQueueSize" stat by 1.
    */
   public void decTempQueueSize() {
@@ -524,6 +575,16 @@ public class GatewaySenderStats {
    */
   public void decQueueSize(int delta) {
     this.stats.incInt(eventQueueSizeId, -delta);
+  }
+
+  /**
+   * Decrements the "eventSecondaryQueueSize" stat by given delta.
+   *
+   * @param delta an integer by which secondary queue size to be increased
+   */
+  public void decSecondaryQueueSize(int delta) {
+    this.stats.incInt(eventSecondaryQueueSizeId, -delta);
+    assert this.stats.getInt(eventSecondaryQueueSizeId) >= 0;
   }
 
   /**

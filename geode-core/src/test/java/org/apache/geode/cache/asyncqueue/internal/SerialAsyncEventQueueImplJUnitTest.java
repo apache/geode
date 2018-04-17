@@ -50,14 +50,17 @@ public class SerialAsyncEventQueueImplJUnitTest {
     attrs.id = AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX + "id";
     SerialAsyncEventQueueImpl queue = new SerialAsyncEventQueueImpl(cache, attrs);
     queue.getStatistics().incQueueSize(5);
+    queue.getStatistics().incSecondaryQueueSize(6);
     queue.getStatistics().incTempQueueSize(10);
 
     assertEquals(5, queue.getStatistics().getEventQueueSize());
+    assertEquals(6, queue.getStatistics().getEventSecondaryQueueSize());
     assertEquals(10, queue.getStatistics().getTempEventQueueSize());
 
     queue.stop();
 
     assertEquals(0, queue.getStatistics().getEventQueueSize());
+    assertEquals(0, queue.getStatistics().getEventSecondaryQueueSize());
     assertEquals(0, queue.getStatistics().getTempEventQueueSize());
   }
 

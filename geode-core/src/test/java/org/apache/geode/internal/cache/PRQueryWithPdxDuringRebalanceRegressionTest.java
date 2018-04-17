@@ -49,6 +49,7 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -57,7 +58,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #43102: hang while executing query with pdx objects
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLQueryTest.class})
 @SuppressWarnings("serial")
 public class PRQueryWithPdxDuringRebalanceRegressionTest implements Serializable {
 

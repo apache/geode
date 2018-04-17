@@ -70,9 +70,8 @@ public class ResourceManagerType {
   /**
    * Gets the value of the criticalHeapPercentage property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getCriticalHeapPercentage() {
@@ -82,9 +81,8 @@ public class ResourceManagerType {
   /**
    * Sets the value of the criticalHeapPercentage property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setCriticalHeapPercentage(String value) {
@@ -94,9 +92,8 @@ public class ResourceManagerType {
   /**
    * Gets the value of the evictionHeapPercentage property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getEvictionHeapPercentage() {
@@ -106,9 +103,8 @@ public class ResourceManagerType {
   /**
    * Sets the value of the evictionHeapPercentage property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setEvictionHeapPercentage(String value) {
@@ -118,9 +114,8 @@ public class ResourceManagerType {
   /**
    * Gets the value of the criticalOffHeapPercentage property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getCriticalOffHeapPercentage() {
@@ -130,9 +125,8 @@ public class ResourceManagerType {
   /**
    * Sets the value of the criticalOffHeapPercentage property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setCriticalOffHeapPercentage(String value) {
@@ -142,9 +136,8 @@ public class ResourceManagerType {
   /**
    * Gets the value of the evictionOffHeapPercentage property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getEvictionOffHeapPercentage() {
@@ -154,9 +147,8 @@ public class ResourceManagerType {
   /**
    * Sets the value of the evictionOffHeapPercentage property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setEvictionOffHeapPercentage(String value) {

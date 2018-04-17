@@ -762,7 +762,6 @@ public class QueryUtils {
    * marks the termination, but in case of CompiledOperation this is not the case
    *
    * @param expr CompiledValue object
-   * @return CompiledValue
    */
   static CompiledValue obtainTheBottomMostCompiledValue(CompiledValue expr) {
     boolean toContinue = true;
