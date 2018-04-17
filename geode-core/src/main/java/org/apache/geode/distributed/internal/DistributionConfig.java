@@ -4945,5 +4945,4 @@ public interface DistributionConfig extends Config, LogConfig {
     Collections.sort(atts);
     return atts.toArray(new String[atts.size()]);
   }
-
 }
