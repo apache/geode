@@ -33,10 +33,10 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 import org.apache.geode.management.internal.cli.functions.GetMemberConfigInformationFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.CompositeResultModel;
+import org.apache.geode.management.internal.cli.result.model.ErrorResultModel;
+import org.apache.geode.management.internal.cli.result.model.SectionResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -71,11 +71,11 @@ public class DescribeConfigCommand extends InternalGfshCommand {
       if (obj != null && obj instanceof MemberConfigurationInfo) {
         MemberConfigurationInfo memberConfigInfo = (MemberConfigurationInfo) obj;
 
-        CompositeResultData crd = ResultBuilder.createCompositeResultData();
+        CompositeResultModel crd = new CompositeResultModel();
         crd.setHeader(CliStrings.format(CliStrings.DESCRIBE_CONFIG__HEADER__TEXT, memberNameOrId));
 
         List<String> jvmArgsList = memberConfigInfo.getJvmInputArguments();
-        TabularResultData jvmInputArgs = crd.addSection().addTable();
+        TabularResultModel jvmInputArgs = crd.addSection().addTable();
 
         for (String jvmArg : jvmArgsList) {
           // This redaction should be redundant, since jvmArgs should have already been redacted in
@@ -101,25 +101,24 @@ public class DescribeConfigCommand extends InternalGfshCommand {
             addSection(crd, cacheServerAttributes, "Cache-server attributes");
           }
         }
-        result = ResultBuilder.buildResult(crd);
+        result = crd;
       }
 
     } catch (FunctionInvocationTargetException e) {
-      result = ResultBuilder.createGemFireErrorResult(CliStrings
+      result = ErrorResultModel.createGemFireErrorResult(CliStrings
           .format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, CliStrings.DESCRIBE_CONFIG));
     } catch (Exception e) {
-      ErrorResultData erd = ResultBuilder.createErrorResultData();
-      erd.addLine(e.getMessage());
-      result = ResultBuilder.buildResult(erd);
+      result = new ErrorResultModel(0, e.getMessage());
     }
     return result;
   }
 
-  private void addSection(CompositeResultData crd, Map<String, String> attrMap, String headerText) {
+  private void addSection(CompositeResultModel crd, Map<String, String> attrMap,
+      String headerText) {
     if (attrMap != null && !attrMap.isEmpty()) {
-      CompositeResultData.SectionResultData section = crd.addSection();
+      SectionResultModel section = crd.addSection();
       section.setHeader(headerText);
-      section.addSeparator('.');
+      section.addSeparator('-');
       Set<String> attributes = new TreeSet<>(attrMap.keySet());
 
       for (String attribute : attributes) {

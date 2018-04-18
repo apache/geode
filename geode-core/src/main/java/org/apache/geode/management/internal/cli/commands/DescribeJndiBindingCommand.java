@@ -30,7 +30,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -48,8 +48,7 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
       operation = ResourcePermission.Operation.READ)
   public Result describeJndiBinding(@CliOption(key = "name", mandatory = true,
       help = "Name of the binding to describe") String bindingName) {
-    Result result = null;
-    TabularResultData tabularData = ResultBuilder.createTabularResultData();
+    TabularResultModel tabularData = new TabularResultModel();
 
     InternalClusterConfigurationService ccService =
         (InternalClusterConfigurationService) getConfigurationService();
@@ -104,12 +103,10 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
       }
     }
 
-    result = ResultBuilder.buildResult(tabularData);
-
-    return result;
+    return tabularData;
   }
 
-  private void addTableRow(TabularResultData table, String property, String value) {
+  private void addTableRow(TabularResultModel table, String property, String value) {
     table.accumulate("Property", property);
     table.accumulate("Value", value != null ? value : "");
   }

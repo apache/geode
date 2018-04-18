@@ -29,7 +29,7 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -49,7 +49,7 @@ public class ListMembersCommand extends InternalGfshCommand {
       return ResultBuilder.createInfoResult(CliStrings.LIST_MEMBER__MSG__NO_MEMBER_FOUND);
     }
 
-    TabularResultData resultData = ResultBuilder.createTabularResultData();
+    TabularResultModel resultData = new TabularResultModel();
     final DistributedMember coordinatorMember = getCoordinator();
     for (DistributedMember member : memberSet) {
       resultData.accumulate("Name", member.getName());
@@ -60,7 +60,7 @@ public class ListMembersCommand extends InternalGfshCommand {
       }
     }
 
-    return ResultBuilder.buildResult(resultData);
+    return resultData;
   }
 
   DistributedMember getCoordinator() {

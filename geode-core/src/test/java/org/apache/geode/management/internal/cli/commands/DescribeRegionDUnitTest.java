@@ -170,16 +170,16 @@ public class DescribeRegionDUnitTest {
     CommandResult result = gfsh.executeAndAssertThat("describe region --name=" + PR1)
         .statusIsSuccess().getCommandResult();
 
-    List<String> names = result.getColumnFromTableContent("Name", 0, 0);
+    List<String> names = result.getColumnFromTableContent("Name", "0", "0");
     assertThat(names).containsOnlyOnce(RegionAttributesNames.ENTRY_IDLE_TIME_CUSTOM_EXPIRY);
 
-    List<String> values = result.getColumnFromTableContent("Value", 0, 0);
+    List<String> values = result.getColumnFromTableContent("Value", "0", "0");
     assertThat(values).containsOnlyOnce(TestCustomIdleExpiry.class.getName());
 
-    names = result.getColumnFromTableContent("Name", 0, 1);
+    names = result.getColumnFromTableContent("Name", "0", "1");
     assertThat(names).containsOnlyOnce(RegionAttributesNames.ENTRY_TIME_TO_LIVE_CUSTOM_EXPIRY);
 
-    values = result.getColumnFromTableContent("Value", 0, 1);
+    values = result.getColumnFromTableContent("Value", "0", "1");
     assertThat(values).containsOnlyOnce(TestCustomTTLExpiry.class.getName());
   }
 

@@ -31,9 +31,12 @@ import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.ModelCommandResponse;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
 public class GfshParserRule extends ExternalResource {
@@ -83,7 +86,14 @@ public class GfshParserRule extends ExternalResource {
       }
     }
 
-    return (CommandResult) commandExecutor.execute(instance, parseResult);
+    Object exeResult = commandExecutor.execute(instance, parseResult);
+    if (exeResult instanceof ResultModel) {
+      ModelCommandResponse mcr = new ModelCommandResponse();
+      mcr.setData((ResultModel) exeResult);
+      return new ModelCommandResult(mcr);
+    }
+
+    return (CommandResult) exeResult;
   }
 
   public <T> CommandResultAssert executeAndAssertThat(T instance, String command) {

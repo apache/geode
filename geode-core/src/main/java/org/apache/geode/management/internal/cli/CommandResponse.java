@@ -17,8 +17,17 @@ package org.apache.geode.management.internal.cli;
 import java.nio.file.Path;
 import java.text.DateFormat;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.result.model.CompositeResultModel;
+import org.apache.geode.management.internal.cli.result.model.ErrorResultModel;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.SectionResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 /**
  * @since GemFire 7.0
@@ -36,13 +45,7 @@ public class CommandResponse {
   private final Data data;
   private final boolean failedToPersist;
   private final String fileToDownload;
-
-  CommandResponse(String sender, String contentType, int status, String page, String tokenAccessor,
-      String debugInfo, String header, GfJsonObject content, String footer,
-      boolean failedToPersist) {
-    this(sender, contentType, status, page, tokenAccessor, debugInfo, header, content, footer,
-        failedToPersist, null);
-  }
+  private final boolean isLegacy;
 
   CommandResponse(String sender, String contentType, int status, String page, String tokenAccessor,
       String debugInfo, String header, GfJsonObject content, String footer, boolean failedToPersist,
@@ -53,7 +56,7 @@ public class CommandResponse {
     this.page = page;
     this.tokenAccessor = tokenAccessor;
     this.debugInfo = debugInfo;
-    this.data = new Data(header, content, footer);
+    this.data = new LegacyData(header, content, footer);
     this.when = DateFormat.getInstance().format(new java.util.Date());
     this.version = GemFireVersion.getGemFireVersion();
     this.failedToPersist = failedToPersist;
@@ -62,6 +65,27 @@ public class CommandResponse {
     } else {
       this.fileToDownload = null;
     }
+    this.isLegacy = true;
+  }
+
+  CommandResponse(ResultModel result, String sender, String page, String tokenAccessor,
+      String debugInfo, Path fileToDownload) {
+    this.sender = sender;
+    this.contentType = result.getType();
+    this.status = result.getStatus().getCode();
+    this.page = page;
+    this.tokenAccessor = tokenAccessor;
+    this.debugInfo = debugInfo;
+    this.data = result;
+    this.when = DateFormat.getInstance().format(new java.util.Date());
+    this.version = GemFireVersion.getGemFireVersion();
+    this.failedToPersist = false; // result.failedToPersist();
+    if (fileToDownload != null) {
+      this.fileToDownload = fileToDownload.toString();
+    } else {
+      this.fileToDownload = null;
+    }
+    this.isLegacy = false;
   }
 
   // For de-serializing
@@ -72,11 +96,12 @@ public class CommandResponse {
     this.page = jsonObject.getString("page");
     this.tokenAccessor = jsonObject.getString("tokenAccessor");
     this.debugInfo = jsonObject.getString("debugInfo");
-    this.data = new Data(jsonObject.getJSONObject("data"));
+    this.data = new LegacyData(jsonObject.getJSONObject("data"));
     this.when = jsonObject.getString("when");
     this.version = jsonObject.getString("version");
     this.failedToPersist = jsonObject.getBoolean("failedToPersist");
     this.fileToDownload = jsonObject.getString("fileToDownload");
+    this.isLegacy = true;
   }
 
   /**
@@ -150,18 +175,37 @@ public class CommandResponse {
     return failedToPersist;
   }
 
-  public static class Data {
+  public boolean isLegacy() {
+    return isLegacy;
+  }
+
+  @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY,
+      property = "modelClass")
+  @JsonSubTypes({@JsonSubTypes.Type(value = TabularResultModel.class),
+      @JsonSubTypes.Type(value = CompositeResultModel.class),
+      @JsonSubTypes.Type(value = SectionResultModel.class),
+      @JsonSubTypes.Type(value = InfoResultModel.class),
+      @JsonSubTypes.Type(value = ErrorResultModel.class)})
+  public interface Data {
+    String getHeader();
+
+    String getFooter();
+
+    Object getContent();
+  }
+
+  public static class LegacyData implements Data {
     private String header;
     private GfJsonObject content;
     private String footer;
 
-    public Data(String header, GfJsonObject content, String footer) {
+    public LegacyData(String header, GfJsonObject content, String footer) {
       this.header = header;
       this.content = content;
       this.footer = footer;
     }
 
-    public Data(GfJsonObject dataJsonObject) {
+    public LegacyData(GfJsonObject dataJsonObject) {
       this.header = dataJsonObject.getString("header");
       this.content = dataJsonObject.getJSONObject("content");
       this.footer = dataJsonObject.getString("footer");
@@ -195,46 +239,40 @@ public class CommandResponse {
       return builder.toString();
     }
   }
+
+  public static class ResultModelData implements Data {
+    private ResultModel content;
+
+    public ResultModelData(ResultModel content) {
+      this.content = content;
+    }
+
+    /**
+     * @return the header
+     */
+    public String getHeader() {
+      return content.getHeader();
+    }
+
+    /**
+     * @return the content
+     */
+    public Object getContent() {
+      return content;
+    }
+
+    /**
+     * @return the footer
+     */
+    public String getFooter() {
+      return content.getFooter();
+    }
+
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append("Data [header=").append(content.getHeader()).append(", content=")
+          .append(content).append(", footer=").append(content.getFooter()).append("]");
+      return builder.toString();
+    }
+  }
 }
-
-
-/*
- ** TABLE
- *
- * { "sender": "member1", "version": "gemfire70", "contentType": "table", "page": "1/1",
- * "tokenAccessor": "__NULL__", "status": "OK", "when": "January 12 2012", "debugData": [ "val1",
- * "val2" ], "data": { "header": [ "Header1", "Header2", "Header3", "Header4" ], "content": [ [
- * "val00", "val01", "val02", "val03" ], [ "val10", "val11", "val12", "val13" ], [ "val20", "val21",
- * "val22", "val23" ] ] } }
- **
- * TABLE SCROLLABLE
- *
- * { "sender": "member1", "version": "gemfire70", "contentType": "table", "page": "1/5",
- * "tokenHolder": "TOKEN12345", "status": "OK", "when": "January 12 2012", "debugData": [ "val1",
- * "val2" ], "data": { "header": [ "Header1", "Header2", "Header3", "Header4" ], "content": [ [
- * "val00", "val01", "val02", "val03" ], [ "val10", "val11", "val12", "val13" ], [ "val20", "val21",
- * "val22", "val23" ] ] } }
- **
- *
- * CATALOG
- *
- * { "sender": "member1", "version": "gemfire70", "contentType": "catalog", "page": "1/1",
- * "tokenHolder": "__NULL__", "status": "OK", "when": "January 12 2012", "debugData": [ "val1",
- * "val2" ], "data": { "content": [ { "key1": "val1", "key2": "val2", "key3": "val3", "key4":
- * "val4", "key5": "val5", "key6": "val6", "key7": "val7" } ] } }
- **
- *
- * CATALOG SCROLLABLE
- *
- * { "sender": "member1", "version": "gemfire70", "contentType": "catalog", "page": "1/10",
- * "tokenHolder": "TOKEN1265765", "status": "OK", "when": "January 12 2012", "debugData": [ "val1",
- * "val2" ], "data": { "content": [ { "key1": "val1", "key2": "val2", "key3": "val3", "key4":
- * "val4", "key5": "val5", "key6": "val6", "key7": "val7" } ] } }
- **
- *
- * Object as argument
- *
- * { "com.foo.bar.Employee": { "id": 1234, "name": "Foo BAR", "department": { "id": 456, "name":
- * "support" } } }
- *
- */

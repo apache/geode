@@ -117,7 +117,7 @@ public class OnlineCommandProcessor {
           resourceOperation.target(), ResourcePermission.ALL);
     }
 
-    // this command processor does not exeucte command that needs fileData passed from client
+    // this command processor does not execute command that needs fileData passed from client
     CliMetaData metaData = method.getAnnotation(CliMetaData.class);
     if (metaData != null && metaData.isFileUploaded() && stagedFilePaths == null) {
       return ResultBuilder
