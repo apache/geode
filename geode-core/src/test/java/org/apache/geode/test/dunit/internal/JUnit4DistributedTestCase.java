@@ -216,15 +216,38 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
         }
 
       } else {
-        Properties activeProps = system.getProperties();
+        Properties activeProps = system.getConfig().toProperties();
         for (Entry<Object, Object> entry : props.entrySet()) {
           String key = (String) entry.getKey();
+          if (key.startsWith("security-")) {
+            continue;
+          }
           String value = (String) entry.getValue();
           if (!value.equals(activeProps.getProperty(key))) {
             needNewSystem = true;
             getLogWriter().info("Forcing DS disconnect. For property " + key + " old value = "
                 + activeProps.getProperty(key) + " new value = " + value);
             break;
+          }
+        }
+        try {
+          activeProps = system.getConfig().toSecurityProperties();
+          for (Entry<Object, Object> entry : props.entrySet()) {
+            String key = (String) entry.getKey();
+            if (!key.startsWith("security-")) {
+              continue;
+            }
+            String value = (String) entry.getValue();
+            if (!value.equals(activeProps.getProperty(key))) {
+              needNewSystem = true;
+              getLogWriter().info("Forcing DS disconnect. For property " + key + " old value = "
+                  + activeProps.getProperty(key) + " new value = " + value);
+              break;
+            }
+          }
+        } catch (NoSuchMethodError e) {
+          if (Version.CURRENT_ORDINAL >= 85) {
+            throw new IllegalStateException("missing method", e);
           }
         }
       }
