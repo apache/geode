@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -74,6 +75,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedLockService;
@@ -88,8 +91,10 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
@@ -872,6 +877,156 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     } finally {
       unlockSharedConfiguration();
     }
+  }
+
+  @Override
+  public <T extends CacheElement> T getCustomCacheElement(String group, String id,
+      Class<T> classT) {
+    registerBindClass(classT);
+    CacheConfig cacheConfig = getCacheConfig(group);
+    if (cacheConfig == null) {
+      return null;
+    }
+    return findCustomCacheElement(cacheConfig, id, classT);
+  }
+
+  @Override
+  public void saveCustomCacheElement(String group, CacheElement element) {
+    registerBindClass(element.getClass());
+    updateCacheConfig(group, cacheConfig -> {
+      CacheElement foundElement =
+          findCustomCacheElement(cacheConfig, element.getId(), element.getClass());
+      if (foundElement != null) {
+        cacheConfig.getCustomCacheElements().remove(foundElement);
+      }
+      cacheConfig.getCustomCacheElements().add(element);
+      return cacheConfig;
+    });
+  }
+
+  @Override
+  public void deleteCustomCacheElement(String group, String id,
+      Class<? extends CacheElement> classT) {
+    registerBindClass(classT);
+    updateCacheConfig(group, config -> {
+      CacheElement cacheElement = findCustomCacheElement(config, id, classT);
+      if (cacheElement == null) {
+        return null;
+      }
+      config.getCustomCacheElements().remove(cacheElement);
+      return config;
+    });
+  }
+
+  @Override
+  public <T extends CacheElement> T getCustomRegionElement(String group, String regionPath,
+      String id, Class<T> classT) {
+    registerBindClass(classT);
+    CacheConfig cacheConfig = getCacheConfig(group);
+    return findCustomRegionElement(cacheConfig, regionPath, id, classT);
+  }
+
+  @Override
+  public void saveCustomRegionElement(String group, String regionPath, CacheElement element) {
+    registerBindClass(element.getClass());
+    updateCacheConfig(group, cacheConfig -> {
+      RegionConfig regionConfig = findRegionConfiguration(cacheConfig, regionPath);
+      if (regionConfig == null) {
+        throw new EntityNotFoundException(
+            String.format("region %s does not exist in group %s", regionPath, group));
+      }
+
+      CacheElement oldElement =
+          findCustomRegionElement(cacheConfig, regionPath, element.getId(), element.getClass());
+
+      if (oldElement != null) {
+        regionConfig.getCustomRegionElements().remove(oldElement);
+      }
+      regionConfig.getCustomRegionElements().add(element);
+      return cacheConfig;
+    });
+  }
+
+  @Override
+  public void deleteCustomRegionElement(String group, String regionPath, String id,
+      Class<? extends CacheElement> classT) {
+    registerBindClass(classT);
+    updateCacheConfig(group, cacheConfig -> {
+      RegionConfig regionConfig = findRegionConfiguration(cacheConfig, regionPath);
+      if (regionConfig == null) {
+        throw new EntityNotFoundException(
+            String.format("region %s does not exist in group %s", regionPath, group));
+      }
+      CacheElement element = findCustomRegionElement(cacheConfig, regionPath, id, classT);
+      if (element == null) {
+        return null;
+      }
+      regionConfig.getCustomRegionElements().remove(element);
+      return cacheConfig;
+    });
+  }
+
+  @Override
+  public <T extends Identifiable<String>> T findIdentifiable(List<T> list, String id) {
+    return list.stream().filter(o -> o.getId().equals(id)).findFirst().orElse(null);
+  }
+
+  @Override
+  public <T extends Identifiable<String>> void removeFromList(List<T> list, String id) {
+    for (Iterator<T> iter = list.listIterator(); iter.hasNext();) {
+      if (iter.next().getId().equals(id)) {
+        iter.remove();
+      }
+    }
+  }
+
+  @Override
+  public RegionConfig findRegionConfiguration(CacheConfig cacheConfig, String regionPath) {
+    return findIdentifiable(cacheConfig.getRegion(), regionPath);
+  }
+
+  @Override
+  public <T extends CacheElement> List<T> findCustomCacheElements(CacheConfig cacheConfig,
+      Class<T> classT) {
+
+    List<T> newList = new ArrayList<>();
+    // streaming won't work here, because it's trying to cast element into CacheElement
+    for (Object element : cacheConfig.getCustomCacheElements()) {
+      if (classT.isInstance(element)) {
+        newList.add(classT.cast(element));
+      }
+    }
+    return newList;
+  }
+
+  @Override
+  public <T extends CacheElement> T findCustomCacheElement(CacheConfig cacheConfig,
+      String elementId, Class<T> classT) {
+    return findIdentifiable(findCustomCacheElements(cacheConfig, classT), elementId);
+  }
+
+  @Override
+  public <T extends CacheElement> List<T> findCustomRegionElements(CacheConfig cacheConfig,
+      String regionPath, Class<T> classT) {
+    List<T> newList = new ArrayList<>();
+    RegionConfig regionConfig = findRegionConfiguration(cacheConfig, regionPath);
+    if (regionConfig == null) {
+      return newList;
+    }
+
+    // streaming won't work here, because it's trying to cast element into CacheElement
+    for (Object element : regionConfig.getCustomRegionElements()) {
+      if (classT.isInstance(element)) {
+        newList.add(classT.cast(element));
+      }
+    }
+    return newList;
+  }
+
+  @Override
+  public <T extends CacheElement> T findCustomRegionElement(CacheConfig cacheConfig,
+      String regionPath, String elementId, Class<T> classT) {
+    return findIdentifiable(findCustomRegionElements(cacheConfig, regionPath, classT), elementId);
   }
 
 }
