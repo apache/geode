@@ -2337,8 +2337,24 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     securityPeerMembershipTimeout = (Integer) value;
   }
 
+  @Override
   public Properties getSecurityProps() {
-    return security;
+    Properties result = new Properties();
+    result.putAll(security);
+    return result;
+  }
+
+  @Override
+  public Properties toSecurityProperties() {
+    Properties result = new Properties();
+    for (Object attName : security.keySet()) {
+      if (attName instanceof String) {
+        result.put(attName, getAttribute((String) attName));
+      } else {
+        result.put(attName, security.get(attName));
+      }
+    }
+    return result;
   }
 
   public String getSecurity(String attName) {
