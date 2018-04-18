@@ -95,7 +95,10 @@ import org.apache.geode.security.NotAuthorizedException;
 /**
  * This class delegates all methods to the InternalCache instance
  * it wraps. Any regions returned will be checked and if they are
- * internal an exception is thrown.
+ * internal an exception is thrown if they are.
+ * Note: an instance of this class should be used by servers that
+ * process requests from clients that contains region names to prevent
+ * the client from directly accessing internal regions.
  */
 public class InternalCacheForClientAccess implements InternalCache {
 
@@ -1177,5 +1180,10 @@ public class InternalCacheForClientAccess implements InternalCache {
   @Override
   public void setPdxReadSerializedOverride(boolean pdxReadSerialized) {
     delegate.setPdxReadSerializedOverride(pdxReadSerialized);
+  }
+
+  @Override
+  public InternalCache getCacheForClients() {
+    return this;
   }
 }

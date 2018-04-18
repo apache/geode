@@ -5353,4 +5353,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  private final InternalCacheForClientAccess cacheForClients =
+      new InternalCacheForClientAccess(this);
+
+  @Override
+  public InternalCache getCacheForClients() {
+    return cacheForClients;
+  }
+
 }
