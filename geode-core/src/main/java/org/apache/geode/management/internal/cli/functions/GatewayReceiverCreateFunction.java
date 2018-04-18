@@ -80,22 +80,11 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
       GatewayReceiver createdGatewayReceiver =
           createGatewayReceiver(cache, gatewayReceiverCreateArgs);
 
-      Map<String, String> attributes = new HashMap<>();
-      if (gatewayReceiverCreateArgs.getStartPort() != null) {
-        attributes.put("start-port", gatewayReceiverCreateArgs.getStartPort().toString());
-      }
-      if (gatewayReceiverCreateArgs.getEndPort() != null) {
-        attributes.put("end-port", gatewayReceiverCreateArgs.getEndPort().toString());
-      }
-      if (gatewayReceiverCreateArgs.getBindAddress() != null) {
-        attributes.put("bind-address", gatewayReceiverCreateArgs.getBindAddress());
-      }
-      XmlEntity xmlEntity = XmlEntity.builder().withType(CacheXml.GATEWAY_RECEIVER)
-          .withAttributes(attributes).build();
+      XmlEntity xmlEntity = getXmlEntity(gatewayReceiverCreateArgs);
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
           CliStrings.format(
               CliStrings.CREATE_GATEWAYRECEIVER__MSG__GATEWAYRECEIVER_CREATED_ON_0_ONPORT_1,
-              memberNameOrId, createdGatewayReceiver.getPort())));
+              memberNameOrId, Integer.toString(createdGatewayReceiver.getPort()))));
     } catch (IllegalStateException e) {
       // no need to log the stack trace
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, e, e.getMessage()));
@@ -104,6 +93,21 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, e, e.getMessage()));
     }
 
+  }
+
+  XmlEntity getXmlEntity(GatewayReceiverFunctionArgs gatewayReceiverCreateArgs) {
+    Map<String, String> attributes = new HashMap<>();
+    if (gatewayReceiverCreateArgs.getStartPort() != null) {
+      attributes.put("start-port", gatewayReceiverCreateArgs.getStartPort().toString());
+    }
+    if (gatewayReceiverCreateArgs.getEndPort() != null) {
+      attributes.put("end-port", gatewayReceiverCreateArgs.getEndPort().toString());
+    }
+    if (gatewayReceiverCreateArgs.getBindAddress() != null) {
+      attributes.put("bind-address", gatewayReceiverCreateArgs.getBindAddress());
+    }
+    return XmlEntity.builder().withType(CacheXml.GATEWAY_RECEIVER).withAttributes(attributes)
+        .build();
   }
 
   /** GatewayReceiver creation happens here. */
@@ -168,7 +172,7 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
     return ClassPathLoader.getLatest().forName(className).newInstance();
   }
 
-  private boolean gatewayReceiverExists(Cache cache) {
+  boolean gatewayReceiverExists(Cache cache) {
     return cache.getGatewayReceivers() != null && !cache.getGatewayReceivers().isEmpty();
   }
 
