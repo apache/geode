@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,20 +61,18 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedLockService;
@@ -88,8 +87,10 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
@@ -107,12 +108,10 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
    * Name of the directory where the shared configuration artifacts are stored
    */
   public static final String CLUSTER_CONFIG_ARTIFACTS_DIR_NAME = "cluster_config";
+  public static final String CLUSTER_CONFIG_DISK_DIR_PREFIX = "ConfigDiskDir_";
+  public static final String CLUSTER_CONFIG = "cluster";
 
   private static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
-
-  public static final String CLUSTER_CONFIG_DISK_DIR_PREFIX = "ConfigDiskDir_";
-
-  public static final String CLUSTER_CONFIG = "cluster";
 
   /**
    * Name of the lock service used for shared configuration
@@ -138,14 +137,6 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
   private final InternalCache cache;
   private DistributedLockService sharedConfigLockingService;
   private JAXBService jaxbService;
-
-  @TestingOnly
-  InternalClusterConfigurationService() {
-    configDirPath = null;
-    configDiskDirPath = null;
-    cache = null;
-    jaxbService = new JAXBService();
-  }
 
   public InternalClusterConfigurationService(InternalCache cache) throws IOException {
     this.cache = cache;
@@ -175,6 +166,10 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     jaxbService = new JAXBService();
   }
 
+  public String getConfigDiskDirPath() {
+    return configDiskDirPath;
+  }
+
   /**
    * Gets or creates (if not created) shared configuration lock service
    */
@@ -190,29 +185,6 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
       return DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
     }
     return sharedConfigDls;
-  }
-
-  /**
-   * Finds xml element in a group's xml, with the tagName that has given attribute and value
-   */
-  public Element getXmlElement(String group, String tagName, String attribute, String value)
-      throws IOException, SAXException, ParserConfigurationException {
-    if (group == null) {
-      group = "cluster";
-    }
-    Configuration config = getConfiguration(group);
-    Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
-    NodeList elements = document.getElementsByTagName(tagName);
-    if (elements == null || elements.getLength() == 0) {
-      return null;
-    } else {
-      for (int i = 0; i < elements.getLength(); i++) {
-        Element eachElement = (Element) elements.item(i);
-        if (eachElement.getAttribute(attribute).equals(value))
-          return eachElement;
-      }
-    }
-    return null;
   }
 
   /**
@@ -587,29 +559,6 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     return response;
   }
 
-  /**
-   * For tests only. TODO: clean this up and remove from production code
-   * <p>
-   * Throws {@code AssertionError} wrapping any exception thrown by operation.
-   */
-  public void destroySharedConfiguration() {
-    try {
-      Region<String, Configuration> configRegion = getConfigurationRegion();
-      if (configRegion != null) {
-        configRegion.destroyRegion();
-      }
-      DiskStore configDiskStore = this.cache.findDiskStore(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
-      if (configDiskStore != null) {
-        configDiskStore.destroy();
-        File file = new File(this.configDiskDirPath);
-        FileUtils.deleteDirectory(file);
-      }
-      FileUtils.deleteDirectory(new File(this.configDirPath));
-    } catch (Exception exception) {
-      throw new AssertionError(exception);
-    }
-  }
-
   public Path getPathToJarOnThisLocator(String groupName, String jarName) {
     return new File(this.configDirPath).toPath().resolve(groupName).resolve(jarName);
   }
@@ -756,16 +705,12 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
       }
 
     } catch (CancelException e) {
-      if (configRegion == null) {
-        this.status.set(SharedConfigurationStatus.STOPPED);
-      }
+      this.status.set(SharedConfigurationStatus.STOPPED);
       // CONFIG: don't rethrow as Exception, keep it a subclass of CancelException
       throw e;
 
     } catch (Exception e) {
-      if (configRegion == null) {
-        this.status.set(SharedConfigurationStatus.STOPPED);
-      }
+      this.status.set(SharedConfigurationStatus.STOPPED);
       throw new RuntimeException("Error occurred while initializing cluster configuration", e);
     }
 
@@ -872,6 +817,156 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     } finally {
       unlockSharedConfiguration();
     }
+  }
+
+  @Override
+  public <T extends CacheElement> T getCustomCacheElement(String group, String id,
+      Class<T> classT) {
+    registerBindClass(classT);
+    CacheConfig cacheConfig = getCacheConfig(group);
+    if (cacheConfig == null) {
+      return null;
+    }
+    return findCustomCacheElement(cacheConfig, id, classT);
+  }
+
+  @Override
+  public void saveCustomCacheElement(String group, CacheElement element) {
+    registerBindClass(element.getClass());
+    updateCacheConfig(group, cacheConfig -> {
+      CacheElement foundElement =
+          findCustomCacheElement(cacheConfig, element.getId(), element.getClass());
+      if (foundElement != null) {
+        cacheConfig.getCustomCacheElements().remove(foundElement);
+      }
+      cacheConfig.getCustomCacheElements().add(element);
+      return cacheConfig;
+    });
+  }
+
+  @Override
+  public void deleteCustomCacheElement(String group, String id,
+      Class<? extends CacheElement> classT) {
+    registerBindClass(classT);
+    updateCacheConfig(group, config -> {
+      CacheElement cacheElement = findCustomCacheElement(config, id, classT);
+      if (cacheElement == null) {
+        return null;
+      }
+      config.getCustomCacheElements().remove(cacheElement);
+      return config;
+    });
+  }
+
+  @Override
+  public <T extends CacheElement> T getCustomRegionElement(String group, String regionPath,
+      String id, Class<T> classT) {
+    registerBindClass(classT);
+    CacheConfig cacheConfig = getCacheConfig(group);
+    return findCustomRegionElement(cacheConfig, regionPath, id, classT);
+  }
+
+  @Override
+  public void saveCustomRegionElement(String group, String regionPath, CacheElement element) {
+    registerBindClass(element.getClass());
+    updateCacheConfig(group, cacheConfig -> {
+      RegionConfig regionConfig = findRegionConfiguration(cacheConfig, regionPath);
+      if (regionConfig == null) {
+        throw new EntityNotFoundException(
+            String.format("region %s does not exist in group %s", regionPath, group));
+      }
+
+      CacheElement oldElement =
+          findCustomRegionElement(cacheConfig, regionPath, element.getId(), element.getClass());
+
+      if (oldElement != null) {
+        regionConfig.getCustomRegionElements().remove(oldElement);
+      }
+      regionConfig.getCustomRegionElements().add(element);
+      return cacheConfig;
+    });
+  }
+
+  @Override
+  public void deleteCustomRegionElement(String group, String regionPath, String id,
+      Class<? extends CacheElement> classT) {
+    registerBindClass(classT);
+    updateCacheConfig(group, cacheConfig -> {
+      RegionConfig regionConfig = findRegionConfiguration(cacheConfig, regionPath);
+      if (regionConfig == null) {
+        throw new EntityNotFoundException(
+            String.format("region %s does not exist in group %s", regionPath, group));
+      }
+      CacheElement element = findCustomRegionElement(cacheConfig, regionPath, id, classT);
+      if (element == null) {
+        return null;
+      }
+      regionConfig.getCustomRegionElements().remove(element);
+      return cacheConfig;
+    });
+  }
+
+  @Override
+  public <T extends Identifiable<String>> T findIdentifiable(List<T> list, String id) {
+    return list.stream().filter(o -> o.getId().equals(id)).findFirst().orElse(null);
+  }
+
+  @Override
+  public <T extends Identifiable<String>> void removeFromList(List<T> list, String id) {
+    for (Iterator<T> iter = list.listIterator(); iter.hasNext();) {
+      if (iter.next().getId().equals(id)) {
+        iter.remove();
+      }
+    }
+  }
+
+  @Override
+  public RegionConfig findRegionConfiguration(CacheConfig cacheConfig, String regionPath) {
+    return findIdentifiable(cacheConfig.getRegion(), regionPath);
+  }
+
+  @Override
+  public <T extends CacheElement> List<T> findCustomCacheElements(CacheConfig cacheConfig,
+      Class<T> classT) {
+
+    List<T> newList = new ArrayList<>();
+    // streaming won't work here, because it's trying to cast element into CacheElement
+    for (Object element : cacheConfig.getCustomCacheElements()) {
+      if (classT.isInstance(element)) {
+        newList.add(classT.cast(element));
+      }
+    }
+    return newList;
+  }
+
+  @Override
+  public <T extends CacheElement> T findCustomCacheElement(CacheConfig cacheConfig,
+      String elementId, Class<T> classT) {
+    return findIdentifiable(findCustomCacheElements(cacheConfig, classT), elementId);
+  }
+
+  @Override
+  public <T extends CacheElement> List<T> findCustomRegionElements(CacheConfig cacheConfig,
+      String regionPath, Class<T> classT) {
+    List<T> newList = new ArrayList<>();
+    RegionConfig regionConfig = findRegionConfiguration(cacheConfig, regionPath);
+    if (regionConfig == null) {
+      return newList;
+    }
+
+    // streaming won't work here, because it's trying to cast element into CacheElement
+    for (Object element : regionConfig.getCustomRegionElements()) {
+      if (classT.isInstance(element)) {
+        newList.add(classT.cast(element));
+      }
+    }
+    return newList;
+  }
+
+  @Override
+  public <T extends CacheElement> T findCustomRegionElement(CacheConfig cacheConfig,
+      String regionPath, String elementId, Class<T> classT) {
+    return findIdentifiable(findCustomRegionElements(cacheConfig, regionPath, classT), elementId);
   }
 
 }
