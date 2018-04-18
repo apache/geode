@@ -61,8 +61,6 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.CancelException;
@@ -110,12 +108,10 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
    * Name of the directory where the shared configuration artifacts are stored
    */
   public static final String CLUSTER_CONFIG_ARTIFACTS_DIR_NAME = "cluster_config";
+  public static final String CLUSTER_CONFIG_DISK_DIR_PREFIX = "ConfigDiskDir_";
+  public static final String CLUSTER_CONFIG = "cluster";
 
   private static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
-
-  public static final String CLUSTER_CONFIG_DISK_DIR_PREFIX = "ConfigDiskDir_";
-
-  public static final String CLUSTER_CONFIG = "cluster";
 
   /**
    * Name of the lock service used for shared configuration
@@ -189,29 +185,6 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
       return DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
     }
     return sharedConfigDls;
-  }
-
-  /**
-   * Finds xml element in a group's xml, with the tagName that has given attribute and value
-   */
-  public Element getXmlElement(String group, String tagName, String attribute, String value)
-      throws IOException, SAXException, ParserConfigurationException {
-    if (group == null) {
-      group = "cluster";
-    }
-    Configuration config = getConfiguration(group);
-    Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
-    NodeList elements = document.getElementsByTagName(tagName);
-    if (elements == null || elements.getLength() == 0) {
-      return null;
-    } else {
-      for (int i = 0; i < elements.getLength(); i++) {
-        Element eachElement = (Element) elements.item(i);
-        if (eachElement.getAttribute(attribute).equals(value))
-          return eachElement;
-      }
-    }
-    return null;
   }
 
   /**
