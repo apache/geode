@@ -95,6 +95,27 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   }
 
   @Test
+  public void listsConnectionsFromMember() {
+    String conn1 =
+        "create jdbc-connection --name=name-1 --url=url --user=user --password=pass --params=param1:value1,param2:value2";
+    gfsh.executeAndAssertThat(conn1).statusIsSuccess();
+    String conn2 =
+        "create jdbc-connection --name=name-2 --url=url --user=user --password=pass --params=param1:value1,param2:value2";
+    gfsh.executeAndAssertThat(conn2).statusIsSuccess();
+    String conn3 =
+        "create jdbc-connection --name=name-3 --url=url --user=user --password=pass --params=param1:value1,param2:value2";
+    gfsh.executeAndAssertThat(conn3).statusIsSuccess();
+
+    CommandResultAssert commandResultAssert =
+        gfsh.executeAndAssertThat(LIST_JDBC_CONNECTION + " --member=server-1").statusIsSuccess();
+
+    commandResultAssert.statusIsSuccess();
+    commandResultAssert.tableHasRowCount(LIST_OF_CONNECTIONS, 3);
+    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_CONNECTIONS, connectionName + "-1",
+        connectionName + "-2", connectionName + "-3");
+  }
+
+  @Test
   public void reportsNoConnectionsFound() {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
 
