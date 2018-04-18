@@ -219,6 +219,23 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
         Properties activeProps = system.getProperties();
         for (Entry<Object, Object> entry : props.entrySet()) {
           String key = (String) entry.getKey();
+          if (key.startsWith("security-")) {
+            continue;
+          }
+          String value = (String) entry.getValue();
+          if (!value.equals(activeProps.getProperty(key))) {
+            needNewSystem = true;
+            getLogWriter().info("Forcing DS disconnect. For property " + key + " old value = "
+                + activeProps.getProperty(key) + " new value = " + value);
+            break;
+          }
+        }
+        activeProps = system.getSecurityProperties();
+        for (Entry<Object, Object> entry : props.entrySet()) {
+          String key = (String) entry.getKey();
+          if (!key.startsWith("security-")) {
+            continue;
+          }
           String value = (String) entry.getValue();
           if (!value.equals(activeProps.getProperty(key))) {
             needNewSystem = true;
