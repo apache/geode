@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -135,11 +137,23 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     assertTrue("No events conflated in batch",
         (v4List.get(8) + v5List.get(8) + v6List.get(8) + v7List.get(8)) > 0);
-    assertEquals("Event in secondary queue should be 0 after dispatched", 0,
-        (v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)));
 
+    verifyEventSecondaryQueuesDrained("ln");
     vm2.invoke(() -> validateRegionSize(getTestMethodName(), 10));
+  }
 
+  private void verifyEventSecondaryQueuesDrained(final String senderId) {
+    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> {
+      int vm4SecondarySize = vm4.invoke(() -> getSecondaryQueueSizeInStats("ln"));
+      int vm5SecondarySize = vm5.invoke(() -> getSecondaryQueueSizeInStats("ln"));
+      int vm6SecondarySize = vm6.invoke(() -> getSecondaryQueueSizeInStats("ln"));
+      int vm7SecondarySize = vm7.invoke(() -> getSecondaryQueueSizeInStats("ln"));
+
+      assertEquals(
+          "Event in secondary queue should be 0 after dispatched, but actual is " + vm4SecondarySize
+              + ":" + vm5SecondarySize + ":" + vm6SecondarySize + ":" + vm7SecondarySize,
+          0, vm4SecondarySize + vm5SecondarySize + vm6SecondarySize + vm7SecondarySize);
+    });
   }
 
   @Test
@@ -189,6 +203,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     // after dispatch, both primary and secondary queues are empty
     vm4.invoke(() -> checkQueueSize("ln", 0));
+    verifyEventSecondaryQueuesDrained("ln");
     validateEventSecondaryQueueSize(0, redundancy);
   }
 
