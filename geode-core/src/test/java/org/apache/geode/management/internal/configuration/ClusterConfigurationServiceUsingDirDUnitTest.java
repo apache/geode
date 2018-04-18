@@ -37,15 +37,18 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -56,7 +59,7 @@ import org.apache.geode.util.test.TestUtil;
 public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTestCase {
 
   @Override
-  public final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() {
     for (int i = 0; i < 2; i++) {
       VM vm = getHost(0).getVM(i);
       vm.invoke("Removing shared configuration", () -> {
@@ -67,14 +70,29 @@ public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTes
 
         InternalClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
         if (sharedConfig != null) {
-          sharedConfig.destroySharedConfiguration();
+          try {
+            Region<String, Configuration> configRegion = sharedConfig.getConfigurationRegion();
+            if (configRegion != null) {
+              configRegion.destroyRegion();
+            }
+            DiskStore configDiskStore = locator.getCache().findDiskStore(
+                InternalClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
+            if (configDiskStore != null) {
+              configDiskStore.destroy();
+              File file = new File(sharedConfig.getConfigDiskDirPath());
+              FileUtils.deleteDirectory(file);
+            }
+            FileUtils.deleteDirectory(new File(sharedConfig.getConfigDiskDirPath()));
+          } catch (Exception exception) {
+            throw new AssertionError(exception);
+          }
         }
       });
     }
   }
 
   @Test
-  public void basicClusterConfigDirWithOneLocator() throws Exception {
+  public void basicClusterConfigDirWithOneLocator() {
     final int[] ports = getRandomAvailableTCPPorts(1);
     final int locatorCount = ports.length;
 
@@ -96,7 +114,7 @@ public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTes
   }
 
   @Test
-  public void basicClusterConfigDirWithTwoLocators() throws Exception {
+  public void basicClusterConfigDirWithTwoLocators() {
     final int[] ports = getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
@@ -118,7 +136,7 @@ public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTes
   }
 
   @Test
-  public void updateClusterConfigDirWithTwoLocatorsNoRollingServerRestart() throws Exception {
+  public void updateClusterConfigDirWithTwoLocatorsNoRollingServerRestart() {
     final int[] ports = getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
@@ -170,7 +188,7 @@ public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTes
   }
 
   @Test
-  public void updateClusterConfigDirWithTwoLocatorsAndRollingServerRestart() throws Exception {
+  public void updateClusterConfigDirWithTwoLocatorsAndRollingServerRestart() {
     final int[] ports = getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
@@ -217,8 +235,7 @@ public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTes
   }
 
   @Test
-  public void updateClusterConfigDirWithTwoLocatorsRollingRestartAndRollingServerRestart()
-      throws Exception {
+  public void updateClusterConfigDirWithTwoLocatorsRollingRestartAndRollingServerRestart() {
     final int[] ports = getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 

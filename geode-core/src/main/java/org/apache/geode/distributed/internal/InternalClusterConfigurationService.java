@@ -66,11 +66,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
@@ -144,14 +142,6 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
   private DistributedLockService sharedConfigLockingService;
   private JAXBService jaxbService;
 
-  @TestingOnly
-  InternalClusterConfigurationService() {
-    configDirPath = null;
-    configDiskDirPath = null;
-    cache = null;
-    jaxbService = new JAXBService();
-  }
-
   public InternalClusterConfigurationService(InternalCache cache) throws IOException {
     this.cache = cache;
     Properties properties = cache.getDistributedSystem().getProperties();
@@ -178,6 +168,10 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     this.sharedConfigLockingService = getSharedConfigLockService(cache.getDistributedSystem());
     this.status.set(SharedConfigurationStatus.NOT_STARTED);
     jaxbService = new JAXBService();
+  }
+
+  public String getConfigDiskDirPath() {
+    return configDiskDirPath;
   }
 
   /**
@@ -592,29 +586,6 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     return response;
   }
 
-  /**
-   * For tests only. TODO: clean this up and remove from production code
-   * <p>
-   * Throws {@code AssertionError} wrapping any exception thrown by operation.
-   */
-  public void destroySharedConfiguration() {
-    try {
-      Region<String, Configuration> configRegion = getConfigurationRegion();
-      if (configRegion != null) {
-        configRegion.destroyRegion();
-      }
-      DiskStore configDiskStore = this.cache.findDiskStore(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
-      if (configDiskStore != null) {
-        configDiskStore.destroy();
-        File file = new File(this.configDiskDirPath);
-        FileUtils.deleteDirectory(file);
-      }
-      FileUtils.deleteDirectory(new File(this.configDirPath));
-    } catch (Exception exception) {
-      throw new AssertionError(exception);
-    }
-  }
-
   public Path getPathToJarOnThisLocator(String groupName, String jarName) {
     return new File(this.configDirPath).toPath().resolve(groupName).resolve(jarName);
   }
@@ -761,16 +732,12 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
       }
 
     } catch (CancelException e) {
-      if (configRegion == null) {
-        this.status.set(SharedConfigurationStatus.STOPPED);
-      }
+      this.status.set(SharedConfigurationStatus.STOPPED);
       // CONFIG: don't rethrow as Exception, keep it a subclass of CancelException
       throw e;
 
     } catch (Exception e) {
-      if (configRegion == null) {
-        this.status.set(SharedConfigurationStatus.STOPPED);
-      }
+      this.status.set(SharedConfigurationStatus.STOPPED);
       throw new RuntimeException("Error occurred while initializing cluster configuration", e);
     }
 
