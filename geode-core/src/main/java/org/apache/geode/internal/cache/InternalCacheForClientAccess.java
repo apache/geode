@@ -194,33 +194,27 @@ public class InternalCacheForClientAccess implements InternalCache {
   public <K, V> Region<K, V> createVMRegion(String name, RegionAttributes<K, V> p_attrs,
       InternalRegionArguments internalRegionArgs)
       throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
-    Region<K, V> result = delegate.createVMRegion(name, p_attrs, internalRegionArgs);
-    checkForInternalRegion(result);
-    return result;
+    if (internalRegionArgs != null) {
+      if (internalRegionArgs.isInternalRegion()
+          || internalRegionArgs.isUsedForPartitionedRegionBucket()
+          || internalRegionArgs.isUsedForMetaRegion()
+          || internalRegionArgs.isUsedForSerialGatewaySenderQueue()
+          || internalRegionArgs.isUsedForParallelGatewaySenderQueue()) {
+        throw new NotAuthorizedException("The region " + name
+            + " is an internal region that a client is never allowed to create");
+      }
+    }
+    return delegate.createVMRegion(name, p_attrs, internalRegionArgs);
   }
 
   @Override
-  public <K, V> Region<K, V> basicCreateRegion(String name, RegionAttributes<K, V> attrs)
-      throws RegionExistsException, TimeoutException {
-    Region<K, V> result = delegate.basicCreateRegion(name, attrs);
-    checkForInternalRegion(result);
-    return result;
-  }
-
-  @Override
-  public <K, V> Region<K, V> createVMRegion(String name, RegionAttributes<K, V> aRegionAttributes)
-      throws RegionExistsException, TimeoutException {
-    Region<K, V> result = delegate.createVMRegion(name, aRegionAttributes);
-    checkForInternalRegion(result);
-    return result;
-  }
-
-  @Override
-  public <K, V> Region<K, V> createRegion(String name, RegionAttributes<K, V> aRegionAttributes)
-      throws RegionExistsException, TimeoutException {
-    Region<K, V> result = delegate.createRegion(name, aRegionAttributes);
-    checkForInternalRegion(result);
-    return result;
+  public Cache getReconnectedCache() {
+    Cache reconnectedCache = delegate.getReconnectedCache();
+    if (reconnectedCache != null) {
+      return new InternalCacheForClientAccess((InternalCache) reconnectedCache);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -233,37 +227,41 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  public <K, V> Region<K, V> basicCreateRegion(String name, RegionAttributes<K, V> attrs)
+      throws RegionExistsException, TimeoutException {
+    return delegate.basicCreateRegion(name, attrs);
+  }
+
+  @Override
+  public <K, V> Region<K, V> createVMRegion(String name, RegionAttributes<K, V> aRegionAttributes)
+      throws RegionExistsException, TimeoutException {
+    return delegate.createVMRegion(name, aRegionAttributes);
+  }
+
+  @Override
+  public <K, V> Region<K, V> createRegion(String name, RegionAttributes<K, V> aRegionAttributes)
+      throws RegionExistsException, TimeoutException {
+    return delegate.createRegion(name, aRegionAttributes);
+  }
+
+  @Override
   public <K, V> RegionFactory<K, V> createRegionFactory() {
-    throwIfClient();
-    return new RegionFactoryImpl<>(this);
+    return delegate.createRegionFactory();
   }
 
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortcut) {
-    throwIfClient();
-    return new RegionFactoryImpl<>(this, shortcut);
+    return delegate.createRegionFactory(shortcut);
   }
 
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(String regionAttributesId) {
-    throwIfClient();
-    return new RegionFactoryImpl<>(this, regionAttributesId);
+    return delegate.createRegionFactory(regionAttributesId);
   }
 
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes) {
-    throwIfClient();
-    return new RegionFactoryImpl<>(this, regionAttributes);
-  }
-
-  @Override
-  public Cache getReconnectedCache() {
-    Cache reconnectedCache = delegate.getReconnectedCache();
-    if (reconnectedCache != null) {
-      return new InternalCacheForClientAccess((InternalCache) reconnectedCache);
-    } else {
-      return null;
-    }
+    return delegate.createRegionFactory(regionAttributes);
   }
 
   @Override

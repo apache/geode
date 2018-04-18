@@ -19,7 +19,6 @@ package org.apache.geode.internal.cache;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -257,25 +257,7 @@ public class InternalCacheForClientAccessTest {
   }
 
   @Test
-  public void createVMRegion2argsWithApplicationWorks() throws Exception {
-    when(delegate.createVMRegion(any(), any())).thenReturn(applicationRegion);
-
-    Region result = cache.createVMRegion(null, null);
-
-    assertThat(result).isSameAs(applicationRegion);
-  }
-
-  @Test
-  public void createVMRegion2argsWithSecretThrows() throws Exception {
-    when(delegate.createVMRegion(any(), any())).thenReturn(secretRegion);
-
-    assertThatThrownBy(() -> {
-      cache.createVMRegion(null, null);
-    }).isInstanceOf(NotAuthorizedException.class);
-  }
-
-  @Test
-  public void createVMRegion3argsWithApplicationWorks() throws Exception {
+  public void createVMRegionWithNullArgsApplicationWorks() throws Exception {
     when(delegate.createVMRegion(any(), any(), any())).thenReturn(applicationRegion);
 
     Region result = cache.createVMRegion(null, null, null);
@@ -284,66 +266,67 @@ public class InternalCacheForClientAccessTest {
   }
 
   @Test
-  public void createVMRegion3argsWithSecretThrows() throws Exception {
-    when(delegate.createVMRegion(any(), any(), any())).thenReturn(secretRegion);
+  public void createVMRegionWithDefaultArgsApplicationWorks() throws Exception {
+    when(delegate.createVMRegion(any(), any(), any())).thenReturn(applicationRegion);
 
-    assertThatThrownBy(() -> {
-      cache.createVMRegion(null, null, null);
-    }).isInstanceOf(NotAuthorizedException.class);
-  }
-
-  @Test
-  public void basicCreateRegionWithApplicationWorks() throws Exception {
-    when(delegate.basicCreateRegion(any(), any())).thenReturn(applicationRegion);
-
-    Region result = cache.basicCreateRegion(null, null);
+    Region result = cache.createVMRegion(null, null, new InternalRegionArguments());
 
     assertThat(result).isSameAs(applicationRegion);
   }
 
   @Test
-  public void basicCreateRegionWithSecretThrows() throws Exception {
-    when(delegate.basicCreateRegion(any(), any())).thenReturn(secretRegion);
-
+  public void createVMRegionWithInternalRegionThrows() throws Exception {
     assertThatThrownBy(() -> {
-      cache.basicCreateRegion(null, null);
+      cache.createVMRegion(null, null, new InternalRegionArguments().setInternalRegion(true));
     }).isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  public void createRegionWithApplicationWorks() throws Exception {
-    when(delegate.createRegion(any(), any())).thenReturn(applicationRegion);
-
-    Region result = cache.createRegion(null, null);
-
-    assertThat(result).isSameAs(applicationRegion);
-  }
-
-  @Test
-  public void createRegionnWithSecretThrows() throws Exception {
-    when(delegate.createRegion(any(), any())).thenReturn(secretRegion);
-
+  public void createVMRegionWithUsedForPartitionedRegionBucketThrows() throws Exception {
     assertThatThrownBy(() -> {
-      cache.createRegion(null, null);
+      cache.createVMRegion(null, null,
+          new InternalRegionArguments().setPartitionedRegionBucketRedundancy(0));
     }).isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  public void createRegionFactoryWithApplicationWorks() throws Exception {
-    when(delegate.createRegion(eq("application"), any())).thenReturn(applicationRegion);
-
-    Region result = cache.createRegionFactory().create("application");
-
-    assertThat(result).isSameAs(applicationRegion);
-  }
-
-  @Test
-  public void createRegionFactoryWithSecretThrows() throws Exception {
-    when(delegate.createRegion(any(), any())).thenReturn(secretRegion);
-
+  public void createVMRegionWithUsedForMetaRegionThrows() throws Exception {
     assertThatThrownBy(() -> {
-      cache.createRegionFactory().create("secret");
+      cache.createVMRegion(null, null, new InternalRegionArguments().setIsUsedForMetaRegion(true));
     }).isInstanceOf(NotAuthorizedException.class);
   }
 
+  @Test
+  public void createVMRegionWithUsedForSerialGatewaySenderQueueThrows() throws Exception {
+    assertThatThrownBy(() -> {
+      cache.createVMRegion(null, null,
+          new InternalRegionArguments().setIsUsedForSerialGatewaySenderQueue(true));
+    }).isInstanceOf(NotAuthorizedException.class);
+  }
+
+  @Test
+  public void createVMRegionWithUsedForParallelGatewaySenderQueueThrows() throws Exception {
+    assertThatThrownBy(() -> {
+      cache.createVMRegion(null, null,
+          new InternalRegionArguments().setIsUsedForParallelGatewaySenderQueue(true));
+    }).isInstanceOf(NotAuthorizedException.class);
+  }
+
+  @Test
+  public void getReconnectedCacheReturnsNull() throws Exception {
+    when(delegate.getReconnectedCache()).thenReturn(null);
+
+    Cache result = cache.getReconnectedCache();
+
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void getReconnectedCacheReturnsWrappedCache() throws Exception {
+    when(delegate.getReconnectedCache()).thenReturn(delegate);
+
+    Cache result = cache.getReconnectedCache();
+
+    assertThat(result).isInstanceOf(InternalCacheForClientAccess.class);
+  }
 }
