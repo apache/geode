@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,6 +59,8 @@ public class CreateJndiBindingCommandTest {
 
   private CreateJndiBindingCommand command;
   private InternalCache cache;
+  JndiBindingsType.JndiBinding binding;
+  List<JndiBindingsType.JndiBinding> bindings;
 
   private static String COMMAND = "create jndi-binding ";
 
@@ -66,6 +69,10 @@ public class CreateJndiBindingCommandTest {
     cache = mock(InternalCache.class);
     command = spy(CreateJndiBindingCommand.class);
     doReturn(cache).when(command).getCache();
+
+    binding = new JndiBindingsType.JndiBinding();
+    binding.setJndiName("name");
+    bindings = new ArrayList<>();
   }
 
   @Test
@@ -101,11 +108,11 @@ public class CreateJndiBindingCommandTest {
     InternalClusterConfigurationService clusterConfigService =
         mock(InternalClusterConfigurationService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
-    JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
+    when(cacheConfig.getJndiBindings()).thenReturn(bindings);
+    bindings.add(binding);
 
     doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
@@ -118,11 +125,11 @@ public class CreateJndiBindingCommandTest {
     InternalClusterConfigurationService clusterConfigService =
         mock(InternalClusterConfigurationService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
-    JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
 
     doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
+    when(cacheConfig.getJndiBindings()).thenReturn(bindings);
+    bindings.add(binding);
 
     gfsh.executeAndAssertThat(command,
         COMMAND
@@ -136,11 +143,11 @@ public class CreateJndiBindingCommandTest {
     InternalClusterConfigurationService clusterConfigService =
         mock(InternalClusterConfigurationService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
-    JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
+    when(cacheConfig.getJndiBindings()).thenReturn(bindings);
+    bindings.add(binding);
 
     doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND
@@ -153,11 +160,11 @@ public class CreateJndiBindingCommandTest {
     InternalClusterConfigurationService clusterConfigService =
         mock(InternalClusterConfigurationService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
-    JndiBindingsType.JndiBinding existingBinding = mock(JndiBindingsType.JndiBinding.class);
+    when(cacheConfig.getJndiBindings()).thenReturn(bindings);
+    bindings.add(binding);
 
     doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(existingBinding).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND
@@ -185,7 +192,6 @@ public class CreateJndiBindingCommandTest {
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(null).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
@@ -251,7 +257,6 @@ public class CreateJndiBindingCommandTest {
     doReturn(clusterConfigService).when(command).getConfigurationService();
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
-    doReturn(null).when(clusterConfigService).findIdentifiable(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND

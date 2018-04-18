@@ -20,6 +20,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
@@ -90,7 +91,7 @@ public class AlterMappingCommand extends InternalGfshCommand {
         throw new EntityNotFoundException("mapping with name '" + regionName + "' does not exist.");
       }
       ConnectorService.RegionMapping mapping =
-          ccService.findIdentifiable(service.getRegionMapping(), regionName);
+          CacheElement.findIdentifiable(service.getRegionMapping(), regionName);
       if (mapping == null) {
         throw new EntityNotFoundException("mapping with name '" + regionName + "' does not exist.");
       }
@@ -112,7 +113,7 @@ public class AlterMappingCommand extends InternalGfshCommand {
           results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
       ConnectorService.RegionMapping mergedMapping =
           (ConnectorService.RegionMapping) successResult.getResultObject();
-      ccService.removeFromList(service.getRegionMapping(), connectionName);
+      CacheElement.removeFromList(service.getRegionMapping(), connectionName);
       service.getRegionMapping().add(mergedMapping);
       ccService.saveCustomCacheElement("cluster", service);
       persisted = true;

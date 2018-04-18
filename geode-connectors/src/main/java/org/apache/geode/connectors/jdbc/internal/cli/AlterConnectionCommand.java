@@ -20,6 +20,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
@@ -83,7 +84,7 @@ public class AlterConnectionCommand extends GfshCommand {
       if (service == null) {
         throw new EntityNotFoundException("connection with name '" + name + "' does not exist.");
       }
-      ConnectorService.Connection conn = ccService.findIdentifiable(service.getConnection(), name);
+      ConnectorService.Connection conn = CacheElement.findIdentifiable(service.getConnection(), name);
       if (conn == null) {
         throw new EntityNotFoundException("connection with name '" + name + "' does not exist.");
       }
@@ -105,7 +106,7 @@ public class AlterConnectionCommand extends GfshCommand {
           results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
       ConnectorService.Connection mergedConnection =
           (ConnectorService.Connection) successResult.getResultObject();
-      ccService.removeFromList(service.getConnection(), name);
+      CacheElement.removeFromList(service.getConnection(), name);
       service.getConnection().add(mergedConnection);
       ccService.saveCustomCacheElement("cluster", service);
       persisted = true;

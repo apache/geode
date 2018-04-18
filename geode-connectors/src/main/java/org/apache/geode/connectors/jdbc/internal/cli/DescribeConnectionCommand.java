@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
@@ -95,7 +96,7 @@ public class DescribeConnectionCommand extends InternalGfshCommand {
       throw new EntityNotFoundException("connection named '" + name + "' not found");
     }
     ConnectorService.Connection connection =
-        ccService.findIdentifiable(service.getConnection(), name);
+        CacheElement.findIdentifiable(service.getConnection(), name);
     if (connection == null) {
       throw new EntityNotFoundException("connection named '" + name + "' not found");
     }
