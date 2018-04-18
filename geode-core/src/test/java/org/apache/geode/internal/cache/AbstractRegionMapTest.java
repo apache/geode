@@ -30,6 +30,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -812,7 +815,75 @@ public class AbstractRegionMapTest {
       when(owner.getCache()).thenReturn(mock(InternalCache.class));
       when(owner.isAllEvents()).thenReturn(true);
       when(owner.isInitialized()).thenReturn(true);
+      when(owner.shouldNotifyBridgeClients()).thenReturn(true);
       initialize(owner, new Attributes(), null, false);
+    }
+  }
+
+  @Test
+  public void txApplyPutOnSecondaryConstructsPendingCallbacksWhenRegionEntryExists()
+      throws Exception {
+    AbstractRegionMap arm = new TxRegionEntryTestableAbstractRegionMap();
+    List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
+
+    Object newValue = "value";
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false,
+        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
+        mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
+
+    assertEquals(1, pendingCallbacks.size());
+  }
+
+  @Test
+  public void txApplyPutOnSecondaryConstructsPendingCallbacksWhenRegionEntryIsRemoved()
+      throws Exception {
+    AbstractRegionMap arm = new TxRemovedRegionEntryTestableAbstractRegionMap();
+    List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
+
+    Object newValue = "value";
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false,
+        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
+        mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
+
+    assertEquals(1, pendingCallbacks.size());
+  }
+
+  @Test
+  public void txApplyPutOnSecondaryConstructsPendingCallbacksWhenRegionEntryIsNull()
+      throws Exception {
+    AbstractRegionMap arm = new TxNoRegionEntryTestableAbstractRegionMap();
+    List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
+
+    Object newValue = "value";
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false,
+        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
+        mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
+
+    assertEquals(1, pendingCallbacks.size());
+  }
+
+  private static class TxNoRegionEntryTestableAbstractRegionMap
+      extends TxTestableAbstractRegionMap {
+    @Override
+    public RegionEntry getEntry(Object key) {
+      return null;
+    }
+  }
+
+  private static class TxRegionEntryTestableAbstractRegionMap extends TxTestableAbstractRegionMap {
+    @Override
+    public RegionEntry getEntry(Object key) {
+      return mock(RegionEntry.class);
+    }
+  }
+
+  private static class TxRemovedRegionEntryTestableAbstractRegionMap
+      extends TxTestableAbstractRegionMap {
+    @Override
+    public RegionEntry getEntry(Object key) {
+      RegionEntry regionEntry = mock(RegionEntry.class);
+      when(regionEntry.isRemoved()).thenReturn(true);
+      return regionEntry;
     }
   }
 
