@@ -14,6 +14,7 @@
  */
 package org.apache.geode.experimental.driver;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,6 +39,7 @@ class ProtobufChannel {
    * Socket to a GemFire server that has Protobuf enabled.
    */
   final Socket socket;
+  final BufferedOutputStream output;
   private final ValueSerializer serializer;
 
   public ProtobufChannel(final Set<InetSocketAddress> locators, String username, String password,
@@ -46,6 +48,7 @@ class ProtobufChannel {
     this.serializer = serializer;
     socket = connectToAServer(locators, username, password, keyStorePath, trustStorePath, protocols,
         ciphers);
+    output = new BufferedOutputStream(socket.getOutputStream(), socket.getSendBufferSize());
   }
 
   public void close() throws IOException {
@@ -181,8 +184,8 @@ class ProtobufChannel {
   }
 
   Message sendRequest(final Message request, MessageTypeCase expectedResult) throws IOException {
-    final OutputStream outputStream = socket.getOutputStream();
-    request.writeDelimitedTo(outputStream);
+    request.writeDelimitedTo(output);
+    output.flush();
     Message response = readResponse();
 
     if (!response.getMessageTypeCase().equals(expectedResult)) {

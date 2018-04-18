@@ -22,11 +22,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -71,7 +71,7 @@ public class ProtobufServerConnectionTest {
   }
 
   @Test
-  public void testClientHealthMonitorRegistration() throws UnknownHostException {
+  public void testClientHealthMonitorRegistration() throws IOException {
     AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
 
     ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
@@ -94,7 +94,7 @@ public class ProtobufServerConnectionTest {
   }
 
   @Test
-  public void testDoOneMessageNotifiesClientHealthMonitor() throws UnknownHostException {
+  public void testDoOneMessageNotifiesClientHealthMonitor() throws IOException {
     AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
     ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
 
@@ -117,7 +117,7 @@ public class ProtobufServerConnectionTest {
 
   private ProtobufServerConnection getServerConnection(Socket socketMock,
       ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
-      throws UnknownHostException {
+      throws IOException {
     clientHealthMonitorMock = mock(ClientHealthMonitor.class);
     when(acceptorStub.getClientHealthMonitor()).thenReturn(clientHealthMonitorMock);
     InetSocketAddress inetSocketAddressStub = InetSocketAddress.createUnresolved("localhost", 9071);
@@ -130,15 +130,16 @@ public class ProtobufServerConnectionTest {
     CachedRegionHelper cachedRegionHelper = mock(CachedRegionHelper.class);
     when(cachedRegionHelper.getCache()).thenReturn(cache);
     return new ProtobufServerConnection(socketMock, cache, cachedRegionHelper,
-        mock(CacheServerStats.class), 0, 0, "",
+        mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
         clientProtocolProcessorMock, mock(SecurityService.class));
   }
 
   private ProtobufServerConnection getServerConnection(
       ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
-      throws UnknownHostException {
+      throws IOException {
     Socket socketMock = mock(Socket.class);
+    when(socketMock.getOutputStream()).thenReturn(new ByteArrayOutputStream());
     return getServerConnection(socketMock, clientProtocolProcessorMock, acceptorStub);
   }
 }

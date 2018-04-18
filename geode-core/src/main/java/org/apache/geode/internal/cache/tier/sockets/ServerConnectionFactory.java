@@ -78,7 +78,7 @@ public class ServerConnectionFactory {
   private ServerConnection createProtobufServerConnection(Socket socket, InternalCache cache,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
-      SecurityService securityService) {
+      SecurityService securityService) throws IOException {
     ClientProtocolService service =
         getClientProtocolService(cache.getDistributedSystem(), acceptor.getServerName());
 
