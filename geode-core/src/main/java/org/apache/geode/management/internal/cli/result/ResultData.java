@@ -14,14 +14,26 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.result.model.ErrorResultModel;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 /**
- *
- *
  * @since GemFire 7.0
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY,
+    property = "modelClass")
+@JsonSubTypes({@JsonSubTypes.Type(value = TabularResultModel.class),
+    @JsonSubTypes.Type(value = ResultModel.class),
+    @JsonSubTypes.Type(value = InfoResultModel.class),
+    @JsonSubTypes.Type(value = ErrorResultModel.class)})
 public interface ResultData {
   String RESULT_HEADER = "header";
   String RESULT_CONTENT = "content";
@@ -37,11 +49,31 @@ public interface ResultData {
 
   String getFooter();
 
-  GfJsonObject getGfJsonObject();
+  @JsonIgnore
+  default GfJsonObject getGfJsonObject() {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs - use getContent() instead");
+  }
 
-  String getType();
+  @JsonIgnore
+  default String getType() {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs");
+  }
 
-  Status getStatus();
+  @JsonIgnore
+  default Status getStatus() {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs");
+  }
 
-  void setStatus(final Status status);
+  default void setStatus(final Status status) {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs");
+  }
+
+  default Object getContent() {
+    throw new UnsupportedOperationException(
+        "This should never be called from a legacy ResultData object");
+  }
 }

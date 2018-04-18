@@ -14,12 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.ModelCommandResponse;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
@@ -181,7 +184,7 @@ public class ResultBuilder {
    * @param resultData data to use to build Result
    */
   public static CommandResult buildResult(ResultData resultData) {
-    return new CommandResult(resultData);
+    return new LegacyCommandResult(resultData);
   }
 
   public static CommandResult buildResult(List<CliFunctionResult> functionResults) {
@@ -235,8 +238,13 @@ public class ResultBuilder {
     CommandResult result;
     try {
       GfJsonObject jsonObject = new GfJsonObject(json);
-      String contentType = jsonObject.getString("contentType");
+
+      if (jsonObject.has("legacy") && !jsonObject.getBoolean("legacy")) {
+        return createModelBasedCommandResult(json);
+      }
+
       GfJsonObject data = jsonObject.getJSONObject("data");
+      String contentType = jsonObject.getString("contentType");
 
       AbstractResultData resultData;
       if (ResultData.TYPE_TABULAR.equals(contentType)) {
@@ -272,6 +280,19 @@ public class ResultBuilder {
     }
 
     return result;
+  }
+
+  public static CommandResult createModelBasedCommandResult(String json) {
+    ObjectMapper mapper = new ObjectMapper();
+
+    ModelCommandResponse response;
+    try {
+      response = mapper.readValue(json, ModelCommandResponse.class);
+    } catch (IOException iox) {
+      throw new RuntimeException(iox);
+    }
+
+    return new ModelCommandResult(response);
   }
 
   public static String resultAsString(Result result) {

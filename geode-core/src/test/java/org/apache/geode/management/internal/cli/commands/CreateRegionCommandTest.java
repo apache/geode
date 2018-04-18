@@ -91,7 +91,7 @@ public class CreateRegionCommandTest {
         parser.executeCommandWithInstance(command, "create region --name=region");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getMessageFromContent())
-        .contains("One of \\\"type\\\" or \\\"template-region\\\" is required.");
+        .contains("One of \"type\" or \"template-region\" is required.");
   }
 
   @Test

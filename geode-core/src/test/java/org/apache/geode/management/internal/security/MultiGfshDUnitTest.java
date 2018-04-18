@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
-import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,13 +31,13 @@ import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
@@ -58,9 +57,8 @@ public class MultiGfshDUnitTest {
         x -> x.withJMXManager().withSecurityManager(SimpleTestSecurityManager.class));
   }
 
-  @Category(FlakyTest.class) // GEODE-1579
   @Test
-  public void testMultiUser() throws JSONException, InterruptedException {
+  public void testMultiUser() throws Exception {
 
     IgnoredException.addIgnoredException("java.util.zip.ZipException: zip file is empty");
     IgnoredException
@@ -130,9 +128,15 @@ public class MultiGfshDUnitTest {
         if (result.getResultData().getStatus() == Status.OK) {
           continue;
         }
+
+        int errorResultCode;
+        if (result.getResultData() instanceof ErrorResultData) {
+          errorResultCode = ((ErrorResultData) result.getResultData()).getErrorCode();
+        } else {
+          errorResultCode = ((ResultModel) result.getResultData()).getErrorCode();
+        }
         assertNotEquals("Did not expect an Unauthorized exception: " + result.toString(),
-            ResultBuilder.ERRORCODE_UNAUTHORIZED,
-            ((ErrorResultData) result.getResultData()).getErrorCode());
+            ResultBuilder.ERRORCODE_UNAUTHORIZED, errorResultCode);
       }
       gfsh.close();
       LogService.getLogger().info("vm 3 done!");

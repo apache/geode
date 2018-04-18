@@ -32,14 +32,13 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.ContinuousQueryFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -48,9 +47,10 @@ public class DescribeClientCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result describeClient(@CliOption(key = CliStrings.DESCRIBE_CLIENT__ID, mandatory = true,
-      help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId) throws Exception {
-    Result result;
+  public ResultModel describeClient(@CliOption(key = CliStrings.DESCRIBE_CLIENT__ID,
+      mandatory = true, help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId)
+      throws Exception {
+    ResultModel result = new ResultModel();
 
     if (clientId.startsWith("\"")) {
       clientId = clientId.substring(1);
@@ -64,14 +64,10 @@ public class DescribeClientCommand extends InternalGfshCommand {
       clientId = clientId.substring(0, clientId.length() - 2);
     }
 
-    CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-    CompositeResultData.SectionResultData sectionResult =
-        compositeResultData.addSection("InfoSection");
-
     ManagementService service = getManagementService();
     ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
     if (cacheServers.length == 0) {
-      return ResultBuilder.createGemFireErrorResult(
+      return result.createGemFireErrorResult(
           CliStrings.format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
     }
 
@@ -86,11 +82,11 @@ public class DescribeClientCommand extends InternalGfshCommand {
           try {
             clientHealthStatus = serverMbean.showClientStats(clientId);
             if (clientHealthStatus == null) {
-              return ResultBuilder.createGemFireErrorResult(CliStrings.format(
+              return result.createGemFireErrorResult(CliStrings.format(
                   CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0, clientId));
             }
           } catch (Exception eee) {
-            return ResultBuilder.createGemFireErrorResult(CliStrings.format(
+            return result.createGemFireErrorResult(CliStrings.format(
                 CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1, clientId,
                 eee.getMessage()));
           }
@@ -99,7 +95,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
     }
 
     if (clientHealthStatus == null) {
-      return ResultBuilder.createGemFireErrorResult(
+      return result.createGemFireErrorResult(
           CliStrings.format(CliStrings.DESCRIBE_CLIENT__CLIENT__ID__NOT__FOUND__0, clientId));
     }
 
@@ -147,20 +143,17 @@ public class DescribeClientCommand extends InternalGfshCommand {
         }
       }
 
-      buildTableResult(sectionResult, clientHealthStatus, isDurable, primaryServers,
-          secondaryServers);
-      result = ResultBuilder.buildResult(compositeResultData);
+      buildTableResult(result, clientHealthStatus, isDurable, primaryServers, secondaryServers);
     } else {
-      return ResultBuilder.createGemFireErrorResult(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
+      result.createGemFireErrorResult(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
     }
 
     LogWrapper.getInstance(getCache()).info("describe client result " + result);
     return result;
   }
 
-  private void buildTableResult(CompositeResultData.SectionResultData sectionResult,
-      ClientHealthStatus clientHealthStatus, String isDurable, List<String> primaryServers,
-      List<String> secondaryServers) {
+  private void buildTableResult(ResultModel result, ClientHealthStatus clientHealthStatus,
+      String isDurable, List<String> primaryServers, List<String> secondaryServers) {
 
     StringBuilder primServers = new StringBuilder();
     for (String primaryServer : primaryServers) {
@@ -171,36 +164,36 @@ public class DescribeClientCommand extends InternalGfshCommand {
     for (String secondServer : secondaryServers) {
       secondServers.append(secondServer);
     }
+
+    DataResultModel dataSection = result.addData("InfoSection");
     if (clientHealthStatus != null) {
-      sectionResult.addSeparator('-');
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS, primServers);
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS, secondServers);
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_CPU, clientHealthStatus.getCpus());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS,
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS, primServers);
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS, secondServers);
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_CPU, clientHealthStatus.getCpus());
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS,
           clientHealthStatus.getNumOfCacheListenerCalls());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_GETS,
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_GETS,
           clientHealthStatus.getNumOfGets());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_MISSES,
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_MISSES,
           clientHealthStatus.getNumOfMisses());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS,
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS,
           clientHealthStatus.getNumOfPuts());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_THREADS,
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_THREADS,
           clientHealthStatus.getNumOfThreads());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PROCESS_CPU_TIME,
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PROCESS_CPU_TIME,
           clientHealthStatus.getProcessCpuTime());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE,
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE,
           clientHealthStatus.getQueueSize());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_UP_TIME,
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_UP_TIME,
           clientHealthStatus.getUpTime());
-      sectionResult.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_DURABLE, isDurable);
-      sectionResult.addSeparator('-');
+      dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_DURABLE, isDurable);
 
       Map<String, String> poolStats = clientHealthStatus.getPoolStats();
 
       if (poolStats.size() > 0) {
         for (Map.Entry<String, String> entry : poolStats.entrySet()) {
-          TabularResultData poolStatsResultTable =
-              sectionResult.addTable("Pool Stats For Pool Name = " + entry.getKey());
+          TabularResultModel poolStatsResultTable =
+              result.addTable("Pool Stats For Pool Name = " + entry.getKey());
           poolStatsResultTable.setHeader("Pool Stats For Pool Name = " + entry.getKey());
           String poolStatsStr = entry.getValue();
           String str[] = poolStatsStr.split(";");

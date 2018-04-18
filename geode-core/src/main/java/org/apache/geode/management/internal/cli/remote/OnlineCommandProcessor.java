@@ -29,7 +29,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.CommandProcessingException;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
@@ -83,15 +82,11 @@ public class OnlineCommandProcessor {
     throw new IllegalStateException("Command String should not be null.");
   }
 
-  public Result executeCommand(String command) {
+  public Object executeCommand(String command) {
     return executeCommand(command, Collections.emptyMap(), null);
   }
 
-  public Result executeCommand(String command, Map<String, String> env) {
-    return executeCommand(command, env, null);
-  }
-
-  public Result executeCommand(String command, Map<String, String> env,
+  public Object executeCommand(String command, Map<String, String> env,
       List<String> stagedFilePaths) {
     CommentSkipHelper commentSkipper = new CommentSkipHelper();
     String commentLessLine = commentSkipper.skipComments(command);
@@ -118,13 +113,13 @@ public class OnlineCommandProcessor {
           resourceOperation.target(), ResourcePermission.ALL);
     }
 
-    // this command processor does not exeucte command that needs fileData passed from client
+    // this command processor does not execute commands that need fileData passed from client
     CliMetaData metaData = method.getAnnotation(CliMetaData.class);
     if (metaData != null && metaData.isFileUploaded() && stagedFilePaths == null) {
       return ResultBuilder
           .createUserErrorResult(command + " can not be executed only from server side");
     }
 
-    return (Result) commandExecutor.execute((GfshParseResult) parseResult);
+    return commandExecutor.execute((GfshParseResult) parseResult);
   }
 }
