@@ -36,7 +36,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.TestDataSerializer;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.Region;
@@ -46,7 +45,6 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -69,34 +67,30 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({DistributedTest.class, ClientServerTest.class, SerializationTest.class})
-public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCase {
+public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCase {
+  private static final int instanceCountWithAllPuts = 3;
+  private static final int instanceCountWithOnePut = 1;
+  private static final String REGION_NAME = "ClientServerDataSerializersRegistrationDUnitTest";
+
   private static Cache cache = null;
 
   private static VM client1 = null;
-
   private static VM client2 = null;
 
   private VM server1 = null;
-
   private VM server2 = null;
 
+  // The port numbers for the two servers, once they've been started.
   private int PORT1 = -1;
-
   private int PORT2 = -1;
-
-  private static int instanceCountWithAllPuts = 3;
-
-  private static int instanceCountWithOnePut = 1;
-
-  private static final String REGION_NAME = "ClientServerDataSerializersRegistrationDUnitTest";
 
   protected static EventID eventId;
 
-  static boolean testEventIDResult = false;
+  private static boolean testEventIDResult = false;
 
   public static boolean successfullyLoadedTestDataSerializer = false;
 
-  public static final ThreadLocal<Boolean> allowNonLocalTL = new ThreadLocal<Boolean>();
+  static final ThreadLocal<Boolean> allowNonLocalTL = new ThreadLocal<Boolean>();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -105,6 +99,8 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     client2 = host.getVM(1);
     server1 = host.getVM(2);
     server2 = host.getVM(3);
+    PORT1 = -1;
+    PORT2 = -1;
   }
 
   private void createCache(Properties props) throws Exception {
@@ -131,30 +127,8 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     r.registerInterest("ALL_KEYS");
   }
 
-  protected int getMaxThreads() {
-    return 0;
-  }
-
   private int initServerCache(VM server) {
-    Object[] args = new Object[] {new Integer(getMaxThreads())};
-    return ((Integer) server.invoke(DataSerializerPropagationDUnitTest.class, "createServerCache",
-        args)).intValue();
-  }
-
-  public static Integer createServerCache(Integer maxThreads) throws Exception {
-    new DataSerializerPropagationDUnitTest().createCache(new Properties());
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setMirrorType(MirrorType.KEYS_VALUES);
-    RegionAttributes attrs = factory.create();
-    cache.createRegion(REGION_NAME, attrs);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    CacheServer server1 = cache.addCacheServer();
-    server1.setPort(port);
-    server1.setMaxThreads(maxThreads.intValue());
-    server1.setNotifyBySubscription(true);
-    server1.start();
-    return new Integer(port);
+    return server.invoke(DataSerializerPropagationDUnitTest::createServerCache);
   }
 
   @Override
@@ -185,15 +159,13 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void verifyDataSerializers(final int numOfDataSerializers) {
+  private static void verifyDataSerializers(final int numOfDataSerializers) {
     verifyDataSerializers(numOfDataSerializers, false);
   }
 
-  public static void verifyDataSerializers(final int numOfDataSerializers,
+  private static void verifyDataSerializers(final int numOfDataSerializers,
       final boolean allowNonLocal) {
     WaitCriterion wc = new StoppableWaitCriterion() {
-      String excuse;
-
       private DataSerializer[] getSerializers() {
         allowNonLocalTL.set(allowNonLocal);
         try {
@@ -220,7 +192,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
   }
 
-  public static void registerDSObject1() throws Exception {
+  private static void registerDSObject1() throws Exception {
     try {
       InternalDataSerializer.register(DSObject1.class, true);
     } catch (Exception e) {
@@ -228,7 +200,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject2() throws Exception {
+  private static void registerDSObject2() throws Exception {
     try {
       InternalDataSerializer.register(DSObject2.class, true);
     } catch (Exception e) {
@@ -236,7 +208,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject3() throws Exception {
+  private static void registerDSObject3() throws Exception {
     try {
       InternalDataSerializer.register(DSObject3.class, true);
     } catch (Exception e) {
@@ -244,7 +216,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject4() throws Exception {
+  private static void registerDSObject4() throws Exception {
     try {
       InternalDataSerializer.register(DSObject4.class, true);
     } catch (Exception e) {
@@ -252,7 +224,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject5() throws Exception {
+  private static void registerDSObject5() throws Exception {
     try {
       InternalDataSerializer.register(DSObject5.class, true);
     } catch (Exception e) {
@@ -260,7 +232,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject6() throws Exception {
+  private static void registerDSObject6() throws Exception {
     try {
       InternalDataSerializer.register(DSObject6.class, true);
     } catch (Exception e) {
@@ -268,7 +240,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject7() throws Exception {
+  private static void registerDSObject7() throws Exception {
     try {
       InternalDataSerializer.register(DSObject7.class, true);
     } catch (Exception e) {
@@ -276,7 +248,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject8() throws Exception {
+  private static void registerDSObject8() throws Exception {
     try {
       InternalDataSerializer.register(DSObject8.class, true);
     } catch (Exception e) {
@@ -284,7 +256,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject9() throws Exception {
+  private static void registerDSObject9() throws Exception {
     try {
       InternalDataSerializer.register(DSObject9.class, true);
     } catch (Exception e) {
@@ -292,7 +264,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject10() throws Exception {
+  private static void registerDSObject10() throws Exception {
     try {
       InternalDataSerializer.register(DSObject10.class, true);
     } catch (Exception e) {
@@ -300,7 +272,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject11() throws Exception {
+  private static void registerDSObject11() throws Exception {
     try {
       InternalDataSerializer.register(DSObject11.class, true);
     } catch (Exception e) {
@@ -308,7 +280,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject12() throws Exception {
+  private static void registerDSObject12() throws Exception {
     try {
       InternalDataSerializer.register(DSObject12.class, true);
     } catch (Exception e) {
@@ -316,7 +288,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObject13() throws Exception {
+  private static void registerDSObject13() throws Exception {
     try {
       InternalDataSerializer.register(DSObject13.class, true);
     } catch (Exception e) {
@@ -324,7 +296,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerDSObjectLocalOnly() throws Exception {
+  private static void registerDSObjectLocalOnly() throws Exception {
 
     try {
       InternalDataSerializer._register(new DSObjectLocalOnly(79), true);
@@ -333,7 +305,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     }
   }
 
-  public static void registerTestDataSerializer() throws Exception {
+  private static void registerTestDataSerializer() throws Exception {
     try {
       InternalDataSerializer.register(TestDataSerializer.class, true);
     } catch (Exception e) {
@@ -375,53 +347,34 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     server1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject1());
     server1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject2());
 
-    server1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(2)));
+    server1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(2));
 
-    client1.invoke(() -> DataSerializerPropagationDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
+    final String hostName = NetworkUtils.getServerHostName();
+    client1.invoke(() -> DataSerializerPropagationDUnitTest.createClientCache(hostName, PORT1));
 
-    client1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(2)));
+    client1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(2));
 
     // Put some entries from the client
-    client1.invoke(new CacheSerializableRunnable("Put entries from client") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = cache.getRegion(REGION_NAME);
-        for (int i = 1; i <= 10; i++) {
-          region.put(i, i);
-        }
+    client1.invoke(() -> {
+      Region region = cache.getRegion(REGION_NAME);
+      for (int i = 1; i <= 10; i++) {
+        region.put(i, i);
       }
     });
 
-    // Run getAll
-    client1.invoke(new CacheSerializableRunnable("Get all entries from server") {
-      @Override
-      public void run2() throws CacheException {
-        // Invoke getAll
-        Region region = cache.getRegion(REGION_NAME);
-        // Verify result size is correct
-        assertEquals(1, region.get(1));
-      }
+    client1.invoke(() -> {
+      Region region = cache.getRegion(REGION_NAME);
+      assertEquals(1, region.get(1));
     });
 
-    server1.invoke(new CacheSerializableRunnable("Put entry from client") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = cache.getRegion(REGION_NAME);
-        region.put(1, 20);
-      }
+    server1.invoke(() -> {
+      Region region = cache.getRegion(REGION_NAME);
+      region.put(1, 20);
     });
 
-    // Run getAll
-    client1.invoke(new CacheSerializableRunnable("Get entry from client") {
-      @Override
-      public void run2() throws CacheException {
-        // Invoke getAll
-        Region region = cache.getRegion(REGION_NAME);
-        // Verify result size is correct
-        Awaitility.await().atMost(10, TimeUnit.SECONDS)
-            .until(() -> assertEquals(20, region.get(1)));
-      }
+    client1.invoke(() -> {
+      Region region = cache.getRegion(REGION_NAME);
+      Awaitility.await().atMost(25, TimeUnit.SECONDS).until(() -> assertEquals(20, region.get(1)));
     });
   }
 
@@ -621,21 +574,20 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
    */
   @Test
   public void testDataSerializersEventIdVerificationClientsAndServers() throws Exception {
-    PORT1 = initServerCache(server1, 1);
-    PORT2 = initServerCache(server2, 2);
+    PORT1 = initServerCache(server1);
+    PORT2 = initServerCache(server2);
 
     createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1));
 
     client2.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2)));
     setClientServerObserver1();
-    client2.invoke(() -> DataSerializerPropagationDUnitTest.setClientServerObserver2());
+    client2.invoke(DataSerializerPropagationDUnitTest::setClientServerObserver2);
 
     registerDSObject13();
 
-    Boolean pass =
-        (Boolean) client2.invoke(() -> DataSerializerPropagationDUnitTest.verifyResult());
-    assertTrue("EventId found Different", pass.booleanValue());
+    Boolean pass = client2.invoke(DataSerializerPropagationDUnitTest::verifyResult);
+    assertTrue("EventId found Different", pass);
 
     PoolImpl.IS_INSTANTIATOR_CALLBACK = false;
   }
@@ -720,62 +672,47 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
         .verifyDataSerializerSupportedClassNamesMap(new Integer(0)));
   }
 
-  public static void verifyTestDataSerializerNotLoaded() {
+  private static void verifyTestDataSerializerNotLoaded() {
     assertFalse("TestDataSerializer should not have been loaded in this vm.",
         successfullyLoadedTestDataSerializer);
   }
 
-  public static void verifyTestDataSerializerLoaded() {
+  private static void verifyTestDataSerializerLoaded() {
     assertTrue("TestDataSerializer should have been loaded in this vm.",
         successfullyLoadedTestDataSerializer);
   }
 
-  public static void verifyLoadedDataSerializers(Integer expected) {
+  private static void verifyLoadedDataSerializers(Integer expected) {
     int actual = InternalDataSerializer.getLoadedDataSerializers();
     assertTrue("Number of loaded data serializers, expected: " + expected + ", actual: " + actual,
         actual == expected);
   }
 
-  public static void verifyDataSerializerClassNamesMap(Integer expected) {
+  private static void verifyDataSerializerClassNamesMap(Integer expected) {
     int actual = InternalDataSerializer.getDsClassesToHoldersMap().size();
     assertTrue(
         "Number of data serializer classnames, expected: " + expected + ", actual: " + actual,
         actual == expected);
   }
 
-  public static void verifyDataSerializerIDMap(Integer expected) {
+  private static void verifyDataSerializerIDMap(Integer expected) {
     int actual = InternalDataSerializer.getIdsToHoldersMap().size();
     assertTrue("Number of ids, expected: " + expected + ", actual: " + actual, actual == expected);
   }
 
-  public static void verifyDataSerializerSupportedClassNamesMap(Integer expected) {
+  private static void verifyDataSerializerSupportedClassNamesMap(Integer expected) {
     int actual = InternalDataSerializer.getSupportedClassesToHoldersMap().size();
     assertTrue("Number of supported classnames, expected: " + expected + ", actual: " + actual,
         actual == expected);
   }
 
-  public static Boolean verifyResult() {
+  private static Boolean verifyResult() {
     boolean temp = testEventIDResult;
     testEventIDResult = false;
     return new Boolean(temp);
   }
 
-  private int initServerCache(VM server, int serverNo) {
-    Object[] args = new Object[] {new Integer(getMaxThreads())};
-    if (serverNo == 1) {
-      return ((Integer) server.invoke(DataSerializerPropagationDUnitTest.class,
-          "createServerCacheOne", args)).intValue();
-    } else {
-      return ((Integer) server.invoke(DataSerializerPropagationDUnitTest.class,
-          "createServerCacheTwo", args)).intValue();
-    }
-  }
-
-  /**
-   * This method creates the server cache
-   *
-   */
-  public static Integer createServerCacheTwo(Integer maxThreads) throws Exception {
+  private static Integer createServerCache() throws Exception {
     new DataSerializerPropagationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -786,27 +723,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
-    server1.setMaxThreads(maxThreads.intValue());
-    server1.setNotifyBySubscription(true);
-    server1.start();
-    return new Integer(port);
-  }
-
-  /**
-   * This method creates the server cache
-   *
-   */
-  public static Integer createServerCacheOne(Integer maxThreads) throws Exception {
-    new DataSerializerPropagationDUnitTest().createCache(new Properties());
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setMirrorType(MirrorType.KEYS_VALUES);
-    RegionAttributes attrs = factory.create();
-    cache.createRegion(REGION_NAME, attrs);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    CacheServer server1 = cache.addCacheServer();
-    server1.setPort(port);
-    server1.setMaxThreads(maxThreads.intValue());
+    server1.setMaxThreads(0);
     server1.setNotifyBySubscription(true);
     server1.start();
     return new Integer(port);
@@ -819,9 +736,7 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
       public void beforeSendingToServer(EventID eventID) {
         eventId = eventID;
         client2.invoke(() -> DataSerializerPropagationDUnitTest.setEventId(eventID));
-
       }
-
     });
   }
 
@@ -833,14 +748,13 @@ public class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCas
     eventId = eventID;
   }
 
-  public static void setClientServerObserver2() {
+  private static void setClientServerObserver2() {
     PoolImpl.IS_INSTANTIATOR_CALLBACK = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       @Override
       public void afterReceivingFromServer(EventID eventID) {
         testEventIDResult = eventID.equals(eventId);
       }
-
     });
   }
 }
