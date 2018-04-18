@@ -791,6 +791,12 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
   private VM rollServerToCurrentCreateLuceneIndexAndCreateRegion(VM oldServer, String regionType,
       File diskdir, String shortcutName, String regionName, int[] locatorPorts) throws Exception {
     VM rollServer = rollServerToCurrent(oldServer, locatorPorts);
+    return createLuceneIndexAndRegionOnRolledServer(regionType, diskdir, shortcutName, regionName,
+        rollServer);
+  }
+
+  protected VM createLuceneIndexAndRegionOnRolledServer(String regionType, File diskdir,
+      String shortcutName, String regionName, VM rollServer) throws Exception {
     rollServer.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
     // recreate region on "rolled" server
     if ((regionType.equals("persistentPartitioned"))) {
