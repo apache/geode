@@ -1183,7 +1183,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public InternalCache getCacheForClients() {
+  public InternalCache getCacheForProcessingClientRequests() {
     return this;
   }
 }

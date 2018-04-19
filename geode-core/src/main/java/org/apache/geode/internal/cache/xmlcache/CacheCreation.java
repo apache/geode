@@ -2371,7 +2371,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public InternalCache getCacheForClients() {
+  public InternalCache getCacheForProcessingClientRequests() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 }
