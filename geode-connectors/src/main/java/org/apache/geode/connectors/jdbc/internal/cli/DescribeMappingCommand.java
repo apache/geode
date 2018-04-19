@@ -25,6 +25,7 @@ import java.util.List;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
@@ -91,7 +92,7 @@ public class DescribeMappingCommand extends InternalGfshCommand {
       throw new EntityNotFoundException("mapping for region '" + regionName + "' not found");
     }
     ConnectorService.RegionMapping mapping =
-        ccService.findIdentifiable(service.getRegionMapping(), regionName);
+        CacheElement.findElement(service.getRegionMapping(), regionName);
     if (mapping == null) {
       throw new EntityNotFoundException("mapping for region '" + regionName + "' not found");
     }

@@ -39,7 +39,6 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -86,28 +85,24 @@ public class DestroyJndiBindingCommandTest {
 
   @Test
   public void returnsErrorIfBindingDoesNotExistAndIfExistsUnspecified() {
-    when(ccService.findIdentifiable(any(), any())).thenReturn(null);
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsError()
         .containsOutput("does not exist.");
   }
 
   @Test
   public void skipsIfBindingDoesNotExistAndIfExistsSpecified() {
-    when(ccService.findIdentifiable(any(), any())).thenReturn(null);
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists").statusIsSuccess()
         .containsOutput("does not exist.");
   }
 
   @Test
   public void skipsIfBindingDoesNotExistAndIfExistsSpecifiedTrue() {
-    when(ccService.findIdentifiable(any(), any())).thenReturn(null);
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=true").statusIsSuccess()
         .containsOutput("does not exist.");
   }
 
   @Test
   public void returnsErrorIfBindingDoesNotExistAndIfExistsSpecifiedFalse() {
-    when(ccService.findIdentifiable(any(), any())).thenReturn(null);
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=false").statusIsError()
         .containsOutput("does not exist.");
   }
@@ -125,8 +120,6 @@ public class DestroyJndiBindingCommandTest {
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig() {
     doNothing().when(ccService).updateCacheConfig(any(), any());
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    when(ccService.findIdentifiable(any(), any()))
-        .thenReturn(mock(JndiBindingsType.JndiBinding.class));
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .containsOutput(
@@ -182,8 +175,6 @@ public class DestroyJndiBindingCommandTest {
     doReturn(members).when(command).findMembers(any(), any());
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
     doNothing().when(ccService).updateCacheConfig(any(), any());
-    when(ccService.findIdentifiable(any(), any()))
-        .thenReturn(mock(JndiBindingsType.JndiBinding.class));
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .tableHasColumnOnlyWithValues("Member", "server1")

@@ -18,10 +18,63 @@
 package org.apache.geode.cache.configuration;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
 
 @Experimental
 public interface CacheElement extends Identifiable<String>, Serializable {
+
+  static <T extends CacheElement> T findElement(List<T> list, String id) {
+    return list.stream().filter(o -> o.getId().equals(id)).findFirst().orElse(null);
+  }
+
+  static <T extends CacheElement> void removeElement(List<T> list, String id) {
+    list.removeIf(t -> t.getId().equals(id));
+  }
+
+  static RegionConfig findRegionConfiguration(CacheConfig cacheConfig, String regionPath) {
+    return findElement(cacheConfig.getRegion(), regionPath);
+  }
+
+  static <T extends CacheElement> List<T> findCustomCacheElements(CacheConfig cacheConfig,
+      Class<T> classT) {
+    List<T> newList = new ArrayList<>();
+    // streaming won't work here, because it's trying to cast element into CacheElement
+    for (Object element : cacheConfig.getCustomCacheElements()) {
+      if (classT.isInstance(element)) {
+        newList.add(classT.cast(element));
+      }
+    }
+    return newList;
+  }
+
+  static <T extends CacheElement> T findCustomCacheElement(CacheConfig cacheConfig,
+      String elementId, Class<T> classT) {
+    return findElement(findCustomCacheElements(cacheConfig, classT), elementId);
+  }
+
+  static <T extends CacheElement> List<T> findCustomRegionElements(CacheConfig cacheConfig,
+      String regionPath, Class<T> classT) {
+    List<T> newList = new ArrayList<>();
+    RegionConfig regionConfig = findRegionConfiguration(cacheConfig, regionPath);
+    if (regionConfig == null) {
+      return newList;
+    }
+
+    // streaming won't work here, because it's trying to cast element into CacheElement
+    for (Object element : regionConfig.getCustomRegionElements()) {
+      if (classT.isInstance(element)) {
+        newList.add(classT.cast(element));
+      }
+    }
+    return newList;
+  }
+
+  static <T extends CacheElement> T findCustomRegionElement(CacheConfig cacheConfig,
+      String regionPath, String elementId, Class<T> classT) {
+    return findElement(findCustomRegionElements(cacheConfig, regionPath, classT), elementId);
+  }
 }
