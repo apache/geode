@@ -2934,6 +2934,10 @@ public abstract class AbstractRegionMap
               re.setUpdateInProgress(false);
             }
           }
+          if (invokeCallbacks) {
+            cbEventInPending = prepareUpdateCallbacks(pendingCallbacks, owner, hasRemoteOrigin,
+                cbEvent, cbEventInPending);
+          }
           if (!clearOccured) {
             lruEntryUpdate(re);
           }
@@ -2943,9 +2947,9 @@ public abstract class AbstractRegionMap
         owner.txApplyInvalidatePart2(re, re.getKey(), true, false /* clear */);
       }
     }
-    if (invokeCallbacks) {
-      cbEventInPending = prepareUpdateCallbacks(pendingCallbacks, owner, hasRemoteOrigin, cbEvent,
-          cbEventInPending);
+    if (invokeCallbacks && !opCompleted) {
+      cbEvent.makeUpdate();
+      owner.notifyBridgeClientsForTxUpdate(cbEvent);
     }
     if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
       txEntryState.setVersionTag(cbEvent.getVersionTag());

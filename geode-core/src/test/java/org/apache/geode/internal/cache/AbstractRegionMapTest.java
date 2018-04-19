@@ -832,11 +832,11 @@ public class AbstractRegionMapTest {
         mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
 
     assertEquals(1, pendingCallbacks.size());
+    verify(arm._getOwner(), times(0)).notifyBridgeClientsForTxUpdate(any());
   }
 
   @Test
-  public void txApplyPutOnSecondaryConstructsPendingCallbacksWhenRegionEntryIsRemoved()
-      throws Exception {
+  public void txApplyPutOnSecondaryNotifiesClientsWhenRegionEntryIsRemoved() throws Exception {
     AbstractRegionMap arm = new TxRemovedRegionEntryTestableAbstractRegionMap();
     List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
 
@@ -845,12 +845,12 @@ public class AbstractRegionMapTest {
         new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
         mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
 
-    assertEquals(1, pendingCallbacks.size());
+    assertEquals(0, pendingCallbacks.size());
+    verify(arm._getOwner(), times(1)).notifyBridgeClientsForTxUpdate(any());
   }
 
   @Test
-  public void txApplyPutOnSecondaryConstructsPendingCallbacksWhenRegionEntryIsNull()
-      throws Exception {
+  public void txApplyPutOnSecondaryNotifiesClientsWhenRegionEntryIsNull() throws Exception {
     AbstractRegionMap arm = new TxNoRegionEntryTestableAbstractRegionMap();
     List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
 
@@ -859,7 +859,8 @@ public class AbstractRegionMapTest {
         new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
         mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
 
-    assertEquals(1, pendingCallbacks.size());
+    assertEquals(0, pendingCallbacks.size());
+    verify(arm._getOwner(), times(1)).notifyBridgeClientsForTxUpdate(any());
   }
 
   private static class TxNoRegionEntryTestableAbstractRegionMap
