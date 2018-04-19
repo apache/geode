@@ -102,6 +102,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
           .setPoolSubscriptionRedundancy(poolAttr.getSubscriptionRedundancy())
           .setPoolSubscriptionMessageTrackingTimeout(
               poolAttr.getSubscriptionMessageTrackingTimeout())
+          .setPoolSubscriptionTimeoutMultiplier(poolAttr.getSubscriptionTimeoutMultiplier())
           .setPoolSubscriptionAckInterval(poolAttr.getSubscriptionAckInterval())
           .setPoolServerGroup(poolAttr.getServerGroup())
           .setPoolMultiuserAuthentication(poolAttr.getMultiuserAuthentication());

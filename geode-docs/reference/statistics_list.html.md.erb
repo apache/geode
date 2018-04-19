@@ -569,10 +569,11 @@ Statistics regarding operations performed on a disk region for persistence/overf
 | Statistic        | Description                                                                                                                                                                            |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `bufferSize`     | Current number of bytes buffered to be written to the disk.                                                                                                                            |
+| `bytesOnlyOnDisk`  | The current number of bytes on disk and not in memory. It includes overflowed entries and recovered entries that have not yet been faulted in. |
 | `commits`        | Total number of commits.                                                                                                                                                               |
 | `commitTime`     | Total amount of time, in nanoseconds, spent doing commits.                                                                                                                             |
 | `entriesInVM`    | Current number of entries whose value resides in the member. The value may also have been written to the disk.                                                                         |
-| `entriesOnDisk`  | Current number of entries whose value is on the disk and is not in memory. This is true of overflowed entries. It is also true of recovered entries that have not yet been faulted in. |
+| `entriesOnlyOnDisk`  | Current number of entries whose value is on the disk and is not in memory. This is true of overflowed entries. It is also true of recovered entries that have not yet been faulted in. |
 | `flushedBytes`   | Total number of bytes flushed out of the async write buffer to the disk.                                                                                                               |
 | `flushes`        | Total number of times the async write buffer has been flushed.                                                                                                                         |
 | `flushTime`      | Total amount of time, in nanoseconds, spent doing a buffer flush.                                                                                                                      |

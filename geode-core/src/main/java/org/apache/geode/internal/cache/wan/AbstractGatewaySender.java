@@ -1098,6 +1098,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     }
 
     statistics.setQueueSize(0);
+    statistics.setSecondaryQueueSize(0);
     statistics.setTempQueueSize(0);
   }
 

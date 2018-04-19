@@ -68,13 +68,13 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category({IntegrationTest.class, ClientServerTest.class})
 public class ClientCacheFactoryJUnitTest {
 
-  private ClientCache cc;
+  private ClientCache clientCache;
   private File tmpFile;
 
   @After
   public void tearDown() throws Exception {
-    if (this.cc != null && !this.cc.isClosed()) {
-      cc.close();
+    if (this.clientCache != null && !this.clientCache.isClosed()) {
+      clientCache.close();
     }
     if (tmpFile != null && tmpFile.exists()) {
       tmpFile.delete();
@@ -91,10 +91,10 @@ public class ClientCacheFactoryJUnitTest {
 
   @Test
   public void test000Defaults() throws Exception {
-    this.cc = new ClientCacheFactory().create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.cc;
+    this.clientCache = new ClientCacheFactory().create();
+    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
     assertEquals(true, gfc.isClient());
-    Properties dsProps = this.cc.getDistributedSystem().getProperties();
+    Properties dsProps = this.clientCache.getDistributedSystem().getProperties();
     assertEquals("0", dsProps.getProperty(MCAST_PORT));
     assertEquals("", dsProps.getProperty(LOCATORS));
     Pool defPool = gfc.getDefaultPool();
@@ -107,8 +107,8 @@ public class ClientCacheFactoryJUnitTest {
     assertEquals(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT, defPool.getSocketConnectTimeout());
 
     ClientCache cc2 = new ClientCacheFactory().create();
-    if (cc2 != this.cc) {
-      fail("expected cc2 and cc to be == " + cc2 + this.cc);
+    if (cc2 != this.clientCache) {
+      fail("expected cc2 and cc to be == " + cc2 + this.clientCache);
     }
 
     try {
@@ -131,10 +131,11 @@ public class ClientCacheFactoryJUnitTest {
     URL url = ClientCacheFactoryJUnitTest.class
         .getResource("ClientCacheFactoryJUnitTest_single_pool.xml");;
     FileUtils.copyFile(new File(url.getFile()), this.tmpFile);
-    this.cc = new ClientCacheFactory().set(CACHE_XML_FILE, this.tmpFile.getAbsolutePath()).create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.cc;
+    this.clientCache =
+        new ClientCacheFactory().set(CACHE_XML_FILE, this.tmpFile.getAbsolutePath()).create();
+    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
     assertEquals(true, gfc.isClient());
-    Properties dsProps = this.cc.getDistributedSystem().getProperties();
+    Properties dsProps = this.clientCache.getDistributedSystem().getProperties();
     assertEquals("0", dsProps.getProperty(MCAST_PORT));
     assertEquals("", dsProps.getProperty(LOCATORS));
     Pool defPool = gfc.getDefaultPool();
@@ -156,8 +157,8 @@ public class ClientCacheFactoryJUnitTest {
     DistributedSystem ds = DistributedSystem.connect(dsProps);
     Pool p = PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777)
         .setSocketConnectTimeout(1400).create("singlePool");
-    this.cc = new ClientCacheFactory().create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.cc;
+    this.clientCache = new ClientCacheFactory().create();
+    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
     assertEquals(true, gfc.isClient());
     Pool defPool = gfc.getDefaultPool();
     assertEquals(p, defPool);
@@ -168,7 +169,7 @@ public class ClientCacheFactoryJUnitTest {
     try {
       Properties suProps = new Properties();
       suProps.setProperty("user", "foo");
-      RegionService cc = this.cc.createAuthenticatedView(suProps);
+      RegionService cc = this.clientCache.createAuthenticatedView(suProps);
       fail("expected IllegalStateException");
     } catch (IllegalStateException ignore) {
     }
@@ -180,7 +181,7 @@ public class ClientCacheFactoryJUnitTest {
       Pool pool = PoolManager.createFactory()
           .addServer(InetAddress.getLocalHost().getHostName(), CacheServer.DEFAULT_PORT)
           .setMultiuserAuthentication(true).setSocketConnectTimeout(2345).create("pool1");
-      RegionService cc = this.cc.createAuthenticatedView(suProps, pool.getName());
+      RegionService cc = this.clientCache.createAuthenticatedView(suProps, pool.getName());
       ProxyCache pc = (ProxyCache) cc;
       UserAttributes ua = pc.getUserAttributes();
       Pool proxyDefPool = ua.getPool();
@@ -205,8 +206,8 @@ public class ClientCacheFactoryJUnitTest {
         .setSocketConnectTimeout(2500).create("p7");
     PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 6666)
         .setSocketConnectTimeout(5200).create("p6");
-    this.cc = new ClientCacheFactory().create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.cc;
+    this.clientCache = new ClientCacheFactory().create();
+    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
     assertEquals(true, gfc.isClient());
     Pool defPool = gfc.getDefaultPool();
     assertEquals(null, defPool);
@@ -218,7 +219,7 @@ public class ClientCacheFactoryJUnitTest {
     try {
       Properties suProps = new Properties();
       suProps.setProperty("user", "foo");
-      RegionService cc = this.cc.createAuthenticatedView(suProps);
+      RegionService cc = this.clientCache.createAuthenticatedView(suProps);
       fail("expected IllegalStateException");
     } catch (IllegalStateException ignore) {
     }
@@ -229,7 +230,7 @@ public class ClientCacheFactoryJUnitTest {
       Pool pool = PoolManager.createFactory()
           .addServer(InetAddress.getLocalHost().getHostName(), CacheServer.DEFAULT_PORT)
           .setMultiuserAuthentication(true).create("pool1");
-      RegionService cc = this.cc.createAuthenticatedView(suProps, pool.getName());
+      RegionService cc = this.clientCache.createAuthenticatedView(suProps, pool.getName());
       ProxyCache pc = (ProxyCache) cc;
       UserAttributes ua = pc.getUserAttributes();
       Pool proxyDefPool = ua.getPool();
@@ -245,15 +246,15 @@ public class ClientCacheFactoryJUnitTest {
 
   @Test
   public void test004SetMethod() throws Exception {
-    this.cc =
+    this.clientCache =
         new ClientCacheFactory().set(LOG_LEVEL, "severe").setPoolSocketConnectTimeout(0).create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.cc;
+    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
     assertEquals(true, gfc.isClient());
-    Properties dsProps = this.cc.getDistributedSystem().getProperties();
+    Properties dsProps = this.clientCache.getDistributedSystem().getProperties();
     assertEquals("0", dsProps.getProperty(MCAST_PORT));
     assertEquals("", dsProps.getProperty(LOCATORS));
     assertEquals("severe", dsProps.getProperty(LOG_LEVEL));
-    assertEquals(0, this.cc.getDefaultPool().getSocketConnectTimeout());
+    assertEquals(0, this.clientCache.getDefaultPool().getSocketConnectTimeout());
 
     try {
       new ClientCacheFactory().setPoolSocketConnectTimeout(-1).create();
@@ -268,11 +269,11 @@ public class ClientCacheFactoryJUnitTest {
     suProps.setProperty("user", "foo");
     GemFireCacheImpl gfc =
         (GemFireCacheImpl) new ClientCacheFactory().setPoolMultiuserAuthentication(true).create();
-    this.cc = gfc;
-    RegionService cc1 = this.cc.createAuthenticatedView(suProps);
+    this.clientCache = gfc;
+    RegionService cc1 = this.clientCache.createAuthenticatedView(suProps);
 
     assertEquals(true, gfc.isClient());
-    Properties dsProps = this.cc.getDistributedSystem().getProperties();
+    Properties dsProps = this.clientCache.getDistributedSystem().getProperties();
     assertEquals("0", dsProps.getProperty(MCAST_PORT));
     assertEquals("", dsProps.getProperty(LOCATORS));
     Pool defPool = gfc.getDefaultPool();
@@ -285,7 +286,7 @@ public class ClientCacheFactoryJUnitTest {
     assertEquals(true, defPool.getMultiuserAuthentication());
 
     // make sure we can create another secure user cache
-    RegionService cc2 = this.cc.createAuthenticatedView(suProps);
+    RegionService cc2 = this.clientCache.createAuthenticatedView(suProps);
     assertEquals(true, gfc.isClient());
     assertEquals("0", dsProps.getProperty(MCAST_PORT));
     assertEquals("", dsProps.getProperty(LOCATORS));
@@ -304,11 +305,11 @@ public class ClientCacheFactoryJUnitTest {
 
   @Test
   public void test006NonDefaultPool() throws Exception {
-    this.cc = new ClientCacheFactory()
+    this.clientCache = new ClientCacheFactory()
         .addPoolServer(InetAddress.getLocalHost().getHostName(), 55555).create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.cc;
+    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
     assertEquals(true, gfc.isClient());
-    Properties dsProps = this.cc.getDistributedSystem().getProperties();
+    Properties dsProps = this.clientCache.getDistributedSystem().getProperties();
     assertEquals("0", dsProps.getProperty(MCAST_PORT));
     assertEquals("", dsProps.getProperty(LOCATORS));
     Pool defPool = gfc.getDefaultPool();
@@ -319,9 +320,9 @@ public class ClientCacheFactoryJUnitTest {
         defPool.getServers());
 
     ClientCache cc2 = new ClientCacheFactory().create();
-    gfc = (GemFireCacheImpl) this.cc;
+    gfc = (GemFireCacheImpl) this.clientCache;
     assertEquals(true, gfc.isClient());
-    dsProps = this.cc.getDistributedSystem().getProperties();
+    dsProps = this.clientCache.getDistributedSystem().getProperties();
     assertEquals("0", dsProps.getProperty(MCAST_PORT));
     assertEquals("", dsProps.getProperty(LOCATORS));
     defPool = gfc.getDefaultPool();
@@ -332,8 +333,8 @@ public class ClientCacheFactoryJUnitTest {
         defPool.getServers());
 
     try {
-      new ClientCacheFactory().addPoolServer(InetAddress.getLocalHost().getHostName(), 44444)
-          .create();
+      clientCache = new ClientCacheFactory()
+          .addPoolServer(InetAddress.getLocalHost().getHostName(), 44444).create();
       fail("expected create to fail");
     } catch (IllegalStateException expected) {
     }
@@ -342,17 +343,26 @@ public class ClientCacheFactoryJUnitTest {
   @Test
   public void test007Bug44907() {
     new ClientCacheFactory().setPdxSerializer(new ReflectionBasedAutoSerializer()).create();
-    new ClientCacheFactory().setPdxSerializer(new ReflectionBasedAutoSerializer()).create();
+    clientCache =
+        new ClientCacheFactory().setPdxSerializer(new ReflectionBasedAutoSerializer()).create();
+  }
+
+  @Test
+  public void testDefaultPoolTimeoutMultiplier() throws Exception {
+    clientCache = new ClientCacheFactory().setPoolSubscriptionTimeoutMultiplier(2)
+        .addPoolServer(InetAddress.getLocalHost().getHostName(), 7777).create();
+    Pool defaultPool = clientCache.getDefaultPool();
+    assertEquals(2, defaultPool.getSubscriptionTimeoutMultiplier());
   }
 
   @Test
   public void testOldClientIDDeserialization() throws Exception {
     // during a HandShake a clientID is read w/o knowing the client's
     // version
-    cc = new ClientCacheFactory().create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) cc;
+    clientCache = new ClientCacheFactory().create();
+    GemFireCacheImpl gfc = (GemFireCacheImpl) clientCache;
     InternalDistributedMember memberID =
-        (InternalDistributedMember) cc.getDistributedSystem().getDistributedMember();
+        (InternalDistributedMember) clientCache.getDistributedSystem().getDistributedMember();
     GMSMember gmsID = (GMSMember) memberID.getNetMember();
     memberID.setVersionObjectForTest(Version.GFE_82);
     assertEquals(Version.GFE_82, memberID.getVersionObject());

@@ -388,7 +388,6 @@ public class QueueStateImpl implements QueueState {
     /**
      * Sets the ackSend
      *
-     * @param ackSend
      */
     public void setAckSend(boolean ackSend) {
       this.ackSend = ackSend;

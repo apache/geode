@@ -95,7 +95,6 @@ public class FunctionServiceManager {
    * with DataPolicy.PARTITION, it executes on members where the data resides as specified by the
    * filter.
    *
-   * @return Execution
    * @throws FunctionException if the region passed in is null
    * @since GemFire 6.0
    */
@@ -137,7 +136,6 @@ public class FunctionServiceManager {
    * thrown.
    *
    * @param pool from which to chose a server for execution
-   * @return Execution
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
@@ -160,7 +158,6 @@ public class FunctionServiceManager {
    * or executing the function on the server, an Exception will be thrown.
    *
    * @param pool the set of servers to execute the function
-   * @return Execution
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
@@ -186,7 +183,6 @@ public class FunctionServiceManager {
    *
    * @param regionService obtained from {@link ClientCacheFactory#create} or
    *        {@link ClientCache#createAuthenticatedView(Properties)} .
-   * @return Execution
    * @throws FunctionException if cache is null, is not on a client, or it does not have a default
    *         pool
    * @since GemFire 6.5
@@ -219,7 +215,6 @@ public class FunctionServiceManager {
    *
    * @param regionService obtained from {@link ClientCacheFactory#create} or
    *        {@link ClientCache#createAuthenticatedView(Properties)} .
-   * @return Execution
    * @throws FunctionException if cache is null, is not on a client, or it does not have a default
    *         pool
    * @since GemFire 6.5
@@ -253,7 +248,6 @@ public class FunctionServiceManager {
    *
    * @param system defines the distributed system
    * @param distributedMember defines a member in the distributed system
-   * @return Execution
    * @throws FunctionException if either input parameter is null
    * @since GemFire 6.0
    *
@@ -276,7 +270,6 @@ public class FunctionServiceManager {
    * or executing the function on the member, an Exception will be thrown.
    *
    * @param system defines the distributed system
-   * @return Execution
    *
    * @throws FunctionException if DistributedSystem instance passed is null
    * @since GemFire 6.0
@@ -326,7 +319,6 @@ public class FunctionServiceManager {
    * Returns the {@link Function} defined by the functionId, returns null if no function is found
    * for the specified functionId
    *
-   * @return Function
    * @throws FunctionException if functionID passed is null
    * @since GemFire 6.0
    */

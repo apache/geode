@@ -28,9 +28,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- *
- */
 public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     implements Filter, OQLLexerTokenTypes {
   /** left operand */
@@ -515,8 +512,6 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
    * @param operator The junction type ( AND or OR ) of the old junction
    * @param indpndntItr Array of RuntimeIterator representing the Independent Iterator for the Group
    *        or Range Junction
-   * @param isCompleteExpansion
-   * @param operands
    * @return Object of type GroupJunction or RangeJunction depending on the type of the invoking
    *         Object
    */
@@ -530,10 +525,6 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
    *
    * @param context ExecutionContext object
    * @return Object of type OrganizedOperands
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   abstract OrganizedOperands organizeOperands(ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,

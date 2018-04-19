@@ -87,6 +87,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @Category({IntegrationTest.class, MembershipTest.class})
 public class JGroupsMessengerJUnitTest {
 
+  private static final String AES_128 = "AES:128";
+
   private Services services;
   private JGroupsMessenger messenger;
   private JoinLeave joinLeave;
@@ -953,13 +955,14 @@ public class JGroupsMessengerJUnitTest {
     InternalDistributedMember otherMbr = new InternalDistributedMember("localhost", 8888);
 
     Properties p = new Properties();
-    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
+    final String udpDhalgo = "AES:128";
+    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, udpDhalgo);
     initMocks(false, p);
 
     NetView v = createView(otherMbr);
     when(joinLeave.getMemberID(messenger.getMemberID().getNetMember()))
         .thenReturn(messenger.getMemberID());
-    GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services);
+    GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services, udpDhalgo);
 
     messenger.setPublicKey(otherMbrEncrptor.getPublicKeyBytes(), otherMbr);
     messenger.initClusterKey();
@@ -992,12 +995,13 @@ public class JGroupsMessengerJUnitTest {
     InternalDistributedMember otherMbr = new InternalDistributedMember("localhost", 8888);
 
     Properties p = new Properties();
-    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
+
+    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, AES_128);
     initMocks(false, p);
 
     NetView v = createView(otherMbr);
 
-    GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services);
+    GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services, AES_128);
     otherMbrEncrptor.setPublicKey(messenger.getPublicKey(messenger.getMemberID()),
         messenger.getMemberID());
 
@@ -1033,12 +1037,12 @@ public class JGroupsMessengerJUnitTest {
     InternalDistributedMember otherMbr = new InternalDistributedMember("localhost", 8888);
 
     Properties p = new Properties();
-    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
+    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, AES_128);
     initMocks(false, p);
 
     NetView v = createView(otherMbr);
 
-    GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services);
+    GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services, AES_128);
 
     messenger.setPublicKey(otherMbrEncrptor.getPublicKeyBytes(), otherMbr);
     messenger.initClusterKey();
@@ -1067,12 +1071,12 @@ public class JGroupsMessengerJUnitTest {
     InternalDistributedMember otherMbr = new InternalDistributedMember("localhost", 8888);
 
     Properties p = new Properties();
-    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
+    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, AES_128);
     initMocks(false, p);
 
     NetView v = createView(otherMbr);
 
-    GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services);
+    GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services, AES_128);
     otherMbrEncrptor.setPublicKey(messenger.getPublicKey(messenger.getMemberID()),
         messenger.getMemberID());
 
@@ -1109,7 +1113,7 @@ public class JGroupsMessengerJUnitTest {
 
     requestBytes = out.toByteArray();
 
-    otherMbrEncrptor.addClusterKey(((JoinResponseMessage) gfMessageAtOtherMbr).getSecretPk());
+    otherMbrEncrptor.setClusterKey(((JoinResponseMessage) gfMessageAtOtherMbr).getSecretPk());
 
     dis = new DataInputStream(new ByteArrayInputStream(requestBytes));
 

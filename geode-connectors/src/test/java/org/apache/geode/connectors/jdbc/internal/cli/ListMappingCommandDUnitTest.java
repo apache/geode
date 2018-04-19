@@ -99,6 +99,30 @@ public class ListMappingCommandDUnitTest implements Serializable {
   }
 
   @Test
+  public void listsMultipleRegionMappingsFromMember() {
+    String mapping1 = "create jdbc-mapping --region=testRegion-1 --connection=connection "
+        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
+        + "--field-mapping=field1:column1,field2:column2";
+    gfsh.executeAndAssertThat(mapping1).statusIsSuccess();
+    String mapping2 = "create jdbc-mapping --region=testRegion-2 --connection=connection "
+        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
+        + "--field-mapping=field1:column1,field2:column2";
+    gfsh.executeAndAssertThat(mapping2).statusIsSuccess();
+    String mapping3 = "create jdbc-mapping --region=testRegion-3 --connection=connection "
+        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
+        + "--field-mapping=field1:column1,field2:column2";
+    gfsh.executeAndAssertThat(mapping3).statusIsSuccess();
+
+    CommandResultAssert commandResultAssert =
+        gfsh.executeAndAssertThat(LIST_MAPPING + " --member=server-1").statusIsSuccess();
+
+    commandResultAssert.statusIsSuccess();
+    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 3);
+    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName + "-1",
+        regionName + "-2", regionName + "-3");
+  }
+
+  @Test
   public void reportsNoRegionMappingsFound() {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
 

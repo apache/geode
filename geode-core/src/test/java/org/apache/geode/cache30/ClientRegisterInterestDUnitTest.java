@@ -25,12 +25,20 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -431,6 +439,57 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
 
     // assert public methods report actively registered interest on region2
     assertTrue(region2.getInterestList().contains(key2));
+  }
+
+
+
+  @Test
+  public void rejectAttemptToRegisterInterestInLonerSystem() throws Exception {
+    final String name = this.getUniqueName();
+    final String regionName1 = name + "-1";
+
+    // create first bridge server with region for client...
+    final int firstServerIdx = 1;
+
+    final VM firstServerVM = Host.getHost(0).getVM(firstServerIdx);
+    firstServerVM.invoke(new CacheSerializableRunnable("Create first bridge server") {
+      public void run2() throws CacheException {
+        Cache cache = new CacheFactory().set("mcast-port", "0").create();
+
+        try {
+          CacheServer bridge = cache.addCacheServer();
+          bridge.setPort(0);
+          bridge.setMaxThreads(getMaxThreads());
+          bridge.start();
+          bridgeServerPort = bridge.getPort();
+        } catch (IOException e) {
+          LogWriterUtils.getLogWriter().error("startBridgeServer threw IOException", e);
+          fail("startBridgeServer threw IOException ", e);
+        }
+        assertTrue(bridgeServerPort != 0);
+
+        Region region1 = cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName1);
+      }
+    });
+
+    // get the bridge server ports...
+    int port = firstServerVM.invoke(() -> ClientRegisterInterestDUnitTest.getBridgeServerPort());
+
+    try {
+      ClientCache clientCache =
+          new ClientCacheFactory().addPoolServer(firstServerVM.getHost().getHostName(), port)
+              .setPoolSubscriptionEnabled(true).create();
+      Region region = clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+          .create(regionName1);
+      region.registerInterestRegex(".*");
+      fail();
+    } catch (ServerOperationException e) {
+      // expected
+      if (!e.getRootCause().getMessage().equals(
+          "Should not register interest for a partitioned region when mcast-port is 0 and no locator is present")) {
+        fail();
+      }
+    }
   }
 
 }

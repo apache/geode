@@ -27,9 +27,6 @@ public class GetEntryOp {
   /**
    * Does a region.getEntry on the server using the given pool
    *
-   * @param pool
-   * @param region
-   * @param key
    * @return an {@link EntrySnapshot} for the given key
    */
   public static Object execute(ExecutablePool pool, LocalRegion region, Object key) {

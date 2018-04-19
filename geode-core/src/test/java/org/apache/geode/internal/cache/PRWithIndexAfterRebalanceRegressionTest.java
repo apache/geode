@@ -45,6 +45,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -53,7 +54,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #50749: RegionDestroyedException when running a OQL inside function for a colocated region
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLIndexTest.class})
 @SuppressWarnings("serial")
 public class PRWithIndexAfterRebalanceRegressionTest implements Serializable {
 

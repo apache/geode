@@ -706,7 +706,6 @@ public interface QueryService {
    * @see CqServiceStatistics
    *
    * @since GemFire 5.5
-   * @return CqServiceStatistics
    *
    */
   CqServiceStatistics getCqStatistics();

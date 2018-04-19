@@ -125,10 +125,6 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * <code>Operation.CREATE</code> to the <code>PutOp.execute()</code> method as the caller of this
    * method does not put Delta instances as value.
    *
-   * @param key
-   * @param value
-   * @param event
-   * @param callbackArg
    */
   public Object putForMetaRegion(Object key, Object value, byte[] deltaBytes, EntryEventImpl event,
       Object callbackArg, boolean isMetaRegionPutOp) {
@@ -805,7 +801,6 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   /**
    * Transaction synchronization notification to the servers
    *
-   * @param status
    * @return the server's TXCommitMessage
    * @see org.apache.geode.internal.cache.tx.ClientTXStateStub#afterCompletion(int)
    */

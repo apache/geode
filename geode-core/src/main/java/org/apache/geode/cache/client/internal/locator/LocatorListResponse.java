@@ -22,9 +22,6 @@ import java.util.List;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.DataSerializableFixedID;
 
-/**
- *
- */
 public class LocatorListResponse extends ServerLocationResponse {
   /** ArrayList of ServerLocations for controllers */
   private List<ServerLocation> controllers;

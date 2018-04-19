@@ -75,7 +75,7 @@ public class DescribeConfigCommand extends InternalGfshCommand {
         crd.setHeader(CliStrings.format(CliStrings.DESCRIBE_CONFIG__HEADER__TEXT, memberNameOrId));
 
         List<String> jvmArgsList = memberConfigInfo.getJvmInputArguments();
-        TabularResultData jvmInputArgs = crd.addSection().addSection().addTable();
+        TabularResultData jvmInputArgs = crd.addSection().addTable();
 
         for (String jvmArg : jvmArgsList) {
           // This redaction should be redundant, since jvmArgs should have already been redacted in
@@ -97,11 +97,8 @@ public class DescribeConfigCommand extends InternalGfshCommand {
             memberConfigInfo.getCacheServerAttributes();
 
         if (cacheServerAttributesList != null && !cacheServerAttributesList.isEmpty()) {
-          CompositeResultData.SectionResultData cacheServerSection = crd.addSection();
-          cacheServerSection.setHeader("Cache-server attributes");
-
           for (Map<String, String> cacheServerAttributes : cacheServerAttributesList) {
-            addSubSection(cacheServerSection, cacheServerAttributes);
+            addSection(crd, cacheServerAttributes, "Cache-server attributes");
           }
         }
         result = ResultBuilder.buildResult(crd);
@@ -132,17 +129,4 @@ public class DescribeConfigCommand extends InternalGfshCommand {
     }
   }
 
-  private void addSubSection(CompositeResultData.SectionResultData section,
-      Map<String, String> attrMap) {
-    if (!attrMap.isEmpty()) {
-      CompositeResultData.SectionResultData subSection = section.addSection();
-      Set<String> attributes = new TreeSet<>(attrMap.keySet());
-      subSection.setHeader("");
-
-      for (String attribute : attributes) {
-        String attributeValue = attrMap.get(attribute);
-        subSection.addData(attribute, attributeValue);
-      }
-    }
-  }
 }

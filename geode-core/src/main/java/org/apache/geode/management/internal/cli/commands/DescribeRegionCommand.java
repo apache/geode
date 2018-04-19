@@ -134,7 +134,7 @@ public class DescribeRegionCommand extends InternalGfshCommand {
           StringUtils.join(regionDescription.getHostingMembers(), '\n'));
       regionSection.addSeparator('.');
 
-      TabularResultData commonNonDefaultAttrTable = regionSection.addSection().addTable();
+      TabularResultData commonNonDefaultAttrTable = regionSection.addTable();
 
       commonNonDefaultAttrTable.setHeader(CliStrings
           .format(CliStrings.DESCRIBE_REGION__NONDEFAULT__COMMONATTRIBUTES__HEADER, memberType));
@@ -159,7 +159,7 @@ public class DescribeRegionCommand extends InternalGfshCommand {
           regionDescription.getRegionDescriptionPerMemberMap();
       Set<String> members = regDescPerMemberMap.keySet();
 
-      TabularResultData table = regionSection.addSection().addTable();
+      TabularResultData table = regionSection.addTable();
 
       boolean setHeader = false;
       for (String member : members) {

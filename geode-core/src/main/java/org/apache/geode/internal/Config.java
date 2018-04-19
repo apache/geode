@@ -105,11 +105,18 @@ public interface Config {
   boolean sameAs(Config v);
 
   /**
-   * Converts the contents of this config to a property instance.
+   * Converts the non-secure contents of this config to a property instance.
    *
    * @since GemFire 3.5
    */
   Properties toProperties();
+
+  /**
+   * Converts the secure contents of this config to a property instance.
+   *
+   * @since Geode 1.6
+   */
+  Properties toSecurityProperties();
 
   /**
    * Writes this config to the specified file.

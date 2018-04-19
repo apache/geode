@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -101,7 +102,13 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
 
     vm6.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-    Wait.pause(5000);
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 1000));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 1000));
+    // secondary queue size stats in serial queue should be 0
+    assertEquals(0, v4List.get(10) + v5List.get(10));
+
     HashMap primarySenderUpdates = (HashMap) vm4.invoke(() -> WANTestBase.checkQueue());
     HashMap secondarySenderUpdates = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue());
     assertEquals(primarySenderUpdates, secondarySenderUpdates);
@@ -136,6 +143,9 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     // removing all the keys.
     secondarySenderUpdates = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue());
     assertEquals(secondarySenderUpdates.get("Destroy"), receiverUpdates.get("Create"));
+
+    vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
   }
 
   protected void checkPrimarySenderUpdatesOnVM5(HashMap primarySenderUpdates) {

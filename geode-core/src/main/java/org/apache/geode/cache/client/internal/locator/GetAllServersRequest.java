@@ -20,11 +20,6 @@ import java.io.IOException;
 
 import org.apache.geode.internal.DataSerializableFixedID;
 
-/**
- *
- *
- */
-
 public class GetAllServersRequest extends ServerLocationRequest {
 
   public GetAllServersRequest() {

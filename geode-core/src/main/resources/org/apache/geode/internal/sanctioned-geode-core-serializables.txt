@@ -545,7 +545,7 @@ org/apache/geode/management/internal/cli/functions/FetchRegionAttributesFunction
 org/apache/geode/management/internal/cli/functions/FetchSharedConfigurationStatusFunction,true,1
 org/apache/geode/management/internal/cli/functions/GarbageCollectionFunction,true,1
 org/apache/geode/management/internal/cli/functions/GatewayReceiverCreateFunction,true,8746830191680509335
-org/apache/geode/management/internal/cli/functions/GatewayReceiverFunctionArgs,true,-5158224572470173267,bindAddress:java/lang/String,endPort:java/lang/Integer,gatewayTransportFilters:java/lang/String[],hostnameForSenders:java/lang/String,manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer
+org/apache/geode/management/internal/cli/functions/GatewayReceiverFunctionArgs,true,-5158224572470173267,bindAddress:java/lang/String,endPort:java/lang/Integer,gatewayTransportFilters:java/lang/String[],hostnameForSenders:java/lang/String,ifNotExists:java/lang/Boolean,manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer
 org/apache/geode/management/internal/cli/functions/GatewaySenderCreateFunction,true,8746830191680509335
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunction,true,1
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunctionArgs,true,3848480256348119530,id:java/lang/String,ifExists:boolean

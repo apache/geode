@@ -449,10 +449,6 @@ public class CommandResult implements Result {
     return gfJsonObject.getJSONObject(ResultData.RESULT_CONTENT);
   }
 
-  public String getContentAsString() {
-    return getContent().toString();
-  }
-
   public String getMessageFromContent() {
     return getContent().getString("message");
   }

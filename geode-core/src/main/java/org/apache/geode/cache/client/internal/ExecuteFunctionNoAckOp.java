@@ -166,15 +166,6 @@ public class ExecuteFunctionNoAckOp {
       getMessage().addBytesPart(ExecuteFunctionOp.getByteArrayForFlags(allMembers));
     }
 
-    /**
-     * @param functionId
-     * @param args
-     * @param memberMappedArg
-     * @param hasResult
-     * @param isFnSerializationReqd
-     * @param isHA
-     * @param optimizeForWrite
-     */
     public ExecuteFunctionNoAckOpImpl(String functionId, Object args,
         MemberMappedArgument memberMappedArg, byte hasResult, boolean isFnSerializationReqd,
         boolean isHA, boolean optimizeForWrite, String[] groups, boolean allMembers) {

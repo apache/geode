@@ -46,6 +46,7 @@ import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -111,7 +112,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     finishCacheXml("MyDisconnect");
     // Cache cache = getCache();
     closeCache();
-    getSystem().disconnect();
+    basicGetSystem().disconnect();
     LogWriterUtils.getLogWriter().fine("Cache Closed ");
   }
 
@@ -127,6 +128,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       dsProperties.put(MCAST_PORT, "0");
       dsProperties.put(MEMBER_TIMEOUT, "1000");
       dsProperties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+      dsProperties.put(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+      dsProperties.put("security-username", "clusterManage");
+      dsProperties.put("security-password", "clusterManage");
       addDSProps(dsProperties);
     }
     return dsProperties;
@@ -632,7 +636,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       Assert.fail("IOException during cache.xml generation to " + file, ex);
     }
     closeCache();
-    getSystem().disconnect();
+    basicGetSystem().disconnect();
 
     LogWriterUtils.getLogWriter().info("disconnected from the system...");
     Host host = Host.getHost(0);
@@ -644,7 +648,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     SerializableRunnable roleLoss = new CacheSerializableRunnable("ROLERECONNECTTESTS") {
       public void run2() throws RuntimeException {
         LogWriterUtils.getLogWriter().info("####### STARTING THE REAL TEST ##########");
+
         locatorPort = locPort;
+        dsProperties = null;
         Properties props = getDistributedSystemProperties();
         props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "RoleReconnect-cache.xml");
         props.put(MAX_WAIT_TIME_RECONNECT, "200");
@@ -660,7 +666,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         basicGetSystem().getLogWriter().info(
             "<ExpectedException action=add>" + "CacheClosedException" + "</ExpectedException");
         try {
-          getCache();
+          getCache(props);
           throw new RuntimeException("The test should throw a CancelException ");
         } catch (CancelException ignor) { // can be caused by role loss during intialization.
           LogWriterUtils.getLogWriter().info("Got Expected CancelException ");

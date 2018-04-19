@@ -223,7 +223,6 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    * has changed. Add the locator back to the list of locators using host address rather than IP.
    * This will cause another DNS lookup, hopefully finding the locator.
    *
-   * @param locator
    */
   protected void updateLocatorInLocatorList(HostAddress locator) {
     if (locator.getSocketInetAddressNoLookup().getHostName() != null && !locator.isIpString()) {
