@@ -21,7 +21,7 @@ import java.util.Set;
 import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.CacheDistributionAdvisor;
+import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
 
 public interface PersistenceAdvisor {
 
@@ -37,7 +37,6 @@ public interface PersistenceAdvisor {
    */
   boolean acquireTieLock();
 
-
   /**
    * Determine the state of this member on it's peers, along with the PersistentMemberID of those
    * peers.
@@ -45,7 +44,7 @@ public interface PersistenceAdvisor {
    * @return a map from the peers persistentId to the state of this member according to that peer.
    */
   PersistentStateQueryResults getMyStateOnMembers(Set<InternalDistributedMember> members)
-      throws ReplyException, InterruptedException;
+      throws ReplyException;
 
   /**
    * Retrieve the state of a particular member from storage.
@@ -143,7 +142,7 @@ public interface PersistenceAdvisor {
    * @return true if we detected that we actually have the same data on disk as another member.
    */
   boolean checkMyStateOnMembers(Set<InternalDistributedMember> replicates)
-      throws ReplyException, InterruptedException, ConflictingPersistentDataException;
+      throws ReplyException, ConflictingPersistentDataException;
 
   void releaseTieLock();
 
@@ -156,8 +155,8 @@ public interface PersistenceAdvisor {
    * @throws ConflictingPersistentDataException if there are active members which are not based on
    *         the state that is persisted in this member.
    */
-  CacheDistributionAdvisor.InitialImageAdvice getInitialImageAdvice(
-      CacheDistributionAdvisor.InitialImageAdvice previousAdvice, boolean recoverFromDisk);
+  InitialImageAdvice getInitialImageAdvice(InitialImageAdvice previousAdvice,
+      boolean hasDiskImageToRecoverFrom);
 
   /**
    * Returns true if this member used to host data.
