@@ -160,7 +160,18 @@ The gateway sender configuration for a specific sender `id` must be identical on
 
 ## <a id="setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879" class="no-quick-link"></a>Create Data Regions for Multi-site Communication
 
-When you are using a multi-site configuration, you choose which data regions to share between sites. Because of the high cost of distributing data between disparate geographical locations, not all changes are passed between sites. After you define gateway senders, configure regions to use the gateway sender to distribute region events.
+When you are using a multi-site configuration, you choose which data regions to share between sites. Because of the high cost of distributing data between disparate geographical locations, not all changes are passed between sites. 
+
+
+**Note these important restrictions on the regions:**
+
+- Replicated regions cannot use a parallel gateway sender. Use a serial gateway sender instead.
+
+- In addition to configuring regions with gateway senders to distribute events, you must configure the same regions in the target clusters to apply the distributed events. The region name in the receiving cluster must exactly match the region name in the sending cluster.
+
+- Regions using the same parallel gateway sender ID must be colocated.
+
+After you define gateway senders, configure regions to use the gateway sender to distribute region events.
 
 -   **gfsh Configuration**
 
@@ -198,15 +209,6 @@ When you are using a multi-site configuration, you choose which data regions to 
 
     **Note:**
     When using the Java API, you must configure a parallel gateway sender *before* you add its id to a region. This ensures that the sender distributes region events that were persisted before new cache operations take place. If the gateway sender id does not exist when you add it to a region, you receive an `IllegalStateException`.
-
-**Note:**
-Replicated regions cannot use a parallel gateway sender. Use a serial gateway sender instead.
-
-**Note:**
-In addition to configuring regions with gateway senders to distribute events, you must configure the same regions in the target clusters to apply the distributed events. The region name in the receiving cluster must exactly match the region name in the sending cluster.
-
-**Note:**
-Regions using the same parallel gateway sender ID must be colocated.
 
 ## <a id="setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637B" class="no-quick-link"></a>Configure Gateway Receivers
 
