@@ -136,17 +136,15 @@ public class CompactDiskStoreCommand extends InternalGfshCommand {
             Set<Map.Entry<DistributedMember, PersistentID>> entries = overallCompactInfo.entrySet();
 
             for (Map.Entry<DistributedMember, PersistentID> entry : entries) {
-              String memberId = entry.getKey().getId();
+              String memberId = entry.getKey().getName();
               section = compositeResultData.addSection(memberId);
-              section.addData("On Member", memberId);
+              section.setHeader("On Member: " + memberId);
 
               PersistentID persistentID = entry.getValue();
               if (persistentID != null) {
-                CompositeResultData.SectionResultData subSection =
-                    section.addSection("DiskStore" + memberId);
-                subSection.addData("UUID", persistentID.getUUID());
-                subSection.addData("Host", persistentID.getHost().getHostName());
-                subSection.addData("Directory", persistentID.getDirectory());
+                section.addData("UUID", persistentID.getUUID());
+                section.addData("Host", persistentID.getHost().getHostName());
+                section.addData("Directory", persistentID.getDirectory());
               }
             }
             compositeResultData.setHeader("Compacted " + diskStoreName + groupInfo);
