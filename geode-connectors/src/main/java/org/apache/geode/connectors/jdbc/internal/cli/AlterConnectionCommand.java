@@ -84,7 +84,7 @@ public class AlterConnectionCommand extends GfshCommand {
       if (service == null) {
         throw new EntityNotFoundException("connection with name '" + name + "' does not exist.");
       }
-      ConnectorService.Connection conn = CacheElement.findIdentifiable(service.getConnection(), name);
+      ConnectorService.Connection conn = CacheElement.findElement(service.getConnection(), name);
       if (conn == null) {
         throw new EntityNotFoundException("connection with name '" + name + "' does not exist.");
       }
@@ -106,7 +106,7 @@ public class AlterConnectionCommand extends GfshCommand {
           results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
       ConnectorService.Connection mergedConnection =
           (ConnectorService.Connection) successResult.getResultObject();
-      CacheElement.removeFromList(service.getConnection(), name);
+      CacheElement.removeElement(service.getConnection(), name);
       service.getConnection().add(mergedConnection);
       ccService.saveCustomCacheElement("cluster", service);
       persisted = true;

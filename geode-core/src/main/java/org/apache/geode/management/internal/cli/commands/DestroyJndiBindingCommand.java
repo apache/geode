@@ -63,7 +63,7 @@ public class DestroyJndiBindingCommand extends InternalGfshCommand {
     if (service != null) {
       service.updateCacheConfig("cluster", cc -> {
         List<JndiBindingsType.JndiBinding> bindings = cc.getJndiBindings();
-        JndiBindingsType.JndiBinding binding = CacheElement.findIdentifiable(bindings, jndiName);
+        JndiBindingsType.JndiBinding binding = CacheElement.findElement(bindings, jndiName);
         if (binding == null) {
           throw new EntityNotFoundException(
               CliStrings.format("Jndi binding with jndi-name \"{0}\" does not exist.", jndiName),

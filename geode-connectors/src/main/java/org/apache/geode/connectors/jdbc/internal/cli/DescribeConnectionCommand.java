@@ -96,7 +96,7 @@ public class DescribeConnectionCommand extends InternalGfshCommand {
       throw new EntityNotFoundException("connection named '" + name + "' not found");
     }
     ConnectorService.Connection connection =
-        CacheElement.findIdentifiable(service.getConnection(), name);
+        CacheElement.findElement(service.getConnection(), name);
     if (connection == null) {
       throw new EntityNotFoundException("connection named '" + name + "' not found");
     }

@@ -62,8 +62,7 @@ public class DestroyConnectionCommand extends InternalGfshCommand {
       ConnectorService service =
           ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
       if (service != null) {
-        ConnectorService.Connection conn =
-            CacheElement.findIdentifiable(service.getConnection(), name);
+        ConnectorService.Connection conn = CacheElement.findElement(service.getConnection(), name);
         service.getConnection().remove(conn);
         ccService.saveCustomCacheElement("cluster", service);
         persisted = true;

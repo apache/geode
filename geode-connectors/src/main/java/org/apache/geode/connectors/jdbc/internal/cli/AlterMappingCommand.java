@@ -91,7 +91,7 @@ public class AlterMappingCommand extends InternalGfshCommand {
         throw new EntityNotFoundException("mapping with name '" + regionName + "' does not exist.");
       }
       ConnectorService.RegionMapping mapping =
-          CacheElement.findIdentifiable(service.getRegionMapping(), regionName);
+          CacheElement.findElement(service.getRegionMapping(), regionName);
       if (mapping == null) {
         throw new EntityNotFoundException("mapping with name '" + regionName + "' does not exist.");
       }
@@ -113,7 +113,7 @@ public class AlterMappingCommand extends InternalGfshCommand {
           results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
       ConnectorService.RegionMapping mergedMapping =
           (ConnectorService.RegionMapping) successResult.getResultObject();
-      CacheElement.removeFromList(service.getRegionMapping(), connectionName);
+      CacheElement.removeElement(service.getRegionMapping(), connectionName);
       service.getRegionMapping().add(mergedMapping);
       ccService.saveCustomCacheElement("cluster", service);
       persisted = true;

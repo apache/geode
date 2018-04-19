@@ -86,7 +86,6 @@ public class DescribeConnectionCommandTest {
 
     ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
-    when(ccService.findIdentifiable(any(), any())).thenReturn(connection);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("name", "name1")
         .containsOutput("url", "url1").containsOutput("user", "user1")

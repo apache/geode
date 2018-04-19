@@ -64,7 +64,7 @@ public class DestroyMappingCommand extends InternalGfshCommand {
       ConnectorService service =
           ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
       if (service != null) {
-        CacheElement.removeFromList(service.getRegionMapping(), regionName);
+        CacheElement.removeElement(service.getRegionMapping(), regionName);
         ccService.saveCustomCacheElement("cluster", service);
         persisted = true;
       }

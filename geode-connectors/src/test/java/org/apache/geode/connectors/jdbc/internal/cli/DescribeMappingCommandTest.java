@@ -20,7 +20,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -90,8 +92,10 @@ public class DescribeMappingCommandTest {
         .add(new ConnectorService.RegionMapping.FieldMapping("field2", "value2"));
 
     ConnectorService connectorService = mock(ConnectorService.class);
+    List<ConnectorService.RegionMapping> mappings = new ArrayList<>();
+    when(connectorService.getRegionMapping()).thenReturn(mappings);
+    mappings.add(mapping);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
-    when(ccService.findIdentifiable(any(), any())).thenReturn(mapping);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
         .containsOutput("connection", "name1").containsOutput("table", "table1")

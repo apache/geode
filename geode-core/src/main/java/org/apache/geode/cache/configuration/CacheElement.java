@@ -19,7 +19,6 @@ package org.apache.geode.cache.configuration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
@@ -28,20 +27,16 @@ import org.apache.geode.lang.Identifiable;
 @Experimental
 public interface CacheElement extends Identifiable<String>, Serializable {
 
-  static <T extends Identifiable<String>> T findIdentifiable(List<T> list, String id) {
+  static <T extends CacheElement> T findElement(List<T> list, String id) {
     return list.stream().filter(o -> o.getId().equals(id)).findFirst().orElse(null);
   }
 
-  static <T extends Identifiable<String>> void removeFromList(List<T> list, String id) {
-    for (Iterator<T> iter = list.listIterator(); iter.hasNext();) {
-      if (iter.next().getId().equals(id)) {
-        iter.remove();
-      }
-    }
+  static <T extends CacheElement> void removeElement(List<T> list, String id) {
+    list.removeIf(t -> t.getId().equals(id));
   }
 
   static RegionConfig findRegionConfiguration(CacheConfig cacheConfig, String regionPath) {
-    return findIdentifiable(cacheConfig.getRegion(), regionPath);
+    return findElement(cacheConfig.getRegion(), regionPath);
   }
 
   static <T extends CacheElement> List<T> findCustomCacheElements(CacheConfig cacheConfig,
@@ -58,7 +53,7 @@ public interface CacheElement extends Identifiable<String>, Serializable {
 
   static <T extends CacheElement> T findCustomCacheElement(CacheConfig cacheConfig,
       String elementId, Class<T> classT) {
-    return findIdentifiable(findCustomCacheElements(cacheConfig, classT), elementId);
+    return findElement(findCustomCacheElements(cacheConfig, classT), elementId);
   }
 
   static <T extends CacheElement> List<T> findCustomRegionElements(CacheConfig cacheConfig,
@@ -80,6 +75,6 @@ public interface CacheElement extends Identifiable<String>, Serializable {
 
   static <T extends CacheElement> T findCustomRegionElement(CacheConfig cacheConfig,
       String regionPath, String elementId, Class<T> classT) {
-    return findIdentifiable(findCustomRegionElements(cacheConfig, regionPath, classT), elementId);
+    return findElement(findCustomRegionElements(cacheConfig, regionPath, classT), elementId);
   }
 }

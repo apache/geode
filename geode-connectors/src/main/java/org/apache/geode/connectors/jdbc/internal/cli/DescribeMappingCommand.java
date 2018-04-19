@@ -92,7 +92,7 @@ public class DescribeMappingCommand extends InternalGfshCommand {
       throw new EntityNotFoundException("mapping for region '" + regionName + "' not found");
     }
     ConnectorService.RegionMapping mapping =
-        CacheElement.findIdentifiable(service.getRegionMapping(), regionName);
+        CacheElement.findElement(service.getRegionMapping(), regionName);
     if (mapping == null) {
       throw new EntityNotFoundException("mapping for region '" + regionName + "' not found");
     }
