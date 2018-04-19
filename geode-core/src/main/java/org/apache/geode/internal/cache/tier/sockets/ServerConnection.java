@@ -289,8 +289,9 @@ public abstract class ServerConnection implements Runnable {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
-
-      initStreams(socket, socketBufferSize, stats);
+      theSocket = socket;
+      theSocket.setSendBufferSize(socketBufferSize);
+      theSocket.setReceiveBufferSize(socketBufferSize);
 
       if (isDebugEnabled) {
         logger.debug(
@@ -1480,12 +1481,8 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
-
-  private void initStreams(Socket s, int socketBufferSize, MessageStats msgStats) {
+  protected void initStreams(Socket s, int socketBufferSize, MessageStats msgStats) {
     try {
-      theSocket = s;
-      theSocket.setSendBufferSize(socketBufferSize);
-      theSocket.setReceiveBufferSize(socketBufferSize);
       if (getAcceptor().isSelector()) {
         // set it on the message to null. This causes Message
         // to fetch it from a thread local. That way we only need

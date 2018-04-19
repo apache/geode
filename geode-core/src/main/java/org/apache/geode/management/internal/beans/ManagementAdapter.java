@@ -389,7 +389,6 @@ public class ManagementAdapter {
   /**
    * Handles LockService Creation
    *
-   * @param lockService
    */
   public void handleLockServiceCreation(DLockService lockService) throws ManagementException {
     if (!isServiceInitialised("handleLockServiceCreation")) {
@@ -422,7 +421,6 @@ public class ManagementAdapter {
    * Handles GatewaySender creation
    *
    * @param sender the specific gateway sender
-   * @throws ManagementException
    */
   public void handleGatewaySenderCreation(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderCreation")) {
@@ -448,7 +446,6 @@ public class ManagementAdapter {
    * Handles Gateway receiver creation
    *
    * @param recv specific gateway receiver
-   * @throws ManagementException
    */
   public void handleGatewayReceiverCreate(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverCreate")) {
@@ -482,7 +479,6 @@ public class ManagementAdapter {
    * Handles Gateway receiver destroy
    *
    * @param recv specific gateway receiver
-   * @throws ManagementException
    */
   public void handleGatewayReceiverDestroy(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverDestroy")) {
@@ -507,7 +503,6 @@ public class ManagementAdapter {
    * Handles Gateway receiver creation
    *
    * @param recv specific gateway receiver
-   * @throws ManagementException
    */
   public void handleGatewayReceiverStart(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverStart")) {
@@ -533,7 +528,6 @@ public class ManagementAdapter {
    * Handles Gateway receiver creation
    *
    * @param recv specific gateway receiver
-   * @throws ManagementException
    */
   public void handleGatewayReceiverStop(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverStop")) {
@@ -609,7 +603,6 @@ public class ManagementAdapter {
    * Sends the alert with the Object source as member. This notification will get filtered out for
    * particular alert level
    *
-   * @param details
    */
   public void handleSystemNotification(AlertDetails details) {
     if (!isServiceInitialised("handleSystemNotification")) {
@@ -799,7 +792,6 @@ public class ManagementAdapter {
   /**
    * Handles particular region destroy or close operation it will remove the corresponding MBean
    *
-   * @param region
    */
   public void handleRegionRemoval(Region region) throws ManagementException {
     if (!isServiceInitialised("handleRegionRemoval")) {
@@ -842,7 +834,6 @@ public class ManagementAdapter {
   /**
    * Handles DiskStore Removal
    *
-   * @param disk
    */
   public void handleDiskRemoval(DiskStore disk) throws ManagementException {
     if (!isServiceInitialised("handleDiskRemoval")) {
@@ -908,7 +899,6 @@ public class ManagementAdapter {
    * stopped and it should also shutdown all the management services by closing the cache.
    *
    * @param locator instance of locator which is getting started
-   * @throws ManagementException
    */
   public void handleLocatorStart(Locator locator) throws ManagementException {
     if (!isServiceInitialised("handleLocatorCreation")) {

@@ -211,9 +211,8 @@ public class PoolType {
   /**
    * Gets the value of the subscriptionTimeoutMultiplier property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getSubscriptionTimeoutMultiplier() {
@@ -223,9 +222,8 @@ public class PoolType {
   /**
    * Sets the value of the subscriptionTimeoutMultiplier property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setSubscriptionTimeoutMultiplier(String value) {
@@ -235,9 +233,8 @@ public class PoolType {
   /**
    * Gets the value of the socketConnectTimeout property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getSocketConnectTimeout() {
@@ -247,9 +244,8 @@ public class PoolType {
   /**
    * Sets the value of the socketConnectTimeout property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setSocketConnectTimeout(String value) {
@@ -259,9 +255,8 @@ public class PoolType {
   /**
    * Gets the value of the freeConnectionTimeout property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getFreeConnectionTimeout() {
@@ -271,9 +266,8 @@ public class PoolType {
   /**
    * Sets the value of the freeConnectionTimeout property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setFreeConnectionTimeout(String value) {
@@ -283,9 +277,8 @@ public class PoolType {
   /**
    * Gets the value of the loadConditioningInterval property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getLoadConditioningInterval() {
@@ -295,9 +288,8 @@ public class PoolType {
   /**
    * Sets the value of the loadConditioningInterval property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setLoadConditioningInterval(String value) {
@@ -307,9 +299,8 @@ public class PoolType {
   /**
    * Gets the value of the minConnections property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getMinConnections() {
@@ -319,9 +310,8 @@ public class PoolType {
   /**
    * Sets the value of the minConnections property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setMinConnections(String value) {
@@ -331,9 +321,8 @@ public class PoolType {
   /**
    * Gets the value of the maxConnections property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getMaxConnections() {
@@ -343,9 +332,8 @@ public class PoolType {
   /**
    * Sets the value of the maxConnections property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setMaxConnections(String value) {
@@ -355,9 +343,8 @@ public class PoolType {
   /**
    * Gets the value of the retryAttempts property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getRetryAttempts() {
@@ -367,9 +354,8 @@ public class PoolType {
   /**
    * Sets the value of the retryAttempts property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setRetryAttempts(String value) {
@@ -379,9 +365,8 @@ public class PoolType {
   /**
    * Gets the value of the idleTimeout property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getIdleTimeout() {
@@ -391,9 +376,8 @@ public class PoolType {
   /**
    * Sets the value of the idleTimeout property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setIdleTimeout(String value) {
@@ -403,9 +387,8 @@ public class PoolType {
   /**
    * Gets the value of the pingInterval property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getPingInterval() {
@@ -415,9 +398,8 @@ public class PoolType {
   /**
    * Sets the value of the pingInterval property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setPingInterval(String value) {
@@ -427,9 +409,8 @@ public class PoolType {
   /**
    * Gets the value of the name property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getName() {
@@ -439,9 +420,8 @@ public class PoolType {
   /**
    * Sets the value of the name property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setName(String value) {
@@ -451,9 +431,8 @@ public class PoolType {
   /**
    * Gets the value of the readTimeout property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getReadTimeout() {
@@ -463,9 +442,8 @@ public class PoolType {
   /**
    * Sets the value of the readTimeout property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setReadTimeout(String value) {
@@ -475,9 +453,8 @@ public class PoolType {
   /**
    * Gets the value of the serverGroup property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getServerGroup() {
@@ -487,9 +464,8 @@ public class PoolType {
   /**
    * Sets the value of the serverGroup property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setServerGroup(String value) {
@@ -499,9 +475,8 @@ public class PoolType {
   /**
    * Gets the value of the socketBufferSize property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getSocketBufferSize() {
@@ -511,9 +486,8 @@ public class PoolType {
   /**
    * Sets the value of the socketBufferSize property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setSocketBufferSize(String value) {
@@ -523,9 +497,8 @@ public class PoolType {
   /**
    * Gets the value of the subscriptionEnabled property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isSubscriptionEnabled() {
@@ -535,9 +508,8 @@ public class PoolType {
   /**
    * Sets the value of the subscriptionEnabled property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setSubscriptionEnabled(Boolean value) {
@@ -547,9 +519,8 @@ public class PoolType {
   /**
    * Gets the value of the subscriptionMessageTrackingTimeout property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getSubscriptionMessageTrackingTimeout() {
@@ -559,9 +530,8 @@ public class PoolType {
   /**
    * Sets the value of the subscriptionMessageTrackingTimeout property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setSubscriptionMessageTrackingTimeout(String value) {
@@ -571,9 +541,8 @@ public class PoolType {
   /**
    * Gets the value of the subscriptionAckInterval property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getSubscriptionAckInterval() {
@@ -583,9 +552,8 @@ public class PoolType {
   /**
    * Sets the value of the subscriptionAckInterval property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setSubscriptionAckInterval(String value) {
@@ -595,9 +563,8 @@ public class PoolType {
   /**
    * Gets the value of the subscriptionRedundancy property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getSubscriptionRedundancy() {
@@ -607,9 +574,8 @@ public class PoolType {
   /**
    * Sets the value of the subscriptionRedundancy property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setSubscriptionRedundancy(String value) {
@@ -619,9 +585,8 @@ public class PoolType {
   /**
    * Gets the value of the statisticInterval property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getStatisticInterval() {
@@ -631,9 +596,8 @@ public class PoolType {
   /**
    * Sets the value of the statisticInterval property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setStatisticInterval(String value) {
@@ -643,9 +607,8 @@ public class PoolType {
   /**
    * Gets the value of the threadLocalConnections property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isThreadLocalConnections() {
@@ -655,9 +618,8 @@ public class PoolType {
   /**
    * Sets the value of the threadLocalConnections property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setThreadLocalConnections(Boolean value) {
@@ -667,9 +629,8 @@ public class PoolType {
   /**
    * Gets the value of the prSingleHopEnabled property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isPrSingleHopEnabled() {
@@ -679,9 +640,8 @@ public class PoolType {
   /**
    * Sets the value of the prSingleHopEnabled property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setPrSingleHopEnabled(Boolean value) {
@@ -691,9 +651,8 @@ public class PoolType {
   /**
    * Gets the value of the multiuserAuthentication property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isMultiuserAuthentication() {
@@ -703,9 +662,8 @@ public class PoolType {
   /**
    * Sets the value of the multiuserAuthentication property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setMultiuserAuthentication(Boolean value) {
@@ -745,9 +703,8 @@ public class PoolType {
     /**
      * Gets the value of the host property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getHost() {
@@ -757,9 +714,8 @@ public class PoolType {
     /**
      * Sets the value of the host property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setHost(String value) {
@@ -769,9 +725,8 @@ public class PoolType {
     /**
      * Gets the value of the port property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getPort() {
@@ -781,9 +736,8 @@ public class PoolType {
     /**
      * Sets the value of the port property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setPort(String value) {
@@ -825,9 +779,8 @@ public class PoolType {
     /**
      * Gets the value of the host property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getHost() {
@@ -837,9 +790,8 @@ public class PoolType {
     /**
      * Sets the value of the host property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setHost(String value) {
@@ -849,9 +801,8 @@ public class PoolType {
     /**
      * Gets the value of the port property.
      *
-     * @return
-     *         possible object is
-     *         {@link String }
+     * possible object is
+     * {@link String }
      *
      */
     public String getPort() {
@@ -861,9 +812,8 @@ public class PoolType {
     /**
      * Sets the value of the port property.
      *
-     * @param value
-     *        allowed object is
-     *        {@link String }
+     * allowed object is
+     * {@link String }
      *
      */
     public void setPort(String value) {

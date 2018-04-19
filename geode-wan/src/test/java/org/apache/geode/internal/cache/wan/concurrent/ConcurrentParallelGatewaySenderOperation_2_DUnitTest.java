@@ -37,9 +37,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-/**
- *
- */
 @Category({DistributedTest.class, WanTest.class})
 public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTestBase {
 

@@ -218,10 +218,6 @@ public class SingleHopClientExecutor {
    * execute bulk op (putAll or removeAll) on multiple PR servers, returning a map of the results.
    * Results are either a VersionedObjectList or a BulkOpPartialResultsException
    *
-   * @param callableTasks
-   * @param cms
-   * @param region
-   * @param failedServers
    * @return the per-server results
    */
   static Map<ServerLocation, Object> submitBulkOp(List callableTasks, ClientMetadataService cms,

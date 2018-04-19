@@ -2267,7 +2267,6 @@ public interface DistributionConfig extends Config, LogConfig {
    * Set timeout for peer membership check when security is enabled. The timeout must be less than
    * peer handshake timeout.
    *
-   * @param attValue
    */
   @ConfigAttributeSetter(name = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT)
   void setSecurityPeerMembershipTimeout(int attValue);
@@ -4946,5 +4945,4 @@ public interface DistributionConfig extends Config, LogConfig {
     Collections.sort(atts);
     return atts.toArray(new String[atts.size()]);
   }
-
 }

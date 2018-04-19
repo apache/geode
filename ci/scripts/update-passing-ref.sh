@@ -25,4 +25,7 @@ DESTINATION_URL=gs://${PUBLIC_BUCKET}/${MAINTENANCE_VERSION}/passing.txt
 pushd ${REPOSITORY_DIR}
 git rev-parse HEAD > ${LOCAL_FILE}
 popd
+echo "Updating passing reference file for ${MAINTENANCE_VERSION} to the following SHA:"
+cat ${LOCAL_FILE}
 gsutil -q -m cp ${LOCAL_FILE} ${DESTINATION_URL}
+gsutil setmeta -h "Cache-Control:no-cache" ${DESTINATION_URL}

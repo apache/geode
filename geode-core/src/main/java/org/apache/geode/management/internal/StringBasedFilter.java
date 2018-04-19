@@ -35,9 +35,6 @@ public class StringBasedFilter {
   private List<Pattern> exclusionPatternList;
   private List<Pattern> inclusionPatternList;
 
-  /**
-   *
-   */
   public StringBasedFilter(FilterParam params) {
     this.params = params;
     exclusionPatternList = new ArrayList<Pattern>();
@@ -47,10 +44,6 @@ public class StringBasedFilter {
     compileFilterList(params.getInclusionList(), inclusionPatternList);
 
   }
-
-  /**
-   *
-   */
 
   public boolean isExcluded(String tokenToMatch) {
     if (params.isDefaultExcludeFilter()) {

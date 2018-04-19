@@ -19,9 +19,11 @@ import java.io.IOException;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
+import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
@@ -253,6 +255,11 @@ public class RegisterInterest61 extends BaseCommand {
 
       // Send chunk response
       try {
+        if (region.getDistributionManager() instanceof LonerDistributionManager
+            && region instanceof PartitionedRegion) {
+          throw new IllegalStateException(
+              "Should not register interest for a partitioned region when mcast-port is 0 and no locator is present");
+        }
         fillAndSendRegisterInterestResponseChunks(region, key, interestType, serializeValues,
             policy, serverConnection);
         serverConnection.setAsTrue(RESPONDED);

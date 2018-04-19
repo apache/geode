@@ -19,9 +19,6 @@ import java.util.HashMap;
 
 import org.apache.geode.modules.session.internal.common.CacheProperty;
 
-/**
- *
- */
 public class TypeAwareMap<K extends CacheProperty, Object> extends HashMap {
 
   private Class<K> keyType;

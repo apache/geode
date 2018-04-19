@@ -187,7 +187,6 @@ public class Argument {
   /**
    * Returns a usage description of this argument.
    *
-   * @return description
    */
   public String getDescription() {
     return description;

@@ -18,9 +18,6 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.internal.sequencelog.GraphType;
 
-/**
- *
- */
 public interface Filter {
 
   boolean accept(GraphType graphType, String name, String edgeName, String source, String dest);

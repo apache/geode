@@ -19,10 +19,6 @@ import java.util.Map;
 
 import org.apache.geode.management.internal.FederationComponent;
 
-/**
- *
- *
- */
 public class ServerClusterStatsMonitor {
 
   private static final String NUM_CLIENTS = "CurrentClients";

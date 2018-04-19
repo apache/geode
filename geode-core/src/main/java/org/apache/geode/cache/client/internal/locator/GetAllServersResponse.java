@@ -21,10 +21,6 @@ import java.util.ArrayList;
 
 import org.apache.geode.internal.DataSerializableFixedID;
 
-/**
- *
- *
- */
 public class GetAllServersResponse extends ServerLocationResponse {
 
   private ArrayList servers;

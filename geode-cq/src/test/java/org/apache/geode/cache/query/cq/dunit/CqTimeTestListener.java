@@ -26,9 +26,6 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
-/**
- *
- */
 public class CqTimeTestListener implements CqListener {
   protected final LogWriter logger;
   protected volatile int eventCreateCount = 0;

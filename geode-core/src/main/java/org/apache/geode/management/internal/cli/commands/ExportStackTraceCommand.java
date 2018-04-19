@@ -114,7 +114,6 @@ public class ExportStackTraceCommand extends InternalGfshCommand {
    * @param dumps - Map containing key : member , value : zipped stack traces
    * @param fileName - Name of the file to which the stack-traces are written to
    * @return Canonical path of the file which contains the stack-traces
-   * @throws IOException
    */
   public String writeStacksToFile(Map<String, byte[]> dumps, String fileName) throws IOException {
     String filePath;

@@ -96,7 +96,6 @@ public final class EvictionAction extends EnumSyntax {
 
   /**
    *
-   * @param s
    * @return the action parsed from the provided string. If there are problems with parsing NONE is
    *         returned.
    */

@@ -23,9 +23,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-/**
- *
- */
 public class CompactResponse extends AdminResponse {
   private HashSet<PersistentID> persistentIds;
 

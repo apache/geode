@@ -27,6 +27,8 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({DistributedTest.class, AEQTest.class})
 public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
@@ -74,15 +76,17 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
                                                                                      // sender
     Wait.pause(2000);// give some time for system to become stable
 
-    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 1000, 1000, 1000));
+    vm1.invoke(
+        () -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 0, 1000, 1000, 1000));
     vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueBatchStats("ln", 10));
-    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 1000, 0, 0));
+    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 0, 1000, 0, 0));
     vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueBatchStats("ln", 0));
   }
 
   /**
    * Two listeners added to the same RR.
    */
+  @Category({FlakyTest.class, WanTest.class}) // GEODE-4647
   @Test
   public void testAsyncStatsTwoListeners() throws Exception {
     Integer lnPort = createFirstLocatorWithDSId(1);
@@ -119,19 +123,43 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     vm4.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue(
         getTestMethodName() + "_RR", "ln1,ln2", isOffHeap()));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
+    vm2.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
+    vm3.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
+    vm4.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
+    vm1.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
+    vm2.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
+    vm3.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
+    vm4.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
+
     vm1.invoke(() -> AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+
+    vm1.invoke(
+        () -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln1", 1000, 0, 1000, 1000, 0));
+    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln2", 1000, 0, 1000, 0, 0));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln1"));
+    vm2.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln1"));
+    vm3.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln1"));
+    vm4.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln1"));
+    vm1.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln2"));
+    vm2.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln2"));
+    vm3.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln2"));
+    vm4.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln2"));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener("ln1", 1000));
     vm1.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener("ln2", 1000));
     Wait.pause(2000);// give some time for system to become stable
 
-    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln1", 0, 1000, 1000, 1000));
+    vm1.invoke(
+        () -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln1", 0, 0, 1000, 1000, 1000));
     vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueBatchStats("ln1", 10));
-    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln2", 0, 1000, 1000, 1000));
+    vm1.invoke(
+        () -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln2", 0, 0, 1000, 1000, 1000));
     vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueBatchStats("ln2", 10));
-    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln1", 0, 1000, 0, 0));
+    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln1", 0, 0, 1000, 0, 0));
     vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueBatchStats("ln1", 0));
-    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln2", 0, 1000, 0, 0));
+    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln2", 0, 0, 1000, 0, 0));
     vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueBatchStats("ln2", 0));
   }
 
@@ -229,11 +257,12 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     vm1.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener("ln", 1500));
 
     Wait.pause(2000);// give some time for system to become stable
-    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 1500, 1500, 1500));
+    vm1.invoke(
+        () -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 0, 1500, 1500, 1500));
     vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueUnprocessedStats("ln", 0));
 
 
-    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 1500, 0, 0));
+    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 0, 1500, 0, 0));
     vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueUnprocessedStats("ln", 1500));
   }
 
@@ -301,7 +330,8 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     vm1.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener("ln", 1000));
 
     Wait.pause(2000);// give some time for system to become stable
-    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 2000, 2000, 1000));
+    vm1.invoke(
+        () -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 0, 2000, 2000, 1000));
     vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueConflatedStats("ln", 500));
   }
 }

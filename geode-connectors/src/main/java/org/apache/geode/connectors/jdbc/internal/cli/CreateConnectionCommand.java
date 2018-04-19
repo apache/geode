@@ -18,15 +18,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
@@ -39,13 +37,11 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
 public class CreateConnectionCommand extends InternalGfshCommand {
-  private static final Logger logger = LogService.getLogger();
 
   static final String CREATE_CONNECTION = "create jdbc-connection";
   static final String CREATE_CONNECTION__HELP =
-      EXPERIMENTAL + "Create a connection for communicating with a database through jdbc.";
+      "Create a connection for communicating with a database through jdbc.";
   static final String CREATE_CONNECTION__NAME = "name";
   static final String CREATE_CONNECTION__NAME__HELP = "Name of the connection to be created.";
   static final String CREATE_CONNECTION__URL = "url";
@@ -59,8 +55,6 @@ public class CreateConnectionCommand extends InternalGfshCommand {
   static final String CREATE_CONNECTION__PARAMS = "params";
   static final String CREATE_CONNECTION__PARAMS__HELP =
       "Additional parameters to use when connecting to the database formatted like \"key:value(,key:value)*\".";
-
-  private static final String ERROR_PREFIX = "ERROR: ";
 
   @CliCommand(value = CREATE_CONNECTION, help = CREATE_CONNECTION__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE,
@@ -101,7 +95,7 @@ public class CreateConnectionCommand extends InternalGfshCommand {
       persisted = true;
     }
 
-    CommandResult commandResult = ResultBuilder.buildResult(results, EXPERIMENTAL, null);
+    CommandResult commandResult = ResultBuilder.buildResult(results);
     commandResult.setCommandPersisted(persisted);
     return commandResult;
   }
@@ -118,5 +112,16 @@ public class CreateConnectionCommand extends InternalGfshCommand {
       }
       return ResultBuilder.createInfoResult("");
     }
+  }
+
+  @CliAvailabilityIndicator({AlterConnectionCommand.ALTER_JDBC_CONNECTION,
+      AlterMappingCommand.ALTER_MAPPING, CreateConnectionCommand.CREATE_CONNECTION,
+      CreateMappingCommand.CREATE_MAPPING, DescribeConnectionCommand.DESCRIBE_CONNECTION,
+      DescribeMappingCommand.DESCRIBE_MAPPING, DestroyConnectionCommand.DESTROY_CONNECTION,
+      DestroyMappingCommand.DESTROY_MAPPING, ListConnectionCommand.LIST_JDBC_CONNECTION,
+      ListMappingCommand.LIST_MAPPING})
+
+  public boolean available() {
+    return isOnlineCommandAvailable();
   }
 }

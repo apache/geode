@@ -98,7 +98,7 @@ public class MultiGfshDUnitTest {
         // for some commands there are pre execution checks to check for user input error, will skip
         // those commands
         if (errorCode == ResultBuilder.ERRORCODE_USER_ERROR) {
-          LogService.getLogger().info("Skip user error: " + result.getContent());
+          LogService.getLogger().info("Skip user error: " + result.getMessageFromContent());
           continue;
         }
 

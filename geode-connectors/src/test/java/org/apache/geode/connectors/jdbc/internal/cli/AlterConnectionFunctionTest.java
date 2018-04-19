@@ -43,6 +43,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -125,10 +126,17 @@ public class AlterConnectionFunctionTest {
 
   @Test
   public void executeReportsErrorIfConnectionConfigNotFound() throws Exception {
+    IgnoredException ignoredException =
+        IgnoredException.addIgnoredException(ConnectionConfigNotFoundException.class.getName());
+
     doThrow(ConnectionConfigNotFoundException.class).when(service)
         .replaceConnectionConfig(eq(connectionConfig));
 
-    function.execute(context);
+    try {
+      function.execute(context);
+    } finally {
+      ignoredException.remove();
+    }
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());

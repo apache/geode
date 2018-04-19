@@ -45,6 +45,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -130,7 +131,14 @@ public class AlterMappingFunctionTest {
     doThrow(ConnectionConfigNotFoundException.class).when(service)
         .replaceRegionMapping(eq(regionMapping));
 
-    function.execute(context);
+    IgnoredException ignoredException =
+        IgnoredException.addIgnoredException(RegionMappingNotFoundException.class.getName());
+
+    try {
+      function.execute(context);
+    } finally {
+      ignoredException.remove();
+    }
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());

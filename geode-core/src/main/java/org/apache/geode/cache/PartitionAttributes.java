@@ -96,7 +96,6 @@ public interface PartitionAttributes<K, V> {
    * not also deprecated.
    *
    * @deprecated use {@link #getLocalMaxMemory()} in GemFire 5.1 and later releases
-   * @return localProperties
    */
   @Deprecated
   Properties getLocalProperties();
@@ -107,7 +106,6 @@ public interface PartitionAttributes<K, V> {
    *
    * @deprecated use {@link #getTotalMaxMemory()} and {@link #getTotalNumBuckets()} in GemFire 5.1
    *             and later releases
-   * @return globalProperties
    */
   @Deprecated
   Properties getGlobalProperties();

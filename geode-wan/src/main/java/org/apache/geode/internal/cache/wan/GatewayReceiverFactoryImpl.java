@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction.A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,51 +62,61 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
     this.cache = cache;
   }
 
+  @Override
   public GatewayReceiverFactory addGatewayTransportFilter(GatewayTransportFilter filter) {
     this.filters.add(filter);
     return this;
   }
 
+  @Override
   public GatewayReceiverFactory removeGatewayTransportFilter(GatewayTransportFilter filter) {
     this.filters.remove(filter);
     return this;
   }
 
+  @Override
   public GatewayReceiverFactory setMaximumTimeBetweenPings(int time) {
     this.timeBetPings = time;
     return this;
   }
 
+  @Override
   public GatewayReceiverFactory setStartPort(int port) {
     this.startPort = port;
     return this;
   }
 
+  @Override
   public GatewayReceiverFactory setEndPort(int port) {
     this.endPort = port;
     return this;
   }
 
+  @Override
   public GatewayReceiverFactory setSocketBufferSize(int size) {
     this.socketBuffSize = size;
     return this;
   }
 
+  @Override
   public GatewayReceiverFactory setBindAddress(String address) {
     this.bindAdd = address;
     return this;
   }
 
+  @Override
   public GatewayReceiverFactory setHostnameForSenders(String address) {
     this.hostnameForSenders = address;
     return this;
   }
 
+  @Override
   public GatewayReceiverFactory setManualStart(boolean start) {
     this.manualStart = start;
     return this;
   }
 
+  @Override
   public GatewayReceiver create() {
     if (this.startPort > this.endPort) {
       throw new IllegalStateException(
@@ -113,7 +125,7 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
 
     if ((this.cache.getGatewayReceivers() != null)
         && (!this.cache.getGatewayReceivers().isEmpty())) {
-      throw new IllegalStateException("A Gateway Receiver already exists on this member.");
+      throw new IllegalStateException(A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
     }
 
     GatewayReceiver recv = null;

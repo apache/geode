@@ -20,13 +20,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -88,5 +92,35 @@ public class DescribeConnectionCommandTest {
         .containsOutput("url", "url1").containsOutput("user", "user1")
         .containsOutput("password", "********").containsOutput("param1", "value1")
         .containsOutput("param2", "value2");
+  }
+
+  @Test
+  public void whenCCIsNotAvailableAndMemberIsNotSpecified() {
+    doReturn(null).when(command).getConfigurationService();
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
+        .containsOutput("Use --member option to describe connections");
+  }
+
+  @Test
+  public void whenNonExistingMemberIsSpecified() {
+    doReturn(null).when(command).getMember(any());
+    gfsh.executeAndAssertThat(command, COMMAND + " --member=member1").statusIsError()
+        .containsOutput("No Members Found");
+  }
+
+  @Test
+  public void whenExistingMemberIsSpecified() {
+    doReturn(mock(DistributedMember.class)).when(command).getMember(any());
+
+    ConnectorService.Connection connection =
+        new ConnectorService.Connection("name", "url1", "user1", "password1", "p1:v1,p2:v2");
+    ResultCollector rc = mock(ResultCollector.class);
+    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
+    when(rc.getResult()).thenReturn(Collections.singletonList(connection));
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --member=member1").statusIsSuccess()
+        .containsOutput("name", "name").containsOutput("url", "url1")
+        .containsOutput("user", "user1").containsOutput("password", "********")
+        .containsOutput("p1", "v1").containsOutput("p2", "v2");
   }
 }

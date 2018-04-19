@@ -91,11 +91,6 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
    * subtree CompiledJunction
    *
    * @param context ExecutionContext object
-   * @return SelectResults
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   // Asif : For doing the Cartesian first evaluate the result of all Group
   // Junction. Doing Cartesian of all the Results together is better than doing
@@ -186,10 +181,6 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
    *
    * @param context ExecutionContext object
    * @return SelectResults object
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   private SelectResults evaluateOrJunction(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {

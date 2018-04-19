@@ -110,7 +110,6 @@ public interface AsyncEventQueueMXBean {
   /**
    * Returns the Size of the event queue
    *
-   * @return integer
    */
   int getEventQueueSize();
 

@@ -20,9 +20,6 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-/**
- *
- */
 public class ShutdownAllResponse extends AdminResponse {
   private transient boolean isToShutDown = true;
 

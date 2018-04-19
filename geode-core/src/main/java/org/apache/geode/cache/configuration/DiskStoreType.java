@@ -94,9 +94,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the diskDirs property.
    *
-   * @return
-   *         possible object is
-   *         {@link DiskDirsType }
+   * possible object is
+   * {@link DiskDirsType }
    *
    */
   public DiskDirsType getDiskDirs() {
@@ -106,9 +105,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the diskDirs property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link DiskDirsType }
+   * allowed object is
+   * {@link DiskDirsType }
    *
    */
   public void setDiskDirs(DiskDirsType value) {
@@ -118,9 +116,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the name property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getName() {
@@ -130,9 +127,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the name property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setName(String value) {
@@ -142,9 +138,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the autoCompact property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isAutoCompact() {
@@ -154,9 +149,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the autoCompact property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setAutoCompact(Boolean value) {
@@ -166,9 +160,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the compactionThreshold property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getCompactionThreshold() {
@@ -178,9 +171,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the compactionThreshold property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setCompactionThreshold(String value) {
@@ -190,9 +182,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the allowForceCompaction property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isAllowForceCompaction() {
@@ -202,9 +193,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the allowForceCompaction property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setAllowForceCompaction(Boolean value) {
@@ -214,9 +204,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the maxOplogSize property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getMaxOplogSize() {
@@ -226,9 +215,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the maxOplogSize property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setMaxOplogSize(String value) {
@@ -238,9 +226,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the timeInterval property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getTimeInterval() {
@@ -250,9 +237,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the timeInterval property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setTimeInterval(String value) {
@@ -262,9 +248,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the writeBufferSize property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getWriteBufferSize() {
@@ -274,9 +259,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the writeBufferSize property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setWriteBufferSize(String value) {
@@ -286,9 +270,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the queueSize property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getQueueSize() {
@@ -298,9 +281,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the queueSize property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setQueueSize(String value) {
@@ -310,9 +292,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the diskUsageWarningPercentage property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getDiskUsageWarningPercentage() {
@@ -322,9 +303,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the diskUsageWarningPercentage property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setDiskUsageWarningPercentage(String value) {
@@ -334,9 +314,8 @@ public class DiskStoreType {
   /**
    * Gets the value of the diskUsageCriticalPercentage property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getDiskUsageCriticalPercentage() {
@@ -346,9 +325,8 @@ public class DiskStoreType {
   /**
    * Sets the value of the diskUsageCriticalPercentage property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setDiskUsageCriticalPercentage(String value) {

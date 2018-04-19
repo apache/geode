@@ -20,10 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang.StringUtils;
-import org.json.JSONArray;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 
@@ -227,16 +227,15 @@ public class GfshCommandRule extends DescribedExternalResource {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-    if (StringUtils.isBlank(gfsh.outputString) && result != null && result.getContent() != null) {
+    if (StringUtils.isBlank(gfsh.outputString) && result != null
+        && !result.getMessageFromContent().isEmpty()) {
       if (result.getStatus() == Result.Status.ERROR) {
         gfsh.outputString = result.toString();
       } else {
         // print out the message body as the command result
-        JSONArray messages = ((JSONArray) result.getContent().get("message"));
-        if (messages != null) {
-          for (int i = 0; i < messages.length(); i++) {
-            gfsh.outputString += messages.getString(i) + "\n";
-          }
+        List<String> messages = result.getListFromContent("message");
+        for (String line : messages) {
+          gfsh.outputString += line + "\n";
         }
       }
     }

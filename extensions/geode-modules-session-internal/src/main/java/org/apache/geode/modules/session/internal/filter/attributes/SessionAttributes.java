@@ -109,7 +109,6 @@ public interface SessionAttributes extends DataSerializable {
   /**
    * Set the jvmId. This is set every time the attributes are flushed to the cache.
    *
-   * @param jvmId
    */
   void setJvmOwnerId(String jvmId);
 

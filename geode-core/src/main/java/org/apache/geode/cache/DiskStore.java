@@ -144,7 +144,6 @@ public interface DiskStore {
    * thrown. If compaction is true then the application will wait for the other oplogs to be
    * compacted and more space to be created.
    *
-   * @throws DiskAccessException
    */
   void forceRoll();
 

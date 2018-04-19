@@ -124,7 +124,6 @@ public class IndexElemArray implements Iterable, Collection {
    *
    * @param index index of the element to return
    * @return the element at the specified position in this list
-   * @throws IndexOutOfBoundsException
    *
    */
   public Object get(int index) {
@@ -140,7 +139,6 @@ public class IndexElemArray implements Iterable, Collection {
    * @param index index of the element to replace
    * @param element element to be stored at the specified position
    * @return the element previously at the specified position
-   * @throws IndexOutOfBoundsException
    *
    */
   public Object set(int index, Object element) {
@@ -159,7 +157,6 @@ public class IndexElemArray implements Iterable, Collection {
    *
    * @param e element to be appended to this list
    * @return <tt>true</tt> (as specified by {@link Collection#add})
-   * @throws ArrayIndexOutOfBoundsException
    */
   public boolean add(Object e) {
     synchronized (lock) {

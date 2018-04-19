@@ -40,6 +40,7 @@ import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
 
 @Category(AcceptanceTest.class)
@@ -122,10 +123,16 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   @Test
   public void putNonPdxInstanceFails() {
     Region nonPdxEmployees = this.employees;
-    nonPdxEmployees.put("1", "non pdx instance");
+
+    IgnoredException ignoredException =
+        IgnoredException.addIgnoredException(ClassCastException.class.getName());
+    try {
+      nonPdxEmployees.put("1", "non pdx instance");
+    } finally {
+      ignoredException.remove();
+    }
 
     awaitUntil(() -> assertThat(jdbcWriter.getTotalEvents()).isEqualTo(1));
-
     awaitUntil(() -> assertThat(jdbcWriter.getFailedEvents()).isEqualTo(1));
   }
 

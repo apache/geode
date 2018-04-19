@@ -49,7 +49,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * Normal happy scenario test case. checks that all the dispatchers have successfully dispatched
    * something individually.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationConcurrentArtifacts() throws Exception {
@@ -118,7 +117,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   /**
    * Normal happy scenario test case.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagation() throws Exception {
@@ -177,7 +175,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   /**
    * Normal happy scenario test case when bucket division tests boundary cases.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationWithUnEqualBucketDivision() throws Exception {
@@ -235,7 +232,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   /**
    * Initially the GatewayReceiver is not up but later it comes up. We verify that
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagation_withoutRemoteSite() throws Exception {
@@ -359,7 +355,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * again. Puts are done to local site. Expected: Remote site should receive all the events put
    * after the local site was built back.
    *
-   * @throws Exception
    */
   @Test
   public void testParallelPropagationWithLocalCacheClosedAndRebuilt() throws Exception {
@@ -466,7 +461,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   /**
    * Colocated regions using ConcurrentParallelGatewaySender. Normal scenario
    *
-   * @throws Exception
    */
   @Test
   public void testParallelColocatedPropagation() throws Exception {
@@ -518,7 +512,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   /**
    * Colocated regions using ConcurrentParallelGatewaySender. Normal scenario
    *
-   * @throws Exception
    */
   @Test
   public void testParallelColocatedPropagationOrderPolicyPartition() throws Exception {

@@ -196,7 +196,6 @@ public class LoggingThreadGroup extends ThreadGroup {
   /**
    * Note: Must be used for test purposes ONLY.
    *
-   * @param threadGroupName
    * @return thread group with given name.
    */
   public static ThreadGroup getThreadGroup(final String threadGroupName) {

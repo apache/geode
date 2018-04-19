@@ -18,9 +18,6 @@ package org.apache.geode.modules.session.internal.filter;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/**
- *
- */
 public class RendezvousManager {
 
   private static AbstractListener listener = null;

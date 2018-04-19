@@ -18,13 +18,16 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
@@ -84,11 +87,15 @@ public class CommandResult implements Result {
     return this.status;
   }
 
+  public void setStatus(Status status) {
+    this.status = status;
+  }
+
   public ResultData getResultData() {
     return ResultBuilder.getReadOnlyResultData(resultData);
   }
 
-  GfJsonObject getGfJsonObject() {
+  private GfJsonObject getGfJsonObject() {
     return gfJsonObject;
   }
 
@@ -442,14 +449,70 @@ public class CommandResult implements Result {
     return gfJsonObject.getJSONObject(ResultData.RESULT_CONTENT);
   }
 
+  public String getMessageFromContent() {
+    return getContent().getString("message");
+  }
+
+  public String getValueFromContent(String key) {
+    return getContent().get(key).toString();
+  }
+
+  public List<String> getListFromContent(String key) {
+    return getContent().getArrayValues(key);
+  }
+
+  public List<String> getColumnFromTableContent(String column, int... sectionAndTableIDs) {
+    List<String> ids =
+        Arrays.stream(sectionAndTableIDs).mapToObj(Integer::toString).collect(Collectors.toList());
+    return CommandResult.toList(
+        getTableContent(ids.toArray(new String[0])).getInternalJsonObject().getJSONArray(column));
+  }
+
+  public Map<String, List<String>> getMapFromTableContent(int... sectionAndTableIDs) {
+    Map<String, List<String>> result = new LinkedHashMap<>();
+
+    List<String> ids =
+        Arrays.stream(sectionAndTableIDs).mapToObj(Integer::toString).collect(Collectors.toList());
+    JSONObject table = getTableContent(ids.toArray(new String[0])).getInternalJsonObject();
+    for (String column : table.keySet()) {
+      result.put(column, CommandResult.toList(table.getJSONArray(column)));
+    }
+
+    return result;
+  }
+
+  public Map<String, List<String>> getMapFromTableContent(String... sectionAndTableIDs) {
+    Map<String, List<String>> result = new LinkedHashMap<>();
+
+    JSONObject table = getTableContent(sectionAndTableIDs).getInternalJsonObject();
+    for (String column : table.keySet()) {
+      result.put(column, CommandResult.toList(table.getJSONArray(column)));
+    }
+
+    return result;
+  }
+
+  public Map<String, String> getMapFromSection(String sectionID) {
+    Map<String, String> result = new LinkedHashMap<>();
+    GfJsonObject obj = getContent().getJSONObject("__sections__-" + sectionID);
+
+    Iterator<String> iter = obj.keys();
+    while (iter.hasNext()) {
+      String key = iter.next();
+      result.put(key, obj.getString(key));
+    }
+
+    return result;
+  }
+
   /**
    * The intent is that this method should be able to handle both ResultData as well as
    * CompositeResultData
    *
    * @return the extracted GfJsonObject table
    */
-  public GfJsonObject getTableContent() {
-    return getTableContent(0, 0);
+  private GfJsonObject getTableContent() {
+    return getTableContent("0", "0");
   }
 
   /**
@@ -457,7 +520,7 @@ public class CommandResult implements Result {
    * Some commands, such as 'describe region', may return command results with subsections, however.
    * Include these in order, e.g., getTableContent(sectionIndex, subsectionIndex, tableIndex);
    */
-  public GfJsonObject getTableContent(int... sectionAndTableIDs) {
+  private GfJsonObject getTableContent(String... sectionAndTableIDs) {
     GfJsonObject topLevelContent = getContent();
     // Most common is receiving exactly one section index and one table index.
     // Some results, however, will have subsections before the table listings.
@@ -465,14 +528,14 @@ public class CommandResult implements Result {
 
     GfJsonObject sectionObject = topLevelContent;
     for (int i = 0; i < sectionAndTableIDs.length - 1; i++) {
-      int idx = sectionAndTableIDs[i];
+      String idx = sectionAndTableIDs[i];
       sectionObject = sectionObject.getJSONObject("__sections__-" + idx);
       if (sectionObject == null) {
         return topLevelContent;
       }
     }
 
-    int tableId = sectionAndTableIDs[sectionAndTableIDs.length - 1];
+    String tableId = sectionAndTableIDs[sectionAndTableIDs.length - 1];
     GfJsonObject tableContent = sectionObject.getJSONObject("__tables__-" + tableId);
     if (tableContent == null) {
       return topLevelContent;

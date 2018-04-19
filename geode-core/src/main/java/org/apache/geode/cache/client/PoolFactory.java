@@ -440,6 +440,12 @@ public interface PoolFactory {
    * minute (60,000 milliseconds). If a subscription timeout multipler is set in the client it
    * enables timing out of the subscription feed with failover to another server.
    * <p>
+   * The client will time out it's subscription connection after a number of seconds equal to this
+   * multiplier times the server's subscription-timeout.
+   * <p>
+   * Set this to 2 or more to make sure the client will receive pings from the server before the
+   * timeout.
+   * <p>
    * A value of zero (the default) disables timeouts
    * <p>
    * The resulting timeout will be multiplied by 1.25 in order to avoid race conditions with the

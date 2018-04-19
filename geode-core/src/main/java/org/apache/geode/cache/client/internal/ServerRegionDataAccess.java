@@ -46,10 +46,7 @@ public interface ServerRegionDataAccess {
    * @param value the entry value to put
    * @param clientEvent the client event, if any, for eventID and version tag propagation
    * @param op the operation type of this event
-   * @param requireOldValue
-   * @param expectedOldValue
    * @param callbackArg an optional callback arg to pass to any cache callbacks
-   * @param isCreateFwd
    */
   Object put(Object key, Object value, byte[] deltaBytes, EntryEventImpl clientEvent, Operation op,
       boolean requireOldValue, Object expectedOldValue, Object callbackArg, boolean isCreateFwd);
@@ -124,7 +121,6 @@ public interface ServerRegionDataAccess {
   /**
    * gets an entry from the server, does not invoke loaders
    *
-   * @param key
    * @return an {@link EntrySnapshot} for the given key
    */
   Entry getEntry(Object key);

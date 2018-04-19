@@ -79,7 +79,6 @@ public class SystemAlertsService implements PulseService {
    * function used for getting all members details in format of JSON Object array defined under a
    * cluster
    *
-   * @param cluster
    * @return JSONObject Array list
    */
   public static ObjectNode getAlertsJson(Cluster cluster, int pageNumber) {

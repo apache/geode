@@ -1465,17 +1465,11 @@ public class CompiledSelect extends AbstractCompiledValue {
    *
    * It assumes the limit is either a CompiledBindArgument or a CompiledLiteral
    *
-   * @param bindArguments
    *
-   * @return
    *
-   * @throws FunctionDomainException
    *
-   * @throws TypeMismatchException
    *
-   * @throws NameResolutionException
    *
-   * @throws QueryInvocationTargetException
    */
   private Integer evaluateLimitValue(Object[] bindArguments) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {

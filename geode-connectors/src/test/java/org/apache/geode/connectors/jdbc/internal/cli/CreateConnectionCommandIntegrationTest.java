@@ -23,10 +23,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -86,9 +88,17 @@ public class CreateConnectionCommandIntegrationTest {
 
     ConnectorService.Connection connectionConfig = service.getConnectionConfig(name);
 
-    Result result = createConnectionCommand.createConnection(name, url, user, password, params);
-    assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
+    IgnoredException ignoredException =
+        IgnoredException.addIgnoredException(ConnectionConfigExistsException.class.getName());
 
+    Result result;
+    try {
+      result = createConnectionCommand.createConnection(name, url, user, password, params);
+    } finally {
+      ignoredException.remove();
+    }
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(service.getConnectionConfig(name)).isSameAs(connectionConfig);
   }
 

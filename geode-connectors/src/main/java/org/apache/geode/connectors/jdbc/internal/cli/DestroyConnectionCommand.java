@@ -20,7 +20,6 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
@@ -34,16 +33,12 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
 public class DestroyConnectionCommand extends InternalGfshCommand {
   static final String DESTROY_CONNECTION = "destroy jdbc-connection";
-  static final String DESTROY_CONNECTION__HELP =
-      EXPERIMENTAL + "Destroy/Remove the specified jdbc connection.";
+  static final String DESTROY_CONNECTION__HELP = "Destroy/Remove the specified jdbc connection.";
   static final String DESTROY_CONNECTION__NAME = "name";
   static final String DESTROY_CONNECTION__NAME__HELP =
       "Name of the jdbc connection to be destroyed.";
-
-  private static final String ERROR_PREFIX = "ERROR: ";
 
   @CliCommand(value = DESTROY_CONNECTION, help = DESTROY_CONNECTION__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -74,7 +69,7 @@ public class DestroyConnectionCommand extends InternalGfshCommand {
       }
     }
 
-    CommandResult commandResult = ResultBuilder.buildResult(results, EXPERIMENTAL, null);
+    CommandResult commandResult = ResultBuilder.buildResult(results);
     commandResult.setCommandPersisted(persisted);
 
     return commandResult;

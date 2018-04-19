@@ -14,9 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import org.apache.geode.annotations.Experimental;
-
-@Experimental
 public class RegionMappingNotFoundException extends Exception {
 
   public RegionMappingNotFoundException() {

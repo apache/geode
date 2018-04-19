@@ -146,7 +146,6 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * This is not the preferred way of creating an instance since the NetMember may not have all
    * required information (e.g., a JGroups address without direct-port and other information).
    *
-   * @param m
    */
   public InternalDistributedMember(NetMember m) {
     netMbr = m;

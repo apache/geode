@@ -20,7 +20,6 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
@@ -35,11 +34,9 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
 public class AlterMappingCommand extends InternalGfshCommand {
   static final String ALTER_MAPPING = "alter jdbc-mapping";
-  static final String ALTER_MAPPING__HELP =
-      EXPERIMENTAL + "Alter properties for an existing jdbc mapping.";
+  static final String ALTER_MAPPING__HELP = "Alter properties for an existing jdbc mapping.";
 
   static final String ALTER_MAPPING__REGION_NAME = "region";
   static final String ALTER_MAPPING__REGION_NAME__HELP =
@@ -58,8 +55,6 @@ public class AlterMappingCommand extends InternalGfshCommand {
   static final String ALTER_MAPPING__FIELD_MAPPING = "field-mapping";
   static final String ALTER_MAPPING__FIELD_MAPPING__HELP =
       "New key value pairs of entry value fields to database columns.";
-
-  private static final String ERROR_PREFIX = "ERROR: ";
 
   @CliCommand(value = ALTER_MAPPING, help = ALTER_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -123,7 +118,7 @@ public class AlterMappingCommand extends InternalGfshCommand {
       persisted = true;
     }
 
-    CommandResult commandResult = ResultBuilder.buildResult(results, EXPERIMENTAL, null);
+    CommandResult commandResult = ResultBuilder.buildResult(results);
     commandResult.setCommandPersisted(persisted);
     return commandResult;
   }

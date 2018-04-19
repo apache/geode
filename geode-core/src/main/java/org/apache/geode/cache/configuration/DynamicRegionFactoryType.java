@@ -86,9 +86,8 @@ public class DynamicRegionFactoryType {
   /**
    * Gets the value of the diskDir property.
    *
-   * @return
-   *         possible object is
-   *         {@link DiskDirType }
+   * possible object is
+   * {@link DiskDirType }
    *
    */
   public DiskDirType getDiskDir() {
@@ -98,9 +97,8 @@ public class DynamicRegionFactoryType {
   /**
    * Sets the value of the diskDir property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link DiskDirType }
+   * allowed object is
+   * {@link DiskDirType }
    *
    */
   public void setDiskDir(DiskDirType value) {
@@ -110,9 +108,8 @@ public class DynamicRegionFactoryType {
   /**
    * Gets the value of the disablePersistBackup property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isDisablePersistBackup() {
@@ -122,9 +119,8 @@ public class DynamicRegionFactoryType {
   /**
    * Sets the value of the disablePersistBackup property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setDisablePersistBackup(Boolean value) {
@@ -134,9 +130,8 @@ public class DynamicRegionFactoryType {
   /**
    * Gets the value of the disableRegisterInterest property.
    *
-   * @return
-   *         possible object is
-   *         {@link Boolean }
+   * possible object is
+   * {@link Boolean }
    *
    */
   public Boolean isDisableRegisterInterest() {
@@ -146,9 +141,8 @@ public class DynamicRegionFactoryType {
   /**
    * Sets the value of the disableRegisterInterest property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link Boolean }
+   * allowed object is
+   * {@link Boolean }
    *
    */
   public void setDisableRegisterInterest(Boolean value) {
@@ -158,9 +152,8 @@ public class DynamicRegionFactoryType {
   /**
    * Gets the value of the poolName property.
    *
-   * @return
-   *         possible object is
-   *         {@link String }
+   * possible object is
+   * {@link String }
    *
    */
   public String getPoolName() {
@@ -170,9 +163,8 @@ public class DynamicRegionFactoryType {
   /**
    * Sets the value of the poolName property.
    *
-   * @param value
-   *        allowed object is
-   *        {@link String }
+   * allowed object is
+   * {@link String }
    *
    */
   public void setPoolName(String value) {

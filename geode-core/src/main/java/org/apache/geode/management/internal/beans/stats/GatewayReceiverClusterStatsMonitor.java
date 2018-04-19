@@ -19,10 +19,6 @@ import java.util.Map;
 
 import org.apache.geode.management.internal.FederationComponent;
 
-/**
- *
- *
- */
 public class GatewayReceiverClusterStatsMonitor {
 
   private static final String CREATE_REQUEST_RATE = "CreateRequestsRate";

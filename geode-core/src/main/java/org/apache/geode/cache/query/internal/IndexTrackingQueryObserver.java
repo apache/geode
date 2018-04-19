@@ -171,7 +171,6 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     /**
      * Adds a results map (mostly a bucket index lookup results) to the "this" IndexInfo.
      *
-     * @param rslts
      */
     public void addResults(Map rslts) {
       for (Object obj : rslts.entrySet()) {

@@ -324,7 +324,6 @@ public class ConnectionTable {
    * @param ackSAThreshold the ms ack-severe_alert-threshold, or zero
    * @return the Connection, or null if someone else already created or closed it
    * @throws IOException if unable to connect
-   * @throws DistributedSystemDisconnectedException
    */
   private Connection handleNewPendingConnection(DistributedMember id, boolean sharedResource,
       boolean preserveOrder, Map m, PendingConnection pc, long startTime, long ackThreshold,
@@ -414,7 +413,6 @@ public class ConnectionTable {
    * @param ackSATimeout the ms ack-severe-alert-threshold, or zero
    * @return the new Connection, or null if an error
    * @throws IOException if unable to create the connection
-   * @throws DistributedSystemDisconnectedException
    */
   private Connection getSharedConnection(DistributedMember id, boolean scheduleTimeout,
       boolean preserveOrder, long startTime, long ackTimeout, long ackSATimeout)
@@ -482,7 +480,6 @@ public class ConnectionTable {
    * @param ackSATimeout the ms ack-severe-alert-threshold, or zero
    * @return the connection, or null if an error
    * @throws IOException if the connection could not be created
-   * @throws DistributedSystemDisconnectedException
    */
   Connection getThreadOwnedConnection(DistributedMember id, long startTime, long ackTimeout,
       long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
@@ -617,7 +614,6 @@ public class ConnectionTable {
    * @param ackSATimeout the ms ack-severe-alert-threshold, or zero
    * @return the new Connection, or null if a problem
    * @throws java.io.IOException if the connection could not be created
-   * @throws DistributedSystemDisconnectedException
    */
   protected Connection get(DistributedMember id, boolean preserveOrder, long startTime,
       long ackTimeout, long ackSATimeout)
@@ -1213,7 +1209,6 @@ public class ConnectionTable {
      * @param ackTimeout the ms ack-wait-threshold, or zero
      * @param ackSATimeout the ms ack-severe-alert-threshold, or zero
      * @return the new connection
-     * @throws IOException
      */
     public synchronized Connection waitForConnect(MembershipManager mgr, long startTime,
         long ackTimeout, long ackSATimeout) throws IOException {

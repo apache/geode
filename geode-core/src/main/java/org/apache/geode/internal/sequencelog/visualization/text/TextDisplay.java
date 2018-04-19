@@ -25,15 +25,8 @@ import org.apache.geode.internal.sequencelog.io.Filter;
 import org.apache.geode.internal.sequencelog.io.InputStreamReader;
 import org.apache.geode.internal.sequencelog.model.GraphReaderCallback;
 
-/**
- *
- */
 public class TextDisplay {
 
-  /**
-   * @param args
-   * @throws IOException
-   */
   public static void main(String[] args) throws IOException {
     File[] files;
     if (args.length > 0) {

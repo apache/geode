@@ -278,7 +278,7 @@ public class JGroupsMessenger implements Messenger {
 
     if (!dc.getSecurityUDPDHAlgo().isEmpty()) {
       try {
-        this.encrypt = new GMSEncrypt(services);
+        this.encrypt = new GMSEncrypt(services, dc.getSecurityUDPDHAlgo());
         logger.info("Initializing GMSEncrypt ");
       } catch (Exception e) {
         throw new GemFireConfigException("problem initializing encryption protocol", e);
@@ -1052,7 +1052,6 @@ public class JGroupsMessenger implements Messenger {
       byte[] pk = null;
 
       if (readPK) {
-        // need to read PK
         pk = InternalDataSerializer.readByteArray(dis);
         data = InternalDataSerializer.readByteArray(dis);
         // using prefixed pk from sender
@@ -1361,7 +1360,7 @@ public class JGroupsMessenger implements Messenger {
   public void setClusterSecretKey(byte[] clusterSecretKey) {
     if (encrypt != null) {
       logger.debug("Setting cluster key");
-      encrypt.addClusterKey(clusterSecretKey);
+      encrypt.setClusterKey(clusterSecretKey);
     }
   }
 

@@ -35,9 +35,6 @@ public interface ServerCQ extends InternalCqQuery {
   /**
    * Register the Query on server.
    *
-   * @param p_clientProxyId
-   * @param p_ccn
-   * @throws CqException
    */
   void registerCq(ClientProxyMembershipID p_clientProxyId, CacheClientNotifier p_ccn, int p_cqState)
       throws CqException, RegionNotFoundException;
@@ -45,14 +42,12 @@ public interface ServerCQ extends InternalCqQuery {
   /**
    * Adds into the CQ Results key cache.
    *
-   * @param key
    */
   void addToCqResultKeys(Object key);
 
   /**
    * Removes the key from CQ Results key cache.
    *
-   * @param key
    * @param isTokenMode if true removes the key if its in destroy token mode if false removes the
    *        key without any check.
    */
@@ -73,7 +68,6 @@ public interface ServerCQ extends InternalCqQuery {
    * care of repository cleanup.
    *
    * @param sendRequestToServer true to send the request to server.
-   * @throws CqException
    */
   void close(boolean sendRequestToServer) throws CqClosedException, CqException;
 
