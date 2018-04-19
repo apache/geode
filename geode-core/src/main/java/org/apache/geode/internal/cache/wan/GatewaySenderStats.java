@@ -46,8 +46,10 @@ public class GatewaySenderStats {
   protected static final String EVENT_QUEUE_TIME = "eventQueueTime";
   /** Name of the event queue size statistic */
   protected static final String EVENT_QUEUE_SIZE = "eventQueueSize";
-  /** Name of the event secondary queue size statistic */
-  protected static final String EVENT_SECONDARY_QUEUE_SIZE = "eventSecondaryQueueSize";
+  /** Name of the secondary event queue size statistic */
+  protected static final String SECONDARY_EVENT_QUEUE_SIZE = "secondaryEventQueueSize";
+  /** Total number of events processed by queue removal message statistic */
+  protected static final String EVENTS_PROCESSED_BY_PQRM = "eventsProcessedByPQRM";
   /** Name of the event temporary queue size statistic */
   protected static final String TMP_EVENT_QUEUE_SIZE = "tempQueueSize";
   /** Name of the events distributed statistic */
@@ -107,7 +109,9 @@ public class GatewaySenderStats {
   /** Id of the event queue size statistic */
   protected static int eventQueueSizeId;
   /** Id of the event in secondary queue size statistic */
-  protected static int eventSecondaryQueueSizeId;
+  protected static int secondaryEventQueueSizeId;
+  /** Id of the events processed by Parallel Queue Removal Message(PQRM) statistic */
+  protected static int eventsProcessedByPQRMId;
   /** Id of the temp event queue size statistic */
   protected static int eventTmpQueueSizeId;
   /** Id of the events distributed statistic */
@@ -172,7 +176,10 @@ public class GatewaySenderStats {
             f.createLongCounter(EVENT_QUEUE_TIME, "Total time spent queueing events.",
                 "nanoseconds"),
             f.createIntGauge(EVENT_QUEUE_SIZE, "Size of the event queue.", "operations", false),
-            f.createIntGauge(EVENT_SECONDARY_QUEUE_SIZE, "Size of secondary event queue.",
+            f.createIntGauge(SECONDARY_EVENT_QUEUE_SIZE, "Size of secondary event queue.",
+                "operations", false),
+            f.createIntGauge(EVENTS_PROCESSED_BY_PQRM,
+                "Total number of events processed by Parallel Queue Removal Message(PQRM).",
                 "operations", false),
             f.createIntGauge(TMP_EVENT_QUEUE_SIZE, "Size of the temporary events.", "operations",
                 false),
@@ -244,7 +251,8 @@ public class GatewaySenderStats {
     eventsNotQueuedConflatedId = type.nameToId(EVENTS_NOT_QUEUED_CONFLATED);
     eventQueueTimeId = type.nameToId(EVENT_QUEUE_TIME);
     eventQueueSizeId = type.nameToId(EVENT_QUEUE_SIZE);
-    eventSecondaryQueueSizeId = type.nameToId(EVENT_SECONDARY_QUEUE_SIZE);
+    secondaryEventQueueSizeId = type.nameToId(SECONDARY_EVENT_QUEUE_SIZE);
+    eventsProcessedByPQRMId = type.nameToId(EVENTS_PROCESSED_BY_PQRM);
     eventTmpQueueSizeId = type.nameToId(TMP_EVENT_QUEUE_SIZE);
     eventsDistributedId = type.nameToId(EVENTS_DISTRIBUTED);
     eventsExceedingAlertThresholdId = type.nameToId(EVENTS_EXCEEDING_ALERT_THRESHOLD);
@@ -365,12 +373,21 @@ public class GatewaySenderStats {
   }
 
   /**
-   * Returns the current value of the "eventSecondaryQueueSize" stat.
+   * Returns the current value of the "secondaryEventQueueSize" stat.
    *
-   * @return the current value of the "eventSecondaryQueueSize" stat
+   * @return the current value of the "secondaryEventQueueSize" stat
    */
-  public int getEventSecondaryQueueSize() {
-    return this.stats.getInt(eventSecondaryQueueSizeId);
+  public int getSecondaryEventQueueSize() {
+    return this.stats.getInt(secondaryEventQueueSizeId);
+  }
+
+  /**
+   * Returns the current value of the "eventsProcessedByPQRM" stat.
+   *
+   * @return the current value of the "eventsProcessedByPQRM" stat
+   */
+  public int getEventsProcessedByPQRM() {
+    return this.stats.getInt(eventsProcessedByPQRMId);
   }
 
   /**
@@ -478,12 +495,21 @@ public class GatewaySenderStats {
   }
 
   /**
-   * Sets the "eventSecondaryQueueSize" stat.
+   * Sets the "secondaryEventQueueSize" stat.
    *
    * @param size The size of the secondary queue
    */
   public void setSecondaryQueueSize(int size) {
-    this.stats.setInt(eventSecondaryQueueSizeId, size);
+    this.stats.setInt(secondaryEventQueueSizeId, size);
+  }
+
+  /**
+   * Sets the "eventsProcessedByPQRM" stat.
+   *
+   * @param size The total number of the events processed by queue removal message
+   */
+  public void setEventsProcessedByPQRM(int size) {
+    this.stats.setInt(eventsProcessedByPQRMId, size);
   }
 
   /**
@@ -504,11 +530,10 @@ public class GatewaySenderStats {
   }
 
   /**
-   * Increments the "eventSecondaryQueueSize" stat by 1.
+   * Increments the "secondaryEventQueueSize" stat by 1.
    */
   public void incSecondaryQueueSize() {
-    this.stats.incInt(eventSecondaryQueueSizeId, 1);
-    assert this.stats.getInt(eventSecondaryQueueSizeId) >= 0;
+    this.stats.incInt(secondaryEventQueueSizeId, 1);
   }
 
   /**
@@ -528,13 +553,21 @@ public class GatewaySenderStats {
   }
 
   /**
-   * Increments the "eventSecondaryQueueSize" stat by given delta.
+   * Increments the "secondaryEventQueueSize" stat by given delta.
    *
-   * @param delta an integer by which secondary queue size to be increased
+   * @param delta an integer by which secondary event queue size to be increased
    */
   public void incSecondaryQueueSize(int delta) {
-    this.stats.incInt(eventSecondaryQueueSizeId, delta);
-    assert this.stats.getInt(eventSecondaryQueueSizeId) >= 0;
+    this.stats.incInt(secondaryEventQueueSizeId, delta);
+  }
+
+  /**
+   * Increments the "eventsProcessedByPQRM" stat by given delta.
+   *
+   * @param delta an integer by which events are processed by queue removal message
+   */
+  public void incEventsProcessedByPQRM(int delta) {
+    this.stats.incInt(eventsProcessedByPQRMId, delta);
   }
 
   /**
@@ -554,11 +587,10 @@ public class GatewaySenderStats {
   }
 
   /**
-   * Decrements the "eventSecondaryQueueSize" stat by 1.
+   * Decrements the "secondaryEventQueueSize" stat by 1.
    */
   public void decSecondaryQueueSize() {
-    this.stats.incInt(eventSecondaryQueueSizeId, -1);
-    assert this.stats.getInt(eventSecondaryQueueSizeId) >= 0;
+    this.stats.incInt(secondaryEventQueueSizeId, -1);
   }
 
   /**
@@ -578,13 +610,12 @@ public class GatewaySenderStats {
   }
 
   /**
-   * Decrements the "eventSecondaryQueueSize" stat by given delta.
+   * Decrements the "secondaryEventQueueSize" stat by given delta.
    *
    * @param delta an integer by which secondary queue size to be increased
    */
   public void decSecondaryQueueSize(int delta) {
-    this.stats.incInt(eventSecondaryQueueSizeId, -delta);
-    assert this.stats.getInt(eventSecondaryQueueSizeId) >= 0;
+    this.stats.incInt(secondaryEventQueueSizeId, -delta);
   }
 
   /**

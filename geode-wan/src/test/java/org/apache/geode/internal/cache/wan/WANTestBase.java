@@ -1170,7 +1170,7 @@ public class WANTestBase extends DistributedTestCase {
   public static int getSecondaryQueueSizeInStats(String senderId) {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     GatewaySenderStats statistics = sender.getStatistics();
-    return statistics.getEventSecondaryQueueSize();
+    return statistics.getSecondaryEventQueueSize();
   }
 
   public static List<Integer> getSenderStats(String senderId, final int expectedQueueSize) {
@@ -1201,7 +1201,8 @@ public class WANTestBase extends DistributedTestCase {
     stats.add(statistics.getEventsNotQueuedConflated());
     stats.add(statistics.getEventsConflatedFromBatches());
     stats.add(statistics.getConflationIndexesMapSize());
-    stats.add(statistics.getEventSecondaryQueueSize());
+    stats.add(statistics.getSecondaryEventQueueSize());
+    stats.add(statistics.getEventsProcessedByPQRM());
     return stats;
   }
 
@@ -3154,7 +3155,7 @@ public class WANTestBase extends DistributedTestCase {
       }
     }
     AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
-    int size = abstractSender.getEventSecondaryQueueSize();
+    int size = abstractSender.getSecondaryEventQueueSize();
     return size;
   }
 
@@ -3256,11 +3257,11 @@ public class WANTestBase extends DistributedTestCase {
           abstractSender.getEventQueueSize());
       Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> {
         assertEquals("Expected events in all secondary queues are drained but actual is "
-            + abstractSender.getEventSecondaryQueueSize() + ". Queue content is: "
-            + displayQueueContent(queue), 0, abstractSender.getEventSecondaryQueueSize());
+            + abstractSender.getSecondaryEventQueueSize() + ". Queue content is: "
+            + displayQueueContent(queue), 0, abstractSender.getSecondaryEventQueueSize());
       });
       assertEquals("Except events in all secondary queues after drain is 0", 0,
-          abstractSender.getEventSecondaryQueueSize());
+          abstractSender.getSecondaryEventQueueSize());
     } finally {
       exp.remove();
       exp1.remove();

@@ -197,7 +197,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     // Validate BucketRegionQueue after processing ParallelQueueRemovalMessage
     assertEquals(1, this.bucketRegionQueue.getFailedBatchRemovalMessageKeys().size());
     // failed BatchRemovalMessage will not modify stats
-    assertEquals(1, stats.getEventSecondaryQueueSize());
+    assertEquals(1, stats.getSecondaryEventQueueSize());
   }
 
   @Test
@@ -209,7 +209,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     // Add an event to the BucketRegionQueue and verify BucketRegionQueue state
     this.bucketRegionQueueHelper.addEvent(KEY);
     assertEquals(1, this.bucketRegionQueue.size());
-    assertEquals(1, stats.getEventSecondaryQueueSize());
+    assertEquals(1, stats.getSecondaryEventQueueSize());
 
     // Create and process a ParallelQueueRemovalMessage (causes the value of the entry to be set to
     // DESTROYED)
@@ -219,7 +219,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     // Clean up destroyed tokens and validate BucketRegionQueue
     this.bucketRegionQueueHelper.cleanUpDestroyedTokensAndMarkGIIComplete();
     assertEquals(0, this.bucketRegionQueue.size());
-    assertEquals(0, stats.getEventSecondaryQueueSize());
+    assertEquals(0, stats.getSecondaryEventQueueSize());
   }
 
   @Test
@@ -257,7 +257,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     // Add an event to the BucketRegionQueue and verify BucketRegionQueue state
     GatewaySenderEventImpl event = this.bucketRegionQueueHelper.addEvent(KEY);
     assertEquals(1, this.bucketRegionQueue.size());
-    assertEquals(1, stats.getEventSecondaryQueueSize());
+    assertEquals(1, stats.getSecondaryEventQueueSize());
 
     // Add a mock GatewaySenderEventImpl to the temp queue
     BlockingQueue<GatewaySenderEventImpl> tempQueue = createTempQueueAndAddEvent(processor, event);
@@ -270,7 +270,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
     // Validate temp queue is empty after processing ParallelQueueRemovalMessage
     assertEquals(0, tempQueue.size());
-    assertEquals(0, stats.getEventSecondaryQueueSize());
+    assertEquals(0, stats.getSecondaryEventQueueSize());
 
     // Clean up destroyed tokens
     this.bucketRegionQueueHelper.cleanUpDestroyedTokensAndMarkGIIComplete();
