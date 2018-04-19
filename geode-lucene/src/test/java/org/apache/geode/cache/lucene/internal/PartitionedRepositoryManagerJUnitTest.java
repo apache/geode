@@ -29,20 +29,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -99,7 +94,6 @@ public class PartitionedRepositoryManagerJUnitTest {
   protected LuceneIndexImpl indexForPR;
   protected PartitionedRepositoryManager repoManager;
   protected GemFireCacheImpl cache;
-  private final Map<Integer, Boolean> isIndexAvailableMap = new HashMap<>();
 
   @Before
   public void setUp() {
@@ -148,14 +142,13 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(prRoot.get("rid")).thenReturn(prConfig);
     PowerMockito.mockStatic(PartitionedRegionHelper.class);
     PowerMockito.when(PartitionedRegionHelper.getPRRoot(cache)).thenReturn(prRoot);
-    repoManager = new PartitionedRepositoryManager(indexForPR, serializer,
-        Executors.newSingleThreadExecutor());
+    repoManager = new PartitionedRepositoryManager(indexForPR, serializer);
     repoManager.setUserRegionForRepositoryManager(userRegion);
     repoManager.allowRepositoryComputation();
   }
 
   @Test
-  public void getByKey() throws BucketNotFoundException {
+  public void getByKey() throws BucketNotFoundException, IOException {
     setUpMockBucket(0);
     setUpMockBucket(1);
 
@@ -237,9 +230,6 @@ public class PartitionedRepositoryManagerJUnitTest {
     setUpMockBucket(0);
     setUpMockBucket(1);
 
-    when(indexForPR.isIndexAvailable(0)).thenReturn(true);
-    when(indexForPR.isIndexAvailable(1)).thenReturn(true);
-
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
     when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
@@ -264,7 +254,6 @@ public class PartitionedRepositoryManagerJUnitTest {
   @Test(expected = BucketNotFoundException.class)
   public void getMissingBucketByRegion() throws BucketNotFoundException {
     setUpMockBucket(0);
-    when(indexForPR.isIndexAvailable(0)).thenReturn(true);
 
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
 
@@ -273,67 +262,11 @@ public class PartitionedRepositoryManagerJUnitTest {
     repoManager.getRepositories(ctx);
   }
 
-  /**
-   * Test that we get the expected exception when a user bucket is not indexed yet
-   */
-  @Test(expected = LuceneIndexCreationInProgressException.class)
-  public void luceneIndexCreationInProgressExceptionExpectedIfIndexIsNotYetIndexed()
-      throws BucketNotFoundException {
-    setUpMockBucket(0);
-
-    Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
-
-    InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
-    repoManager.getRepositories(ctx);
-  }
-
-  @Ignore
-  @Test
-  public void queryOnlyWhenIndexIsAvailable() throws Exception {
-    setUpMockBucket(0);
-    setUpMockBucket(1);
-
-    when(indexForPR.isIndexAvailable(0)).thenReturn(true);
-    when(indexForPR.isIndexAvailable(1)).thenReturn(true);
-
-    Set<Integer> buckets = new LinkedHashSet<>(Arrays.asList(0, 1));
-    InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
-
-    Awaitility.await().pollDelay(1, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-        .atMost(500, TimeUnit.SECONDS).until(() -> {
-          final Collection<IndexRepository> repositories = new HashSet<>();
-          try {
-            repositories.addAll(repoManager.getRepositories(ctx));
-          } catch (BucketNotFoundException | LuceneIndexCreationInProgressException e) {
-          }
-          return repositories.size() == 2;
-        });
-
-    Iterator<IndexRepository> itr = repoManager.getRepositories(ctx).iterator();
-    IndexRepositoryImpl repo0 = (IndexRepositoryImpl) itr.next();
-    IndexRepositoryImpl repo1 = (IndexRepositoryImpl) itr.next();
-
-    assertNotNull(repo0);
-    assertNotNull(repo1);
-    assertNotEquals(repo0, repo1);
-
-    checkRepository(repo0, 0, 1);
-    checkRepository(repo1, 0, 1);
-  }
-
-  protected void checkRepository(IndexRepositoryImpl repo0, int... bucketIds) {
+  protected void checkRepository(IndexRepositoryImpl repo0, int bucketId) {
     IndexWriter writer0 = repo0.getWriter();
     RegionDirectory dir0 = (RegionDirectory) writer0.getDirectory();
-    boolean result = false;
-    for (int bucketId : bucketIds) {
-      BucketTargetingMap bucketTargetingMap =
-          new BucketTargetingMap(fileAndChunkBuckets.get(bucketId), bucketId);
-      result |= bucketTargetingMap.equals(dir0.getFileSystem().getFileAndChunkRegion());
-    }
-
-    assertTrue(result);
+    assertEquals(new BucketTargetingMap(fileAndChunkBuckets.get(bucketId), bucketId),
+        dir0.getFileSystem().getFileAndChunkRegion());
     assertEquals(serializer, repo0.getSerializer());
   }
 

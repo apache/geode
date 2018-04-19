@@ -19,8 +19,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.Executors;
-
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
@@ -58,7 +56,6 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     ((RawLuceneRepositoryManager) repoManager).close();
   }
 
-  @Override
   protected void createIndexAndRepoManager() {
     LuceneServiceImpl.luceneIndexFactory = new LuceneRawIndexFactory();
 
@@ -69,8 +66,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     when(indexForPR.getCache()).thenReturn(cache);
     when(indexForPR.getRegionPath()).thenReturn("/testRegion");
     when(indexForPR.withPersistence()).thenReturn(true);
-    repoManager =
-        new RawLuceneRepositoryManager(indexForPR, serializer, Executors.newSingleThreadExecutor());
+    repoManager = new RawLuceneRepositoryManager(indexForPR, serializer);
     repoManager.setUserRegionForRepositoryManager(userRegion);
     repoManager.allowRepositoryComputation();
   }
@@ -82,7 +78,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
   }
 
   @Override
-  protected void checkRepository(IndexRepositoryImpl repo0, int... bucketId) {
+  protected void checkRepository(IndexRepositoryImpl repo0, int bucketId) {
     IndexWriter writer0 = repo0.getWriter();
     Directory dir0 = writer0.getDirectory();
     assertTrue(dir0 instanceof NIOFSDirectory);
@@ -108,6 +104,5 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
 
     assertNotNull(repoManager.getRepository(userRegion, 0, null));
   }
-
 
 }

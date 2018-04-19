@@ -164,7 +164,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
     if (!regionPath.startsWith("/")) {
       regionPath = "/" + regionPath;
     }
-    return indexName + "#" + regionPath.replace('/', '_');
+    String name = indexName + "#" + regionPath.replace('/', '_');
+    return name;
   }
 
   public static String getUniqueIndexRegionName(String indexName, String regionPath,
@@ -252,13 +253,15 @@ public class LuceneServiceImpl implements InternalLuceneService {
             throw new BucketNotFoundException(
                 "Bucket ID : " + primaryBucketId + " not found during lucene indexing");
           }
-          /**
-           *
-           * Calling getRepository will in turn call computeRepository
-           * which is responsible for indexing the user region.
-           *
-           **/
-          repositoryManager.getRepository(primaryBucketId);
+          if (!userBucket.isEmpty()) {
+            /**
+             *
+             * Calling getRepository will in turn call computeRepository
+             * which is responsible for indexing the user region.
+             *
+             **/
+            repositoryManager.getRepository(primaryBucketId);
+          }
         } catch (BucketNotFoundException | PrimaryBucketException e) {
           logger.debug("Bucket ID : " + primaryBucketId
               + " not found while saving to lucene index: " + e.getMessage(), e);
