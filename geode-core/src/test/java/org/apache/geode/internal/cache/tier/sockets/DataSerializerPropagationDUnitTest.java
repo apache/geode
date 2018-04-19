@@ -153,157 +153,18 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
   }
 
   private static void verifyDataSerializers(final int numOfDataSerializers) {
-    verifyDataSerializers(numOfDataSerializers, false);
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .until(() -> assertEquals(
+            "serializers: " + Arrays.toString(InternalDataSerializer.getSerializers()),
+            InternalDataSerializer.getSerializers().length, numOfDataSerializers));
   }
 
-  private static void verifyDataSerializers(final int numOfDataSerializers,
-      final boolean allowNonLocal) {
-    WaitCriterion wc = new StoppableWaitCriterion() {
-      private DataSerializer[] getSerializers() {
-        allowNonLocalTL.set(allowNonLocal);
-        try {
-          return InternalDataSerializer.getSerializers();
-        } finally {
-          allowNonLocalTL.remove();
-        }
-      }
-
-      public boolean done() {
-        return getSerializers().length == numOfDataSerializers;
-      }
-
-      public String description() {
-        return "expected " + numOfDataSerializers + " but got this "
-            + InternalDataSerializer.getSerializers().length + " serializers="
-            + java.util.Arrays.toString(getSerializers());
-      }
-
-      public boolean stopWaiting() {
-        return getSerializers().length > numOfDataSerializers;
-      }
-    };
-    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-  }
-
-  private static void registerDSObject1() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject1.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject1", e);
-    }
-  }
-
-  private static void registerDSObject2() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject2.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject2", e);
-    }
-  }
-
-  private static void registerDSObject3() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject3.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject2", e);
-    }
-  }
-
-  private static void registerDSObject4() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject4.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject4", e);
-    }
-  }
-
-  private static void registerDSObject5() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject5.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject5", e);
-    }
-  }
-
-  private static void registerDSObject6() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject6.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject6", e);
-    }
-  }
-
-  private static void registerDSObject7() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject7.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject7", e);
-    }
-  }
-
-  private static void registerDSObject8() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject8.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject8", e);
-    }
-  }
-
-  private static void registerDSObject9() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject9.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject9", e);
-    }
-  }
-
-  private static void registerDSObject10() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject10.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject10", e);
-    }
-  }
-
-  private static void registerDSObject11() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject11.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject11", e);
-    }
-  }
-
-  private static void registerDSObject12() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject12.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject12", e);
-    }
-  }
-
-  private static void registerDSObject13() throws Exception {
-    try {
-      InternalDataSerializer.register(DSObject13.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObject13", e);
-    }
+  private static void registerDataSerializer(Class klass) {
+    InternalDataSerializer.register(klass, true);
   }
 
   private static void registerDSObjectLocalOnly() throws Exception {
-
-    try {
-      InternalDataSerializer._register(new DSObjectLocalOnly(79), true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in DSObjectLocalOnly", e);
-    }
-  }
-
-  private static void registerTestDataSerializer() throws Exception {
-    try {
-      InternalDataSerializer.register(TestDataSerializer.class, true);
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception in TestDataSerializer", e);
-    }
+    InternalDataSerializer._register(new DSObjectLocalOnly(79), true);
   }
 
   public static void stopServer() {
@@ -328,8 +189,8 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
   public void testServerUpFirstClientLater() throws Exception {
     PORT1 = initServerCache(server1);
 
-    server1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject1());
-    server1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject2());
+    server1.invoke(() -> registerDataSerializer(DSObject1.class));
+    server1.invoke(() -> registerDataSerializer(DSObject2.class));
 
     server1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(2));
 
@@ -369,7 +230,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     client2.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2)));
 
-    client1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject3());
+    client1.invoke(() -> registerDataSerializer(DSObject3.class));
 
     client1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(1)));
 
@@ -419,7 +280,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     client2.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2)));
 
-    client1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject4());
+    client1.invoke(() -> registerDataSerializer(DSObject4.class));
 
     server1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(1));
 
@@ -435,8 +296,8 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
 
     server1.invoke(() -> DataSerializerPropagationDUnitTest.stopServer());
 
-    server1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject5());
-    server1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject6());
+    server1.invoke(() -> registerDataSerializer(DSObject5.class));
+    server1.invoke(() -> registerDataSerializer(DSObject6.class));
 
     server2.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(3)));
 
@@ -460,9 +321,9 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     client2.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2)));
 
-    client1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject10());
+    client1.invoke(() -> registerDataSerializer(DSObject10.class));
 
-    server1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject11());
+    server1.invoke(() -> registerDataSerializer(DSObject11.class));
 
     server2.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(2)));
 
@@ -482,7 +343,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     client2.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2)));
 
-    client1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject7());
+    client1.invoke(() -> registerDataSerializer(DSObject7.class));
     client1.invoke(() -> DataSerializerPropagationDUnitTest
         .verifyDataSerializers(new Integer(instanceCountWithOnePut)));
 
@@ -502,12 +363,12 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     server1.invoke(() -> DataSerializerPropagationDUnitTest.stopServer());
 
     try {
-      client1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject8());
+      client1.invoke(() -> registerDataSerializer(DSObject8.class));
     } catch (Exception e) {// we are putting in a client whose server is dead
 
     }
     try {
-      client1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject9());
+      client1.invoke(() -> registerDataSerializer(DSObject9.class));
     } catch (Exception e) {// we are putting in a client whose server is
       // dead
     }
@@ -539,7 +400,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
         .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
     createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2));
 
-    client1.invoke(() -> DataSerializerPropagationDUnitTest.registerDSObject12());
+    client1.invoke(() -> registerDataSerializer(DSObject12.class));
 
     client1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(1)));
 
@@ -568,7 +429,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     setClientServerObserver1();
     client2.invoke(DataSerializerPropagationDUnitTest::setClientServerObserver2);
 
-    registerDSObject13();
+    registerDataSerializer(DSObject13.class);
 
     Boolean pass = client2.invoke(DataSerializerPropagationDUnitTest::verifyResult);
     assertTrue("EventId found Different", pass);
@@ -588,7 +449,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     client2.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
 
-    client1.invoke(() -> DataSerializerPropagationDUnitTest.registerTestDataSerializer());
+    client1.invoke(() -> registerDataSerializer(TestDataSerializer.class));
 
     client1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(1)));
 
