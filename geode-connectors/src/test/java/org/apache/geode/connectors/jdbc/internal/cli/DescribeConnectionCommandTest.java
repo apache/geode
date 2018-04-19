@@ -20,7 +20,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -81,13 +83,16 @@ public class DescribeConnectionCommandTest {
   @Test
   public void successfulResult() {
     // connection found in CC
-    ConnectorService.Connection connection = new ConnectorService.Connection("name1", "url1",
+    ConnectorService.Connection connection = new ConnectorService.Connection("name", "url1",
         "user1", "password1", "param1:value1,param2:value2");
+    List<ConnectorService.Connection> connections = new ArrayList<>();
+    connections.add(connection);
 
     ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
+    when(connectorService.getConnection()).thenReturn(connections);
 
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("name", "name1")
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("name", "name")
         .containsOutput("url", "url1").containsOutput("user", "user1")
         .containsOutput("password", "********").containsOutput("param1", "value1")
         .containsOutput("param2", "value2");
