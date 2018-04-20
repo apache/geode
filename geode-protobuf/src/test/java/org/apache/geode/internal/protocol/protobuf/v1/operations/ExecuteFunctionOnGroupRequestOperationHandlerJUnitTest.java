@@ -48,9 +48,10 @@ import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionCont
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
   private static final String TEST_GROUP1 = "group1";
   private static final String TEST_GROUP2 = "group2";

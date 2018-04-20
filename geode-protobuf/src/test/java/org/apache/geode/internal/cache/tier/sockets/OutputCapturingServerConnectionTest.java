@@ -38,10 +38,11 @@ import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class OutputCapturingServerConnectionTest {
 
   @Rule

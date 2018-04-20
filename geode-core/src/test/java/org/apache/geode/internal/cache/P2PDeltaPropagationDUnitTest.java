@@ -42,11 +42,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
  * Tests the P2P delta propagation functionality.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, SerializationTest.class})
 public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   static VM server1 = null;

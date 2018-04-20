@@ -33,8 +33,9 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, RedisTest.class})
 public class AuthJUnitTest {
 
   private static final String PASSWORD = "pwd";

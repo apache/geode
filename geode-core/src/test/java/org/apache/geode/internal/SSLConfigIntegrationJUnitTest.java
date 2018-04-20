@@ -28,12 +28,13 @@ import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Test that DistributionConfigImpl handles SSL options correctly.
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class SSLConfigIntegrationJUnitTest {
 
   @After

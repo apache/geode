@@ -49,9 +49,10 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RestAPITest.class})
 public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
   @Override

@@ -27,8 +27,9 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, RedisTest.class})
 public class RedisServerTest {
 
   Cache cache;

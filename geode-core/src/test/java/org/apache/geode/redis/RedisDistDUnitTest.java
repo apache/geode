@@ -37,8 +37,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RedisTest.class})
 public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
 
   public static final String TEST_KEY = "key";

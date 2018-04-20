@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -43,7 +44,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, MembershipTest.class})
 public class SocketUtilsJUnitTest {
 
   private Mockery mockContext;

@@ -22,12 +22,13 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 
 /**
  * A test class to document and make clear what JSONFormatter will and won't parse as far as simple
  * examples.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, RestAPITest.class})
 public class JSONFormatterBasicJUnitTest {
   // This is needed because the JsonFormatter needs to access the PDX region, which requires a
   // running Cache.

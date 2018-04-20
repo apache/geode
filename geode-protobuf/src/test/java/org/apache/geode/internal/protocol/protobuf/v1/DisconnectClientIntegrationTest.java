@@ -44,9 +44,10 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class DisconnectClientIntegrationTest {
   public static final String SECURITY_PRINCIPAL = "principle";
   private Socket socket;

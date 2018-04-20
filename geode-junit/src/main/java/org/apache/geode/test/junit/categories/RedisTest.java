@@ -12,26 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.rest.internal.web.controllers.support;
+package org.apache.geode.test.junit.categories;
 
-import static org.mockito.Mockito.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.test.junit.categories.UnitTest;
-
-@Category({UnitTest.class, RestAPITest.class})
-public class RegionDataTest {
-
-  @Test
-  public void shouldBeMockable() throws Exception {
-    RegionData mockRegionData = mock(RegionData.class);
-    String regionNamePath = "regionNamePath";
-
-    mockRegionData.setRegionNamePath(regionNamePath);
-
-    verify(mockRegionData, times(1)).setRegionNamePath(regionNamePath);
-  }
+/**
+ * A test category for Redis-related tests
+ */
+public interface RedisTest {
 }

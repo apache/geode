@@ -17,6 +17,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /*
@@ -34,7 +35,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * the License.
  */
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class ProtocolVersionHandlerJUnitTest {
   private static final int INVALID_MAJOR_VERSION = 67;
   private static final int INVALID_MINOR_VERSION = 92347;

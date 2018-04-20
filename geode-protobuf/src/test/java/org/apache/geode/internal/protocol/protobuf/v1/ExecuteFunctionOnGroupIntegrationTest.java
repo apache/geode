@@ -55,9 +55,10 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ExecuteFunctionOnGroupIntegrationTest {
   private static final String TEST_REGION = "testRegion";
   private static final String TEST_FUNCTION_ID = "testFunction";

@@ -29,10 +29,11 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, MembershipTest.class})
 public class ConnectionTableTest {
   private ConnectionTable connectionTable;
   private Socket socket;

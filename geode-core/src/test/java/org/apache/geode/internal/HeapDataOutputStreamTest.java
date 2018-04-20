@@ -21,9 +21,10 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, SerializationTest.class})
 public class HeapDataOutputStreamTest {
 
   @Test

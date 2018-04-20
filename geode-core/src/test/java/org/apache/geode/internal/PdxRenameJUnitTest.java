@@ -40,8 +40,9 @@ import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SerializationTest.class})
 public class PdxRenameJUnitTest {
   @Test
   public void testGetPdxTypes() throws Exception {

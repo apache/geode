@@ -57,13 +57,13 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Test that using the magic byte to indicate intend ot use ProtoBuf messages works
+ * Test that using the magic byte to indicate intend to use ProtoBuf messages works
  */
-@Category({IntegrationTest.class, FlakyTest.class})
+@Category({AcceptanceTest.class, FlakyTest.class}) // Flaky - GEODE-3733
 public class CacheMaxConnectionJUnitTest {
   private static final String TEST_KEY = "testKey";
   private static final String TEST_VALUE = "testValue";
