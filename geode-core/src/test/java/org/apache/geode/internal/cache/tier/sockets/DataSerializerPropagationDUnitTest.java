@@ -164,7 +164,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
   }
 
   private static void registerDSObjectLocalOnly() throws Exception {
-    InternalDataSerializer._register(new DSObjectLocalOnly(79), true);
+    InternalDataSerializer._register(new DSObjectLocalOnly(), true);
   }
 
   public static void stopServer() {
@@ -230,7 +230,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     client2.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2)));
 
-    client1.invoke(() -> registerDataSerializer(DSObject3.class));
+    client1.invoke(() -> registerDataSerializer(DSObject1.class));
 
     client1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(1)));
 
@@ -280,7 +280,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     client2.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2)));
 
-    client1.invoke(() -> registerDataSerializer(DSObject4.class));
+    client1.invoke(() -> registerDataSerializer(DSObject1.class));
 
     server1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(1));
 
@@ -296,8 +296,8 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
 
     server1.invoke(() -> DataSerializerPropagationDUnitTest.stopServer());
 
-    server1.invoke(() -> registerDataSerializer(DSObject5.class));
-    server1.invoke(() -> registerDataSerializer(DSObject6.class));
+    server1.invoke(() -> registerDataSerializer(DSObject1.class));
+    server1.invoke(() -> registerDataSerializer(DSObject2.class));
 
     server2.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(3)));
 
@@ -321,9 +321,9 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     client2.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2)));
 
-    client1.invoke(() -> registerDataSerializer(DSObject10.class));
+    client1.invoke(() -> registerDataSerializer(DSObject1.class));
 
-    server1.invoke(() -> registerDataSerializer(DSObject11.class));
+    server1.invoke(() -> registerDataSerializer(DSObject2.class));
 
     server2.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(2)));
 
@@ -343,7 +343,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     client2.invoke(() -> DataSerializerPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2)));
 
-    client1.invoke(() -> registerDataSerializer(DSObject7.class));
+    client1.invoke(() -> registerDataSerializer(DSObject1.class));
     client1.invoke(() -> DataSerializerPropagationDUnitTest
         .verifyDataSerializers(new Integer(instanceCountWithOnePut)));
 
@@ -363,12 +363,12 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     server1.invoke(() -> DataSerializerPropagationDUnitTest.stopServer());
 
     try {
-      client1.invoke(() -> registerDataSerializer(DSObject8.class));
+      client1.invoke(() -> registerDataSerializer(DSObject2.class));
     } catch (Exception e) {// we are putting in a client whose server is dead
 
     }
     try {
-      client1.invoke(() -> registerDataSerializer(DSObject9.class));
+      client1.invoke(() -> registerDataSerializer(DSObject3.class));
     } catch (Exception e) {// we are putting in a client whose server is
       // dead
     }
@@ -400,7 +400,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
         .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
     createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2));
 
-    client1.invoke(() -> registerDataSerializer(DSObject12.class));
+    client1.invoke(() -> registerDataSerializer(DSObject1.class));
 
     client1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(1)));
 
@@ -429,7 +429,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     setClientServerObserver1();
     client2.invoke(DataSerializerPropagationDUnitTest::setClientServerObserver2);
 
-    registerDataSerializer(DSObject13.class);
+    registerDataSerializer(DSObject1.class);
 
     Boolean pass = client2.invoke(DataSerializerPropagationDUnitTest::verifyResult);
     assertTrue("EventId found Different", pass);
@@ -602,8 +602,6 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
 
 
 class DSObject1 extends DataSerializer {
-  int tempField = 5;
-
   public DSObject1() {
     // Do nothing.
   }
@@ -620,7 +618,7 @@ class DSObject1 extends DataSerializer {
 
   @Override
   public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
+    out.write(5);
     return false;
   }
 
@@ -633,8 +631,6 @@ class DSObject1 extends DataSerializer {
 
 
 class DSObject2 extends DataSerializer {
-  int tempField = 15;
-
   public DSObject2() {
     // Do nothing.
   }
@@ -651,7 +647,7 @@ class DSObject2 extends DataSerializer {
 
   @Override
   public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
+    out.write(15);
     return false;
   }
 
@@ -664,8 +660,6 @@ class DSObject2 extends DataSerializer {
 
 
 class DSObject3 extends DataSerializer {
-  int tempField = 25;
-
   public DSObject3() {
     // Do nothing.
   }
@@ -682,317 +676,7 @@ class DSObject3 extends DataSerializer {
 
   @Override
   public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
-    return false;
-  }
-
-  @Override
-  public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readInteger(in);
-    return null;
-  }
-}
-
-
-class DSObject4 extends DataSerializer {
-  int tempField = 5;
-
-  public DSObject4() {
-    // Do nothing.
-  }
-
-  @Override
-  public int getId() {
-    return 4;
-  }
-
-  @Override
-  public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
-  }
-
-  @Override
-  public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
-    return false;
-  }
-
-  @Override
-  public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readInteger(in);
-    return null;
-  }
-}
-
-
-class DSObject5 extends DataSerializer {
-  int tempField = 15;
-
-  public DSObject5() {
-    // Do nothing.
-  }
-
-  @Override
-  public int getId() {
-    return 5;
-  }
-
-  @Override
-  public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
-  }
-
-  @Override
-  public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
-    return false;
-  }
-
-  @Override
-  public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readInteger(in);
-    return null;
-  }
-}
-
-
-class DSObject6 extends DataSerializer {
-  int tempField = 25;
-
-  public DSObject6() {
-    // Do nothing.
-  }
-
-  @Override
-  public int getId() {
-    return 6;
-  }
-
-  @Override
-  public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
-  }
-
-  @Override
-  public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
-    return false;
-  }
-
-  @Override
-  public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readInteger(in);
-    return null;
-  }
-}
-
-
-class DSObject7 extends DataSerializer {
-  int tempField = 5;
-
-  public DSObject7() {
-    // Do nothing.
-  }
-
-  @Override
-  public int getId() {
-    return 7;
-  }
-
-  @Override
-  public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
-  }
-
-  @Override
-  public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
-    return false;
-  }
-
-  @Override
-  public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readInteger(in);
-    return null;
-  }
-}
-
-
-class DSObject8 extends DataSerializer {
-  int tempField = 15;
-
-  public DSObject8() {
-    // Do nothing.
-  }
-
-  @Override
-  public int getId() {
-    return 8;
-  }
-
-  @Override
-  public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
-  }
-
-  @Override
-  public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
-    return false;
-  }
-
-  @Override
-  public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readInteger(in);
-    return null;
-  }
-}
-
-
-class DSObject9 extends DataSerializer {
-  int tempField = 25;
-
-  public DSObject9() {
-    // Do nothing.
-  }
-
-  @Override
-  public int getId() {
-    return 9;
-  }
-
-  @Override
-  public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
-  }
-
-  @Override
-  public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
-    return false;
-  }
-
-  @Override
-  public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readInteger(in);
-    return null;
-  }
-}
-
-
-class DSObject10 extends DataSerializer {
-  int tempField = 5;
-
-  public DSObject10() {
-    // Do nothing.
-  }
-
-  @Override
-  public int getId() {
-    return 10;
-  }
-
-  @Override
-  public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
-  }
-
-  @Override
-  public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
-    return false;
-  }
-
-  @Override
-  public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readInteger(in);
-    return null;
-  }
-}
-
-
-class DSObject11 extends DataSerializer {
-  int tempField = 15;
-
-  public DSObject11() {
-    // Do nothing.
-  }
-
-  @Override
-  public int getId() {
-    return 11;
-  }
-
-  @Override
-  public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
-  }
-
-  @Override
-  public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
-    return false;
-  }
-
-  @Override
-  public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readInteger(in);
-    return null;
-  }
-}
-
-
-class DSObject12 extends DataSerializer {
-  int tempField = 25;
-
-  public DSObject12() {
-    // Do nothing.
-  }
-
-  @Override
-  public int getId() {
-    return 12;
-  }
-
-  @Override
-  public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
-  }
-
-  @Override
-  public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
-    return false;
-  }
-
-  @Override
-  public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readInteger(in);
-    return null;
-  }
-}
-
-
-class DSObject13 extends DataSerializer {
-  int tempField = 25;
-
-  public DSObject13() {
-    // Do nothing.
-  }
-
-  @Override
-  public int getId() {
-    return 19;
-  }
-
-  @Override
-  public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
-  }
-
-  @Override
-  public boolean toData(Object o, DataOutput out) throws IOException {
-    out.write(tempField);
+    out.write(25);
     return false;
   }
 
@@ -1016,12 +700,6 @@ class Bogus {
  */
 class DSObjectLocalOnly extends DataSerializer {
   static final ThreadLocal<Boolean> allowNonLocalTL = new ThreadLocal<>();
-
-  int tempField;
-
-  public DSObjectLocalOnly(int v) {
-    this.tempField = v;
-  }
 
   public DSObjectLocalOnly() {
     Boolean b = allowNonLocalTL.get();
