@@ -1686,7 +1686,7 @@ public class PRQueryDUnitHelper implements Serializable {
            * " + "buckets indexed should be equal",
            * ((PartitionedRegion)region).getTotalNumberOfBuckets(),
            * (((PartionedIndex)parIndex).getNumberOfIndexedBucket()+((PartionedIndex)parIndex).
-           * getNumRemtoeBucketsIndexed())); should put all the assetion in a seperate function.
+           * getNumRemtoeBucketsIndexed())); should put all the assetion in a separate function.
            */
         } catch (Exception ex) {
           Assert.fail("Creating Index in this vm failed : ", ex);

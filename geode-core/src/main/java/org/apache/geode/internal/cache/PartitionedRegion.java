@@ -3577,10 +3577,10 @@ public class PartitionedRegion extends LocalRegion
         logger.debug("FunctionService: Executing on remote nodes with member to keys map.{}",
             memberToKeysMap);
       }
-      PartitionedRegionFunctionResultWaiter resultReciever =
+      PartitionedRegionFunctionResultWaiter resultReceiver =
           new PartitionedRegionFunctionResultWaiter(getSystem(), this.getPRId(),
               localResultCollector, function, resultSender);
-      return resultReciever.getPartitionedDataFrom(recipMap, this, execution);
+      return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
     }
     return localResultCollector;
   }
@@ -3826,11 +3826,11 @@ public class PartitionedRegion extends LocalRegion
               localBucketSet, resultSender, execution.isReExecute());
       execution.executeFunctionOnLocalNode(function, prContext, resultSender, dm, isTX());
     }
-    PartitionedRegionFunctionResultWaiter resultReciever =
+    PartitionedRegionFunctionResultWaiter resultReceiver =
         new PartitionedRegionFunctionResultWaiter(getSystem(), this.getPRId(), localRC, function,
             resultSender);
 
-    return resultReciever.getPartitionedDataFrom(recipMap, this, execution);
+    return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
   }
 
   /**
@@ -3921,11 +3921,11 @@ public class PartitionedRegion extends LocalRegion
               localBucketSet, resultSender, execution.isReExecute());
       execution.executeFunctionOnLocalPRNode(function, prContext, resultSender, dm, isTX());
     }
-    PartitionedRegionFunctionResultWaiter resultReciever =
+    PartitionedRegionFunctionResultWaiter resultReceiver =
         new PartitionedRegionFunctionResultWaiter(getSystem(), this.getPRId(), localResultCollector,
             function, resultSender);
 
-    return resultReciever.getPartitionedDataFrom(recipMap, this, execution);
+    return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
   }
 
   /**
@@ -4811,7 +4811,7 @@ public class PartitionedRegion extends LocalRegion
         new PartitionedRegionFunctionResultSender(null, this, 0, rc, sender, false, true,
             execution.isForwardExceptions(), function, bucketSet);
 
-    PartitionedRegionFunctionResultWaiter resultReciever =
+    PartitionedRegionFunctionResultWaiter resultReceiver =
         new PartitionedRegionFunctionResultWaiter(getSystem(), this.getPRId(), rc, function,
             resultSender);
 
@@ -4823,7 +4823,7 @@ public class PartitionedRegion extends LocalRegion
 
     recipMap.put(targetNode, context);
 
-    return resultReciever.getPartitionedDataFrom(recipMap, this, execution);
+    return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
   }
 
   /**

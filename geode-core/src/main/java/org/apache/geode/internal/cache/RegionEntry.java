@@ -298,9 +298,9 @@ public interface RegionEntry {
    * getInitialImage.
    *
    * <p>
-   * put if LOCAL_INVALID and nonexistant<br>
-   * put if INVALID and nonexistant, recovered, or LOCAL_INVALID<br>
-   * put if valid and nonexistant, recovered, or LOCAL_INVALID
+   * put if LOCAL_INVALID and nonexistent<br>
+   * put if INVALID and nonexistent, recovered, or LOCAL_INVALID<br>
+   * put if valid and nonexistent, recovered, or LOCAL_INVALID
    *
    * <p>
    * REGION_INVALIDATED: (special case)<br>

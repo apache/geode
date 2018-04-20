@@ -45,7 +45,7 @@ public class ExportLogsCacheWriter extends CacheWriterAdapter implements Seriali
       Object newValue = event.getNewValue();
       if (!(newValue instanceof byte[])) {
         throw new IllegalArgumentException(
-            "Value must be a byte[].  Recieved " + newValue.getClass().getCanonicalName());
+            "Value must be a byte[].  Received " + newValue.getClass().getCanonicalName());
       }
       currentOutputStream.write((byte[]) newValue);
       isEmpty = false;

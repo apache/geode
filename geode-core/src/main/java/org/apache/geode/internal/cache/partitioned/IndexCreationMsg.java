@@ -85,7 +85,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
   /**
    * This message may be sent to nodes before the PartitionedRegion is completely initialized due to
-   * the RegionAdvisor(s) knowing about the existance of a partitioned region at a very early part
+   * the RegionAdvisor(s) knowing about the existence of a partitioned region at a very early part
    * of the initialization
    */
   @Override

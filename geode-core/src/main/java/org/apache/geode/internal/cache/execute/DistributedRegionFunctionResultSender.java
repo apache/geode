@@ -45,7 +45,7 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
 
   private boolean enableOrderedResultStreming;
 
-  private boolean localLastResultRecieved = false;
+  private boolean localLastResultReceived = false;
 
   /**
    * Have to combine next two construcotr in one and make a new class which will send Results back.
@@ -77,10 +77,10 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
           LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
               .toLocalizedString("send"));
     }
-    if (this.localLastResultRecieved) {
+    if (this.localLastResultReceived) {
       return;
     }
-    this.localLastResultRecieved = true;
+    this.localLastResultReceived = true;
     if (this.sender != null) { // Client-Server
       sender.lastResult(oneResult);
       if (this.rc != null) {
@@ -114,7 +114,7 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
           LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
               .toLocalizedString("send"));
     }
-    this.localLastResultRecieved = true;
+    this.localLastResultReceived = true;
     if (this.sender != null) { // Client-Server
       sender.lastResult(oneResult, memberID);
       if (this.rc != null) {
@@ -211,7 +211,7 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
   public void sendException(Throwable exception) {
     InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
     this.lastResult(iFunxtionException);
-    this.localLastResultRecieved = true;
+    this.localLastResultReceived = true;
   }
 
   public void setException(Throwable exception) {
@@ -227,7 +227,7 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
           exception);
     }
     this.rc.endResults();
-    this.localLastResultRecieved = true;
+    this.localLastResultReceived = true;
   }
 
   public void enableOrderedResultStreming(boolean enable) {
@@ -239,6 +239,6 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
   }
 
   public boolean isLastResultReceived() {
-    return this.localLastResultRecieved;
+    return this.localLastResultReceived;
   }
 }

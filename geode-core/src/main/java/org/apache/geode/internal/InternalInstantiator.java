@@ -177,8 +177,8 @@ public class InternalInstantiator {
       // send it to cache servers if it is a client
       sendRegistrationMessageToServers(instantiator);
     }
-    // send it to all cache clients irelevent of distribute
-    // bridge servers send it all the clients irelevent of
+    // send it to all cache clients irrelevant of distribute
+    // bridge servers send it all the clients irrelevant of
     // originator VM
     sendRegistrationMessageToClients(instantiator);
 

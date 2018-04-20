@@ -115,7 +115,7 @@ public class GfshParser extends SimpleParser {
 
     List<String> furtherSplitWithEquals = new ArrayList<>();
     for (String token : splitWithWhiteSpaces) {
-      // if this token has equal sign, split around the first occurrance of it
+      // if this token has equal sign, split around the first occurrence of it
       int indexOfFirstEqual = token.indexOf('=');
       if (indexOfFirstEqual < 0) {
         furtherSplitWithEquals.add(token);

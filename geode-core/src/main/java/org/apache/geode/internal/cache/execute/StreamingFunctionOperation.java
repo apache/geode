@@ -42,7 +42,7 @@ public abstract class StreamingFunctionOperation {
 
   protected ResultCollector reply;
 
-  protected int totalLastMsgRecieved = 0;
+  protected int totalLastMsgReceived = 0;
 
   /** Creates a new instance of StreamingOperation */
   public StreamingFunctionOperation(InternalDistributedSystem sys, ResultCollector rc,
@@ -68,9 +68,9 @@ public abstract class StreamingFunctionOperation {
   public void processData(Object result, boolean lastMsg, DistributedMember memberID) {
     boolean completelyDone = false;
     if (lastMsg) {
-      this.totalLastMsgRecieved++;
+      this.totalLastMsgReceived++;
     }
-    if (this.totalLastMsgRecieved == this.recipients.size()) {
+    if (this.totalLastMsgReceived == this.recipients.size()) {
       completelyDone = true;
     }
 

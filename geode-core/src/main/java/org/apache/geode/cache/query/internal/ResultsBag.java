@@ -146,9 +146,9 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
 
     while (numLeft > 0) {
       Object key = DataSerializer.readObject(in);
-      int occurence = in.readInt();
-      this.map.put(key, occurence);
-      numLeft -= occurence;
+      int occurrence = in.readInt();
+      this.map.put(key, occurrence);
+      numLeft -= occurrence;
     }
   }
 
@@ -169,12 +169,12 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
       Entry entry = itr.next();
       Object key = entry.getKey();
       DataSerializer.writeObject(key, out);
-      int occurence = entry.getValue();
-      if (numLeft < occurence) {
-        occurence = numLeft;
+      int occurrence = entry.getValue();
+      if (numLeft < occurrence) {
+        occurrence = numLeft;
       }
-      out.writeInt(occurence);
-      numLeft -= occurence;
+      out.writeInt(occurrence);
+      numLeft -= occurrence;
     }
   }
 

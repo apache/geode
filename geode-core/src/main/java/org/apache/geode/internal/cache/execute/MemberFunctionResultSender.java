@@ -41,7 +41,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
 
   private final Function function;
 
-  private boolean localLastResultRecieved = false;
+  private boolean localLastResultReceived = false;
 
   private boolean onlyLocal = false;
 
@@ -85,13 +85,13 @@ public class MemberFunctionResultSender implements InternalResultSender {
               .toLocalizedString("send"));
     }
     if (this.serverSender != null) { // client-server
-      if (this.localLastResultRecieved) {
+      if (this.localLastResultReceived) {
         return;
       }
       if (onlyLocal) {
         this.serverSender.lastResult(oneResult);
         this.rc.endResults();
-        this.localLastResultRecieved = true;
+        this.localLastResultReceived = true;
       } else {
         lastResult(oneResult, rc, false, true, this.dm.getId());
       }
@@ -107,13 +107,13 @@ public class MemberFunctionResultSender implements InternalResultSender {
           throw new FunctionException(e);
         }
       } else {
-        if (this.localLastResultRecieved) {
+        if (this.localLastResultReceived) {
           return;
         }
         if (onlyLocal) {
           this.rc.addResult(this.dm.getDistributionManagerId(), oneResult);
           this.rc.endResults();
-          this.localLastResultRecieved = true;
+          this.localLastResultReceived = true;
         } else {
           // call a synchronized method as local node is also waiting to send lastResult
           lastResult(oneResult, rc, false, true, this.dm.getDistributionManagerId());
@@ -131,18 +131,18 @@ public class MemberFunctionResultSender implements InternalResultSender {
       this.completelyDoneFromRemote = true;
     }
     if (lastLocalResult) {
-      this.localLastResultRecieved = true;
+      this.localLastResultReceived = true;
 
     }
     if (this.serverSender != null) { // Client-Server
-      if (this.completelyDoneFromRemote && this.localLastResultRecieved) {
+      if (this.completelyDoneFromRemote && this.localLastResultReceived) {
         this.serverSender.lastResult(oneResult, memberID);
         collector.endResults();
       } else {
         this.serverSender.sendResult(oneResult, memberID);
       }
     } else { // P2P
-      if (this.completelyDoneFromRemote && this.localLastResultRecieved) {
+      if (this.completelyDoneFromRemote && this.localLastResultReceived) {
         collector.addResult(memberID, oneResult);
         collector.endResults();
       } else {
@@ -217,7 +217,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
   public void sendException(Throwable exception) {
     InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
     this.lastResult(iFunxtionException);
-    this.localLastResultRecieved = true;
+    this.localLastResultReceived = true;
   }
 
   public void setException(Throwable exception) {
@@ -228,7 +228,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
             LocalizedStrings.MemberResultSender_UNEXPECTED_EXCEPTION_DURING_FUNCTION_EXECUTION_ON_LOCAL_NODE),
         exception);
     this.rc.endResults();
-    this.localLastResultRecieved = true;
+    this.localLastResultReceived = true;
   }
 
   public void enableOrderedResultStreming(boolean enable) {
@@ -240,6 +240,6 @@ public class MemberFunctionResultSender implements InternalResultSender {
   }
 
   public boolean isLastResultReceived() {
-    return this.localLastResultRecieved;
+    return this.localLastResultReceived;
   }
 }

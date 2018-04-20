@@ -604,7 +604,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     /**
      * 1. Create a cache server with slow dispatcher 2. Start a durable client with a custom cache
-     * listener which shuts itself down as soon as it recieves a marker message. 3. Do some puts on
+     * listener which shuts itself down as soon as it receives a marker message. 3. Do some puts on
      * the server region 4. Let the dispatcher start dispatching 5. Verify that durable client is
      * disconnected as soon as it processes the marker. Server will retain its queue which has some
      * events (containing deltas) in it. 6. Restart the durable client without the self-destructing

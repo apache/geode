@@ -260,7 +260,7 @@ public class ExecutionContext {
    * Independent Iterator which is passed as a parameter to the function. For correct usage it is
    * necessary that the RuntimeIterator passed is independent. If there are no dependent Iterators
    * then the list will just contain one element which will be the RuntimeIterator passed as
-   * argument . Also the self independent Runtime Iterator present in the scope ( that is teh
+   * argument . Also the self independent Runtime Iterator present in the scope ( that is the
    * RuntimeIterator same as the independent iterator passed as argument) is added at start of the
    * list. If an iterator is dependent on more than one independent iterator, it is not added to the
    * List
