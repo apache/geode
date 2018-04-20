@@ -39,7 +39,7 @@ RUN chmod +x /usr/local/bin/tini \
   && echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
   && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
   && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
-  && apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D \
+  && apt-key adv --keyserver hkp://pgp.mit.edu --recv-keys 58118E89F3A912897C070ADBF76221572C52609D \
   && apt-get update \
   && apt-get purge lxc-docker \
   && apt-get install -y --no-install-recommends \
