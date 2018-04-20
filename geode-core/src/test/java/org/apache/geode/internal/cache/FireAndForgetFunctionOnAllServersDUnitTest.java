@@ -28,7 +28,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.functions.FireAndForgetFunctionOnAllServers;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -66,13 +65,12 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
     VM server2 = host.getVM(2);
     VM client = host.getVM(3);
 
-    final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locatorHost = NetworkUtils.getServerHostName(host);
+    final String locatorHost = NetworkUtils.getServerHostName();
 
     // Step 1. Start a locator and one cache server.
-    locator.invoke("Start Locator", () -> startLocator(locatorHost, locatorPort, ""));
+    final int locatorPort = locator.invoke("Start Locator", () -> startLocator(locatorHost, ""));
 
-    String locString = getLocatorString(host, locatorPort);
+    String locString = getLocatorString(locatorHost, locatorPort);
 
     // Step 2. Start a server and create a replicated region "R1".
     server1.invoke("Start BridgeServer",
