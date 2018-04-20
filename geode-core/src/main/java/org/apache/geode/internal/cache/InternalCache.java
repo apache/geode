@@ -361,4 +361,11 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   Boolean getPdxReadSerializedOverride();
 
   void setPdxReadSerializedOverride(boolean pdxReadSerialized);
+
+  /**
+   * Returns a version of InternalCache that can only access
+   * application visible regions. Any regions created internally
+   * by Geode will not be accessible from the returned cache.
+   */
+  InternalCache getCacheForProcessingClientRequests();
 }
