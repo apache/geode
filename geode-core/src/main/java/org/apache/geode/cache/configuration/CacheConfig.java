@@ -265,9 +265,10 @@ import org.apache.geode.annotations.Experimental;
         "diskStore", "pdx", "regionAttributes", "jndiBindings", "region", "functionService",
         "resourceManager", "serializationRegistration", "backup", "initializer", "cacheElements"})
 @XmlRootElement(name = "cache", namespace = "http://geode.apache.org/schema/cache")
+@XSDRootElement(namespace = "http://geode.apache.org/schema/cache",
+    schemaLocation = "http://geode.apache.org/schema/cache/cache-1.0.xsd")
 @Experimental
 public class CacheConfig {
-
   @XmlElement(name = "cache-transaction-manager",
       namespace = "http://geode.apache.org/schema/cache")
   protected CacheTransactionManagerType cacheTransactionManager;
@@ -1020,7 +1021,6 @@ public class CacheConfig {
   public void setVersion(String value) {
     this.version = value;
   }
-
 
   /**
    * <p>
