@@ -52,8 +52,9 @@ public class InternalClusterConfigurationServiceTest {
 
   @Before
   public void setUp() throws Exception {
-    service = spy(InternalClusterConfigurationService.class);
-    service2 = spy(InternalClusterConfigurationService.class);
+    service = spy(new InternalClusterConfigurationService(CacheConfig.class, ElementOne.class,
+        ElementTwo.class));
+    service2 = spy(new InternalClusterConfigurationService(CacheConfig.class));
     configuration = new Configuration("cluster");
     doReturn(configuration).when(service).getConfiguration(any());
     doReturn(configuration).when(service2).getConfiguration(any());
@@ -115,6 +116,7 @@ public class InternalClusterConfigurationServiceTest {
   }
 
   @Test
+  // in case a locator in the cluster doesn't have the plugin installed
   public void xmlWithCustomElementsCanBeUnMarshalledByAnotherService() {
     service.saveCustomCacheElement("cluster", new ElementOne("one"));
     service.saveCustomCacheElement("cluster", new ElementTwo("two"));
@@ -122,11 +124,11 @@ public class InternalClusterConfigurationServiceTest {
     String prettyXml = configuration.getCacheXmlContent();
     System.out.println(prettyXml);
 
-    // the xml is sent to another locator, and can interpreted ocrrectly
+    // the xml is sent to another locator with no such plugin installed, it can be parsed
+    // but the element couldn't be recognized by the locator without the plugin
     service2.updateCacheConfig("cluster", cc -> cc);
-
     ElementOne elementOne = service2.getCustomCacheElement("cluster", "one", ElementOne.class);
-    assertThat(elementOne.getId()).isEqualTo("one");
+    assertThat(elementOne).isNull();
 
     String uglyXml = configuration.getCacheXmlContent();
     System.out.println(uglyXml);
