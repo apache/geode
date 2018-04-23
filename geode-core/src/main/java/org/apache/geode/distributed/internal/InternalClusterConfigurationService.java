@@ -179,7 +179,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     if (xsdClasses != null && xsdClasses.length > 0) {
       this.jaxbService = new JAXBService(xsdClasses);
     }
-    // else, use ServiceLoader to find all the XSDDefinitions in the classpath
+    // else, scan the classpath to find all the classes annotated with XSDRootElement
     else {
       Set<Class<?>> scannedClasses = ClasspathScanLoadHelper
           .scanClasspathForAnnotation(XSDRootElement.class, "org.apache.geode");

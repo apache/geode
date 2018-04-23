@@ -21,7 +21,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Set;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
@@ -43,9 +43,7 @@ public class JAXBService {
 
   public JAXBService(Class<?>... xsdRootClasses) {
     try {
-      Set<Class> bindClasses = Arrays.stream(xsdRootClasses).collect(Collectors.toSet());
-      JAXBContext jaxbContext =
-          JAXBContext.newInstance(bindClasses.toArray(new Class[bindClasses.size()]));
+      JAXBContext jaxbContext = JAXBContext.newInstance(xsdRootClasses);
       marshaller = jaxbContext.createMarshaller();
       unmarshaller = jaxbContext.createUnmarshaller();
       marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -56,10 +54,10 @@ public class JAXBService {
             && StringUtils.isNotEmpty(element.schemaLocation())) {
           return (element.namespace() + " " + element.schemaLocation());
         }
-        return "";
-      }).collect(Collectors.joining(" "));
+        return null;
+      }).filter(Objects::nonNull).collect(Collectors.joining(" "));
 
-      marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemas.trim());
+      marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemas);
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
