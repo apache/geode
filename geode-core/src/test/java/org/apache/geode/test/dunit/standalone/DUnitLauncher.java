@@ -98,7 +98,7 @@ public class DUnitLauncher {
   /**
    * Number of VMs to use during initialization.
    */
-  public static final int NUM_VMS = 4;
+  public static int NUM_VMS = 4;
 
   /**
    * VM ID for the VM to use for the debugger.
@@ -164,6 +164,14 @@ public class DUnitLauncher {
     }
 
     Host.setAllVMsToCurrentVersion();
+  }
+
+  /**
+   * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
+   */
+  public static void launchIfNeeded(int vmCount) {
+    NUM_VMS = vmCount;
+    launchIfNeeded();
   }
 
   /**
