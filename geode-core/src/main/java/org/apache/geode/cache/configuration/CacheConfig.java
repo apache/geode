@@ -1,23 +1,21 @@
-
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,279 +36,275 @@ import org.apache.geode.annotations.Experimental;
 
 
 /**
+ *
+ * The "cache" element is the root element of the declarative cache file on a peer or server.
+ * This element configures a Geode Cache and describes the root regions it contains, if any.
+ *
+ *
  * <p>
- * Java class for anonymous complex type.
+ * Java class for cache element declaration.
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="cache-transaction-manager" type="{http://geode.apache.org/schema/cache}cache-transaction-manager-type" minOccurs="0"/>
- *         &lt;element name="dynamic-region-factory" type="{http://geode.apache.org/schema/cache}dynamic-region-factory-type" minOccurs="0"/>
- *         &lt;element name="gateway-hub" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="gateway" maxOccurs="unbounded" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;sequence>
- *                             &lt;choice>
- *                               &lt;element name="gateway-endpoint" maxOccurs="unbounded">
+ * &lt;element name="cache">
+ *   &lt;complexType>
+ *     &lt;complexContent>
+ *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *         &lt;sequence>
+ *           &lt;element name="cache-transaction-manager" type="{http://geode.apache.org/schema/cache}cache-transaction-manager-type" minOccurs="0"/>
+ *           &lt;element name="gateway-hub" maxOccurs="unbounded" minOccurs="0">
+ *             &lt;complexType>
+ *               &lt;complexContent>
+ *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                   &lt;sequence>
+ *                     &lt;element name="gateway" maxOccurs="unbounded" minOccurs="0">
+ *                       &lt;complexType>
+ *                         &lt;complexContent>
+ *                           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                             &lt;sequence>
+ *                               &lt;choice>
+ *                                 &lt;element name="gateway-endpoint" maxOccurs="unbounded">
+ *                                   &lt;complexType>
+ *                                     &lt;complexContent>
+ *                                       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                                         &lt;attribute name="host" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                                         &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                                         &lt;attribute name="port" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                                       &lt;/restriction>
+ *                                     &lt;/complexContent>
+ *                                   &lt;/complexType>
+ *                                 &lt;/element>
+ *                                 &lt;element name="gateway-listener" maxOccurs="unbounded">
+ *                                   &lt;complexType>
+ *                                     &lt;complexContent>
+ *                                       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                                         &lt;sequence>
+ *                                           &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
+ *                                           &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
+ *                                         &lt;/sequence>
+ *                                       &lt;/restriction>
+ *                                     &lt;/complexContent>
+ *                                   &lt;/complexType>
+ *                                 &lt;/element>
+ *                               &lt;/choice>
+ *                               &lt;element name="gateway-queue" minOccurs="0">
  *                                 &lt;complexType>
  *                                   &lt;complexContent>
  *                                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                                       &lt;attribute name="host" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                                       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                                       &lt;attribute name="port" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                                       &lt;attribute name="alert-threshold" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                                       &lt;attribute name="batch-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                                       &lt;attribute name="batch-size" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                                       &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                                       &lt;attribute name="enable-persistence" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                                       &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                                       &lt;attribute name="maximum-queue-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                                     &lt;/restriction>
  *                                   &lt;/complexContent>
  *                                 &lt;/complexType>
  *                               &lt;/element>
- *                               &lt;element name="gateway-listener" maxOccurs="unbounded">
- *                                 &lt;complexType>
- *                                   &lt;complexContent>
- *                                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                                       &lt;sequence>
- *                                         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                                         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
- *                                       &lt;/sequence>
- *                                     &lt;/restriction>
- *                                   &lt;/complexContent>
- *                                 &lt;/complexType>
- *                               &lt;/element>
- *                             &lt;/choice>
- *                             &lt;element name="gateway-queue" minOccurs="0">
- *                               &lt;complexType>
- *                                 &lt;complexContent>
- *                                   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                                     &lt;attribute name="alert-threshold" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                                     &lt;attribute name="batch-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                                     &lt;attribute name="batch-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                                     &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                                     &lt;attribute name="enable-persistence" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                                     &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                                     &lt;attribute name="roll-oplogs" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                                     &lt;attribute name="maximum-queue-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                                     &lt;attribute name="overflow-directory" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                                   &lt;/restriction>
- *                                 &lt;/complexContent>
- *                               &lt;/complexType>
- *                             &lt;/element>
- *                           &lt;/sequence>
- *                           &lt;attribute name="early-ack" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                           &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="socket-read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="concurrency-level" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="order-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *                 &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="bind-address" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="maximum-time-between-pings" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="port" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="startup-policy">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                       &lt;enumeration value="primary"/>
- *                       &lt;enumeration value="secondary"/>
- *                       &lt;enumeration value="none"/>
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *                 &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="max-connections" type="{http://www.w3.org/2001/XMLSchema}integer" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="gateway-sender" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="gateway-event-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/>
- *                   &lt;element name="gateway-event-substitution-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" minOccurs="0"/>
- *                   &lt;element name="gateway-transport-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/>
- *                 &lt;/sequence>
- *                 &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="remote-distributed-system-id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="parallel" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="socket-read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="enable-batch-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="batch-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="enable-persistence" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="disk-synchronous" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="maximum-queue-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="alert-threshold" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="dispatcher-threads" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="order-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="gateway-receiver" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="gateway-transport-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/>
- *                 &lt;/sequence>
- *                 &lt;attribute name="start-port" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="end-port" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="bind-address" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="maximum-time-between-pings" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="hostname-for-senders" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="gateway-conflict-resolver" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="async-event-queue" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="gateway-event-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/>
- *                   &lt;element name="gateway-event-substitution-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" minOccurs="0"/>
- *                   &lt;element name="async-event-listener" type="{http://geode.apache.org/schema/cache}class-with-parameters-type"/>
- *                 &lt;/sequence>
- *                 &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="parallel" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="batch-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="enable-batch-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="maximum-queue-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="persistent" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="disk-synchronous" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="dispatcher-threads" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="order-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="forward-expiration-destroy" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="cache-server" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;extension base="{http://geode.apache.org/schema/cache}server-type">
- *                 &lt;attribute name="tcp-no-delay" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *               &lt;/extension>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="pool" type="{http://geode.apache.org/schema/cache}pool-type" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="disk-store" type="{http://geode.apache.org/schema/cache}disk-store-type" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="pdx" type="{http://geode.apache.org/schema/cache}pdx-type" minOccurs="0"/>
- *         &lt;element name="region-attributes" type="{http://geode.apache.org/schema/cache}region-attributes-type" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element name="jndi-bindings" type="{http://geode.apache.org/schema/cache}jndi-bindings-type"/>
- *           &lt;element name="region" type="{http://geode.apache.org/schema/cache}region-type"/>
- *           &lt;element name="vm-root-region" type="{http://geode.apache.org/schema/cache}region-type"/>
- *         &lt;/choice>
- *         &lt;element name="function-service" type="{http://geode.apache.org/schema/cache}function-service-type" minOccurs="0"/>
- *         &lt;element name="resource-manager" type="{http://geode.apache.org/schema/cache}resource-manager-type" minOccurs="0"/>
- *         &lt;element name="serialization-registration" type="{http://geode.apache.org/schema/cache}serialization-registration-type" minOccurs="0"/>
- *         &lt;element name="backup" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="initializer" type="{http://geode.apache.org/schema/cache}initializer-type" minOccurs="0"/>
- *         &lt;any processContents='lax' namespace='##other' maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="copy-on-read" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="is-server" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="lock-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="lock-lease" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="message-sync-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="search-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="version" use="required" type="{http://geode.apache.org/schema/cache}versionType" fixed="1.0" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ *                             &lt;/sequence>
+ *                             &lt;attribute name="early-ack" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                             &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                             &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                             &lt;attribute name="socket-read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                             &lt;attribute name="concurrency-level" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                             &lt;attribute name="order-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                           &lt;/restriction>
+ *                         &lt;/complexContent>
+ *                       &lt;/complexType>
+ *                     &lt;/element>
+ *                   &lt;/sequence>
+ *                   &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="bind-address" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="maximum-time-between-pings" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="port" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="startup-policy">
+ *                     &lt;simpleType>
+ *                       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *                         &lt;enumeration value="primary"/>
+ *                         &lt;enumeration value="secondary"/>
+ *                         &lt;enumeration value="none"/>
+ *                       &lt;/restriction>
+ *                     &lt;/simpleType>
+ *                   &lt;/attribute>
+ *                   &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                   &lt;attribute name="max-connections" type="{http://www.w3.org/2001/XMLSchema}integer" />
+ *                 &lt;/restriction>
+ *               &lt;/complexContent>
+ *             &lt;/complexType>
+ *           &lt;/element>
+ *           &lt;element name="gateway-sender" maxOccurs="unbounded" minOccurs="0">
+ *             &lt;complexType>
+ *               &lt;complexContent>
+ *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                   &lt;sequence>
+ *                     &lt;element name="gateway-event-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/>
+ *                     &lt;element name="gateway-event-substitution-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" minOccurs="0"/>
+ *                     &lt;element name="gateway-transport-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/>
+ *                   &lt;/sequence>
+ *                   &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="remote-distributed-system-id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="parallel" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                   &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="socket-read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="enable-batch-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                   &lt;attribute name="batch-size" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="enable-persistence" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                   &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="disk-synchronous" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                   &lt;attribute name="maximum-queue-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="alert-threshold" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="dispatcher-threads" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="order-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;/restriction>
+ *               &lt;/complexContent>
+ *             &lt;/complexType>
+ *           &lt;/element>
+ *           &lt;element name="gateway-receiver" minOccurs="0">
+ *             &lt;complexType>
+ *               &lt;complexContent>
+ *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                   &lt;sequence>
+ *                     &lt;element name="gateway-transport-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/>
+ *                   &lt;/sequence>
+ *                   &lt;attribute name="start-port" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="end-port" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="bind-address" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="maximum-time-between-pings" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="hostname-for-senders" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                 &lt;/restriction>
+ *               &lt;/complexContent>
+ *             &lt;/complexType>
+ *           &lt;/element>
+ *           &lt;element name="gateway-conflict-resolver" minOccurs="0">
+ *             &lt;complexType>
+ *               &lt;complexContent>
+ *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                   &lt;sequence>
+ *                     &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
+ *                     &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
+ *                   &lt;/sequence>
+ *                 &lt;/restriction>
+ *               &lt;/complexContent>
+ *             &lt;/complexType>
+ *           &lt;/element>
+ *           &lt;element name="async-event-queue" maxOccurs="unbounded" minOccurs="0">
+ *             &lt;complexType>
+ *               &lt;complexContent>
+ *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                   &lt;sequence>
+ *                     &lt;element name="gateway-event-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/>
+ *                     &lt;element name="gateway-event-substitution-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" minOccurs="0"/>
+ *                     &lt;element name="async-event-listener" type="{http://geode.apache.org/schema/cache}class-with-parameters-type"/>
+ *                   &lt;/sequence>
+ *                   &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="parallel" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                   &lt;attribute name="batch-size" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="enable-batch-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                   &lt;attribute name="maximum-queue-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="persistent" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                   &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="disk-synchronous" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                   &lt;attribute name="dispatcher-threads" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="order-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                   &lt;attribute name="forward-expiration-destroy" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
+ *                 &lt;/restriction>
+ *               &lt;/complexContent>
+ *             &lt;/complexType>
+ *           &lt;/element>
+ *           &lt;element name="cache-server" maxOccurs="unbounded" minOccurs="0">
+ *             &lt;complexType>
+ *               &lt;complexContent>
+ *                 &lt;extension base="{http://geode.apache.org/schema/cache}server-type">
+ *                   &lt;attribute name="tcp-no-delay" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                 &lt;/extension>
+ *               &lt;/complexContent>
+ *             &lt;/complexType>
+ *           &lt;/element>
+ *           &lt;element name="pool" type="{http://geode.apache.org/schema/cache}pool-type" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="disk-store" type="{http://geode.apache.org/schema/cache}disk-store-type" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="pdx" type="{http://geode.apache.org/schema/cache}pdx-type" minOccurs="0"/>
+ *           &lt;element name="region-attributes" type="{http://geode.apache.org/schema/cache}region-attributes-type" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="jndi-bindings" type="{http://geode.apache.org/schema/cache}jndi-bindings-type" minOccurs="0"/>
+ *           &lt;element name="region" type="{http://geode.apache.org/schema/cache}region-type" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="function-service" type="{http://geode.apache.org/schema/cache}function-service-type" minOccurs="0"/>
+ *           &lt;element name="serialization-registration" type="{http://geode.apache.org/schema/cache}serialization-registration-type" minOccurs="0"/>
+ *           &lt;element name="backup" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="initializer" type="{http://geode.apache.org/schema/cache}initializer-type" minOccurs="0"/>
+ *           &lt;any processContents='lax' namespace='##other' maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;/sequence>
+ *         &lt;attribute name="copy-on-read" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *         &lt;attribute name="is-server" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *         &lt;attribute name="lock-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *         &lt;attribute name="lock-lease" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *         &lt;attribute name="message-sync-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *         &lt;attribute name="search-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *         &lt;attribute name="version" use="required" type="{http://geode.apache.org/schema/cache}versionType" fixed="1.0" />
+ *       &lt;/restriction>
+ *     &lt;/complexContent>
+ *   &lt;/complexType>
+ * &lt;/element>
  * </pre>
  *
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "",
-    propOrder = {"cacheTransactionManager", "dynamicRegionFactory", "gatewayHub", "gatewaySender",
-        "gatewayReceiver", "gatewayConflictResolver", "asyncEventQueue", "cacheServer", "pool",
-        "diskStore", "pdx", "regionAttributes", "jndiBindings", "region", "functionService",
-        "resourceManager", "serializationRegistration", "backup", "initializer", "cacheElements"})
+    propOrder = {"cacheTransactionManager", "gatewayHubs", "gatewaySenders", "gatewayReceiver",
+        "gatewayConflictResolver", "asyncEventQueues", "cacheServers", "pools", "diskStores", "pdx",
+        "regionAttributes", "jndiBindings", "regions", "functionService",
+        "serializationRegistration", "backups", "initializer", "customCacheElements"})
 @XmlRootElement(name = "cache", namespace = "http://geode.apache.org/schema/cache")
 @Experimental
-public class CacheConfig {
+public class CacheConfig implements Serializable {
 
+  private static final long serialVersionUID = 1L;
   @XmlElement(name = "cache-transaction-manager",
       namespace = "http://geode.apache.org/schema/cache")
   protected CacheTransactionManagerType cacheTransactionManager;
-  @XmlElement(name = "dynamic-region-factory", namespace = "http://geode.apache.org/schema/cache")
-  protected DynamicRegionFactoryType dynamicRegionFactory;
   @XmlElement(name = "gateway-hub", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.GatewayHub> gatewayHub;
+  protected List<CacheConfig.GatewayHub> gatewayHubs;
   @XmlElement(name = "gateway-sender", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.GatewaySender> gatewaySender;
+  protected List<CacheConfig.GatewaySender> gatewaySenders;
   @XmlElement(name = "gateway-receiver", namespace = "http://geode.apache.org/schema/cache")
   protected CacheConfig.GatewayReceiver gatewayReceiver;
   @XmlElement(name = "gateway-conflict-resolver",
       namespace = "http://geode.apache.org/schema/cache")
   protected CacheConfig.GatewayConflictResolver gatewayConflictResolver;
   @XmlElement(name = "async-event-queue", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.AsyncEventQueue> asyncEventQueue;
+  protected List<CacheConfig.AsyncEventQueue> asyncEventQueues;
   @XmlElement(name = "cache-server", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.CacheServer> cacheServer;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<PoolType> pool;
+  protected List<CacheConfig.CacheServer> cacheServers;
+  @XmlElement(name = "pool", namespace = "http://geode.apache.org/schema/cache")
+  protected List<PoolType> pools;
   @XmlElement(name = "disk-store", namespace = "http://geode.apache.org/schema/cache")
-  protected List<DiskStoreType> diskStore;
+  protected List<DiskStoreType> diskStores;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected PdxType pdx;
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionAttributesType> regionAttributes;
   @XmlElement(name = "jndi-bindings", namespace = "http://geode.apache.org/schema/cache")
   protected JndiBindingsType jndiBindings;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig> region;
+  @XmlElement(name = "region", namespace = "http://geode.apache.org/schema/cache")
+  protected List<RegionConfig> regions;
   @XmlElement(name = "function-service", namespace = "http://geode.apache.org/schema/cache")
   protected FunctionServiceType functionService;
-  @XmlElement(name = "resource-manager", namespace = "http://geode.apache.org/schema/cache")
-  protected ResourceManagerType resourceManager;
   @XmlElement(name = "serialization-registration",
       namespace = "http://geode.apache.org/schema/cache")
   protected SerializationRegistrationType serializationRegistration;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<String> backup;
+  @XmlElement(name = "backup", namespace = "http://geode.apache.org/schema/cache")
+  protected List<String> backups;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected InitializerType initializer;
-  @XmlAnyElement(lax = true)
-  protected List<CacheElement> cacheElements;
+  @XmlAnyElement
+  protected List<CacheElement> customCacheElements;
   @XmlAttribute(name = "copy-on-read")
   protected Boolean copyOnRead;
   @XmlAttribute(name = "is-server")
@@ -325,13 +319,7 @@ public class CacheConfig {
   protected String searchTimeout;
   @XmlAttribute(name = "version", required = true)
   @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-  protected String version;
-
-  public CacheConfig() {}
-
-  public CacheConfig(String version) {
-    this.version = version;
-  }
+  public static final String VERSION = "1.0";
 
   /**
    * Gets the value of the cacheTransactionManager property.
@@ -356,41 +344,19 @@ public class CacheConfig {
   }
 
   /**
-   * Gets the value of the dynamicRegionFactory property.
-   *
-   * possible object is
-   * {@link DynamicRegionFactoryType }
-   *
-   */
-  public DynamicRegionFactoryType getDynamicRegionFactory() {
-    return dynamicRegionFactory;
-  }
-
-  /**
-   * Sets the value of the dynamicRegionFactory property.
-   *
-   * allowed object is
-   * {@link DynamicRegionFactoryType }
-   *
-   */
-  public void setDynamicRegionFactory(DynamicRegionFactoryType value) {
-    this.dynamicRegionFactory = value;
-  }
-
-  /**
-   * Gets the value of the gatewayHub property.
+   * Gets the value of the gatewayHubs property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the gatewayHub property.
+   * This is why there is not a <CODE>set</CODE> method for the gatewayHubs property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getGatewayHub().add(newItem);
+   * getGatewayHubs().add(newItem);
    * </pre>
    *
    *
@@ -400,27 +366,27 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.GatewayHub> getGatewayHub() {
-    if (gatewayHub == null) {
-      gatewayHub = new ArrayList<CacheConfig.GatewayHub>();
+  public List<CacheConfig.GatewayHub> getGatewayHubs() {
+    if (gatewayHubs == null) {
+      gatewayHubs = new ArrayList<CacheConfig.GatewayHub>();
     }
-    return this.gatewayHub;
+    return this.gatewayHubs;
   }
 
   /**
-   * Gets the value of the gatewaySender property.
+   * Gets the value of the gatewaySenders property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the gatewaySender property.
+   * This is why there is not a <CODE>set</CODE> method for the gatewaySenders property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getGatewaySender().add(newItem);
+   * getGatewaySenders().add(newItem);
    * </pre>
    *
    *
@@ -430,11 +396,11 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.GatewaySender> getGatewaySender() {
-    if (gatewaySender == null) {
-      gatewaySender = new ArrayList<CacheConfig.GatewaySender>();
+  public List<CacheConfig.GatewaySender> getGatewaySenders() {
+    if (gatewaySenders == null) {
+      gatewaySenders = new ArrayList<CacheConfig.GatewaySender>();
     }
-    return this.gatewaySender;
+    return this.gatewaySenders;
   }
 
   /**
@@ -482,19 +448,19 @@ public class CacheConfig {
   }
 
   /**
-   * Gets the value of the asyncEventQueue property.
+   * Gets the value of the asyncEventQueues property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the asyncEventQueue property.
+   * This is why there is not a <CODE>set</CODE> method for the asyncEventQueues property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getAsyncEventQueue().add(newItem);
+   * getAsyncEventQueues().add(newItem);
    * </pre>
    *
    *
@@ -504,27 +470,27 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.AsyncEventQueue> getAsyncEventQueue() {
-    if (asyncEventQueue == null) {
-      asyncEventQueue = new ArrayList<CacheConfig.AsyncEventQueue>();
+  public List<CacheConfig.AsyncEventQueue> getAsyncEventQueues() {
+    if (asyncEventQueues == null) {
+      asyncEventQueues = new ArrayList<CacheConfig.AsyncEventQueue>();
     }
-    return this.asyncEventQueue;
+    return this.asyncEventQueues;
   }
 
   /**
-   * Gets the value of the cacheServer property.
+   * Gets the value of the cacheServers property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the cacheServer property.
+   * This is why there is not a <CODE>set</CODE> method for the cacheServers property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getCacheServer().add(newItem);
+   * getCacheServers().add(newItem);
    * </pre>
    *
    *
@@ -534,27 +500,27 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.CacheServer> getCacheServer() {
-    if (cacheServer == null) {
-      cacheServer = new ArrayList<CacheConfig.CacheServer>();
+  public List<CacheConfig.CacheServer> getCacheServers() {
+    if (cacheServers == null) {
+      cacheServers = new ArrayList<CacheConfig.CacheServer>();
     }
-    return this.cacheServer;
+    return this.cacheServers;
   }
 
   /**
-   * Gets the value of the pool property.
+   * Gets the value of the pools property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the pool property.
+   * This is why there is not a <CODE>set</CODE> method for the pools property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getPool().add(newItem);
+   * getPools().add(newItem);
    * </pre>
    *
    *
@@ -564,27 +530,27 @@ public class CacheConfig {
    *
    *
    */
-  public List<PoolType> getPool() {
-    if (pool == null) {
-      pool = new ArrayList<PoolType>();
+  public List<PoolType> getPools() {
+    if (pools == null) {
+      pools = new ArrayList<PoolType>();
     }
-    return this.pool;
+    return this.pools;
   }
 
   /**
-   * Gets the value of the diskStore property.
+   * Gets the value of the diskStores property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the diskStore property.
+   * This is why there is not a <CODE>set</CODE> method for the diskStores property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getDiskStore().add(newItem);
+   * getDiskStores().add(newItem);
    * </pre>
    *
    *
@@ -594,11 +560,11 @@ public class CacheConfig {
    *
    *
    */
-  public List<DiskStoreType> getDiskStore() {
-    if (diskStore == null) {
-      diskStore = new ArrayList<DiskStoreType>();
+  public List<DiskStoreType> getDiskStores() {
+    if (diskStores == null) {
+      diskStores = new ArrayList<DiskStoreType>();
     }
-    return this.diskStore;
+    return this.diskStores;
   }
 
   /**
@@ -653,51 +619,27 @@ public class CacheConfig {
     return this.regionAttributes;
   }
 
-  /**
-   * Gets the value of the jndiBindings property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the jndiBindings property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   *
-   * <pre>
-   * getJndiBindings().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link JndiBindingsType }
-   *
-   *
-   */
   public List<JndiBindingsType.JndiBinding> getJndiBindings() {
     if (jndiBindings == null) {
       jndiBindings = new JndiBindingsType();
     }
-    return jndiBindings.getJndiBinding();
+    return jndiBindings.getJndiBindings();
   }
 
-
   /**
-   * Gets the value of the region property.
+   * Gets the value of the regions property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the region property.
+   * This is why there is not a <CODE>set</CODE> method for the regions property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getRegion().add(newItem);
+   * getRegions().add(newItem);
    * </pre>
    *
    *
@@ -707,11 +649,11 @@ public class CacheConfig {
    *
    *
    */
-  public List<RegionConfig> getRegion() {
-    if (region == null) {
-      region = new ArrayList<RegionConfig>();
+  public List<RegionConfig> getRegions() {
+    if (regions == null) {
+      regions = new ArrayList<RegionConfig>();
     }
-    return this.region;
+    return this.regions;
   }
 
   /**
@@ -737,28 +679,6 @@ public class CacheConfig {
   }
 
   /**
-   * Gets the value of the resourceManager property.
-   *
-   * possible object is
-   * {@link ResourceManagerType }
-   *
-   */
-  public ResourceManagerType getResourceManager() {
-    return resourceManager;
-  }
-
-  /**
-   * Sets the value of the resourceManager property.
-   *
-   * allowed object is
-   * {@link ResourceManagerType }
-   *
-   */
-  public void setResourceManager(ResourceManagerType value) {
-    this.resourceManager = value;
-  }
-
-  /**
    * Gets the value of the serializationRegistration property.
    *
    * possible object is
@@ -781,19 +701,19 @@ public class CacheConfig {
   }
 
   /**
-   * Gets the value of the backup property.
+   * Gets the value of the backups property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the backup property.
+   * This is why there is not a <CODE>set</CODE> method for the backups property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getBackup().add(newItem);
+   * getBackups().add(newItem);
    * </pre>
    *
    *
@@ -803,11 +723,11 @@ public class CacheConfig {
    *
    *
    */
-  public List<String> getBackup() {
-    if (backup == null) {
-      backup = new ArrayList<String>();
+  public List<String> getBackups() {
+    if (backups == null) {
+      backups = new ArrayList<String>();
     }
-    return this.backup;
+    return this.backups;
   }
 
   /**
@@ -833,13 +753,13 @@ public class CacheConfig {
   }
 
   /**
-   * Gets the value of the any property.
+   * Gets the value of the customCacheElements property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the any property.
+   * This is why there is not a <CODE>set</CODE> method for the customCacheElements property.
    *
    * <p>
    * For example, to add a new item, do as follows:
@@ -852,15 +772,14 @@ public class CacheConfig {
    * <p>
    * Objects of the following type(s) are allowed in the list
    * {@link Element }
-   * {@link CacheElement }
    *
    *
    */
   public List<CacheElement> getCustomCacheElements() {
-    if (cacheElements == null) {
-      cacheElements = new ArrayList<CacheElement>();
+    if (customCacheElements == null) {
+      customCacheElements = new ArrayList<CacheElement>();
     }
-    return this.cacheElements;
+    return this.customCacheElements;
   }
 
   /**
@@ -995,32 +914,6 @@ public class CacheConfig {
     this.searchTimeout = value;
   }
 
-  /**
-   * Gets the value of the version property.
-   *
-   * possible object is
-   * {@link String }
-   *
-   */
-  public String getVersion() {
-    if (version == null) {
-      return "1.0";
-    } else {
-      return version;
-    }
-  }
-
-  /**
-   * Sets the value of the version property.
-   *
-   * allowed object is
-   * {@link String }
-   *
-   */
-  public void setVersion(String value) {
-    this.version = value;
-  }
-
 
   /**
    * <p>
@@ -1059,11 +952,12 @@ public class CacheConfig {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "",
-      propOrder = {"gatewayEventFilter", "gatewayEventSubstitutionFilter", "asyncEventListener"})
-  public static class AsyncEventQueue {
+      propOrder = {"gatewayEventFilters", "gatewayEventSubstitutionFilter", "asyncEventListener"})
+  public static class AsyncEventQueue implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
-    protected List<ClassWithParametersType> gatewayEventFilter;
+    protected List<ClassWithParametersType> gatewayEventFilters;
     @XmlElement(name = "gateway-event-substitution-filter",
         namespace = "http://geode.apache.org/schema/cache")
     protected ClassWithParametersType gatewayEventSubstitutionFilter;
@@ -1096,19 +990,19 @@ public class CacheConfig {
     protected Boolean forwardExpirationDestroy;
 
     /**
-     * Gets the value of the gatewayEventFilter property.
+     * Gets the value of the gatewayEventFilters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the gatewayEventFilter property.
+     * This is why there is not a <CODE>set</CODE> method for the gatewayEventFilters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getGatewayEventFilter().add(newItem);
+     * getGatewayEventFilters().add(newItem);
      * </pre>
      *
      *
@@ -1118,11 +1012,11 @@ public class CacheConfig {
      *
      *
      */
-    public List<ClassWithParametersType> getGatewayEventFilter() {
-      if (gatewayEventFilter == null) {
-        gatewayEventFilter = new ArrayList<ClassWithParametersType>();
+    public List<ClassWithParametersType> getGatewayEventFilters() {
+      if (gatewayEventFilters == null) {
+        gatewayEventFilters = new ArrayList<ClassWithParametersType>();
       }
-      return this.gatewayEventFilter;
+      return this.gatewayEventFilters;
     }
 
     /**
@@ -1461,8 +1355,9 @@ public class CacheConfig {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "")
-  public static class CacheServer extends ServerType {
+  public static class CacheServer extends ServerType implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlAttribute(name = "tcp-no-delay")
     protected Boolean tcpNoDelay;
 
@@ -1514,14 +1409,15 @@ public class CacheConfig {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"className", "parameter"})
-  public static class GatewayConflictResolver {
+  @XmlType(name = "", propOrder = {"className", "parameters"})
+  public static class GatewayConflictResolver implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected String className;
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected List<ParameterType> parameter;
+    @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
+    protected List<ParameterType> parameters;
 
     /**
      * Gets the value of the className property.
@@ -1546,19 +1442,19 @@ public class CacheConfig {
     }
 
     /**
-     * Gets the value of the parameter property.
+     * Gets the value of the parameters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the parameter property.
+     * This is why there is not a <CODE>set</CODE> method for the parameters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getParameter().add(newItem);
+     * getParameters().add(newItem);
      * </pre>
      *
      *
@@ -1568,11 +1464,11 @@ public class CacheConfig {
      *
      *
      */
-    public List<ParameterType> getParameter() {
-      if (parameter == null) {
-        parameter = new ArrayList<ParameterType>();
+    public List<ParameterType> getParameters() {
+      if (parameters == null) {
+        parameters = new ArrayList<ParameterType>();
       }
-      return this.parameter;
+      return this.parameters;
     }
 
   }
@@ -1630,9 +1526,7 @@ public class CacheConfig {
    *                           &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
    *                           &lt;attribute name="enable-persistence" type="{http://www.w3.org/2001/XMLSchema}boolean" />
    *                           &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *                           &lt;attribute name="roll-oplogs" type="{http://www.w3.org/2001/XMLSchema}boolean" />
    *                           &lt;attribute name="maximum-queue-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *                           &lt;attribute name="overflow-directory" type="{http://www.w3.org/2001/XMLSchema}string" />
    *                         &lt;/restriction>
    *                       &lt;/complexContent>
    *                     &lt;/complexType>
@@ -1673,11 +1567,12 @@ public class CacheConfig {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"gateway"})
-  public static class GatewayHub {
+  @XmlType(name = "", propOrder = {"gateways"})
+  public static class GatewayHub implements Serializable {
 
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected List<CacheConfig.GatewayHub.Gateway> gateway;
+    private static final long serialVersionUID = 1L;
+    @XmlElement(name = "gateway", namespace = "http://geode.apache.org/schema/cache")
+    protected List<CacheConfig.GatewayHub.Gateway> gateways;
     @XmlAttribute(name = "id", required = true)
     protected String id;
     @XmlAttribute(name = "bind-address")
@@ -1696,19 +1591,19 @@ public class CacheConfig {
     protected BigInteger maxConnections;
 
     /**
-     * Gets the value of the gateway property.
+     * Gets the value of the gateways property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the gateway property.
+     * This is why there is not a <CODE>set</CODE> method for the gateways property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getGateway().add(newItem);
+     * getGateways().add(newItem);
      * </pre>
      *
      *
@@ -1718,11 +1613,11 @@ public class CacheConfig {
      *
      *
      */
-    public List<CacheConfig.GatewayHub.Gateway> getGateway() {
-      if (gateway == null) {
-        gateway = new ArrayList<CacheConfig.GatewayHub.Gateway>();
+    public List<CacheConfig.GatewayHub.Gateway> getGateways() {
+      if (gateways == null) {
+        gateways = new ArrayList<CacheConfig.GatewayHub.Gateway>();
       }
-      return this.gateway;
+      return this.gateways;
     }
 
     /**
@@ -1949,9 +1844,7 @@ public class CacheConfig {
      *                 &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
      *                 &lt;attribute name="enable-persistence" type="{http://www.w3.org/2001/XMLSchema}boolean" />
      *                 &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *                 &lt;attribute name="roll-oplogs" type="{http://www.w3.org/2001/XMLSchema}boolean" />
      *                 &lt;attribute name="maximum-queue-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *                 &lt;attribute name="overflow-directory" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -1971,13 +1864,14 @@ public class CacheConfig {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"gatewayEndpoint", "gatewayListener", "gatewayQueue"})
-    public static class Gateway {
+    @XmlType(name = "", propOrder = {"gatewayListeners", "gatewayEndpoints", "gatewayQueue"})
+    public static class Gateway implements Serializable {
 
-      @XmlElement(name = "gateway-endpoint", namespace = "http://geode.apache.org/schema/cache")
-      protected List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> gatewayEndpoint;
+      private static final long serialVersionUID = 1L;
       @XmlElement(name = "gateway-listener", namespace = "http://geode.apache.org/schema/cache")
-      protected List<CacheConfig.GatewayHub.Gateway.GatewayListener> gatewayListener;
+      protected List<CacheConfig.GatewayHub.Gateway.GatewayListener> gatewayListeners;
+      @XmlElement(name = "gateway-endpoint", namespace = "http://geode.apache.org/schema/cache")
+      protected List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> gatewayEndpoints;
       @XmlElement(name = "gateway-queue", namespace = "http://geode.apache.org/schema/cache")
       protected CacheConfig.GatewayHub.Gateway.GatewayQueue gatewayQueue;
       @XmlAttribute(name = "early-ack")
@@ -1994,49 +1888,19 @@ public class CacheConfig {
       protected String orderPolicy;
 
       /**
-       * Gets the value of the gatewayEndpoint property.
+       * Gets the value of the gatewayListeners property.
        *
        * <p>
        * This accessor method returns a reference to the live list,
        * not a snapshot. Therefore any modification you make to the
        * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the gatewayEndpoint property.
+       * This is why there is not a <CODE>set</CODE> method for the gatewayListeners property.
        *
        * <p>
        * For example, to add a new item, do as follows:
        *
        * <pre>
-       * getGatewayEndpoint().add(newItem);
-       * </pre>
-       *
-       *
-       * <p>
-       * Objects of the following type(s) are allowed in the list
-       * {@link CacheConfig.GatewayHub.Gateway.GatewayEndpoint }
-       *
-       *
-       */
-      public List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> getGatewayEndpoint() {
-        if (gatewayEndpoint == null) {
-          gatewayEndpoint = new ArrayList<CacheConfig.GatewayHub.Gateway.GatewayEndpoint>();
-        }
-        return this.gatewayEndpoint;
-      }
-
-      /**
-       * Gets the value of the gatewayListener property.
-       *
-       * <p>
-       * This accessor method returns a reference to the live list,
-       * not a snapshot. Therefore any modification you make to the
-       * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the gatewayListener property.
-       *
-       * <p>
-       * For example, to add a new item, do as follows:
-       *
-       * <pre>
-       * getGatewayListener().add(newItem);
+       * getGatewayListeners().add(newItem);
        * </pre>
        *
        *
@@ -2046,11 +1910,41 @@ public class CacheConfig {
        *
        *
        */
-      public List<CacheConfig.GatewayHub.Gateway.GatewayListener> getGatewayListener() {
-        if (gatewayListener == null) {
-          gatewayListener = new ArrayList<CacheConfig.GatewayHub.Gateway.GatewayListener>();
+      public List<CacheConfig.GatewayHub.Gateway.GatewayListener> getGatewayListeners() {
+        if (gatewayListeners == null) {
+          gatewayListeners = new ArrayList<CacheConfig.GatewayHub.Gateway.GatewayListener>();
         }
-        return this.gatewayListener;
+        return this.gatewayListeners;
+      }
+
+      /**
+       * Gets the value of the gatewayEndpoints property.
+       *
+       * <p>
+       * This accessor method returns a reference to the live list,
+       * not a snapshot. Therefore any modification you make to the
+       * returned list will be present inside the JAXB object.
+       * This is why there is not a <CODE>set</CODE> method for the gatewayEndpoints property.
+       *
+       * <p>
+       * For example, to add a new item, do as follows:
+       *
+       * <pre>
+       * getGatewayEndpoints().add(newItem);
+       * </pre>
+       *
+       *
+       * <p>
+       * Objects of the following type(s) are allowed in the list
+       * {@link CacheConfig.GatewayHub.Gateway.GatewayEndpoint }
+       *
+       *
+       */
+      public List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> getGatewayEndpoints() {
+        if (gatewayEndpoints == null) {
+          gatewayEndpoints = new ArrayList<CacheConfig.GatewayHub.Gateway.GatewayEndpoint>();
+        }
+        return this.gatewayEndpoints;
       }
 
       /**
@@ -2231,8 +2125,9 @@ public class CacheConfig {
        */
       @XmlAccessorType(XmlAccessType.FIELD)
       @XmlType(name = "")
-      public static class GatewayEndpoint {
+      public static class GatewayEndpoint implements Serializable {
 
+        private static final long serialVersionUID = 1L;
         @XmlAttribute(name = "host", required = true)
         protected String host;
         @XmlAttribute(name = "id", required = true)
@@ -2332,14 +2227,15 @@ public class CacheConfig {
        *
        */
       @XmlAccessorType(XmlAccessType.FIELD)
-      @XmlType(name = "", propOrder = {"className", "parameter"})
-      public static class GatewayListener {
+      @XmlType(name = "", propOrder = {"className", "parameters"})
+      public static class GatewayListener implements Serializable {
 
+        private static final long serialVersionUID = 1L;
         @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
             required = true)
         protected String className;
-        @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-        protected List<ParameterType> parameter;
+        @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
+        protected List<ParameterType> parameters;
 
         /**
          * Gets the value of the className property.
@@ -2364,19 +2260,19 @@ public class CacheConfig {
         }
 
         /**
-         * Gets the value of the parameter property.
+         * Gets the value of the parameters property.
          *
          * <p>
          * This accessor method returns a reference to the live list,
          * not a snapshot. Therefore any modification you make to the
          * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the parameter property.
+         * This is why there is not a <CODE>set</CODE> method for the parameters property.
          *
          * <p>
          * For example, to add a new item, do as follows:
          *
          * <pre>
-         * getParameter().add(newItem);
+         * getParameters().add(newItem);
          * </pre>
          *
          *
@@ -2386,11 +2282,11 @@ public class CacheConfig {
          *
          *
          */
-        public List<ParameterType> getParameter() {
-          if (parameter == null) {
-            parameter = new ArrayList<ParameterType>();
+        public List<ParameterType> getParameters() {
+          if (parameters == null) {
+            parameters = new ArrayList<ParameterType>();
           }
-          return this.parameter;
+          return this.parameters;
         }
 
       }
@@ -2413,9 +2309,7 @@ public class CacheConfig {
        *       &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
        *       &lt;attribute name="enable-persistence" type="{http://www.w3.org/2001/XMLSchema}boolean" />
        *       &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
-       *       &lt;attribute name="roll-oplogs" type="{http://www.w3.org/2001/XMLSchema}boolean" />
        *       &lt;attribute name="maximum-queue-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
-       *       &lt;attribute name="overflow-directory" type="{http://www.w3.org/2001/XMLSchema}string" />
        *     &lt;/restriction>
        *   &lt;/complexContent>
        * &lt;/complexType>
@@ -2425,8 +2319,9 @@ public class CacheConfig {
        */
       @XmlAccessorType(XmlAccessType.FIELD)
       @XmlType(name = "")
-      public static class GatewayQueue {
+      public static class GatewayQueue implements Serializable {
 
+        private static final long serialVersionUID = 1L;
         @XmlAttribute(name = "alert-threshold")
         protected String alertThreshold;
         @XmlAttribute(name = "batch-conflation")
@@ -2439,12 +2334,8 @@ public class CacheConfig {
         protected Boolean enablePersistence;
         @XmlAttribute(name = "disk-store-name")
         protected String diskStoreName;
-        @XmlAttribute(name = "roll-oplogs")
-        protected Boolean rollOplogs;
         @XmlAttribute(name = "maximum-queue-memory")
         protected String maximumQueueMemory;
-        @XmlAttribute(name = "overflow-directory")
-        protected String overflowDirectory;
 
         /**
          * Gets the value of the alertThreshold property.
@@ -2579,28 +2470,6 @@ public class CacheConfig {
         }
 
         /**
-         * Gets the value of the rollOplogs property.
-         *
-         * possible object is
-         * {@link Boolean }
-         *
-         */
-        public Boolean isRollOplogs() {
-          return rollOplogs;
-        }
-
-        /**
-         * Sets the value of the rollOplogs property.
-         *
-         * allowed object is
-         * {@link Boolean }
-         *
-         */
-        public void setRollOplogs(Boolean value) {
-          this.rollOplogs = value;
-        }
-
-        /**
          * Gets the value of the maximumQueueMemory property.
          *
          * possible object is
@@ -2620,28 +2489,6 @@ public class CacheConfig {
          */
         public void setMaximumQueueMemory(String value) {
           this.maximumQueueMemory = value;
-        }
-
-        /**
-         * Gets the value of the overflowDirectory property.
-         *
-         * possible object is
-         * {@link String }
-         *
-         */
-        public String getOverflowDirectory() {
-          return overflowDirectory;
-        }
-
-        /**
-         * Sets the value of the overflowDirectory property.
-         *
-         * allowed object is
-         * {@link String }
-         *
-         */
-        public void setOverflowDirectory(String value) {
-          this.overflowDirectory = value;
         }
 
       }
@@ -2680,12 +2527,13 @@ public class CacheConfig {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"gatewayTransportFilter"})
-  public static class GatewayReceiver {
+  @XmlType(name = "", propOrder = {"gatewayTransportFilters"})
+  public static class GatewayReceiver implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "gateway-transport-filter",
         namespace = "http://geode.apache.org/schema/cache")
-    protected List<ClassWithParametersType> gatewayTransportFilter;
+    protected List<ClassWithParametersType> gatewayTransportFilters;
     @XmlAttribute(name = "start-port")
     protected String startPort;
     @XmlAttribute(name = "end-port")
@@ -2702,19 +2550,19 @@ public class CacheConfig {
     protected Boolean manualStart;
 
     /**
-     * Gets the value of the gatewayTransportFilter property.
+     * Gets the value of the gatewayTransportFilters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the gatewayTransportFilter property.
+     * This is why there is not a <CODE>set</CODE> method for the gatewayTransportFilters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getGatewayTransportFilter().add(newItem);
+     * getGatewayTransportFilters().add(newItem);
      * </pre>
      *
      *
@@ -2724,11 +2572,11 @@ public class CacheConfig {
      *
      *
      */
-    public List<ClassWithParametersType> getGatewayTransportFilter() {
-      if (gatewayTransportFilter == null) {
-        gatewayTransportFilter = new ArrayList<ClassWithParametersType>();
+    public List<ClassWithParametersType> getGatewayTransportFilters() {
+      if (gatewayTransportFilters == null) {
+        gatewayTransportFilters = new ArrayList<ClassWithParametersType>();
       }
-      return this.gatewayTransportFilter;
+      return this.gatewayTransportFilters;
     }
 
     /**
@@ -2907,7 +2755,6 @@ public class CacheConfig {
    *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="remote-distributed-system-id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="parallel" type="{http://www.w3.org/2001/XMLSchema}boolean" />
-   *       &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
    *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="socket-read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="enable-batch-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
@@ -2928,26 +2775,25 @@ public class CacheConfig {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"gatewayEventFilter", "gatewayEventSubstitutionFilter",
-      "gatewayTransportFilter"})
-  public static class GatewaySender {
+  @XmlType(name = "", propOrder = {"gatewayEventFilters", "gatewayEventSubstitutionFilter",
+      "gatewayTransportFilters"})
+  public static class GatewaySender implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
-    protected List<ClassWithParametersType> gatewayEventFilter;
+    protected List<ClassWithParametersType> gatewayEventFilters;
     @XmlElement(name = "gateway-event-substitution-filter",
         namespace = "http://geode.apache.org/schema/cache")
     protected ClassWithParametersType gatewayEventSubstitutionFilter;
     @XmlElement(name = "gateway-transport-filter",
         namespace = "http://geode.apache.org/schema/cache")
-    protected List<ClassWithParametersType> gatewayTransportFilter;
+    protected List<ClassWithParametersType> gatewayTransportFilters;
     @XmlAttribute(name = "id", required = true)
     protected String id;
     @XmlAttribute(name = "remote-distributed-system-id", required = true)
     protected String remoteDistributedSystemId;
     @XmlAttribute(name = "parallel")
     protected Boolean parallel;
-    @XmlAttribute(name = "manual-start")
-    protected Boolean manualStart;
     @XmlAttribute(name = "socket-buffer-size")
     protected String socketBufferSize;
     @XmlAttribute(name = "socket-read-timeout")
@@ -2974,19 +2820,19 @@ public class CacheConfig {
     protected String orderPolicy;
 
     /**
-     * Gets the value of the gatewayEventFilter property.
+     * Gets the value of the gatewayEventFilters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the gatewayEventFilter property.
+     * This is why there is not a <CODE>set</CODE> method for the gatewayEventFilters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getGatewayEventFilter().add(newItem);
+     * getGatewayEventFilters().add(newItem);
      * </pre>
      *
      *
@@ -2996,11 +2842,11 @@ public class CacheConfig {
      *
      *
      */
-    public List<ClassWithParametersType> getGatewayEventFilter() {
-      if (gatewayEventFilter == null) {
-        gatewayEventFilter = new ArrayList<ClassWithParametersType>();
+    public List<ClassWithParametersType> getGatewayEventFilters() {
+      if (gatewayEventFilters == null) {
+        gatewayEventFilters = new ArrayList<ClassWithParametersType>();
       }
-      return this.gatewayEventFilter;
+      return this.gatewayEventFilters;
     }
 
     /**
@@ -3026,19 +2872,19 @@ public class CacheConfig {
     }
 
     /**
-     * Gets the value of the gatewayTransportFilter property.
+     * Gets the value of the gatewayTransportFilters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the gatewayTransportFilter property.
+     * This is why there is not a <CODE>set</CODE> method for the gatewayTransportFilters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getGatewayTransportFilter().add(newItem);
+     * getGatewayTransportFilters().add(newItem);
      * </pre>
      *
      *
@@ -3048,11 +2894,11 @@ public class CacheConfig {
      *
      *
      */
-    public List<ClassWithParametersType> getGatewayTransportFilter() {
-      if (gatewayTransportFilter == null) {
-        gatewayTransportFilter = new ArrayList<ClassWithParametersType>();
+    public List<ClassWithParametersType> getGatewayTransportFilters() {
+      if (gatewayTransportFilters == null) {
+        gatewayTransportFilters = new ArrayList<ClassWithParametersType>();
       }
-      return this.gatewayTransportFilter;
+      return this.gatewayTransportFilters;
     }
 
     /**
@@ -3119,28 +2965,6 @@ public class CacheConfig {
      */
     public void setParallel(Boolean value) {
       this.parallel = value;
-    }
-
-    /**
-     * Gets the value of the manualStart property.
-     *
-     * possible object is
-     * {@link Boolean }
-     *
-     */
-    public Boolean isManualStart() {
-      return manualStart;
-    }
-
-    /**
-     * Sets the value of the manualStart property.
-     *
-     * allowed object is
-     * {@link Boolean }
-     *
-     */
-    public void setManualStart(Boolean value) {
-      this.manualStart = value;
     }
 
     /**

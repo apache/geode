@@ -36,7 +36,7 @@ public interface CacheElement extends Identifiable<String>, Serializable {
   }
 
   static RegionConfig findRegionConfiguration(CacheConfig cacheConfig, String regionPath) {
-    return findElement(cacheConfig.getRegion(), regionPath);
+    return findElement(cacheConfig.getRegions(), regionPath);
   }
 
   static <T extends CacheElement> List<T> findCustomCacheElements(CacheConfig cacheConfig,

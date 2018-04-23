@@ -1,22 +1,21 @@
-
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.configuration;
+
+import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -56,38 +55,17 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "parameter-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"string", "declarable"})
+    propOrder = {"declarable", "string"})
 @Experimental
-public class ParameterType {
+public class ParameterType implements Serializable {
 
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected StringType string;
+  private static final long serialVersionUID = 1L;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType declarable;
+  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
+  protected StringType string;
   @XmlAttribute(name = "name", required = true)
   protected String name;
-
-  /**
-   * Gets the value of the string property.
-   *
-   * possible object is
-   * {@link StringType }
-   *
-   */
-  public StringType getString() {
-    return string;
-  }
-
-  /**
-   * Sets the value of the string property.
-   *
-   * allowed object is
-   * {@link StringType }
-   *
-   */
-  public void setString(StringType value) {
-    this.string = value;
-  }
 
   /**
    * Gets the value of the declarable property.
@@ -109,6 +87,28 @@ public class ParameterType {
    */
   public void setDeclarable(DeclarableType value) {
     this.declarable = value;
+  }
+
+  /**
+   * Gets the value of the string property.
+   *
+   * possible object is
+   * {@link StringType }
+   *
+   */
+  public StringType getString() {
+    return string;
+  }
+
+  /**
+   * Sets the value of the string property.
+   *
+   * allowed object is
+   * {@link StringType }
+   *
+   */
+  public void setString(StringType value) {
+    this.string = value;
   }
 
   /**

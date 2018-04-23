@@ -1,23 +1,21 @@
-
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,27 +102,28 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "jndi-bindings-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"jndiBinding"})
+    propOrder = {"jndiBindings"})
 @Experimental
-public class JndiBindingsType {
+public class JndiBindingsType implements Serializable {
 
+  private static final long serialVersionUID = 1L;
   @XmlElement(name = "jndi-binding", namespace = "http://geode.apache.org/schema/cache")
-  protected List<JndiBindingsType.JndiBinding> jndiBinding;
+  protected List<JndiBindingsType.JndiBinding> jndiBindings;
 
   /**
-   * Gets the value of the jndiBinding property.
+   * Gets the value of the jndiBindings property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the jndiBinding property.
+   * This is why there is not a <CODE>set</CODE> method for the jndiBindings property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getJndiBinding().add(newItem);
+   * getJndiBindings().add(newItem);
    * </pre>
    *
    *
@@ -134,11 +133,11 @@ public class JndiBindingsType {
    *
    *
    */
-  public List<JndiBindingsType.JndiBinding> getJndiBinding() {
-    if (jndiBinding == null) {
-      jndiBinding = new ArrayList<JndiBindingsType.JndiBinding>();
+  public List<JndiBindingsType.JndiBinding> getJndiBindings() {
+    if (jndiBindings == null) {
+      jndiBindings = new ArrayList<JndiBindingsType.JndiBinding>();
     }
-    return this.jndiBinding;
+    return this.jndiBindings;
   }
 
 
@@ -200,12 +199,12 @@ public class JndiBindingsType {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"configProperty"})
-  @Experimental
+  @XmlType(name = "", propOrder = {"configProperties"})
   public static class JndiBinding implements CacheElement {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "config-property", namespace = "http://geode.apache.org/schema/cache")
-    protected List<JndiBindingsType.JndiBinding.ConfigProperty> configProperty;
+    protected List<JndiBindingsType.JndiBinding.ConfigProperty> configProperties;
     @XmlAttribute(name = "blocking-timeout-seconds")
     protected String blockingTimeoutSeconds;
     @XmlAttribute(name = "conn-pooled-datasource-class")
@@ -238,19 +237,19 @@ public class JndiBindingsType {
     protected String xaDatasourceClass;
 
     /**
-     * Gets the value of the configProperty property.
+     * Gets the value of the configProperties property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the configProperty property.
+     * This is why there is not a <CODE>set</CODE> method for the configProperties property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getConfigProperty().add(newItem);
+     * getConfigProperties().add(newItem);
      * </pre>
      *
      *
@@ -260,11 +259,11 @@ public class JndiBindingsType {
      *
      *
      */
-    public List<JndiBindingsType.JndiBinding.ConfigProperty> getConfigProperty() {
-      if (configProperty == null) {
-        configProperty = new ArrayList<JndiBindingsType.JndiBinding.ConfigProperty>();
+    public List<JndiBindingsType.JndiBinding.ConfigProperty> getConfigProperties() {
+      if (configProperties == null) {
+        configProperties = new ArrayList<JndiBindingsType.JndiBinding.ConfigProperty>();
       }
-      return this.configProperty;
+      return this.configProperties;
     }
 
     /**
@@ -627,104 +626,90 @@ public class JndiBindingsType {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "",
-        propOrder = {"configPropertyName", "configPropertyType", "configPropertyValue"})
+    @XmlType(name = "", propOrder = {"name", "type", "value"})
     public static class ConfigProperty implements CacheElement {
 
+      private static final long serialVersionUID = 1L;
       @XmlElement(name = "config-property-name", namespace = "http://geode.apache.org/schema/cache",
           required = true)
-      protected String configPropertyName;
+      protected String name;
       @XmlElement(name = "config-property-type", namespace = "http://geode.apache.org/schema/cache",
           required = true)
-      protected String configPropertyType;
+      protected String type;
       @XmlElement(name = "config-property-value",
           namespace = "http://geode.apache.org/schema/cache", required = true)
-      protected String configPropertyValue;
-
-      public ConfigProperty() {};
-
-      public ConfigProperty(String name, String type, String value) {
-        this.configPropertyName = name;
-        this.configPropertyType = type;
-        this.configPropertyValue = value;
-      }
+      protected String value;
 
       /**
-       * Get the id of the element. The id is the same as the name.
-       *
-       * @return the id of the element
-       */
-      @Override
-      public String getId() {
-        return getName();
-      }
-
-      /**
-       * Gets the value of the configPropertyName property.
+       * Gets the value of the name property.
        *
        * possible object is
        * {@link String }
        *
        */
       public String getName() {
-        return configPropertyName;
+        return name;
       }
 
       /**
-       * Sets the value of the configPropertyName property.
+       * Sets the value of the name property.
        *
        * allowed object is
        * {@link String }
        *
        */
       public void setName(String value) {
-        this.configPropertyName = value;
+        this.name = value;
       }
 
       /**
-       * Gets the value of the configPropertyType property.
+       * Gets the value of the type property.
        *
        * possible object is
        * {@link String }
        *
        */
       public String getType() {
-        return configPropertyType;
+        return type;
       }
 
       /**
-       * Sets the value of the configPropertyType property.
+       * Sets the value of the type property.
        *
        * allowed object is
        * {@link String }
        *
        */
       public void setType(String value) {
-        this.configPropertyType = value;
+        this.type = value;
       }
 
       /**
-       * Gets the value of the configPropertyValue property.
+       * Gets the value of the value property.
        *
        * possible object is
        * {@link String }
        *
        */
       public String getValue() {
-        return configPropertyValue;
+        return value;
       }
 
       /**
-       * Sets the value of the configPropertyValue property.
+       * Sets the value of the value property.
        *
        * allowed object is
        * {@link String }
        *
        */
       public void setValue(String value) {
-        this.configPropertyValue = value;
+        this.value = value;
       }
 
+      @Override
+      public String getId() {
+        return getName();
+      }
     }
 
   }

@@ -144,7 +144,7 @@ public class CreateJndiBindingCommand extends InternalGfshCommand {
     configuration.setUserName(username);
     configuration.setXaDatasourceClass(xaDataSource);
     if (dsConfigProperties != null && dsConfigProperties.length > 0)
-      configuration.getConfigProperty().addAll(Arrays.asList(dsConfigProperties));
+      configuration.getConfigProperties().addAll(Arrays.asList(dsConfigProperties));
 
     Result result;
     boolean persisted = false;

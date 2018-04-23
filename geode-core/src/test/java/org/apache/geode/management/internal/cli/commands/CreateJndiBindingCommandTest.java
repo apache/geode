@@ -235,7 +235,7 @@ public class CreateJndiBindingCommandTest {
     assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
     assertThat(jndiConfig.getValue()).isNotNull();
     assertThat(jndiConfig.getValue().getJndiName()).isEqualTo("name");
-    assertThat(jndiConfig.getValue().getConfigProperty().get(0).getName()).isEqualTo("name1");
+    assertThat(jndiConfig.getValue().getConfigProperties().get(0).getName()).isEqualTo("name1");
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 
@@ -278,7 +278,7 @@ public class CreateJndiBindingCommandTest {
     assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
     assertThat(jndiConfig.getValue()).isNotNull();
     assertThat(jndiConfig.getValue().getJndiName()).isEqualTo("name");
-    assertThat(jndiConfig.getValue().getConfigProperty().get(0).getName()).isEqualTo("name1");
+    assertThat(jndiConfig.getValue().getConfigProperties().get(0).getName()).isEqualTo("name1");
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 }

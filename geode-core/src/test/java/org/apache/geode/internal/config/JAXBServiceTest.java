@@ -147,22 +147,22 @@ public class JAXBServiceTest {
     cache.setCopyOnRead(true);
     CacheConfig.GatewayReceiver receiver = new CacheConfig.GatewayReceiver();
     receiver.setBindAddress("localhost");
-    receiver.setEndPort("8080");
+    receiver.setEndPort(8080);
     receiver.setManualStart(false);
-    receiver.setStartPort("6000");
+    receiver.setStartPort(6000);
     cache.setGatewayReceiver(receiver);
-    cache.setVersion("1.0");
 
     RegionConfig region = new RegionConfig();
     region.setName("testRegion");
     region.setRefid("REPLICATE");
-    cache.getRegion().add(region);
+    cache.getRegions().add(region);
   }
 
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"id", "value"})
   @XmlRootElement(name = "custom-one", namespace = "http://geode.apache.org/schema/CustomOne")
   public static class ElementOne implements CacheElement {
+    private static final long serialVersionUID = 5385622917240503975L;
     @XmlElement(name = "id", namespace = "http://geode.apache.org/schema/CustomOne")
     private String id;
     @XmlElement(name = "value", namespace = "http://geode.apache.org/schema/CustomOne")
@@ -195,6 +195,7 @@ public class JAXBServiceTest {
   @XmlType(name = "", propOrder = {"id", "value"})
   @XmlRootElement(name = "custom-two", namespace = "http://geode.apache.org/schema/CustomTwo")
   public static class ElementTwo implements CacheElement {
+    private static final long serialVersionUID = 1623166601787822155L;
     @XmlElement(name = "id", namespace = "http://geode.apache.org/schema/CustomTwo")
     private String id;
     @XmlElement(name = "value", namespace = "http://geode.apache.org/schema/CustomTwo")

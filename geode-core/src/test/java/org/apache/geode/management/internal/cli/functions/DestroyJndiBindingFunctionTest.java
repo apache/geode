@@ -66,7 +66,7 @@ public class DestroyJndiBindingFunctionTest {
     config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
     JNDIInvoker.mapDatasource(CreateJndiBindingFunction.getParamsAsMap(config),
-        CreateJndiBindingFunction.convert(config.getConfigProperty()));
+        CreateJndiBindingFunction.convert(config.getConfigProperties()));
   }
 
   @Test

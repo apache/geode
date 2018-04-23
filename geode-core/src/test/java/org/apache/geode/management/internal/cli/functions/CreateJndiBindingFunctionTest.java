@@ -93,7 +93,10 @@ public class CreateJndiBindingFunctionTest {
   @Test
   public void convert() {
     JndiBindingsType.JndiBinding.ConfigProperty propA =
-        new JndiBindingsType.JndiBinding.ConfigProperty("name", "type", "value");
+        new JndiBindingsType.JndiBinding.ConfigProperty();
+    propA.setName("name");
+    propA.setType("type");
+    propA.setValue("value");
 
     List<ConfigProperty> converted =
         CreateJndiBindingFunction.convert(Collections.singletonList(propA));
