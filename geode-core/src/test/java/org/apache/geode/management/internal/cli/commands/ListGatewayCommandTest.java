@@ -103,4 +103,17 @@ public class ListGatewayCommandTest {
     assertThat(tableContent.get("content").toString()).contains("[\"\"]");
   }
 
+  @Test
+  public void listGatewaysDisplaysGatewayReceiversWhenNull() {
+    CompositeResultData crd = ResultBuilder.createCompositeResultData();
+    crd.setHeader(CliStrings.HEADER_GATEWAYS);
+
+    doReturn(null).when(receiverMXBean).getConnectedGatewaySenders();
+
+    command.accumulateListGatewayResult(crd, Collections.EMPTY_MAP, receiverBeans);
+    JSONObject tableContent = (JSONObject) crd.retrieveSectionByIndex(0).getSectionGfJsonObject()
+        .get("__tables__-GatewayReceiver Table");
+
+    assertThat(tableContent.get("content").toString()).contains("[\"\"]");
+  }
 }

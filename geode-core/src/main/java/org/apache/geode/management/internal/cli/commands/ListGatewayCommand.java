@@ -149,8 +149,12 @@ public class ListGatewayCommand extends InternalGfshCommand {
         gatewayReceiverData.accumulate(CliStrings.RESULT_PORT, entry.getValue().getPort());
         gatewayReceiverData.accumulate(CliStrings.RESULT_SENDERS_COUNT,
             entry.getValue().getClientConnectionCount());
-        gatewayReceiverData.accumulate(CliStrings.RESULT_SENDER_CONNECTED,
-            Arrays.stream(entry.getValue().getConnectedGatewaySenders()).collect(joining(", ")));
+        if (entry.getValue() == null || entry.getValue().getConnectedGatewaySenders() == null) {
+          gatewayReceiverData.accumulate(CliStrings.RESULT_SENDER_CONNECTED, "");
+        } else {
+          gatewayReceiverData.accumulate(CliStrings.RESULT_SENDER_CONNECTED,
+              Arrays.stream(entry.getValue().getConnectedGatewaySenders()).collect(joining(", ")));
+        }
       }
     }
   }
