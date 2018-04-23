@@ -2309,9 +2309,7 @@ public abstract class AbstractRegionMap
       } finally {
         OffHeapHelper.release(putInfo.getOldValueForDelta());
         putInfo.setOldValueForDelta(null);
-        if (!putInfo.isOnlyExisting() && re.getValueAsToken() == Token.REMOVED_PHASE1) {
-          // the following condition may have caused a problem: (!putInfo.isCompleted() &&
-          // putInfo.isCreate())
+        if (putInfo.isCreate() && re.getValueAsToken() == Token.REMOVED_PHASE1) {
           // Region entry remove needs to be done while still synced on re.
           removeEntry(putInfo.getEvent().getKey(), re, false);
         }
