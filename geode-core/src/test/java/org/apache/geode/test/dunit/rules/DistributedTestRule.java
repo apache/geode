@@ -111,6 +111,7 @@ public class DistributedTestRule extends AbstractDistributedTestRule {
   }
 
   DistributedTestRule(final Builder builder) {
+    super(builder.vmCount);
     vmCount = builder.vmCount;
   }
 
