@@ -16,9 +16,7 @@ package org.apache.geode.test.dunit.tests;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -38,12 +36,16 @@ public class OverridingGetPropertiesDisconnectsAllDistributedTest extends Distri
 
   @Override
   public final void preTearDownAssertions() throws Exception {
-    invokeInEveryVM(() -> assertNotNull(basicGetSystem()));
+    invokeInEveryVM(() -> {
+      assertThat(basicGetSystem().isConnected()).isTrue();
+    });
   }
 
   @Override
   public final void postTearDownAssertions() throws Exception {
-    invokeInEveryVM(() -> assertNull(basicGetSystem()));
+    invokeInEveryVM(() -> {
+      assertThat(basicGetSystem().isConnected()).isFalse();
+    });
   }
 
   @Override
@@ -55,7 +57,11 @@ public class OverridingGetPropertiesDisconnectsAllDistributedTest extends Distri
 
   @Test
   public void testDisconnects() throws Exception {
-    invokeInEveryVM(() -> assertFalse(getDistributedSystemProperties().isEmpty()));
-    invokeInEveryVM(() -> assertNotNull(getSystem()));
+    invokeInEveryVM(() -> {
+      assertThat(getDistributedSystemProperties()).isNotEmpty();
+    });
+    invokeInEveryVM(() -> {
+      assertThat(getSystem().isConnected()).isTrue();
+    });
   }
 }
