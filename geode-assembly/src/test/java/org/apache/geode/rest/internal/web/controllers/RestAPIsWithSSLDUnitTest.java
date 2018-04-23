@@ -64,7 +64,6 @@ import java.io.InputStreamReader;
 import java.net.BindException;
 import java.security.KeyStore;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,8 +84,6 @@ import org.apache.http.ssl.SSLContexts;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -103,7 +100,6 @@ import org.apache.geode.cache.client.internal.LocatorTestBase;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -115,15 +111,12 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
 
 /**
  * @since GemFire 8.0
  */
 @Category({DistributedTest.class, RestAPITest.class})
-@RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   private static final long serialVersionUID = -254776154266339226L;
@@ -131,13 +124,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   private final String PEOPLE_REGION_NAME = "People";
   private final String INVALID_CLIENT_ALIAS = "INVALID_CLIENT_ALIAS";
 
-  @Parameterized.Parameter
-  public String urlContext;
-
-  @Parameterized.Parameters
-  public static Collection<String> data() {
-    return Arrays.asList("/geode", "/gemfire-api");
-  }
+  public String urlContext = "/geode";
 
   public RestAPIsWithSSLDUnitTest() {
     super();
@@ -258,15 +245,12 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     VM client = host.getVM(3);
 
     // start locator
-    final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locatorHostName = NetworkUtils.getServerHostName(locator.getHost());
+    final String hostName = NetworkUtils.getServerHostName(locator.getHost());
 
-    locator.invoke("Start Locator", () -> {
-      startLocator(locatorHostName, locatorPort, "");
-    });
+    int locatorPort = startLocatorInVM(locator, hostName, "");
 
     // find locators
-    String locators = locatorHostName + "[" + locatorPort + "]";
+    String locators = hostName + "[" + locatorPort + "]";
 
     // start manager (peer cache)
     manager.invoke("StartManager",
@@ -274,7 +258,6 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
     // start startBridgeServer With RestService enabled
     String restEndpoint = server.invoke("startBridgeServerWithRestServiceOnInVM", () -> {
-      final String hostName = server.getHost().getHostName();
       final int restServicePort = AvailablePortHelper.getRandomAvailableTCPPort();
       startBridgeServer(hostName, restServicePort, locators, new String[] {REGION_NAME},
           sslProperties, clusterLevel);
@@ -283,8 +266,8 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
     // create a client cache
     client.invoke("Create ClientCache", () -> {
-      new ClientCacheFactory().setPdxReadSerialized(true)
-          .addPoolLocator(locatorHostName, locatorPort).create();
+      new ClientCacheFactory().setPdxReadSerialized(true).addPoolLocator(hostName, locatorPort)
+          .create();
       return null;
     });
 
