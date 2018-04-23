@@ -48,7 +48,7 @@ public class ClusterConfigurationServiceDUnitTest {
         RegionConfig regionConfig = new RegionConfig();
         regionConfig.setName("regionB");
         regionConfig.setRefid("REPLICATE");
-        cc.getRegion().add(regionConfig);
+        cc.getRegions().add(regionConfig);
         return cc;
       });
     });

@@ -1,23 +1,21 @@
-
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,30 +86,6 @@ import org.apache.geode.annotations.Experimental;
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
- *         &lt;element name="disk-write-attributes" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;choice>
- *                   &lt;element name="asynchronous-writes">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="bytes-threshold" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="time-interval" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                   &lt;element name="synchronous-writes" type="{http://www.w3.org/2001/XMLSchema}anyType"/>
- *                 &lt;/choice>
- *                 &lt;attribute name="max-oplog-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="roll-oplogs" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="disk-dirs" type="{http://geode.apache.org/schema/cache}disk-dirs-type" minOccurs="0"/>
  *         &lt;element name="partition-attributes" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
@@ -161,43 +135,6 @@ import org.apache.geode.annotations.Experimental;
  *                 &lt;attribute name="total-max-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="total-num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="colocated-with" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="membership-attributes" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="required-role" maxOccurs="unbounded" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *                 &lt;attribute name="loss-action">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                       &lt;enumeration value="full-access"/>
- *                       &lt;enumeration value="limited-access"/>
- *                       &lt;enumeration value="no-access"/>
- *                       &lt;enumeration value="reconnect"/>
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *                 &lt;attribute name="resumption-action">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                       &lt;enumeration value="none"/>
- *                       &lt;enumeration value="reinitialize"/>
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -329,12 +266,12 @@ import org.apache.geode.annotations.Experimental;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "region-attributes-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"keyConstraint", "valueConstraint", "regionTimeToLive", "regionIdleTime",
-        "entryTimeToLive", "entryIdleTime", "diskWriteAttributes", "diskDirs",
-        "partitionAttributes", "membershipAttributes", "subscriptionAttributes", "cacheLoader",
-        "cacheWriter", "cacheListener", "compressor", "evictionAttributes"})
+        "entryTimeToLive", "entryIdleTime", "partitionAttributes", "subscriptionAttributes",
+        "cacheLoader", "cacheWriter", "cacheListeners", "compressor", "evictionAttributes"})
 @Experimental
-public class RegionAttributesType {
+public class RegionAttributesType implements Serializable {
 
+  private static final long serialVersionUID = 1L;
   @XmlElement(name = "key-constraint", namespace = "http://geode.apache.org/schema/cache")
   protected Object keyConstraint;
   @XmlElement(name = "value-constraint", namespace = "http://geode.apache.org/schema/cache")
@@ -347,14 +284,8 @@ public class RegionAttributesType {
   protected RegionAttributesType.EntryTimeToLive entryTimeToLive;
   @XmlElement(name = "entry-idle-time", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType.EntryIdleTime entryIdleTime;
-  @XmlElement(name = "disk-write-attributes", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.DiskWriteAttributes diskWriteAttributes;
-  @XmlElement(name = "disk-dirs", namespace = "http://geode.apache.org/schema/cache")
-  protected DiskDirsType diskDirs;
   @XmlElement(name = "partition-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType.PartitionAttributes partitionAttributes;
-  @XmlElement(name = "membership-attributes", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.MembershipAttributes membershipAttributes;
   @XmlElement(name = "subscription-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType.SubscriptionAttributes subscriptionAttributes;
   @XmlElement(name = "cache-loader", namespace = "http://geode.apache.org/schema/cache")
@@ -362,7 +293,7 @@ public class RegionAttributesType {
   @XmlElement(name = "cache-writer", namespace = "http://geode.apache.org/schema/cache")
   protected CacheWriterType cacheWriter;
   @XmlElement(name = "cache-listener", namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionAttributesType.CacheListener> cacheListener;
+  protected List<RegionAttributesType.CacheListener> cacheListeners;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType.Compressor compressor;
   @XmlElement(name = "eviction-attributes", namespace = "http://geode.apache.org/schema/cache")
@@ -557,50 +488,6 @@ public class RegionAttributesType {
   }
 
   /**
-   * Gets the value of the diskWriteAttributes property.
-   *
-   * possible object is
-   * {@link RegionAttributesType.DiskWriteAttributes }
-   *
-   */
-  public RegionAttributesType.DiskWriteAttributes getDiskWriteAttributes() {
-    return diskWriteAttributes;
-  }
-
-  /**
-   * Sets the value of the diskWriteAttributes property.
-   *
-   * allowed object is
-   * {@link RegionAttributesType.DiskWriteAttributes }
-   *
-   */
-  public void setDiskWriteAttributes(RegionAttributesType.DiskWriteAttributes value) {
-    this.diskWriteAttributes = value;
-  }
-
-  /**
-   * Gets the value of the diskDirs property.
-   *
-   * possible object is
-   * {@link DiskDirsType }
-   *
-   */
-  public DiskDirsType getDiskDirs() {
-    return diskDirs;
-  }
-
-  /**
-   * Sets the value of the diskDirs property.
-   *
-   * allowed object is
-   * {@link DiskDirsType }
-   *
-   */
-  public void setDiskDirs(DiskDirsType value) {
-    this.diskDirs = value;
-  }
-
-  /**
    * Gets the value of the partitionAttributes property.
    *
    * possible object is
@@ -620,28 +507,6 @@ public class RegionAttributesType {
    */
   public void setPartitionAttributes(RegionAttributesType.PartitionAttributes value) {
     this.partitionAttributes = value;
-  }
-
-  /**
-   * Gets the value of the membershipAttributes property.
-   *
-   * possible object is
-   * {@link RegionAttributesType.MembershipAttributes }
-   *
-   */
-  public RegionAttributesType.MembershipAttributes getMembershipAttributes() {
-    return membershipAttributes;
-  }
-
-  /**
-   * Sets the value of the membershipAttributes property.
-   *
-   * allowed object is
-   * {@link RegionAttributesType.MembershipAttributes }
-   *
-   */
-  public void setMembershipAttributes(RegionAttributesType.MembershipAttributes value) {
-    this.membershipAttributes = value;
   }
 
   /**
@@ -711,19 +576,19 @@ public class RegionAttributesType {
   }
 
   /**
-   * Gets the value of the cacheListener property.
+   * Gets the value of the cacheListeners property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the cacheListener property.
+   * This is why there is not a <CODE>set</CODE> method for the cacheListeners property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getCacheListener().add(newItem);
+   * getCacheListeners().add(newItem);
    * </pre>
    *
    *
@@ -733,11 +598,11 @@ public class RegionAttributesType {
    *
    *
    */
-  public List<RegionAttributesType.CacheListener> getCacheListener() {
-    if (cacheListener == null) {
-      cacheListener = new ArrayList<RegionAttributesType.CacheListener>();
+  public List<RegionAttributesType.CacheListener> getCacheListeners() {
+    if (cacheListeners == null) {
+      cacheListeners = new ArrayList<RegionAttributesType.CacheListener>();
     }
-    return this.cacheListener;
+    return this.cacheListeners;
   }
 
   /**
@@ -1428,14 +1293,15 @@ public class RegionAttributesType {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"className", "parameter"})
-  public static class CacheListener {
+  @XmlType(name = "", propOrder = {"className", "parameters"})
+  public static class CacheListener implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected String className;
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected List<ParameterType> parameter;
+    @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
+    protected List<ParameterType> parameters;
 
     /**
      * Gets the value of the className property.
@@ -1460,19 +1326,19 @@ public class RegionAttributesType {
     }
 
     /**
-     * Gets the value of the parameter property.
+     * Gets the value of the parameters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the parameter property.
+     * This is why there is not a <CODE>set</CODE> method for the parameters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getParameter().add(newItem);
+     * getParameters().add(newItem);
      * </pre>
      *
      *
@@ -1482,11 +1348,11 @@ public class RegionAttributesType {
      *
      *
      */
-    public List<ParameterType> getParameter() {
-      if (parameter == null) {
-        parameter = new ArrayList<ParameterType>();
+    public List<ParameterType> getParameters() {
+      if (parameters == null) {
+        parameters = new ArrayList<ParameterType>();
       }
-      return this.parameter;
+      return this.parameters;
     }
 
   }
@@ -1515,8 +1381,9 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"className"})
-  public static class Compressor {
+  public static class Compressor implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected String className;
@@ -1557,220 +1424,6 @@ public class RegionAttributesType {
    * &lt;complexType>
    *   &lt;complexContent>
    *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;choice>
-   *         &lt;element name="asynchronous-writes">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;attribute name="bytes-threshold" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *                 &lt;attribute name="time-interval" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *         &lt;element name="synchronous-writes" type="{http://www.w3.org/2001/XMLSchema}anyType"/>
-   *       &lt;/choice>
-   *       &lt;attribute name="max-oplog-size" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="roll-oplogs" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"asynchronousWrites", "synchronousWrites"})
-  public static class DiskWriteAttributes {
-
-    @XmlElement(name = "asynchronous-writes", namespace = "http://geode.apache.org/schema/cache")
-    protected RegionAttributesType.DiskWriteAttributes.AsynchronousWrites asynchronousWrites;
-    @XmlElement(name = "synchronous-writes", namespace = "http://geode.apache.org/schema/cache")
-    protected Object synchronousWrites;
-    @XmlAttribute(name = "max-oplog-size")
-    protected String maxOplogSize;
-    @XmlAttribute(name = "roll-oplogs")
-    protected String rollOplogs;
-
-    /**
-     * Gets the value of the asynchronousWrites property.
-     *
-     * possible object is
-     * {@link RegionAttributesType.DiskWriteAttributes.AsynchronousWrites }
-     *
-     */
-    public RegionAttributesType.DiskWriteAttributes.AsynchronousWrites getAsynchronousWrites() {
-      return asynchronousWrites;
-    }
-
-    /**
-     * Sets the value of the asynchronousWrites property.
-     *
-     * allowed object is
-     * {@link RegionAttributesType.DiskWriteAttributes.AsynchronousWrites }
-     *
-     */
-    public void setAsynchronousWrites(
-        RegionAttributesType.DiskWriteAttributes.AsynchronousWrites value) {
-      this.asynchronousWrites = value;
-    }
-
-    /**
-     * Gets the value of the synchronousWrites property.
-     *
-     * possible object is
-     * {@link Object }
-     *
-     */
-    public Object getSynchronousWrites() {
-      return synchronousWrites;
-    }
-
-    /**
-     * Sets the value of the synchronousWrites property.
-     *
-     * allowed object is
-     * {@link Object }
-     *
-     */
-    public void setSynchronousWrites(Object value) {
-      this.synchronousWrites = value;
-    }
-
-    /**
-     * Gets the value of the maxOplogSize property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getMaxOplogSize() {
-      return maxOplogSize;
-    }
-
-    /**
-     * Sets the value of the maxOplogSize property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setMaxOplogSize(String value) {
-      this.maxOplogSize = value;
-    }
-
-    /**
-     * Gets the value of the rollOplogs property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getRollOplogs() {
-      return rollOplogs;
-    }
-
-    /**
-     * Sets the value of the rollOplogs property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setRollOplogs(String value) {
-      this.rollOplogs = value;
-    }
-
-
-    /**
-     * <p>
-     * Java class for anonymous complex type.
-     *
-     * <p>
-     * The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="bytes-threshold" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *       &lt;attribute name="time-interval" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     *
-     *
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "")
-    public static class AsynchronousWrites {
-
-      @XmlAttribute(name = "bytes-threshold", required = true)
-      protected String bytesThreshold;
-      @XmlAttribute(name = "time-interval", required = true)
-      protected String timeInterval;
-
-      /**
-       * Gets the value of the bytesThreshold property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getBytesThreshold() {
-        return bytesThreshold;
-      }
-
-      /**
-       * Sets the value of the bytesThreshold property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setBytesThreshold(String value) {
-        this.bytesThreshold = value;
-      }
-
-      /**
-       * Gets the value of the timeInterval property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getTimeInterval() {
-        return timeInterval;
-      }
-
-      /**
-       * Sets the value of the timeInterval property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setTimeInterval(String value) {
-        this.timeInterval = value;
-      }
-
-    }
-
-  }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
    *       &lt;sequence>
    *         &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
    *       &lt;/sequence>
@@ -1783,8 +1436,9 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class EntryIdleTime {
+  public static class EntryIdleTime implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected ExpirationAttributesType expirationAttributes;
@@ -1837,8 +1491,9 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class EntryTimeToLive {
+  public static class EntryTimeToLive implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected ExpirationAttributesType expirationAttributes;
@@ -1926,36 +1581,37 @@ public class RegionAttributesType {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"lruEntryCount", "lruHeapPercentage", "lruMemorySize"})
-  public static class EvictionAttributes {
+  @XmlType(name = "", propOrder = {"lruMemorySize", "lruHeapPercentage", "lruEntryCount"})
+  public static class EvictionAttributes implements Serializable {
 
-    @XmlElement(name = "lru-entry-count", namespace = "http://geode.apache.org/schema/cache")
-    protected RegionAttributesType.EvictionAttributes.LruEntryCount lruEntryCount;
-    @XmlElement(name = "lru-heap-percentage", namespace = "http://geode.apache.org/schema/cache")
-    protected RegionAttributesType.EvictionAttributes.LruHeapPercentage lruHeapPercentage;
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "lru-memory-size", namespace = "http://geode.apache.org/schema/cache")
     protected RegionAttributesType.EvictionAttributes.LruMemorySize lruMemorySize;
+    @XmlElement(name = "lru-heap-percentage", namespace = "http://geode.apache.org/schema/cache")
+    protected RegionAttributesType.EvictionAttributes.LruHeapPercentage lruHeapPercentage;
+    @XmlElement(name = "lru-entry-count", namespace = "http://geode.apache.org/schema/cache")
+    protected RegionAttributesType.EvictionAttributes.LruEntryCount lruEntryCount;
 
     /**
-     * Gets the value of the lruEntryCount property.
+     * Gets the value of the lruMemorySize property.
      *
      * possible object is
-     * {@link RegionAttributesType.EvictionAttributes.LruEntryCount }
+     * {@link RegionAttributesType.EvictionAttributes.LruMemorySize }
      *
      */
-    public RegionAttributesType.EvictionAttributes.LruEntryCount getLruEntryCount() {
-      return lruEntryCount;
+    public RegionAttributesType.EvictionAttributes.LruMemorySize getLruMemorySize() {
+      return lruMemorySize;
     }
 
     /**
-     * Sets the value of the lruEntryCount property.
+     * Sets the value of the lruMemorySize property.
      *
      * allowed object is
-     * {@link RegionAttributesType.EvictionAttributes.LruEntryCount }
+     * {@link RegionAttributesType.EvictionAttributes.LruMemorySize }
      *
      */
-    public void setLruEntryCount(RegionAttributesType.EvictionAttributes.LruEntryCount value) {
-      this.lruEntryCount = value;
+    public void setLruMemorySize(RegionAttributesType.EvictionAttributes.LruMemorySize value) {
+      this.lruMemorySize = value;
     }
 
     /**
@@ -1982,25 +1638,25 @@ public class RegionAttributesType {
     }
 
     /**
-     * Gets the value of the lruMemorySize property.
+     * Gets the value of the lruEntryCount property.
      *
      * possible object is
-     * {@link RegionAttributesType.EvictionAttributes.LruMemorySize }
+     * {@link RegionAttributesType.EvictionAttributes.LruEntryCount }
      *
      */
-    public RegionAttributesType.EvictionAttributes.LruMemorySize getLruMemorySize() {
-      return lruMemorySize;
+    public RegionAttributesType.EvictionAttributes.LruEntryCount getLruEntryCount() {
+      return lruEntryCount;
     }
 
     /**
-     * Sets the value of the lruMemorySize property.
+     * Sets the value of the lruEntryCount property.
      *
      * allowed object is
-     * {@link RegionAttributesType.EvictionAttributes.LruMemorySize }
+     * {@link RegionAttributesType.EvictionAttributes.LruEntryCount }
      *
      */
-    public void setLruMemorySize(RegionAttributesType.EvictionAttributes.LruMemorySize value) {
-      this.lruMemorySize = value;
+    public void setLruEntryCount(RegionAttributesType.EvictionAttributes.LruEntryCount value) {
+      this.lruEntryCount = value;
     }
 
 
@@ -2026,8 +1682,9 @@ public class RegionAttributesType {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class LruEntryCount {
+    public static class LruEntryCount implements Serializable {
 
+      private static final long serialVersionUID = 1L;
       @XmlAttribute(name = "action")
       protected EnumActionDestroyOverflow action;
       @XmlAttribute(name = "maximum")
@@ -2104,13 +1761,14 @@ public class RegionAttributesType {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"className", "parameter"})
-    public static class LruHeapPercentage {
+    @XmlType(name = "", propOrder = {"className", "parameters"})
+    public static class LruHeapPercentage implements Serializable {
 
+      private static final long serialVersionUID = 1L;
       @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache")
       protected String className;
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected List<ParameterType> parameter;
+      @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
+      protected List<ParameterType> parameters;
       @XmlAttribute(name = "action")
       protected EnumActionDestroyOverflow action;
 
@@ -2137,19 +1795,19 @@ public class RegionAttributesType {
       }
 
       /**
-       * Gets the value of the parameter property.
+       * Gets the value of the parameters property.
        *
        * <p>
        * This accessor method returns a reference to the live list,
        * not a snapshot. Therefore any modification you make to the
        * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the parameter property.
+       * This is why there is not a <CODE>set</CODE> method for the parameters property.
        *
        * <p>
        * For example, to add a new item, do as follows:
        *
        * <pre>
-       * getParameter().add(newItem);
+       * getParameters().add(newItem);
        * </pre>
        *
        *
@@ -2159,11 +1817,11 @@ public class RegionAttributesType {
        *
        *
        */
-      public List<ParameterType> getParameter() {
-        if (parameter == null) {
-          parameter = new ArrayList<ParameterType>();
+      public List<ParameterType> getParameters() {
+        if (parameters == null) {
+          parameters = new ArrayList<ParameterType>();
         }
-        return this.parameter;
+        return this.parameters;
       }
 
       /**
@@ -2216,13 +1874,14 @@ public class RegionAttributesType {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"className", "parameter"})
-    public static class LruMemorySize {
+    @XmlType(name = "", propOrder = {"className", "parameters"})
+    public static class LruMemorySize implements Serializable {
 
+      private static final long serialVersionUID = 1L;
       @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache")
       protected String className;
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected List<ParameterType> parameter;
+      @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
+      protected List<ParameterType> parameters;
       @XmlAttribute(name = "action")
       protected EnumActionDestroyOverflow action;
       @XmlAttribute(name = "maximum")
@@ -2251,19 +1910,19 @@ public class RegionAttributesType {
       }
 
       /**
-       * Gets the value of the parameter property.
+       * Gets the value of the parameters property.
        *
        * <p>
        * This accessor method returns a reference to the live list,
        * not a snapshot. Therefore any modification you make to the
        * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the parameter property.
+       * This is why there is not a <CODE>set</CODE> method for the parameters property.
        *
        * <p>
        * For example, to add a new item, do as follows:
        *
        * <pre>
-       * getParameter().add(newItem);
+       * getParameters().add(newItem);
        * </pre>
        *
        *
@@ -2273,11 +1932,11 @@ public class RegionAttributesType {
        *
        *
        */
-      public List<ParameterType> getParameter() {
-        if (parameter == null) {
-          parameter = new ArrayList<ParameterType>();
+      public List<ParameterType> getParameters() {
+        if (parameters == null) {
+          parameters = new ArrayList<ParameterType>();
         }
-        return this.parameter;
+        return this.parameters;
       }
 
       /**
@@ -2322,192 +1981,6 @@ public class RegionAttributesType {
        */
       public void setMaximum(String value) {
         this.maximum = value;
-      }
-
-    }
-
-  }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="required-role" maxOccurs="unbounded" minOccurs="0">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *       &lt;/sequence>
-   *       &lt;attribute name="loss-action">
-   *         &lt;simpleType>
-   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-   *             &lt;enumeration value="full-access"/>
-   *             &lt;enumeration value="limited-access"/>
-   *             &lt;enumeration value="no-access"/>
-   *             &lt;enumeration value="reconnect"/>
-   *           &lt;/restriction>
-   *         &lt;/simpleType>
-   *       &lt;/attribute>
-   *       &lt;attribute name="resumption-action">
-   *         &lt;simpleType>
-   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-   *             &lt;enumeration value="none"/>
-   *             &lt;enumeration value="reinitialize"/>
-   *           &lt;/restriction>
-   *         &lt;/simpleType>
-   *       &lt;/attribute>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"requiredRole"})
-  public static class MembershipAttributes {
-
-    @XmlElement(name = "required-role", namespace = "http://geode.apache.org/schema/cache")
-    protected List<RegionAttributesType.MembershipAttributes.RequiredRole> requiredRole;
-    @XmlAttribute(name = "loss-action")
-    protected String lossAction;
-    @XmlAttribute(name = "resumption-action")
-    protected String resumptionAction;
-
-    /**
-     * Gets the value of the requiredRole property.
-     *
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the requiredRole property.
-     *
-     * <p>
-     * For example, to add a new item, do as follows:
-     *
-     * <pre>
-     * getRequiredRole().add(newItem);
-     * </pre>
-     *
-     *
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link RegionAttributesType.MembershipAttributes.RequiredRole }
-     *
-     *
-     */
-    public List<RegionAttributesType.MembershipAttributes.RequiredRole> getRequiredRole() {
-      if (requiredRole == null) {
-        requiredRole = new ArrayList<RegionAttributesType.MembershipAttributes.RequiredRole>();
-      }
-      return this.requiredRole;
-    }
-
-    /**
-     * Gets the value of the lossAction property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getLossAction() {
-      return lossAction;
-    }
-
-    /**
-     * Sets the value of the lossAction property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setLossAction(String value) {
-      this.lossAction = value;
-    }
-
-    /**
-     * Gets the value of the resumptionAction property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getResumptionAction() {
-      return resumptionAction;
-    }
-
-    /**
-     * Sets the value of the resumptionAction property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setResumptionAction(String value) {
-      this.resumptionAction = value;
-    }
-
-
-    /**
-     * <p>
-     * Java class for anonymous complex type.
-     *
-     * <p>
-     * The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     *
-     *
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "")
-    public static class RequiredRole {
-
-      @XmlAttribute(name = "name", required = true)
-      protected String name;
-
-      /**
-       * Gets the value of the name property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getName() {
-        return name;
-      }
-
-      /**
-       * Sets the value of the name property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setName(String value) {
-        this.name = value;
       }
 
     }
@@ -2580,13 +2053,14 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "",
-      propOrder = {"partitionResolver", "partitionListener", "fixedPartitionAttributes"})
-  public static class PartitionAttributes {
+      propOrder = {"partitionResolver", "partitionListeners", "fixedPartitionAttributes"})
+  public static class PartitionAttributes implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "partition-resolver", namespace = "http://geode.apache.org/schema/cache")
     protected RegionAttributesType.PartitionAttributes.PartitionResolver partitionResolver;
     @XmlElement(name = "partition-listener", namespace = "http://geode.apache.org/schema/cache")
-    protected List<RegionAttributesType.PartitionAttributes.PartitionListener> partitionListener;
+    protected List<RegionAttributesType.PartitionAttributes.PartitionListener> partitionListeners;
     @XmlElement(name = "fixed-partition-attributes",
         namespace = "http://geode.apache.org/schema/cache")
     protected List<RegionAttributesType.PartitionAttributes.FixedPartitionAttributes> fixedPartitionAttributes;
@@ -2629,19 +2103,19 @@ public class RegionAttributesType {
     }
 
     /**
-     * Gets the value of the partitionListener property.
+     * Gets the value of the partitionListeners property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the partitionListener property.
+     * This is why there is not a <CODE>set</CODE> method for the partitionListeners property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getPartitionListener().add(newItem);
+     * getPartitionListeners().add(newItem);
      * </pre>
      *
      *
@@ -2651,12 +2125,12 @@ public class RegionAttributesType {
      *
      *
      */
-    public List<RegionAttributesType.PartitionAttributes.PartitionListener> getPartitionListener() {
-      if (partitionListener == null) {
-        partitionListener =
+    public List<RegionAttributesType.PartitionAttributes.PartitionListener> getPartitionListeners() {
+      if (partitionListeners == null) {
+        partitionListeners =
             new ArrayList<RegionAttributesType.PartitionAttributes.PartitionListener>();
       }
-      return this.partitionListener;
+      return this.partitionListeners;
     }
 
     /**
@@ -2868,8 +2342,9 @@ public class RegionAttributesType {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class FixedPartitionAttributes {
+    public static class FixedPartitionAttributes implements Serializable {
 
+      private static final long serialVersionUID = 1L;
       @XmlAttribute(name = "partition-name", required = true)
       protected String partitionName;
       @XmlAttribute(name = "is-primary")
@@ -2969,14 +2444,15 @@ public class RegionAttributesType {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"className", "parameter"})
-    public static class PartitionListener {
+    @XmlType(name = "", propOrder = {"className", "parameters"})
+    public static class PartitionListener implements Serializable {
 
+      private static final long serialVersionUID = 1L;
       @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
           required = true)
       protected String className;
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected List<ParameterType> parameter;
+      @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
+      protected List<ParameterType> parameters;
 
       /**
        * Gets the value of the className property.
@@ -3001,19 +2477,19 @@ public class RegionAttributesType {
       }
 
       /**
-       * Gets the value of the parameter property.
+       * Gets the value of the parameters property.
        *
        * <p>
        * This accessor method returns a reference to the live list,
        * not a snapshot. Therefore any modification you make to the
        * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the parameter property.
+       * This is why there is not a <CODE>set</CODE> method for the parameters property.
        *
        * <p>
        * For example, to add a new item, do as follows:
        *
        * <pre>
-       * getParameter().add(newItem);
+       * getParameters().add(newItem);
        * </pre>
        *
        *
@@ -3023,11 +2499,11 @@ public class RegionAttributesType {
        *
        *
        */
-      public List<ParameterType> getParameter() {
-        if (parameter == null) {
-          parameter = new ArrayList<ParameterType>();
+      public List<ParameterType> getParameters() {
+        if (parameters == null) {
+          parameters = new ArrayList<ParameterType>();
         }
-        return this.parameter;
+        return this.parameters;
       }
 
     }
@@ -3057,14 +2533,15 @@ public class RegionAttributesType {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"className", "parameter"})
-    public static class PartitionResolver {
+    @XmlType(name = "", propOrder = {"className", "parameters"})
+    public static class PartitionResolver implements Serializable {
 
+      private static final long serialVersionUID = 1L;
       @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
           required = true)
       protected String className;
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected List<ParameterType> parameter;
+      @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
+      protected List<ParameterType> parameters;
       @XmlAttribute(name = "name")
       protected String name;
 
@@ -3091,19 +2568,19 @@ public class RegionAttributesType {
       }
 
       /**
-       * Gets the value of the parameter property.
+       * Gets the value of the parameters property.
        *
        * <p>
        * This accessor method returns a reference to the live list,
        * not a snapshot. Therefore any modification you make to the
        * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the parameter property.
+       * This is why there is not a <CODE>set</CODE> method for the parameters property.
        *
        * <p>
        * For example, to add a new item, do as follows:
        *
        * <pre>
-       * getParameter().add(newItem);
+       * getParameters().add(newItem);
        * </pre>
        *
        *
@@ -3113,11 +2590,11 @@ public class RegionAttributesType {
        *
        *
        */
-      public List<ParameterType> getParameter() {
-        if (parameter == null) {
-          parameter = new ArrayList<ParameterType>();
+      public List<ParameterType> getParameters() {
+        if (parameters == null) {
+          parameters = new ArrayList<ParameterType>();
         }
-        return this.parameter;
+        return this.parameters;
       }
 
       /**
@@ -3170,8 +2647,9 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class RegionIdleTime {
+  public static class RegionIdleTime implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected ExpirationAttributesType expirationAttributes;
@@ -3224,8 +2702,9 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"expirationAttributes"})
-  public static class RegionTimeToLive {
+  public static class RegionTimeToLive implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "expiration-attributes", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected ExpirationAttributesType expirationAttributes;
@@ -3283,8 +2762,9 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "")
-  public static class SubscriptionAttributes {
+  public static class SubscriptionAttributes implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlAttribute(name = "interest-policy")
     protected String interestPolicy;
 

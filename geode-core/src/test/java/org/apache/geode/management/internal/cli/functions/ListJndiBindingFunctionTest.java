@@ -29,6 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding.ConfigProperty;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
@@ -64,10 +65,13 @@ public class ListJndiBindingFunctionTest {
     config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
     config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
-    config.getConfigProperty()
-        .add(new JndiBindingsType.JndiBinding.ConfigProperty("test", "test", "test"));
+    ConfigProperty configProperty = new ConfigProperty();
+    configProperty.setName("test");
+    configProperty.setType("test");
+    configProperty.setValue("test");
+    config.getConfigProperties().add(configProperty);
     JNDIInvoker.mapDatasource(CreateJndiBindingFunction.getParamsAsMap(config),
-        CreateJndiBindingFunction.convert(config.getConfigProperty()));
+        CreateJndiBindingFunction.convert(config.getConfigProperties()));
   }
 
   @Test

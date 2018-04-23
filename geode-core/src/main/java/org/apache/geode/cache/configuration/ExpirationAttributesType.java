@@ -1,23 +1,21 @@
-
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,8 +79,9 @@ import org.apache.geode.annotations.Experimental;
 @XmlType(name = "expiration-attributes-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"customExpiry"})
 @Experimental
-public class ExpirationAttributesType {
+public class ExpirationAttributesType implements Serializable {
 
+  private static final long serialVersionUID = 1L;
   @XmlElement(name = "custom-expiry", namespace = "http://geode.apache.org/schema/cache")
   protected ExpirationAttributesType.CustomExpiry customExpiry;
   @XmlAttribute(name = "action")
@@ -180,14 +179,15 @@ public class ExpirationAttributesType {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"className", "parameter"})
-  public static class CustomExpiry {
+  @XmlType(name = "", propOrder = {"className", "parameters"})
+  public static class CustomExpiry implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected String className;
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected List<ParameterType> parameter;
+    @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
+    protected List<ParameterType> parameters;
 
     /**
      * Gets the value of the className property.
@@ -212,19 +212,19 @@ public class ExpirationAttributesType {
     }
 
     /**
-     * Gets the value of the parameter property.
+     * Gets the value of the parameters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the parameter property.
+     * This is why there is not a <CODE>set</CODE> method for the parameters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getParameter().add(newItem);
+     * getParameters().add(newItem);
      * </pre>
      *
      *
@@ -234,11 +234,11 @@ public class ExpirationAttributesType {
      *
      *
      */
-    public List<ParameterType> getParameter() {
-      if (parameter == null) {
-        parameter = new ArrayList<ParameterType>();
+    public List<ParameterType> getParameters() {
+      if (parameters == null) {
+        parameters = new ArrayList<ParameterType>();
       }
-      return this.parameter;
+      return this.parameters;
     }
 
   }

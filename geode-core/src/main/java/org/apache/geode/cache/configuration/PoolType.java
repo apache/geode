@@ -1,23 +1,21 @@
-
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,14 +95,15 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "pool-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"locator", "server"})
+    propOrder = {"servers", "locators"})
 @Experimental
-public class PoolType {
+public class PoolType implements Serializable {
 
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<PoolType.Locator> locator;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<PoolType.Server> server;
+  private static final long serialVersionUID = 1L;
+  @XmlElement(name = "server", namespace = "http://geode.apache.org/schema/cache")
+  protected List<PoolType.Server> servers;
+  @XmlElement(name = "locator", namespace = "http://geode.apache.org/schema/cache")
+  protected List<PoolType.Locator> locators;
   @XmlAttribute(name = "subscription-timeout-multiplier")
   protected String subscriptionTimeoutMultiplier;
   @XmlAttribute(name = "socket-connect-timeout")
@@ -149,49 +148,19 @@ public class PoolType {
   protected Boolean multiuserAuthentication;
 
   /**
-   * Gets the value of the locator property.
+   * Gets the value of the servers property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the locator property.
+   * This is why there is not a <CODE>set</CODE> method for the servers property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getLocator().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link PoolType.Locator }
-   *
-   *
-   */
-  public List<PoolType.Locator> getLocator() {
-    if (locator == null) {
-      locator = new ArrayList<PoolType.Locator>();
-    }
-    return this.locator;
-  }
-
-  /**
-   * Gets the value of the server property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the server property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   *
-   * <pre>
-   * getServer().add(newItem);
+   * getServers().add(newItem);
    * </pre>
    *
    *
@@ -201,11 +170,41 @@ public class PoolType {
    *
    *
    */
-  public List<PoolType.Server> getServer() {
-    if (server == null) {
-      server = new ArrayList<PoolType.Server>();
+  public List<PoolType.Server> getServers() {
+    if (servers == null) {
+      servers = new ArrayList<PoolType.Server>();
     }
-    return this.server;
+    return this.servers;
+  }
+
+  /**
+   * Gets the value of the locators property.
+   *
+   * <p>
+   * This accessor method returns a reference to the live list,
+   * not a snapshot. Therefore any modification you make to the
+   * returned list will be present inside the JAXB object.
+   * This is why there is not a <CODE>set</CODE> method for the locators property.
+   *
+   * <p>
+   * For example, to add a new item, do as follows:
+   *
+   * <pre>
+   * getLocators().add(newItem);
+   * </pre>
+   *
+   *
+   * <p>
+   * Objects of the following type(s) are allowed in the list
+   * {@link PoolType.Locator }
+   *
+   *
+   */
+  public List<PoolType.Locator> getLocators() {
+    if (locators == null) {
+      locators = new ArrayList<PoolType.Locator>();
+    }
+    return this.locators;
   }
 
   /**
@@ -693,8 +692,9 @@ public class PoolType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "")
-  public static class Locator {
+  public static class Locator implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlAttribute(name = "host", required = true)
     protected String host;
     @XmlAttribute(name = "port", required = true)
@@ -769,8 +769,9 @@ public class PoolType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "")
-  public static class Server {
+  public static class Server implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlAttribute(name = "host", required = true)
     protected String host;
     @XmlAttribute(name = "port", required = true)

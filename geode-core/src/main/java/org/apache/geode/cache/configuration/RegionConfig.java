@@ -1,23 +1,21 @@
-
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -148,20 +146,21 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"regionAttributes", "index", "entry", "regionElements", "region"})
+    propOrder = {"regionAttributes", "indices", "entries", "customRegionElements", "regions"})
 @Experimental
 public class RegionConfig implements CacheElement {
 
+  private static final long serialVersionUID = 1L;
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionAttributesType> regionAttributes;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig.Index> index;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig.Entry> entry;
-  @XmlAnyElement(lax = true)
-  protected List<CacheElement> regionElements;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig> region;
+  @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
+  protected List<RegionConfig.Index> indices;
+  @XmlElement(name = "entry", namespace = "http://geode.apache.org/schema/cache")
+  protected List<RegionConfig.Entry> entries;
+  @XmlAnyElement
+  protected List<CacheElement> customRegionElements;
+  @XmlElement(name = "region", namespace = "http://geode.apache.org/schema/cache")
+  protected List<RegionConfig> regions;
   @XmlAttribute(name = "name", required = true)
   protected String name;
   @XmlAttribute(name = "refid")
@@ -198,19 +197,19 @@ public class RegionConfig implements CacheElement {
   }
 
   /**
-   * Gets the value of the index property.
+   * Gets the value of the indices property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the index property.
+   * This is why there is not a <CODE>set</CODE> method for the indices property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getIndex().add(newItem);
+   * getIndices().add(newItem);
    * </pre>
    *
    *
@@ -220,27 +219,27 @@ public class RegionConfig implements CacheElement {
    *
    *
    */
-  public List<RegionConfig.Index> getIndex() {
-    if (index == null) {
-      index = new ArrayList<RegionConfig.Index>();
+  public List<RegionConfig.Index> getIndices() {
+    if (indices == null) {
+      indices = new ArrayList<RegionConfig.Index>();
     }
-    return this.index;
+    return this.indices;
   }
 
   /**
-   * Gets the value of the entry property.
+   * Gets the value of the entries property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the entry property.
+   * This is why there is not a <CODE>set</CODE> method for the entries property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getEntry().add(newItem);
+   * getEntries().add(newItem);
    * </pre>
    *
    *
@@ -250,21 +249,21 @@ public class RegionConfig implements CacheElement {
    *
    *
    */
-  public List<RegionConfig.Entry> getEntry() {
-    if (entry == null) {
-      entry = new ArrayList<RegionConfig.Entry>();
+  public List<RegionConfig.Entry> getEntries() {
+    if (entries == null) {
+      entries = new ArrayList<RegionConfig.Entry>();
     }
-    return this.entry;
+    return this.entries;
   }
 
   /**
-   * Gets the value of the any property.
+   * Gets the value of the customRegionElements property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the any property.
+   * This is why there is not a <CODE>set</CODE> method for the customRegionElements property.
    *
    * <p>
    * For example, to add a new item, do as follows:
@@ -277,31 +276,30 @@ public class RegionConfig implements CacheElement {
    * <p>
    * Objects of the following type(s) are allowed in the list
    * {@link Element }
-   * {@link CacheElement }
    *
    *
    */
   public List<CacheElement> getCustomRegionElements() {
-    if (regionElements == null) {
-      regionElements = new ArrayList<>();
+    if (customRegionElements == null) {
+      customRegionElements = new ArrayList<CacheElement>();
     }
-    return this.regionElements;
+    return this.customRegionElements;
   }
 
   /**
-   * Gets the value of the region property.
+   * Gets the value of the regions property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the region property.
+   * This is why there is not a <CODE>set</CODE> method for the regions property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getRegion().add(newItem);
+   * getRegions().add(newItem);
    * </pre>
    *
    *
@@ -311,11 +309,11 @@ public class RegionConfig implements CacheElement {
    *
    *
    */
-  public List<RegionConfig> getRegion() {
-    if (region == null) {
-      region = new ArrayList<RegionConfig>();
+  public List<RegionConfig> getRegions() {
+    if (regions == null) {
+      regions = new ArrayList<RegionConfig>();
     }
-    return this.region;
+    return this.regions;
   }
 
   /**
@@ -414,8 +412,9 @@ public class RegionConfig implements CacheElement {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"key", "value"})
-  public static class Entry {
+  public static class Entry implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(namespace = "http://geode.apache.org/schema/cache", required = true)
     protected RegionConfig.Entry.Key key;
     @XmlElement(namespace = "http://geode.apache.org/schema/cache", required = true)
@@ -489,35 +488,14 @@ public class RegionConfig implements CacheElement {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"string", "declarable"})
-    public static class Key {
+    @XmlType(name = "", propOrder = {"declarable", "string"})
+    public static class Key implements Serializable {
 
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected StringType string;
+      private static final long serialVersionUID = 1L;
       @XmlElement(namespace = "http://geode.apache.org/schema/cache")
       protected DeclarableType declarable;
-
-      /**
-       * Gets the value of the string property.
-       *
-       * possible object is
-       * {@link StringType }
-       *
-       */
-      public StringType getString() {
-        return string;
-      }
-
-      /**
-       * Sets the value of the string property.
-       *
-       * allowed object is
-       * {@link StringType }
-       *
-       */
-      public void setString(StringType value) {
-        this.string = value;
-      }
+      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
+      protected StringType string;
 
       /**
        * Gets the value of the declarable property.
@@ -539,6 +517,28 @@ public class RegionConfig implements CacheElement {
        */
       public void setDeclarable(DeclarableType value) {
         this.declarable = value;
+      }
+
+      /**
+       * Gets the value of the string property.
+       *
+       * possible object is
+       * {@link StringType }
+       *
+       */
+      public StringType getString() {
+        return string;
+      }
+
+      /**
+       * Sets the value of the string property.
+       *
+       * allowed object is
+       * {@link StringType }
+       *
+       */
+      public void setString(StringType value) {
+        this.string = value;
       }
 
     }
@@ -567,35 +567,14 @@ public class RegionConfig implements CacheElement {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"string", "declarable"})
-    public static class Value {
+    @XmlType(name = "", propOrder = {"declarable", "string"})
+    public static class Value implements Serializable {
 
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected StringType string;
+      private static final long serialVersionUID = 1L;
       @XmlElement(namespace = "http://geode.apache.org/schema/cache")
       protected DeclarableType declarable;
-
-      /**
-       * Gets the value of the string property.
-       *
-       * possible object is
-       * {@link StringType }
-       *
-       */
-      public StringType getString() {
-        return string;
-      }
-
-      /**
-       * Sets the value of the string property.
-       *
-       * allowed object is
-       * {@link StringType }
-       *
-       */
-      public void setString(StringType value) {
-        this.string = value;
-      }
+      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
+      protected StringType string;
 
       /**
        * Gets the value of the declarable property.
@@ -617,6 +596,28 @@ public class RegionConfig implements CacheElement {
        */
       public void setDeclarable(DeclarableType value) {
         this.declarable = value;
+      }
+
+      /**
+       * Gets the value of the string property.
+       *
+       * possible object is
+       * {@link StringType }
+       *
+       */
+      public StringType getString() {
+        return string;
+      }
+
+      /**
+       * Sets the value of the string property.
+       *
+       * allowed object is
+       * {@link StringType }
+       *
+       */
+      public void setString(StringType value) {
+        this.string = value;
       }
 
     }
@@ -678,13 +679,14 @@ public class RegionConfig implements CacheElement {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"functional", "primaryKey"})
-  public static class Index {
+  @XmlType(name = "", propOrder = {"primaryKey", "functional"})
+  public static class Index implements Serializable {
 
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected RegionConfig.Index.Functional functional;
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "primary-key", namespace = "http://geode.apache.org/schema/cache")
     protected RegionConfig.Index.PrimaryKey primaryKey;
+    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
+    protected RegionConfig.Index.Functional functional;
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")
@@ -697,28 +699,6 @@ public class RegionConfig implements CacheElement {
     protected Boolean keyIndex;
     @XmlAttribute(name = "type")
     protected String type;
-
-    /**
-     * Gets the value of the functional property.
-     *
-     * possible object is
-     * {@link RegionConfig.Index.Functional }
-     *
-     */
-    public RegionConfig.Index.Functional getFunctional() {
-      return functional;
-    }
-
-    /**
-     * Sets the value of the functional property.
-     *
-     * allowed object is
-     * {@link RegionConfig.Index.Functional }
-     *
-     */
-    public void setFunctional(RegionConfig.Index.Functional value) {
-      this.functional = value;
-    }
 
     /**
      * Gets the value of the primaryKey property.
@@ -740,6 +720,28 @@ public class RegionConfig implements CacheElement {
      */
     public void setPrimaryKey(RegionConfig.Index.PrimaryKey value) {
       this.primaryKey = value;
+    }
+
+    /**
+     * Gets the value of the functional property.
+     *
+     * possible object is
+     * {@link RegionConfig.Index.Functional }
+     *
+     */
+    public RegionConfig.Index.Functional getFunctional() {
+      return functional;
+    }
+
+    /**
+     * Sets the value of the functional property.
+     *
+     * allowed object is
+     * {@link RegionConfig.Index.Functional }
+     *
+     */
+    public void setFunctional(RegionConfig.Index.Functional value) {
+      this.functional = value;
     }
 
     /**
@@ -902,8 +904,9 @@ public class RegionConfig implements CacheElement {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Functional {
+    public static class Functional implements Serializable {
 
+      private static final long serialVersionUID = 1L;
       @XmlAttribute(name = "expression", required = true)
       protected String expression;
       @XmlAttribute(name = "from-clause", required = true)
@@ -1001,8 +1004,9 @@ public class RegionConfig implements CacheElement {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class PrimaryKey {
+    public static class PrimaryKey implements Serializable {
 
+      private static final long serialVersionUID = 1L;
       @XmlAttribute(name = "field", required = true)
       protected String field;
 

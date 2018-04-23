@@ -36,6 +36,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding.ConfigProperty;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.config.JAXBServiceTest;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementOne;
@@ -71,7 +72,7 @@ public class InternalClusterConfigurationServiceTest {
       RegionConfig regionConfig = new RegionConfig();
       regionConfig.setName("regionA");
       regionConfig.setRefid("REPLICATE");
-      cacheConfig.getRegion().add(regionConfig);
+      cacheConfig.getRegions().add(regionConfig);
       return cacheConfig;
     });
 
@@ -87,9 +88,13 @@ public class InternalClusterConfigurationServiceTest {
       jndiBinding.setJndiName("jndiOne");
       jndiBinding.setJdbcDriverClass("com.sun.ABC");
       jndiBinding.setType("SimpleDataSource");
-      jndiBinding.getConfigProperty()
-          .add(new JndiBindingsType.JndiBinding.ConfigProperty("test", "test", "test"));
-      cacheConfig.getJndiBindings().add(jndiBinding);
+
+      ConfigProperty configProperty = new ConfigProperty();
+      configProperty.setName("test");
+      configProperty.setType("test");
+      configProperty.setValue("test");
+      jndiBinding.getConfigProperties().add(configProperty);
+      cacheConfig.getJndiBindings().getJndiBindings().add(jndiBinding);
       return cacheConfig;
     });
 

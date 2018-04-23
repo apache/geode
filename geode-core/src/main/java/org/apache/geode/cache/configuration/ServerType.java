@@ -1,23 +1,21 @@
-
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +41,6 @@ import org.apache.geode.annotations.Experimental;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="group" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="client-subscription" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
@@ -58,7 +55,6 @@ import org.apache.geode.annotations.Experimental;
  *                 &lt;/attribute>
  *                 &lt;attribute name="capacity" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="overflow-directory" type="{http://www.w3.org/2001/XMLSchema}string" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -96,13 +92,12 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "server-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"group", "clientSubscription", "customLoadProbe"})
-@XmlSeeAlso({CacheConfig.CacheServer.class})
+    propOrder = {"clientSubscription", "customLoadProbe"})
+@XmlSeeAlso({org.apache.geode.cache.configuration.CacheConfig.CacheServer.class})
 @Experimental
-public class ServerType {
+public class ServerType implements Serializable {
 
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<String> group;
+  private static final long serialVersionUID = 1L;
   @XmlElement(name = "client-subscription", namespace = "http://geode.apache.org/schema/cache")
   protected ServerType.ClientSubscription clientSubscription;
   @XmlElement(name = "custom-load-probe", namespace = "http://geode.apache.org/schema/cache")
@@ -129,36 +124,6 @@ public class ServerType {
   protected String socketBufferSize;
   @XmlAttribute(name = "load-poll-interval")
   protected String loadPollInterval;
-
-  /**
-   * Gets the value of the group property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the group property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   *
-   * <pre>
-   * getGroup().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link String }
-   *
-   *
-   */
-  public List<String> getGroup() {
-    if (group == null) {
-      group = new ArrayList<String>();
-    }
-    return this.group;
-  }
 
   /**
    * Gets the value of the clientSubscription property.
@@ -468,7 +433,6 @@ public class ServerType {
    *       &lt;/attribute>
    *       &lt;attribute name="capacity" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="overflow-directory" type="{http://www.w3.org/2001/XMLSchema}string" />
    *     &lt;/restriction>
    *   &lt;/complexContent>
    * &lt;/complexType>
@@ -478,16 +442,15 @@ public class ServerType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "")
-  public static class ClientSubscription {
+  public static class ClientSubscription implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlAttribute(name = "eviction-policy", required = true)
     protected String evictionPolicy;
     @XmlAttribute(name = "capacity", required = true)
     protected String capacity;
     @XmlAttribute(name = "disk-store-name")
     protected String diskStoreName;
-    @XmlAttribute(name = "overflow-directory")
-    protected String overflowDirectory;
 
     /**
      * Gets the value of the evictionPolicy property.
@@ -555,28 +518,6 @@ public class ServerType {
       this.diskStoreName = value;
     }
 
-    /**
-     * Gets the value of the overflowDirectory property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getOverflowDirectory() {
-      return overflowDirectory;
-    }
-
-    /**
-     * Sets the value of the overflowDirectory property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setOverflowDirectory(String value) {
-      this.overflowDirectory = value;
-    }
-
   }
 
 
@@ -603,14 +544,15 @@ public class ServerType {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"className", "parameter"})
-  public static class CustomLoadProbe {
+  @XmlType(name = "", propOrder = {"className", "parameters"})
+  public static class CustomLoadProbe implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected String className;
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected List<ParameterType> parameter;
+    @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
+    protected List<ParameterType> parameters;
 
     /**
      * Gets the value of the className property.
@@ -635,19 +577,19 @@ public class ServerType {
     }
 
     /**
-     * Gets the value of the parameter property.
+     * Gets the value of the parameters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the parameter property.
+     * This is why there is not a <CODE>set</CODE> method for the parameters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getParameter().add(newItem);
+     * getParameters().add(newItem);
      * </pre>
      *
      *
@@ -657,11 +599,11 @@ public class ServerType {
      *
      *
      */
-    public List<ParameterType> getParameter() {
-      if (parameter == null) {
-        parameter = new ArrayList<ParameterType>();
+    public List<ParameterType> getParameters() {
+      if (parameters == null) {
+        parameters = new ArrayList<ParameterType>();
       }
-      return this.parameter;
+      return this.parameters;
     }
 
   }

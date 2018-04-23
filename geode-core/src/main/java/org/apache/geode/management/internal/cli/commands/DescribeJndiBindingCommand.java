@@ -95,7 +95,8 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
             addTableRow(tabularData, "login-timeout-seconds", binding.getLoginTimeoutSeconds());
           }
 
-          for (JndiBindingsType.JndiBinding.ConfigProperty confProp : binding.getConfigProperty()) {
+          for (JndiBindingsType.JndiBinding.ConfigProperty confProp : binding
+              .getConfigProperties()) {
             addTableRow(tabularData, confProp.getName(), confProp.getValue());
           }
 

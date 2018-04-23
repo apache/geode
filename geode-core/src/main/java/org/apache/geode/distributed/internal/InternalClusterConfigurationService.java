@@ -856,7 +856,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     try {
       CacheConfig cacheConfig = getCacheConfig(group);
       if (cacheConfig == null) {
-        cacheConfig = new CacheConfig("1.0");
+        cacheConfig = new CacheConfig();
       }
       cacheConfig = mutator.apply(cacheConfig);
       if (cacheConfig == null) {

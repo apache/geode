@@ -1,23 +1,21 @@
-
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,29 +78,31 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "serialization-registration-type",
-    namespace = "http://geode.apache.org/schema/cache", propOrder = {"serializer", "instantiator"})
+    namespace = "http://geode.apache.org/schema/cache",
+    propOrder = {"serializers", "instantiators"})
 @Experimental
-public class SerializationRegistrationType {
+public class SerializationRegistrationType implements Serializable {
 
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<SerializationRegistrationType.Serializer> serializer;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<SerializationRegistrationType.Instantiator> instantiator;
+  private static final long serialVersionUID = 1L;
+  @XmlElement(name = "serializer", namespace = "http://geode.apache.org/schema/cache")
+  protected List<SerializationRegistrationType.Serializer> serializers;
+  @XmlElement(name = "instantiator", namespace = "http://geode.apache.org/schema/cache")
+  protected List<SerializationRegistrationType.Instantiator> instantiators;
 
   /**
-   * Gets the value of the serializer property.
+   * Gets the value of the serializers property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the serializer property.
+   * This is why there is not a <CODE>set</CODE> method for the serializers property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getSerializer().add(newItem);
+   * getSerializers().add(newItem);
    * </pre>
    *
    *
@@ -112,27 +112,27 @@ public class SerializationRegistrationType {
    *
    *
    */
-  public List<SerializationRegistrationType.Serializer> getSerializer() {
-    if (serializer == null) {
-      serializer = new ArrayList<SerializationRegistrationType.Serializer>();
+  public List<SerializationRegistrationType.Serializer> getSerializers() {
+    if (serializers == null) {
+      serializers = new ArrayList<SerializationRegistrationType.Serializer>();
     }
-    return this.serializer;
+    return this.serializers;
   }
 
   /**
-   * Gets the value of the instantiator property.
+   * Gets the value of the instantiators property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the instantiator property.
+   * This is why there is not a <CODE>set</CODE> method for the instantiators property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getInstantiator().add(newItem);
+   * getInstantiators().add(newItem);
    * </pre>
    *
    *
@@ -142,11 +142,11 @@ public class SerializationRegistrationType {
    *
    *
    */
-  public List<SerializationRegistrationType.Instantiator> getInstantiator() {
-    if (instantiator == null) {
-      instantiator = new ArrayList<SerializationRegistrationType.Instantiator>();
+  public List<SerializationRegistrationType.Instantiator> getInstantiators() {
+    if (instantiators == null) {
+      instantiators = new ArrayList<SerializationRegistrationType.Instantiator>();
     }
-    return this.instantiator;
+    return this.instantiators;
   }
 
 
@@ -174,8 +174,9 @@ public class SerializationRegistrationType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"className"})
-  public static class Instantiator {
+  public static class Instantiator implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected String className;
@@ -252,8 +253,9 @@ public class SerializationRegistrationType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"className"})
-  public static class Serializer {
+  public static class Serializer implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
         required = true)
     protected String className;

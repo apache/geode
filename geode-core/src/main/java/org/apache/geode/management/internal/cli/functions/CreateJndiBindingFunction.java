@@ -37,7 +37,7 @@ public class CreateJndiBindingFunction implements InternalFunction<JndiBindingsT
     ResultSender<Object> resultSender = context.getResultSender();
     JndiBindingsType.JndiBinding configuration = context.getArguments();
     JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
-        convert(configuration.getConfigProperty()));
+        convert(configuration.getConfigProperties()));
 
     resultSender.lastResult(new CliFunctionResult(context.getMemberName(), true,
         CliStrings.format(RESULT_MESSAGE, configuration.getJndiName(), context.getMemberName())));
