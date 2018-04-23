@@ -117,7 +117,7 @@ public class DistributedTestRule extends AbstractDistributedTestRule {
 
   @Override
   protected void before() throws Exception {
-    DUnitLauncher.launchIfNeeded();
+    DUnitLauncher.launchIfNeeded(vmCount);
     for (int i = 0; i < vmCount; i++) {
       assertThat(getVM(i)).isNotNull();
     }
