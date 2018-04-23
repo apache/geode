@@ -77,6 +77,12 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   @Override
   public Collection<IndexRepository> getRepositories(RegionFunctionContext ctx)
       throws BucketNotFoundException {
+    return getRepositories(ctx, false);
+  }
+
+  @Override
+  public Collection<IndexRepository> getRepositories(RegionFunctionContext ctx,
+      boolean waitForRepository) throws BucketNotFoundException {
     Region<Object, Object> region = ctx.getDataSet();
     Set<Integer> buckets = ((InternalRegionFunctionContext) ctx).getLocalBucketSet(region);
     ArrayList<IndexRepository> repos = new ArrayList<IndexRepository>(buckets.size());
@@ -86,7 +92,8 @@ public class PartitionedRepositoryManager implements RepositoryManager {
         throw new BucketNotFoundException(
             "User bucket was not found for region " + region + "bucket id " + bucketId);
       } else {
-        if (index.isIndexAvailable(userBucket.getId()) || userBucket.isEmpty()) {
+        if (index.isIndexAvailable(userBucket.getId()) || userBucket.isEmpty()
+            || waitForRepository) {
           repos.add(getRepository(userBucket.getId()));
         } else {
           waitingThreadPoolFromDM.execute(() -> {
