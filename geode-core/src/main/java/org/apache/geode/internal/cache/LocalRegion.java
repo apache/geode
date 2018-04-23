@@ -6797,14 +6797,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  public void notifyBridgeClientsForTxUpdate(final EntryEventImpl event) {
-    Operation operation = event.getOperation();
-    if (operation == Operation.REPLACE) {
-      event.setOperation(Operation.UPDATE);
-    }
-    notifyBridgeClients(event);
-  }
-
   /**
    * @param key the key of the entry to destroy
    * @param rmtOrigin true if transaction being applied had a remote origin

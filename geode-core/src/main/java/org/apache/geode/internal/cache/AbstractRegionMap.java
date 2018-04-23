@@ -2653,8 +2653,8 @@ public abstract class AbstractRegionMap
     EntryEventImpl cbEvent = null;
     boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady);
     boolean cbEventInPending = false;
-    cbEvent = createCBEvent(owner, putOp, key, newValue, txId, txEvent, eventId, aCallbackArgument,
-        filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
+    cbEvent = createCallBackEvent(owner, putOp, key, newValue, txId, txEvent, eventId,
+        aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("txApplyPut cbEvent={}", cbEvent);
@@ -2949,7 +2949,7 @@ public abstract class AbstractRegionMap
     }
     if (invokeCallbacks && !opCompleted) {
       cbEvent.makeUpdate();
-      owner.notifyBridgeClientsForTxUpdate(cbEvent);
+      owner.invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, cbEvent, false);
     }
     if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
       txEntryState.setVersionTag(cbEvent.getVersionTag());
@@ -3074,6 +3074,15 @@ public abstract class AbstractRegionMap
     }
     return (isPartitioned || isInitialized) && (lr.shouldDispatchListenerEvent()
         || lr.shouldNotifyBridgeClients() || lr.getConcurrencyChecksEnabled());
+  }
+
+  EntryEventImpl createCallBackEvent(final LocalRegion re, Operation op, Object key,
+      Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
+      Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      long tailKey) {
+    return createCBEvent(re, op, key, newValue, txId, txEvent, eventId, aCallbackArgument,
+        filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
   }
 
   /** create a callback event for applying a transactional change to the local cache */

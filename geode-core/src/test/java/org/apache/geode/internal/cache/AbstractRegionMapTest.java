@@ -41,10 +41,12 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -56,6 +58,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class AbstractRegionMapTest {
 
   private static final Object KEY = "key";
+  private static final EntryEventImpl UPDATEEVENT = mock(EntryEventImpl.class);
 
   @After
   public void tearDown() {
@@ -832,7 +835,8 @@ public class AbstractRegionMapTest {
         mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
 
     assertEquals(1, pendingCallbacks.size());
-    verify(arm._getOwner(), times(0)).notifyBridgeClientsForTxUpdate(any());
+    verify(arm._getOwner(), never()).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
+        false);
   }
 
   @Test
@@ -846,7 +850,8 @@ public class AbstractRegionMapTest {
         mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
 
     assertEquals(0, pendingCallbacks.size());
-    verify(arm._getOwner(), times(1)).notifyBridgeClientsForTxUpdate(any());
+    verify(arm._getOwner(), times(1)).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
+        false);
   }
 
   @Test
@@ -860,7 +865,8 @@ public class AbstractRegionMapTest {
         mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
 
     assertEquals(0, pendingCallbacks.size());
-    verify(arm._getOwner(), times(1)).notifyBridgeClientsForTxUpdate(any());
+    verify(arm._getOwner(), times(1)).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
+        false);
   }
 
   private static class TxNoRegionEntryTestableAbstractRegionMap
@@ -868,6 +874,15 @@ public class AbstractRegionMapTest {
     @Override
     public RegionEntry getEntry(Object key) {
       return null;
+    }
+
+    @Override
+    EntryEventImpl createCallBackEvent(final LocalRegion re, Operation op, Object key,
+        Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
+        Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
+        ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+        long tailKey) {
+      return UPDATEEVENT;
     }
   }
 
@@ -885,6 +900,15 @@ public class AbstractRegionMapTest {
       RegionEntry regionEntry = mock(RegionEntry.class);
       when(regionEntry.isRemoved()).thenReturn(true);
       return regionEntry;
+    }
+
+    @Override
+    EntryEventImpl createCallBackEvent(final LocalRegion re, Operation op, Object key,
+        Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
+        Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
+        ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+        long tailKey) {
+      return UPDATEEVENT;
     }
   }
 
