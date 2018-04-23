@@ -423,7 +423,12 @@ public abstract class EvictionAttributes implements DataSerializable {
 
   /**
    * The unit of this value is determined by the definition of the {@link EvictionAlgorithm} set by
-   * one of the creation methods e.g. {@link EvictionAttributes#createLRUEntryAttributes()}
+   * one of the creation methods e.g. {@link EvictionAttributes#createLRUEntryAttributes()}.
+   * If the algorithm is LRU_ENTRY then the unit is entries.
+   * If the algorithm is LRU_MEMORY then the unit is megabytes.
+   * If the algorithm is LRU_HEAP then the unit is undefined and this method always returns zero.
+   * Note, in geode 1.4 and earlier, this method would throw UnsupportedOperationException for
+   * LRU_HEAP.
    *
    * @return maximum value used by the {@link EvictionAlgorithm} which determines when the
    *         {@link EvictionAction} is performed.
