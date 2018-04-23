@@ -18,6 +18,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
@@ -118,14 +119,13 @@ public class RegionExpirationDistributedTest implements Serializable {
     // In withExpirationVM0, region should be absent (for destroy, localDestroy), or entry invalid
     withExpirationVM0.invoke(() -> {
       verification.verify(spyCacheListener);
-      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      verification.assertThatExpirationOccurredInLocalMember(region);
+      verification.assertThatExpirationOccurredInLocalMember(cacheRule.getCache(), regionName);
     });
 
     // In withoutExpirationVM1, region should be absent (for destroy), or entry invalid
     // (invalidate).
     withoutExpirationVM1.invoke(() -> {
-      verification.assertRegionStateInRemoteMember(cacheRule.getCache().getRegion(regionName));
+      verification.assertRegionStateInRemoteMember(cacheRule.getCache(), regionName);
     });
   }
 
@@ -162,32 +162,44 @@ public class RegionExpirationDistributedTest implements Serializable {
       return expirationAction;
     }
 
-    void assertThatExpirationOccurredInLocalMember(final Region<String, String> region) {
+    void assertThatExpirationOccurredInLocalMember(final Cache cache, final String regionName) {
       if (expirationAction().isInvalidate() || expirationAction().isLocalInvalidate()) {
-        // invalidate region
-        assertThat(region.containsValueForKey(KEY)).isFalse();
+        // verify region was invalidated
+        Region<String, String> region = cache.getRegion(regionName);
+        await().atMost(1, MINUTES)
+            .until(() -> assertThat(region.containsValueForKey(KEY)).isFalse());
 
       } else {
-        // destroy region
-        assertThat(region).isNull();
+        // verify region was destroyed (or is in process of being destroyed)
+        await().atMost(1, MINUTES).until(() -> isDestroyed(cache.getRegion(regionName)));
       }
     }
 
-    void assertRegionStateInRemoteMember(final Region<String, String> region) {
+    void assertRegionStateInRemoteMember(final Cache cache, final String regionName) {
       if (expirationAction().isInvalidate()) {
         // distributed invalidate region
-        assertThat(region.containsKey(KEY)).isTrue();
-        assertThat(region.containsValueForKey(KEY)).isFalse();
+        Region<String, String> region = cache.getRegion(regionName);
+        await().atMost(1, MINUTES).until(() -> {
+          assertThat(region.containsKey(KEY)).isTrue();
+          assertThat(region.containsValueForKey(KEY)).isFalse();
+        });
 
       } else if (expirationAction().isDestroy()) {
-        // distributed destroy region
-        assertThat(region).isNull();
+        // verify region was destroyed (or is in process of being destroyed)
+        await().atMost(1, MINUTES).until(() -> isDestroyed(cache.getRegion(regionName)));
 
       } else {
         // for LOCAL_DESTROY or LOCAL_INVALIDATE, the value should be present
-        assertThat(region.containsValueForKey(KEY)).isTrue();
-        assertThat(region.get(KEY)).isEqualTo(VALUE);
+        Region<String, String> region = cache.getRegion(regionName);
+        await().atMost(1, MINUTES).until(() -> {
+          assertThat(region.containsValueForKey(KEY)).isTrue();
+          assertThat(region.get(KEY)).isEqualTo(VALUE);
+        });
       }
+    }
+
+    boolean isDestroyed(final Region region) {
+      return region == null || region.isDestroyed();
     }
   }
 }
