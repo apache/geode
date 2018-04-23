@@ -26,6 +26,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
@@ -62,8 +63,9 @@ public class DescribeMappingCommand extends InternalGfshCommand {
     // check if CC is available and use it to describe the connection
     ClusterConfigurationService ccService = getConfigurationService();
     if (ccService != null) {
+      CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       ConnectorService service =
-          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
+          cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
       if (service != null) {
         mapping = CacheElement.findElement(service.getRegionMapping(), regionName);
       }

@@ -34,7 +34,7 @@ public class CacheConfigTest {
   @Before
   public void setUp() throws Exception {
     cacheConfig = new CacheConfig("1.0");
-    service = new JAXBService();
+    service = new JAXBService(CacheConfig.class);
   }
 
   @Test

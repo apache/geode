@@ -29,6 +29,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
@@ -98,8 +99,7 @@ public class CreateIndexCommand extends SingleGfshCommand {
     String[] regionPathTokens = regionPath.trim().split(" ");
     regionPath = regionPathTokens[0];
     // check to see if the region path is in the form of "--region=region.entrySet() z"
-    while (regionPath.contains(".")
-        && CacheElement.findRegionConfiguration(cacheConfig, regionPath) == null) {
+    while (regionPath.contains(".") && cacheConfig.findRegionConfiguration(regionPath) == null) {
       regionPath = regionPath.substring(0, regionPath.lastIndexOf("."));
     }
     return regionPath;
@@ -110,7 +110,7 @@ public class CreateIndexCommand extends SingleGfshCommand {
     RegionConfig.Index index = (RegionConfig.Index) element;
     String regionPath = getValidRegionName(index.getFromClause(), config);
 
-    RegionConfig regionConfig = CacheElement.findRegionConfiguration(config, regionPath);
+    RegionConfig regionConfig = config.findRegionConfiguration(regionPath);
     if (regionConfig == null) {
       throw new EntityNotFoundException("Region " + index.getFromClause() + " not found.");
     }

@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.management.cli;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.management.cli.GfshCommand;
 
 /**
  * Command class that extends this class can only have one single command method,
  * i.e only one method that is annotated with @CliCommand.
  */
+@Experimental
 public abstract class SingleGfshCommand extends GfshCommand {
 
   /**

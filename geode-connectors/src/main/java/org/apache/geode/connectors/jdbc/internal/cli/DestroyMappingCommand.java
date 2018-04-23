@@ -20,13 +20,13 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyMappingCommand extends InternalGfshCommand {
+public class DestroyMappingCommand extends SingleGfshCommand {
   static final String DESTROY_MAPPING = "destroy jdbc-mapping";
   static final String DESTROY_MAPPING__HELP = "Destroy the specified mapping.";
   static final String DESTROY_MAPPING__REGION_NAME = "region";
@@ -56,23 +56,18 @@ public class DestroyMappingCommand extends InternalGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new DestroyMappingFunction(), regionName, targetMembers);
 
-    // output
-    boolean persisted = false;
-    ClusterConfigurationService ccService = getConfigurationService();
-
-    if (ccService != null && results.stream().filter(CliFunctionResult::isSuccessful).count() > 0) {
-      ConnectorService service =
-          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
-      if (service != null) {
-        CacheElement.removeElement(service.getRegionMapping(), regionName);
-        ccService.saveCustomCacheElement("cluster", service);
-        persisted = true;
-      }
-    }
-
     CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setCommandPersisted(persisted);
-
+    CacheElement cacheElement = (CacheElement) () -> regionName;
+    commandResult.setCacheElemnt(cacheElement);
     return commandResult;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, CacheElement element) {
+    ConnectorService service =
+        config.findCustomCacheElement("connector-service", ConnectorService.class);
+    if (service != null) {
+      CacheElement.removeElement(service.getRegionMapping(), element.getId());
+    }
   }
 }

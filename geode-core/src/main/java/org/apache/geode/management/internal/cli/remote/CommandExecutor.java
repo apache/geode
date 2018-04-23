@@ -21,8 +21,8 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.commands.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -129,6 +129,7 @@ public class CommandExecutor {
         try {
           gfshCommand.updateClusterConfig(group, cc, commandResult.getCacheElemnt());
         } catch (Exception e) {
+          logger.error("failed to update cluster config for " + group, e);
           // for now, if one cc update failed, we will set this flag. Will change this when we can
           // add lines to the result returned by the command
           commandResult.setCommandPersisted(false);

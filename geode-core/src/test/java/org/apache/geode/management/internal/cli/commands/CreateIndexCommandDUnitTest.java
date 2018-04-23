@@ -27,7 +27,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -69,7 +68,7 @@ public class CreateIndexCommandDUnitTest {
       InternalClusterConfigurationService configurationService =
           ClusterStartupRule.getLocator().getSharedConfiguration();
       CacheConfig cacheConfig = configurationService.getCacheConfig("cluster");
-      assertThat(CacheElement.findRegionConfiguration(cacheConfig, "noExist")).isNull();
+      assertThat(cacheConfig.findRegionConfiguration("noExist")).isNull();
     });
   }
 
@@ -85,7 +84,7 @@ public class CreateIndexCommandDUnitTest {
       InternalClusterConfigurationService configurationService =
           ClusterStartupRule.getLocator().getSharedConfiguration();
       CacheConfig cacheConfig = configurationService.getCacheConfig("cluster");
-      assertThat(CacheElement.findRegionConfiguration(cacheConfig, "regionA")).isNull();
+      assertThat(cacheConfig.findRegionConfiguration("regionA")).isNull();
     });
 
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=regionA")
@@ -95,9 +94,8 @@ public class CreateIndexCommandDUnitTest {
     locator.invoke(() -> {
       InternalClusterConfigurationService configurationService =
           ClusterStartupRule.getLocator().getSharedConfiguration();
-      assertThat(CacheElement
-          .findRegionConfiguration(configurationService.getCacheConfig("cluster"), "regionA"))
-              .isNull();
+      assertThat(configurationService.getCacheConfig("cluster").findRegionConfiguration("regionA"))
+          .isNull();
     });
   }
 

@@ -137,7 +137,7 @@ public class CreateIndexCommandTest {
   public void getValidRegionName() {
     CacheConfig cacheConfig = mock(CacheConfig.class);
     RegionConfig region = new RegionConfig("regionA.regionB", "REPLICATE");
-    when(cacheConfig.getRegion()).thenReturn(Collections.singletonList(region));
+    when(cacheConfig.findRegionConfiguration("/regionA.regionB")).thenReturn(region);
 
     assertThat(command.getValidRegionName("regionB", cacheConfig)).isEqualTo("regionB");
     assertThat(command.getValidRegionName("/regionB", cacheConfig)).isEqualTo("/regionB");
