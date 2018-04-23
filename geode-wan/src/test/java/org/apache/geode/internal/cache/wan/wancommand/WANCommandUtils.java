@@ -332,6 +332,11 @@ public class WANCommandUtils implements Serializable {
     }
   }
 
+  public static void verifyReceiverDoesNotExist() {
+    Set<GatewayReceiver> receivers = ClusterStartupRule.getCache().getGatewayReceivers();
+    assertThat(receivers.size()).isEqualTo(0);
+  }
+
   public static void validateMemberMXBeanProxy(final InternalDistributedMember member) {
     MemberMXBean memberMXBean = awaitMemberMXBeanProxy(member);
     assertThat(memberMXBean).isNotNull();
