@@ -3799,12 +3799,18 @@ public class HARegionQueue implements RegionQueue {
 
     private static volatile ExpirationAttributes testExpAtts;
 
+    private final int expTime;
+
+    ThreadIdentifierCustomExpiry() {
+      expTime = calculateThreadIdExpiryTime();
+    }
+
     @Override
     public ExpirationAttributes getExpiry(Region.Entry entry) {
       // Use key to determine expiration.
       Object key = entry.getKey();
       if (key instanceof ThreadIdentifier) {
-        final int expTime = calculateThreadIdExpiryTime();
+        // TODO: inject subclass of ThreadIdentifierCustomExpiry and move next block to test class
         if (expTime != DEFAULT_THREAD_ID_EXPIRY_TIME) {
           // This should only happen in unit test code
           ExpirationAttributes result = testExpAtts;
