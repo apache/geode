@@ -147,9 +147,9 @@ public class JAXBServiceTest {
     cache.setCopyOnRead(true);
     CacheConfig.GatewayReceiver receiver = new CacheConfig.GatewayReceiver();
     receiver.setBindAddress("localhost");
-    receiver.setEndPort(8080);
+    receiver.setEndPort("8080");
     receiver.setManualStart(false);
-    receiver.setStartPort(6000);
+    receiver.setStartPort("6000");
     cache.setGatewayReceiver(receiver);
 
     RegionConfig region = new RegionConfig();
