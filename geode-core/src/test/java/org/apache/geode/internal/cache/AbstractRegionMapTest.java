@@ -30,6 +30,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,10 +41,12 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -53,6 +58,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class AbstractRegionMapTest {
 
   private static final Object KEY = "key";
+  private static final EntryEventImpl UPDATEEVENT = mock(EntryEventImpl.class);
 
   @After
   public void tearDown() {
@@ -812,7 +818,97 @@ public class AbstractRegionMapTest {
       when(owner.getCache()).thenReturn(mock(InternalCache.class));
       when(owner.isAllEvents()).thenReturn(true);
       when(owner.isInitialized()).thenReturn(true);
+      when(owner.shouldNotifyBridgeClients()).thenReturn(true);
       initialize(owner, new Attributes(), null, false);
+    }
+  }
+
+  @Test
+  public void txApplyPutOnSecondaryConstructsPendingCallbacksWhenRegionEntryExists()
+      throws Exception {
+    AbstractRegionMap arm = new TxRegionEntryTestableAbstractRegionMap();
+    List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
+
+    Object newValue = "value";
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false,
+        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
+        mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
+
+    assertEquals(1, pendingCallbacks.size());
+    verify(arm._getOwner(), never()).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
+        false);
+  }
+
+  @Test
+  public void txApplyPutOnSecondaryNotifiesClientsWhenRegionEntryIsRemoved() throws Exception {
+    AbstractRegionMap arm = new TxRemovedRegionEntryTestableAbstractRegionMap();
+    List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
+
+    Object newValue = "value";
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false,
+        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
+        mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
+
+    assertEquals(0, pendingCallbacks.size());
+    verify(arm._getOwner(), times(1)).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
+        false);
+  }
+
+  @Test
+  public void txApplyPutOnSecondaryNotifiesClientsWhenRegionEntryIsNull() throws Exception {
+    AbstractRegionMap arm = new TxNoRegionEntryTestableAbstractRegionMap();
+    List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
+
+    Object newValue = "value";
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false,
+        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
+        mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
+
+    assertEquals(0, pendingCallbacks.size());
+    verify(arm._getOwner(), times(1)).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
+        false);
+  }
+
+  private static class TxNoRegionEntryTestableAbstractRegionMap
+      extends TxTestableAbstractRegionMap {
+    @Override
+    public RegionEntry getEntry(Object key) {
+      return null;
+    }
+
+    @Override
+    EntryEventImpl createCallBackEvent(final LocalRegion re, Operation op, Object key,
+        Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
+        Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
+        ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+        long tailKey) {
+      return UPDATEEVENT;
+    }
+  }
+
+  private static class TxRegionEntryTestableAbstractRegionMap extends TxTestableAbstractRegionMap {
+    @Override
+    public RegionEntry getEntry(Object key) {
+      return mock(RegionEntry.class);
+    }
+  }
+
+  private static class TxRemovedRegionEntryTestableAbstractRegionMap
+      extends TxTestableAbstractRegionMap {
+    @Override
+    public RegionEntry getEntry(Object key) {
+      RegionEntry regionEntry = mock(RegionEntry.class);
+      when(regionEntry.isRemoved()).thenReturn(true);
+      return regionEntry;
+    }
+
+    @Override
+    EntryEventImpl createCallBackEvent(final LocalRegion re, Operation op, Object key,
+        Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
+        Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
+        ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+        long tailKey) {
+      return UPDATEEVENT;
     }
   }
 
