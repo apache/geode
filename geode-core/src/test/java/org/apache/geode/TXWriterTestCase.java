@@ -14,7 +14,7 @@
  */
 package org.apache.geode;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.util.Properties;
 

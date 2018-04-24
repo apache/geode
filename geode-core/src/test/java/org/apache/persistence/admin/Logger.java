@@ -15,8 +15,11 @@
 package org.apache.persistence.admin;
 
 import java.io.PrintWriter;
-import java.text.*;
-import java.util.*;
+import java.text.BreakIterator;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 /**
  * Provides single point for all log messages to written to. Currently this class only supports
