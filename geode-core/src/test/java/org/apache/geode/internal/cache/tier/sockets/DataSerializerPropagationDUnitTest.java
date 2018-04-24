@@ -257,11 +257,11 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     server2.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(0)));
 
     client1.invoke(() -> {
-      DSObjectLocalOnly.allowNonLocalTL.set(true);
+      DSObjectLocalOnly.allowDefaultInstantiation = true;
       try {
         DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(1));
       } finally {
-        DSObjectLocalOnly.allowNonLocalTL.remove();
+        DSObjectLocalOnly.allowDefaultInstantiation = false;
       }
     });
 
@@ -294,8 +294,8 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
 
     server1.invoke(() -> DataSerializerPropagationDUnitTest.stopServer());
 
-    server1.invoke(() -> registerDataSerializer(DSObject1.class));
     server1.invoke(() -> registerDataSerializer(DSObject2.class));
+    server1.invoke(() -> registerDataSerializer(DSObject3.class));
 
     server2.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(3)));
 
@@ -694,20 +694,17 @@ class Bogus {
 /**
  * This data serializer can be created locally but remote guys who call the default constructor will
  * fail.
- *
  */
 class DSObjectLocalOnly extends DataSerializer {
-  static final ThreadLocal<Boolean> allowNonLocalTL = new ThreadLocal<>();
+  static boolean allowDefaultInstantiation = false;
 
-  int tempField;
-
-  public DSObjectLocalOnly(int v) {
-    this.tempField = v;
+  DSObjectLocalOnly(int v) {
+    // this allows us to make one locally without setting the static.
   }
 
+  // used for serialization
   public DSObjectLocalOnly() {
-    Boolean b = allowNonLocalTL.get();
-    if (b == null || !b) {
+    if (!allowDefaultInstantiation) {
       throw new UnsupportedOperationException("DSObjectLocalOnly can not be deserialized");
     }
   }
