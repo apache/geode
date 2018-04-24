@@ -51,7 +51,6 @@ public class DescribeMappingCommandTest {
   public void setUp() {
     command = spy(DescribeMappingCommand.class);
     ccService = mock(InternalClusterConfigurationService.class);
-    doReturn(ccService).when(command).getConfigurationService();
   }
 
   @Test
@@ -61,20 +60,16 @@ public class DescribeMappingCommandTest {
   }
 
   @Test
-  public void whenCCServiceIsNotAvailable() {
-    doReturn(null).when(command).getConfigurationService();
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("cluster configuration service is not running");
-  }
-
-  @Test
   public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
+    doReturn(ccService).when(command).getConfigurationService();
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("mapping for region 'region' not found");
   }
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectionFound() {
+    doReturn(ccService).when(command).getConfigurationService();
+
     ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
@@ -82,7 +77,9 @@ public class DescribeMappingCommandTest {
   }
 
   @Test
-  public void successfulResult() {
+  public void whenCCIsAvailable() {
+    doReturn(ccService).when(command).getConfigurationService();
+
     // mapping found in CC
     ConnectorService.RegionMapping mapping =
         new ConnectorService.RegionMapping("region", "class1", "table1", "name1", true);
@@ -105,22 +102,19 @@ public class DescribeMappingCommandTest {
   }
 
   @Test
-  public void whenCCIsNotAvailableAndMemberIsNotSpecified() {
+  public void whenCCIsNotAvailableAndNoMemberExists() {
     doReturn(null).when(command).getConfigurationService();
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("Use --member option to describe mappings");
+    doReturn(Collections.emptySet()).when(command).findMembers(null, null);
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+        .containsOutput("mapping for region 'region' not found");
   }
 
   @Test
-  public void whenNonExistingMemberIsSpecified() {
-    doReturn(null).when(command).getMember(any());
-    gfsh.executeAndAssertThat(command, COMMAND + " --member=member1").statusIsError()
-        .containsOutput("No Members Found");
-  }
-
-  @Test
-  public void whenExistingMemberIsSpecified() {
-    doReturn(mock(DistributedMember.class)).when(command).getMember(any());
+  public void whenCCIsNotAvailableAndMemberExists() {
+    doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
+        null);
 
     ConnectorService.RegionMapping mapping =
         new ConnectorService.RegionMapping("region", "class1", "table1", "name1", true);
@@ -133,10 +127,24 @@ public class DescribeMappingCommandTest {
     doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
     when(rc.getResult()).thenReturn(Collections.singletonList(mapping));
 
-    gfsh.executeAndAssertThat(command, COMMAND + " --member=member1").statusIsSuccess()
-        .containsOutput("region", "region").containsOutput("connection", "name1")
-        .containsOutput("table", "table1").containsOutput("pdx-class-name", "class1")
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
+        .containsOutput("connection", "name1").containsOutput("table", "table1")
+        .containsOutput("pdx-class-name", "class1")
         .containsOutput("value-contains-primary-key", "true").containsOutput("field1", "value1")
         .containsOutput("field2", "value2");
+  }
+
+  @Test
+  public void whenCCIsNotAvailableAndNoMappingFoundOnMember() {
+    doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
+        null);
+
+    ResultCollector rc = mock(ResultCollector.class);
+    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
+    when(rc.getResult()).thenReturn(Collections.emptyList());
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+        .containsOutput("mapping for region 'region' not found");
   }
 }

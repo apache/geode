@@ -19,13 +19,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -41,50 +39,43 @@ public class ListConnectionCommand extends InternalGfshCommand {
 
   static final String LIST_OF_CONNECTIONS = "List of connections";
   static final String NO_CONNECTIONS_FOUND = "No connections found";
-  static final String LIST_CONNECTION_MEMBER__HELP =
-      "Member from which the jdbc connections are retrieved.";
 
   @CliCommand(value = LIST_JDBC_CONNECTION, help = LIST_JDBC_CONNECTION__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result listConnection(
-      @CliOption(key = {CliStrings.MEMBER}, optionContext = ConverterHint.MEMBERIDNAME,
-          help = LIST_CONNECTION_MEMBER__HELP) String onMember) {
+  public Result listConnection() {
 
-    // when member is specified, we go to each member and describe what are on the members
-    if (onMember != null) {
-      DistributedMember member = getMember(onMember);
-      if (member == null) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
+    Collection<ConnectorService.Connection> connections = null;
 
-      List<?> result =
-          (List<?>) executeFunction(new ListConnectionFunction(), null, member).getResult();
-      Set<ConnectorService.Connection> connections =
-          (Set<ConnectorService.Connection>) result.get(0);
-      TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-      boolean connectionsExist = fillTabularResultData(connections, tabularResultData);
-
-      return createResult(tabularResultData, connectionsExist);
-    }
-
-    // otherwise, use cluster configuration to describe the connections
+    // check if CC is available and use it to describe the connection
     ClusterConfigurationService ccService = getConfigurationService();
-    if (ccService == null) {
-      return ResultBuilder.createInfoResult(
-          "cluster configuration service is not running. Use --member option to describe connections on specific members.");
+    if (ccService != null) {
+      ConnectorService service =
+          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
+      if (service != null) {
+        connections = service.getConnection();
+      }
+    } else {
+      // otherwise get it from any member
+      Set<DistributedMember> members = findMembers(null, null);
+      if (members.size() > 0) {
+        DistributedMember targetMember = members.iterator().next();
+        List<?> result =
+            (List<?>) executeFunction(new ListConnectionFunction(), null, targetMember).getResult();
+        if (!result.isEmpty()) {
+          connections = (Set<ConnectorService.Connection>) result.get(0);
+        }
+      }
     }
 
-    ConnectorService service =
-        ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
-    if (service == null) {
-      return ResultBuilder.createInfoResult(NO_CONNECTIONS_FOUND);
+    if (connections == null) {
+      return ResultBuilder.createInfoResult("No connections found");
     }
 
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean connectionsExist = fillTabularResultData(service.getConnection(), tabularResultData);
+    boolean connectionsExist = fillTabularResultData(connections, tabularResultData);
     return createResult(tabularResultData, connectionsExist);
   }
 

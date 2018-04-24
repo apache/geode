@@ -23,13 +23,20 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING__REGION_NAME;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import java.io.Serializable;
+import java.util.Properties;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -39,23 +46,23 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
-public class DescribeMappingCommandDUnitTest {
+public class DescribeMappingCommandDUnitTest implements Serializable {
 
   private static final String REGION_NAME = "testRegion";
 
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  @Rule
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
-  @ClassRule
-  public static ClusterStartupRule startupRule = new ClusterStartupRule();
+  @Rule
+  public transient ClusterStartupRule startupRule = new ClusterStartupRule();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
 
-  private static MemberVM locator, server;
+  private MemberVM locator, server;
 
-  @BeforeClass
-  public static void before() throws Exception {
+  @Test
+  public void describesExistingMapping() throws Exception {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
@@ -70,12 +77,9 @@ public class DescribeMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
-  }
 
-  @Test
-  public void describesExistingMapping() {
-    CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_MAPPING)
-        .addOption(DESCRIBE_MAPPING__REGION_NAME, REGION_NAME);
+    csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(DESCRIBE_MAPPING__REGION_NAME,
+        REGION_NAME);
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
@@ -92,7 +96,11 @@ public class DescribeMappingCommandDUnitTest {
   }
 
   @Test
-  public void reportsNoMappingFound() {
+  public void reportsNoMappingFound() throws Exception {
+    locator = startupRule.startLocatorVM(0);
+    server = startupRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_MAPPING)
         .addOption(DESCRIBE_MAPPING__REGION_NAME, "nonExisting");
 
@@ -103,19 +111,31 @@ public class DescribeMappingCommandDUnitTest {
   }
 
   @Test
-  public void reportConfigurationFoundOnMember() {
-    CommandResultAssert commandResultAssert = gfsh
-        .executeAndAssertThat(DESCRIBE_MAPPING + " --region=" + REGION_NAME + " --member=server-1")
-        .statusIsSuccess();
+  public void reportConfigurationFoundOnMember() throws Exception {
+    Properties properties = new Properties();
+    properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+
+    locator = startupRule.startLocatorVM(0, properties);
+    server = startupRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
+    server.invoke(() -> createRegionMapping());
+
+    CommandResultAssert commandResultAssert =
+        gfsh.executeAndAssertThat(DESCRIBE_MAPPING + " --region=" + REGION_NAME).statusIsSuccess();
 
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__REGION_NAME, REGION_NAME);
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__CONNECTION_NAME, "connection");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__TABLE_NAME, "testTable");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
-    commandResultAssert.containsOutput("field1");
-    commandResultAssert.containsOutput("field2");
-    commandResultAssert.containsOutput("column1");
-    commandResultAssert.containsOutput("column2");
+  }
+
+  private void createRegionMapping() throws RegionMappingExistsException {
+    InternalCache cache = ClusterStartupRule.getCache();
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
+    service.createRegionMapping(new ConnectorService.RegionMapping(REGION_NAME, "myPdxClass",
+        "testTable", "connection", true));
+    assertThat(service.getMappingForRegion(REGION_NAME)).isNotNull();
   }
 }
