@@ -14,12 +14,11 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.assertj.core.api.Assertions.fail;
 
 import java.io.Serializable;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -35,14 +34,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryService;
@@ -51,20 +47,12 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.IndexManager;
-import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.execute.PRClientServerTestBase;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
@@ -92,8 +80,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
   public CacheRule cacheRule = CacheRule.builder().createCacheInAll().disconnectAfter().build();
 
   @Before
-  public void initialize()
-  {
+  public void initialize() {
     server = Host.getHost(0).getVM(0);
   }
 
@@ -143,9 +130,8 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       Awaitility.await().until(() -> hooked);
       Object resultSet = null;
       try {
-        resultSet =
-            queryService.newQuery("<trace> select * from /" + repRegionName + " where ID = 1")
-                .execute();
+        resultSet = queryService
+            .newQuery("<trace> select * from /" + repRegionName + " where ID = 1").execute();
       } catch (Exception e) {
         logger.error(e);
         fail("Query execution failed on server.");
@@ -167,9 +153,8 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       Awaitility.await().until(() -> hooked);
       Object resultSet = null;
       try {
-        resultSet =
-            queryService.newQuery("<trace> select * from /" + repRegionName + " where ID = 1")
-                .execute();
+        resultSet = queryService
+            .newQuery("<trace> select * from /" + repRegionName + " where ID = 1").execute();
       } catch (Exception e) {
         logger.error(e);
         fail("Query execution failed on server." + e.getMessage());
@@ -188,7 +173,6 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       hooked = false;// Let client put go further.
     });
     Awaitility.await().until(joinThread(putThread));
-    // ThreadUtils.join(putThread, 200);
   }
 
   @Test
@@ -353,8 +337,6 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       }
     });
     Awaitility.await().until(joinThread(putThread));
-    // ThreadUtils.join(putThread, 200); // GEODE-925 occuresultSet here and this is very short join 200
-    // millis
   }
 
   @Test
