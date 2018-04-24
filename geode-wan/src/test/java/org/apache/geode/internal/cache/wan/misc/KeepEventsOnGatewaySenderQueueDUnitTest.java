@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 import java.util.UUID;

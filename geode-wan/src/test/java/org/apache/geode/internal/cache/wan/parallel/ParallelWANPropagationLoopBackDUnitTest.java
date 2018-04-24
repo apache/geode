@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
