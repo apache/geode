@@ -56,7 +56,7 @@ public class DestroyConnectionCommand extends SingleGfshCommand {
         executeAndGetFunctionResult(new DestroyConnectionFunction(), name, targetMembers);
     CommandResult commandResult = ResultBuilder.buildResult(results);
     CacheElement element = (CacheElement) () -> name;
-    commandResult.setCacheElemnt(element);
+    commandResult.setCacheElement(element);
     return commandResult;
   }
 

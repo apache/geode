@@ -127,7 +127,7 @@ public class CommandExecutor {
     for (String group : groups) {
       ccService.updateCacheConfig(group, cc -> {
         try {
-          gfshCommand.updateClusterConfig(group, cc, commandResult.getCacheElemnt());
+          gfshCommand.updateClusterConfig(group, cc, commandResult.getCacheElement());
         } catch (Exception e) {
           logger.error("failed to update cluster config for " + group, e);
           // for now, if one cc update failed, we will set this flag. Will change this when we can

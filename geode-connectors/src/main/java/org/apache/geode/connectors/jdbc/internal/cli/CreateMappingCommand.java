@@ -87,7 +87,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
 
 
     CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setCacheElemnt(mapping);
+    commandResult.setCacheElement(mapping);
     return commandResult;
   }
 

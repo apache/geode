@@ -89,7 +89,7 @@ public class CreateIndexCommand extends SingleGfshCommand {
     List<CliFunctionResult> functionResults =
         executeAndGetFunctionResult(createIndexFunction, index, targetMembers);
     result = ResultBuilder.buildResult(functionResults);
-    result.setCacheElemnt(index);
+    result.setCacheElement(index);
     return result;
   }
 

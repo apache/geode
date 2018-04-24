@@ -58,7 +58,7 @@ public class DestroyMappingCommand extends SingleGfshCommand {
 
     CommandResult commandResult = ResultBuilder.buildResult(results);
     CacheElement cacheElement = (CacheElement) () -> regionName;
-    commandResult.setCacheElemnt(cacheElement);
+    commandResult.setCacheElement(cacheElement);
     return commandResult;
   }
 

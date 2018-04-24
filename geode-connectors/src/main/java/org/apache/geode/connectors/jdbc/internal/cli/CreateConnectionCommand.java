@@ -83,7 +83,7 @@ public class CreateConnectionCommand extends SingleGfshCommand {
         executeAndGetFunctionResult(new CreateConnectionFunction(), connection, targetMembers);
 
     CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setCacheElemnt(connection);
+    commandResult.setCacheElement(connection);
     return commandResult;
   }
 

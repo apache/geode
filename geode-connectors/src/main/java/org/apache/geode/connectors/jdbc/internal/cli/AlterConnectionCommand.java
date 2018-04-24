@@ -102,7 +102,7 @@ public class AlterConnectionCommand extends SingleGfshCommand {
         (ConnectorService.Connection) successResult.getResultObject();
 
     CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setCacheElemnt(mergedConnection);
+    commandResult.setCacheElement(mergedConnection);
     return commandResult;
   }
 

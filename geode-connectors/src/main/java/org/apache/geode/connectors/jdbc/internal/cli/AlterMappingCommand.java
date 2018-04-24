@@ -104,12 +104,12 @@ public class AlterMappingCommand extends SingleGfshCommand {
         executeAndGetFunctionResult(new AlterMappingFunction(), newMapping, targetMembers);
     CommandResult commandResult = ResultBuilder.buildResult(results);
 
-    // find the merged regionmapping from the function result
+    // find the merged regionMapping from the function result
     CliFunctionResult successResult =
         results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
     ConnectorService.RegionMapping mergedMapping =
         (ConnectorService.RegionMapping) successResult.getResultObject();
-    commandResult.setCacheElemnt(mergedMapping);
+    commandResult.setCacheElement(mergedMapping);
     return commandResult;
   }
 

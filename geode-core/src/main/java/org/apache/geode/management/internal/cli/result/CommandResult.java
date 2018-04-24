@@ -57,7 +57,7 @@ public class CommandResult implements Result {
   private ResultData resultData;
   private List<String> resultLines;
   private boolean failedToPersist = false;
-  private CacheElement cacheElemnt;
+  private CacheElement cacheElement;
 
   private transient int numTimesSaved;
 
@@ -101,12 +101,12 @@ public class CommandResult implements Result {
     return gfJsonObject;
   }
 
-  public CacheElement getCacheElemnt() {
-    return cacheElemnt;
+  public CacheElement getCacheElement() {
+    return cacheElement;
   }
 
-  public void setCacheElemnt(CacheElement cacheElemnt) {
-    this.cacheElemnt = cacheElemnt;
+  public void setCacheElement(CacheElement cacheElement) {
+    this.cacheElement = cacheElement;
   }
 
   @Override

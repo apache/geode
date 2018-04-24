@@ -28,6 +28,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -74,6 +75,8 @@ public class CreateIndexCommandDUnitTest {
 
   @Test
   public void regionExistOnServerButNotInClusterConfig() {
+    IgnoredException.addIgnoredException(
+        "org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException");
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create("regionA");
