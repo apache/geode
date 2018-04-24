@@ -16,7 +16,11 @@ package org.apache.geode.internal.cache;
 
 import java.util.Properties;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.DiskWriteAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.i18n.LocalizedStrings;

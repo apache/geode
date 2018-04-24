@@ -14,9 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.TransactionEvent;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.internal.offheap.Releasable;
 
 /**
