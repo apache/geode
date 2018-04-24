@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
