@@ -14,7 +14,7 @@
  */
 package org.apache.geode.pdx.internal;
 
-import static java.lang.Integer.*;
+import static java.lang.Integer.valueOf;
 
 import java.util.Map;
 import java.util.Set;

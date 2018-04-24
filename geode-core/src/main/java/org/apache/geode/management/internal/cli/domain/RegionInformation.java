@@ -15,7 +15,8 @@
 package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
