@@ -94,7 +94,7 @@ public class InternalClusterConfigurationServiceTest {
       configProperty.setType("test");
       configProperty.setValue("test");
       jndiBinding.getConfigProperties().add(configProperty);
-      cacheConfig.getJndiBindings().getJndiBindings().add(jndiBinding);
+      cacheConfig.getJndiBindings().add(jndiBinding);
       return cacheConfig;
     });
 

@@ -65,7 +65,7 @@ public class ListJndiBindingCommandTest {
   @Test
   public void hasServiceNoBindingNoMember() {
     doReturn(ccService).when(command).getConfigurationService();
-    when(cacheConfig.getJndiBindings().getJndiBindings()).thenReturn(Collections.emptyList());
+    when(cacheConfig.getJndiBindings()).thenReturn(Collections.emptyList());
     doReturn(Collections.emptySet()).when(command).findMembers(null, null);
     gfsh.executeAndAssertThat(command, "list jndi-binding").statusIsSuccess()
         .containsOutput("No JNDI-bindings found in cluster configuration")
