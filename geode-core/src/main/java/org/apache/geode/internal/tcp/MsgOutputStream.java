@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.tcp;
 
-import java.io.*;
-import java.nio.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UTFDataFormatException;
+import java.nio.ByteBuffer;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.*;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
