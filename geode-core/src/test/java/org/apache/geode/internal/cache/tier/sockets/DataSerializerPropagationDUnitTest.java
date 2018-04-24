@@ -355,60 +355,35 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
         .verifyDataSerializers(new Integer(instanceCountWithOnePut)));
 
     // can get server connectivity exception
-    final IgnoredException expectedEx =
-        IgnoredException.addIgnoredException("Server unreachable", client1);
+    try (IgnoredException removedLater =
+        IgnoredException.addIgnoredException("Server unreachable", client1)) {
 
-    server1.invoke(() -> DataSerializerPropagationDUnitTest.stopServer());
+      server1.invoke(() -> DataSerializerPropagationDUnitTest.stopServer());
 
-    try {
-      client1.invoke(() -> registerDataSerializer(DSObject2.class));
-    } catch (Exception e) {// we are putting in a client whose server is dead
+      try {
+        client1.invoke(() -> registerDataSerializer(DSObject2.class));
+      } catch (Exception e) {// we are putting in a client whose server is dead
 
+      }
+      try {
+        client1.invoke(() -> registerDataSerializer(DSObject3.class));
+      } catch (Exception e) {// we are putting in a client whose server is
+        // dead
+      }
+      server1.invoke(() -> DataSerializerPropagationDUnitTest.startServer());
+
+      client1.invoke(() -> DataSerializerPropagationDUnitTest
+          .verifyDataSerializers(new Integer(instanceCountWithAllPuts)));
+
+      server1.invoke(() -> DataSerializerPropagationDUnitTest
+          .verifyDataSerializers(new Integer(instanceCountWithAllPuts)));
+
+      server2.invoke(() -> DataSerializerPropagationDUnitTest
+          .verifyDataSerializers(new Integer(instanceCountWithAllPuts)));
+
+      client1.invoke(() -> DataSerializerPropagationDUnitTest
+          .verifyDataSerializers(new Integer(instanceCountWithAllPuts)));
     }
-    try {
-      client1.invoke(() -> registerDataSerializer(DSObject3.class));
-    } catch (Exception e) {// we are putting in a client whose server is
-      // dead
-    }
-    server1.invoke(() -> DataSerializerPropagationDUnitTest.startServer());
-
-    client1.invoke(() -> DataSerializerPropagationDUnitTest
-        .verifyDataSerializers(new Integer(instanceCountWithAllPuts)));
-
-    server1.invoke(() -> DataSerializerPropagationDUnitTest
-        .verifyDataSerializers(new Integer(instanceCountWithAllPuts)));
-
-    server2.invoke(() -> DataSerializerPropagationDUnitTest
-        .verifyDataSerializers(new Integer(instanceCountWithAllPuts)));
-
-    client1.invoke(() -> DataSerializerPropagationDUnitTest
-        .verifyDataSerializers(new Integer(instanceCountWithAllPuts)));
-
-    expectedEx.remove();
-  }
-
-  @Test
-  public void testDataSerializerCount() throws Exception {
-    PORT1 = initServerCache(server1);
-    PORT2 = initServerCache(server2);
-
-    client1.invoke(() -> DataSerializerPropagationDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
-    client2.invoke(() -> DataSerializerPropagationDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
-    createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2));
-
-    client1.invoke(() -> registerDataSerializer(DSObject1.class));
-
-    client1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(1)));
-
-    server1.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(1)));
-
-    server2.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(1)));
-
-    client2.invoke(() -> DataSerializerPropagationDUnitTest.verifyDataSerializers(new Integer(1)));
-
-    verifyDataSerializers(1);
   }
 
   /**
