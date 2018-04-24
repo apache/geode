@@ -64,7 +64,7 @@ public class DescribeMappingCommand extends InternalGfshCommand {
     ClusterConfigurationService ccService = getConfigurationService();
     if (ccService != null) {
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
-      if(cacheConfig != null) {
+      if (cacheConfig != null) {
         ConnectorService service =
             cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
         if (service != null) {
