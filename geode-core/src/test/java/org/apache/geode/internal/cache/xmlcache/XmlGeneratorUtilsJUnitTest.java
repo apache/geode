@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import static javax.xml.XMLConstants.*;
-import static org.junit.Assert.*;
+import static javax.xml.XMLConstants.NULL_NS_URI;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.concurrent.atomic.AtomicReference;
 
