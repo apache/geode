@@ -265,7 +265,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     return this.queue.size();
   }
 
-  public int eventSecondaryQueueSize() {
+  public int secondaryEventQueueSize() {
     if (queue == null) {
       return 0;
     }
