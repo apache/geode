@@ -84,8 +84,6 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
 
   private static boolean testEventIDResult = false;
 
-  public static boolean successfullyLoadedTestDataSerializer = false;
-
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
@@ -141,7 +139,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
       server1 = null;
 
     } finally {
-      DataSerializerPropagationDUnitTest.successfullyLoadedTestDataSerializer = false;
+      TestDataSerializer.successfullyInstantiated = false;
       DistributedTestUtils.unregisterAllDataSerializersFromAllVms();
     }
   }
@@ -164,7 +162,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
   }
 
   private static void registerDSObjectLocalOnly() throws Exception {
-    InternalDataSerializer._register(new DSObjectLocalOnly(), true);
+    InternalDataSerializer._register(new DSObjectLocalOnly(79), true);
   }
 
   public static void stopServer() {
@@ -519,12 +517,12 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
 
   private static void verifyTestDataSerializerNotLoaded() {
     assertFalse("TestDataSerializer should not have been loaded in this vm.",
-        successfullyLoadedTestDataSerializer);
+        TestDataSerializer.successfullyInstantiated);
   }
 
   private static void verifyTestDataSerializerLoaded() {
     assertTrue("TestDataSerializer should have been loaded in this vm.",
-        successfullyLoadedTestDataSerializer);
+        TestDataSerializer.successfullyInstantiated);
   }
 
   private static void verifyLoadedDataSerializers(int expected) {
@@ -700,6 +698,12 @@ class Bogus {
  */
 class DSObjectLocalOnly extends DataSerializer {
   static final ThreadLocal<Boolean> allowNonLocalTL = new ThreadLocal<>();
+
+  int tempField;
+
+  public DSObjectLocalOnly(int v) {
+    this.tempField = v;
+  }
 
   public DSObjectLocalOnly() {
     Boolean b = allowNonLocalTL.get();
