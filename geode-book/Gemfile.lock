@@ -10,12 +10,12 @@ GEM
       public_suffix (>= 2.0.2, < 4.0)
     ansi (1.5.0)
     backports (3.11.3)
-    bookbindery (10.1.12)
+    bookbindery (10.1.13)
       ansi (~> 1.4)
       css_parser
       elasticsearch
       fog-aws (~> 0.7.1)
-      font-awesome-sass
+      font-awesome-sass (= 4.7.0)
       git (~> 1.2.8)
       middleman (= 4.1.10)
       middleman-compass
@@ -87,7 +87,7 @@ GEM
     fog-xml (0.1.3)
       fog-core
       nokogiri (>= 1.5.11, < 2.0.0)
-    font-awesome-sass (5.0.9)
+    font-awesome-sass (4.7.0)
       sass (>= 3.2)
     formatador (0.2.5)
     git (1.2.9.1)
@@ -198,7 +198,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bookbindery (= 10.1.12)
+  bookbindery
   libv8 (= 3.16.14.7)
 
 BUNDLED WITH
