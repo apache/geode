@@ -476,6 +476,10 @@ public class HARegion extends DistributedRegion {
     return ((HARegionAdvisor) this.distAdvisor).noPrimaryOrHasRegisteredInterest();
   }
 
+  public Object updateHAEventWrapper(InternalDistributedMember sender,
+      CachedDeserializable newValueCd) {
+    return this.owningQueue.updateHAEventWrapper(sender, newValueCd, getName());
+  }
 
   /** HARegions have their own advisors so that interest registration state can be tracked */
   public static class HARegionAdvisor extends CacheDistributionAdvisor {

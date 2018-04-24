@@ -79,11 +79,13 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientMarkerMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -96,6 +98,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
@@ -2070,6 +2073,84 @@ public class HARegionQueue implements RegionQueue {
     }
   }
 
+  public Object updateHAEventWrapper(InternalDistributedMember sender,
+      CachedDeserializable newValueCd, String regionName) {
+    Object inputValue;
+    try {
+      inputValue = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
+          sender.getVersionObject(), null);
+      newValueCd = new VMCachedDeserializable(inputValue, newValueCd.getSizeInBytes());
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException("Unable to deserialize HA event for region " + regionName);
+    }
+    if (inputValue instanceof HAEventWrapper) {
+      HAEventWrapper inputHaEventWrapper = (HAEventWrapper) inputValue;
+      // Key was removed at sender side so not putting it into the HARegion
+      if (inputHaEventWrapper.getClientUpdateMessage() == null) {
+        return null;
+      }
+      // Getting the instance from singleton CCN..This assumes only one bridge
+      // server in the VM
+      HAContainerWrapper haContainer =
+          (HAContainerWrapper) CacheClientNotifier.getInstance().getHaContainer();
+      if (haContainer == null) {
+        return null;
+      }
+      HAEventWrapper entryHaEventWrapper = null;
+      // synchronized (haContainer) {
+      do {
+        ClientUpdateMessageImpl entryMessage = (ClientUpdateMessageImpl) haContainer
+            .putIfAbsent(inputHaEventWrapper, inputHaEventWrapper.getClientUpdateMessage());
+        if (entryMessage != null) {
+          entryHaEventWrapper = (HAEventWrapper) haContainer.getKey(inputHaEventWrapper);
+          if (entryHaEventWrapper == null) {
+            continue;
+          }
+          synchronized (entryHaEventWrapper) {
+            if (haContainer.getKey(entryHaEventWrapper) != null) {
+              entryHaEventWrapper.incAndGetReferenceCount();
+              // If the input and entry HAEventWrappers are not the same (which is the normal
+              // case), add the CQs and interest list from the input to the entry and create a new
+              // value from the entry.
+              if (entryHaEventWrapper != inputHaEventWrapper) { // See GEODE-4957
+                addClientCQsAndInterestList(entryMessage, inputHaEventWrapper, haContainer,
+                    regionName);
+                inputHaEventWrapper.setClientUpdateMessage(null);
+                newValueCd =
+                    new VMCachedDeserializable(entryHaEventWrapper, newValueCd.getSizeInBytes());
+              }
+            } else {
+              entryHaEventWrapper = null;
+            }
+          }
+        } else { // putIfAbsent successful
+          entryHaEventWrapper = (HAEventWrapper) haContainer.getKey(inputHaEventWrapper);
+          synchronized (entryHaEventWrapper) {
+            entryHaEventWrapper.incAndGetReferenceCount();
+            entryHaEventWrapper.setHAContainer(haContainer);
+            // If the input and entry HAEventWrappers are not the same (which is not the normal
+            // case), get the entry message, add the CQs and interest list from the input to the
+            // entry and create a new value from the entry.
+            if (entryHaEventWrapper != inputHaEventWrapper) { // See GEODE-4957
+              entryMessage = (ClientUpdateMessageImpl) haContainer.get(inputHaEventWrapper);
+              addClientCQsAndInterestList(entryMessage, inputHaEventWrapper, haContainer,
+                  regionName);
+              inputHaEventWrapper.setClientUpdateMessage(null);
+              newValueCd =
+                  new VMCachedDeserializable(entryHaEventWrapper, newValueCd.getSizeInBytes());
+            }
+            entryHaEventWrapper.setClientUpdateMessage(null);
+            entryHaEventWrapper.setIsRefFromHAContainer(true);
+          }
+          break;
+        }
+        // try until we either get a reference to HAEventWrapper from
+        // HAContainer or successfully put one into it.
+      } while (entryHaEventWrapper == null);
+    }
+    return newValueCd;
+  }
+
   /**
    * This is an implementation of RegionQueue where peek() & take () are blocking operation and will
    * not return unless it gets some legitimate value The Lock object used by this class is a
@@ -3440,7 +3521,7 @@ public class HARegionQueue implements RegionQueue {
     }
   }
 
-  public static void addClientCQsAndInterestList(ClientUpdateMessageImpl msg,
+  private void addClientCQsAndInterestList(ClientUpdateMessageImpl msg,
       HAEventWrapper haEventWrapper, Map haContainer, String regionName) {
 
     ClientProxyMembershipID proxyID = ((HAContainerWrapper) haContainer).getProxyID(regionName);

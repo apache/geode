@@ -18,9 +18,13 @@ import static org.apache.geode.test.dunit.Invoke.*;
 import static org.awaitility.Awaitility.*;
 import static org.awaitility.Duration.*;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.AdditionalAnswers;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -35,6 +39,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.HAHelper;
+import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -113,7 +118,13 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
     factory.setMirrorType(MirrorType.KEYS_VALUES);
     factory.setScope(Scope.DISTRIBUTED_ACK);
 
-    haRegion = HARegion.getInstance(HAREGION_NAME, (GemFireCacheImpl) cache, null,
+    // Mock the HARegionQueue and answer the input CachedDeserializable when updateHAEventWrapper is
+    // called
+    HARegionQueue harq = mock(HARegionQueue.class);
+    when(harq.updateHAEventWrapper(any(), any(), any()))
+        .thenAnswer(AdditionalAnswers.returnsSecondArg());
+
+    haRegion = HARegion.getInstance(HAREGION_NAME, (GemFireCacheImpl) cache, harq,
         factory.createRegionAttributes());
   }
 
