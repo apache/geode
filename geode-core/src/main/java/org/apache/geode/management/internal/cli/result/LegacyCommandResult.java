@@ -398,7 +398,18 @@ public class LegacyCommandResult implements CommandResult {
 
   @Override
   public String getMessageFromContent() {
-    return getContent().getString("message");
+    List<String> messages;
+    try {
+      GfJsonArray jsonArray = getContent().getJSONArray("message");
+      if (jsonArray == null) {
+        return "";
+      }
+      messages = toList(jsonArray.getInternalJsonArray());
+    } catch (GfJsonException jex) {
+      return "";
+    }
+
+    return messages.stream().collect(Collectors.joining(". "));
   }
 
   @Override

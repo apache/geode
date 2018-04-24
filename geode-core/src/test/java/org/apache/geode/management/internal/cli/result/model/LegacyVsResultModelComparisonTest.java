@@ -27,6 +27,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
+import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -136,6 +137,56 @@ public class LegacyVsResultModelComparisonTest {
 
     assertThat(readCommandOutput(clientNewModelResult))
         .isEqualTo(readCommandOutput(clientLegacyResult));
+  }
+
+  @Test
+  public void legacyErrorComparison() {
+    // Create the legacy results
+    ErrorResultData legacyError = ResultBuilder.createErrorResultData();
+    legacyError.addLine("This is a bad line");
+    legacyError.addLine("This is another bad line");
+
+    Result legacyResult = ResultBuilder.buildResult(legacyError);
+    String legacyString =
+        CommandResponseBuilder.createCommandResponseJson("server1", (CommandResult) legacyResult);
+
+    CommandResult legacyErrorResult = ResultBuilder.fromJson(legacyString);
+
+    // Create the new model results
+    ErrorResultModel newError = new ErrorResultModel();
+    newError.addLine("This is a bad line");
+    newError.addLine("This is another bad line");
+
+    String newModelString = CommandResponseBuilder.createCommandResponseJson("server1", newError);
+    CommandResult newErrorModelResult = ResultBuilder.fromJson(newModelString);
+
+    assertThat(legacyErrorResult.getMessageFromContent())
+        .isEqualTo(newErrorModelResult.getMessageFromContent());
+
+    assertThat(readCommandOutput(newErrorModelResult))
+        .isEqualTo(readCommandOutput(legacyErrorResult));
+  }
+
+  @Test
+  public void legacyUserErrorComparison() {
+    // Create the legacy results
+    Result legacyResult = ResultBuilder.createUserErrorResult("This is an error message");
+    String legacyString =
+        CommandResponseBuilder.createCommandResponseJson("server1", (CommandResult) legacyResult);
+
+    CommandResult legacyErrorResult = ResultBuilder.fromJson(legacyString);
+
+    // Create the new model results
+    ErrorResultModel newError = new ErrorResultModel(500, "This is an error message");
+
+    String newModelString = CommandResponseBuilder.createCommandResponseJson("server1", newError);
+    CommandResult newErrorModelResult = ResultBuilder.fromJson(newModelString);
+
+    assertThat(legacyErrorResult.getMessageFromContent())
+        .isEqualTo(newErrorModelResult.getMessageFromContent());
+
+    assertThat(readCommandOutput(newErrorModelResult))
+        .isEqualTo(readCommandOutput(legacyErrorResult));
   }
 
   private List<String> readCommandOutput(CommandResult cmd) {

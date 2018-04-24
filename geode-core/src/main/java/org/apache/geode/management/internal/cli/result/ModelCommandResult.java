@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.ModelCommandResponse;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.model.CompositeResultModel;
 import org.apache.geode.management.internal.cli.result.model.ErrorResultModel;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.SectionResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -132,7 +134,9 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public String getMessageFromContent() {
-    return null;
+    // Only Info and Error types have messages
+    List<String> messages = ((InfoResultModel) response.getData()).getContent();
+    return messages.stream().collect(Collectors.joining(". "));
   }
 
   @Override

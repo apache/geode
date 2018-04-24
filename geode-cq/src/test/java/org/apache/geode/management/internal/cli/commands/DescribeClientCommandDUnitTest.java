@@ -99,7 +99,7 @@ public class DescribeClientCommandDUnitTest {
     client2Vm4 = createClient(4, subscriptionEnabled);
     setupCqsOnVM(client2Vm4, STOCKS_REGION, "cq1", "cq2", "cq3");
 
-    waitForClientReady(subscriptionEnabled);
+    waitForClientReady(3);
 
     validateResults(subscriptionEnabled);
   }
@@ -113,7 +113,7 @@ public class DescribeClientCommandDUnitTest {
     client2Vm4 = createClient(4, subscriptionEnabled);
     setupCqsOnVM(client2Vm4, STOCKS_REGION, "cq1", "cq2", "cq3");
 
-    waitForClientReady(subscriptionEnabled);
+    waitForClientReady(1);
 
     validateResults(subscriptionEnabled);
   }
@@ -162,16 +162,12 @@ public class DescribeClientCommandDUnitTest {
         .isGreaterThan(0);
   }
 
-  void waitForClientReady(boolean subscriptionEnabled) {
+  void waitForClientReady(int cqsToWaitFor) {
     // Wait until all CQs are ready
     Awaitility.waitAtMost(10, TimeUnit.SECONDS).until(() -> {
       CommandResult r = gfsh.executeCommand("list clients");
       if (r.getStatus() != Result.Status.OK) {
         return false;
-      }
-
-      if (!subscriptionEnabled) {
-        return true;
       }
 
       String clientId = r.getColumnFromTableContent(CliStrings.LIST_CLIENT_COLUMN_Clients,
@@ -180,7 +176,11 @@ public class DescribeClientCommandDUnitTest {
       Map<String, List<String>> table =
           r.getMapFromTableContent("InfoSection", "Pool Stats For Pool Name = DEFAULT");
 
-      return table.get(CliStrings.DESCRIBE_CLIENT_CQs).get(0).equals("3");
+      if (table.size() == 0 || table.get(CliStrings.DESCRIBE_CLIENT_CQs).size() == 0) {
+        return false;
+      }
+
+      return table.get(CliStrings.DESCRIBE_CLIENT_CQs).get(0).equals(cqsToWaitFor + "");
     });
   }
 
