@@ -891,6 +891,7 @@ These statistics are for outgoing gateway queue and its connection. The primary 
 | `eventsDistributed`                   | Number of events operations removed from the event queue and sent.                                                                      |
 | `eventsNotQueuedConflated`            | Number of events operations received but not added to the event queue because the queue already contains an event with the event's key. |
 | `eventsQueued`                        | Number of events operations added to the event queue.                                                                                   |
+| `secondaryEventQueueSize`             | Size of the secondary event queue.                 |
 | `unprocessedEventMapSize`             | Current number of events entries in the secondary's unprocessed event map.                                                              |
 | `unprocessedEventsAddedBySecondary`   | Number of events added to the secondary's unprocessed event map by the secondary.                                                       |
 | `unprocessedEventsRemovedByPrimary`   | Number of events removed through a listener from the secondary's unprocessed event map by the primary.                                  |
