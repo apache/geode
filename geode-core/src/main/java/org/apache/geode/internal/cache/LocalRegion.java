@@ -7310,11 +7310,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  void cleanUpOnIncompleteOp(EntryEventImpl event, RegionEntry regionEntry) {
-    // Ok to remove entry as index has not been modified yet by the operation
-    this.entries.removeEntry(event.getKey(), regionEntry, false);
-  }
-
   public static void validateRegionName(String name, InternalRegionArguments internalRegionArgs) {
     if (name == null) {
       throw new IllegalArgumentException(
