@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal.deadlock;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashSet;
 import java.util.Set;
