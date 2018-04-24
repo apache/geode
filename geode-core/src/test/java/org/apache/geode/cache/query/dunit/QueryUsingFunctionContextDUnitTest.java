@@ -15,7 +15,8 @@
 package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashSet;

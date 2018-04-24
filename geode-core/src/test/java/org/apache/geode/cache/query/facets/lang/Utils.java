@@ -15,7 +15,10 @@
 
 package org.apache.geode.cache.query.facets.lang;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.StringTokenizer;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;

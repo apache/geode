@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache;
 
-import static org.junit.runners.MethodSorters.*;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 import org.junit.FixMethodOrder;
 import org.junit.experimental.categories.Category;

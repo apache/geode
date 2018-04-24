@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashSet;
 import java.util.Set;
