@@ -115,6 +115,7 @@ import org.apache.geode.management.internal.beans.stats.VMStatsMonitor;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.remote.OnlineCommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 /**
  * This class acts as an Bridge between MemberMBean and GemFire Cache and Distributed System
@@ -1512,7 +1513,12 @@ public class MemberMBeanBridge {
     }
 
     Result result = commandProcessor.executeCommand(commandString, env, stagedFilePaths);
-    return CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
+
+    if (result instanceof CommandResult) {
+      return CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
+    } else {
+      return CommandResponseBuilder.createCommandResponseJson(getMember(), (ResultModel) result);
+    }
   }
 
   public long getTotalDiskUsage() {

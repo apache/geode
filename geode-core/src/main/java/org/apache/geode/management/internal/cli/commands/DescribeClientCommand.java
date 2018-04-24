@@ -37,9 +37,10 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.ContinuousQueryFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.CompositeResultModel;
+import org.apache.geode.management.internal.cli.result.model.SectionResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -64,9 +65,8 @@ public class DescribeClientCommand extends InternalGfshCommand {
       clientId = clientId.substring(0, clientId.length() - 2);
     }
 
-    CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-    CompositeResultData.SectionResultData sectionResult =
-        compositeResultData.addSection("InfoSection");
+    CompositeResultModel compositeResultData = new CompositeResultModel();
+    SectionResultModel sectionResult = compositeResultData.addSection("InfoSection");
 
     ManagementService service = getManagementService();
     ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
@@ -149,7 +149,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
 
       buildTableResult(sectionResult, clientHealthStatus, isDurable, primaryServers,
           secondaryServers);
-      result = ResultBuilder.buildResult(compositeResultData);
+      result = compositeResultData;
     } else {
       return ResultBuilder.createGemFireErrorResult(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
     }
@@ -158,7 +158,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
     return result;
   }
 
-  private void buildTableResult(CompositeResultData.SectionResultData sectionResult,
+  private void buildTableResult(SectionResultModel sectionResult,
       ClientHealthStatus clientHealthStatus, String isDurable, List<String> primaryServers,
       List<String> secondaryServers) {
 
@@ -199,7 +199,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
 
       if (poolStats.size() > 0) {
         for (Map.Entry<String, String> entry : poolStats.entrySet()) {
-          TabularResultData poolStatsResultTable =
+          TabularResultModel poolStatsResultTable =
               sectionResult.addTable("Pool Stats For Pool Name = " + entry.getKey());
           poolStatsResultTable.setHeader("Pool Stats For Pool Name = " + entry.getKey());
           String poolStatsStr = entry.getValue();

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import org.apache.geode.management.cli.CliMetaData;
@@ -21,6 +23,7 @@ import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 /**
  *
@@ -28,11 +31,11 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
  */
 public class CommandResponseBuilder {
 
-  public static CommandResponse prepareCommandResponse(String memberName, CommandResult result) {
+  private static CommandResponse prepareCommandResponse(String memberName, CommandResult result) {
     GfJsonObject content;
     content = result.getContent();
     return new CommandResponse(memberName, getType(result), result.getStatus().getCode(), "1/1",
-        CliMetaData.ANNOTATION_NULL_VALUE, getDebugInfo(result), result.getHeader(), content,
+        CliMetaData.ANNOTATION_NULL_VALUE, getDebugInfo(), result.getHeader(), content,
         result.getFooter(), result.failedToPersist(), result.getFileToDownload());
   }
 
@@ -47,7 +50,7 @@ public class CommandResponseBuilder {
     return new CommandResponse(jsonObject);
   }
 
-  public static String getCommandResponseJson(CommandResponse commandResponse) {
+  private static String getCommandResponseJson(CommandResponse commandResponse) {
     return new GfJsonObject(commandResponse).toString();
   }
 
@@ -55,11 +58,25 @@ public class CommandResponseBuilder {
     return getCommandResponseJson(prepareCommandResponse(memberName, result));
   }
 
+  public static String createCommandResponseJson(String memberName, ResultModel result) {
+    CommandResponse response = new CommandResponse(result, memberName, "1/1",
+        CliMetaData.ANNOTATION_NULL_VALUE, getDebugInfo(), null);
+
+    ObjectMapper mapper = new ObjectMapper();
+
+    try {
+      String json = mapper.writeValueAsString(response);
+      return json;
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private static String getType(CommandResult result) {
     return result.getType();
   }
 
-  private static String getDebugInfo(CommandResult result) {
+  private static String getDebugInfo() {
     String debugInfo = "";
     if (CommandExecutionContext.isSetWrapperThreadLocal()) {
       CommandResponseWriter responseWriter = CommandExecutionContext.getCommandResponseWriter();
