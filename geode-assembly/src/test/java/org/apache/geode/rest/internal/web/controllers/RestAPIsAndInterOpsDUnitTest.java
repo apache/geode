@@ -67,7 +67,6 @@ import org.apache.geode.cache.client.internal.LocatorTestBase;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -76,6 +75,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
@@ -83,7 +83,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  *
  * @since GemFire 8.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RestAPITest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
@@ -618,12 +618,11 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     VM client = host.getVM(3);
 
     // start locator
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locatorHostName = NetworkUtils.getServerHostName(locator.getHost());
-    locator.invoke(() -> startLocator(locatorHostName, locatorPort, ""));
+    final String hostName = NetworkUtils.getServerHostName();
+    int locatorPort = locator.invoke(() -> startLocator(hostName, ""));
 
     // find locators
-    String locators = locatorHostName + "[" + locatorPort + "]";
+    String locators = hostName + "[" + locatorPort + "]";
 
     // start manager (peer cache)
     manager.invoke(() -> startManager(/* groups */null, locators, new String[] {REGION_NAME},
@@ -636,7 +635,7 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
             locators, new String[] {REGION_NAME}, CacheServer.DEFAULT_LOAD_PROBE));
 
     // create a client cache
-    client.invoke(() -> createClientCache(locatorHostName, locatorPort));
+    client.invoke(() -> createClientCache(hostName, locatorPort));
 
     // create region in Manager, peer cache and Client cache nodes
     manager.invoke(() -> createRegion());

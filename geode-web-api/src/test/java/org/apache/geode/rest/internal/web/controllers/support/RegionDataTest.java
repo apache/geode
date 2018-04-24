@@ -19,9 +19,10 @@ import static org.mockito.Mockito.*;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, RestAPITest.class})
 public class RegionDataTest {
 
   @Test

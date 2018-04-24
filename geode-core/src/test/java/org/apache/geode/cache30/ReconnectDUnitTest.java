@@ -55,9 +55,10 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.test.dunit.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 @SuppressWarnings("serial")
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   static int locatorPort;
   static Locator locator;

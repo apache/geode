@@ -19,7 +19,7 @@ import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -32,8 +32,8 @@ public class GetPidAndIdAfterBounceDistributedTest {
   private int[] idsBefore;
   private int[] pidsBefore;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Before
   public void setUp() throws Exception {

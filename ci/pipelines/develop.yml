@@ -443,6 +443,26 @@ jobs:
           - uiTest
           - uitestfiles
           path: geode-ci/ci/scripts/test-run.sh
+      ensure:
+         aggregate:
+         - task: archive-results
+           config:
+             inputs:
+               - name: geode
+               - name: geode-ci
+               - name: geode-build-version
+               - name: built-geode
+             platform: linux
+             image_resource: *docker-geode-build-image
+             params:
+               MAINTENANCE_VERSION: ((!maintenance-version))
+               SERVICE_ACCOUNT: ((!concourse-gcp-account))
+               PUBLIC_BUCKET: ((!public-bucket))
+             run:
+               args:
+               - uiTest
+               - uitestfiles
+               path: geode-ci/ci/scripts/test-archive.sh
 
 - name: TestExamples
   serial: true

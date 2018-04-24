@@ -45,7 +45,7 @@ public class CacheConfigIntegrationTest {
     xmlFile = temporaryFolder.newFile("cache.xml");
     CacheConfig cacheConfig = new CacheConfig();
     cacheConfig.setVersion("1.0");
-    JAXBService service = new JAXBService();
+    JAXBService service = new JAXBService(CacheConfig.class);
     String xml = service.marshall(cacheConfig);
     FileUtils.writeStringToFile(xmlFile, xml, "UTF-8");
 

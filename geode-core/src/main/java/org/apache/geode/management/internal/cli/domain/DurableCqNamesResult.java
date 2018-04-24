@@ -30,17 +30,6 @@ public class DurableCqNamesResult extends MemberResult implements Serializable {
     super(memberNameOrId);
   }
 
-  public DurableCqNamesResult(final String memberNameOrId, List<String> cqNames) {
-    super(memberNameOrId);
-    cqNames.addAll(cqNames);
-  }
-
-  public void addCqName(String cqName) {
-    cqNames.add(cqName);
-    super.isSuccessful = true;
-    super.opPossible = true;
-  }
-
   public List<String> getCqNamesList() {
     return cqNames;
   }

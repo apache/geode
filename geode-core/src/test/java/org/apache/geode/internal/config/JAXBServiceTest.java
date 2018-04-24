@@ -19,7 +19,6 @@ package org.apache.geode.internal.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.spy;
 
 import java.util.List;
 
@@ -48,8 +47,11 @@ public class JAXBServiceTest {
 
   @Before
   public void setUp() throws Exception {
-    service = spy(new JAXBService());
-    service2 = spy(new JAXBService());
+    service = new JAXBService(CacheConfig.class, ElementOne.class, ElementTwo.class);
+    service.validateWithLocalCacheXSD();
+
+    service2 = new JAXBService(CacheConfig.class);
+    service2.validateWithLocalCacheXSD();
   }
 
   @Test
@@ -83,7 +85,6 @@ public class JAXBServiceTest {
     setBasicValues(cache);
     cache.getCustomCacheElements().add(new ElementOne("test"));
 
-    service.registerBindClasses(ElementOne.class);
     xml = service.marshall(cache);
     System.out.println(xml);
     // cache has the default namespace
@@ -96,15 +97,13 @@ public class JAXBServiceTest {
     CacheConfig cache = new CacheConfig();
     setBasicValues(cache);
     cache.getCustomCacheElements().add(new ElementOne("testOne"));
-    service.registerBindClasses(ElementOne.class);
 
     xml = service.marshall(cache);
     System.out.println(xml);
     assertThat(xml).contains("custom-one>");
 
-    unmarshalled = service.unMarshall(xml);
+    unmarshalled = service2.unMarshall(xml);
     unmarshalled.getCustomCacheElements().add(new ElementTwo("testTwo"));
-    service.registerBindClasses(ElementTwo.class);
 
     // xml generated wtih CacheConfigTwo has both elements in there.
     xml = service.marshall(unmarshalled);
@@ -120,18 +119,15 @@ public class JAXBServiceTest {
   public void xmlWithCustomElementsCanBeUnMarshalledByAnotherService() {
     CacheConfig cache = new CacheConfig();
     setBasicValues(cache);
-    service.registerBindClasses(ElementOne.class);
-    service.registerBindClasses(ElementTwo.class);
     cache.getCustomCacheElements().add(new ElementOne("test"));
     cache.getCustomCacheElements().add(new ElementTwo("test"));
 
     String prettyXml = service.marshall(cache);
     System.out.println(prettyXml);
 
-    service2.registerBindClasses(ElementOne.class);
     CacheConfig cacheConfig = service2.unMarshall(prettyXml);
     List elements = cacheConfig.getCustomCacheElements();
-    assertThat(elements.get(0)).isInstanceOf(ElementOne.class);
+    assertThat(elements.get(0)).isNotInstanceOf(ElementOne.class);
     assertThat(elements.get(1)).isNotInstanceOf(ElementTwo.class);
 
     String uglyXml = service2.marshall(cacheConfig);

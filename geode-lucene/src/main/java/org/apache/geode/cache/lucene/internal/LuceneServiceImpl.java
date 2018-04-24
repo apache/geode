@@ -64,8 +64,10 @@ import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.cache.lucene.internal.results.PageResults;
 import org.apache.geode.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CacheService;
@@ -196,24 +198,45 @@ public class LuceneServiceImpl implements InternalLuceneService {
     // We must always register the index (this is where IndexAlreadyExistsException is detected)
     registerDefinedIndex(indexName, regionPath, new LuceneIndexCreationProfile(indexName,
         regionPath, fields, analyzer, fieldAnalyzers, serializer));
+    try {
+      // If the region does not yet exist, install LuceneRegionListener and return
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
+      if (region == null) {
+        LuceneRegionListener regionListener = new LuceneRegionListener(this, cache, indexName,
+            regionPath, fields, analyzer, fieldAnalyzers, serializer);
+        cache.addRegionListener(regionListener);
+        return;
+      } else if (allowOnExistingRegion) {
+        validateAllMembersAreTheSameVersion(region);
+      }
 
-    // If the region does not yet exist, install LuceneRegionListener and return
-    PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
-    if (region == null) {
-      LuceneRegionListener regionListener = new LuceneRegionListener(this, cache, indexName,
-          regionPath, fields, analyzer, fieldAnalyzers, serializer);
-      cache.addRegionListener(regionListener);
-      return;
-    }
+      if (!allowOnExistingRegion) {
+        definedIndexMap.remove(LuceneServiceImpl.getUniqueIndexName(indexName, regionPath));
+        throw new IllegalStateException("The lucene index must be created before region");
+      }
 
-    if (!allowOnExistingRegion) {
+      // do work normally handled by LuceneRegionListener (if region already exists)
+      createIndexOnExistingRegion(region, indexName, regionPath, fields, analyzer, fieldAnalyzers,
+          serializer);
+    } catch (Exception exception) {
       definedIndexMap.remove(LuceneServiceImpl.getUniqueIndexName(indexName, regionPath));
-      throw new IllegalStateException("The lucene index must be created before region");
+      throw exception;
     }
+  }
 
-    // do work normally handled by LuceneRegionListener (if region already exists)
-    createIndexOnExistingRegion(region, indexName, regionPath, fields, analyzer, fieldAnalyzers,
-        serializer);
+  protected void validateAllMembersAreTheSameVersion(PartitionedRegion region) {
+    Set<InternalDistributedMember> remoteMembers = region.getRegionAdvisor().adviseAllPRNodes();
+    Version localVersion =
+        cache.getDistributionManager().getDistributionManagerId().getVersionObject();
+    if (!remoteMembers.isEmpty()) {
+      for (InternalDistributedMember remoteMember : remoteMembers) {
+        if (!remoteMember.getVersionObject().equals(localVersion)) {
+          throw new IllegalStateException(
+              "The lucene index cannot be created on a existing region if all members hosting the region : "
+                  + region.getFullPath() + ", are not the same Apache Geode version ");
+        }
+      }
+    }
   }
 
   private void createIndexOnExistingRegion(PartitionedRegion region, String indexName,

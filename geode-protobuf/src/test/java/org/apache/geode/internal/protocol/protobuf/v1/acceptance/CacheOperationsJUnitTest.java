@@ -67,13 +67,14 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
  * Test operations using ProtoBuf
  */
-@Category(IntegrationTest.class)
+@Category({AcceptanceTest.class, ClientServerTest.class})
 public class CacheOperationsJUnitTest {
   private final String TEST_KEY = "testKey";
   private final String TEST_VALUE = "testValue";

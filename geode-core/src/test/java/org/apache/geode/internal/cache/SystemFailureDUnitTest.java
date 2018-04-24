@@ -42,13 +42,14 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * This class tests the response of GemFire to various occurrences of {@link VirtualMachineError}
  *
  * @since GemFire 5.1
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
   static final String REGION_NAME = "SystemFailureDUnitTest";

@@ -14,9 +14,9 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -32,28 +32,36 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class OverridingGetPropertiesDisconnectsAllDUnitTest extends DistributedTestCase {
+public class OverridingGetPropertiesDisconnectsAllDistributedTest extends DistributedTestCase {
 
   @Override
   public final void preTearDownAssertions() throws Exception {
-    invokeInEveryVM(() -> assertNotNull(basicGetSystem()));
+    invokeInEveryVM(() -> {
+      assertThat(basicGetSystem().isConnected()).isTrue();
+    });
   }
 
   @Override
   public final void postTearDownAssertions() throws Exception {
-    invokeInEveryVM(() -> assertNull(basicGetSystem()));
+    invokeInEveryVM(() -> {
+      assertThat(basicGetSystem().isConnected()).isFalse();
+    });
   }
 
   @Override
   public Properties getDistributedSystemProperties() {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    return props;
+    Properties config = new Properties();
+    config.setProperty(MCAST_PORT, "0");
+    return config;
   }
 
   @Test
   public void testDisconnects() throws Exception {
-    invokeInEveryVM(() -> assertFalse(getDistributedSystemProperties().isEmpty()));
-    invokeInEveryVM(() -> assertNotNull(getSystem()));
+    invokeInEveryVM(() -> {
+      assertThat(getDistributedSystemProperties()).isNotEmpty();
+    });
+    invokeInEveryVM(() -> {
+      assertThat(getSystem().isConnected()).isTrue();
+    });
   }
 }

@@ -14,11 +14,18 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static com.googlecode.catchexception.CatchException.*;
-import static com.googlecode.catchexception.throwable.CatchThrowable.*;
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static com.googlecode.catchexception.throwable.CatchThrowable.catchThrowable;
+import static com.googlecode.catchexception.throwable.CatchThrowable.caughtThrowable;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import java.util.Properties;
 
@@ -37,8 +44,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * This class tests the basic functionality of the distributed unit test framework.
  */
 @Category(DistributedTest.class)
-@SuppressWarnings({"serial", "unused"})
-public class BasicDUnitTest extends DistributedTestCase {
+@SuppressWarnings("serial")
+public class BasicDistributedTest extends DistributedTestCase {
 
   private static final String MESSAGE_FOR_remoteThrowException = "Test exception.  Please ignore.";
 
@@ -47,16 +54,12 @@ public class BasicDUnitTest extends DistributedTestCase {
   private VM vm0;
   private VM vm1;
 
-  public BasicDUnitTest() {
-    super();
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     bindings = new Properties();
     invokeInEveryVM(() -> bindings = new Properties());
-    this.vm0 = Host.getHost(0).getVM(0);
-    this.vm1 = Host.getHost(0).getVM(1);
+    vm0 = Host.getHost(0).getVM(0);
+    vm1 = Host.getHost(0).getVM(1);
   }
 
   @Override
@@ -74,55 +77,55 @@ public class BasicDUnitTest extends DistributedTestCase {
 
   @Test
   public void testInvokeOnClassTargetWithEmptyArgs() throws Exception {
-    assertThat(this.vm0.invoke(BasicDUnitTest.class, "booleanValue", new Object[] {}), is(true));
+    assertThat(vm0.invoke(BasicDistributedTest.class, "booleanValue", new Object[] {}), is(true));
   }
 
   @Test
   public void testInvokeOnObjectTargetWithEmptyArgs() throws Exception {
-    assertThat(this.vm0.invoke(new BasicDUnitTest(), "booleanValue", new Object[] {}), is(true));
+    assertThat(vm0.invoke(new BasicDistributedTest(), "booleanValue", new Object[] {}), is(true));
   }
 
   @Test
   public void testInvokeAsyncOnClassTargetWithEmptyArgs() throws Exception {
     AsyncInvocation<?> async =
-        this.vm0.invokeAsync(BasicDUnitTest.class, "booleanValue", new Object[] {}).join();
+        vm0.invokeAsync(BasicDistributedTest.class, "booleanValue", new Object[] {}).join();
     assertThat(async.getResult(), is(true));
   }
 
   @Test
   public void testInvokeAsyncOnObjectTargetWithEmptyArgs() throws Exception {
     AsyncInvocation<?> async =
-        this.vm0.invokeAsync(new BasicDUnitTest(), "booleanValue", new Object[] {}).join();
+        vm0.invokeAsync(new BasicDistributedTest(), "booleanValue", new Object[] {}).join();
     assertThat(async.getResult(), is(true));
   }
 
   @Test
   public void testInvokeOnClassTargetWithNullArgs() throws Exception {
-    assertThat(this.vm0.invoke(BasicDUnitTest.class, "booleanValue", null), is(true));
+    assertThat(vm0.invoke(BasicDistributedTest.class, "booleanValue", null), is(true));
   }
 
   @Test
   public void testInvokeOnObjectTargetWithNullArgs() throws Exception {
-    assertThat(this.vm0.invoke(new BasicDUnitTest(), "booleanValue", null), is(true));
+    assertThat(vm0.invoke(new BasicDistributedTest(), "booleanValue", null), is(true));
   }
 
   @Test
   public void testInvokeAsyncOnClassTargetWithNullArgs() throws Exception {
     AsyncInvocation<?> async =
-        this.vm0.invokeAsync(BasicDUnitTest.class, "booleanValue", null).join();
+        vm0.invokeAsync(BasicDistributedTest.class, "booleanValue", null).join();
     assertThat(async.getResult(), is(true));
   }
 
   @Test
   public void testInvokeAsyncOnObjectTargetWithNullArgs() throws Exception {
     AsyncInvocation<?> async =
-        this.vm0.invokeAsync(new BasicDUnitTest(), "booleanValue", null).join();
+        vm0.invokeAsync(new BasicDistributedTest(), "booleanValue", null).join();
     assertThat(async.getResult(), is(true));
   }
 
   @Test
   public void testRemoteInvocationWithException() throws Exception {
-    catchException(this.vm0).invoke(() -> remoteThrowException());
+    catchException(vm0).invoke(() -> remoteThrowException());
 
     assertThat(caughtException(), instanceOf(RMIException.class));
     assertThat(caughtException().getCause(), notNullValue());
@@ -132,24 +135,24 @@ public class BasicDUnitTest extends DistributedTestCase {
 
   @Test
   public void testInvokeWithLambda() throws Exception {
-    assertThat(this.vm0.invoke(() -> DUnitEnv.get().getVMID()), is(0));
-    assertThat(this.vm1.invoke(() -> DUnitEnv.get().getVMID()), is(1));
+    assertThat(vm0.invoke(() -> DUnitEnv.get().getVMID()), is(0));
+    assertThat(vm1.invoke(() -> DUnitEnv.get().getVMID()), is(1));
   }
 
   @Test
   public void testInvokeLambdaAsync() throws Throwable {
-    assertThat(this.vm0.invokeAsync(() -> DUnitEnv.get().getVMID()).getResult(), is(0));
+    assertThat(vm0.invokeAsync(() -> DUnitEnv.get().getVMID()).getResult(), is(0));
   }
 
   @Test
   public void testInvokeWithNamedLambda() {
-    assertThat(this.vm0.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(0));
-    assertThat(this.vm1.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(1));
+    assertThat(vm0.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(0));
+    assertThat(vm1.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(1));
   }
 
   @Test
   public void testInvokeNamedLambdaAsync() throws Throwable {
-    assertThat(this.vm0.invokeAsync("getVMID", () -> DUnitEnv.get().getVMID()).getResult(), is(0));
+    assertThat(vm0.invokeAsync("getVMID", () -> DUnitEnv.get().getVMID()).getResult(), is(0));
   }
 
   @Test
@@ -157,13 +160,13 @@ public class BasicDUnitTest extends DistributedTestCase {
     String name = getUniqueName();
     String value = "Hello";
 
-    this.vm0.invokeAsync(() -> remoteBind(name, value)).join().checkException();
-    this.vm0.invokeAsync(() -> remoteValidateBind(name, value)).join().checkException();
+    vm0.invokeAsync(() -> remoteBind(name, value)).join().checkException();
+    vm0.invokeAsync(() -> remoteValidateBind(name, value)).join().checkException();
   }
 
   @Test
   public void testRemoteInvokeAsyncWithException() throws Exception {
-    AsyncInvocation<?> async = this.vm0.invokeAsync(() -> remoteThrowException()).join();
+    AsyncInvocation<?> async = vm0.invokeAsync(() -> remoteThrowException()).join();
 
     assertThat(async.exceptionOccurred(), is(true));
     assertThat(async.getException(), instanceOf(BasicTestException.class));
@@ -178,7 +181,7 @@ public class BasicDUnitTest extends DistributedTestCase {
 
   @Test
   public void testInvokeNamedRunnableLambdaAsync() throws Exception {
-    catchThrowable(this.vm0.invokeAsync("throwSomething", () -> throwException()).join())
+    catchThrowable(vm0.invokeAsync("throwSomething", () -> throwException()).join())
         .checkException();
 
     assertThat(caughtThrowable(), notNullValue());
@@ -188,7 +191,7 @@ public class BasicDUnitTest extends DistributedTestCase {
 
   @Test
   public void testInvokeNamedRunnableLambda() throws Exception {
-    catchException(this.vm0).invoke("throwSomething", () -> throwException());
+    catchException(vm0).invoke("throwSomething", () -> throwException());
 
     assertThat(caughtException(), notNullValue());
     assertThat(caughtException().getCause(), notNullValue());
@@ -217,7 +220,7 @@ public class BasicDUnitTest extends DistributedTestCase {
     assertNotNull("value must not be null", value);
     assertNotNull("bindings must not be null", bindings);
 
-    new BasicDUnitTest().getSystem(); // forces connection
+    new BasicDistributedTest().getSystem(); // forces connection
     bindings.setProperty(name, value);
   }
 
@@ -225,6 +228,7 @@ public class BasicDUnitTest extends DistributedTestCase {
     assertEquals(expected, bindings.getProperty(name));
   }
 
+  @SuppressWarnings("unused")
   private static class BasicTestException extends RuntimeException {
     BasicTestException() {
       this("Test exception.  Please ignore.");
@@ -236,6 +240,8 @@ public class BasicDUnitTest extends DistributedTestCase {
   }
 
   private static class BasicDUnitException extends RuntimeException {
-    public BasicDUnitException() {}
+    BasicDUnitException() {
+      // nothing
+    }
   }
 }

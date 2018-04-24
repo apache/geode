@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.geode.test.dunit.VM.getAllVMs;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,12 +23,8 @@ import java.util.concurrent.Callable;
 
 import org.hamcrest.Matcher;
 import org.junit.rules.ErrorCollector;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 
 /**
  * JUnit Rule that provides a shared ErrorCollector in all DistributedTest VMs. In particular, this
@@ -52,50 +50,31 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
  * </pre>
  */
 @SuppressWarnings({"serial", "unused"})
-public class SharedErrorCollector implements SerializableTestRule {
+public class SharedErrorCollector extends AbstractDistributedTestRule {
 
   private static volatile ProtectedErrorCollector errorCollector;
 
-  private final RemoteInvoker invoker;
-
   public SharedErrorCollector() {
-    this(new RemoteInvoker());
-  }
-
-  SharedErrorCollector(final RemoteInvoker invoker) {
-    this.invoker = invoker;
+    // nothing
   }
 
   @Override
-  public Statement apply(final Statement base, Description description) {
-    return new Statement() {
-      @Override
-      public void evaluate() throws Throwable {
-        before();
-        try {
-          base.evaluate();
-        } finally {
-          after();
-        }
-      }
-    };
-  }
-
   protected void before() throws Throwable {
-    invoker.invokeInEveryVMAndController(() -> errorCollector = new ProtectedErrorCollector());
+    invoker().invokeInEveryVMAndController(() -> errorCollector = new ProtectedErrorCollector());
   }
 
+  @Override
   protected void after() throws Throwable {
     ProtectedErrorCollector allErrors = errorCollector;
     try {
-      for (VM vm : Host.getHost(0).getAllVMs()) {
+      for (VM vm : getAllVMs()) {
         List<Throwable> remoteFailures = new ArrayList<>();
         remoteFailures.addAll(vm.invoke(() -> errorCollector.errors()));
         for (Throwable t : remoteFailures) {
           allErrors.addError(t);
         }
       }
-      invoker.invokeInEveryVMAndController(() -> errorCollector = null);
+      invoker().invokeInEveryVMAndController(() -> errorCollector = null);
     } finally {
       allErrors.verify();
     }
@@ -135,20 +114,19 @@ public class SharedErrorCollector implements SerializableTestRule {
    */
   private static class ProtectedErrorCollector extends ErrorCollector {
 
-    protected final List<Throwable> protectedErrors;
+    private final List<Throwable> protectedErrors;
 
-    public ProtectedErrorCollector() {
-      super();
+    ProtectedErrorCollector() {
       try {
         Field superErrors = ErrorCollector.class.getDeclaredField("errors");
         superErrors.setAccessible(true);
-        this.protectedErrors = (List<Throwable>) superErrors.get(this);
+        protectedErrors = (List<Throwable>) superErrors.get(this);
       } catch (IllegalAccessException | NoSuchFieldException e) {
         throw new RuntimeException(e);
       }
     }
 
-    public List<Throwable> errors() {
+    List<Throwable> errors() {
       return protectedErrors;
     }
 

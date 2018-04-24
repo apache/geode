@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.rules.tests;
 
+import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMCount;
@@ -24,7 +25,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import org.junit.ClassRule;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -44,8 +45,13 @@ public class SharedErrorCollectorDistributedTest {
 
   static final String MESSAGE = "Failure message";
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+
+  @Before
+  public void setUp() {
+    assertThat(getVMCount()).isGreaterThanOrEqualTo(DEFAULT_VM_COUNT);
+  }
 
   @Test
   public void errorCollectorHasExpectedField() throws Exception {

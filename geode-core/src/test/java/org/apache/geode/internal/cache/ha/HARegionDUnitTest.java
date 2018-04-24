@@ -15,11 +15,15 @@
 package org.apache.geode.internal.cache.ha;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.AdditionalAnswers;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
@@ -213,7 +217,14 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    HARegion.getInstance(REGION_NAME, (GemFireCacheImpl) cache, null, factory.create());
+
+    // Mock the HARegionQueue and answer the input CachedDeserializable when updateHAEventWrapper is
+    // called
+    HARegionQueue harq = mock(HARegionQueue.class);
+    when(harq.updateHAEventWrapper(any(), any(), any()))
+        .thenAnswer(AdditionalAnswers.returnsSecondArg());
+
+    HARegion.getInstance(REGION_NAME, (GemFireCacheImpl) cache, harq, factory.create());
   }
 
   private static HARegionQueue hrq = null;

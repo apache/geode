@@ -20,6 +20,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
@@ -61,8 +62,7 @@ public class DestroyConnectionCommand extends InternalGfshCommand {
       ConnectorService service =
           ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
       if (service != null) {
-        ConnectorService.Connection conn =
-            ccService.findIdentifiable(service.getConnection(), name);
+        ConnectorService.Connection conn = CacheElement.findElement(service.getConnection(), name);
         service.getConnection().remove(conn);
         ccService.saveCustomCacheElement("cluster", service);
         persisted = true;

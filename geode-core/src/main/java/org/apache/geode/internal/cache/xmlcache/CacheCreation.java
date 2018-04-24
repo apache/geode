@@ -2369,4 +2369,9 @@ public class CacheCreation implements InternalCache {
   public void registerPdxMetaData(Object instance) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
+  @Override
+  public InternalCache getCacheForProcessingClientRequests() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
 }

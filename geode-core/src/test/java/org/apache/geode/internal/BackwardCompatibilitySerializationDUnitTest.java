@@ -34,6 +34,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
  * Test the DSFID serialization framework added for rolling upgrades in 7.1
@@ -41,7 +42,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, SerializationTest.class})
 public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTestCase {
 
   private transient ByteArrayOutputStream baos;

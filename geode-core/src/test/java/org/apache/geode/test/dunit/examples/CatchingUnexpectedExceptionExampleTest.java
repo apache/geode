@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,7 +31,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.rules.DistributedDisconnectRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -40,18 +38,14 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @SuppressWarnings("serial")
 public class CatchingUnexpectedExceptionExampleTest implements Serializable {
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
-
   @Rule
-  public DistributedDisconnectRule disconnectRule =
-      new DistributedDisconnectRule.Builder().disconnectAfter(true).build();
+  public DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   /**
    * Don't do this! Catch Exception and invoke fail => anti-pattern
    */
   @Test
-  public void createRegion_withTryCatch_dontDoThis() throws Exception {
+  public void createRegion_withTryCatch_DO_NOT_DO_THIS() throws Exception {
     getVM(0).invoke(new SerializableRunnable("Create Region") {
       @Override
       public void run() {
@@ -71,7 +65,7 @@ public class CatchingUnexpectedExceptionExampleTest implements Serializable {
    * Use "throws Exception" is better!
    */
   @Test
-  public void createRegion_withThrowsException_thisIsBetter() throws Exception {
+  public void createRegion_withThrowsException_THIS_IS_BETTER() throws Exception {
     getVM(0).invoke(new SerializableRunnable("Create Region") {
       @Override
       public void run() throws Exception {
@@ -87,7 +81,7 @@ public class CatchingUnexpectedExceptionExampleTest implements Serializable {
    * Use lambda without having to specify run() with throws Exception -- best!
    */
   @Test
-  public void createRegion_withLambda_thisIsBest() throws Exception {
+  public void createRegion_withLambda_THIS_IS_BEST() throws Exception {
     getVM(0).invoke("Create Region", () -> {
       Cache cache = new CacheFactory().create();
       RegionFactory regionFactory = cache.createRegionFactory(new AttributesFactory().create());

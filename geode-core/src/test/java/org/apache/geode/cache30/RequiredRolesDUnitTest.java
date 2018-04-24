@@ -44,13 +44,14 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Tests the functionality of the {@link RequiredRoles} class.
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
   protected transient volatile boolean startTestWaitForRequiredRoles = false;

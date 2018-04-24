@@ -53,9 +53,10 @@ import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityA
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class OqlQueryRequestOperationHandlerIntegrationTest {
   private Cache cache;
 

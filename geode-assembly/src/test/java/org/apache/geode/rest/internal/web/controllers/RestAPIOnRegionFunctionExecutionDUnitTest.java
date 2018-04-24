@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
@@ -59,7 +60,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  * @since GemFire 8.0
  */
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RestAPITest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {

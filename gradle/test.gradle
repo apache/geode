@@ -289,6 +289,18 @@ subprojects {
   }
 
 
+  task redisTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.RedisTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    forkEvery 1
+    reports.junitXml.destination = file "$buildDir/test-reports-redis"
+  }
+
   task restAPITest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.RestAPITest'

@@ -22,9 +22,10 @@ import java.util.regex.Pattern;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, RedisTest.class})
 public class AbstractScanExecutorTest {
 
   @Test

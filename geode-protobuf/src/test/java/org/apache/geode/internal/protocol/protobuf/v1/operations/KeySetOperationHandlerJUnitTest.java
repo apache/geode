@@ -34,9 +34,10 @@ import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class KeySetOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_KEY1 = "Key1";
   private final String TEST_KEY2 = "Key2";

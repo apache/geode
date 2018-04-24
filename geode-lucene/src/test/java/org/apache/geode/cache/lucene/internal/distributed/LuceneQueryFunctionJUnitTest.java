@@ -71,7 +71,7 @@ public class LuceneQueryFunctionJUnitTest {
   private final EntryScore<String> r2_2 = new EntryScore<>("key-2-2", .35f);
 
   private InternalRegionFunctionContext mockContext;
-  private ResultSender<TopEntriesCollector> mockResultSender;
+  private ResultSender mockResultSender;
   private Region<Object, Object> mockRegion;
 
   private RepositoryManager mockRepoManager;
@@ -93,7 +93,7 @@ public class LuceneQueryFunctionJUnitTest {
   public void testRepoQueryAndMerge() throws Exception {
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
-    when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
+    when(mockContext.getResultSender()).thenReturn(mockResultSender);
     when(mockRepoManager.getRepositories(eq(mockContext))).thenReturn(repos);
     doAnswer(invocation -> {
       IndexResultCollector collector = invocation.getArgument(2);
@@ -135,7 +135,7 @@ public class LuceneQueryFunctionJUnitTest {
         new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", null, 3);
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
-    when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
+    when(mockContext.getResultSender()).thenReturn(mockResultSender);
     when(mockRepoManager.getRepositories(eq(mockContext))).thenReturn(repos);
 
     doAnswer(invocation -> {
@@ -175,7 +175,7 @@ public class LuceneQueryFunctionJUnitTest {
         new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", mockManager);
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
-    when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
+    when(mockContext.getResultSender()).thenReturn(mockResultSender);
     repos.remove(0);
     when(mockRepoManager.getRepositories(eq(mockContext))).thenReturn(repos);
     when(mockManager.newCollector(eq("repo2"))).thenReturn(mockCollector);
@@ -207,7 +207,7 @@ public class LuceneQueryFunctionJUnitTest {
   public void testIndexRepoQueryFails() throws Exception {
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
-    when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
+    when(mockContext.getResultSender()).thenReturn(mockResultSender);
     when(mockRepoManager.getRepositories(eq(mockContext))).thenReturn(repos);
     doThrow(IOException.class).when(mockRepository1).query(eq(query),
         eq(LuceneQueryFactory.DEFAULT_LIMIT), any(IndexResultCollector.class));
@@ -259,7 +259,7 @@ public class LuceneQueryFunctionJUnitTest {
     });
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
-    when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
+    when(mockContext.getResultSender()).thenReturn(mockResultSender);
     CancelCriterion mockCancelCriterion = mock(CancelCriterion.class);
     when(mockCache.getCancelCriterion()).thenReturn(mockCancelCriterion);
     when(mockCancelCriterion.isCancelInProgress()).thenReturn(false);
@@ -297,7 +297,7 @@ public class LuceneQueryFunctionJUnitTest {
 
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
-    when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
+    when(mockContext.getResultSender()).thenReturn(mockResultSender);
     repos.remove(1);
     when(mockRepoManager.getRepositories(eq(mockContext))).thenReturn(repos);
     when(mockManager.newCollector(eq("repo1"))).thenReturn(mockCollector);
@@ -314,7 +314,7 @@ public class LuceneQueryFunctionJUnitTest {
     searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName");
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
-    when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
+    when(mockContext.getResultSender()).thenReturn(mockResultSender);
     when(queryProvider.getQuery(eq(mockIndex))).thenThrow(LuceneQueryException.class);
     LuceneQueryFunction function = new LuceneQueryFunction();
 

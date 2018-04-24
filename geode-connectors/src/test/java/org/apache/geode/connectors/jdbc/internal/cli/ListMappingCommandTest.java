@@ -51,24 +51,19 @@ public class ListMappingCommandTest {
   public void setUp() {
     command = spy(ListMappingCommand.class);
     ccService = mock(InternalClusterConfigurationService.class);
-    doReturn(ccService).when(command).getConfigurationService();
-  }
-
-  @Test
-  public void whenCCServiceIsNotAvailable() {
-    doReturn(null).when(command).getConfigurationService();
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("cluster configuration service is not running");
   }
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
+    doReturn(ccService).when(command).getConfigurationService();
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOutput("No mappings found");
   }
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectionFound() {
+    doReturn(ccService).when(command).getConfigurationService();
+
     ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
@@ -76,7 +71,9 @@ public class ListMappingCommandTest {
   }
 
   @Test
-  public void successfulResult() {
+  public void whenCCIsAvailable() {
+    doReturn(ccService).when(command).getConfigurationService();
+
     // mappings found in CC
     ConnectorService.RegionMapping mapping1 =
         new ConnectorService.RegionMapping("region1", "class1", "table1", "name1", true);
@@ -98,22 +95,19 @@ public class ListMappingCommandTest {
   }
 
   @Test
-  public void whenCCIsNotAvailableAndMemberIsNotSpecified() {
+  public void whenCCIsNotAvailableAndNoMemberExists() {
     doReturn(null).when(command).getConfigurationService();
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("Use --member option to describe mappings");
-  }
+    doReturn(Collections.emptySet()).when(command).findMembers(null, null);
 
-  @Test
-  public void whenNonExistingMemberIsSpecified() {
-    doReturn(null).when(command).getMember(any());
-    gfsh.executeAndAssertThat(command, COMMAND + " --member=member1").statusIsError()
-        .containsOutput("No Members Found");
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
+        .containsOutput("No mappings found");
   }
 
   @Test
   public void whenExistingMemberIsSpecified() {
-    doReturn(mock(DistributedMember.class)).when(command).getMember(any());
+    doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
+        null);
 
     ConnectorService.RegionMapping mapping1 =
         new ConnectorService.RegionMapping("region1", "class1", "table1", "name1", true);
@@ -134,8 +128,22 @@ public class ListMappingCommandTest {
     when(rc.getResult())
         .thenReturn(Collections.singletonList(Stream.of(mapping1, mapping2).collect(toSet())));
 
-    gfsh.executeAndAssertThat(command, COMMAND + " --member=member1").statusIsSuccess()
-        .containsOutput("region1", "region2");
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region1",
+        "region2");
   }
 
+
+  @Test
+  public void whenCCIsNotAvailableAndNoConnectionFoundOnMember() {
+    doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
+        null);
+
+    ResultCollector rc = mock(ResultCollector.class);
+    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
+    when(rc.getResult()).thenReturn(Collections.emptyList());
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
+        .containsOutput("No mappings found");
+  }
 }

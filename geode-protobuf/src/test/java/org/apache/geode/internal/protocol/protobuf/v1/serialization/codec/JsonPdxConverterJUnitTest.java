@@ -38,9 +38,10 @@ import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.WritablePdxInstance;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class JsonPdxConverterJUnitTest {
 
   private String complexJSONString = "{\n" + "    \"_id\": \"599c7d885df276ac3e0bf10a\",\n"

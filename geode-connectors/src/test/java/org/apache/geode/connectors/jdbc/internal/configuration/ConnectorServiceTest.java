@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -38,8 +39,7 @@ public class ConnectorServiceTest {
 
   @Before
   public void setUp() throws Exception {
-    jaxbService = new JAXBService();
-    jaxbService.registerBindClassWithSchema(ConnectorService.class, ConnectorService.SCHEMA);
+    jaxbService = new JAXBService(CacheConfig.class, ConnectorService.class);
     // find the local jdbc-1.0.xsd
     URL local_xsd = ClassPathLoader.getLatest()
         .getResource("META-INF/schemas/geode.apache.org/schema/jdbc/jdbc-1.0.xsd");

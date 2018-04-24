@@ -14,18 +14,19 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMCount;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.DistributedTestCase;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class GetTestMethodNameDUnitTest extends DistributedTestCase {
+public class GetTestMethodNameDistributedTest extends DistributedTestCase {
 
   @Test
   public void testGetTestMethodName() {
@@ -41,9 +42,8 @@ public class GetTestMethodNameDUnitTest extends DistributedTestCase {
   public void testGetTestMethodNameInAllVMs() {
     assertGetTestMethodName("testGetTestMethodNameInAllVMs");
 
-    for (int vmIndex = 0; vmIndex < Host.getHost(0).getVMCount(); vmIndex++) {
-      Host.getHost(0).getVM(vmIndex)
-          .invoke(() -> assertGetTestMethodName("testGetTestMethodNameInAllVMs"));
+    for (int vmIndex = 0; vmIndex < getVMCount(); vmIndex++) {
+      getVM(vmIndex).invoke(() -> assertGetTestMethodName("testGetTestMethodNameInAllVMs"));
     }
   }
 

@@ -163,5 +163,10 @@ public class LuceneServiceImplJUnitTest {
           (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());
       verify(userRegion, never()).addAsyncEventQueueId(anyString(), anyBoolean());
     }
+
+    @Override
+    protected void validateAllMembersAreTheSameVersion(PartitionedRegion region) {
+
+    }
   }
 }

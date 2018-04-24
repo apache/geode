@@ -238,4 +238,6 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
    * @return boolean indicating whether to generate eventID or not
    */
   boolean generateEventID();
+
+  boolean containsTombstone(Object key);
 }

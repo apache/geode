@@ -44,9 +44,10 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.De
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_KEY1 = "my key1";
   private final String TEST_KEY2 = "my key2";

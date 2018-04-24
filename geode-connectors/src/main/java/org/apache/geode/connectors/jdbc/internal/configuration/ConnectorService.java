@@ -37,6 +37,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.XSDRootElement;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.pdx.internal.PdxType;
@@ -105,10 +106,9 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {"connection", "regionMapping"})
 @XmlRootElement(name = "connector-service", namespace = "http://geode.apache.org/schema/jdbc")
+@XSDRootElement(namespace = "http://geode.apache.org/schema/jdbc",
+    schemaLocation = "http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd")
 public class ConnectorService implements CacheElement {
-  public static String SCHEMA =
-      "http://geode.apache.org/schema/jdbc http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd";
-
   @XmlElement(namespace = "http://geode.apache.org/schema/jdbc")
   protected List<ConnectorService.Connection> connection;
   @XmlElement(name = "region-mapping", namespace = "http://geode.apache.org/schema/jdbc")
