@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,7 +34,8 @@ public class ConfigurePDXCommandIntegrationTest {
   public GfshCommandRule gfsh = new GfshCommandRule().withTimeout(1);
 
   @Rule
-  public LocatorStarterRule locator = new LocatorStarterRule().withAutoStart().withJMXManager();
+  public LocatorStarterRule locator =
+      new LocatorStarterRule().withWorkingDir().withAutoStart().withJMXManager();;
 
   @Before
   public void before() throws Exception {
@@ -50,14 +50,13 @@ public class ConfigurePDXCommandIntegrationTest {
   }
 
   @Test
-  @Ignore("See https://issues.apache.org/jira/browse/GEODE-4794")
   public void commandShouldSucceedWhenUsingDefaults() {
     gfsh.executeAndAssertThat(BASE_COMMAND_STRING).statusIsSuccess().hasNoFailToPersistError();
 
     String sharedConfigXml = locator.getLocator().getSharedConfiguration()
         .getConfiguration("cluster").getCacheXmlContent();
     assertThat(sharedConfigXml).contains(
-        "<pdx ignore-unread-fields=\"false\" persistent=\"false\" read-serialized=\"false\"></pdx>");
+        "<pdx read-serialized=\"false\" ignore-unread-fields=\"false\" persistent=\"false\"/>");
   }
 
   @Test
@@ -69,7 +68,7 @@ public class ConfigurePDXCommandIntegrationTest {
     String sharedConfigXml = locator.getLocator().getSharedConfiguration()
         .getConfiguration("cluster").getCacheXmlContent();
     assertThat(sharedConfigXml).contains(
-        "<pdx disk-store-name=\"myDiskStore\" ignore-unread-fields=\"true\" persistent=\"true\" read-serialized=\"true\">");
+        "<pdx read-serialized=\"true\" ignore-unread-fields=\"true\" persistent=\"true\" disk-store-name=\"myDiskStore\">");
     assertThat(sharedConfigXml).contains("<pdx-serializer>",
         "<class-name>org.apache.geode.pdx.ReflectionBasedAutoSerializer</class-name>",
         "<parameter name=\"classes\">",
@@ -86,7 +85,8 @@ public class ConfigurePDXCommandIntegrationTest {
 
     String sharedConfigXml = locator.getLocator().getSharedConfiguration()
         .getConfiguration("cluster").getCacheXmlContent();
-    assertThat(sharedConfigXml).contains("<pdx>");
+    assertThat(sharedConfigXml).contains(
+        "<pdx read-serialized=\"false\" ignore-unread-fields=\"false\" persistent=\"false\">");
     assertThat(sharedConfigXml).contains("<pdx-serializer>",
         "<class-name>org.apache.geode.pdx.ReflectionBasedAutoSerializer</class-name>",
         "<parameter name=\"classes\">",
@@ -104,7 +104,7 @@ public class ConfigurePDXCommandIntegrationTest {
     String sharedConfigXml = locator.getLocator().getSharedConfiguration()
         .getConfiguration("cluster").getCacheXmlContent();
     assertThat(sharedConfigXml).contains(
-        "<pdx disk-store-name=\"myDiskStore\" ignore-unread-fields=\"true\" persistent=\"true\" read-serialized=\"true\">");
+        "<pdx read-serialized=\"true\" ignore-unread-fields=\"true\" persistent=\"true\" disk-store-name=\"myDiskStore\">");
     assertThat(sharedConfigXml).contains("<parameter name=\"check-portability\">")
         .contains("<string>true</string>").contains("</parameter>");
     assertThat(sharedConfigXml).contains("<pdx-serializer>",
@@ -123,7 +123,8 @@ public class ConfigurePDXCommandIntegrationTest {
 
     String sharedConfigXml = locator.getLocator().getSharedConfiguration()
         .getConfiguration("cluster").getCacheXmlContent();
-    assertThat(sharedConfigXml).contains("<pdx>");
+    assertThat(sharedConfigXml).contains(
+        "<pdx read-serialized=\"false\" ignore-unread-fields=\"false\" persistent=\"false\">");
     assertThat(sharedConfigXml).contains("<parameter name=\"check-portability\">")
         .contains("<string>true</string>").contains("</parameter>");
     assertThat(sharedConfigXml).contains("<pdx-serializer>",

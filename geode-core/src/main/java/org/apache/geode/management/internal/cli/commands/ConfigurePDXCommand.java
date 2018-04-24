@@ -15,18 +15,16 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
-import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.cache.configuration.ParameterType;
+import org.apache.geode.cache.configuration.PdxType;
+import org.apache.geode.cache.configuration.StringType;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
@@ -34,7 +32,6 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.security.ResourcePermission;
@@ -46,28 +43,6 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
     return new ReflectionBasedAutoSerializer(checkPortability, patterns);
   }
 
-  /**
-   * @param forParsing if true then this creation is used for parsing xml; if false then it is used
-   *        for generating xml.
-   * @since GemFire 5.7
-   */
-  protected CacheCreation getCacheCreation(boolean forParsing) {
-    return new CacheCreation(forParsing);
-  }
-
-  /**
-   * Creates the XmlEntity associated to the PDX configuration.
-   */
-  protected XmlEntity createXmlEntity(CacheCreation cache) {
-    final StringWriter stringWriter = new StringWriter();
-    final PrintWriter printWriter = new PrintWriter(stringWriter);
-    CacheXmlGenerator.generate(cache, printWriter, true, false, false);
-    printWriter.close();
-    String xmlDefinition = stringWriter.toString();
-
-    return XmlEntity.builder().withType(CacheXml.PDX).withConfig(xmlDefinition).build();
-  }
-
   @CliCommand(value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
       interceptor = "org.apache.geode.management.internal.cli.commands.ConfigurePDXCommand$Interceptor")
@@ -75,10 +50,12 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public Result configurePDX(
       @CliOption(key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
+          unspecifiedDefaultValue = "false",
           help = CliStrings.CONFIGURE_PDX__READ__SERIALIZED__HELP) Boolean readSerialized,
       @CliOption(key = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS,
+          unspecifiedDefaultValue = "false",
           help = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS__HELP) Boolean ignoreUnreadFields,
-      @CliOption(key = CliStrings.CONFIGURE_PDX__DISKSTORE, specifiedDefaultValue = "",
+      @CliOption(key = CliStrings.CONFIGURE_PDX__DISKSTORE, specifiedDefaultValue = "DEFAULT",
           help = CliStrings.CONFIGURE_PDX__DISKSTORE__HELP) String diskStore,
       @CliOption(key = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
           help = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES__HELP) String[] nonPortableClassesPatterns,
@@ -86,8 +63,7 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
           help = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES__HELP) String[] portableClassesPatterns) {
 
     Result result;
-    ReflectionBasedAutoSerializer autoSerializer;
-    CacheCreation cache = getCacheCreation(true);
+    ReflectionBasedAutoSerializer autoSerializer = null;
     InfoResultData ird = ResultBuilder.createInfoResultData();
 
     if (!getAllNormalMembers().isEmpty()) {
@@ -96,59 +72,56 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
 
     // Set persistent and the disk-store
     if (diskStore != null) {
-      cache.setPdxPersistent(true);
-      ird.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = " + cache.getPdxPersistent());
-
-      if (!diskStore.equals("")) {
-        cache.setPdxDiskStore(diskStore);
-        ird.addLine(CliStrings.CONFIGURE_PDX__DISKSTORE + " = " + cache.getPdxDiskStore());
-      } else {
-        ird.addLine(CliStrings.CONFIGURE_PDX__DISKSTORE + " = " + "DEFAULT");
-      }
+      ird.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = true");
+      ird.addLine(CliStrings.CONFIGURE_PDX__DISKSTORE + " = " + diskStore);
     } else {
-      cache.setPdxPersistent(CacheConfig.DEFAULT_PDX_PERSISTENT);
-      ird.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = " + cache.getPdxPersistent());
+      ird.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = false");
     }
 
-    // Set read-serialized
-    if (readSerialized != null) {
-      cache.setPdxReadSerialized(readSerialized);
-    } else {
-      cache.setPdxReadSerialized(CacheConfig.DEFAULT_PDX_READ_SERIALIZED);
-    }
-
-    ird.addLine(CliStrings.CONFIGURE_PDX__READ__SERIALIZED + " = " + cache.getPdxReadSerialized());
-
-    // Set ignoreUnreadFields
-    if (ignoreUnreadFields != null) {
-      cache.setPdxIgnoreUnreadFields(ignoreUnreadFields);
-    } else {
-      cache.setPdxIgnoreUnreadFields(CacheConfig.DEFAULT_PDX_IGNORE_UNREAD_FIELDS);
-    }
-
-    ird.addLine(
-        CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS + " = " + cache.getPdxIgnoreUnreadFields());
+    ird.addLine(CliStrings.CONFIGURE_PDX__READ__SERIALIZED + " = " + readSerialized);
+    ird.addLine(CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS + " = " + ignoreUnreadFields);
 
     // Auto Serializer Configuration
     if (portableClassesPatterns != null) {
       autoSerializer = createReflectionBasedAutoSerializer(true, portableClassesPatterns);
-      cache.setPdxSerializer(autoSerializer);
-      ird.addLine("PDX Serializer = " + cache.getPdxSerializer().getClass().getName());
+      ird.addLine("PDX Serializer = " + autoSerializer.getClass().getName());
       ird.addLine("Portable Classes = " + Arrays.toString(portableClassesPatterns));
     }
 
     if (nonPortableClassesPatterns != null) {
       autoSerializer = createReflectionBasedAutoSerializer(false, nonPortableClassesPatterns);
-      cache.setPdxSerializer(autoSerializer);
-      ird.addLine("PDX Serializer = " + cache.getPdxSerializer().getClass().getName());
+      ird.addLine("PDX Serializer = " + autoSerializer.getClass().getName());
       ird.addLine("Non Portable Classes = " + Arrays.toString(nonPortableClassesPatterns));
     }
 
-    XmlEntity xmlEntity = createXmlEntity(cache);
     result = ResultBuilder.buildResult(ird);
-    persistClusterConfiguration(result,
-        () -> ((InternalClusterConfigurationService) getConfigurationService())
-            .addXmlEntity(xmlEntity, null));
+    ReflectionBasedAutoSerializer finalAutoSerializer = autoSerializer;
+    getConfigurationService().updateCacheConfig("cluster", config -> {
+      if (config.getPdx() == null) {
+        config.setPdx(new PdxType());
+      }
+      config.getPdx().setReadSerialized(readSerialized);
+      config.getPdx().setIgnoreUnreadFields(ignoreUnreadFields);
+      config.getPdx().setDiskStoreName(diskStore);
+      config.getPdx().setPersistent(diskStore != null ? true : false);
+
+      if (portableClassesPatterns != null || nonPortableClassesPatterns != null) {
+        PdxType.PdxSerializer pdxSerializer = new PdxType.PdxSerializer();
+        pdxSerializer.setClassName(ReflectionBasedAutoSerializer.class.getName());
+        if (finalAutoSerializer != null) {
+          List<ParameterType> parameters =
+              finalAutoSerializer.getConfig().entrySet().stream().map(entry -> {
+                ParameterType parameterType = new ParameterType();
+                parameterType.setName((String) entry.getKey());
+                parameterType.setString(new StringType((String) entry.getValue()));
+                return parameterType;
+              }).collect(Collectors.toList());
+          pdxSerializer.getParameter().addAll(parameters);
+        }
+        config.getPdx().setPdxSerializer(pdxSerializer);
+      }
+      return config;
+    });
     return result;
   }
 
