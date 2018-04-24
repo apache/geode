@@ -65,7 +65,7 @@ public class AsyncEventQueueStatsJUnitTest extends MBeanStatsTestCase {
       if (s.getName().equals("notQueuedEvent")) {
         notQueueEvents++;
       }
-      if (s.getName().equals("notQueuedEventAtYetRunningPrimarySender")) {
+      if (s.getName().equals("eventsDroppedDueToPrimarySenderNotRunning")) {
         notQueueToPrimary++;
       }
       if (s.getName().equals("eventsProcessedByPQRM")) {
