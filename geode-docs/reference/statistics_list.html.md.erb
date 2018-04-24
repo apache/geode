@@ -889,7 +889,9 @@ These statistics are for outgoing gateway queue and its connection. The primary 
 | `eventQueueSize`                      | Size of the event operations queue.                                                                                                     |
 | `eventQueueTime`                      | Total time, in nanoseconds, spent queueing events.                                                                                      |
 | `eventsDistributed`                   | Number of events operations removed from the event queue and sent.                                                                      |
+| `eventsDroppedDueToPrimarySenderNotRunning` | Number of events dropped because the primary gateway sender is not running.                                                                      |
 | `eventsNotQueuedConflated`            | Number of events operations received but not added to the event queue because the queue already contains an event with the event's key. |
+| `eventsProcessedByPQRM`               | Total number of events processed by the Parallel Queue Removal Message(PQRM).                                                                                 |
 | `eventsQueued`                        | Number of events operations added to the event queue.                                                                                   |
 | `unprocessedEventMapSize`             | Current number of events entries in the secondary's unprocessed event map.                                                              |
 | `unprocessedEventsAddedBySecondary`   | Number of events added to the secondary's unprocessed event map by the secondary.                                                       |
