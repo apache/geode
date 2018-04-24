@@ -15,9 +15,17 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheClient;
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.security.SecurityTestUtils.KEYS;
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.REGION_NAME;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.getCache;
+import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.util.Properties;
 

@@ -14,9 +14,11 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.REGION_NAME;
+import static org.apache.geode.security.SecurityTestUtils.getCache;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Properties;
 

@@ -14,7 +14,8 @@
  */
 package org.apache.geode.codeAnalysis.decode;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 import org.apache.geode.codeAnalysis.decode.cp.CpUtf8;
 
