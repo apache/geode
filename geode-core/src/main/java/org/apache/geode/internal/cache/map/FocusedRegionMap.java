@@ -42,4 +42,13 @@ public interface FocusedRegionMap {
 
   void processVersionTag(RegionEntry regionEntry, EntryEventImpl event);
 
+  void lruEntryUpdate(RegionEntry regionEntry);
+
+  void lruEntryCreate(RegionEntry regionEntry);
+
+  void runWhileEvictionDisabled(Runnable runnable);
+
+  void lruUpdateCallback();
+
+  void resetThreadLocals();
 }

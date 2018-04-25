@@ -3085,7 +3085,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     serverRegionClear(event);
   }
 
-  void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients, CacheWriter localWriter,
+  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients, CacheWriter localWriter,
       boolean requireOldValue, Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
     Assert.assertTrue(netWriteRecipients == null);
@@ -5718,8 +5718,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  protected long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
-      long lastModified, boolean clearConflict) {
+  public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
+                            long lastModified, boolean clearConflict) {
 
     final boolean isNewKey = event.getOperation().isCreate();
 
@@ -10734,11 +10734,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return 0;
   }
 
-  void updateSizeOnPut(Object key, int oldSize, int newSize) {
+  public void updateSizeOnPut(Object key, int oldSize, int newSize) {
     // Only needed by BucketRegion
   }
 
-  void updateSizeOnCreate(Object key, int newSize) {
+  public void updateSizeOnCreate(Object key, int newSize) {
     // Only needed by BucketRegion
   }
 

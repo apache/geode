@@ -2582,8 +2582,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * invoke a cache writer before a put is performed elsewhere
    */
   @Override
-  protected void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
-      CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
+  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
+                                  CacheWriter localWriter, boolean requireOldValue,
+                                  Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
     if ((localWriter != null || (netWriteRecipients != null && !netWriteRecipients.isEmpty()))
         && !event.inhibitAllNotifications()) {

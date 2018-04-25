@@ -1553,7 +1553,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @param oldValueForDelta Used by Delta Propagation feature
    */
-  void putExistingEntry(final LocalRegion owner, final RegionEntry reentry, boolean requireOldValue,
+  public void putExistingEntry(final LocalRegion owner, final RegionEntry reentry, boolean requireOldValue,
       Object oldValueForDelta) throws RegionClearedException {
     makeUpdate();
     // only set oldValue if it hasn't already been set to something
@@ -1596,7 +1596,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @since GemFire 5.0
    */
-  void makeUpdate() {
+  public void makeUpdate() {
     setOperation(this.op.getCorrespondingUpdateOp());
   }
 
@@ -1605,14 +1605,14 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @since GemFire 5.0
    */
-  void makeCreate() {
+  public void makeCreate() {
     setOperation(this.op.getCorrespondingCreateOp());
   }
 
   /**
    * Put a newValue into the given, write synced, new, region entry.
    */
-  void putNewEntry(final LocalRegion owner, final RegionEntry reentry)
+  public void putNewEntry(final LocalRegion owner, final RegionEntry reentry)
       throws RegionClearedException {
     if (!this.op.guaranteesOldValue()) { // preserves oldValue for CM ops in clients
       basicSetOldValue(null);
@@ -1890,7 +1890,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.oldValue == Token.DESTROYED || this.oldValue == Token.TOMBSTONE;
   }
 
-  void setOldValueDestroyedToken() {
+  public void setOldValueDestroyedToken() {
     basicSetOldValue(Token.DESTROYED);
   }
 

@@ -206,7 +206,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   protected int[] diskSizes;
   protected String diskStoreName;
   protected boolean isDiskSynchronous;
-  protected boolean indexMaintenanceSynchronous = false;
+  private boolean indexMaintenanceSynchronous = false;
 
   protected volatile IndexManager indexManager = null;
 
@@ -1814,4 +1814,5 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   public void incRecentlyUsed() {
     // nothing
   }
+
 }

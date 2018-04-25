@@ -651,8 +651,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * distribute the operation in basicPutPart2 so the region entry lock is held
    */
   @Override
-  protected long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
-      long lastModified, boolean clearConflict) {
+  public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
+                            long lastModified, boolean clearConflict) {
     // Assumed this is called with entry synchrony
 
     // Typically UpdateOperation is called with the
@@ -1982,8 +1982,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
-      CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
+  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
+                                  CacheWriter localWriter, boolean requireOldValue,
+                                  Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
 
     boolean origRemoteState = false;
@@ -2144,12 +2145,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  void updateSizeOnPut(Object key, int oldSize, int newSize) {
+  public void updateSizeOnPut(Object key, int oldSize, int newSize) {
     updateBucket2Size(oldSize, newSize, SizeOp.UPDATE);
   }
 
   @Override
-  void updateSizeOnCreate(Object key, int newSize) {
+  public void updateSizeOnCreate(Object key, int newSize) {
     this.partitionedRegion.getPrStats().incDataStoreEntryCount(1);
     updateBucket2Size(0, newSize, SizeOp.CREATE);
   }

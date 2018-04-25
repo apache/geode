@@ -7735,8 +7735,9 @@ public class PartitionedRegion extends LocalRegion
    * @see BucketRegion#cacheWriteBeforePut(EntryEventImpl, Set, CacheWriter, boolean, Object)
    */
   @Override
-  protected void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
-      CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
+  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
+                                  CacheWriter localWriter, boolean requireOldValue,
+                                  Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 

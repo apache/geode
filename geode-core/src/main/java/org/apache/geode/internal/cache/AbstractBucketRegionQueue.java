@@ -141,8 +141,8 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   }
 
   @Override
-  protected long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
-      long lastModified, boolean clearConflict) {
+  public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
+                            long lastModified, boolean clearConflict) {
     return System.currentTimeMillis();
   }
 
