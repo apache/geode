@@ -68,7 +68,7 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
   }
 
   /*
-   * Used both for the reciept of a FlushMessage and the reply to a Flushmessage
+   * Used both for the receipt of a FlushMessage and the reply to a Flushmessage
    */
   @Override
   protected void process(ClusterDistributionManager dm) {

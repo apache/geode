@@ -874,7 +874,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
       }
       if (pdxEvent.isDispatched) {
         // Dispacther does not mean that event has reched remote site. We may
-        // need to send it agian if there is porblem while recieveing ack
+        // need to send it agian if there is porblem while receiveing ack
         // containing this event.Dont add to pdxEventsToBeDispatched
         continue;
       }

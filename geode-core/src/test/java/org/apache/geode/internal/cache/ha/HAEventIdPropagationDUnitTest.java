@@ -617,7 +617,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Listener which sends a notification after create to waiting threads and also extracts teh event
+   * Listener which sends a notification after create to waiting threads and also extracts the event
    * id storing it in a static variable
    */
   static class HAEventIdPropagationListenerForClient extends CacheListenerAdapter {
@@ -702,7 +702,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Listener which sends a notification after create to waiting threads and also extracts teh event
+   * Listener which sends a notification after create to waiting threads and also extracts the event
    * id storing it in a static variable
    */
   static class HAEventIdPropagationListenerForServer extends CacheListenerAdapter {

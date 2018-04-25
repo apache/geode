@@ -1144,7 +1144,7 @@ public class HashIndex extends AbstractIndex {
      * can be used to obtain the underlying RegionEntry object. If the boolean is true & additional
      * projection attribute is not null, then the Region.Entry object can be obtained by evaluating
      * the additional projection attribute. If the boolean isFirstItrOnEntry is tru e& additional
-     * projection attribute is null, then teh 0th iterator itself will evaluate to Region.Entry
+     * projection attribute is null, then the 0th iterator itself will evaluate to Region.Entry
      * Object.
      *
      * The 2nd element of Object Array contains the Struct object ( tuple) created. If the boolean

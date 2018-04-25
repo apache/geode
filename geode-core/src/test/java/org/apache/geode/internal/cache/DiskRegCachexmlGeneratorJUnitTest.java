@@ -34,7 +34,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test is for testing Disk attributes set programmatically The generated cacheXml is used to
- * create a cache and teh region properties retested.
+ * create a cache and the region properties retested.
  */
 @Category(IntegrationTest.class)
 public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {

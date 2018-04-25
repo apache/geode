@@ -467,7 +467,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
         IgnoredException.addIgnoredException(RevokedPersistentDataException.class.getName(), vm1);
     try {
       createPR(vm1, 1);
-      fail("Should have recieved a SplitDistributedSystemException");
+      fail("Should have received a SplitDistributedSystemException");
     } catch (RMIException e) {
       // This should throw a split distributed system exception, because
       // We revoked this member.
@@ -540,7 +540,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
         IgnoredException.addIgnoredException(RevokedPersistentDataException.class.getName(), vm1);
     try {
       createPR(vm1, 1);
-      fail("Should have recieved a SplitDistributedSystemException");
+      fail("Should have received a SplitDistributedSystemException");
     } catch (RMIException e) {
       // This should throw a split distributed system exception, because
       // We revoked this member.
@@ -903,7 +903,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
         IgnoredException.addIgnoredException(RevokedPersistentDataException.class.getName(), vm1);
     try {
       createPR(vm1, 0);
-      fail("Should have recieved a RevokedPersistentDataException");
+      fail("Should have received a RevokedPersistentDataException");
     } catch (RMIException e) {
       // This should throw a split distributed system exception, because
       // We revoked this member.
@@ -953,7 +953,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
         IgnoredException.addIgnoredException(RevokedPersistentDataException.class.getName(), vm1);
     try {
       createPR(vm1, 1);
-      fail("Should have recieved a SplitDistributedSystemException");
+      fail("Should have received a SplitDistributedSystemException");
     } catch (RMIException e) {
       // This should throw a RevokedPersistentDataException exception, because
       // We revoked this member.
@@ -975,7 +975,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
 
     try {
       createPR(vm1, 1);
-      fail("Should have recieved a RevokedPersistentDataException");
+      fail("Should have received a RevokedPersistentDataException");
     } catch (RMIException e) {
       // This should throw a RevokedPersistentDataException exception, because
       // We revoked this member.

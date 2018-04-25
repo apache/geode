@@ -260,7 +260,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   }
 
   // TODO Asif: optimize it by creating a Sorted SelectResults Object at the time of fromData , so
-  // that processData already recieves ordered data.
+  // that processData already receives ordered data.
   private List sortIncomingData(List objects, List<CompiledSortCriterion> orderByAttribs) {
     ObjectType resultType = cumulativeResults.getCollectionType().getElementType();
     ExecutionContext local = new ExecutionContext(null, this.pr.cache);
@@ -713,16 +713,16 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
             for (Object obj : res) {
               checkIfQueryShouldBeCancelled();
-              int occurence = 0;
+              int occurrence = 0;
               obj = PDXUtils.convertPDX(obj, isStruct, getDomainObjectForPdx, getDeserializedObject,
                   localResults, objectChangedMarker, true);
               boolean elementGotAdded =
                   isStruct ? ((StructSet) this.cumulativeResults).addFieldValues((Object[]) obj)
                       : this.cumulativeResults.add(obj);
-              occurence = elementGotAdded ? 1 : 0;
-              // Asif: (Unique i.e first time occurence) or subsequent occurence
+              occurrence = elementGotAdded ? 1 : 0;
+              // Asif: (Unique i.e first time occurrence) or subsequent occurrence
               // for non distinct query
-              if (occurence == 1) {
+              if (occurrence == 1) {
                 ++numElementsInResult;
                 // Asif:Check again to see if this addition caused limit to be
                 // reached so that current loop will not iterate one more

@@ -64,13 +64,13 @@ public class BackupFileCopier {
   }
 
   void copyConfigFiles() throws IOException {
-    ensureExistance(configDirectory);
+    ensureExistence(configDirectory);
     addConfigFileToBackup(cache.getCacheXmlURL());
     addConfigFileToBackup(DistributedSystem.getPropertiesFileURL());
     // TODO: should the gfsecurity.properties file be backed up?
   }
 
-  private void ensureExistance(Path directory) throws IOException {
+  private void ensureExistence(Path directory) throws IOException {
     if (!Files.exists(directory)) {
       Files.createDirectories(directory);
     }
@@ -97,7 +97,7 @@ public class BackupFileCopier {
 
   Set<File> copyUserFiles() throws IOException {
     Set<File> userFilesBackedUp = new HashSet<>();
-    ensureExistance(userDirectory);
+    ensureExistence(userDirectory);
     List<File> backupFiles = cache.getBackupFiles();
     for (File original : backupFiles) {
       if (original.exists()) {
@@ -119,7 +119,7 @@ public class BackupFileCopier {
     Set<File> userJars = new HashSet<>();
     JarDeployer deployer = null;
 
-    ensureExistance(userDirectory);
+    ensureExistence(userDirectory);
     try {
       // Suspend any user deployed jar file updates during this backup.
       deployer = getJarDeployer();

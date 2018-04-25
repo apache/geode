@@ -70,7 +70,7 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
   }
 
   /**
-   * blocking peek. This method will not return till it has acquired a legitimate object from teh
+   * blocking peek. This method will not return till it has acquired a legitimate object from the
    * queue.
    *
    */

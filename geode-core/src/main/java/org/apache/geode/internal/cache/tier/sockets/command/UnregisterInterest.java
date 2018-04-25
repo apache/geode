@@ -141,7 +141,7 @@ public class UnregisterInterest extends BaseCommand {
      * interest request"); writeErrorResponse(msg, MessageType.UNREGISTER_INTEREST_DATA_ERROR);
      * responded = true; } else {
      */
-    // Unregister interest irrelevent of whether the region is present it or
+    // Unregister interest irrelevant of whether the region is present it or
     // not
     serverConnection.getAcceptor().getCacheClientNotifier().unregisterClientInterest(regionName,
         key, interestType, isClosing, serverConnection.getProxyID(), keepalive);

@@ -156,7 +156,7 @@ public class CacheMapTxnDUnitTest extends JUnit4DistributedTestCase { // TODO: r
                                                                                            // same
                                                                                            // vm but
                                                                                            // in
-                                                                                           // seperate
+                                                                                           // separate
                                                                                            // thread
     AsyncInvocation o3 = vm1.invokeAsync(() -> CacheMapTxnDUnitTest.miscMethodsNotOwner());// invoke
                                                                                            // in

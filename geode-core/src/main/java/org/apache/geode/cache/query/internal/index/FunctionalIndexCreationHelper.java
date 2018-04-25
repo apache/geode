@@ -466,7 +466,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
           this.isMapTypeIndex = true;
           this.isAllKeys = true;
           // Strip the index operator
-          expr = mi.getRecieverSansIndexArgs();
+          expr = mi.getReceiverSansIndexArgs();
           expr.generateCanonicalizedExpression(sb, this.context);
           sb.append('[').append('*').append(']');
 
@@ -477,7 +477,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
           this.isMapTypeIndex = true;
           this.multiIndexKeysPattern = new String[indexingKeys.size()];
           this.mapKeys = new Object[indexingKeys.size()];
-          expr = mi.getRecieverSansIndexArgs();
+          expr = mi.getReceiverSansIndexArgs();
           expr.generateCanonicalizedExpression(sb, this.context);
           sb.append('[');
           String prefixStr = sb.toString();

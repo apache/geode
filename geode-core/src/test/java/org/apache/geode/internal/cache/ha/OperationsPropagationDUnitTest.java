@@ -100,7 +100,7 @@ public class OperationsPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * closes the cache and disconnects the vm from teh distributed system
+   * closes the cache and disconnects the vm from the distributed system
    */
   public static void closeCache() {
     if (cache != null && !cache.isClosed()) {

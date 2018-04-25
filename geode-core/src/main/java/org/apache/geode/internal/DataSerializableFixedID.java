@@ -31,7 +31,7 @@ import org.apache.geode.Instantiator;
  *
  * <p>
  * Note that this class is for internal use only. Customer classes that want to do something
- * similiar should implement a subclass of {@link DataSerializer} or {@link Instantiator}.
+ * similar should implement a subclass of {@link DataSerializer} or {@link Instantiator}.
  *
  * <p>
  * To add a new DataSerializableFixedID do this following:

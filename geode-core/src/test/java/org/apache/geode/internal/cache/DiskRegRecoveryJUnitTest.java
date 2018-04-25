@@ -756,7 +756,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
   }
 
   /**
-   * This tests the case where potential of writing a dummy byte was tehre. The case would be
+   * This tests the case where potential of writing a dummy byte was there. The case would be
    * compactor terminating early. The create is present in both Htree as well as Oplog. When
    * recovery is done, the create is added to the Oplog createdEntrySet. Now while compactor
    * iterates over the entries in the region, it skips the created entry because its Htree Offset is

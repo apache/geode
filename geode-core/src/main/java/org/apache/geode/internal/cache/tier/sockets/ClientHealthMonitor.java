@@ -122,7 +122,7 @@ public class ClientHealthMonitor {
 
   /**
    * Gives, version-wise, the number of clients connected to the cache servers in this cache, which
-   * are capable of processing recieved deltas.
+   * are capable of processing received deltas.
    *
    * NOTE: It does not necessarily give the actual number of clients per version connected to the
    * cache servers in this cache.

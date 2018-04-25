@@ -30,7 +30,7 @@ public class RedisConstants {
    * Error responses
    */
   static final String PARSING_EXCEPTION_MESSAGE =
-      "The command recieved by GeodeRedisServer was improperly formatted";
+      "The command received by GeodeRedisServer was improperly formatted";
   static final String SERVER_ERROR_MESSAGE = "The server had an internal error please try again";
   static final String SERVER_ERROR_UNKNOWN_RESPONSE = "Unkown response";
   static final String SERVER_ERROR_SHUTDOWN = "The server is shutting down";

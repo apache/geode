@@ -371,7 +371,7 @@ public class MBeanUtil {
         timerNotificationId = refreshTimer.addNotification(type.getType(), // type
             type.getMessage(), // message = "refresh"
             userData, // userData
-            new Date(System.currentTimeMillis() + refreshInterval * 1000), // first occurence
+            new Date(System.currentTimeMillis() + refreshInterval * 1000), // first occurrence
             refreshInterval * 1000); // period to repeat
 
         // put an entry into the map for the listener...

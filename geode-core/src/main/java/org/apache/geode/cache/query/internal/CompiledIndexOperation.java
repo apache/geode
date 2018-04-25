@@ -165,7 +165,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
   }
 
 
-  public CompiledValue getRecieverSansIndexArgs() {
+  public CompiledValue getReceiverSansIndexArgs() {
     return this.receiver;
   }
 

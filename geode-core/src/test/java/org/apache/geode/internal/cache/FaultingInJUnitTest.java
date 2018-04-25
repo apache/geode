@@ -48,7 +48,7 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
   }
 
   /**
-   * fault in a value from teh current oplog
+   * fault in a value from the current oplog
    */
   private void faultInFromCurrentOplog() {
     put100Int();

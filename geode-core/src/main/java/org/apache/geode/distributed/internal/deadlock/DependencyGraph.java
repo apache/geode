@@ -174,20 +174,20 @@ public class DependencyGraph implements Serializable {
 
     // find all terminal nodes having no incoming
     // dependers.
-    Set<Object> allDependants = new HashSet<>();
+    Set<Object> allDependents = new HashSet<>();
     for (Dependency dep : edges) {
       if ((dep.dependsOn instanceof LocalThread)) {
         if (dep.depender instanceof MessageKey) {
-          allDependants.add(dep.dependsOn);
+          allDependents.add(dep.dependsOn);
         }
       } else {
-        allDependants.add(dep.dependsOn);
+        allDependents.add(dep.dependsOn);
       }
     }
 
     List<DependencyGraph> result = new LinkedList<>();
     for (Object depender : dependsOnObj) {
-      if (!allDependants.contains(depender)) {
+      if (!allDependents.contains(depender)) {
         result.add(getSubGraph(depender));
       }
     }

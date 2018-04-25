@@ -29,14 +29,14 @@ public class VersionManagerJUnitTest {
   @Test
   public void exceptionIsNotThrownInInitialization() throws Exception {
     VersionManager instance =
-        VersionManager.getInstance("--nonexistant-file?--", "--nonexistant-install-file--");
+        VersionManager.getInstance("--nonexistent-file?--", "--nonexistent-install-file--");
     Assert.assertNotEquals("", instance.loadFailure);
   }
 
   @Test
   public void exceptionIsThrownOnUse() throws Exception {
     VersionManager instance =
-        VersionManager.getInstance("--nonexistant-file?--", "--nonexistant-install-file--");
+        VersionManager.getInstance("--nonexistent-file?--", "--nonexistent-install-file--");
     Assert.assertNotEquals("", instance.loadFailure);
     assertThatThrownBy(() -> instance.getVersionsWithoutCurrent()).hasMessage(instance.loadFailure);
     assertThatThrownBy(() -> instance.getVersions()).hasMessage(instance.loadFailure);

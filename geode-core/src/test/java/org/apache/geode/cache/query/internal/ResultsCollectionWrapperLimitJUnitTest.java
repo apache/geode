@@ -304,7 +304,7 @@ public class ResultsCollectionWrapperLimitJUnitTest {
   }
 
   @Test
-  public void testOccurences() {
+  public void testOccurrences() {
     Collection ordered = new TreeSet();
     for (int i = 1; i < 11; ++i) {
       ordered.add(new Integer(i));

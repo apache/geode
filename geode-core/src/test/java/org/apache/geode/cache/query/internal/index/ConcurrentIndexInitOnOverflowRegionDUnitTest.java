@@ -375,7 +375,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTes
         switch (spot) {
           case 6: // processAction in IndexManager
             hooked = true;
-            // wait untill some thread unhooks.
+            // wait until some thread unhooks.
             while (hooked) {
               Wait.pause(20);
             }
