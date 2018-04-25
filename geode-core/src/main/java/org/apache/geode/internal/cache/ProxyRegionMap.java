@@ -277,20 +277,8 @@ class ProxyRegionMap implements RegionMap {
         EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, op, key, null, rmtOrigin,
             event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
             versionTag, tailKey);
-        boolean cbEventInPending = false;
-        try {
-          AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
-          if (pendingCallbacks == null) {
-            this.owner.invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, e,
-                true/* callDispatchListenerEvent */);
-          } else {
-            pendingCallbacks.add(e);
-            cbEventInPending = true;
-          }
-        } finally {
-          if (!cbEventInPending)
-            e.release();
-        }
+        AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
+        pendingCallbacks.add(e);
       }
     }
   }
@@ -308,25 +296,13 @@ class ProxyRegionMap implements RegionMap {
       }
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
-        boolean cbEventInPending = false;
         @Released
         EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner,
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, rmtOrigin,
             event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
             versionTag, tailKey);
-        try {
-          AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
-          if (pendingCallbacks == null) {
-            this.owner.invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, e,
-                true/* callDispatchListenerEvent */);
-          } else {
-            pendingCallbacks.add(e);
-            cbEventInPending = true;
-          }
-        } finally {
-          if (!cbEventInPending)
-            e.release();
-        }
+        AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
+        pendingCallbacks.add(e);
       }
     }
   }
@@ -346,24 +322,12 @@ class ProxyRegionMap implements RegionMap {
       }
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
-        boolean cbEventInPending = false;
         @Released
         EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, putOperation, key, newValue,
             rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
             txEntryState, versionTag, tailKey);
-        try {
-          AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
-          if (pendingCallbacks == null) {
-            this.owner.invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, e,
-                true/* callDispatchListenerEvent */);
-          } else {
-            pendingCallbacks.add(e);
-            cbEventInPending = true;
-          }
-        } finally {
-          if (!cbEventInPending)
-            e.release();
-        }
+        AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
+        pendingCallbacks.add(e);
       }
     }
   }

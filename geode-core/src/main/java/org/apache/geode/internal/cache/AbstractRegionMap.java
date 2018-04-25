@@ -1040,6 +1040,7 @@ public abstract class AbstractRegionMap
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, boolean isOriginRemote, TXEntryState txEntryState,
       VersionTag versionTag, long tailKey) {
+    assert pendingCallbacks != null;
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     final LocalRegion owner = _getOwner();
@@ -1118,13 +1119,8 @@ public abstract class AbstractRegionMap
                     clearOccured /* Clear Conflciting with the operation */);
                 if (invokeCallbacks) {
                   switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                  if (pendingCallbacks == null) {
-                    owner.invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, cbEvent,
-                        true/* callDispatchListenerEvent */);
-                  } else {
-                    pendingCallbacks.add(cbEvent);
-                    cbEventInPending = true;
-                  }
+                  pendingCallbacks.add(cbEvent);
+                  cbEventInPending = true;
                 }
                 if (!clearOccured) {
                   lruEntryDestroy(re);
@@ -1183,13 +1179,8 @@ public abstract class AbstractRegionMap
                       processAndGenerateTXVersionTag(owner, cbEvent, oldRe, txEntryState);
                       if (invokeCallbacks) {
                         switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                        if (pendingCallbacks == null) {
-                          owner.invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, cbEvent,
-                              dispatchListenerEvent);
-                        } else {
-                          pendingCallbacks.add(cbEvent);
-                          cbEventInPending = true;
-                        }
+                        pendingCallbacks.add(cbEvent);
+                        cbEventInPending = true;
                       }
                       int oldSize = 0;
                       boolean wasTombstone = oldRe.isTombstone();
@@ -1247,13 +1238,8 @@ public abstract class AbstractRegionMap
                 processAndGenerateTXVersionTag(owner, cbEvent, newRe, txEntryState);
                 if (invokeCallbacks) {
                   switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                  if (pendingCallbacks == null) {
-                    owner.invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, cbEvent,
-                        dispatchListenerEvent);
-                  } else {
-                    pendingCallbacks.add(cbEvent);
-                    cbEventInPending = true;
-                  }
+                  pendingCallbacks.add(cbEvent);
+                  cbEventInPending = true;
                 }
                 EntryLogger.logTXDestroy(_getOwnerObject(), key);
                 owner.updateSizeOnCreate(newRe.getKey(), 0);
@@ -1300,12 +1286,8 @@ public abstract class AbstractRegionMap
             txHandleWANEvent(owner, cbEvent, txEntryState);
           }
           switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-          if (pendingCallbacks == null) {
-            owner.invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, cbEvent, false);
-          } else {
-            pendingCallbacks.add(cbEvent);
-            cbEventInPending = true;
-          }
+          pendingCallbacks.add(cbEvent);
+          cbEventInPending = true;
         } finally {
           if (!cbEventInPending)
             cbEvent.release();
@@ -1834,6 +1816,7 @@ public abstract class AbstractRegionMap
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
+    assert pendingCallbacks != null;
     // boolean didInvalidate = false;
     final LocalRegion owner = _getOwner();
 
@@ -1910,13 +1893,8 @@ public abstract class AbstractRegionMap
                     // didInvalidate = true;
                     if (invokeCallbacks) {
                       switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                      if (pendingCallbacks == null) {
-                        owner.invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, cbEvent,
-                            true/* callDispatchListenerEvent */);
-                      } else {
-                        pendingCallbacks.add(cbEvent);
-                        cbEventInPending = true;
-                      }
+                      pendingCallbacks.add(cbEvent);
+                      cbEventInPending = true;
                     }
                     if (!clearOccured) {
                       lruEntryUpdate(oldRe);
@@ -1956,13 +1934,8 @@ public abstract class AbstractRegionMap
 
                 if (invokeCallbacks) {
                   switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                  if (pendingCallbacks == null) {
-                    owner.invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, cbEvent,
-                        true/* callDispatchListenerEvent */);
-                  } else {
-                    pendingCallbacks.add(cbEvent);
-                    cbEventInPending = true;
-                  }
+                  pendingCallbacks.add(cbEvent);
+                  cbEventInPending = true;
                 }
                 opCompleted = true;
                 if (!clearOccured) {
@@ -2025,13 +1998,8 @@ public abstract class AbstractRegionMap
                 // didInvalidate = true;
                 if (invokeCallbacks) {
                   switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                  if (pendingCallbacks == null) {
-                    owner.invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, cbEvent,
-                        true/* callDispatchListenerEvent */);
-                  } else {
-                    pendingCallbacks.add(cbEvent);
-                    cbEventInPending = true;
-                  }
+                  pendingCallbacks.add(cbEvent);
+                  cbEventInPending = true;
                 }
                 if (!clearOccured) {
                   lruEntryUpdate(re);
@@ -2060,12 +2028,8 @@ public abstract class AbstractRegionMap
                   bridgeContext, txEntryState, versionTag, tailKey);
           try {
             switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-            if (pendingCallbacks == null) {
-              owner.invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, cbEvent, false);
-            } else {
-              pendingCallbacks.add(cbEvent);
-              cbEventInPending = true;
-            }
+            pendingCallbacks.add(cbEvent);
+            cbEventInPending = true;
           } finally {
             if (!cbEventInPending)
               cbEvent.release();
@@ -2594,6 +2558,7 @@ public abstract class AbstractRegionMap
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
+    assert pendingCallbacks != null;
     final LocalRegion owner = _getOwner();
     if (owner == null) {
       // "fix" for bug 32440
@@ -2644,7 +2609,7 @@ public abstract class AbstractRegionMap
           if (!owner.isAllEvents() || (!putOp.isCreate() && isRegionReady)) {
             cbEventInPending = applyTxUpdateOnReplicateOrRedundantCopy(key, nv, didDestroy, txEvent,
                 aCallbackArgument, pendingCallbacks, txEntryState, owner, putOp, newValue,
-                hasRemoteOrigin, cbEvent, invokeCallbacks, cbEventInPending, opCompleted);
+                hasRemoteOrigin, cbEvent, invokeCallbacks, opCompleted);
             return;
           }
         }
@@ -2727,15 +2692,8 @@ public abstract class AbstractRegionMap
                       cbEvent.makeUpdate();
                     }
                     switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                    if (pendingCallbacks == null) {
-                      owner.invokeTXCallbacks(
-                          cbEvent.op.isCreate() ? EnumListenerEvent.AFTER_CREATE
-                              : EnumListenerEvent.AFTER_UPDATE,
-                          cbEvent, true/* callDispatchListenerEvent */);
-                    } else {
-                      pendingCallbacks.add(cbEvent);
-                      cbEventInPending = true;
-                    }
+                    pendingCallbacks.add(cbEvent);
+                    cbEventInPending = true;
                   }
                   if (!clearOccured) {
                     lruEntryUpdate(oldRe);
@@ -2793,13 +2751,8 @@ public abstract class AbstractRegionMap
                 cbEvent.makeCreate();
                 cbEvent.setOldValue(null);
                 switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                if (pendingCallbacks == null) {
-                  owner.invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, cbEvent,
-                      true/* callDispatchListenerEvent */);
-                } else {
-                  pendingCallbacks.add(cbEvent);
-                  cbEventInPending = true;
-                }
+                pendingCallbacks.add(cbEvent);
+                cbEventInPending = true;
               }
               if (!clearOccured) {
                 lruEntryCreate(newRe);
@@ -2833,7 +2786,8 @@ public abstract class AbstractRegionMap
       TXRmtEvent txEvent, Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
       TXEntryState txEntryState, LocalRegion owner, Operation putOp, Object newValue,
       boolean hasRemoteOrigin, EntryEventImpl cbEvent, boolean invokeCallbacks,
-      boolean cbEventInPending, boolean opCompleted) {
+      boolean opCompleted) {
+    boolean result = false;
     // At this point we should only apply the update if the entry exists
     RegionEntry re = getEntry(key); // Fix for bug 32347.
     if (re != null) {
@@ -2894,8 +2848,8 @@ public abstract class AbstractRegionMap
             }
           }
           if (invokeCallbacks) {
-            cbEventInPending = prepareUpdateCallbacks(pendingCallbacks, owner, hasRemoteOrigin,
-                cbEvent, cbEventInPending);
+            prepareUpdateCallbacks(pendingCallbacks, owner, hasRemoteOrigin, cbEvent);
+            result = true;
           }
           if (!clearOccured) {
             lruEntryUpdate(re);
@@ -2913,20 +2867,14 @@ public abstract class AbstractRegionMap
     if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
       txEntryState.setVersionTag(cbEvent.getVersionTag());
     }
-    return cbEventInPending;
+    return result;
   }
 
-  private boolean prepareUpdateCallbacks(List<EntryEventImpl> pendingCallbacks, LocalRegion owner,
-      boolean hasRemoteOrigin, EntryEventImpl cbEvent, boolean cbEventInPending) {
+  private void prepareUpdateCallbacks(List<EntryEventImpl> pendingCallbacks, LocalRegion owner,
+      boolean hasRemoteOrigin, EntryEventImpl cbEvent) {
     cbEvent.makeUpdate();
     switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-    if (pendingCallbacks == null) {
-      owner.invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, cbEvent, hasRemoteOrigin);
-    } else {
-      pendingCallbacks.add(cbEvent);
-      cbEventInPending = true;
-    }
-    return cbEventInPending;
+    pendingCallbacks.add(cbEvent);
   }
 
   private void txHandleWANEvent(final LocalRegion owner, EntryEventImpl cbEvent,
