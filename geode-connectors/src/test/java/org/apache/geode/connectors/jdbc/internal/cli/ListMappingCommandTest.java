@@ -61,8 +61,9 @@ public class ListMappingCommandTest {
   @Test
   public void whenCCServiceIsNotAvailable() {
     doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("cluster configuration service is not running");
+        .containsOutput("No mappings found");
   }
 
   @Test
