@@ -55,17 +55,16 @@ public class DestroyConnectionCommand extends SingleGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new DestroyConnectionFunction(), name, targetMembers);
     CommandResult commandResult = ResultBuilder.buildResult(results);
-    CacheElement element = (CacheElement) () -> name;
-    commandResult.setCacheElement(element);
+    commandResult.setConfigObject(name);
     return commandResult;
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, CacheElement element) {
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
     ConnectorService service =
         config.findCustomCacheElement("connector-service", ConnectorService.class);
     if (service != null) {
-      CacheElement.removeElement(service.getConnection(), element.getId());
+      CacheElement.removeElement(service.getConnection(), (String) element);
     }
   }
 }

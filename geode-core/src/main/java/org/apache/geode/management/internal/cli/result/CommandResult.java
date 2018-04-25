@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
@@ -57,7 +56,7 @@ public class CommandResult implements Result {
   private ResultData resultData;
   private List<String> resultLines;
   private boolean failedToPersist = false;
-  private CacheElement cacheElement;
+  private Object configObject;
 
   private transient int numTimesSaved;
 
@@ -101,12 +100,12 @@ public class CommandResult implements Result {
     return gfJsonObject;
   }
 
-  public CacheElement getCacheElement() {
-    return cacheElement;
+  public Object getConfigObject() {
+    return configObject;
   }
 
-  public void setCacheElement(CacheElement cacheElement) {
-    this.cacheElement = cacheElement;
+  public void setConfigObject(Object configObject) {
+    this.configObject = configObject;
   }
 
   @Override

@@ -109,12 +109,12 @@ public class AlterMappingCommand extends SingleGfshCommand {
         results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
     ConnectorService.RegionMapping mergedMapping =
         (ConnectorService.RegionMapping) successResult.getResultObject();
-    commandResult.setCacheElement(mergedMapping);
+    commandResult.setConfigObject(mergedMapping);
     return commandResult;
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, CacheElement element) {
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
     ConnectorService.RegionMapping mapping = (ConnectorService.RegionMapping) element;
     ConnectorService service =
         config.findCustomCacheElement("connector-service", ConnectorService.class);

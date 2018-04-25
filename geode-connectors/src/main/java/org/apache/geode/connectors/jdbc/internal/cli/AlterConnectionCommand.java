@@ -102,12 +102,12 @@ public class AlterConnectionCommand extends SingleGfshCommand {
         (ConnectorService.Connection) successResult.getResultObject();
 
     CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setCacheElement(mergedConnection);
+    commandResult.setConfigObject(mergedConnection);
     return commandResult;
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, CacheElement element) {
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
     ConnectorService.Connection connection = (ConnectorService.Connection) element;
     ConnectorService service =
         config.findCustomCacheElement("connector-service", ConnectorService.class);

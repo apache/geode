@@ -21,7 +21,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -87,12 +86,12 @@ public class CreateMappingCommand extends SingleGfshCommand {
 
 
     CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setCacheElement(mapping);
+    commandResult.setConfigObject(mapping);
     return commandResult;
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, CacheElement element) {
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
     ConnectorService.RegionMapping mapping = (ConnectorService.RegionMapping) element;
     ConnectorService service =
         config.findCustomCacheElement("connector-service", ConnectorService.class);

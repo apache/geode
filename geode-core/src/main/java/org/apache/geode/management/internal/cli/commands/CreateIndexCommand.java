@@ -22,7 +22,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
@@ -89,7 +88,7 @@ public class CreateIndexCommand extends SingleGfshCommand {
     List<CliFunctionResult> functionResults =
         executeAndGetFunctionResult(createIndexFunction, index, targetMembers);
     result = ResultBuilder.buildResult(functionResults);
-    result.setCacheElement(index);
+    result.setConfigObject(index);
     return result;
   }
 
@@ -106,7 +105,7 @@ public class CreateIndexCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, CacheElement element) {
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
     RegionConfig.Index index = (RegionConfig.Index) element;
     String regionPath = getValidRegionName(index.getFromClause(), config);
 

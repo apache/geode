@@ -32,8 +32,8 @@ import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -42,7 +42,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeMappingCommand extends InternalGfshCommand {
+public class DescribeMappingCommand extends GfshCommand {
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
   static final String DESCRIBE_MAPPING__HELP = "Describe the specified jdbc mapping";
   static final String DESCRIBE_MAPPING__REGION_NAME = "region";

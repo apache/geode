@@ -57,17 +57,16 @@ public class DestroyMappingCommand extends SingleGfshCommand {
         executeAndGetFunctionResult(new DestroyMappingFunction(), regionName, targetMembers);
 
     CommandResult commandResult = ResultBuilder.buildResult(results);
-    CacheElement cacheElement = (CacheElement) () -> regionName;
-    commandResult.setCacheElement(cacheElement);
+    commandResult.setConfigObject(regionName);
     return commandResult;
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, CacheElement element) {
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
     ConnectorService service =
         config.findCustomCacheElement("connector-service", ConnectorService.class);
     if (service != null) {
-      CacheElement.removeElement(service.getRegionMapping(), element.getId());
+      CacheElement.removeElement(service.getRegionMapping(), (String) element);
     }
   }
 }

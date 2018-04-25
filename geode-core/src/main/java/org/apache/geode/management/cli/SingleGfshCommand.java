@@ -19,7 +19,6 @@ package org.apache.geode.management.cli;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 
 /**
  * Command class that extends this class can only have one single command method,
@@ -36,10 +35,11 @@ public abstract class SingleGfshCommand extends GfshCommand {
    *
    * @param group the group name of the cluster config, never null
    * @param config the configuration object, never null
-   * @param element the return value of CommandResult.getCacheElement. CommandResult is the return
+   * @param configObject the return value of CommandResult.getConfigObject. CommandResult is the
+   *        return
    *        value of your command method.
    *
    *        it should throw some RuntimeException if update failed.
    */
-  public abstract void updateClusterConfig(String group, CacheConfig config, CacheElement element);
+  public abstract void updateClusterConfig(String group, CacheConfig config, Object configObject);
 }
