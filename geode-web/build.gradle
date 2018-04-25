@@ -50,8 +50,8 @@ dependencies {
   provided project(path: ':geode-core', configuration: 'classesOutput')
 
   testRuntime project(':geode-common')
-  testCompile project(path: ':geode-core', configuration: 'testOutput')
-  testCompile project(path: ':geode-test')
+  testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
+  testCompile project(path: ':geode-test', configuration: 'runtime')
 
   testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'

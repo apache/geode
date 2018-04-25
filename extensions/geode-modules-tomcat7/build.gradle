@@ -38,7 +38,7 @@ dependencies {
   testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
 
   testCompile project(path: ':geode-core', configuration: 'testOutput')
-  testCompile project(path: ':geode-test')
+  testCompile project(path: ':geode-test', configuration: 'runtime')
   testCompile project(path: ':extensions/geode-modules', configuration: 'testOutput')
 
   eclipse.classpath.file {

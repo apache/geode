@@ -31,7 +31,7 @@ dependencies {
   testRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 
   testCompile project(path: ':geode-core', configuration: 'testOutput')
-  testCompile project(path: ':geode-test')
+  testCompile project(path: ':geode-test', configuration: 'runtime')
 }
 
 disableMavenPublishing()

@@ -39,7 +39,7 @@ dependencies {
   testCompile 'javax.security.auth.message:javax.security.auth.message-api:' + '1.1'
 
   testCompile project(path: ':geode-core', configuration: 'testOutput')
-  testCompile project(path: ':geode-test')
+  testCompile project(path: ':geode-test', configuration: 'runtime')
   testCompile project(path: ':extensions/geode-modules', configuration: 'testOutput')
 
   eclipse.classpath.file {

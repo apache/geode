@@ -19,6 +19,6 @@ dependencies {
     compile project(':geode-core')
     compile project(':geode-common')
 
-    testCompile project(path: ':geode-core', configuration: 'testOutput')
-    testCompile project(path: ':geode-test')
+    testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
+    testCompile project(path: ':geode-test', configuration: 'runtime')
 }
