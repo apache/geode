@@ -46,6 +46,8 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
 
   private String regionPath;
 
+  private boolean reindexOp;
+
   /* Used by DataSerializer */
   public LuceneIndexCreationProfile() {}
 
@@ -59,6 +61,13 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
     if (serializer != null) {
       this.serializerClass = serializer.getClass().getSimpleName();
     }
+  }
+
+  public LuceneIndexCreationProfile(String indexName, String regionPath, String[] fieldNames,
+      Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer,
+      boolean reindexOp) {
+    this(indexName, regionPath, fieldNames, analyzer, fieldAnalyzers, serializer);
+    this.reindexOp = reindexOp;
   }
 
   public String getIndexName() {
@@ -157,17 +166,23 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
 
   @Override
   public String getMissingProfileMessage(boolean existsInThisMember) {
-    return existsInThisMember
-        ? LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_NOT_DEFINED_IN_ANOTHER_MEMBER
-            .toString(getIndexName(), regionPath)
-        : LocalizedStrings.LuceneService_MUST_DEFINE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_DEFINED_IN_ANOTHER_MEMBER
-            .toString(getIndexName(), regionPath);
+    // If the remote member is reindexing, no error if the index is not present in the local member
+    if (reindexOp) {
+      return null; // null is handled as a no failure
+    } else {
+      return existsInThisMember
+          ? LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_NOT_DEFINED_IN_ANOTHER_MEMBER
+              .toString(getIndexName(), regionPath)
+          : LocalizedStrings.LuceneService_MUST_DEFINE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_DEFINED_IN_ANOTHER_MEMBER
+              .toString(getIndexName(), regionPath);
+    }
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     toDataPre_GEODE_1_4_0_0(out);
     DataSerializer.writeString(this.serializerClass, out);
+    DataSerializer.writeBoolean(this.reindexOp, out);
   }
 
   public void toDataPre_GEODE_1_4_0_0(DataOutput out) throws IOException {
@@ -182,6 +197,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_4_0_0(in);
     this.serializerClass = DataSerializer.readString(in);
+    this.reindexOp = DataSerializer.readBoolean(in);
   }
 
   public void fromDataPre_GEODE_1_4_0_0(DataInput in) throws IOException, ClassNotFoundException {
@@ -197,7 +213,9 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
         .append(this.indexName).append("; regionPath=").append(this.regionPath)
         .append("; fieldNames=").append(Arrays.toString(this.fieldNames)).append("; analyzerClass=")
         .append(this.analyzerClass).append("; fieldAnalyzers=").append(this.fieldAnalyzers)
-        .append("; serializer=").append(this.serializerClass).append("]").toString();
+        .append("; serializer=").append(this.serializerClass).append("; reindex operation=")
+        .append(this.reindexOp).append("]").toString();
+
   }
 
   public String getRegionPath() {
