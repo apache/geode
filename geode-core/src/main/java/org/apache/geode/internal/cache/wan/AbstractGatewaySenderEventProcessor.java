@@ -301,7 +301,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
       boolean isPrimary = prQ.getRegionAdvisor().getBucketAdvisor(bucketId).isPrimary();
       if (isPrimary) {
         pgsq.sendQueueRemovalMesssageForDroppedEvent(prQ, bucketId, shadowKey);
-        this.sender.getStatistics().incEventsNotQueuedAtYetRunningPrimarySender();
+        this.sender.getStatistics().incEventsDroppedDueToPrimarySenderNotRunning();
         if (logger.isDebugEnabled()) {
           logger.debug("register dropped event for primary queue. BucketId is " + bucketId
               + ", shadowKey is " + shadowKey + ", prQ is " + prQ.getFullPath());

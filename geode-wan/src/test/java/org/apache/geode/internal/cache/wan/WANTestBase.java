@@ -1228,10 +1228,10 @@ public class WANTestBase extends DistributedTestCase {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     GatewaySenderStats statistics = sender.getStatistics();
     ArrayList<Integer> stats = new ArrayList<Integer>();
-    int eventNotQueued = statistics.getEventsNotQueuedAtYetRunningPrimarySender();
+    int eventNotQueued = statistics.getEventsDroppedDueToPrimarySenderNotRunning();
     if (eventNotQueued > 0) {
-      logger.info(
-          "Found " + eventNotQueued + " not queued events due to primary sender is yet running");
+      logger
+          .info("Found " + eventNotQueued + " events dropped due to primary sender is not running");
     }
     stats.add(eventNotQueued);
     stats.add(statistics.getEventsNotQueued());
