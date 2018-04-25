@@ -14,6 +14,8 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.distributed.ClusterConfigurationService.CLUSTER_CONFIG;
+
 import java.util.List;
 import java.util.Set;
 
@@ -86,7 +88,7 @@ public class AlterMappingCommand extends SingleGfshCommand {
     // if cc is running, you can only alter connection available in cc service.
     if (ccService != null) {
       // search for the connection that has this id to see if it exists
-      CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
+      CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
       ConnectorService service =
           cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
       if (service == null) {

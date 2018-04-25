@@ -14,6 +14,8 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.distributed.ClusterConfigurationService.CLUSTER_CONFIG;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +55,7 @@ public class ListMappingCommand extends GfshCommand {
     // check if CC is available and use it to describe the connection
     ClusterConfigurationService ccService = getConfigurationService();
     if (ccService != null) {
-      CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
+      CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
       if (cacheConfig != null) {
         ConnectorService service =
             cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);

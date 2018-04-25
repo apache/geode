@@ -24,6 +24,8 @@ import org.apache.geode.cache.configuration.CacheConfig;
 
 @Experimental
 public interface ClusterConfigurationService {
+  String CLUSTER_CONFIG = "cluster";
+
   /**
    * retrieves the configuration object of a member group
    *
