@@ -63,6 +63,13 @@ public class ConfigurePDXCommandTest {
   }
 
   @Test
+  public void errorOutIfCCNotRunning() {
+    doReturn(null).when(command).getConfigurationService();
+    gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING).statusIsError()
+        .containsOutput("Cluster configuration service is not running.");
+  }
+
+  @Test
   public void parsingShouldSucceedWithoutArguments() {
     assertThat(gfshParserRule.parse(BASE_COMMAND_STRING)).isNotNull();
   }

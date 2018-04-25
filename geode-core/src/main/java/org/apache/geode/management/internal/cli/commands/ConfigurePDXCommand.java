@@ -25,6 +25,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.cache.configuration.StringType;
+import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
@@ -64,64 +65,72 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
 
     Result result;
     ReflectionBasedAutoSerializer autoSerializer = null;
-    InfoResultData ird = ResultBuilder.createInfoResultData();
+
+    if (getConfigurationService() == null) {
+      return ResultBuilder.createUserErrorResult("Cluster configuration service is not running.");
+    }
+
+    InfoResultData infoResultData = ResultBuilder.createInfoResultData();
 
     if (!getAllNormalMembers().isEmpty()) {
-      ird.addLine(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING);
+      infoResultData.addLine(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING);
     }
 
     // Set persistent and the disk-store
     if (diskStore != null) {
-      ird.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = true");
-      ird.addLine(CliStrings.CONFIGURE_PDX__DISKSTORE + " = " + diskStore);
+      infoResultData.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = true");
+      infoResultData.addLine(CliStrings.CONFIGURE_PDX__DISKSTORE + " = " + diskStore);
     } else {
-      ird.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = false");
+      infoResultData.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = false");
     }
 
-    ird.addLine(CliStrings.CONFIGURE_PDX__READ__SERIALIZED + " = " + readSerialized);
-    ird.addLine(CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS + " = " + ignoreUnreadFields);
+    infoResultData.addLine(CliStrings.CONFIGURE_PDX__READ__SERIALIZED + " = " + readSerialized);
+    infoResultData
+        .addLine(CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS + " = " + ignoreUnreadFields);
 
     // Auto Serializer Configuration
     if (portableClassesPatterns != null) {
       autoSerializer = createReflectionBasedAutoSerializer(true, portableClassesPatterns);
-      ird.addLine("PDX Serializer = " + autoSerializer.getClass().getName());
-      ird.addLine("Portable Classes = " + Arrays.toString(portableClassesPatterns));
+      infoResultData.addLine("PDX Serializer = " + autoSerializer.getClass().getName());
+      infoResultData.addLine("Portable Classes = " + Arrays.toString(portableClassesPatterns));
     }
 
     if (nonPortableClassesPatterns != null) {
       autoSerializer = createReflectionBasedAutoSerializer(false, nonPortableClassesPatterns);
-      ird.addLine("PDX Serializer = " + autoSerializer.getClass().getName());
-      ird.addLine("Non Portable Classes = " + Arrays.toString(nonPortableClassesPatterns));
+      infoResultData.addLine("PDX Serializer = " + autoSerializer.getClass().getName());
+      infoResultData
+          .addLine("Non Portable Classes = " + Arrays.toString(nonPortableClassesPatterns));
     }
 
-    result = ResultBuilder.buildResult(ird);
+    result = ResultBuilder.buildResult(infoResultData);
     ReflectionBasedAutoSerializer finalAutoSerializer = autoSerializer;
-    getConfigurationService().updateCacheConfig("cluster", config -> {
-      if (config.getPdx() == null) {
-        config.setPdx(new PdxType());
-      }
-      config.getPdx().setReadSerialized(readSerialized);
-      config.getPdx().setIgnoreUnreadFields(ignoreUnreadFields);
-      config.getPdx().setDiskStoreName(diskStore);
-      config.getPdx().setPersistent(diskStore != null ? true : false);
+    getConfigurationService().updateCacheConfig(InternalClusterConfigurationService.CLUSTER_CONFIG,
+        config -> {
+          if (config.getPdx() == null) {
+            config.setPdx(new PdxType());
+          }
+          config.getPdx().setReadSerialized(readSerialized);
+          config.getPdx().setIgnoreUnreadFields(ignoreUnreadFields);
+          config.getPdx().setDiskStoreName(diskStore);
+          config.getPdx().setPersistent(diskStore != null);
 
-      if (portableClassesPatterns != null || nonPortableClassesPatterns != null) {
-        PdxType.PdxSerializer pdxSerializer = new PdxType.PdxSerializer();
-        pdxSerializer.setClassName(ReflectionBasedAutoSerializer.class.getName());
-        if (finalAutoSerializer != null) {
-          List<ParameterType> parameters =
-              finalAutoSerializer.getConfig().entrySet().stream().map(entry -> {
-                ParameterType parameterType = new ParameterType();
-                parameterType.setName((String) entry.getKey());
-                parameterType.setString(new StringType((String) entry.getValue()));
-                return parameterType;
-              }).collect(Collectors.toList());
-          pdxSerializer.getParameter().addAll(parameters);
-        }
-        config.getPdx().setPdxSerializer(pdxSerializer);
-      }
-      return config;
-    });
+          if (portableClassesPatterns != null || nonPortableClassesPatterns != null) {
+            PdxType.PdxSerializer pdxSerializer = new PdxType.PdxSerializer();
+            pdxSerializer.setClassName(ReflectionBasedAutoSerializer.class.getName());
+
+            List<ParameterType> parameters =
+                finalAutoSerializer.getConfig().entrySet().stream().map(entry -> {
+                  ParameterType parameterType = new ParameterType();
+                  parameterType.setName((String) entry.getKey());
+                  parameterType.setString(new StringType((String) entry.getValue()));
+                  return parameterType;
+                }).collect(Collectors.toList());
+            pdxSerializer.getParameter().addAll(parameters);
+
+            config.getPdx().setPdxSerializer(pdxSerializer);
+          }
+          return config;
+        });
     return result;
   }
 
