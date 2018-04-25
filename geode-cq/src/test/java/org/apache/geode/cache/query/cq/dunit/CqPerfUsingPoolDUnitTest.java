@@ -726,18 +726,8 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
       cqDUnitTest.executeCQ(client2, "testMatchingCQsWithMultipleServers_" + i, false, null);
     }
 
-    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[0], 1 * clients.length);
-    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[1], 1 * clients.length);
-
-
-    // CREATE.
-    cqDUnitTest.createValues(server1, cqDUnitTest.regions[0], 10);
-    cqDUnitTest.createValues(server1, cqDUnitTest.regions[1], 10);
-
-    for (int i = 1; i <= 10; i++) {
-      cqDUnitTest.waitForCreated(client1, "testMatchingCQsWithMultipleServers_0",
-          CqQueryUsingPoolDUnitTest.KEY + i);
-    }
+    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[0], clients.length);
+    validateMatchingCqs(server1, numCQs, cqDUnitTest.cqs[1], clients.length);
 
     cqDUnitTest.createServer(server2, ports[0]);
 
@@ -747,47 +737,12 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
         .println("### Port on which server1 running : " + port1 + " Server2 running : " + port2);
 
 
-    // UPDATE - 1.
-    for (int k = 0; k < numCQs; k++) {
-      cqDUnitTest.clearCQListenerEvents(client1, "testMatchingCQsWithMultipleServers_" + k);
-      cqDUnitTest.clearCQListenerEvents(client2, "testMatchingCQsWithMultipleServers_" + k);
-    }
-
-    cqDUnitTest.createValues(server1, cqDUnitTest.regions[0], 10);
-    cqDUnitTest.createValues(server1, cqDUnitTest.regions[1], 10);
-
-    // Wait for updates on regions[0]
-    for (int i = 1; i <= 10; i++) {
-      cqDUnitTest.waitForUpdated(client1, "testMatchingCQsWithMultipleServers_0",
-          CqQueryDUnitTest.KEY + i);
-      cqDUnitTest.waitForUpdated(client2, "testMatchingCQsWithMultipleServers_0",
-          CqQueryDUnitTest.KEY + i);
-    }
-
-    // Wait for updates on regions[1] - Waiting for last key is good enough.
-    cqDUnitTest.waitForUpdated(client1, "testMatchingCQsWithMultipleServers_2",
-        CqQueryDUnitTest.KEY + 4);
-    cqDUnitTest.waitForUpdated(client2, "testMatchingCQsWithMultipleServers_2",
-        CqQueryDUnitTest.KEY + 4);
-
-    int[] resultsCnt = new int[] {10, 1, 2};
-
-    for (int i = 0; i < numCQs; i++) {
-      cqDUnitTest.validateCQ(client1, "testMatchingCQsWithMultipleServers_" + i,
-          CqQueryUsingPoolDUnitTest.noTest, resultsCnt[i], resultsCnt[i],
-          CqQueryUsingPoolDUnitTest.noTest);
-
-      cqDUnitTest.validateCQ(client2, "testMatchingCQsWithMultipleServers_" + i,
-          CqQueryUsingPoolDUnitTest.noTest, resultsCnt[i], resultsCnt[i],
-          CqQueryUsingPoolDUnitTest.noTest);
-    }
-
     // Close server1.
     cqDUnitTest.closeServer(server1);
     // Close.
     cqDUnitTest.closeClient(client1);
 
-    validateMatchingCqs(server2, numCQs, cqDUnitTest.cqs[0], 1 * (clients.length - 1));
+    validateMatchingCqs(server2, numCQs, cqDUnitTest.cqs[0], (clients.length - 1));
 
     cqDUnitTest.closeClient(client2);
     cqDUnitTest.closeServer(server2);
@@ -945,7 +900,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
         }
 
         Map matchedCqMap = cqService.getMatchingCqMap();
-        Awaitility.await().atMost(10, TimeUnit.SECONDS)
+        Awaitility.await().atMost(30, TimeUnit.SECONDS)
             .until(() -> assertEquals("The number of matched cq is not as expected.", mapSize,
                 matchedCqMap.size()));
 
@@ -954,7 +909,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
             fail("Query not found in the matched cq map. Query:" + query);
           }
           Collection cqs = (Collection) matchedCqMap.get(query);
-          Awaitility.await().atMost(5, TimeUnit.SECONDS)
+          Awaitility.await().atMost(30, TimeUnit.SECONDS)
               .until(() -> assertEquals(
                   "Number of matched cqs are not equal to the expected matched cqs", numCqSize,
                   cqs.size()));
