@@ -91,7 +91,6 @@ public interface ConnectionManager {
    *        been invalidated).
    * @param excludedServers servers to exclude when looking for a new connection
    * @return a new connection to the pool to a server that is not in the list of excluded servers
-   * @throws AllConnectionsInUseException
    */
   Connection exchangeConnection(Connection conn, Set/* <ServerLocation> */ excludedServers,
       long aquireTimeout) throws AllConnectionsInUseException;

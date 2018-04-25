@@ -20,6 +20,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.lang.ClassUtils;
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /*
@@ -36,7 +37,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, SerializationTest.class})
 public class InternalDataSerializerSerializationWhitelistTest {
   private HeapDataOutputStream outputStream;
   private Object testSerializable;

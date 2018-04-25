@@ -23,9 +23,10 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class FunctionServiceIntegrationTest extends IntegrationTestBase {
   @Test
   public void testFunctionOnRegion() throws IOException {

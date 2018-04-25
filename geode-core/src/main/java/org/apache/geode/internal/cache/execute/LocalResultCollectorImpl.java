@@ -32,7 +32,7 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
 
   private CountDownLatch latch = new CountDownLatch(1);
 
-  protected volatile boolean endResultRecieved = false;
+  protected volatile boolean endResultReceived = false;
 
   private volatile boolean resultCollected = false;
 
@@ -54,7 +54,7 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
     if (resultsCleared) {
       return;
     }
-    if (!this.endResultRecieved) {
+    if (!this.endResultReceived) {
       if (resultOfSingleExecution instanceof Throwable) {
         Throwable t = (Throwable) resultOfSingleExecution;
         if (this.execution.isIgnoreDepartedMembers()) {
@@ -88,14 +88,14 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
   }
 
   public void endResults() {
-    this.endResultRecieved = true;
+    this.endResultReceived = true;
     this.userRC.endResults();
     this.latch.countDown();
   }
 
   public synchronized void clearResults() {
     this.latch = new CountDownLatch(1);
-    this.endResultRecieved = false;
+    this.endResultReceived = false;
     this.functionException = null;
     this.userRC.clearResults();
     resultsCleared = true;
@@ -139,19 +139,19 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
   public Object getResult(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
 
-    boolean resultRecieved = false;
+    boolean resultReceived = false;
     if (this.resultCollected) {
       throw new FunctionException(
           LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString());
     }
     this.resultCollected = true;
     try {
-      resultRecieved = this.latch.await(timeout, unit);
+      resultReceived = this.latch.await(timeout, unit);
     } catch (InterruptedException e) {
       this.latch.countDown();
       Thread.currentThread().interrupt();
     }
-    if (!resultRecieved) {
+    if (!resultReceived) {
       throw new FunctionException(
           LocalizedStrings.ExecuteFunction_RESULTS_NOT_COLLECTED_IN_TIME_PROVIDED
               .toLocalizedString());

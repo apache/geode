@@ -52,30 +52,16 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.admin.ClientStatsManager;
-import org.apache.geode.internal.cache.CacheServerLauncher;
-import org.apache.geode.internal.cache.DiskStoreObserver;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
-import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.tier.InternalClientMembership;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -215,15 +201,38 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
         }
 
       } else {
-        Properties activeProps = system.getProperties();
+        Properties activeProps = system.getConfig().toProperties();
         for (Entry<Object, Object> entry : props.entrySet()) {
           String key = (String) entry.getKey();
+          if (key.startsWith("security-")) {
+            continue;
+          }
           String value = (String) entry.getValue();
           if (!value.equals(activeProps.getProperty(key))) {
             needNewSystem = true;
             getLogWriter().info("Forcing DS disconnect. For property " + key + " old value = "
                 + activeProps.getProperty(key) + " new value = " + value);
             break;
+          }
+        }
+        try {
+          activeProps = system.getConfig().toSecurityProperties();
+          for (Entry<Object, Object> entry : props.entrySet()) {
+            String key = (String) entry.getKey();
+            if (!key.startsWith("security-")) {
+              continue;
+            }
+            String value = (String) entry.getValue();
+            if (!value.equals(activeProps.getProperty(key))) {
+              needNewSystem = true;
+              getLogWriter().info("Forcing DS disconnect. For property " + key + " old value = "
+                  + activeProps.getProperty(key) + " new value = " + value);
+              break;
+            }
+          }
+        } catch (NoSuchMethodError e) {
+          if (Version.CURRENT_ORDINAL >= 85) {
+            throw new IllegalStateException("missing method", e);
           }
         }
       }
@@ -548,7 +557,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
   }
 
-  private static final void cleanupAllVms() {
+  public static final void cleanupAllVms() {
     tearDownVM();
     invokeInEveryVM("tearDownVM", () -> tearDownVM());
     invokeInLocator(() -> {
@@ -560,42 +569,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   private static final void tearDownVM() {
     closeCache();
-    disconnectFromDS();
-
-    // keep alphabetized to detect duplicate lines
-    CacheCreation.clearThreadLocals();
-    CacheServerLauncher.clearStatics();
-    CacheServerTestUtil.clearCacheReference();
-    ClientProxyMembershipID.system = null;
-    ClientServerTestCase.AUTO_LOAD_BALANCE = false;
-    ClientStatsManager.cleanupForTests();
-    DiskStoreObserver.setInstance(null);
-    unregisterInstantiatorsInThisVM();
-    DistributionMessageObserver.setInstance(null);
-    InitialImageOperation.slowImageProcessing = 0;
-    InternalClientMembership.unregisterAllListeners();
-    LogWrapper.close();
-    MultiVMRegionTestCase.CCRegion = null;
-    QueryObserverHolder.reset();
-    QueryTestUtils.setCache(null);
-    RegionTestCase.preSnapshotRegion = null;
-    SocketCreator.resetHostNameCache();
-    SocketCreator.resolve_dns = true;
-    TcpClient.clearStaticData();
-
-    // clear system properties -- keep alphabetized
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
-    System.clearProperty("jgroups.resolve_dns");
-    System.clearProperty(Message.MAX_MESSAGE_SIZE_PROPERTY);
-
-    if (InternalDistributedSystem.systemAttemptingReconnect != null) {
-      InternalDistributedSystem.systemAttemptingReconnect.stopReconnecting();
-    }
-
-    IgnoredException.removeAllExpectedExceptions();
-    SocketCreatorFactory.close();
-    TypeRegistry.setPdxSerializer(null);
-    TypeRegistry.init();
+    DistributedTestRule.TearDown.tearDownInVM();
     cleanDiskDirs();
   }
 

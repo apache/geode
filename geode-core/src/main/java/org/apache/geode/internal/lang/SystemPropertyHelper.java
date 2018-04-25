@@ -61,6 +61,10 @@ public class SystemPropertyHelper {
 
   public static final String DEFAULT_DISK_DIRS_PROPERTY = "defaultDiskDirs";
 
+  public static final String HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY = "MessageTimeToLive";
+
+  public static final String THREAD_ID_EXPIRY_TIME_PROPERTY = "threadIdExpiryTime";
+
   /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It
    * will check and prefer "geode." setting first, then try to check "gemfire." setting.

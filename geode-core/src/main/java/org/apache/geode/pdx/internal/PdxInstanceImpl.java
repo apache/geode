@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
+import org.apache.geode.internal.util.Hex;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
@@ -464,8 +465,30 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       result.append(fieldType.getFieldName());
       result.append("=");
       try {
-        // TODO check to see if getField returned an array and if it did use Arrays.deepToString
-        result.append(ur.readField(fieldType.getFieldName()));
+        final Object value = ur.readField(fieldType.getFieldName());
+        if (value instanceof byte[]) {
+          result.append(Hex.toHex((byte[]) value));
+        } else if (value.getClass().isArray()) {
+          if (value instanceof short[]) {
+            result.append(Arrays.toString((short[]) value));
+          } else if (value instanceof int[]) {
+            result.append(Arrays.toString((int[]) value));
+          } else if (value instanceof long[]) {
+            result.append(Arrays.toString((long[]) value));
+          } else if (value instanceof char[]) {
+            result.append(Arrays.toString((char[]) value));
+          } else if (value instanceof float[]) {
+            result.append(Arrays.toString((float[]) value));
+          } else if (value instanceof double[]) {
+            result.append(Arrays.toString((double[]) value));
+          } else if (value instanceof boolean[]) {
+            result.append(Arrays.toString((boolean[]) value));
+          } else {
+            result.append(Arrays.deepToString((Object[]) value));
+          }
+        } else {
+          result.append(value);
+        }
       } catch (RuntimeException e) {
         result.append(e);
       }

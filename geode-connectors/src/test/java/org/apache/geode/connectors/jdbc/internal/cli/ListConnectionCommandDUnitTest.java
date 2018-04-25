@@ -16,14 +16,20 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand.LIST_JDBC_CONNECTION;
 import static org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand.LIST_OF_CONNECTIONS;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.Properties;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -39,7 +45,7 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
+  public transient ClusterStartupRule startupRule = new ClusterStartupRule();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
@@ -47,20 +53,14 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   private MemberVM locator;
   private MemberVM server;
 
-  private String connectionName;
-
-  @Before
-  public void before() throws Exception {
-    connectionName = "name";
-
-    locator = startupRule.startLocatorVM(0);
-    server = startupRule.startServerVM(1, locator.getPort());
-
-    gfsh.connectAndVerify(locator);
-  }
+  private String connectionName = "name";
 
   @Test
-  public void listsOneConnection() {
+  public void listsConnectionFromClusterConfiguration() throws Exception {
+    locator = startupRule.startLocatorVM(0);
+    server = startupRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
     String conn1 =
         "create jdbc-connection --name=name --url=url --user=user --password=pass --params=param1:value1,param2:value2";
     gfsh.executeAndAssertThat(conn1).statusIsSuccess();
@@ -74,19 +74,17 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void listsMultipleConnections() {
-    String conn1 =
-        "create jdbc-connection --name=name-1 --url=url --user=user --password=pass --params=param1:value1,param2:value2";
-    gfsh.executeAndAssertThat(conn1).statusIsSuccess();
-    String conn2 =
-        "create jdbc-connection --name=name-2 --url=url --user=user --password=pass --params=param1:value1,param2:value2";
-    gfsh.executeAndAssertThat(conn2).statusIsSuccess();
-    String conn3 =
-        "create jdbc-connection --name=name-3 --url=url --user=user --password=pass --params=param1:value1,param2:value2";
-    gfsh.executeAndAssertThat(conn3).statusIsSuccess();
+  public void listsConnectionsFromMember() throws Exception {
+    Properties properties = new Properties();
+    properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
 
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
-    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+    locator = startupRule.startLocatorVM(0, properties);
+    server = startupRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
+    server.invoke(() -> createNConnections(3));
+
+    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(LIST_JDBC_CONNECTION);
 
     commandResultAssert.statusIsSuccess();
     commandResultAssert.tableHasRowCount(LIST_OF_CONNECTIONS, 3);
@@ -95,12 +93,26 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void reportsNoConnectionsFound() {
+  public void reportsNoConnectionsFound() throws Exception {
+    locator = startupRule.startLocatorVM(0);
+    server = startupRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
     CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-
     commandResultAssert.statusIsSuccess();
     commandResultAssert.containsOutput("No connections found");
+  }
+
+  private void createNConnections(int N) throws ConnectionConfigExistsException {
+    InternalCache cache = ClusterStartupRule.getCache();
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
+    for (int i = 1; i <= N; i++) {
+      String name = connectionName + "-" + i;
+      service.createConnectionConfig(
+          new ConnectorService.Connection(name, null, null, null, (String) null));
+      assertThat(service.getConnectionConfig(name)).isNotNull();
+    }
   }
 }

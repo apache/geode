@@ -14,8 +14,6 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.test.dunit.DistributedTestUtils.getLocators;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -53,7 +51,7 @@ import org.apache.geode.test.dunit.VM;
  * </pre>
  */
 @SuppressWarnings({"serial", "unused"})
-public class ClientCacheRule extends DistributedExternalResource {
+public class ClientCacheRule extends AbstractDistributedTestRule {
 
   private static volatile InternalClientCache clientCache;
 
@@ -163,7 +161,7 @@ public class ClientCacheRule extends DistributedExternalResource {
     private Properties systemProperties = new Properties();
 
     public Builder() {
-      config.setProperty(LOCATORS, getLocators());
+      // nothing
     }
 
     /**

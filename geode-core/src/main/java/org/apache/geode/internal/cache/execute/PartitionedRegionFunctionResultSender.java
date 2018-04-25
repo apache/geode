@@ -35,7 +35,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * ResultSender needs ResultCollector in which to add results one by one. In case of localExecution
  * it just adds result to the resultCollector whereas for remote cases it takes help of
  * PRFunctionExecutionStreamer to send results to the calling node. The results will be received in
- * the ResultReciever. ResultSender will be instantiated in executeOnDatastore and set in
+ * the ResultReceiver. ResultSender will be instantiated in executeOnDatastore and set in
  * FunctionContext.
  *
  */
@@ -58,7 +58,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   private ServerToClientFunctionResultSender serverSender;
 
-  private boolean localLastResultRecieved = false;
+  private boolean localLastResultReceived = false;
 
   private boolean onlyLocal = false;
 
@@ -137,7 +137,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
     // so that client receives all the results before
 
     if (this.serverSender != null) { // Client-Server
-      if (this.localLastResultRecieved) {
+      if (this.localLastResultReceived) {
         return;
       }
       if (onlyLocal) {
@@ -149,7 +149,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
           lastClientSend(dm.getDistributionManagerId(), oneResult);
         }
         this.rc.endResults();
-        this.localLastResultRecieved = true;
+        this.localLastResultReceived = true;
 
       } else {
         // call a synchronized method as local node is also waiting to send lastResult
@@ -175,7 +175,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
           throw new FunctionException(e);
         }
       } else {
-        if (this.localLastResultRecieved) {
+        if (this.localLastResultReceived) {
           return;
         }
         if (onlyLocal) {
@@ -188,7 +188,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
           }
           // exception thrown will do end result
           this.rc.endResults();
-          this.localLastResultRecieved = true;
+          this.localLastResultReceived = true;
         } else {
           // call a synchronized method as local node is also waiting to send lastResult
           lastResult(oneResult, rc, false, true, dm.getDistributionManagerId());
@@ -209,7 +209,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
       boolean lastRemoteResult, boolean lastLocalResult, DistributedMember memberID) {
 
 
-    boolean completedLocal = lastLocalResult || this.localLastResultRecieved;
+    boolean completedLocal = lastLocalResult || this.localLastResultReceived;
     if (lastRemoteResult) {
       this.completelyDoneFromRemote = true;
     }
@@ -273,7 +273,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
       }
     }
     if (lastLocalResult) {
-      this.localLastResultRecieved = true;
+      this.localLastResultReceived = true;
     }
   }
 
@@ -365,7 +365,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   public void sendException(Throwable exception) {
     InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
     this.lastResult(iFunxtionException);
-    this.localLastResultRecieved = true;
+    this.localLastResultReceived = true;
   }
 
   public void setException(Throwable exception) {
@@ -379,7 +379,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
           exception);
     }
     this.rc.endResults();
-    this.localLastResultRecieved = true;
+    this.localLastResultReceived = true;
   }
 
   public void enableOrderedResultStreming(boolean enable) {
@@ -391,7 +391,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   }
 
   public boolean isLastResultReceived() {
-    return localLastResultRecieved;
+    return localLastResultReceived;
   }
 
 }

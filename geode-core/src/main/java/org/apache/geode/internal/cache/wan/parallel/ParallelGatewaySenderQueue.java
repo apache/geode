@@ -1416,10 +1416,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return (BucketRegionQueue) prQ.getDataStore().getLocalBucketById(bucketId);
   }
 
-  public int localSize() {
-    return localSize(false);
-  }
-
   public String displayContent() {
     int size = 0;
     StringBuffer sb = new StringBuffer();
@@ -1434,6 +1430,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       }
     }
     return sb.toString();
+  }
+
+  public int localSize() {
+    return localSize(false);
   }
 
   public int localSize(boolean includeSecondary) {

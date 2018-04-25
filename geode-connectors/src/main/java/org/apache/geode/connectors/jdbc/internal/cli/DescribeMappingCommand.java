@@ -20,11 +20,16 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
@@ -38,7 +43,7 @@ import org.apache.geode.security.ResourcePermission;
 
 public class DescribeMappingCommand extends InternalGfshCommand {
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
-  static final String DESCRIBE_MAPPING__HELP = "Describe the jdbc mapping in cluster configuration";
+  static final String DESCRIBE_MAPPING__HELP = "Describe the specified jdbc mapping";
   static final String DESCRIBE_MAPPING__REGION_NAME = "region";
   static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
       "Region name of the jdbc mapping to be described.";
@@ -52,19 +57,30 @@ public class DescribeMappingCommand extends InternalGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public Result describeMapping(@CliOption(key = DESCRIBE_MAPPING__REGION_NAME, mandatory = true,
       help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName) {
+    ConnectorService.RegionMapping mapping = null;
 
+    // check if CC is available and use it to describe the connection
     ClusterConfigurationService ccService = getConfigurationService();
-    if (ccService == null) {
-      return ResultBuilder.createInfoResult("cluster configuration service is not running");
+    if (ccService != null) {
+      ConnectorService service =
+          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
+      if (service != null) {
+        mapping = CacheElement.findElement(service.getRegionMapping(), regionName);
+      }
+    } else {
+      // otherwise get it from any member
+      Set<DistributedMember> members = findMembers(null, null);
+      if (members.size() > 0) {
+        DistributedMember targetMember = members.iterator().next();
+        List<?> result =
+            (List<?>) executeFunction(new DescribeMappingFunction(), regionName, targetMember)
+                .getResult();
+        if (!result.isEmpty()) {
+          mapping = (ConnectorService.RegionMapping) result.get(0);
+        }
+      }
     }
-    // search for the connection that has this id to see if it exists
-    ConnectorService service =
-        ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
-    if (service == null) {
-      throw new EntityNotFoundException("mapping for region '" + regionName + "' not found");
-    }
-    ConnectorService.RegionMapping mapping =
-        ccService.findIdentifiable(service.getRegionMapping(), regionName);
+
     if (mapping == null) {
       throw new EntityNotFoundException("mapping for region '" + regionName + "' not found");
     }

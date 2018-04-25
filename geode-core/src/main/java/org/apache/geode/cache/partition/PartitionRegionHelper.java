@@ -119,7 +119,6 @@ public final class PartitionRegionHelper {
   /**
    * Test a Region to see if it is a partitioned Region
    *
-   * @param r
    * @return true if it is a partitioned Region
    * @since GemFire 6.0
    */
@@ -134,8 +133,6 @@ public final class PartitionRegionHelper {
   /**
    * Test a Region to see if it is a partitioned Region
    *
-   * @param r
-   * @throws IllegalStateException
    * @return PartitionedRegion if it is a partitioned Region
    * @since GemFire 6.0
    */

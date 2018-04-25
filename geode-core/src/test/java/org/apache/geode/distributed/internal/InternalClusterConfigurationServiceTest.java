@@ -47,17 +47,23 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class InternalClusterConfigurationServiceTest {
-  private InternalClusterConfigurationService service;
+  private InternalClusterConfigurationService service, service2;
   private Configuration configuration;
 
   @Before
   public void setUp() throws Exception {
-    service = spy(InternalClusterConfigurationService.class);
+    service = spy(new InternalClusterConfigurationService(CacheConfig.class, ElementOne.class,
+        ElementTwo.class));
+    service2 = spy(new InternalClusterConfigurationService(CacheConfig.class));
     configuration = new Configuration("cluster");
-    doReturn(configuration).when(service).getConfiguration("cluster");
+    doReturn(configuration).when(service).getConfiguration(any());
+    doReturn(configuration).when(service2).getConfiguration(any());
     doReturn(mock(Region.class)).when(service).getConfigurationRegion();
+    doReturn(mock(Region.class)).when(service2).getConfigurationRegion();
     doReturn(true).when(service).lockSharedConfiguration();
+    doReturn(true).when(service2).lockSharedConfiguration();
     doNothing().when(service).unlockSharedConfiguration();
+    doNothing().when(service2).unlockSharedConfiguration();
   }
 
   @Test
@@ -108,6 +114,36 @@ public class InternalClusterConfigurationServiceTest {
     assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
     assertThat(configuration.getCacheXmlContent()).contains("custom-two>");
   }
+
+  @Test
+  // in case a locator in the cluster doesn't have the plugin installed
+  public void xmlWithCustomElementsCanBeUnMarshalledByAnotherService() {
+    service.saveCustomCacheElement("cluster", new ElementOne("one"));
+    service.saveCustomCacheElement("cluster", new ElementTwo("two"));
+
+    String prettyXml = configuration.getCacheXmlContent();
+    System.out.println(prettyXml);
+
+    // the xml is sent to another locator with no such plugin installed, it can be parsed
+    // but the element couldn't be recognized by the locator without the plugin
+    service2.updateCacheConfig("cluster", cc -> cc);
+    ElementOne elementOne = service2.getCustomCacheElement("cluster", "one", ElementOne.class);
+    assertThat(elementOne).isNull();
+
+    String uglyXml = configuration.getCacheXmlContent();
+    System.out.println(uglyXml);
+    assertThat(uglyXml).isNotEqualTo(prettyXml);
+
+    // the xml can be unmarshalled correctly by the first locator
+    CacheConfig cacheConfig = service.getCacheConfig("cluster");
+    service.updateCacheConfig("cluster", cc -> cc);
+    assertThat(cacheConfig.getCustomCacheElements()).hasSize(2);
+    assertThat(cacheConfig.getCustomCacheElements().get(0)).isInstanceOf(ElementOne.class);
+    assertThat(cacheConfig.getCustomCacheElements().get(1)).isInstanceOf(ElementTwo.class);
+
+    assertThat(configuration.getCacheXmlContent()).isEqualTo(prettyXml);
+  }
+
 
   @Test
   public void updateCustomCacheElement() {

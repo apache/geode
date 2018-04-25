@@ -25,7 +25,7 @@ public class CountPRQueryNode implements Aggregator {
   private int count = 0;
 
   /**
-   * Recieves the input of the individual counts from the bucket nodes.
+   * Receives the input of the individual counts from the bucket nodes.
    */
   @Override
   public void accumulate(Object value) {

@@ -14,13 +14,19 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.geode.test.dunit.VM.getVMCount;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.UseJacksonForJsonPathRule;
 
 public class DistributedUseJacksonForJsonPathRule extends UseJacksonForJsonPathRule {
 
-  private static UseJacksonForJsonPathRule instance = new UseJacksonForJsonPathRule();
+  private static volatile UseJacksonForJsonPathRule instance = new UseJacksonForJsonPathRule();
 
   private final RemoteInvoker invoker;
+
+  private volatile int beforeVmCount;
 
   public DistributedUseJacksonForJsonPathRule() {
     this(new RemoteInvoker());
@@ -32,19 +38,27 @@ public class DistributedUseJacksonForJsonPathRule extends UseJacksonForJsonPathR
 
   @Override
   public void before() {
-    this.invoker.invokeInEveryVMAndController(DistributedUseJacksonForJsonPathRule::invokeBefore);
+    DUnitLauncher.launchIfNeeded();
+    beforeVmCount = getVMCount();
+
+    invoker.invokeInEveryVMAndController(() -> invokeBefore());
   }
 
   @Override
   public void after() {
-    this.invoker.invokeInEveryVMAndController(DistributedUseJacksonForJsonPathRule::invokeAfter);
+    int afterVmCount = getVMCount();
+    assertThat(afterVmCount).isEqualTo(beforeVmCount);
+
+    invoker.invokeInEveryVMAndController(() -> invokeAfter());
   }
 
   private static void invokeBefore() {
+    instance = new UseJacksonForJsonPathRule();
     instance.before();
   }
 
   private static void invokeAfter() {
     instance.after();
+    instance = null;
   }
 }

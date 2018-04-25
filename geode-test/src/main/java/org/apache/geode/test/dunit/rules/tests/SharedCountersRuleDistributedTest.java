@@ -29,7 +29,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.google.common.base.Stopwatch;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -50,8 +49,8 @@ public class SharedCountersRuleDistributedTest implements Serializable {
   private static CompletableFuture<Void> combined;
   private static List<CompletableFuture<Boolean>> futures;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Rule
   public SharedCountersRule sharedCountersRule = SharedCountersRule.builder().build();

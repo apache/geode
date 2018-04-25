@@ -14,33 +14,59 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.test.dunit.DistributedTestUtils.getLocators;
+import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
+import static org.apache.geode.test.dunit.standalone.DUnitLauncher.getDistributedSystemProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.dunit.Disconnect;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.VM;
 
 /**
  * JUnit Rule that creates Cache instances in DistributedTest VMs without {@code CacheTestCase}.
  *
  * <p>
- * {@code CacheRule} follows the standard convention of using a {@code Builder} for configuration as
- * introduced in the JUnit {@code Timeout} rule.
+ * {@code CacheRule} can be used in DistributedTests as a {@code Rule}:
+ *
+ * <pre>
+ * {@literal @}Rule
+ * public DistributedTestRule distributedTestRule = new DistributedTestRule();
+ *
+ * {@literal @}Rule
+ * public CacheRule cacheRule = new CacheRule();
+ *
+ * {@literal @}Before
+ * public void setUp() {
+ *   getVM(0).invoke(() -> cacheRule.createCache(new CacheFactory().setPdxDiskStore(myDiskStore))));
+ * }
+ *
+ * {@literal @}Test
+ * public void createRegionWithRegionFactory() {
+ *   getVM(0).invoke(() -> {
+ *     RegionFactory regionFactory = cacheRule.getCache().createRegionFactory();
+ *     ...
+ *   });
+ * }
+ * </pre>
  *
  * <p>
- * {@code CacheRule} can be used in DistributedTests as a {@code Rule}:
+ * {@link CacheRule.Builder} can be used to construct an instance with more options:
  *
  * <pre>
  * {@literal @}ClassRule
  * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+ *
+ * {@literal @}Rule
+ * public DistributedTestRule.TearDown tearDown = new DistributedTestRule.TearDown();
  *
  * {@literal @}Rule
  * public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
@@ -55,17 +81,22 @@ import org.apache.geode.test.dunit.VM;
  * </pre>
  */
 @SuppressWarnings({"serial", "unused"})
-public class CacheRule extends DistributedExternalResource {
+public class CacheRule extends AbstractDistributedTestRule {
 
   private static volatile InternalCache cache;
 
   private final boolean createCacheInAll;
   private final boolean createCache;
   private final boolean disconnectAfter;
+  private final boolean destroyRegions;
+  private final boolean replaceConfig;
   private final List<VM> createCacheInVMs;
   private final Properties config;
   private final Properties systemProperties;
 
+  /**
+   * Use {@code Builder} for more options in constructing {@code CacheRule}.
+   */
   public static Builder builder() {
     return new Builder();
   }
@@ -78,6 +109,8 @@ public class CacheRule extends DistributedExternalResource {
     createCacheInAll = builder.createCacheInAll;
     createCache = builder.createCache;
     disconnectAfter = builder.disconnectAfter;
+    destroyRegions = builder.destroyRegions;
+    replaceConfig = builder.replaceConfig;
     createCacheInVMs = builder.createCacheInVMs;
     config = builder.config;
     systemProperties = builder.systemProperties;
@@ -86,13 +119,13 @@ public class CacheRule extends DistributedExternalResource {
   @Override
   protected void before() {
     if (createCacheInAll) {
-      invoker().invokeInEveryVMAndController(() -> createCache(config, systemProperties));
+      invoker().invokeInEveryVMAndController(() -> createCache(config(), systemProperties));
     } else {
       if (createCache) {
-        createCache(config, systemProperties);
+        createCache(config(), systemProperties);
       }
       for (VM vm : createCacheInVMs) {
-        vm.invoke(() -> createCache(config, systemProperties));
+        vm.invoke(() -> createCache(config(), systemProperties));
       }
     }
   }
@@ -103,8 +136,17 @@ public class CacheRule extends DistributedExternalResource {
     invoker().invokeInEveryVMAndController(() -> closeAndNullCache());
 
     if (disconnectAfter) {
-      Disconnect.disconnectAllFromDS();
+      disconnectAllFromDS();
     }
+  }
+
+  private Properties config() {
+    if (replaceConfig) {
+      return config;
+    }
+    Properties allConfig = getDistributedSystemProperties();
+    allConfig.putAll(config);
+    return allConfig;
   }
 
   public InternalCache getCache() {
@@ -116,7 +158,7 @@ public class CacheRule extends DistributedExternalResource {
   }
 
   public void createCache() {
-    cache = (InternalCache) new CacheFactory(config).create();
+    cache = (InternalCache) new CacheFactory(config()).create();
   }
 
   public void createCache(final CacheFactory cacheFactory) {
@@ -140,14 +182,17 @@ public class CacheRule extends DistributedExternalResource {
     return cache;
   }
 
-  private static void closeAndNullCache() {
+  private void closeAndNullCache() {
     closeCache();
     nullCache();
   }
 
-  private static void closeCache() {
+  private void closeCache() {
     try {
       if (cache != null) {
+        if (destroyRegions) {
+          destroyRegions(cache);
+        }
         cache.close();
       }
     } catch (Exception ignored) {
@@ -159,6 +204,23 @@ public class CacheRule extends DistributedExternalResource {
     cache = null;
   }
 
+  private static void destroyRegions(final Cache cache) {
+    if (cache != null && !cache.isClosed()) {
+      // try to destroy the root regions first so that we clean up any persistent files.
+      for (Region<?, ?> root : cache.rootRegions()) {
+        String regionFullPath = root == null ? null : root.getFullPath();
+        // for colocated regions you can't locally destroy a partitioned region.
+        if (root.isDestroyed() || root instanceof HARegion || root instanceof PartitionedRegion) {
+          continue;
+        }
+        try {
+          root.localDestroyRegion("CacheRule_tearDown");
+        } catch (Exception ignore) {
+        }
+      }
+    }
+  }
+
   /**
    * Builds an instance of CacheRule.
    */
@@ -167,12 +229,14 @@ public class CacheRule extends DistributedExternalResource {
     private boolean createCacheInAll;
     private boolean createCache;
     private boolean disconnectAfter;
+    private boolean destroyRegions;
+    private boolean replaceConfig;
     private List<VM> createCacheInVMs = new ArrayList<>();
     private Properties config = new Properties();
     private Properties systemProperties = new Properties();
 
     public Builder() {
-      config.setProperty(LOCATORS, getLocators());
+      // nothing
     }
 
     /**
@@ -210,8 +274,19 @@ public class CacheRule extends DistributedExternalResource {
       return this;
     }
 
+    /**
+     * Destroy all Regions before closing the Cache. This will cleanup the presence of each Region
+     * in DiskStores, but this is not needed if the disk files are on a TemporaryFolder. Default is
+     * false.
+     */
+    public Builder destroyRegions() {
+      destroyRegions = true;
+      return this;
+    }
+
     public Builder replaceConfig(final Properties config) {
       this.config = config;
+      replaceConfig = true;
       return this;
     }
 

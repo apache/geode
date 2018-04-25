@@ -47,6 +47,9 @@ public class AlterConnectionCommandTest {
   private List<CliFunctionResult> results;
   private CliFunctionResult result;
   private ClusterConfigurationService ccService;
+  private ConnectorService.Connection connection;
+  private List<ConnectorService.Connection> connections;
+  private ConnectorService connectorService;
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
@@ -63,6 +66,10 @@ public class AlterConnectionCommandTest {
     when(result.getStatus()).thenReturn("message");
     ccService = mock(InternalClusterConfigurationService.class);
     doReturn(ccService).when(command).getConfigurationService();
+    connectorService = mock(ConnectorService.class);
+    connections = new ArrayList<>();
+    connection = new ConnectorService.Connection();
+    connection.setName("name");
   }
 
   @Test
@@ -106,7 +113,6 @@ public class AlterConnectionCommandTest {
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectionFound() {
-    ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("connection with name 'name' does not exist.");
@@ -116,11 +122,9 @@ public class AlterConnectionCommandTest {
   @Test
   public void noSuccessfulResult() {
     // connection found in CC
-    ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
-    when(ccService.findIdentifiable(any(), any()))
-        .thenReturn(mock(ConnectorService.Connection.class));
-
+    when(connectorService.getConnection()).thenReturn(connections);
+    connections.add(connection);
     // result is not successful
     when(result.isSuccessful()).thenReturn(false);
     results.add(result);
@@ -132,10 +136,9 @@ public class AlterConnectionCommandTest {
   @Test
   public void successfulResult() {
     // connection found in CC
-    ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
-    when(ccService.findIdentifiable(any(), any()))
-        .thenReturn(mock(ConnectorService.Connection.class));
+    when(connectorService.getConnection()).thenReturn(connections);
+    connections.add(connection);
 
     // result is not successful
     when(result.isSuccessful()).thenReturn(true);

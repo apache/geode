@@ -292,7 +292,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       Long previousTailKey = (Long) latestIndexesForRegion.put(keyToConflate, tailKey);
       if (previousTailKey != null) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: Conflating {} at queue index={} and previousTailKey: ", this, object,
+          logger.debug("{}: Conflating {} at queue index={} and previousTailKey={} ", this, object,
               tailKey, previousTailKey);
         }
         AbstractGatewaySenderEventProcessor ep =
@@ -438,6 +438,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
     if (this.getBucketAdvisor().isPrimary()) {
       incQueueSize(1);
+    } else {
+      incSecondaryQueueSize(1);
     }
   }
 

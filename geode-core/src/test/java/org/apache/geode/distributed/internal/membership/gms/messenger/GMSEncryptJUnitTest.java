@@ -44,6 +44,7 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 public class GMSEncryptJUnitTest {
 
   private static final int THREAD_COUNT = 20;
+  private static final String DEFAULT_ALGO = "AES:128";
 
   Services services;
 
@@ -56,7 +57,7 @@ public class GMSEncryptJUnitTest {
       ExecutorServiceRule.builder().threadCount(THREAD_COUNT).build();
 
   private void initMocks() throws Exception {
-    initMocks("AES:128");
+    initMocks(DEFAULT_ALGO);
   }
 
   private void initMocks(String algo) throws Exception {
@@ -93,15 +94,15 @@ public class GMSEncryptJUnitTest {
     for (String algo : algos) {
       initMocks(algo);
 
-      GMSEncrypt sender = new GMSEncrypt(services, mockMembers[1]);
-      GMSEncrypt receiver = new GMSEncrypt(services, mockMembers[2]);
+      GMSEncrypt sender = new GMSEncrypt(services, algo);
+      GMSEncrypt receiver = new GMSEncrypt(services, algo);
 
       // establish the public keys for the sender and receiver
       netView.setPublicKey(mockMembers[1], sender.getPublicKeyBytes());
       netView.setPublicKey(mockMembers[2], receiver.getPublicKeyBytes());
 
-      sender.installView(netView, mockMembers[1]);
-      receiver.installView(netView, mockMembers[2]);
+      sender.overrideInstallViewForTest(netView);
+      receiver.overrideInstallViewForTest(netView);
 
       // sender encrypts a message, so use receiver's public key
       String ch = "Hello world";
@@ -134,15 +135,15 @@ public class GMSEncryptJUnitTest {
   public void testOneMemberCanDecryptAnothersMessageMultithreaded() throws Exception {
     initMocks();
     final int runs = 100000;
-    final GMSEncrypt sender = new GMSEncrypt(services, mockMembers[1]);
-    final GMSEncrypt receiver = new GMSEncrypt(services, mockMembers[2]);
+    final GMSEncrypt sender = new GMSEncrypt(services, DEFAULT_ALGO);
+    final GMSEncrypt receiver = new GMSEncrypt(services, DEFAULT_ALGO);
 
     // establish the public keys for the sender and receiver
     netView.setPublicKey(mockMembers[1], sender.getPublicKeyBytes());
     netView.setPublicKey(mockMembers[2], receiver.getPublicKeyBytes());
 
-    sender.installView(netView, mockMembers[1]);
-    receiver.installView(netView, mockMembers[2]);
+    sender.overrideInstallViewForTest(netView);
+    receiver.overrideInstallViewForTest(netView);
     final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
 
     for (int j = 0; j < THREAD_COUNT; j++)
@@ -195,18 +196,15 @@ public class GMSEncryptJUnitTest {
   public void testPublicKeyPrivateKeyFromSameMember() throws Exception {
     initMocks();
 
-    GMSEncrypt sender = new GMSEncrypt(services, mockMembers[1]);
-    GMSEncrypt receiver = new GMSEncrypt(services, mockMembers[2]);
-
-    sender = sender.clone();
-    receiver = receiver.clone();
+    GMSEncrypt sender = new GMSEncrypt(services, DEFAULT_ALGO);
+    GMSEncrypt receiver = new GMSEncrypt(services, DEFAULT_ALGO);
 
     // establish the public keys for the sender and receiver
     netView.setPublicKey(mockMembers[1], sender.getPublicKeyBytes());
     netView.setPublicKey(mockMembers[2], receiver.getPublicKeyBytes());
 
-    sender.installView(netView, mockMembers[1]);
-    receiver.installView(netView, mockMembers[2]);
+    sender.overrideInstallViewForTest(netView);
+    receiver.overrideInstallViewForTest(netView);
 
     // sender encrypts a message, so use receiver's public key
     String ch = "Hello world";
@@ -238,12 +236,12 @@ public class GMSEncryptJUnitTest {
   public void testForClusterSecretKey() throws Exception {
     initMocks();
 
-    GMSEncrypt sender = new GMSEncrypt(services, mockMembers[1]);
+    GMSEncrypt sender = new GMSEncrypt(services, DEFAULT_ALGO);
     sender.initClusterSecretKey();
     // establish the public keys for the sender and receiver
     netView.setPublicKey(mockMembers[1], sender.getPublicKeyBytes());
 
-    sender.installView(netView, mockMembers[1]);
+    sender.overrideInstallViewForTest(netView);
 
     // sender encrypts a message, so use receiver's public key
     String ch = "Hello world";
@@ -263,20 +261,20 @@ public class GMSEncryptJUnitTest {
     for (String algo : algos) {
       initMocks(algo);
 
-      final GMSEncrypt sender = new GMSEncrypt(services, mockMembers[1]);
+      final GMSEncrypt sender = new GMSEncrypt(services, algo);
       sender.initClusterSecretKey();
-      final GMSEncrypt receiver = new GMSEncrypt(services, mockMembers[2]);
+      final GMSEncrypt receiver = new GMSEncrypt(services, algo);
 
       // establish the public keys for the sender and receiver
       netView.setPublicKey(mockMembers[1], sender.getPublicKeyBytes());
       netView.setPublicKey(mockMembers[2], receiver.getPublicKeyBytes());
 
-      sender.installView(netView, mockMembers[1]);
+      sender.overrideInstallViewForTest(netView);
 
       byte[] secretBytes = sender.getClusterSecretKey();
-      receiver.addClusterKey(secretBytes);
+      receiver.setClusterKey(secretBytes);
 
-      receiver.installView(netView, mockMembers[1]);
+      receiver.overrideInstallViewForTest(netView);
 
       // sender encrypts a message, so use receiver's public key
       String ch = "Hello world";
@@ -308,21 +306,21 @@ public class GMSEncryptJUnitTest {
   public void testForClusterSecretKeyFromOtherMemberMultipleThreads() throws Exception {
     initMocks();
 
-    final GMSEncrypt sender = new GMSEncrypt(services, mockMembers[1]);
+    final GMSEncrypt sender = new GMSEncrypt(services, DEFAULT_ALGO);
     Thread.currentThread().sleep(100);
     sender.initClusterSecretKey();
-    final GMSEncrypt receiver = new GMSEncrypt(services, mockMembers[2]);
+    final GMSEncrypt receiver = new GMSEncrypt(services, DEFAULT_ALGO);
 
     // establish the public keys for the sender and receiver
     netView.setPublicKey(mockMembers[1], sender.getPublicKeyBytes());
     netView.setPublicKey(mockMembers[2], receiver.getPublicKeyBytes());
 
-    sender.installView(netView, mockMembers[1]);
+    sender.overrideInstallViewForTest(netView);
 
     byte[] secretBytes = sender.getClusterSecretKey();
-    receiver.addClusterKey(secretBytes);
+    receiver.setClusterKey(secretBytes);
 
-    receiver.installView(netView, mockMembers[1]);
+    receiver.overrideInstallViewForTest(netView);
 
     final int runs = 100000;
     final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);

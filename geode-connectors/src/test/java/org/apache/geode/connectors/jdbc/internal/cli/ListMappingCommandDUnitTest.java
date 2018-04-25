@@ -16,14 +16,20 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand.LIST_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand.LIST_OF_MAPPINGS;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.Properties;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -39,7 +45,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
+  public transient ClusterStartupRule startupRule = new ClusterStartupRule();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
@@ -47,20 +53,14 @@ public class ListMappingCommandDUnitTest implements Serializable {
   private MemberVM locator;
   private MemberVM server;
 
-  private String regionName;
-
-  @Before
-  public void before() throws Exception {
-    regionName = "testRegion";
-
-    locator = startupRule.startLocatorVM(0);
-    server = startupRule.startServerVM(1, locator.getPort());
-
-    gfsh.connectAndVerify(locator);
-  }
+  private String regionName = "testRegion";
 
   @Test
-  public void listsOneRegionMapping() {
+  public void listsRegionMappingFromClusterConfiguration() throws Exception {
+    locator = startupRule.startLocatorVM(0);
+    server = startupRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
     String mapping = "create jdbc-mapping --region=testRegion --connection=connection "
         + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
         + "--field-mapping=field1:column1,field2:column2";
@@ -75,22 +75,18 @@ public class ListMappingCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void listsMultipleRegionMappings() {
-    String mapping1 = "create jdbc-mapping --region=testRegion-1 --connection=connection "
-        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
-        + "--field-mapping=field1:column1,field2:column2";
-    gfsh.executeAndAssertThat(mapping1).statusIsSuccess();
-    String mapping2 = "create jdbc-mapping --region=testRegion-2 --connection=connection "
-        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
-        + "--field-mapping=field1:column1,field2:column2";
-    gfsh.executeAndAssertThat(mapping2).statusIsSuccess();
-    String mapping3 = "create jdbc-mapping --region=testRegion-3 --connection=connection "
-        + "--table=myTable --pdx-class-name=myPdxClass --value-contains-primary-key=true "
-        + "--field-mapping=field1:column1,field2:column2";
-    gfsh.executeAndAssertThat(mapping3).statusIsSuccess();
+  public void listsRegionMappingsFromMember() throws Exception {
+    Properties properties = new Properties();
+    properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
 
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
-    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+    locator = startupRule.startLocatorVM(0, properties);
+    server = startupRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
+    server.invoke(() -> createNRegionMappings(3));
+
+    CommandResultAssert commandResultAssert =
+        gfsh.executeAndAssertThat(LIST_MAPPING).statusIsSuccess();
 
     commandResultAssert.statusIsSuccess();
     commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 3);
@@ -99,12 +95,26 @@ public class ListMappingCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void reportsNoRegionMappingsFound() {
+  public void reportsNoRegionMappingsFound() throws Exception {
+    locator = startupRule.startLocatorVM(0);
+    server = startupRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-
     commandResultAssert.statusIsSuccess();
     commandResultAssert.containsOutput("No mappings found");
+  }
+
+  private void createNRegionMappings(int N) throws RegionMappingExistsException {
+    InternalCache cache = ClusterStartupRule.getCache();
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
+    for (int i = 1; i <= N; i++) {
+      String name = regionName + "-" + i;
+      service.createRegionMapping(
+          new ConnectorService.RegionMapping(name, "x.y.MyPdxClass", "table", "connection", true));
+      assertThat(service.getMappingForRegion(name)).isNotNull();
+    }
   }
 }

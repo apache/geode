@@ -295,7 +295,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * the system to locator other system nodes and to publish itself so it can be located by others.
    *
    * @param value must be of the form <code>hostName[portNum]</code>. Multiple elements are allowed
-   *        and must be seperated by a comma.
+   *        and must be separated by a comma.
    *
    * @throws IllegalArgumentException if the specified value is not acceptable.
    * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
@@ -4945,5 +4945,4 @@ public interface DistributionConfig extends Config, LogConfig {
     Collections.sort(atts);
     return atts.toArray(new String[atts.size()]);
   }
-
 }

@@ -20,20 +20,26 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(UnitTest.class)
 public class DescribeConnectionCommandTest {
-  public static final String COMMAND = "describe jdbc-connection --name=name ";
+  public static final String COMMAND = "describe jdbc-connection --name=name";
   private DescribeConnectionCommand command;
   private ClusterConfigurationService ccService;
 
@@ -41,10 +47,9 @@ public class DescribeConnectionCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     command = spy(DescribeConnectionCommand.class);
     ccService = mock(InternalClusterConfigurationService.class);
-    doReturn(ccService).when(command).getConfigurationService();
   }
 
   @Test
@@ -54,20 +59,16 @@ public class DescribeConnectionCommandTest {
   }
 
   @Test
-  public void whenCCServiceIsNotAvailable() {
-    doReturn(null).when(command).getConfigurationService();
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("cluster configuration service is not running");
-  }
-
-  @Test
   public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
+    doReturn(ccService).when(command).getConfigurationService();
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("connection named 'name' not found");
   }
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectionFound() {
+    doReturn(ccService).when(command).getConfigurationService();
+
     ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
@@ -75,18 +76,64 @@ public class DescribeConnectionCommandTest {
   }
 
   @Test
-  public void successfulResult() {
+  public void whenCCIsAvailable() {
+    doReturn(ccService).when(command).getConfigurationService();
+
     // connection found in CC
-    ConnectorService.Connection connection = new ConnectorService.Connection("name1", "url1",
+    ConnectorService.Connection connection = new ConnectorService.Connection("name", "url1",
         "user1", "password1", "param1:value1,param2:value2");
+    List<ConnectorService.Connection> connections = new ArrayList<>();
+    connections.add(connection);
 
     ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
-    when(ccService.findIdentifiable(any(), any())).thenReturn(connection);
+    when(connectorService.getConnection()).thenReturn(connections);
 
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("name", "name1")
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("name", "name")
         .containsOutput("url", "url1").containsOutput("user", "user1")
         .containsOutput("password", "********").containsOutput("param1", "value1")
         .containsOutput("param2", "value2");
+  }
+
+  @Test
+  public void whenCCIsNotAvailableAndNoMemberExists() {
+    doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.emptySet()).when(command).findMembers(null, null);
+
+    doReturn(null).when(command).getMember(any());
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+        .containsOutput("connection named 'name' not found");
+  }
+
+  @Test
+  public void whenCCIsNotAvailableAndMemberExists() {
+    doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
+        null);
+
+    ConnectorService.Connection connection =
+        new ConnectorService.Connection("name", "url1", "user1", "password1", "p1:v1,p2:v2");
+    ResultCollector rc = mock(ResultCollector.class);
+    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
+    when(rc.getResult()).thenReturn(Collections.singletonList(connection));
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("name", "name")
+        .containsOutput("url", "url1").containsOutput("user", "user1")
+        .containsOutput("password", "********").containsOutput("p1", "v1")
+        .containsOutput("p2", "v2");
+  }
+
+  @Test
+  public void whenCCIsNotAvailableAndNoConnectionFoundOnMember() {
+    doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
+        null);
+
+    ResultCollector rc = mock(ResultCollector.class);
+    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
+    when(rc.getResult()).thenReturn(Collections.emptyList());
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+        .containsOutput("connection named 'name' not found");
   }
 }

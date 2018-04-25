@@ -437,7 +437,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
           } catch (FunctionException ex) {
             // ex.printStackTrace();
             if (!(ex.getCause() instanceof QueryInvocationTargetException)) {
-              fail("Should have received an QueryInvocationTargetException but recieved"
+              fail("Should have received an QueryInvocationTargetException but received"
                   + ex.getMessage());
             }
           }
@@ -511,11 +511,11 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
               if (ex.getCause() instanceof FunctionException) {
                 FunctionException fe = (FunctionException) ex.getCause();
                 if (!fe.getMessage().startsWith("IOException")) {
-                  fail("Should have received an QueryInvocationTargetException but recieved"
+                  fail("Should have received an QueryInvocationTargetException but received"
                       + ex.getMessage());
                 }
               } else {
-                fail("Should have received an QueryInvocationTargetException but recieved"
+                fail("Should have received an QueryInvocationTargetException but received"
                     + ex.getMessage());
               }
             }

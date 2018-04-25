@@ -30,7 +30,6 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.LocatorTestBase;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -116,12 +115,11 @@ public class ClientTxCommitShouldNotHangRegressionTest extends LocatorTestBase {
     region1Name = uniqueName + "_R1";
     region2Name = uniqueName + "_R2";
 
-    hostName = NetworkUtils.getServerHostName(getHost(0));
-    locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    hostName = NetworkUtils.getServerHostName();
 
-    locator.invoke("Start locator", () -> startLocator(hostName, locatorPort, ""));
+    locatorPort = locator.invoke("Start locator", () -> startLocator(hostName, ""));
 
-    String locators = getLocatorString(getHost(0), locatorPort);
+    String locators = getLocatorString(hostName, locatorPort);
 
     server1.invoke("Start server",
         () -> startBridgeServer(new String[] {region1Name}, locators, new String[] {region1Name}));

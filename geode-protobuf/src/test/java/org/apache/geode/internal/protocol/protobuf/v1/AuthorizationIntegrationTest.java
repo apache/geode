@@ -50,9 +50,10 @@ import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class AuthorizationIntegrationTest {
 
   private static final String TEST_USERNAME = "bob";

@@ -14,7 +14,8 @@
  */
 package org.apache.geode.test.dunit.rules.tests;
 
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.apache.geode.test.junit.runners.TestRunner.runTestWithValidation;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,8 +47,8 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
   public static void assertPreconditions() {
     assertThat(System.getProperty(NULL_PROPERTY)).isNull();
     assertThat(System.getProperty(PREEXISTING_PROPERTY)).isNull();
-    for (int i = 0; i < 4; i++) {
-      getHost(0).getVM(i).invoke(() -> {
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
         assertThat(System.getProperty(NULL_PROPERTY)).isNull();
         assertThat(System.getProperty(PREEXISTING_PROPERTY)).isNull();
       });
@@ -57,8 +58,8 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
   @Before
   public void setUp() {
     System.setProperty(PREEXISTING_PROPERTY, PREEXISTING_VALUE);
-    for (int i = 0; i < 4; i++) {
-      getHost(0).getVM(i).invoke(() -> {
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
         System.setProperty(PREEXISTING_PROPERTY, PREEXISTING_VALUE);
       });
     }
@@ -67,8 +68,8 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
   @After
   public void tearDown() {
     System.clearProperty(PREEXISTING_PROPERTY);
-    for (int i = 0; i < 4; i++) {
-      getHost(0).getVM(i).invoke(() -> {
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
         System.clearProperty(PREEXISTING_PROPERTY);
       });
     }
@@ -79,8 +80,8 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
     runTestWithValidation(NullPropertyWithDifferentValues.class);
 
     assertThat(System.getProperty(NULL_PROPERTY)).isNull();
-    for (int i = 0; i < 4; i++) {
-      getHost(0).getVM(i).invoke(() -> {
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
         assertThat(System.getProperty(NULL_PROPERTY)).isNull();
       });
     }
@@ -91,8 +92,8 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
     runTestWithValidation(NullPropertyWithDifferentValues.class);
 
     assertThat(System.getProperty(PREEXISTING_PROPERTY)).isEqualTo(PREEXISTING_VALUE);
-    for (int i = 0; i < 4; i++) {
-      getHost(0).getVM(i).invoke(() -> {
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
         assertThat(System.getProperty(PREEXISTING_PROPERTY)).isEqualTo(PREEXISTING_VALUE);
       });
     }
@@ -110,10 +111,10 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
     @Test
     public void nullPropertyWithDifferentValues() throws Exception {
       System.setProperty(NULL_PROPERTY, "controller");
-      getHost(0).getVM(0).invoke(() -> System.setProperty(NULL_PROPERTY, "vm0"));
-      getHost(0).getVM(1).invoke(() -> System.setProperty(NULL_PROPERTY, "vm1"));
-      getHost(0).getVM(2).invoke(() -> System.setProperty(NULL_PROPERTY, "vm2"));
-      getHost(0).getVM(3).invoke(() -> System.setProperty(NULL_PROPERTY, "vm3"));
+      getVM(0).invoke(() -> System.setProperty(NULL_PROPERTY, "vm0"));
+      getVM(1).invoke(() -> System.setProperty(NULL_PROPERTY, "vm1"));
+      getVM(2).invoke(() -> System.setProperty(NULL_PROPERTY, "vm2"));
+      getVM(3).invoke(() -> System.setProperty(NULL_PROPERTY, "vm3"));
     }
   }
 
@@ -129,10 +130,10 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
     @Test
     public void preexistingPropertyWithDifferentValues() throws Exception {
       System.setProperty(PREEXISTING_PROPERTY, "controller");
-      getHost(0).getVM(0).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm0"));
-      getHost(0).getVM(1).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm1"));
-      getHost(0).getVM(2).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm2"));
-      getHost(0).getVM(3).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm3"));
+      getVM(0).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm0"));
+      getVM(1).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm1"));
+      getVM(2).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm2"));
+      getVM(3).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm3"));
     }
   }
 }

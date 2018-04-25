@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * The Region Destroy Operation from Cache Client does not pass the Client side Context object nor
  * does the p2p messaging has provision of sending Context object in the DestroyRegionMessage. This
- * can cause sender to recieve it own region destruction message.
+ * can cause sender to receive it own region destruction message.
  */
 @Category({DistributedTest.class, ClientServerTest.class})
 public class Bug36269DUnitTest extends JUnit4DistributedTestCase {

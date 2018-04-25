@@ -15,6 +15,9 @@
 package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.test.dunit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +30,7 @@ import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.AdditionalAnswers;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
@@ -157,7 +161,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get teh value in VM1 to assert
+   * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get the value in VM1 to assert
    * put has happened successfully 4) Create mirrored HARegion region1 in VM2 5) do a get in VM2 to
    * verify that value was got through GII 6) do a put in VM2 7) assert put in VM2 was successful
    */
@@ -173,7 +177,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get teh value in VM1 to assert
+   * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get the value in VM1 to assert
    * put has happened successfully 4) Create mirrored HARegion region1 in VM2 5) do a get in VM2 to
    * verify that value was got through GII 6) do a put in VM2 7) assert put in VM2 was successful
    */
@@ -264,7 +268,14 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    HARegion.getInstance("HARegionQueueDUnitTest_region", (GemFireCacheImpl) cache, null,
+
+    // Mock the HARegionQueue and answer the input CachedDeserializable when updateHAEventWrapper is
+    // called
+    HARegionQueue harq = mock(HARegionQueue.class);
+    when(harq.updateHAEventWrapper(any(), any(), any()))
+        .thenAnswer(AdditionalAnswers.returnsSecondArg());
+
+    HARegion.getInstance("HARegionQueueDUnitTest_region", (GemFireCacheImpl) cache, harq,
         factory.create());
   }
 

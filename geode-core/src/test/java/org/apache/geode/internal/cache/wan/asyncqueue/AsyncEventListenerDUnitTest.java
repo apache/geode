@@ -1521,8 +1521,8 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     LogWriterUtils.getLogWriter().info("Primary buckets on vm2: " + primaryBucketsvm2);
 
     // before shutdown vm2, both vm1 and vm2 should have 40 events in primary queue
-    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 80, 80, 0));
-    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 80, 80, 0));
+    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 40, 80, 80, 0));
+    vm2.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 40, 80, 80, 0));
 
     // ---------------------------- Kill vm2 --------------------------
     vm2.invoke(() -> AsyncEventQueueTestBase.killSender());
@@ -1549,8 +1549,8 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         .info("After shutdown vm2, started vm3, Primary buckets on vm1: " + primaryBucketsvm1);
 
     // vm1.invoke(()->AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 80, 80, 80, 0));
-    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 80, 80, 0));
-    vm3.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 0, 0, 0));
+    vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 40, 80, 80, 0));
+    vm3.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 40, 40, 0, 0, 0));
 
     vm3.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln"));
     vm1.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln"));

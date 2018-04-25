@@ -25,11 +25,12 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * TRAC #49856: Some GemFire Threads not cleaned up in cache close.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class SystemFailureThreadCleanupRegressionTest {
 
   @Test

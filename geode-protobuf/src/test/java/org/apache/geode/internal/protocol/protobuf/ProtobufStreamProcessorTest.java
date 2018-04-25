@@ -28,9 +28,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufStreamProcessor;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class ProtobufStreamProcessorTest {
   @Test(expected = IOException.class)
   public void receiveMessage() throws Exception {

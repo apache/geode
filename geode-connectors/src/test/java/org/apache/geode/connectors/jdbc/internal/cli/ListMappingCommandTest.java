@@ -14,19 +14,25 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static java.util.stream.Collectors.toSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.stream.Stream;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -45,24 +51,19 @@ public class ListMappingCommandTest {
   public void setUp() {
     command = spy(ListMappingCommand.class);
     ccService = mock(InternalClusterConfigurationService.class);
-    doReturn(ccService).when(command).getConfigurationService();
-  }
-
-  @Test
-  public void whenCCServiceIsNotAvailable() {
-    doReturn(null).when(command).getConfigurationService();
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("cluster configuration service is not running");
   }
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
+    doReturn(ccService).when(command).getConfigurationService();
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOutput("No mappings found");
   }
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectionFound() {
+    doReturn(ccService).when(command).getConfigurationService();
+
     ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
@@ -70,7 +71,9 @@ public class ListMappingCommandTest {
   }
 
   @Test
-  public void successfulResult() {
+  public void whenCCIsAvailable() {
+    doReturn(ccService).when(command).getConfigurationService();
+
     // mappings found in CC
     ConnectorService.RegionMapping mapping1 =
         new ConnectorService.RegionMapping("region1", "class1", "table1", "name1", true);
@@ -89,5 +92,58 @@ public class ListMappingCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region1",
         "region2");
+  }
+
+  @Test
+  public void whenCCIsNotAvailableAndNoMemberExists() {
+    doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.emptySet()).when(command).findMembers(null, null);
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
+        .containsOutput("No mappings found");
+  }
+
+  @Test
+  public void whenExistingMemberIsSpecified() {
+    doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
+        null);
+
+    ConnectorService.RegionMapping mapping1 =
+        new ConnectorService.RegionMapping("region1", "class1", "table1", "name1", true);
+    mapping1.getFieldMapping()
+        .add(new ConnectorService.RegionMapping.FieldMapping("field1", "value1"));
+    mapping1.getFieldMapping()
+        .add(new ConnectorService.RegionMapping.FieldMapping("field2", "value2"));
+
+    ConnectorService.RegionMapping mapping2 =
+        new ConnectorService.RegionMapping("region2", "class2", "table2", "name2", true);
+    mapping2.getFieldMapping()
+        .add(new ConnectorService.RegionMapping.FieldMapping("field3", "value3"));
+    mapping2.getFieldMapping()
+        .add(new ConnectorService.RegionMapping.FieldMapping("field4", "value4"));
+
+    ResultCollector rc = mock(ResultCollector.class);
+    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
+    when(rc.getResult())
+        .thenReturn(Collections.singletonList(Stream.of(mapping1, mapping2).collect(toSet())));
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region1",
+        "region2");
+  }
+
+
+  @Test
+  public void whenCCIsNotAvailableAndNoConnectionFoundOnMember() {
+    doReturn(null).when(command).getConfigurationService();
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
+        null);
+
+    ResultCollector rc = mock(ResultCollector.class);
+    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
+    when(rc.getResult()).thenReturn(Collections.emptyList());
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
+        .containsOutput("No mappings found");
   }
 }

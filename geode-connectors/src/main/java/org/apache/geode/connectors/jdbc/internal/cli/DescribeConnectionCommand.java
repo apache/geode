@@ -20,11 +20,18 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionComm
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__URL;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__USER;
 
+import java.util.List;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
@@ -37,9 +44,9 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DescribeConnectionCommand extends InternalGfshCommand {
+  private static Logger logger = LogService.getLogger();
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
-  static final String DESCRIBE_CONNECTION__HELP =
-      "Describe the specified jdbc connection found in cluster configuration.";
+  static final String DESCRIBE_CONNECTION__HELP = "Describe the specified jdbc connection.";
   static final String DESCRIBE_CONNECTION__NAME = "name";
   static final String DESCRIBE_CONNECTION__NAME__HELP =
       "Name of the jdbc connection to be described.";
@@ -53,19 +60,30 @@ public class DescribeConnectionCommand extends InternalGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public Result describeConnection(@CliOption(key = DESCRIBE_CONNECTION__NAME, mandatory = true,
       help = DESCRIBE_CONNECTION__NAME__HELP) String name) {
+    ConnectorService.Connection connection = null;
 
+    // check if CC is available and use it to describe the connection
     ClusterConfigurationService ccService = getConfigurationService();
-    if (ccService == null) {
-      return ResultBuilder.createInfoResult("cluster configuration service is not running");
+    if (ccService != null) {
+      ConnectorService service =
+          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
+      if (service != null) {
+        connection = CacheElement.findElement(service.getConnection(), name);
+      }
+    } else {
+      // otherwise get it from any member
+      Set<DistributedMember> members = findMembers(null, null);
+      if (members.size() > 0) {
+        DistributedMember targetMember = members.iterator().next();
+        List<?> result =
+            (List<?>) executeFunction(new DescribeConnectionFunction(), name, targetMember)
+                .getResult();
+        if (!result.isEmpty()) {
+          connection = (ConnectorService.Connection) result.get(0);
+        }
+      }
     }
-    // search for the connection that has this id to see if it exists
-    ConnectorService service =
-        ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
-    if (service == null) {
-      throw new EntityNotFoundException("connection named '" + name + "' not found");
-    }
-    ConnectorService.Connection connection =
-        ccService.findIdentifiable(service.getConnection(), name);
+
     if (connection == null) {
       throw new EntityNotFoundException("connection named '" + name + "' not found");
     }
@@ -75,21 +93,22 @@ public class DescribeConnectionCommand extends InternalGfshCommand {
     return ResultBuilder.buildResult(resultData);
   }
 
-  private void fillResultData(ConnectorService.Connection config, CompositeResultData resultData) {
+  private void fillResultData(ConnectorService.Connection connection,
+      CompositeResultData resultData) {
     CompositeResultData.SectionResultData sectionResult =
         resultData.addSection(RESULT_SECTION_NAME);
     sectionResult.addSeparator('-');
-    sectionResult.addData(CREATE_CONNECTION__NAME, config.getName());
-    sectionResult.addData(CREATE_CONNECTION__URL, config.getUrl());
-    if (config.getUser() != null) {
-      sectionResult.addData(CREATE_CONNECTION__USER, config.getUser());
+    sectionResult.addData(CREATE_CONNECTION__NAME, connection.getName());
+    sectionResult.addData(CREATE_CONNECTION__URL, connection.getUrl());
+    if (connection.getUser() != null) {
+      sectionResult.addData(CREATE_CONNECTION__USER, connection.getUser());
     }
-    if (config.getPassword() != null) {
+    if (connection.getPassword() != null) {
       sectionResult.addData(CREATE_CONNECTION__PASSWORD, OBSCURED_PASSWORD);
     }
     TabularResultData tabularResultData = sectionResult.addTable(CREATE_CONNECTION__PARAMS);
     tabularResultData.setHeader("Additional connection parameters:");
-    config.getParameterMap().entrySet().forEach((entry) -> {
+    connection.getParameterMap().entrySet().forEach((entry) -> {
       tabularResultData.accumulate("Param Name", entry.getKey());
       tabularResultData.accumulate("Value", entry.getValue());
     });

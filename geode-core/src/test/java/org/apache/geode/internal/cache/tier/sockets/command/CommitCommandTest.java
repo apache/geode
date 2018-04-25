@@ -23,12 +23,13 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Exposes GEODE-537: NPE in JTA AFTER_COMPLETION command processing
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class CommitCommandTest {
 
   /**

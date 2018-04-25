@@ -56,8 +56,9 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RestAPITest.class})
 class RestAPITestBase extends JUnit4DistributedTestCase {
 
   protected Cache cache = null;
@@ -88,7 +89,7 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
   private void postSetUpRestAPITestBase() throws Exception {}
 
   /**
-   * close the clients and teh servers
+   * close the clients and the servers
    */
   @Override
   public final void preTearDown() throws Exception {

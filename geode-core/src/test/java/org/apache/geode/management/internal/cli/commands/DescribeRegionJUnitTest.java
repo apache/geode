@@ -103,9 +103,9 @@ public class DescribeRegionJUnitTest {
             .doesNotContainOutput("Non-Default Attributes Specific To");
 
     Map<String, List<String>> shared =
-        commandAssert.getCommandResult().getMapFromTableContent(0, 0, 0);
+        commandAssert.getCommandResult().getMapFromTableContent(0, 0);
     Map<String, List<String>> memberSpecific =
-        commandAssert.getCommandResult().getMapFromTableContent(0, 1, 0);
+        commandAssert.getCommandResult().getMapFromTableContent(0, 1);
 
     assertThat(shared.get("Name")).contains("regKey", "evictKey", "partKey");
     assertThat(shared.get("Value")).contains("regVal", "evictVal", "partVal");
@@ -134,9 +134,9 @@ public class DescribeRegionJUnitTest {
             .doesNotContainOutput("Non-Default Attributes Specific To");
 
     Map<String, List<String>> shared =
-        commandAssert.getCommandResult().getMapFromTableContent(0, 0, 0);
+        commandAssert.getCommandResult().getMapFromTableContent(0, 0);
     Map<String, List<String>> memberSpecific =
-        commandAssert.getCommandResult().getMapFromTableContent(0, 1, 0);
+        commandAssert.getCommandResult().getMapFromTableContent(0, 1);
 
     assertThat(shared.get("Name")).contains("regKey", "evictKey", "partKey");
     assertThat(shared.get("Value")).contains("regVal", "evictVal", "partVal");
@@ -172,9 +172,9 @@ public class DescribeRegionJUnitTest {
         gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess();
 
     Map<String, List<String>> shared =
-        commandAssert.getCommandResult().getMapFromTableContent(0, 0, 0);
+        commandAssert.getCommandResult().getMapFromTableContent(0, 0);
     Map<String, List<String>> memberSpecific =
-        commandAssert.getCommandResult().getMapFromTableContent(0, 1, 0);
+        commandAssert.getCommandResult().getMapFromTableContent(0, 1);
 
     assertThat(shared.get("Type")).containsExactly("Eviction");
     assertThat(shared.get("Name")).containsExactly("sharedEvictionKey");

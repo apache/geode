@@ -876,7 +876,6 @@ public class AttributesFactory<K, V> {
   /**
    * adds a gateway sender to the end of list of gateway senders on this factory
    *
-   * @param gatewaySenderId
    * @throws IllegalArgumentException if {@code gatewaySender} is null
    * @since GemFire 7.0
    */
@@ -893,7 +892,6 @@ public class AttributesFactory<K, V> {
   /**
    * Adds a AsyncEventQueue to the end of list of async event queues on this factory
    *
-   * @param asyncEventQueueId
    * @throws IllegalArgumentException if {@code gatewaySender} is null
    * @since GemFire 7.0
    */

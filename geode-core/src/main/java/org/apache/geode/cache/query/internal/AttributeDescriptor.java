@@ -199,10 +199,7 @@ public class AttributeDescriptor {
   /**
    * reads field value from a PdxInstance
    *
-   * @param target
    * @return the value of the field from PdxInstance
-   * @throws NameNotFoundException
-   * @throws QueryInvocationTargetException
    */
   private Object readPdx(PdxInstance target)
       throws NameNotFoundException, QueryInvocationTargetException {

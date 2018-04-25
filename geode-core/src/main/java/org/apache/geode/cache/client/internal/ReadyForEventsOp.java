@@ -28,7 +28,6 @@ public class ReadyForEventsOp {
    * subscriptions.
    *
    * @param pool the pool to use to communicate with the server.
-   * @param primary
    */
   public static void execute(ExecutablePool pool, QueueConnectionImpl primary) {
     AbstractOp op = new ReadyForEventsOpImpl();

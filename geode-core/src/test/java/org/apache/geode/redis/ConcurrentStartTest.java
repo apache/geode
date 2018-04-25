@@ -31,8 +31,9 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, RedisTest.class})
 public class ConcurrentStartTest {
 
   private Cache cache;

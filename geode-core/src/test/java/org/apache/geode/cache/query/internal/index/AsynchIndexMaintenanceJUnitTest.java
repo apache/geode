@@ -79,7 +79,7 @@ public class AsynchIndexMaintenanceJUnitTest {
   }
 
   @Test
-  public void testIndexMaintenanceBasedOnThreshhold() throws Exception {
+  public void testIndexMaintenanceBasedOnThreshold() throws Exception {
     System.getProperties()
         .put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", "50");
     System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval",

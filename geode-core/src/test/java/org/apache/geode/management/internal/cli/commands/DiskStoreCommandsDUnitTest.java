@@ -35,7 +35,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -60,7 +62,8 @@ public class DiskStoreCommandsDUnitTest {
   public TemporaryFolder tempDir = new TemporaryFolder();
 
   private void createDiskStoreAndRegion(MemberVM jmxManager, int serverCount) {
-    gfsh.executeAndAssertThat(String.format("create disk-store --name=%s --dir=%s --group=%s",
+    gfsh.executeAndAssertThat(String.format(
+        "create disk-store --name=%s --dir=%s --group=%s --auto-compact=false --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true",
         DISKSTORE, DISKSTORE, GROUP));
 
     List<String> diskStores =
@@ -282,5 +285,39 @@ public class DiskStoreCommandsDUnitTest {
         .statusIsSuccess();
     gfsh.executeAndAssertThat(String.format("destroy disk-store --name=%s --if-exists", DISKSTORE))
         .statusIsSuccess();
+  }
+
+  @Test
+  public void testCompactDiskStore() throws Exception {
+    Properties props = new Properties();
+    props.setProperty("groups", GROUP);
+
+    MemberVM locator = rule.startLocatorVM(0);
+    MemberVM server1 = rule.startServerVM(1, props, locator.getPort());
+    rule.startServerVM(2, props, locator.getPort());
+
+    gfsh.connectAndVerify(locator);
+
+    createDiskStoreAndRegion(locator, 2);
+
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      Region r = cache.getRegion(REGION_1);
+      // Make sure we have more than 1 log and there is something to compact
+      for (int i = 0; i < 10000; i++) {
+        r.put(i, "value_" + i);
+        r.put(i, "another_value_" + i);
+      }
+    });
+
+    gfsh.executeAndAssertThat(
+        String.format("compact disk-store --name=%s --group=%s", DISKSTORE, GROUP))
+        .statusIsSuccess();
+
+    CommandResult cmdResult = gfsh.getCommandResult();
+    assertThat(cmdResult.getMapFromSection("server-1").keySet()).contains("UUID", "Host",
+        "Directory");
+    assertThat(cmdResult.getMapFromSection("server-2").keySet()).contains("UUID", "Host",
+        "Directory");
   }
 }

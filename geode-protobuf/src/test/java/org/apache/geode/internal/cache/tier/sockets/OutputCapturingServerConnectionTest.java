@@ -21,11 +21,11 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,10 +38,11 @@ import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class OutputCapturingServerConnectionTest {
 
   @Rule
@@ -52,6 +53,8 @@ public class OutputCapturingServerConnectionTest {
     Socket socketMock = mock(Socket.class);
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
     when(socketMock.isClosed()).thenReturn(true);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    when(socketMock.getOutputStream()).thenReturn(outputStream);
 
     AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
     ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
@@ -76,7 +79,7 @@ public class OutputCapturingServerConnectionTest {
 
   private ProtobufServerConnection getServerConnection(Socket socketMock,
       ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
-      throws UnknownHostException {
+      throws IOException {
     ClientHealthMonitor clientHealthMonitorMock = mock(ClientHealthMonitor.class);
     when(acceptorStub.getClientHealthMonitor()).thenReturn(clientHealthMonitorMock);
     InetSocketAddress inetSocketAddressStub = InetSocketAddress.createUnresolved("localhost", 9071);
@@ -89,7 +92,7 @@ public class OutputCapturingServerConnectionTest {
     CachedRegionHelper cachedRegionHelper = mock(CachedRegionHelper.class);
     when(cachedRegionHelper.getCache()).thenReturn(cache);
     return new ProtobufServerConnection(socketMock, cache, cachedRegionHelper,
-        mock(CacheServerStats.class), 0, 0, "",
+        mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
         clientProtocolProcessorMock, mock(SecurityService.class));
   }

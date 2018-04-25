@@ -232,18 +232,18 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   // gets an Object [] indicating field values as parameter
   // from the CompiledSelect
   public int addAndGetOccurence(Object element) {
-    int occurence;
+    int occurrence;
     if (element == null) {
       numNulls++;
-      occurence = numNulls;
+      occurrence = numNulls;
     } else {
-      occurence = this.mapGet(element); // 0 if not
-                                        // found
-      this.mapPut(element, ++occurence);
+      occurrence = this.mapGet(element); // 0 if not
+                                         // found
+      this.mapPut(element, ++occurrence);
     }
     this.size++;
     assert this.size >= 0 : this.size;
-    return occurence;
+    return occurrence;
   }
 
   @Override
@@ -339,20 +339,10 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     }
   }
 
-  /**
-   *
-   * @param out
-   * @throws IOException
-   */
   void writeNumNulls(DataOutput out) throws IOException {
     out.writeInt(this.numNulls);
   }
 
-  /**
-   *
-   * @param in
-   * @throws IOException
-   */
   void readNumNulls(DataInput in) throws IOException {
     this.numNulls = in.readInt();
   }
@@ -659,9 +649,6 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     }
   }
 
-  /**
-   *
-   */
   protected class LimitBagIterator extends Bag.BagIterator {
     private final int localLimit;
 

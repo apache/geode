@@ -479,7 +479,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
 
   // Asif : If the underlying collection is a ordered
   // one then it will allow duplicates. In such case , our
-  // limit iterator will correctly give the number of occurences
+  // limit iterator will correctly give the number of occurrences
   // but if the underlying collection is not ordered , it will
   // not allow duplicates, but then since we have already truncated
   // the unordered set, it will work correctly.
@@ -558,10 +558,6 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
-  /**
-   *
-   *
-   */
   class LimitIterator implements Iterator {
     private final Iterator iter;
 

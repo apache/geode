@@ -26,13 +26,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the LocatorLoadSnapshot, which is the data structure that is used in
  * the locator to compare the load between multiple servers.
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, MembershipTest.class})
 public class LocatorLoadSnapshotJUnitTest {
 
   /**

@@ -577,7 +577,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   /**
-   * Reports the existance of a Transaction for this thread
+   * Reports the existence of a Transaction for this thread
    *
    */
   public boolean exists() {

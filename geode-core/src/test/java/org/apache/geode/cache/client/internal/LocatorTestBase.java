@@ -37,8 +37,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
@@ -48,11 +48,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -109,45 +106,28 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
   protected void postTearDownLocatorTestBase() throws Exception {}
 
-  protected void startLocator(final String hostName, final int locatorPort,
-      final String otherLocators) {
+  protected int startLocator(final String hostName, final String otherLocators) throws Exception {
     final String testName = getUniqueName();
     disconnectFromDS();
     Properties props = new Properties();
-    props.setProperty(MCAST_PORT, String.valueOf(0));
-    props.setProperty(LOCATORS, otherLocators);
-    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.put(MCAST_PORT, String.valueOf(0));
+    props.put(LOCATORS, otherLocators);
+    props.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+    props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    File logFile = new File("");
+    InetAddress bindAddr = null;
     try {
-      File logFile = new File(testName + "-locator" + locatorPort + ".log");
-      InetAddress bindAddr = null;
-      try {
-        bindAddr = InetAddress.getByName(hostName);
-      } catch (UnknownHostException uhe) {
-        Assert.fail("While resolving bind address ", uhe);
-      }
-      Locator locator = Locator.startLocatorAndDS(locatorPort, logFile, bindAddr, props);
-      remoteObjects.put(LOCATOR_KEY, locator);
-    } catch (IOException ex) {
-      Assert.fail("While starting locator on port " + locatorPort, ex);
+      bindAddr = InetAddress.getByName(hostName);
+    } catch (UnknownHostException uhe) {
+      Assert.fail("While resolving bind address ", uhe);
     }
+    Locator locator = Locator.startLocatorAndDS(0, logFile, bindAddr, props);
+    remoteObjects.put(LOCATOR_KEY, locator);
+    return locator.getPort();
   }
 
-  protected void startLocatorInVM(final VM vm, final int locatorPort, final String otherLocators) {
-    vm.invoke(new SerializableRunnable("Create Locator") {
-      public void run() {
-        String hostName = NetworkUtils.getServerHostName(vm.getHost());
-        startLocator(hostName, locatorPort, otherLocators);
-      }
-    });
-  }
-
-  protected void stopLocatorInVM(VM vm) {
-    vm.invoke(new SerializableRunnable("Stop Locator") {
-      public void run() {
-        stopLocator();
-      }
-    });
+  protected int startLocatorInVM(final VM vm, final String hostName, final String otherLocators) {
+    return vm.invoke("create locator", () -> startLocator(hostName, otherLocators));
   }
 
   protected void stopLocator() {
@@ -165,17 +145,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     server.setPort(0);
     server.setGroups(groups);
     server.start();
-    return new Integer(server.getPort());
-  }
-
-  protected int addCacheServerInVM(VM vm, final String[] groups) {
-    SerializableCallable connect = new SerializableCallable("Add Bridge server") {
-      public Object call() throws Exception {
-        return addCacheServer(groups);
-      }
-    };
-    Integer port = (Integer) vm.invoke(connect);
-    return port.intValue();
+    return server.getPort();
   }
 
   protected int startBridgeServerInVM(VM vm, final String[] groups, final String locators,
@@ -192,13 +162,8 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
   protected int startBridgeServerInVM(VM vm, final String[] groups, final String locators,
       final String[] regions, final ServerLoadProbe probe, final boolean useGroupsProperty) {
-    SerializableCallable connect = new SerializableCallable("Start bridge server") {
-      public Object call() throws IOException {
-        return startBridgeServer(groups, locators, regions, probe, useGroupsProperty);
-      }
-    };
-    Integer port = (Integer) vm.invoke(connect);
-    return port.intValue();
+    return vm.invoke("start bridge server",
+        () -> startBridgeServer(groups, locators, regions, probe, useGroupsProperty));
   }
 
   protected int startBridgeServer(String[] groups, String locators) throws IOException {
@@ -213,21 +178,14 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   protected int startBridgeServer(final String[] groups, final String locators,
       final String[] regions, final ServerLoadProbe probe, final boolean useGroupsProperty)
       throws IOException {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, locators);
+    CacheFactory cacheFactory = new CacheFactory().set(MCAST_PORT, "0").set(LOCATORS, locators);
     if (useGroupsProperty && groups != null) {
-      props.setProperty(GROUPS, StringUtils.join(groups, ","));
+      cacheFactory.set(GROUPS, StringUtils.join(groups, ","));
     }
-    DistributedSystem ds = getSystem(props);
-    Cache cache = CacheFactory.create(ds);
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setEnableBridgeConflation(true);
-    factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionAttributes attrs = factory.create();
-    for (int i = 0; i < regions.length; i++) {
-      cache.createRegion(regions[i], attrs);
+    Cache cache = cacheFactory.create();
+    for (String regionName : regions) {
+      cache.createRegionFactory(RegionShortcut.REPLICATE).setEnableSubscriptionConflation(true)
+          .create(regionName);
     }
     CacheServer server = cache.addCacheServer();
     server.setPort(0);
@@ -239,24 +197,16 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
     remoteObjects.put(CACHE_KEY, cache);
 
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   protected int startBridgeServerWithEmbeddedLocator(final String[] groups, final String locators,
       final String[] regions, final ServerLoadProbe probe) throws IOException {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, String.valueOf(0));
-    props.setProperty(START_LOCATOR, locators);
-    props.setProperty(LOCATORS, locators);
-    DistributedSystem ds = getSystem(props);
-    Cache cache = CacheFactory.create(ds);
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setEnableBridgeConflation(true);
-    factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionAttributes attrs = factory.create();
-    for (int i = 0; i < regions.length; i++) {
-      cache.createRegion(regions[i], attrs);
+    Cache cache = new CacheFactory().set(MCAST_PORT, "0").set(LOCATORS, locators)
+        .set(START_LOCATOR, locators).create();
+    for (String regionName : regions) {
+      cache.createRegionFactory(RegionShortcut.REPLICATE).setEnableSubscriptionConflation(true)
+          .create(regionName);
     }
     CacheServer server = cache.addCacheServer();
     server.setGroups(groups);
@@ -266,34 +216,23 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
     remoteObjects.put(CACHE_KEY, cache);
 
-    return new Integer(server.getPort());
-  }
-
-  protected int startBridgeServerWithEmbeddedLocatorInVM(VM vm, final String[] groups,
-      final String locators, final String[] regions, final ServerLoadProbe probe) {
-    SerializableCallable connect = new SerializableCallable("Start bridge server") {
-      public Object call() throws IOException {
-        return startBridgeServerWithEmbeddedLocator(groups, locators, regions, probe);
-      }
-    };
-    Integer port = (Integer) vm.invoke(connect);
-    return port.intValue();
+    return server.getPort();
   }
 
   protected void startBridgeClientInVM(VM vm, final String group, final String host, final int port)
       throws Exception {
-    startBridgeClientInVM(vm, group, host, port, new String[] {REGION_NAME});
+    startBridgeClientInVM(vm, group, host, port, REGION_NAME);
   }
 
   protected void startBridgeClientInVM(VM vm, final String group, final String host, final int port,
-      final String[] regions) throws Exception {
+      final String... regions) throws Exception {
     PoolFactoryImpl pf = new PoolFactoryImpl(null);
     pf.addLocator(host, port).setServerGroup(group).setPingInterval(200)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1);
     startBridgeClientInVM(vm, pf.getPoolAttributes(), regions);
   }
 
-  protected void startBridgeClientInVM(VM vm, final Pool pool, final String[] regions)
+  protected void startBridgeClientInVM(VM vm, final Pool pool, final String... regions)
       throws Exception {
     SerializableRunnable connect = new SerializableRunnable("Start bridge client") {
       public void run() throws Exception {
@@ -354,15 +293,14 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     });
   }
 
-  public String getLocatorString(Host host, int locatorPort) {
-    return getLocatorString(host, new int[] {locatorPort});
+  public String getLocatorString(String hostName, int locatorPort) {
+    return getLocatorString(hostName, new int[] {locatorPort});
   }
 
-  public String getLocatorString(Host host, int[] locatorPorts) {
+  public String getLocatorString(String hostName, int... locatorPorts) {
     StringBuffer str = new StringBuffer();
     for (int i = 0; i < locatorPorts.length; i++) {
-      str.append(NetworkUtils.getServerHostName(host)).append("[").append(locatorPorts[i])
-          .append("]");
+      str.append(hostName).append("[").append(locatorPorts[i]).append("]");
       if (i < locatorPorts.length - 1) {
         str.append(",");
       }

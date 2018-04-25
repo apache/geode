@@ -124,6 +124,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
@@ -142,6 +143,8 @@ import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.Shipment;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
@@ -932,9 +935,9 @@ public class WANTestBase extends DistributedTestCase {
       props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
     }
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
     String logLevel = System.getProperty(LOG_LEVEL, "info");
     props.setProperty(LOG_LEVEL, logLevel);
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
   }
@@ -1131,12 +1134,57 @@ public class WANTestBase extends DistributedTestCase {
     return connectionInfo;
   }
 
+  public static void moveAllPrimaryBuckets(String senderId, final DistributedMember destination,
+      final String regionName) {
+
+    AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+    final RegionQueue regionQueue;
+    regionQueue = sender.getQueues().toArray(new RegionQueue[1])[0];
+    if (sender.isParallel()) {
+      ConcurrentParallelGatewaySenderQueue parallelGatewaySenderQueue =
+          (ConcurrentParallelGatewaySenderQueue) regionQueue;
+      PartitionedRegion prQ =
+          parallelGatewaySenderQueue.getRegions().toArray(new PartitionedRegion[1])[0];
+
+      Set<Integer> primaryBucketIds = prQ.getDataStore().getAllLocalPrimaryBucketIds();
+      for (int bid : primaryBucketIds) {
+        movePrimary(destination, regionName, bid);
+      }
+
+      // double check after moved all primary buckets
+      primaryBucketIds = prQ.getDataStore().getAllLocalPrimaryBucketIds();
+      assertTrue(primaryBucketIds.isEmpty());
+    }
+  }
+
+  public static void movePrimary(final DistributedMember destination, final String regionName,
+      final int bucketId) {
+    PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
+
+    BecomePrimaryBucketResponse response = BecomePrimaryBucketMessage
+        .send((InternalDistributedMember) destination, region, bucketId, true);
+    assertNotNull(response);
+    assertTrue(response.waitForResponse());
+  }
+
+  public static int getSecondaryQueueSizeInStats(String senderId) {
+    AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+    GatewaySenderStats statistics = sender.getStatistics();
+    return statistics.getSecondaryEventQueueSize();
+  }
+
   public static List<Integer> getSenderStats(String senderId, final int expectedQueueSize) {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     GatewaySenderStats statistics = sender.getStatistics();
     if (expectedQueueSize != -1) {
       final RegionQueue regionQueue;
       regionQueue = sender.getQueues().toArray(new RegionQueue[1])[0];
+      if (sender.isParallel()) {
+        ConcurrentParallelGatewaySenderQueue parallelGatewaySenderQueue =
+            (ConcurrentParallelGatewaySenderQueue) regionQueue;
+        PartitionedRegion pr =
+            parallelGatewaySenderQueue.getRegions().toArray(new PartitionedRegion[1])[0];
+      }
       Awaitility.await().atMost(120, TimeUnit.SECONDS)
           .until(() -> assertEquals("Expected queue entries: " + expectedQueueSize
               + " but actual entries: " + regionQueue.size(), expectedQueueSize,
@@ -1153,17 +1201,37 @@ public class WANTestBase extends DistributedTestCase {
     stats.add(statistics.getEventsNotQueuedConflated());
     stats.add(statistics.getEventsConflatedFromBatches());
     stats.add(statistics.getConflationIndexesMapSize());
+    stats.add(statistics.getSecondaryEventQueueSize());
+    stats.add(statistics.getEventsProcessedByPQRM());
     return stats;
+  }
+
+  protected static int getTotalBucketQueueSize(PartitionedRegion prQ, boolean isPrimary) {
+    int size = 0;
+    if (prQ != null) {
+      Set<Map.Entry<Integer, BucketRegion>> allBuckets = prQ.getDataStore().getAllLocalBuckets();
+      List<Integer> thisProcessorBuckets = new ArrayList<Integer>();
+
+      for (Map.Entry<Integer, BucketRegion> bucketEntry : allBuckets) {
+        BucketRegion bucket = bucketEntry.getValue();
+        int bId = bucket.getId();
+        if ((isPrimary && bucket.getBucketAdvisor().isPrimary())
+            || (!isPrimary && !bucket.getBucketAdvisor().isPrimary())) {
+          size += bucket.size();
+        }
+      }
+    }
+    return size;
   }
 
   public static List<Integer> getSenderStatsForDroppedEvents(String senderId) {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     GatewaySenderStats statistics = sender.getStatistics();
     ArrayList<Integer> stats = new ArrayList<Integer>();
-    int eventNotQueued = statistics.getEventsNotQueuedAtYetRunningPrimarySender();
+    int eventNotQueued = statistics.getEventsDroppedDueToPrimarySenderNotRunning();
     if (eventNotQueued > 0) {
-      logger.info(
-          "Found " + eventNotQueued + " not queued events due to primary sender is yet running");
+      logger
+          .info("Found " + eventNotQueued + " events dropped due to primary sender is not running");
     }
     stats.add(eventNotQueued);
     stats.add(statistics.getEventsNotQueued());
@@ -3087,7 +3155,7 @@ public class WANTestBase extends DistributedTestCase {
       }
     }
     AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
-    int size = abstractSender.getEventSecondaryQueueSize();
+    int size = abstractSender.getSecondaryEventQueueSize();
     return size;
   }
 
@@ -3117,9 +3185,7 @@ public class WANTestBase extends DistributedTestCase {
     }
 
     if (!sender.isParallel()) {
-      if (includeSecondary) {
-        fail("Not implemented yet");
-      }
+      // if sender is serial, the queues will be all primary or all secondary at one member
       final Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
       int size = 0;
       for (RegionQueue q : queues) {
@@ -3134,11 +3200,7 @@ public class WANTestBase extends DistributedTestCase {
       } else if (regionQueue instanceof ParallelGatewaySenderQueue) {
         return ((ParallelGatewaySenderQueue) regionQueue).localSize(includeSecondary);
       } else {
-        if (includeSecondary) {
-          fail("Not Implemented yet");
-        }
-        regionQueue = ((AbstractGatewaySender) sender).getQueues().toArray(new RegionQueue[1])[0];
-        return regionQueue.getRegion().size();
+        fail("Not implemented yet");
       }
     }
     fail("Not yet implemented?");
@@ -3195,11 +3257,11 @@ public class WANTestBase extends DistributedTestCase {
           abstractSender.getEventQueueSize());
       Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> {
         assertEquals("Expected events in all secondary queues are drained but actual is "
-            + abstractSender.getEventSecondaryQueueSize() + ". Queue content is: "
-            + displayQueueContent(queue), 0, abstractSender.getEventSecondaryQueueSize());
+            + abstractSender.getSecondaryEventQueueSize() + ". Queue content is: "
+            + displayQueueContent(queue), 0, abstractSender.getSecondaryEventQueueSize());
       });
       assertEquals("Except events in all secondary queues after drain is 0", 0,
-          abstractSender.getEventSecondaryQueueSize());
+          abstractSender.getSecondaryEventQueueSize());
     } finally {
       exp.remove();
       exp1.remove();

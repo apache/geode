@@ -347,7 +347,7 @@ public class NWayMergeResultsJUnitTest {
   }
 
   @Test
-  public void testOccurenceNonDistinct() throws Exception {
+  public void testOccurrenceNonDistinct() throws Exception {
     final int numSortedLists = 40;
     Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
     for (int i = 0; i < numSortedLists; ++i) {
@@ -395,7 +395,7 @@ public class NWayMergeResultsJUnitTest {
   }
 
   @Test
-  public void testOccurenceDistinct() throws Exception {
+  public void testOccurrenceDistinct() throws Exception {
     final int numSortedLists = 40;
     Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
     for (int i = 0; i < numSortedLists; ++i) {

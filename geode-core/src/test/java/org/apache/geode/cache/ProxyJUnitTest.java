@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -1061,6 +1062,7 @@ public class ProxyJUnitTest {
   /**
    * Make sure a proxy region expiration behaves as expected
    */
+  @Category(FlakyTest.class) // GEODE-5094
   @Test
   public void testExpiration() throws Exception {
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");

@@ -30,18 +30,12 @@ import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- *
- *
- */
 public class SortedStructBag extends SortedResultsBag<Object[]> implements StructFields {
 
 
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param nullAtStart
    */
   public SortedStructBag(Comparator<Object[]> comparator, boolean nullAtStart) {
     super(comparator, nullAtStart);
@@ -51,9 +45,6 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param elementType
-   * @param nullAtStart
    */
   public SortedStructBag(Comparator<Object[]> comparator, StructType elementType,
       boolean nullAtStart) {
@@ -63,10 +54,6 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param elementType
-   * @param stats
-   * @param nullAtStart
    */
   public SortedStructBag(Comparator<Object[]> comparator, ObjectType elementType,
       CachePerfStats stats, boolean nullAtStart) {
@@ -77,9 +64,6 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param stats
-   * @param nullAtStart
    */
   public SortedStructBag(Comparator<Object[]> comparator, CachePerfStats stats,
       boolean nullAtStart) {
@@ -166,7 +150,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
           count++;
           encounteredObject = true;
         } else if (encounteredObject) {
-          // Asif: No possibility of its occurence again
+          // Asif: No possibility of its occurrence again
           break;
         }
       }
@@ -289,7 +273,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
 
   /**
    * Return an iterator over the elements in this collection. Duplicates will show up the number of
-   * times it has occurrances.
+   * times it has occurrences.
    */
   @Override
   public Iterator iterator() {

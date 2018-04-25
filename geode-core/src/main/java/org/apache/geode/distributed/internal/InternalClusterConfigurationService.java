@@ -74,6 +74,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.XSDRootElement;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedLockService;
@@ -90,6 +91,7 @@ import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
@@ -140,14 +142,16 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
   private JAXBService jaxbService;
 
   @TestingOnly
-  InternalClusterConfigurationService() {
+  InternalClusterConfigurationService(Class<?>... xsdClasses) {
     configDirPath = null;
     configDiskDirPath = null;
     cache = null;
-    jaxbService = new JAXBService();
+    jaxbService = new JAXBService(xsdClasses);
+    jaxbService.validateWithLocalCacheXSD();
   }
 
-  public InternalClusterConfigurationService(InternalCache cache) throws IOException {
+  public InternalClusterConfigurationService(InternalCache cache, Class<?>... xsdClasses)
+      throws IOException {
     this.cache = cache;
     Properties properties = cache.getDistributedSystem().getProperties();
     // resolve the cluster config dir
@@ -172,7 +176,16 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     this.configDiskDirPath = FilenameUtils.concat(clusterConfigRootDir, configDiskDirName);
     this.sharedConfigLockingService = getSharedConfigLockService(cache.getDistributedSystem());
     this.status.set(SharedConfigurationStatus.NOT_STARTED);
-    jaxbService = new JAXBService();
+    if (xsdClasses != null && xsdClasses.length > 0) {
+      this.jaxbService = new JAXBService(xsdClasses);
+    }
+    // else, scan the classpath to find all the classes annotated with XSDRootElement
+    else {
+      Set<Class<?>> scannedClasses = ClasspathScanLoadHelper
+          .scanClasspathForAnnotation(XSDRootElement.class, "org.apache.geode");
+      this.jaxbService = new JAXBService(scannedClasses.toArray(new Class[scannedClasses.size()]));
+    }
+    jaxbService.validateWithLocalCacheXSD();
   }
 
   /**
@@ -822,12 +835,6 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     CacheXmlGenerator.generateDefault(pw);
     return sw.toString();
   }
-
-  @Override
-  public void registerBindClassWithSchema(Class clazz, String namespaceAndLocation) {
-    jaxbService.registerBindClassWithSchema(clazz, namespaceAndLocation);
-  }
-
 
   @Override
   public CacheConfig getCacheConfig(String group) {

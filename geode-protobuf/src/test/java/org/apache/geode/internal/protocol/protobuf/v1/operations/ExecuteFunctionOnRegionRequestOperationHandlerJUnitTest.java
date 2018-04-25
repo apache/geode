@@ -44,13 +44,14 @@ import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionCont
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unfortunately, we can't test the happy path with a unit test, because the function service is
  * static, and there's mocking function execution is too complicated.
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
   private static final String TEST_REGION = "testRegion";
   private static final String TEST_FUNCTION_ID = "testFunction";

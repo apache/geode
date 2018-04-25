@@ -47,7 +47,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -89,18 +88,16 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    String hostName = NetworkUtils.getServerHostName(vm0.getHost());
-    vm0.invoke("Start Locator", () -> startLocator(hostName, locatorPort, ""));
+    String hostName = NetworkUtils.getServerHostName();
+    int locatorPort = vm0.invoke("Start Locator", () -> startLocator(hostName, ""));
 
-    String locators = getLocatorString(host, locatorPort);
+    String locators = getLocatorString(hostName, locatorPort);
 
     int serverPort = vm1.invoke("Start BridgeServer",
         () -> startBridgeServer(new String[] {"a", "b"}, locators));
 
     ServerLoad expectedLoad = new ServerLoad(0f, 1 / 800.0f, 0f, 1f);
-    ServerLocation expectedLocation =
-        new ServerLocation(NetworkUtils.getServerHostName(vm0.getHost()), serverPort);
+    ServerLocation expectedLocation = new ServerLocation(hostName, serverPort);
     Map expected = new HashMap();
     expected.put(expectedLocation, expectedLoad);
 
@@ -109,8 +106,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     int serverPort2 = vm2.invoke("Start BridgeServer",
         () -> startBridgeServer(new String[] {"a", "b"}, locators));
 
-    ServerLocation expectedLocation2 =
-        new ServerLocation(NetworkUtils.getServerHostName(vm0.getHost()), serverPort2);
+    ServerLocation expectedLocation2 = new ServerLocation(hostName, serverPort2);
 
     expected.put(expectedLocation2, expectedLoad);
     vm0.invoke("check Locator Load", () -> checkLocatorLoad(expected));
@@ -126,44 +122,44 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    String hostName = NetworkUtils.getServerHostName(vm0.getHost());
-    vm0.invoke("Start Locator", () -> startLocator(hostName, locatorPort, ""));
-    String locators = getLocatorString(host, locatorPort);
+    String hostName = NetworkUtils.getServerHostName();
+    int locatorPort = vm0.invoke("Start Locator", () -> startLocator(hostName, ""));
+    String locators = getLocatorString(hostName, locatorPort);
 
     int serverPort = vm1.invoke("Start BridgeServer",
         () -> startBridgeServer(new String[] {"a", "b"}, locators));
 
     ServerLoad expectedLoad = new ServerLoad(2 / 800f, 1 / 800.0f, 0f, 1f);
-    ServerLocation expectedLocation =
-        new ServerLocation(NetworkUtils.getServerHostName(host), serverPort);
+    ServerLocation expectedLocation = new ServerLocation(hostName, serverPort);
     Map expected = new HashMap();
     expected.put(expectedLocation, expectedLoad);
 
     SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
     ClientConnectionResponse response;
-    response = (ClientConnectionResponse) new TcpClient().requestToServer(
-        InetAddress.getByName(NetworkUtils.getServerHostName(host)), locatorPort,
-        new ClientConnectionRequest(Collections.EMPTY_SET, null), 10000);
+    response =
+        (ClientConnectionResponse) new TcpClient().requestToServer(InetAddress.getByName(hostName),
+            locatorPort, new ClientConnectionRequest(Collections.EMPTY_SET, null), 10000);
     Assert.assertEquals(expectedLocation, response.getServer());
 
-    response = (ClientConnectionResponse) new TcpClient().requestToServer(
-        InetAddress.getByName(NetworkUtils.getServerHostName(host)), locatorPort,
-        new ClientConnectionRequest(Collections.EMPTY_SET, null), 10000, true);
+    response =
+        (ClientConnectionResponse) new TcpClient().requestToServer(InetAddress.getByName(hostName),
+            locatorPort, new ClientConnectionRequest(Collections.EMPTY_SET, null), 10000, true);
     Assert.assertEquals(expectedLocation, response.getServer());
 
     // we expect that the connection load load will be 2 * the loadPerConnection
     vm0.invoke("check Locator Load", () -> checkLocatorLoad(expected));
 
     QueueConnectionResponse response2;
-    response2 = (QueueConnectionResponse) new TcpClient().requestToServer(
-        InetAddress.getByName(NetworkUtils.getServerHostName(host)), locatorPort,
-        new QueueConnectionRequest(null, 2, Collections.EMPTY_SET, null, false), 10000, true);
+    response2 =
+        (QueueConnectionResponse) new TcpClient().requestToServer(InetAddress.getByName(hostName),
+            locatorPort, new QueueConnectionRequest(null, 2, Collections.EMPTY_SET, null, false),
+            10000, true);
     Assert.assertEquals(Collections.singletonList(expectedLocation), response2.getServers());
 
-    response2 = (QueueConnectionResponse) new TcpClient().requestToServer(
-        InetAddress.getByName(NetworkUtils.getServerHostName(host)), locatorPort,
-        new QueueConnectionRequest(null, 5, Collections.EMPTY_SET, null, false), 10000, true);
+    response2 =
+        (QueueConnectionResponse) new TcpClient().requestToServer(InetAddress.getByName(hostName),
+            locatorPort, new QueueConnectionRequest(null, 5, Collections.EMPTY_SET, null, false),
+            10000, true);
 
     Assert.assertEquals(Collections.singletonList(expectedLocation), response2.getServers());
 
@@ -184,18 +180,16 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    String hostName = NetworkUtils.getServerHostName(vm0.getHost());
-    vm0.invoke("Start Locator", () -> startLocator(hostName, locatorPort, ""));
-    String locators = getLocatorString(host, locatorPort);
+    String hostName = NetworkUtils.getServerHostName();
+    int locatorPort = vm0.invoke("Start Locator", () -> startLocator(hostName, ""));
+    String locators = getLocatorString(hostName, locatorPort);
 
     final int serverPort = vm1.invoke("Start BridgeServer",
         () -> startBridgeServer(new String[] {"a", "b"}, locators));
 
     // We expect 0 load
     Map expected = new HashMap();
-    ServerLocation expectedLocation =
-        new ServerLocation(NetworkUtils.getServerHostName(host), serverPort);
+    ServerLocation expectedLocation = new ServerLocation(hostName, serverPort);
     ServerLoad expectedLoad = new ServerLoad(0f, 1 / 800.0f, 0f, 1f);
     expected.put(expectedLocation, expectedLoad);
     vm0.invoke("check Locator Load", () -> checkLocatorLoad(expected));
@@ -236,17 +230,16 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    String hostName = NetworkUtils.getServerHostName(vm0.getHost());
-    vm0.invoke("Start Locator", () -> startLocator(hostName, locatorPort, ""));
-    String locators = getLocatorString(host, locatorPort);
+    String hostName = NetworkUtils.getServerHostName();
+    int locatorPort = vm0.invoke("Start Locator", () -> startLocator(hostName, ""));
+    String locators = getLocatorString(hostName, locatorPort);
 
     vm1.invoke("Start BridgeServer", () -> startBridgeServer(new String[] {"a", "b"}, locators));
     vm2.invoke("Start BridgeServer", () -> startBridgeServer(new String[] {"a", "b"}, locators));
 
     vm3.invoke("StartBridgeClient", () -> {
       PoolFactoryImpl pf = new PoolFactoryImpl(null);
-      pf.addLocator(NetworkUtils.getServerHostName(host), locatorPort);
+      pf.addLocator(hostName, locatorPort);
       pf.setMinConnections(80);
       pf.setMaxConnections(80);
       pf.setSubscriptionEnabled(false);
@@ -300,10 +293,9 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    String hostName = NetworkUtils.getServerHostName(vm0.getHost());
-    vm0.invoke("Start Locator", () -> startLocator(hostName, locatorPort, ""));
-    String locators = getLocatorString(host, locatorPort);
+    String hostName = NetworkUtils.getServerHostName();
+    int locatorPort = vm0.invoke("Start Locator", () -> startLocator(hostName, ""));
+    String locators = getLocatorString(hostName, locatorPort);
 
     int serverPort1 =
         vm1.invoke("Start BridgeServer", () -> startBridgeServer(new String[] {"a"}, locators));
@@ -387,10 +379,9 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     VM vm2 = host.getVM(2);
     // VM vm3 = host.getVM(3);
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     String hostName = NetworkUtils.getServerHostName(vm0.getHost());
-    vm0.invoke("Start Locator", () -> startLocator(hostName, locatorPort, ""));
-    String locators = getLocatorString(host, locatorPort);
+    int locatorPort = vm0.invoke("Start Locator", () -> startLocator(hostName, ""));
+    String locators = getLocatorString(hostName, locatorPort);
 
     final ServerLoad load1 = new ServerLoad(.3f, .01f, .44f, 4564f);
     final ServerLoad load2 = new ServerLoad(23.2f, 1.1f, 22.3f, .3f);

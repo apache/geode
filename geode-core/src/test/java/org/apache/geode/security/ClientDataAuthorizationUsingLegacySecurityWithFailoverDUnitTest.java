@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -60,7 +61,6 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.VMProvider;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
@@ -189,14 +189,14 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     });
 
     // Initialize client cache and region. Get the port of the primary connected server.
-    VMProvider server_to_fail = determinePrimaryServer(client);
+    MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
     server_to_fail.invoke(() -> ClusterStartupRule.getCache().close());
 
     // Confirm failover
-    VMProvider secondaryServer = (server1.equals(server_to_fail)) ? server2 : server1;
-    assertThat(secondaryServer).isEqualTo(determinePrimaryServer(client));
+    MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
+    await().until(() -> getPrimaryServerPort(client) == secondaryServer.getPort());
 
     // Confirm permissions: client should still only be able to read and not write.
     client.invoke(() -> {
@@ -253,14 +253,14 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     });
 
     // Initialize client cache and region. Get the port of the primary connected server.
-    VMProvider server_to_fail = determinePrimaryServer(client);
+    MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
     server_to_fail.invoke(() -> ClusterStartupRule.getCache().close());
 
     // Confirm failover
-    VMProvider secondaryServer = (server1.equals(server_to_fail)) ? server2 : server1;
-    assertThat(secondaryServer).isEqualTo(determinePrimaryServer(client));
+    MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
+    await().until(() -> getPrimaryServerPort(client) == secondaryServer.getPort());
 
     // Confirm permissions: client should still only be able to write and not read.
     client.invoke(() -> {
@@ -299,14 +299,14 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     });
 
     // Initialize client cache and region. Get the port of the primary connected server.
-    VMProvider server_to_fail = determinePrimaryServer(client);
+    MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
     server_to_fail.invoke(() -> ClusterStartupRule.getCache().close());
 
     // Confirm failover
-    VMProvider secondaryServer = (server1.equals(server_to_fail)) ? server2 : server1;
-    assertThat(secondaryServer).isEqualTo(determinePrimaryServer(client));
+    MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
+    await().until(() -> getPrimaryServerPort(client) == secondaryServer.getPort());
 
     // Confirm permissions.
     client.invoke(() -> {
@@ -358,14 +358,14 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     });
 
     // Initialize client cache and region. Get the port of the primary connected server.
-    VMProvider server_to_fail = determinePrimaryServer(client);
+    MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
     server_to_fail.invoke(() -> ClusterStartupRule.getCache().close());
 
     // Confirm failover
-    VMProvider secondaryServer = (server1.equals(server_to_fail)) ? server2 : server1;
-    assertThat(secondaryServer).isEqualTo(determinePrimaryServer(client));
+    MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
+    await().until(() -> getPrimaryServerPort(client) == secondaryServer.getPort());
 
     // Confirm permissions.
     client.invoke(() -> {
@@ -405,14 +405,17 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     return client;
   }
 
-  private VMProvider determinePrimaryServer(ClientVM client) {
-    int primaryPort = client.invoke(() -> {
+  private MemberVM determinePrimaryServer(ClientVM client) {
+    int primaryPort = getPrimaryServerPort(client);
+    return (primaryPort == server1.getPort()) ? server1 : server2;
+  }
+
+  private int getPrimaryServerPort(ClientVM client) {
+    return client.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
       PoolImpl pool = (PoolImpl) cache.getDefaultPool();
       return pool.getPrimaryPort();
     });
-
-    return (primaryPort == server1.getPort()) ? server1 : server2;
   }
 
   private Properties getVMPropertiesWithPermission(String permission) {

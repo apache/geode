@@ -70,6 +70,15 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
   }
 
   @Override
+  public String toString() {
+    String cname = getShortClassName();
+    final StringBuilder sb = new StringBuilder(cname);
+    sb.append("regionToDispatchedKeysMap=" + regionToDispatchedKeysMap);
+    sb.append(" sender=").append(getSender());
+    return sb.toString();
+  }
+
+  @Override
   protected void process(ClusterDistributionManager dm) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     final InternalCache cache = dm.getCache();
@@ -183,6 +192,10 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
       brq.destroyKey(key);
+      if (!brq.getBucketAdvisor().isPrimary()) {
+        prQ.getParallelGatewaySender().getStatistics().decSecondaryQueueSize();
+        prQ.getParallelGatewaySender().getStatistics().incEventsProcessedByPQRM(1);
+      }
       if (isDebugEnabled) {
         logger.debug("Destroyed the key {} for shadowPR {} for bucket {}", key, prQ.getName(),
             brq.getId());

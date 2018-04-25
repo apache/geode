@@ -49,8 +49,6 @@ public class AsyncEventQueueStatsJUnitTest extends MBeanStatsTestCase {
     sample();
 
     assertEquals(0, getEventQueueSize());
-
-
   }
 
   private int getEventQueueSize() {
@@ -62,16 +60,21 @@ public class AsyncEventQueueStatsJUnitTest extends MBeanStatsTestCase {
     StatisticDescriptor[] sds = asyncEventQueueStats.type.getStatistics();
     int notQueueEvents = 0;
     int notQueueToPrimary = 0;
+    int eventsProcessedByPQRM = 0;
     for (StatisticDescriptor s : sds) {
       if (s.getName().equals("notQueuedEvent")) {
         notQueueEvents++;
       }
-      if (s.getName().equals("notQueuedEventAtYetRunningPrimarySender")) {
+      if (s.getName().equals("eventsDroppedDueToPrimarySenderNotRunning")) {
         notQueueToPrimary++;
+      }
+      if (s.getName().equals("eventsProcessedByPQRM")) {
+        eventsProcessedByPQRM++;
       }
     }
     assertEquals(1, notQueueEvents);
     assertEquals(1, notQueueToPrimary);
+    assertEquals(1, eventsProcessedByPQRM);
   }
 
 }

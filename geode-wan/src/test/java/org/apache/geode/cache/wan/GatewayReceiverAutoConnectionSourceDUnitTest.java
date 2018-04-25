@@ -28,7 +28,6 @@ import org.apache.geode.cache.client.internal.AutoConnectionSourceImpl;
 import org.apache.geode.cache.client.internal.LocatorTestBase;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -75,10 +74,10 @@ public class GatewayReceiverAutoConnectionSourceDUnitTest extends LocatorTestBas
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    startLocatorInVM(vm0, locatorPort, "");
+    String hostName = NetworkUtils.getServerHostName();
+    int locatorPort = startLocatorInVM(vm0, hostName, "");
 
-    String locators = NetworkUtils.getServerHostName(vm0.getHost()) + "[" + locatorPort + "]";
+    String locators = getLocatorString(hostName, locatorPort);
 
     int serverPort = startBridgeServerInVM(vm1, serverGroups, locators, true);
 

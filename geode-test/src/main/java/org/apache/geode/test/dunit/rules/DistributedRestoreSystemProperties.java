@@ -14,48 +14,29 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.test.dunit.Host.getHost;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.apache.geode.test.junit.rules.accessible.AccessibleRestoreSystemProperties;
-import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 
 /**
  * Distributed version of RestoreSystemProperties which affects all DUnit JVMs including the Locator
  * JVM.
  */
-public class DistributedRestoreSystemProperties extends AccessibleRestoreSystemProperties
-    implements SerializableTestRule {
+public class DistributedRestoreSystemProperties extends AbstractDistributedTestRule {
 
   private static final AccessibleRestoreSystemProperties restoreSystemProperties =
       new AccessibleRestoreSystemProperties();
 
-  private final RemoteInvoker invoker;
-
-  private volatile int beforeVmCount;
-
   public DistributedRestoreSystemProperties() {
-    this(new RemoteInvoker());
-  }
-
-  public DistributedRestoreSystemProperties(final RemoteInvoker invoker) {
-    super();
-    this.invoker = invoker;
+    // nothing
   }
 
   @Override
-  public void before() throws Throwable {
-    beforeVmCount = getVMCount();
-
-    invoker.invokeInEveryVMAndController(() -> invokeBefore());
+  public void before() throws Exception {
+    invoker().invokeInEveryVMAndController(() -> invokeBefore());
   }
 
   @Override
   public void after() {
-    int afterVmCount = getVMCount();
-    assertThat(afterVmCount).isEqualTo(beforeVmCount);
-
-    invoker.invokeInEveryVMAndController(() -> invokeAfter());
+    invoker().invokeInEveryVMAndController(() -> invokeAfter());
   }
 
   private void invokeBefore() throws Exception {
@@ -71,13 +52,5 @@ public class DistributedRestoreSystemProperties extends AccessibleRestoreSystemP
 
   private void invokeAfter() {
     restoreSystemProperties.after();
-  }
-
-  private int getVMCount() {
-    try {
-      return getHost(0).getVMCount();
-    } catch (IllegalArgumentException e) {
-      throw new IllegalStateException("DUnit VMs have not been launched");
-    }
   }
 }

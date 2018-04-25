@@ -44,6 +44,7 @@ import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -58,7 +59,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * <p>
  * This addresses JIRA tickets GEODE-4116 and GEODE-4168.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
 
   /** this JSON document is used by the "put" the tests */

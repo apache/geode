@@ -49,13 +49,14 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Test to make sure slow receiver queuing is working
  *
  * @since GemFire 4.2.1
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 @Ignore("Test was disabled by renaming to DisabledTest")
 public class SlowRecDUnitTest extends JUnit4CacheTestCase {
 

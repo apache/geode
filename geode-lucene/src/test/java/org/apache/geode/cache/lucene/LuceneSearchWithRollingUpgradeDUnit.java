@@ -52,6 +52,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -140,6 +141,83 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
     executeLuceneQueryWithServerRollOvers("persistentPartitioned", oldVersion);
   }
 
+  @Test
+  public void luceneReindexShouldBeSuccessfulWhenAllServersRollToCurrentVersion() throws Exception {
+    final Host host = Host.getHost(0);
+    VM locator1 = host.getVM(oldVersion, 0);
+    VM server1 = host.getVM(oldVersion, 1);
+    VM server2 = host.getVM(oldVersion, 2);
+
+    final String regionName = "aRegion";
+    RegionShortcut shortcut = RegionShortcut.PARTITION_REDUNDANT;
+
+    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    DistributedTestUtils.deleteLocatorStateFile(locatorPort);
+
+    String hostName = NetworkUtils.getServerHostName(host);
+    String locatorString = getLocatorString(locatorPort);
+    String regionType = "partitionedRedundant";
+    try {
+      locator1.invoke(
+          invokeStartLocator(hostName, locatorPort, getLocatorPropertiesPre91(locatorString)));
+      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(new int[] {locatorPort})), server1,
+          server2);
+
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      locator1.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+
+      locator1 =
+          rollLocatorToCurrent(locator1, hostName, locatorPort, getTestMethodName(), locatorString);
+
+      server1 = rollServerToCurrentAndCreateRegionOnly(server1, regionType, null, shortcut.name(),
+          regionName, new int[] {locatorPort});
+
+      invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut.name()), server2);
+      try {
+        server1.invoke(() -> createLuceneIndexOnExistingRegion(cache, regionName, INDEX_NAME));
+        fail();
+      } catch (Exception exception) {
+        if (!exception.getCause().getCause().getMessage()
+            .contains("are not the same Apache Geode version")) {
+          exception.printStackTrace();
+          fail();
+        }
+      }
+
+      int expectedRegionSize = 10;
+      putSerializableObject(server1, regionName, 0, expectedRegionSize);
+
+      server2 = rollServerToCurrentAndCreateRegionOnly(server2, regionType, null, shortcut.name(),
+          regionName, new int[] {locatorPort});
+
+
+      AsyncInvocation ai1 = server1
+          .invokeAsync(() -> createLuceneIndexOnExistingRegion(cache, regionName, INDEX_NAME));
+
+      AsyncInvocation ai2 = server2
+          .invokeAsync(() -> createLuceneIndexOnExistingRegion(cache, regionName, INDEX_NAME));
+
+      ai1.join();
+      ai2.join();
+
+      ai1.checkException();
+      ai2.checkException();
+
+      expectedRegionSize += 10;
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 15,
+          25, server1, server2);
+
+    } finally {
+      invokeRunnableInVMs(true, invokeStopLocator(), locator1);
+      invokeRunnableInVMs(true, invokeCloseCache(), server1, server2);
+    }
+  }
+
   // 2 locator, 2 servers
   @Test
   public void luceneQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServersAreRolled()
@@ -192,8 +270,8 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       locator2 = rollLocatorToCurrent(locator2, hostName, locatorPorts[1], getTestMethodName(),
           locatorString);
 
-      server1 = rollServerToCurrentAndCreateRegion(server1, regionType, null, shortcut.name(),
-          regionName, locatorPorts);
+      server1 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server1, regionType, null,
+          shortcut.name(), regionName, locatorPorts);
       expectedRegionSize += 10;
       putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 15,
           25, server1, server2);
@@ -201,8 +279,8 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 20,
           30, server1, server2);
 
-      server2 = rollServerToCurrentAndCreateRegion(server2, regionType, null, shortcut.name(),
-          regionName, locatorPorts);
+      server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType, null,
+          shortcut.name(), regionName, locatorPorts);
       expectedRegionSize += 5;
       putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 25,
           35, server1, server2);
@@ -281,8 +359,8 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
           locatorString);
 
-      server3 = rollServerToCurrentAndCreateRegion(server3, regionType, null, shortcut.name(),
-          regionName, locatorPorts);
+      server3 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server3, regionType, null,
+          shortcut.name(), regionName, locatorPorts);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server3);
       expectedRegionSize += 10;
       putSerializableObjectAndVerifyLuceneQueryResult(client, regionName, expectedRegionSize, 20,
@@ -291,8 +369,8 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       putSerializableObjectAndVerifyLuceneQueryResult(server3, regionName, expectedRegionSize, 30,
           40, server2);
 
-      server2 = rollServerToCurrentAndCreateRegion(server2, regionType, null, shortcut.name(),
-          regionName, locatorPorts);
+      server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType, null,
+          shortcut.name(), regionName, locatorPorts);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server2);
       expectedRegionSize += 10;
       putSerializableObjectAndVerifyLuceneQueryResult(client, regionName, expectedRegionSize, 40,
@@ -408,8 +486,8 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       // Roll the locator and server 1 to current version
       locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
           locatorString);
-      server1 = rollServerToCurrentAndCreateRegion(server1, regionType, null, shortcut.name(),
-          regionName, locatorPorts);
+      server1 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server1, regionType, null,
+          shortcut.name(), regionName, locatorPorts);
 
       // Execute a query on the client and verify the results. This also waits until flushed.
       client.invoke(() -> verifyLuceneQueryResults(regionName, numObjects));
@@ -567,8 +645,8 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
           locatorString);
 
-      server1 = rollServerToCurrentAndCreateRegion(server1, regionType, testingDirs[0],
-          shortcutName, regionName, locatorPorts);
+      server1 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server1, regionType,
+          testingDirs[0], shortcutName, regionName, locatorPorts);
       verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, server1);
       expectedRegionSize += 5;
       putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 5,
@@ -577,8 +655,8 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 10,
           20, server1, server3);
 
-      server2 = rollServerToCurrentAndCreateRegion(server2, regionType, testingDirs[1],
-          shortcutName, regionName, locatorPorts);
+      server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType,
+          testingDirs[1], shortcutName, regionName, locatorPorts);
       verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, server2);
       expectedRegionSize += 5;
       putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 15,
@@ -587,8 +665,8 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       putSerializableObjectAndVerifyLuceneQueryResult(server3, regionName, expectedRegionSize, 20,
           30, server2, server3);
 
-      server3 = rollServerToCurrentAndCreateRegion(server3, regionType, testingDirs[2],
-          shortcutName, regionName, locatorPorts);
+      server3 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server3, regionType,
+          testingDirs[2], shortcutName, regionName, locatorPorts);
       verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, server3);
       putSerializableObjectAndVerifyLuceneQueryResult(server3, regionName, expectedRegionSize, 15,
           25, server1, server2);
@@ -710,10 +788,31 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
     return rollServer;
   }
 
-  private VM rollServerToCurrentAndCreateRegion(VM oldServer, String regionType, File diskdir,
+  private VM rollServerToCurrentCreateLuceneIndexAndCreateRegion(VM oldServer, String regionType,
+      File diskdir, String shortcutName, String regionName, int[] locatorPorts) throws Exception {
+    VM rollServer = rollServerToCurrent(oldServer, locatorPorts);
+    return createLuceneIndexAndRegionOnRolledServer(regionType, diskdir, shortcutName, regionName,
+        rollServer);
+  }
+
+  protected VM createLuceneIndexAndRegionOnRolledServer(String regionType, File diskdir,
+      String shortcutName, String regionName, VM rollServer) throws Exception {
+    rollServer.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
+    // recreate region on "rolled" server
+    if ((regionType.equals("persistentPartitioned"))) {
+      CacheSerializableRunnable runnable =
+          invokeCreatePersistentPartitionedRegion(regionName, diskdir);
+      invokeRunnableInVMs(runnable, rollServer);
+    } else {
+      invokeRunnableInVMs(invokeCreateRegion(regionName, shortcutName), rollServer);
+    }
+    rollServer.invoke(invokeRebalance());
+    return rollServer;
+  }
+
+  private VM rollServerToCurrentAndCreateRegionOnly(VM oldServer, String regionType, File diskdir,
       String shortcutName, String regionName, int[] locatorPorts) throws Exception {
     VM rollServer = rollServerToCurrent(oldServer, locatorPorts);
-    rollServer.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
     // recreate region on "rolled" server
     if ((regionType.equals("persistentPartitioned"))) {
       CacheSerializableRunnable runnable =
@@ -990,6 +1089,22 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
         "status");
     luceneIndexFactory.getClass().getMethod("create", String.class, String.class)
         .invoke(luceneIndexFactory, indexName, regionName);
+  }
+
+  public static void createLuceneIndexOnExistingRegion(Object cache, String regionName,
+      String indexName) throws Exception {
+    Class luceneServiceProvider = Thread.currentThread().getContextClassLoader()
+        .loadClass("org.apache.geode.cache.lucene.LuceneServiceProvider");
+    Method getLuceneService = luceneServiceProvider.getMethod("get", GemFireCache.class);
+    Object luceneService = getLuceneService.invoke(luceneServiceProvider, cache);
+    Method createLuceneIndexFactoryMethod =
+        luceneService.getClass().getMethod("createIndexFactory");
+    createLuceneIndexFactoryMethod.setAccessible(true);
+    Object luceneIndexFactory = createLuceneIndexFactoryMethod.invoke(luceneService);
+    luceneIndexFactory.getClass().getMethod("addField", String.class).invoke(luceneIndexFactory,
+        "status");
+    luceneIndexFactory.getClass().getMethod("create", String.class, String.class, boolean.class)
+        .invoke(luceneIndexFactory, indexName, regionName, true);
   }
 
   public static void createPersistentPartitonedRegion(Object cache, String regionName,

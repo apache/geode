@@ -43,13 +43,14 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Test {@link RegionMembershipListener}
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
 
   private transient MyRML myListener;

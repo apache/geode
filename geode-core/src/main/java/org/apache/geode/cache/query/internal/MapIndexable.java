@@ -19,7 +19,7 @@ import java.util.List;
 public interface MapIndexable {
   CompiledValue getMapLookupKey();
 
-  CompiledValue getRecieverSansIndexArgs();
+  CompiledValue getReceiverSansIndexArgs();
 
   List<CompiledValue> getIndexingKeys();
 }

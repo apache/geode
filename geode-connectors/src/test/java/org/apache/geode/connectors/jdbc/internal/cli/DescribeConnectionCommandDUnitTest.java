@@ -22,21 +22,26 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionComm
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__USER;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand.DESCRIBE_CONNECTION;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand.DESCRIBE_CONNECTION__NAME;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.Properties;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
 public class DescribeConnectionCommandDUnitTest implements Serializable {
@@ -47,23 +52,17 @@ public class DescribeConnectionCommandDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
+  public transient ClusterStartupRule startupRule = new ClusterStartupRule();
 
-  @Rule
-  public SerializableTestName testName = new SerializableTestName();
+  private MemberVM locator, server;
 
-  private MemberVM server;
-
-  @Before
-  public void before() throws Exception {
-    MemberVM locator = startupRule.startLocatorVM(0);
+  @Test
+  public void describesExistingConnection() throws Exception {
+    locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
-  }
 
-  @Test
-  public void describesExistingConnection() {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_CONNECTION);
     csb.addOption(CREATE_CONNECTION__NAME, CONNECTION_NAME);
     csb.addOption(CREATE_CONNECTION__URL, "myUrl");
@@ -87,17 +86,48 @@ public class DescribeConnectionCommandDUnitTest implements Serializable {
     commandResultAssert.containsOutput("value1");
     commandResultAssert.containsOutput("key2");
     commandResultAssert.containsOutput("value2");
-
   }
 
   @Test
-  public void reportsNoConfigurationFound() {
+  public void reportsNoConfigurationFound() throws Exception {
+    locator = startupRule.startLocatorVM(0);
+    server = startupRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_CONNECTION)
         .addOption(DESCRIBE_CONNECTION__NAME, "nonExisting");
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-
     commandResultAssert.statusIsError();
     commandResultAssert.containsOutput(String.format("connection named 'nonExisting' not found"));
+  }
+
+  @Test
+  public void reportConfigurationFoundOnMember() throws Exception {
+    Properties properties = new Properties();
+    properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+
+    locator = startupRule.startLocatorVM(0, properties);
+    server = startupRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
+    server.invoke(() -> createConnection());
+
+    CommandResultAssert commandResultAssert = gfsh
+        .executeAndAssertThat(DESCRIBE_CONNECTION + " --name=" + CONNECTION_NAME).statusIsSuccess();
+
+    commandResultAssert.statusIsSuccess();
+    commandResultAssert.containsKeyValuePair("name", CONNECTION_NAME);
+    commandResultAssert.containsKeyValuePair("url", "myUrl");
+    commandResultAssert.containsKeyValuePair("user", "username");
+    commandResultAssert.containsKeyValuePair("password", "\\*\\*\\*\\*\\*\\*\\*\\*");
+  }
+
+  private void createConnection() throws ConnectionConfigExistsException {
+    InternalCache cache = ClusterStartupRule.getCache();
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
+    service.createConnectionConfig(new ConnectorService.Connection(CONNECTION_NAME, "myUrl",
+        "username", "password ", (String) null));
+    assertThat(service.getConnectionConfig(CONNECTION_NAME)).isNotNull();
   }
 }

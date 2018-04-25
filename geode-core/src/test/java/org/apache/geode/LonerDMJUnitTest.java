@@ -32,13 +32,14 @@ import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * This class makes sure an isolated "loner" distribution manager can be created and do some cache
  * functions.
  */
 @SuppressWarnings("deprecation")
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class LonerDMJUnitTest {
 
   @After

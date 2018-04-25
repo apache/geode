@@ -41,10 +41,11 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.test.junit.categories.DLockTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, DLockTest.class})
 public class DLockServiceLeakTest {
 
   private Cache cache;

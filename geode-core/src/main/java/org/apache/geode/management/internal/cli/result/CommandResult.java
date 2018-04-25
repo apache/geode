@@ -87,6 +87,10 @@ public class CommandResult implements Result {
     return this.status;
   }
 
+  public void setStatus(Status status) {
+    this.status = status;
+  }
+
   public ResultData getResultData() {
     return ResultBuilder.getReadOnlyResultData(resultData);
   }
@@ -443,10 +447,6 @@ public class CommandResult implements Result {
 
   public GfJsonObject getContent() {
     return gfJsonObject.getJSONObject(ResultData.RESULT_CONTENT);
-  }
-
-  public String getContentAsString() {
-    return getContent().toString();
   }
 
   public String getMessageFromContent() {

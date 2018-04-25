@@ -15,13 +15,12 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class CommandAvailabilityIndicator implements CommandMarker {
+public class CommandAvailabilityIndicator extends GfshCommand {
 
   @CliAvailabilityIndicator({CliStrings.LIST_CLIENTS, CliStrings.DESCRIBE_CLIENT,
       CliStrings.DESCRIBE_CONFIG, CliStrings.EXPORT_CONFIG, CliStrings.ALTER_RUNTIME_CONFIG,
@@ -50,17 +49,11 @@ public class CommandAvailabilityIndicator implements CommandMarker {
       CliStrings.STOP_GATEWAYRECEIVER, CliStrings.LIST_GATEWAY, CliStrings.STATUS_GATEWAYSENDER,
       CliStrings.STATUS_GATEWAYRECEIVER, CliStrings.LOAD_BALANCE_GATEWAYSENDER,
       CliStrings.DESTROY_GATEWAYSENDER, AlterAsyncEventQueueCommand.COMMAND_NAME,
+      DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE,
+      DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER,
       CreateJndiBindingCommand.CREATE_JNDIBINDING, DestroyJndiBindingCommand.DESTROY_JNDIBINDING,
-      DescribeJndiBindingCommand.DESCRIBE_JNDI_BINDING})
-  public boolean clientCommandsAvailable() {
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-
-    // command should always be available on the server
-    if (gfsh == null) {
-      return true;
-    }
-
-    // if in gfshVM, only when gfsh is connected and ready
-    return gfsh.isConnectedAndReady();
+      DescribeJndiBindingCommand.DESCRIBE_JNDI_BINDING, ListJndiBindingCommand.LIST_JNDIBINDING})
+  public boolean available() {
+    return isOnlineCommandAvailable();
   }
 }

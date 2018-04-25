@@ -224,7 +224,7 @@ public class Bug36805DUnitTest extends JUnit4DistributedTestCase {
     // + " but it is: " + proxy.getDeadServers().size()
     // + ". This issue can occur on Solaris as DSM thread get stuck in connectForServer() call, and
     // hence not recovering any newly started server This may be beacuase of tcp_ip_abort_cinterval
-    // kernal level property on solaris which has 3 minutes as a default value",
+    // kernel level property on solaris which has 3 minutes as a default value",
     // (System.currentTimeMillis() - start) < maxWaitTime);
     // try {
     // Thread.yield();

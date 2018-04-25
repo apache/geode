@@ -88,16 +88,6 @@ public class CompositeResultData extends AbstractResultData {
     return new SectionResultData(sectionData);
   }
 
-  public CompositeResultData addSeparator(char buildSeparatorFrom) {
-    try {
-      contentObject.put(SEPARATOR, buildSeparatorFrom);
-    } catch (GfJsonException e) {
-      throw new ResultDataException(e.getMessage());
-    }
-
-    return this;
-  }
-
   public SectionResultData retrieveSectionByIndex(int index) {
     SectionResultData sectionToRetrieve = null;
     int i = 0;
@@ -132,7 +122,6 @@ public class CompositeResultData extends AbstractResultData {
   public static class SectionResultData {
     protected GfJsonObject sectionGfJsonObject;
 
-    private int subsectionCount = 0;
     private int tablesCount = 0;
 
     SectionResultData() {
@@ -194,21 +183,6 @@ public class CompositeResultData extends AbstractResultData {
       return this;
     }
 
-    public SectionResultData addSection() {
-      return addSection(String.valueOf(subsectionCount));
-    }
-
-    public SectionResultData addSection(String keyToAccess) {
-      GfJsonObject sectionData = new GfJsonObject();
-      try {
-        sectionGfJsonObject.putAsJSONObject(generateSectionKey(keyToAccess), sectionData);
-      } catch (GfJsonException e) {
-        throw new ResultDataException(e.getMessage());
-      }
-      subsectionCount++;
-      return new SectionResultData(sectionData);
-    }
-
     public TabularResultData addTable() {
       return addTable(String.valueOf(tablesCount));
     }
@@ -223,33 +197,6 @@ public class CompositeResultData extends AbstractResultData {
       }
       tablesCount++;
       return tabularResultData;
-    }
-
-    public SectionResultData retrieveSectionByIndex(int index) {
-      SectionResultData sectionToRetrieve = null;
-      int i = 0;
-      for (Iterator<String> iterator = sectionGfJsonObject.keys(); iterator.hasNext();) {
-        String key = iterator.next();
-        if (key.startsWith(CompositeResultData.SECTION_DATA_ACCESSOR)) {
-          if (i == index) {
-            sectionToRetrieve = new SectionResultData(sectionGfJsonObject.getJSONObject(key));
-            break;
-          }
-          i++;
-        }
-      }
-
-      return sectionToRetrieve;
-    }
-
-    public SectionResultData retrieveSection(String keyToRetrieve) {
-      SectionResultData sectionToRetrieve = null;
-      if (sectionGfJsonObject.has(generateSectionKey(keyToRetrieve))) {
-        GfJsonObject sectionData =
-            sectionGfJsonObject.getJSONObject(generateSectionKey(keyToRetrieve));
-        sectionToRetrieve = new SectionResultData(sectionData);
-      }
-      return sectionToRetrieve;
     }
 
     public TabularResultData retrieveTableByIndex(int index) {
@@ -292,22 +239,6 @@ public class CompositeResultData extends AbstractResultData {
       return sectionGfJsonObject.getString(name);
     }
 
-    public String[] retrieveStringArray(String name) {
-      String[] stringArray;
-      Object retrievedObject = sectionGfJsonObject.get(name);
-
-      if (retrievedObject instanceof GfJsonArray) {
-        stringArray = GfJsonArray.toStringArray(((GfJsonArray) retrievedObject));
-      } else {
-        try {
-          stringArray = GfJsonArray.toStringArray(new GfJsonArray(retrievedObject));
-        } catch (GfJsonException e) {
-          throw new ResultDataException(e.getMessage());
-        }
-      }
-      return stringArray;
-    }
-
     public static String generateSectionKey(String keyToRetrieve) {
       return SECTION_DATA_ACCESSOR + "-" + keyToRetrieve;
     }
@@ -317,48 +248,4 @@ public class CompositeResultData extends AbstractResultData {
     }
   }
 
-  public static void main(String[] args) {
-    CompositeResultData crd = new CompositeResultData();
-
-    SectionResultData r1Section = crd.addSection("R1");
-    r1Section.addData("Region", "R1").addData("IsPartitioned", false).addData("IsPersistent", true)
-        .addData("Disk Store", "DiskStore1").addData("Group", "Group1");
-    TabularResultData r1Table = r1Section.addTable("R1Members");
-    r1Table.accumulate("Member Id", "host1(3467):12435:12423")
-        .accumulate("PrimaryEntryCount", 20000).accumulate("BackupEntryCount", 20000)
-        .accumulate("Memory(MB)", "100").accumulate("NumOfCopies", 1);
-    r1Table.accumulate("Member Id", "host3(5756):57665:90923")
-        .accumulate("PrimaryEntryCount", 25000).accumulate("BackupEntryCount", 10000)
-        .accumulate("Memory(MB)", "200").accumulate("NumOfCopies", 1);
-
-    SectionResultData r3Section = crd.addSection("R3");
-    r3Section.addData("Region", "R3").addData("IsPartitioned", true).addData("IsPersistent", true)
-        .addData("Disk Store", "DiskStore2").addData("Group", "Group2")
-        .addData("ColocatedWith", "-");
-    SectionResultData r3SubSection = r3Section.addSection("R3Config");
-    r3SubSection.addData("Configuration", "");
-    r3SubSection.addData("Config1", "abcd");
-    r3SubSection.addData("Config2", "abcde");
-    r3SubSection.addData("Config3", "abcdfg");
-    TabularResultData r3Table = r3Section.addTable("R3Members");
-    r3Table.accumulate("Member Id", "host1(3467):12435:12423")
-        .accumulate("PrimaryEntryCount", 20000).accumulate("BackupEntryCount", 20000)
-        .accumulate("Memory(MB)", "100").accumulate("NumOfCopies", 1)
-        .accumulate("NumOfBuckets", 100);
-    r3Table.accumulate("Member Id", "host2(3353):23545:14723")
-        .accumulate("PrimaryEntryCount", 20000).accumulate("BackupEntryCount", 20000)
-        .accumulate("Memory(MB)", "100").accumulate("NumOfCopies", 1)
-        .accumulate("NumOfBuckets", 100);
-    r3Table.accumulate("Member Id", "host3(5756):57665:90923")
-        .accumulate("PrimaryEntryCount", 25000).accumulate("BackupEntryCount", 10000)
-        .accumulate("Memory(MB)", "200").accumulate("NumOfCopies", 1)
-        .accumulate("NumOfBuckets", 100);
-
-    try {
-      System.out.println(crd.getGfJsonObject().toIndentedString(0));
-
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
 }

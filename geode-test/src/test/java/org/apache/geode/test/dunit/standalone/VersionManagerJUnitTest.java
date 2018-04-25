@@ -20,22 +20,23 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, BackwardCompatibilityTest.class})
 public class VersionManagerJUnitTest {
 
   @Test
   public void exceptionIsNotThrownInInitialization() throws Exception {
     VersionManager instance =
-        VersionManager.getInstance("--nonexistant-file?--", "--nonexistant-install-file--");
+        VersionManager.getInstance("--nonexistent-file?--", "--nonexistent-install-file--");
     Assert.assertNotEquals("", instance.loadFailure);
   }
 
   @Test
   public void exceptionIsThrownOnUse() throws Exception {
     VersionManager instance =
-        VersionManager.getInstance("--nonexistant-file?--", "--nonexistant-install-file--");
+        VersionManager.getInstance("--nonexistent-file?--", "--nonexistent-install-file--");
     Assert.assertNotEquals("", instance.loadFailure);
     assertThatThrownBy(() -> instance.getVersionsWithoutCurrent()).hasMessage(instance.loadFailure);
     assertThatThrownBy(() -> instance.getVersions()).hasMessage(instance.loadFailure);

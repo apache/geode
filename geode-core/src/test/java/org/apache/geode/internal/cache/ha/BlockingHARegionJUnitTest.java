@@ -39,7 +39,7 @@ public class BlockingHARegionJUnitTest {
 
   private static InternalCache cache = null;
 
-  /** boolean to record an exception occurence in another thread **/
+  /** boolean to record an exception occurrence in another thread **/
   private static volatile boolean exceptionOccurred = false;
   /** StringBuffer to store the exception **/
   private static StringBuffer exceptionString = new StringBuffer();

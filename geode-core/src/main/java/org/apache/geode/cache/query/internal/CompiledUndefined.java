@@ -64,7 +64,6 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
    * are iter operands. In such cases , the iter operands will be evaluated while expanding/cutting
    * down the index resultset
    *
-   * @return SelectResults
    */
   @Override
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults,

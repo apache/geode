@@ -503,7 +503,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"gateway-ssl-ciphers"</i> property <a
    * name="gateway-ssl-ciphers"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL cipher suites to enable. Those listed
+   * <U>Description</U>: A space separated list of the SSL cipher suites to enable. Those listed
    * must be supported by the available providers.
    * </p>
    * <U>Default</U>: <code>any</code>
@@ -578,7 +578,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"gateway-ssl-protocols"</i> property <a
    * name="gateway-ssl-protocols"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL protocols to enable. Those listed must be
+   * <U>Description</U>: A space separated list of the SSL protocols to enable. Those listed must be
    * supported by the available providers.
    * </p>
    * <U>Default</U>: <code>any</code>
@@ -974,7 +974,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"jmx-manager-ssl-ciphers"</i> property <a
    * name="jmx-manager-ssl-ciphers"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL cipher suites to enable. Those listed
+   * <U>Description</U>: A space separated list of the SSL cipher suites to enable. Those listed
    * must be supported by the available providers.
    * </p>
    * <U>Default</U>: "any"
@@ -1047,7 +1047,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"jmx-manager-ssl-protocols"</i> property <a
    * name="jmx-manager-ssl-protocols"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL protocols to enable. Those listed must be
+   * <U>Description</U>: A space separated list of the SSL protocols to enable. Those listed must be
    * supported by the available providers.
    * </p>
    * <U>Default</U>: "any"
@@ -1555,7 +1555,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"server-ssl-ciphers"</i> property <a
    * name="server-ssl-ciphers"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL cipher suites to enable. Those listed
+   * <U>Description</U>: A space separated list of the SSL cipher suites to enable. Those listed
    * must be supported by the available providers.
    * </p>
    * <U>Default</U>: <code>any</code>
@@ -1630,7 +1630,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"server-ssl-protocols"</i> property <a
    * name="server-ssl-protocols"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL protocols to enable. Those listed must be
+   * <U>Description</U>: A space separated list of the SSL protocols to enable. Those listed must be
    * supported by the available providers.
    * </p>
    * <U>Default</U>: <code>any</code>

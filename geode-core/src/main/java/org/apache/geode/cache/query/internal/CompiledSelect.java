@@ -884,8 +884,8 @@ public class CompiledSelect extends AbstractCompiledValue {
           for (int i = 0; i < values.length; i++) {
             ((RuntimeIterator) iterators.get(i)).setCurrent(values[i]);
           }
-          int occurence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
-          if (occurence == 1 || (occurence > 1 && !this.distinct)) {
+          int occurrence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
+          if (occurrence == 1 || (occurrence > 1 && !this.distinct)) {
             // (Unique i.e first time occurrence) or subsequent occurrence
             // for non distinct query
             ++numElementsAdded;
@@ -1129,22 +1129,22 @@ public class CompiledSelect extends AbstractCompiledValue {
   // could be a distinct subquery)
   // in future, it would be good to simplify this to always work with a bag
   // (converting all sets to bags) until the end when we enforce distinct
-  // The number returned indicates the occurence of the data in the SelectResults
+  // The number returned indicates the occurrence of the data in the SelectResults
   // Thus if the SelectResults is of type ResultsSet or StructSet
   // then 1 will indicate that data was added to the results & that was the
-  // first occurence. For this 0 will indicate that the data was not added
+  // first occurrence. For this 0 will indicate that the data was not added
   // because it was a duplicate
   // If the SelectResults is an instance ResultsBag or StructsBag , the number will
-  // indicate the occurence. Thus 1 will indicate it being added for first time
+  // indicate the occurrence. Thus 1 will indicate it being added for first time
   // Currently orderBy is present only for StructSet & ResultSet which are
-  // unique object holders. So the occurence for them can be either 0 or 1 only
+  // unique object holders. So the occurrence for them can be either 0 or 1 only
 
   private int applyProjectionAndAddToResultSet(ExecutionContext context, SelectResults resultSet,
       boolean ignoreOrderBy) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     List currrentRuntimeIters = context.getCurrentIterators();
 
-    int occurence = 0;
+    int occurrence = 0;
     ObjectType elementType = resultSet.getCollectionType().getElementType();
     boolean isStruct = elementType != null && elementType.isStructType();
 
@@ -1193,7 +1193,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         // until
         // the end of evaluate call to this CompiledSelect object.
         this.countStartQueryResult++;
-        occurence = 1;
+        occurrence = 1;
       } else {
         // if order by is present
         if (applyOrderBy) {
@@ -1203,10 +1203,10 @@ public class CompiledSelect extends AbstractCompiledValue {
               if (values.length == 1 && values[0] instanceof StructImpl) {
                 structImpl = (StructImpl) values[0];
                 comparator.addEvaluatedSortCriteria(structImpl.getFieldValues(), context);
-                occurence = resultSet.add(structImpl) ? 1 : 0;
+                occurrence = resultSet.add(structImpl) ? 1 : 0;
               } else {
                 comparator.addEvaluatedSortCriteria(values, context);
-                occurence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
+                occurrence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
               }
               // TODO:Instead of a normal Map containing which holds
               // StructImpl object
@@ -1215,22 +1215,22 @@ public class CompiledSelect extends AbstractCompiledValue {
               // creating objects of type Object[]
             } else {
               comparator.addEvaluatedSortCriteria(values[0], context);
-              occurence = resultSet.add(values[0]) ? 1 : 0;
+              occurrence = resultSet.add(values[0]) ? 1 : 0;
             }
           } else {
             if (isStruct) {
               if (values.length == 1 && values[0] instanceof StructImpl) {
                 structImpl = (StructImpl) values[0];
                 comparator.addEvaluatedSortCriteria(structImpl.getFieldValues(), context);
-                occurence = ((Bag) resultSet).addAndGetOccurence(structImpl.getFieldValues());
+                occurrence = ((Bag) resultSet).addAndGetOccurence(structImpl.getFieldValues());
               } else {
                 comparator.addEvaluatedSortCriteria(values, context);
-                occurence = ((Bag) resultSet).addAndGetOccurence(values);
+                occurrence = ((Bag) resultSet).addAndGetOccurence(values);
 
               }
             } else {
               comparator.addEvaluatedSortCriteria(values[0], context);
-              occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+              occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
             }
           }
         } else {
@@ -1243,28 +1243,28 @@ public class CompiledSelect extends AbstractCompiledValue {
                 structImpl = new StructImpl((StructTypeImpl) elementType, values);
               }
               if (this.distinct) {
-                occurence = resultSet.add(structImpl) ? 1 : 0;
+                occurrence = resultSet.add(structImpl) ? 1 : 0;
               } else {
-                occurence = ((Bag) resultSet).addAndGetOccurence(structImpl);
+                occurrence = ((Bag) resultSet).addAndGetOccurence(structImpl);
               }
             } else {
               if (this.distinct) {
-                occurence = resultSet.add(values[0]) ? 1 : 0;
+                occurrence = resultSet.add(values[0]) ? 1 : 0;
               } else {
-                occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+                occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
               }
 
             }
           } else {
             if (this.distinct) {
               if (isStruct) {
-                occurence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
+                occurrence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
               } else {
-                occurence = resultSet.add(values[0]) ? 1 : 0;
+                occurrence = resultSet.add(values[0]) ? 1 : 0;
               }
             } else {
               if (isStruct) {
-                occurence = ((Bag) resultSet).addAndGetOccurence(values);
+                occurrence = ((Bag) resultSet).addAndGetOccurence(values);
               } else {
                 boolean add = true;
                 if (context.isCqQueryContext()) {
@@ -1284,7 +1284,7 @@ public class CompiledSelect extends AbstractCompiledValue {
                   }
                 }
                 if (add) {
-                  occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+                  occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
                 }
               }
             }
@@ -1318,22 +1318,22 @@ public class CompiledSelect extends AbstractCompiledValue {
         if (distinct) {
           if (isStruct) {
             comparator.addEvaluatedSortCriteria(values, context);
-            // Occurence field is used to identify the corrcet number of
+            // Occurrence field is used to identify the corrcet number of
             // iterations
             // required to implement the limit based on the presence or absence
             // of distinct clause
-            occurence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
+            occurrence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
           } else {
             comparator.addEvaluatedSortCriteria(values[0], context);
-            occurence = resultSet.add(values[0]) ? 1 : 0;
+            occurrence = resultSet.add(values[0]) ? 1 : 0;
           }
         } else {
           if (isStruct) {
             comparator.addEvaluatedSortCriteria(values, context);
-            occurence = ((Bag) resultSet).addAndGetOccurence(values);
+            occurrence = ((Bag) resultSet).addAndGetOccurence(values);
           } else {
             comparator.addEvaluatedSortCriteria(values[0], context);
-            occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+            occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
           }
         }
       } else {
@@ -1341,36 +1341,36 @@ public class CompiledSelect extends AbstractCompiledValue {
           if (isStruct) {
             StructImpl structImpl = new StructImpl((StructTypeImpl) elementType, values);
             if (this.distinct) {
-              occurence = resultSet.add(structImpl) ? 1 : 0;
+              occurrence = resultSet.add(structImpl) ? 1 : 0;
             } else {
-              occurence = ((Bag) resultSet).addAndGetOccurence(structImpl);
+              occurrence = ((Bag) resultSet).addAndGetOccurence(structImpl);
             }
 
           } else {
             if (this.distinct) {
-              occurence = resultSet.add(values[0]) ? 1 : 0;
+              occurrence = resultSet.add(values[0]) ? 1 : 0;
             } else {
-              occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+              occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
             }
           }
         } else {
           if (this.distinct) {
             if (isStruct) {
-              occurence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
+              occurrence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
             } else {
-              occurence = resultSet.add(values[0]) ? 1 : 0;
+              occurrence = resultSet.add(values[0]) ? 1 : 0;
             }
           } else {
             if (isStruct) {
-              occurence = ((Bag) resultSet).addAndGetOccurence(values);
+              occurrence = ((Bag) resultSet).addAndGetOccurence(values);
             } else {
-              occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+              occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
             }
           }
         }
       }
     }
-    return occurence;
+    return occurrence;
   }
 
   private String generateProjectionName(CompiledValue projExpr, ExecutionContext context) {
@@ -1465,17 +1465,11 @@ public class CompiledSelect extends AbstractCompiledValue {
    *
    * It assumes the limit is either a CompiledBindArgument or a CompiledLiteral
    *
-   * @param bindArguments
    *
-   * @return
    *
-   * @throws FunctionDomainException
    *
-   * @throws TypeMismatchException
    *
-   * @throws NameResolutionException
    *
-   * @throws QueryInvocationTargetException
    */
   private Integer evaluateLimitValue(Object[] bindArguments) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {

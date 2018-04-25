@@ -22,13 +22,14 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test if exceptions are logged when thread is submitted using
  * {@code SingleHopClientExecutor#submitTask} method.
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class SingleHopClientExecutorSubmitTaskWithExceptionTest {
 
   @Rule

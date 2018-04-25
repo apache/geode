@@ -45,12 +45,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests for AcceptorImpl.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
 
   public AcceptorImplDUnitTest() {

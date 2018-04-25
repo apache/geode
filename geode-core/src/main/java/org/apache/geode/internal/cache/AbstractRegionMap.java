@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -53,18 +52,13 @@ import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
-import org.apache.geode.internal.cache.ha.HAContainerWrapper;
-import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.map.CacheModificationLock;
 import org.apache.geode.internal.cache.map.FocusedRegionMap;
 import org.apache.geode.internal.cache.map.RegionMapDestroy;
 import org.apache.geode.internal.cache.map.RegionMapPutContext;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.region.entry.RegionEntryFactoryBuilder;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
-import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
@@ -85,7 +79,6 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
-import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
@@ -635,6 +628,10 @@ public abstract class AbstractRegionMap
             tombstones.put(tag, newRe);
           } else {
             _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(newRe));
+            if (_getOwner() instanceof BucketRegionQueue) {
+              BucketRegionQueue brq = (BucketRegionQueue) _getOwner();
+              brq.incSecondaryQueueSize(1);
+            }
           }
           incEntryCount(1);
           lruEntryUpdate(newRe);
@@ -660,6 +657,10 @@ public abstract class AbstractRegionMap
         } else {
           _getOwner().updateSizeOnCreate(re.getKey(),
               _getOwner().calculateRegionEntryValueSize(re));
+          if (_getOwner() instanceof BucketRegionQueue) {
+            BucketRegionQueue brq = (BucketRegionQueue) _getOwner();
+            brq.incSecondaryQueueSize(1);
+          }
         }
       }
       incEntryCount(size());
@@ -821,73 +822,9 @@ public abstract class AbstractRegionMap
     }
 
     if (owner instanceof HARegion && newValue instanceof CachedDeserializable) {
-      Object actualVal = null;
-      CachedDeserializable newValueCd = (CachedDeserializable) newValue;
-      try {
-        actualVal = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
-            sender.getVersionObject(), null);
-        newValue = new VMCachedDeserializable(actualVal, newValueCd.getSizeInBytes());
-      } catch (IOException | ClassNotFoundException e) {
-        throw new RuntimeException("Unable to deserialize HA event for region " + owner);
-      }
-      if (actualVal instanceof HAEventWrapper) {
-        HAEventWrapper haEventWrapper = (HAEventWrapper) actualVal;
-        // Key was removed at sender side so not putting it into the HARegion
-        if (haEventWrapper.getClientUpdateMessage() == null) {
-          return false;
-        }
-        // Getting the instance from singleton CCN..This assumes only one bridge
-        // server in the VM
-        HAContainerWrapper haContainer =
-            (HAContainerWrapper) CacheClientNotifier.getInstance().getHaContainer();
-        if (haContainer == null) {
-          return false;
-        }
-        HAEventWrapper original = null;
-        // synchronized (haContainer) {
-        do {
-          ClientUpdateMessageImpl oldMsg = (ClientUpdateMessageImpl) haContainer
-              .putIfAbsent(haEventWrapper, haEventWrapper.getClientUpdateMessage());
-          if (oldMsg != null) {
-            original = (HAEventWrapper) haContainer.getKey(haEventWrapper);
-            if (original == null) {
-              continue;
-            }
-            synchronized (original) {
-              if ((HAEventWrapper) haContainer.getKey(original) != null) {
-                original.incAndGetReferenceCount();
-                HARegionQueue.addClientCQsAndInterestList(oldMsg, haEventWrapper, haContainer,
-                    owner.getName());
-                haEventWrapper.setClientUpdateMessage(null);
-                newValue = new VMCachedDeserializable(original, newValueCd.getSizeInBytes());
-              } else {
-                original = null;
-              }
-            }
-          } else { // putIfAbsent successful
-            synchronized (haEventWrapper) {
-              haEventWrapper.incAndGetReferenceCount();
-              haEventWrapper.setHAContainer(haContainer);
-              haEventWrapper.setClientUpdateMessage(null);
-              haEventWrapper.setIsRefFromHAContainer(true);
-            }
-            break;
-          }
-          // try until we either get a reference to HAEventWrapper from
-          // HAContainer or successfully put one into it.
-        } while (original == null);
-        /*
-         * entry = (Map.Entry)haContainer.getEntry(haEventWrapper); if (entry != null) { original =
-         * (HAEventWrapper)entry.getKey(); original.incAndGetReferenceCount(); } else {
-         * haEventWrapper.incAndGetReferenceCount(); haEventWrapper.setHAContainer(haContainer);
-         * haContainer.put(haEventWrapper, haEventWrapper .getClientUpdateMessage());
-         * haEventWrapper.setClientUpdateMessage(null);
-         * haEventWrapper.setIsRefFromHAContainer(true); } } if (entry != null) {
-         * HARegionQueue.addClientCQsAndInterestList(entry, haEventWrapper, haContainer,
-         * owner.getName()); haEventWrapper.setClientUpdateMessage(null); newValue =
-         * CachedDeserializableFactory.create(original,
-         * ((CachedDeserializable)newValue).getSizeInBytes()); }
-         */
+      newValue = ((HARegion) owner).updateHAEventWrapper(sender, (CachedDeserializable) newValue);
+      if (newValue == null) {
+        return false;
       }
     }
 
@@ -1043,6 +980,10 @@ public abstract class AbstractRegionMap
           } finally {
             if (done && result) {
               initialImagePutEntry(newRe);
+              if (owner instanceof BucketRegionQueue) {
+                BucketRegionQueue brq = (BucketRegionQueue) owner;
+                brq.addToEventQueue(key, done, event);
+              }
             }
             if (!done) {
               removeEntry(key, newRe, false);
@@ -2297,7 +2238,7 @@ public abstract class AbstractRegionMap
       } finally {
         OffHeapHelper.release(putInfo.getOldValueForDelta());
         putInfo.setOldValueForDelta(null);
-        if (!putInfo.isCompleted() && putInfo.isCreate()) {
+        if (putInfo.isCreate() && re.getValueAsToken() == Token.REMOVED_PHASE1) {
           // Region entry remove needs to be done while still synced on re.
           removeEntry(putInfo.getEvent().getKey(), re, false);
         }
@@ -2671,13 +2612,12 @@ public abstract class AbstractRegionMap
     EntryEventImpl cbEvent = null;
     boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady);
     boolean cbEventInPending = false;
-    cbEvent = createCBEvent(owner, putOp, key, newValue, txId, txEvent, eventId, aCallbackArgument,
-        filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
+    cbEvent = createCallBackEvent(owner, putOp, key, newValue, txId, txEvent, eventId,
+        aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("txApplyPut cbEvent={}", cbEvent);
       }
-
 
       if (owner.isUsedForPartitionedRegionBucket()) {
         newValue = EntryEventImpl.getCachedDeserializable(nv, cbEvent);
@@ -2702,90 +2642,9 @@ public abstract class AbstractRegionMap
           // are initialized.
           // Otherwise use the standard create/update logic
           if (!owner.isAllEvents() || (!putOp.isCreate() && isRegionReady)) {
-            // At this point we should only apply the update if the entry exists
-            RegionEntry re = getEntry(key); // Fix for bug 32347.
-            if (re != null) {
-              synchronized (re) {
-                if (!re.isRemoved()) {
-                  opCompleted = true;
-                  putOp = putOp.getCorrespondingUpdateOp();
-                  // Net writers are not called for received transaction data
-                  final int oldSize = owner.calculateRegionEntryValueSize(re);
-                  if (cbEvent != null) {
-                    cbEvent.setRegionEntry(re);
-                    cbEvent.setOldValue(re.getValueInVM(owner)); // OFFHEAP eei
-                  }
-
-                  boolean clearOccured = false;
-                  // Set RegionEntry updateInProgress
-                  if (owner.indexMaintenanceSynchronous) {
-                    re.setUpdateInProgress(true);
-                  }
-                  try {
-                    txRemoveOldIndexEntry(putOp, re);
-                    if (didDestroy) {
-                      re.txDidDestroy(owner.cacheTimeMillis());
-                    }
-                    if (txEvent != null) {
-                      txEvent.addPut(putOp, owner, re, re.getKey(), newValue, aCallbackArgument);
-                    }
-                    re.setValueResultOfSearch(putOp.isNetSearch());
-                    try {
-                      processAndGenerateTXVersionTag(owner, cbEvent, re, txEntryState);
-                      {
-                        re.setValue(owner,
-                            re.prepareValueForCache(owner, newValue, cbEvent, !putOp.isCreate()));
-                      }
-                      if (putOp.isCreate()) {
-                        owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(re));
-                      } else if (putOp.isUpdate()) {
-                        // Rahul : fix for 41694. Negative bucket size can also be
-                        // an issue with normal GFE Delta and will have to be fixed
-                        // in a similar manner and may be this fix the the one for
-                        // other delta can be combined.
-                        {
-                          owner.updateSizeOnPut(key, oldSize,
-                              owner.calculateRegionEntryValueSize(re));
-                        }
-                      }
-                    } catch (RegionClearedException rce) {
-                      clearOccured = true;
-                    }
-                    {
-                      long lastMod = owner.cacheTimeMillis();
-                      EntryLogger.logTXPut(_getOwnerObject(), key, nv);
-                      re.updateStatsForPut(lastMod, lastMod);
-                      owner.txApplyPutPart2(re, re.getKey(), lastMod, false, didDestroy,
-                          clearOccured);
-                    }
-                  } finally {
-                    if (re != null && owner.indexMaintenanceSynchronous) {
-                      re.setUpdateInProgress(false);
-                    }
-                  }
-                  if (invokeCallbacks) {
-                    cbEvent.makeUpdate();
-                    switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                    if (pendingCallbacks == null) {
-                      owner.invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, cbEvent,
-                          hasRemoteOrigin);
-                    } else {
-                      pendingCallbacks.add(cbEvent);
-                      cbEventInPending = true;
-                    }
-                  }
-                  if (!clearOccured) {
-                    lruEntryUpdate(re);
-                  }
-                }
-              }
-              if (didDestroy && !opCompleted) {
-                owner.txApplyInvalidatePart2(re, re.getKey(), true, false /* clear */);
-              }
-            }
-            if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
-              txEntryState.setVersionTag(cbEvent.getVersionTag());
-            }
+            cbEventInPending = applyTxUpdateOnReplicateOrRedundantCopy(key, nv, didDestroy, txEvent,
+                aCallbackArgument, pendingCallbacks, txEntryState, owner, putOp, newValue,
+                hasRemoteOrigin, cbEvent, invokeCallbacks, cbEventInPending, opCompleted);
             return;
           }
         }
@@ -2970,6 +2829,106 @@ public abstract class AbstractRegionMap
     }
   }
 
+  private boolean applyTxUpdateOnReplicateOrRedundantCopy(Object key, Object nv, boolean didDestroy,
+      TXRmtEvent txEvent, Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
+      TXEntryState txEntryState, LocalRegion owner, Operation putOp, Object newValue,
+      boolean hasRemoteOrigin, EntryEventImpl cbEvent, boolean invokeCallbacks,
+      boolean cbEventInPending, boolean opCompleted) {
+    // At this point we should only apply the update if the entry exists
+    RegionEntry re = getEntry(key); // Fix for bug 32347.
+    if (re != null) {
+      synchronized (re) {
+        if (!re.isRemoved()) {
+          opCompleted = true;
+          putOp = putOp.getCorrespondingUpdateOp();
+          // Net writers are not called for received transaction data
+          final int oldSize = owner.calculateRegionEntryValueSize(re);
+          if (cbEvent != null) {
+            cbEvent.setRegionEntry(re);
+            cbEvent.setOldValue(re.getValueInVM(owner)); // OFFHEAP eei
+          }
+
+          boolean clearOccured = false;
+          // Set RegionEntry updateInProgress
+          if (owner.indexMaintenanceSynchronous) {
+            re.setUpdateInProgress(true);
+          }
+          try {
+            txRemoveOldIndexEntry(putOp, re);
+            if (didDestroy) {
+              re.txDidDestroy(owner.cacheTimeMillis());
+            }
+            if (txEvent != null) {
+              txEvent.addPut(putOp, owner, re, re.getKey(), newValue, aCallbackArgument);
+            }
+            re.setValueResultOfSearch(putOp.isNetSearch());
+            try {
+              processAndGenerateTXVersionTag(owner, cbEvent, re, txEntryState);
+              {
+                re.setValue(owner,
+                    re.prepareValueForCache(owner, newValue, cbEvent, !putOp.isCreate()));
+              }
+              if (putOp.isCreate()) {
+                owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(re));
+              } else if (putOp.isUpdate()) {
+                // Rahul : fix for 41694. Negative bucket size can also be
+                // an issue with normal GFE Delta and will have to be fixed
+                // in a similar manner and may be this fix the the one for
+                // other delta can be combined.
+                {
+                  owner.updateSizeOnPut(key, oldSize, owner.calculateRegionEntryValueSize(re));
+                }
+              }
+            } catch (RegionClearedException rce) {
+              clearOccured = true;
+            }
+            {
+              long lastMod = owner.cacheTimeMillis();
+              EntryLogger.logTXPut(_getOwnerObject(), key, nv);
+              re.updateStatsForPut(lastMod, lastMod);
+              owner.txApplyPutPart2(re, re.getKey(), lastMod, false, didDestroy, clearOccured);
+            }
+          } finally {
+            if (re != null && owner.indexMaintenanceSynchronous) {
+              re.setUpdateInProgress(false);
+            }
+          }
+          if (invokeCallbacks) {
+            cbEventInPending = prepareUpdateCallbacks(pendingCallbacks, owner, hasRemoteOrigin,
+                cbEvent, cbEventInPending);
+          }
+          if (!clearOccured) {
+            lruEntryUpdate(re);
+          }
+        }
+      }
+      if (didDestroy && !opCompleted) {
+        owner.txApplyInvalidatePart2(re, re.getKey(), true, false /* clear */);
+      }
+    }
+    if (invokeCallbacks && !opCompleted) {
+      cbEvent.makeUpdate();
+      owner.invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, cbEvent, false);
+    }
+    if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
+      txEntryState.setVersionTag(cbEvent.getVersionTag());
+    }
+    return cbEventInPending;
+  }
+
+  private boolean prepareUpdateCallbacks(List<EntryEventImpl> pendingCallbacks, LocalRegion owner,
+      boolean hasRemoteOrigin, EntryEventImpl cbEvent, boolean cbEventInPending) {
+    cbEvent.makeUpdate();
+    switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
+    if (pendingCallbacks == null) {
+      owner.invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, cbEvent, hasRemoteOrigin);
+    } else {
+      pendingCallbacks.add(cbEvent);
+      cbEventInPending = true;
+    }
+    return cbEventInPending;
+  }
+
   private void txHandleWANEvent(final LocalRegion owner, EntryEventImpl cbEvent,
       TXEntryState txEntryState) {
     ((BucketRegion) owner).handleWANEvent(cbEvent);
@@ -3074,6 +3033,15 @@ public abstract class AbstractRegionMap
     }
     return (isPartitioned || isInitialized) && (lr.shouldDispatchListenerEvent()
         || lr.shouldNotifyBridgeClients() || lr.getConcurrencyChecksEnabled());
+  }
+
+  EntryEventImpl createCallBackEvent(final LocalRegion re, Operation op, Object key,
+      Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
+      Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      long tailKey) {
+    return createCBEvent(re, op, key, newValue, txId, txEvent, eventId, aCallbackArgument,
+        filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
   }
 
   /** create a callback event for applying a transactional change to the local cache */

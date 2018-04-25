@@ -22,6 +22,7 @@ import java.util.Set;
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 
+
 /**
  * Utility class to scan class-path & load classes.
  *
@@ -36,6 +37,14 @@ public class ClasspathScanLoadHelper {
 
     return classesImplementing.stream().filter(ClasspathScanLoadHelper::isInstantiable)
         .collect(toSet());
+  }
+
+  public static Set<Class<?>> scanClasspathForAnnotation(Class<?> annotation,
+      String... packagesToScan) {
+    Set<Class<?>> classesWithAnnotation = new HashSet<>();
+    new FastClasspathScanner(packagesToScan)
+        .matchClassesWithAnnotation(annotation, classesWithAnnotation::add).scan();
+    return classesWithAnnotation;
   }
 
   private static boolean isInstantiable(Class<?> klass) {

@@ -41,7 +41,7 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase {
   }
 
   /**
-   * This tests failing of a primary server in a situation where teh rest of the server are all
+   * This tests failing of a primary server in a situation where the rest of the server are all
    * redundant. After every failure, the order, the dispatcher, the interest registration and the
    * makePrimary calls are verified. The failure detection in these tests could be either through
    * CCU or cache operation, whichever occurs first
@@ -194,7 +194,7 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase {
   }
 
   /**
-   * This tests failing of a primary server in a situation where only one of the rest of teh servers
+   * This tests failing of a primary server in a situation where only one of the rest of the servers
    * is redundant. After every failure, the order, the dispatcher, the interest registration and the
    * makePrimary calls are verified. The failure detection in these tests could be either through
    * CCU or cache operation, whichever occurs first

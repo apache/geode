@@ -32,8 +32,9 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, RedisTest.class})
 public class HashesJUnitTest {
   private static Jedis jedis;
   private static GeodeRedisServer server;

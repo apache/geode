@@ -383,11 +383,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
   /**
    * Checks if key1 operator key2 is true or not. The operator could be =, != , <, >,<=,>=
    *
-   * @param key1
-   * @param key2
-   * @param operator
    * @return boolean true if the condition is satisfied else false
-   * @throws TypeMismatchException
    */
   private boolean isConditionSatisfied(Object key1, Object key2, int operator)
       throws TypeMismatchException {
@@ -406,7 +402,6 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * @param greaterCondnKey Key of the 'greater' condition operand
    * @param greaterCondnOp Type of 'greater' operator ( > or >=)
    * @return boolean true if the nature is bounded else false ( unbounded )
-   * @throws TypeMismatchException
    */
   private boolean checkForRangeBoundednessAndTrimNotEqualKeyset(Set notEqualKeys,
       Object lessCondnKey, int lessOperator, Object greaterCondnKey, int greaterCondnOp)
@@ -446,7 +441,6 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    *        inequality
    * @param indxInfo The IndexInfo object for this RangeJunction
    * @return Filter object of type CompiledComparison or RangeJunction.SingleCondnEvaluator object
-   * @throws TypeMismatchException
    */
   private Filter generateSingleCondnEvaluatorIfRequired(Set notEqualKeys, CompiledValue operand,
       int operator, Object condnKey, IndexInfo indxInfo) throws TypeMismatchException {
@@ -669,7 +663,6 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * Test function which retrieves the underlying Index for a NotEqualConditionEvaluator operator
    *
    * @param o Object of type NotEqualConditionEvaluator from which the index needs to be retrieved
-   * @return Index
    */
   static Index getIndex(Object o) {
     if (o instanceof NotEqualConditionEvaluator) {

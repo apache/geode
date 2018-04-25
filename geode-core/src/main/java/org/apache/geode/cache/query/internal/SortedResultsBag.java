@@ -44,7 +44,6 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
   /**
    * Constructor for unordered input
    *
-   * @param comparator
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
    *        order by column value need to be emitted at start, else if desc, then emit at last
    */
@@ -58,8 +57,6 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param elementType
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
    *        order by column value need to be emitted at start, else if desc, then emit at last
    */
@@ -74,9 +71,6 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param elementType
-   * @param stats
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
    *        order by column value need to be emitted at start, else if desc, then emit at last
    */
@@ -91,8 +85,6 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
   /**
    * Constructor for unordered input
    *
-   * @param comparator
-   * @param stats
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
    *        order by column value need to be emitted at start, else if desc, then emit at last
    */
@@ -106,7 +98,6 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
   /**
    * Constructor for ordered input. Creates underlying Map as LinkedHashMap
    *
-   * @param stats
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
    *        order by column value need to be emitted at start, else if desc, then emit at last
    */
@@ -133,7 +124,6 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
   /**
    * Constructor for ordered input. Creates underlying Map as LinkedHashMap
    *
-   * @param elementType
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
    *        order by column value need to be emitted at start, else if desc, then emit at last
    */

@@ -47,6 +47,9 @@ public class AlterMappingCommandTest {
   private List<CliFunctionResult> results;
   private CliFunctionResult result;
   private ClusterConfigurationService ccService;
+  private ConnectorService.RegionMapping mapping;
+  private List<ConnectorService.RegionMapping> mappings;
+  private ConnectorService connectorService;
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
@@ -63,6 +66,10 @@ public class AlterMappingCommandTest {
     when(result.getStatus()).thenReturn("message");
     ccService = mock(InternalClusterConfigurationService.class);
     doReturn(ccService).when(command).getConfigurationService();
+    connectorService = mock(ConnectorService.class);
+    mappings = new ArrayList<>();
+    mapping = new ConnectorService.RegionMapping();
+    mapping.setRegionName("region");
   }
 
   @Test
@@ -123,11 +130,9 @@ public class AlterMappingCommandTest {
   @Test
   public void noSuccessfulResult() {
     // mapping found in CC
-    ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
-    when(ccService.findIdentifiable(any(), any()))
-        .thenReturn(mock(ConnectorService.RegionMapping.class));
-
+    when(connectorService.getRegionMapping()).thenReturn(mappings);
+    mappings.add(mapping);
     // result is not successful
     when(result.isSuccessful()).thenReturn(false);
     results.add(result);
@@ -139,10 +144,9 @@ public class AlterMappingCommandTest {
   @Test
   public void successfulResult() {
     // mapping found in CC
-    ConnectorService connectorService = mock(ConnectorService.class);
     when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
-    when(ccService.findIdentifiable(any(), any()))
-        .thenReturn(mock(ConnectorService.RegionMapping.class));
+    when(connectorService.getRegionMapping()).thenReturn(mappings);
+    mappings.add(mapping);
 
     // result is not successful
     when(result.isSuccessful()).thenReturn(true);
