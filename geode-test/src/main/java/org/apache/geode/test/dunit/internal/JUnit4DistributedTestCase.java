@@ -43,11 +43,6 @@ import org.junit.Rule;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.QueryTestUtils;
-import org.apache.geode.cache.query.internal.QueryObserverHolder;
-import org.apache.geode.cache30.ClientServerTestCase;
-import org.apache.geode.cache30.MultiVMRegionTestCase;
-import org.apache.geode.cache30.RegionTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
