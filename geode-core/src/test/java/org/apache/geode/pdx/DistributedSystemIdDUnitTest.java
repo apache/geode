@@ -141,8 +141,8 @@ public class DistributedSystemIdDUnitTest extends JUnit4DistributedTestCase {
 
     SerializableCallable createSystem = new SerializableCallable() {
       public Object call() throws Exception {
-        ClusterDistributionManager dm = (ClusterDistributionManager) InternalDistributedSystem
-            .getAnyInstance().getDistributionManager();
+        ClusterDistributionManager dm =
+            (ClusterDistributionManager) basicGetSystem().getDistributionManager();
         assertEquals(dsId, dm.getDistributedSystemId());
         return null;
       }
