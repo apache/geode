@@ -32,6 +32,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
@@ -50,6 +51,7 @@ public class AlterConnectionCommandTest {
   private ConnectorService.Connection connection;
   private List<ConnectorService.Connection> connections;
   private ConnectorService connectorService;
+  private CacheConfig cacheConfig;
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
@@ -65,6 +67,8 @@ public class AlterConnectionCommandTest {
     when(result.getMemberIdOrName()).thenReturn("memberName");
     when(result.getStatus()).thenReturn("message");
     ccService = mock(InternalClusterConfigurationService.class);
+    cacheConfig = mock(CacheConfig.class);
+    when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
     doReturn(ccService).when(command).getConfigurationService();
     connectorService = mock(ConnectorService.class);
     connections = new ArrayList<>();
@@ -113,7 +117,7 @@ public class AlterConnectionCommandTest {
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectionFound() {
-    when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
+    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("connection with name 'name' does not exist.");
     verify(command, times(0)).executeAndGetFunctionResult(any(), any(), any());
@@ -122,7 +126,7 @@ public class AlterConnectionCommandTest {
   @Test
   public void noSuccessfulResult() {
     // connection found in CC
-    when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
+    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
     when(connectorService.getConnection()).thenReturn(connections);
     connections.add(connection);
     // result is not successful
@@ -136,7 +140,7 @@ public class AlterConnectionCommandTest {
   @Test
   public void successfulResult() {
     // connection found in CC
-    when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
+    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
     when(connectorService.getConnection()).thenReturn(connections);
     connections.add(connection);
 

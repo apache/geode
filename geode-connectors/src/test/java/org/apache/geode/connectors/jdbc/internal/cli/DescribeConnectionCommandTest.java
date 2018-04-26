@@ -29,6 +29,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
@@ -42,6 +43,7 @@ public class DescribeConnectionCommandTest {
   public static final String COMMAND = "describe jdbc-connection --name=name";
   private DescribeConnectionCommand command;
   private ClusterConfigurationService ccService;
+  private CacheConfig cacheConfig;
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
@@ -50,6 +52,9 @@ public class DescribeConnectionCommandTest {
   public void setUp() {
     command = spy(DescribeConnectionCommand.class);
     ccService = mock(InternalClusterConfigurationService.class);
+    doReturn(ccService).when(command).getConfigurationService();
+    cacheConfig = mock(CacheConfig.class);
+    when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
   }
 
   @Test
@@ -70,7 +75,7 @@ public class DescribeConnectionCommandTest {
     doReturn(ccService).when(command).getConfigurationService();
 
     ConnectorService connectorService = mock(ConnectorService.class);
-    when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
+    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("connection named 'name' not found");
   }
@@ -86,7 +91,7 @@ public class DescribeConnectionCommandTest {
     connections.add(connection);
 
     ConnectorService connectorService = mock(ConnectorService.class);
-    when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
+    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
     when(connectorService.getConnection()).thenReturn(connections);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("name", "name")
