@@ -20,6 +20,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.admin.ThreadMonitoring;
+import org.apache.geode.admin.internal.ThreadMonitoringProvider;
+
 /**
  * A decorator for a ScheduledExecutorService which tries to make sure that there is only one task
  * in the queue for the executor service that has been submitted through this decorator.
@@ -131,7 +134,12 @@ public class OneTaskOnlyExecutor {
       synchronized (OneTaskOnlyExecutor.this) {
         future = null;
       }
-      runnable.run();
+      beforeExecute();
+      try {
+        runnable.run();
+      } finally {
+        afterExecute();
+      }
     }
   }
 
@@ -158,5 +166,13 @@ public class OneTaskOnlyExecutor {
     public void taskDropped() {
 
     }
+  }
+
+  protected void beforeExecute() {
+    ThreadMonitoringProvider.getInstance().startMonitor(ThreadMonitoring.Mode.OneTaskOnlyEx);
+  }
+
+  protected void afterExecute() {
+    ThreadMonitoringProvider.getInstance().endMonitor();
   }
 }

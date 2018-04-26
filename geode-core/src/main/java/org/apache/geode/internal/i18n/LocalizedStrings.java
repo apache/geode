@@ -7714,6 +7714,22 @@ public class LocalizedStrings {
   public static final StringId PoolImpl_CACHE_MUST_BE_CREATED_BEFORE_CREATING_POOL =
       new StringId(6666, "Cache must be created before creating pool");
 
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_INTERVAL = new StringId(
+      6667,
+      "Defines the time interval (in milliseconds) with which thread monitoring is scheduled to run.");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_ENABLED =
+      new StringId(6668, "Defines whether thread monitoring is to be enabled.");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_TIME_LIMIT = new StringId(
+      6669,
+      "Defines the time period (in milliseconds) after which the monitored thread is considered to be stuck.");
+  public static final StringId THREAD_MONITOR_NAME = new StringId(6670, "ThreadsMonitor");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_AUTO_ENABLED =
+      new StringId(6671,
+          "Defines whether thread monitoring is expected to automatically kill stuck thread.");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_AUTO_LIMIT = new StringId(
+      6672,
+      "Defines the number of thread monitoring attempts after which the stuck thread will be automatically killed (only applicable when <thread-monitor-auto-enabled> is set to Y).");
+
   /** Testing strings, messageId 90000-99999 **/
 
   /**

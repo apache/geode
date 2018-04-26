@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.concurrent.*;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.ThreadMonitoring;
+import org.apache.geode.admin.internal.ThreadMonitoringProvider;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -155,6 +157,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
     if (this.stats != null) {
       this.stats.startJob();
     }
+    ThreadMonitoringProvider.getInstance().startMonitor(ThreadMonitoring.Mode.PooledEx);
   }
 
   @Override
@@ -162,6 +165,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
     if (this.stats != null) {
       this.stats.endJob();
     }
+    ThreadMonitoringProvider.getInstance().endMonitor();
   }
 
   private static int getCorePoolSize(int maxSize) {

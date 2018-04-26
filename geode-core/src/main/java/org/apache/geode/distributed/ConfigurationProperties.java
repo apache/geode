@@ -2097,4 +2097,68 @@ public interface ConfigurationProperties {
    *
    */
   String SERIALIZABLE_OBJECT_FILTER = "serializable-object-filter";
+  /**
+   * The static String definition of the <i>"thread-monitor-enabled"</i> property <a
+   * name="thread-monitor-enabled"/a>
+   * <p>
+   * <U>Description</U>: Defines whether thread monitoring is to be enabled.
+   * <p>
+   * <U>Default</U>: "true"
+   * <p>
+   * <U>Allowed values</U>: false/true
+   * <p>
+   * <U>Since</U>: Geode 1.5
+   */
+  String THREAD_MONITOR_ENABLED = "thread-monitor-enabled";
+  /**
+   * The static String definition of the <i>"thread-monitor-interval-ms"</i> property <a
+   * name="thread-monitor-interval-ms"/a>
+   * <p>
+   * <U>Description</U>: Defines the time interval (in milliseconds) with which thread monitoring is
+   * scheduled to run.
+   * <p>
+   * <U>Default</U>: "60000"
+   * <p>
+   * <U>Since</U>: Geode 1.5
+   */
+  String THREAD_MONITOR_INTERVAL = "thread-monitor-interval-ms";
+  /**
+   * The static String definition of the <i>"thread-monitor-time-limit-ms"</i> property <a
+   * name="thread-monitor-time-limit-ms"/a>
+   * <p>
+   * <U>Description</U>: Defines the time period (in milliseconds) after which the monitored thread
+   * is considered to be stuck.
+   * <p>
+   * <U>Default</U>: "30000"
+   * <p>
+   * <U>Since</U>: Geode 1.5
+   */
+  String THREAD_MONITOR_TIME_LIMIT = "thread-monitor-time-limit-ms";
+  /**
+   * The static String definition of the <i>"thread-monitor-auto-enabled"</i> property <a
+   * name="thread-monitor-auto-enabled"/a>
+   * <p>
+   * <U>Description</U>: Defines whether thread monitoring is expected to automatically kill stuck
+   * thread.
+   * <p>
+   * <U>Default</U>: "false"
+   * <p>
+   * <U>Allowed values</U>: false/true
+   * <p>
+   * <U>Since</U>: Geode 1.5
+   */
+  String THREAD_MONITOR_AUTO_ENABLED = "thread-monitor-auto-enabled";
+  /**
+   * The static String definition of the <i>"thread-monitor-auto-limit"</i> property <a
+   * name="thread-monitor-auto-limit"/a>
+   * <p>
+   * <U>Description</U>: Defines the number of thread monitoring attempts after which the stuck
+   * thread will be automatically killed (only applicable when <thread-monitor-auto-enabled> is set
+   * to Y).
+   * <p>
+   * <U>Default</U>: "30000"
+   * <p>
+   * <U>Since</U>: Geode 1.5
+   */
+  String THREAD_MONITOR_AUTO_LIMIT = "thread-monitor-auto-limit";
 }

@@ -927,6 +927,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
           }
           this.gfManagerAgent.removeJoinLeaveListener(this);
           this.gfManagerAgent.disconnect();
+          ThreadMonitoringProvider.getInstance().close();
         }
         this.gfManagerAgent = null;
         if (this.config instanceof DistributedSystemConfigImpl) {

@@ -29,6 +29,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.admin.ThreadMonitoring;
+import org.apache.geode.admin.internal.ThreadMonitoringProvider;
+
 /**
  * A ScheduledThreadPoolExecutor which allows threads to time out after the keep alive time. With
  * the normal ScheduledThreadPoolExecutor, there is no way to configure it such that it only add
@@ -64,6 +67,16 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
   @Override
   public void execute(Runnable command) {
     timer.execute(new HandOffTask(command));
+  }
+
+  @Override
+  protected void beforeExecute(Thread t, Runnable r) {
+    ThreadMonitoringProvider.getInstance().startMonitor(ThreadMonitoring.Mode.ScheduledThreadEx);
+  }
+
+  @Override
+  protected void afterExecute(Runnable r, Throwable ex) {
+    ThreadMonitoringProvider.getInstance().endMonitor();
   }
 
   @Override

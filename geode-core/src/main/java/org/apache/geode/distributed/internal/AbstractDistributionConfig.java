@@ -1225,6 +1225,17 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "If true checks incoming java serializable objects against a filter");
     m.put(SERIALIZABLE_OBJECT_FILTER, "The filter to check incoming java serializables against");
 
+    m.put(THREAD_MONITOR_INTERVAL,
+        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_INTERVAL.toLocalizedString());
+    m.put(THREAD_MONITOR_ENABLED,
+        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_ENABLED.toLocalizedString());
+    m.put(THREAD_MONITOR_TIME_LIMIT,
+        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_TIME_LIMIT.toLocalizedString());
+    m.put(THREAD_MONITOR_AUTO_ENABLED,
+        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_AUTO_ENABLED
+            .toLocalizedString());
+    m.put(THREAD_MONITOR_AUTO_LIMIT,
+        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_AUTO_LIMIT.toLocalizedString());
     dcAttDescriptions = Collections.unmodifiableMap(m);
 
   }
