@@ -36,7 +36,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunction;
@@ -51,7 +51,7 @@ public class DestroyAsyncEventQueueCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private DestroyAsyncEventQueueCommand command;
-  private InternalClusterConfigurationService service;
+  private InternalConfigurationPersistenceService service;
   private Map<String, Configuration> configurationMap;
   private DistributedMember member1 = mock(DistributedMember.class);
   private DistributedMember member2 = mock(DistributedMember.class);

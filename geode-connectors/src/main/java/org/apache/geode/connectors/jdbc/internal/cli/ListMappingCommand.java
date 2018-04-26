@@ -14,7 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.distributed.ClusterConfigurationService.CLUSTER_CONFIG;
+import static org.apache.geode.distributed.ConfigurationPersistenceService.CLUSTER_CONFIG;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,7 +24,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
@@ -53,7 +53,7 @@ public class ListMappingCommand extends GfshCommand {
     Collection<ConnectorService.RegionMapping> mappings = null;
 
     // check if CC is available and use it to describe the connection
-    ClusterConfigurationService ccService = getConfigurationService();
+    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
     if (ccService != null) {
       CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
       if (cacheConfig != null) {

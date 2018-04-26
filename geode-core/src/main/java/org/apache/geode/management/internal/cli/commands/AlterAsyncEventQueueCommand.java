@@ -34,7 +34,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
@@ -85,8 +85,8 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
 
     // need not check if any running servers has this async-event-queue. A server with this queue id
     // may be shutdown, but we still need to update Cluster Configuration.
-    InternalClusterConfigurationService service =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService service =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
 
     if (service == null) {
       return ResultBuilder.createUserErrorResult("Cluster Configuration Service is not available. "

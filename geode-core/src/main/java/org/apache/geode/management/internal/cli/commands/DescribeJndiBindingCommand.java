@@ -24,7 +24,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -51,8 +51,8 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
     Result result = null;
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
 
-    InternalClusterConfigurationService ccService =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService ccService =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
     if (ccService != null) {
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       if (cacheConfig == null) {

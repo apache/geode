@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
@@ -54,18 +54,18 @@ public class CreateGatewaySenderCommandTest {
   private CreateGatewaySenderCommand command;
   private InternalCache cache;
   private List<CliFunctionResult> functionResults;
-  private InternalClusterConfigurationService ccService;
+  private InternalConfigurationPersistenceService ccService;
   private CliFunctionResult result1, result2;
   private XmlEntity xmlEntity;
 
   @Before
   public void before() {
     command = spy(CreateGatewaySenderCommand.class);
-    ccService = mock(InternalClusterConfigurationService.class);
+    ccService = mock(InternalConfigurationPersistenceService.class);
     xmlEntity = mock(XmlEntity.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     functionResults = new ArrayList<>();
     doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(),
         any(Set.class));
@@ -119,7 +119,7 @@ public class CreateGatewaySenderCommandTest {
   @Test
   public void whenNoCCService() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", xmlEntity, "result1");
     functionResults.add(result1);
     gfsh.executeAndAssertThat(command,
@@ -131,7 +131,7 @@ public class CreateGatewaySenderCommandTest {
   @Test
   public void whenCommandOnMember() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", xmlEntity, "result1");
     functionResults.add(result1);
     gfsh.executeAndAssertThat(command,
@@ -143,7 +143,7 @@ public class CreateGatewaySenderCommandTest {
   @Test
   public void whenNoXml() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", false, "result1");
     functionResults.add(result1);
 

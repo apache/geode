@@ -27,7 +27,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -54,8 +54,8 @@ public class CreateIndexCommandDUnitTest {
 
     // when locator started, the cacheConfig is null
     locator.invoke(() -> {
-      CacheConfig cacheConfig =
-          ClusterStartupRule.getLocator().getSharedConfiguration().getCacheConfig("cluster");
+      CacheConfig cacheConfig = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+          .getCacheConfig("cluster");
       assertThat(cacheConfig).isNull();
     });
   }
@@ -66,8 +66,8 @@ public class CreateIndexCommandDUnitTest {
         .statusIsError().containsOutput("ERROR: Region not found : \"/noExist\"");
 
     locator.invoke(() -> {
-      InternalClusterConfigurationService configurationService =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService configurationService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       CacheConfig cacheConfig = configurationService.getCacheConfig("cluster");
       assertThat(cacheConfig.findRegionConfiguration("noExist")).isNull();
     });
@@ -84,8 +84,8 @@ public class CreateIndexCommandDUnitTest {
 
     // no region exists in cluster config
     locator.invoke(() -> {
-      InternalClusterConfigurationService configurationService =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService configurationService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       CacheConfig cacheConfig = configurationService.getCacheConfig("cluster");
       assertThat(cacheConfig.findRegionConfiguration("regionA")).isNull();
     });
@@ -95,8 +95,8 @@ public class CreateIndexCommandDUnitTest {
 
     // after index is created, the cluster config is not udpated with regionA or index
     locator.invoke(() -> {
-      InternalClusterConfigurationService configurationService =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService configurationService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       assertThat(configurationService.getCacheConfig("cluster").findRegionConfiguration("regionA"))
           .isNull();
     });
@@ -107,8 +107,8 @@ public class CreateIndexCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=regionB --type=REPLICATE").statusIsSuccess();
     locator.waitTillRegionsAreReadyOnServers("/regionB", 1);
     locator.invoke(() -> {
-      InternalClusterConfigurationService configurationService =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService configurationService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       assertThat(configurationService.getConfiguration("cluster").getCacheXmlContent())
           .contains("<region name=\"regionB\">");
     });
@@ -117,8 +117,8 @@ public class CreateIndexCommandDUnitTest {
         .statusIsSuccess();
 
     locator.invoke(() -> {
-      InternalClusterConfigurationService configurationService =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService configurationService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       assertThat(configurationService.getConfiguration("cluster").getCacheXmlContent())
           .contains("<region name=\"regionB\">").contains("<index").contains("expression=\"id\" ")
           .contains("from-clause=\"/regionB\"").contains("name=\"myIndex\"")

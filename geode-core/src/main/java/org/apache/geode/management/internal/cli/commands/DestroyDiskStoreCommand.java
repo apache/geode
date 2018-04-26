@@ -22,7 +22,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -65,7 +65,7 @@ public class DestroyDiskStoreCommand extends InternalGfshCommand {
 
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> ((InternalClusterConfigurationService) getConfigurationService())
+          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
               .deleteXmlEntity(xmlEntity, groups));
     }
 

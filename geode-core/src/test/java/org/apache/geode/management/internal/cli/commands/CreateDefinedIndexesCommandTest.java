@@ -40,7 +40,7 @@ import org.mockito.Mockito;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -86,10 +86,10 @@ public class CreateDefinedIndexesCommandTest {
   public void creationFailure() throws Exception {
     DistributedMember member = mock(DistributedMember.class);
     when(member.getId()).thenReturn("memberId");
-    InternalClusterConfigurationService mockService =
-        mock(InternalClusterConfigurationService.class);
+    InternalConfigurationPersistenceService mockService =
+        mock(InternalConfigurationPersistenceService.class);
 
-    doReturn(mockService).when(command).getConfigurationService();
+    doReturn(mockService).when(command).getConfigurationPersistenceService();
     doReturn(Collections.singleton(member)).when(command).findMembers(any(), any());
     doReturn(Arrays.asList(new CliFunctionResult(member.getId(), new Exception("MockException"),
         "Exception Message."))).when(resultCollector).getResult();
@@ -107,10 +107,10 @@ public class CreateDefinedIndexesCommandTest {
     XmlEntity xmlEntity = mock(XmlEntity.class);
     DistributedMember member = mock(DistributedMember.class);
     when(member.getId()).thenReturn("memberId");
-    InternalClusterConfigurationService mockService =
-        mock(InternalClusterConfigurationService.class);
+    InternalConfigurationPersistenceService mockService =
+        mock(InternalConfigurationPersistenceService.class);
 
-    doReturn(mockService).when(command).getConfigurationService();
+    doReturn(mockService).when(command).getConfigurationPersistenceService();
     doReturn(Collections.singleton(member)).when(command).findMembers(any(), any());
     doReturn(Arrays.asList(new CliFunctionResult(member.getId(), xmlEntity))).when(resultCollector)
         .getResult();
@@ -134,8 +134,8 @@ public class CreateDefinedIndexesCommandTest {
     when(member1.getId()).thenReturn("memberId_1");
     when(member2.getId()).thenReturn("memberId_2");
 
-    InternalClusterConfigurationService mockService =
-        mock(InternalClusterConfigurationService.class);
+    InternalConfigurationPersistenceService mockService =
+        mock(InternalConfigurationPersistenceService.class);
     CliFunctionResult member1Region1Result =
         new CliFunctionResult(member1.getId(), xmlEntityRegion1);
     CliFunctionResult member1Region2Result =
@@ -145,7 +145,7 @@ public class CreateDefinedIndexesCommandTest {
     CliFunctionResult member2Region2Result =
         new CliFunctionResult(member2.getId(), xmlEntityRegion2);
 
-    doReturn(mockService).when(command).getConfigurationService();
+    doReturn(mockService).when(command).getConfigurationPersistenceService();
     doReturn(new HashSet<>(Arrays.asList(new DistributedMember[] {member1, member2}))).when(command)
         .findMembers(any(), any());
     doReturn(Arrays.asList(new CliFunctionResult[] {member1Region1Result, member1Region2Result,

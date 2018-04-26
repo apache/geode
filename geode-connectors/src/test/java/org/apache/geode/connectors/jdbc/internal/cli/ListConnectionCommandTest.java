@@ -32,9 +32,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -43,7 +43,7 @@ import org.apache.geode.test.junit.rules.GfshParserRule;
 public class ListConnectionCommandTest {
   public static final String COMMAND = "list jdbc-connections ";
   private ListConnectionCommand command;
-  private ClusterConfigurationService ccService;
+  private ConfigurationPersistenceService ccService;
   private CacheConfig cacheConfig;
 
   @ClassRule
@@ -52,15 +52,15 @@ public class ListConnectionCommandTest {
   @Before
   public void setUp() {
     command = spy(ListConnectionCommand.class);
-    ccService = mock(InternalClusterConfigurationService.class);
-    doReturn(ccService).when(command).getConfigurationService();
+    ccService = mock(InternalConfigurationPersistenceService.class);
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     cacheConfig = mock(CacheConfig.class);
     when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
   }
 
   @Test
   public void whenCCServiceIsNotAvailable() {
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOutput("No connections found");
@@ -68,14 +68,14 @@ public class ListConnectionCommandTest {
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOutput("No connections found");
   }
 
   @Test
   public void whenCCServiceIsRunningAndNoConnectionFound() {
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
 
     ConnectorService connectorService = mock(ConnectorService.class);
     when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
@@ -85,7 +85,7 @@ public class ListConnectionCommandTest {
 
   @Test
   public void whenCCIsAvailable() {
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
 
     // connections found in CC
     ConnectorService.Connection connection1 = new ConnectorService.Connection("name1", "url1",
@@ -108,7 +108,7 @@ public class ListConnectionCommandTest {
 
   @Test
   public void whenCCIsNotAvailableAndNoMemberExists() {
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(Collections.emptySet()).when(command).findMembers(null, null);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
@@ -117,7 +117,7 @@ public class ListConnectionCommandTest {
 
   @Test
   public void whenCCIsNotAvailableAndMemberExists() {
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
         null);
 
@@ -139,7 +139,7 @@ public class ListConnectionCommandTest {
 
   @Test
   public void whenCCIsNotAvailableAndNoConnectionFoundOnMember() {
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
         null);
 
