@@ -2047,8 +2047,9 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
-      boolean requireOldValue, long lastModified, boolean overwriteDestroyed)
+  public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+                            Object expectedOldValue,
+                            boolean requireOldValue, long lastModified, boolean overwriteDestroyed)
       throws TimeoutException, CacheWriterException {
     final long startTime = PartitionedRegionStats.startTime();
     boolean result = false;
@@ -5136,7 +5137,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
+  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
       final Object expectedOldValue)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
 

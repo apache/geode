@@ -45,6 +45,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
@@ -144,8 +145,8 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
    * @return the InvalidateResponse processor used to await the potential
    *         {@link org.apache.geode.cache.CacheException}
    */
-  public static InvalidateResponse send(DistributedMember recipient, LocalRegion r,
-      EntryEventImpl event, boolean useOriginRemote, boolean possibleDuplicate)
+  public static InvalidateResponse send(DistributedMember recipient, InternalRegion r,
+                                        EntryEventImpl event, boolean useOriginRemote, boolean possibleDuplicate)
       throws RemoteOperationException {
     InvalidateResponse p = new InvalidateResponse(r.getSystem(), recipient, event.getKey());
     RemoteInvalidateMessage m = new RemoteInvalidateMessage(recipient, r.getFullPath(), p, event,
@@ -230,12 +231,12 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
   @Override
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, long startTime) {
+                           ReplyException ex, InternalRegion r, long startTime) {
     sendReply(member, procId, dm, ex, r, null, startTime);
   }
 
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, VersionTag<?> versionTag, long startTime) {
+                           ReplyException ex, InternalRegion r, VersionTag<?> versionTag, long startTime) {
     InvalidateReplyMessage.send(member, procId, getReplySender(dm), versionTag, ex);
   }
 

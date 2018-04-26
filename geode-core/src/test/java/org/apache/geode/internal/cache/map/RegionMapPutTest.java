@@ -18,8 +18,10 @@ package org.apache.geode.internal.cache.map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,40 +31,70 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.AbstractRegionMapTest;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EntryEventSerialization;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionEntryFactory;
+import org.apache.geode.internal.cache.Token;
 
 public class RegionMapPutTest {
-/*
+
+  private InternalRegion internalRegion;
+  private FocusedRegionMap focusedRegionMap;
+  private CacheModificationLock cacheModificationLock;
+  private EntryEventSerialization entryEventSerialization;
+  private RegionEntry regionEntry;
+
+  @Before
+  public void setup() {
+    this.internalRegion = mock(InternalRegion.class);
+    this.focusedRegionMap = mock(FocusedRegionMap.class);
+    this.cacheModificationLock = mock(CacheModificationLock.class);
+    this.entryEventSerialization = mock(EntryEventSerialization.class);
+    this.regionEntry = mock(RegionEntry.class);
+
+    RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
+
+    when(internalRegion.getScope()).thenReturn(Scope.LOCAL);
+    when(internalRegion.isInitialized()).thenReturn(true);
+    when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
+    when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(regionEntry);
+    when(regionEntry.getValueAsToken()).thenReturn(Token.REMOVED_PHASE1);
+  }
+
   @Test
   public void createOnEmptyMapAddsEntry() {
-    final AbstractRegionMapTest.TestableAbstractRegionMap
-        arm = new AbstractRegionMapTest.TestableAbstractRegionMap();
-    final EntryEventImpl event = createEventForCreate(arm._getOwner(), "key");
+
+    final EntryEventImpl event = createEventForCreate(internalRegion, "key");
     event.setNewValue("value");
     final boolean ifNew = true;
     final boolean ifOld = false;
     final boolean requireOldValue = false;
     final Object expectedOldValue = null;
+    final boolean overwriteDestroyed = false;
+    RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, internalRegion, cacheModificationLock,
+        entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed, requireOldValue, expectedOldValue);
 
-    RegionEntry result =
-        arm.basicPut(event, 0L, ifNew, ifOld, expectedOldValue, requireOldValue, false);
+    RegionEntry result = regionMapPut.put();
 
-    assertThat(result).isNotNull();
-    assertThat(result.getKey()).isEqualTo("key");
-    assertThat(result.getValue()).isEqualTo("value");
-    verify(arm._getOwner(), times(1)).basicPutPart2(eq(event), eq(result), eq(true), anyLong(),
+    assertThat(result).isSameAs(regionEntry);
+    verify(internalRegion, times(1)).basicPutPart2(eq(event), eq(result), eq(true), anyLong(),
         eq(false));
-    verify(arm._getOwner(), times(1)).basicPutPart3(eq(event), eq(result), eq(true), anyLong(),
+    verify(internalRegion, times(1)).basicPutPart3(eq(event), eq(result), eq(true), anyLong(),
         eq(true), eq(ifNew), eq(ifOld), eq(expectedOldValue), eq(requireOldValue));
   }
 
+  /*
   @Test
   public void verifyConcurrentCreateHasCorrectResult() throws Exception {
     CountDownLatch firstCreateAddedUninitializedEntry = new CountDownLatch(1);
@@ -91,14 +123,17 @@ public class RegionMapPutTest {
     assertThat(resultFromOtherThread).isNotNull();
     assertThat(resultFromOtherThread.getKey()).isSameAs(key1);
   }
+  */
 
-  private EntryEventImpl createEventForCreate(LocalRegion lr, String key) {
+  private EntryEventImpl createEventForCreate(InternalRegion lr, String key) {
     when(lr.getKeyInfo(key)).thenReturn(new KeyInfo(key, null, null));
     EntryEventImpl event =
         EntryEventImpl.create(lr, Operation.CREATE, key, false, null, true, false);
     event.setNewValue("create_value");
     return event;
   }
+
+  /*
 
   private Future<RegionEntry> doFirstCreateInAnotherThread(TestableBasicPutMap arm, String key) {
     Future<RegionEntry> result = CompletableFuture.supplyAsync(() -> {
@@ -107,6 +142,7 @@ public class RegionMapPutTest {
     });
     return result;
   }
+
 
   private static class TestableBasicPutMap extends AbstractRegionMapTest.TestableAbstractRegionMap {
     private final CountDownLatch firstCreateAddedUninitializedEntry;
@@ -144,5 +180,5 @@ public class RegionMapPutTest {
       }
     }
   }
-*/
+  */
 }

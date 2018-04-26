@@ -166,7 +166,7 @@ public class PeerTXStateStub extends TXStateStub {
   }
 
   @Override
-  protected TXRegionStub generateRegionStub(LocalRegion region) {
+  protected TXRegionStub generateRegionStub(InternalRegion region) {
     TXRegionStub stub = null;
     if (region.getPartitionAttributes() != null) {
       // a partitioned region
@@ -185,7 +185,7 @@ public class PeerTXStateStub extends TXStateStub {
   }
 
   @Override
-  protected void validateRegionCanJoinTransaction(LocalRegion region) throws TransactionException {
+  protected void validateRegionCanJoinTransaction(InternalRegion region) throws TransactionException {
     /*
      * Ok is this region legit to enter into tx?
      */

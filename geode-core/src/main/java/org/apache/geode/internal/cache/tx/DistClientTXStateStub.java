@@ -26,6 +26,7 @@ import org.apache.geode.internal.cache.DistTXCoordinatorInterface;
 import org.apache.geode.internal.cache.DistTXPrecommitMessage;
 import org.apache.geode.internal.cache.DistTXRollbackMessage;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -33,7 +34,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 public class DistClientTXStateStub extends ClientTXStateStub implements DistTXCoordinatorInterface {
 
   public DistClientTXStateStub(InternalCache cache, DistributionManager dm, TXStateProxy stateProxy,
-      DistributedMember target, LocalRegion firstRegion) {
+                               DistributedMember target, InternalRegion firstRegion) {
     super(cache, dm, stateProxy, target, firstRegion);
   }
 
@@ -92,8 +93,8 @@ public class DistClientTXStateStub extends ClientTXStateStub implements DistTXCo
   }
 
   @Override
-  public void gatherAffectedRegions(HashSet<LocalRegion> regionSet, boolean includePrimaryRegions,
-      boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException {
+  public void gatherAffectedRegions(HashSet<InternalRegion> regionSet, boolean includePrimaryRegions,
+                                    boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
             .toLocalizedString("gatherAffectedRegions"));

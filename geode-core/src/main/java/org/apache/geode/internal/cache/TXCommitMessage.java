@@ -189,7 +189,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     return map.waitForMessage(id, dm);
   }
 
-  void startRegion(LocalRegion r, int maxSize) {
+  void startRegion(InternalRegion r, int maxSize) {
     this.currentRegion = new RegionCommit(this, r, maxSize);
     if (r.requiresReliabilityCheck()) {
       this.hasReliableRegions = true;
@@ -252,7 +252,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     this.currentRegion = null;
   }
 
-  private Map<InternalDistributedMember, PersistentMemberID> getPersistentIds(LocalRegion r) {
+  private Map<InternalDistributedMember, PersistentMemberID> getPersistentIds(InternalRegion r) {
     if (r instanceof DistributedRegion) {
       return ((CacheDistributionAdvisee) r).getCacheDistributionAdvisor().advisePersistentMembers();
     } else {
@@ -307,7 +307,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     return this.msgMap == null || this.msgMap.isEmpty();
   }
 
-  void addOp(LocalRegion r, Object key, TXEntryState entry, Set otherRecipients) {
+  void addOp(InternalRegion r, Object key, TXEntryState entry, Set otherRecipients) {
     this.currentRegion.addOp(key, entry);
   }
 
@@ -1052,7 +1052,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     /**
      * The region that this commit represents. Valid on both nearside and farside.
      */
-    protected transient LocalRegion r;
+    protected transient InternalRegion r;
     /**
      * Valid only on farside.
      */
@@ -1098,7 +1098,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     /**
      * Used on nearside
      */
-    RegionCommit(TXCommitMessage msg, LocalRegion r, int maxSize) {
+    RegionCommit(TXCommitMessage msg, InternalRegion r, int maxSize) {
       this.msg = msg;
       this.r = r;
       this.maxSize = maxSize;

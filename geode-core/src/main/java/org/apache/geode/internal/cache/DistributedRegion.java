@@ -318,9 +318,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
 
   @Override
-  protected boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+  public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+                            Object expectedOldValue, boolean requireOldValue, long lastModified,
+                            boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     final boolean isTraceEnabled = logger.isTraceEnabled();
 
     Lock dlock = null;
@@ -631,7 +631,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  protected void handleReliableDistribution(Set successfulRecipients) {
+  public void handleReliableDistribution(Set successfulRecipients) {
     handleReliableDistribution(successfulRecipients, Collections.emptySet(),
         Collections.emptySet());
   }
@@ -1801,7 +1801,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   void distributeInvalidate(EntryEventImpl event) {
-    if (!this.regionInvalid && event.isDistributed() && !event.isOriginRemote()
+    if (!this.isRegionInvalid() && event.isDistributed() && !event.isOriginRemote()
         && !isTX() /* only distribute if non-tx */) {
       if (event.isDistributed() && !event.isOriginRemote()) {
         boolean distribute = !event.getInhibitDistribution();
@@ -1816,10 +1816,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   void basicUpdateEntryVersion(EntryEventImpl event) throws EntryNotFoundException {
-    LocalRegion localRegion = event.getRegion();
-    AbstractRegionMap regionMap = (AbstractRegionMap) localRegion.getRegionMap();
+    InternalRegion internalRegion = event.getRegion();
+    AbstractRegionMap regionMap = (AbstractRegionMap) internalRegion.getRegionMap();
     try {
-      regionMap.lockForCacheModification(localRegion, event);
+      regionMap.lockForCacheModification(internalRegion, event);
       try {
         if (!hasSeenEvent(event)) {
           super.basicUpdateEntryVersion(event);
@@ -1830,12 +1830,12 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         }
       }
     } finally {
-      regionMap.releaseCacheModificationLock(localRegion, event);
+      regionMap.releaseCacheModificationLock(internalRegion, event);
     }
   }
 
   void distributeUpdateEntryVersion(EntryEventImpl event) {
-    if (!this.regionInvalid && event.isDistributed() && !event.isOriginRemote()
+    if (!this.isRegionInvalid() && event.isDistributed() && !event.isOriginRemote()
         && !isTX() /* only distribute if non-tx */) {
       if (event.isDistributed() && !event.isOriginRemote()) {
         // before distribute: DR has sent callback earlier

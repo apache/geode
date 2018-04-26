@@ -2590,23 +2590,23 @@ public abstract class AbstractRegionMap
 
   /** create a callback event for applying a transactional change to the local cache */
   @Retained
-  public static EntryEventImpl createCBEvent(final LocalRegion re, Operation op, Object key,
-      Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
-      Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
-      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
-      long tailKey) {
+  public static EntryEventImpl createCBEvent(final InternalRegion internalRegion, Operation op, Object key,
+                                             Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
+                                             Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
+                                             ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+                                             long tailKey) {
     DistributedMember originator = null;
     // txId should not be null even on localOrigin
     Assert.assertTrue(txId != null);
     originator = ((TXId) txId).getMemberId();
 
-    LocalRegion eventRegion = re;
+    InternalRegion eventRegion = internalRegion;
     if (eventRegion.isUsedForPartitionedRegionBucket()) {
-      eventRegion = re.getPartitionedRegion();
+      eventRegion = internalRegion.getPartitionedRegion();
     }
 
     @Retained
-    EntryEventImpl retVal = EntryEventImpl.create(re, op, key, newValue, aCallbackArgument,
+    EntryEventImpl retVal = EntryEventImpl.create(internalRegion, op, key, newValue, aCallbackArgument,
         txEntryState == null, originator);
     boolean returnedRetVal = false;
     try {
@@ -2637,7 +2637,7 @@ public abstract class AbstractRegionMap
           computeFilterInfo = !filterRoutingInfo.hasLocalInterestBeenComputed();
         } else {
           // routing was computed elsewhere and is in the "remote" routing table
-          localRouting = filterRoutingInfo.getFilterInfo(re.getMyId());
+          localRouting = filterRoutingInfo.getFilterInfo(internalRegion.getMyId());
         }
         if (localRouting != null) {
           if (!computeFilterInfo) {
@@ -2652,8 +2652,8 @@ public abstract class AbstractRegionMap
             filterRoutingInfo, computeFilterInfo, localRouting);
       }
 
-      if (re.isUsedForPartitionedRegionBucket()) {
-        BucketRegion bucket = (BucketRegion) re;
+      if (internalRegion.isUsedForPartitionedRegionBucket()) {
+        BucketRegion bucket = (BucketRegion) internalRegion;
         if (BucketRegion.FORCE_LOCAL_LISTENERS_INVOCATION
             || bucket.getBucketAdvisor().isPrimary()) {
           retVal.setInvokePRCallbacks(true);
@@ -2666,7 +2666,7 @@ public abstract class AbstractRegionMap
             if (logger.isTraceEnabled()) {
               logger.trace("createCBEvent computing routing for primary bucket");
             }
-            FilterProfile fp = ((BucketRegion) re).getPartitionedRegion().getFilterProfile();
+            FilterProfile fp = ((BucketRegion) internalRegion).getPartitionedRegion().getFilterProfile();
             if (fp != null) {
               FilterRoutingInfo fri = fp.getFilterRoutingInfoPart2(filterRoutingInfo, retVal);
               if (fri != null) {
@@ -2679,7 +2679,7 @@ public abstract class AbstractRegionMap
         if (logger.isTraceEnabled()) {
           logger.trace("createCBEvent computing routing for non-bucket");
         }
-        FilterProfile fp = re.getFilterProfile();
+        FilterProfile fp = internalRegion.getFilterProfile();
         if (fp != null) {
           retVal.setLocalFilterInfo(fp.getLocalFilterRouting(retVal));
         }
@@ -2784,7 +2784,7 @@ public abstract class AbstractRegionMap
   }
 
   @Override
-  public void lockRegionForAtomicTX(LocalRegion r) {
+  public void lockRegionForAtomicTX(InternalRegion r) {
     if (armLockTestHook != null)
       armLockTestHook.beforeLock(r, null);
 
@@ -2798,7 +2798,7 @@ public abstract class AbstractRegionMap
   }
 
   @Override
-  public void unlockRegionForAtomicTX(LocalRegion r) {
+  public void unlockRegionForAtomicTX(InternalRegion r) {
     if (armLockTestHook != null)
       armLockTestHook.beforeRelease(r, null);
 

@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventSerialization;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
@@ -43,7 +43,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 
 public class RegionMapPut {
-  private final LocalRegion owner;
+  private final InternalRegion owner;
   private final FocusedRegionMap focusedRegionMap;
   private final EntryEventImpl event;
   private final boolean ifNew;
@@ -68,12 +68,11 @@ public class RegionMapPut {
   @Released
   private Object oldValueForDelta;
 
-  public RegionMapPut(FocusedRegionMap focusedRegionMap, LocalRegion owner,
+  public RegionMapPut(FocusedRegionMap focusedRegionMap, InternalRegion owner,
                       CacheModificationLock cacheModificationLock,
                       EntryEventSerialization entryEventSerialization,
                       EntryEventImpl event, boolean ifNew, boolean ifOld,
                       boolean overwriteDestroyed, boolean requireOldValue,
-
                       Object expectedOldValue) {
     if (owner == null) {
       // "fix" for bug 32440
@@ -212,7 +211,7 @@ public class RegionMapPut {
     this.oldValueForDelta = value;
   }
 
-  private LocalRegion getOwner() {
+  private InternalRegion getOwner() {
     return owner;
   }
 
@@ -569,15 +568,14 @@ public class RegionMapPut {
   }
 
   private void createEntry() throws RegionClearedException {
-    final LocalRegion owner = getOwner();
     final EntryEventImpl event = getEvent();
     final RegionEntry re = getRegionEntry();
     final boolean wasTombstone = re.isTombstone();
     getRegionMap().processVersionTag(re, event);
-    event.putNewEntry(owner, re);
+    event.putNewEntry(getOwner(), re);
     updateSize(0, false, wasTombstone);
     if (!event.getRegion().isInitialized()) {
-      owner.getImageState().removeDestroyedEntry(event.getKey());
+      getOwner().getImageState().removeDestroyedEntry(event.getKey());
     }
   }
 

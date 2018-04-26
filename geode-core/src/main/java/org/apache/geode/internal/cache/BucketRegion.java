@@ -515,9 +515,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // 1) apply op locally
   // 2) update local bs, gateway
   @Override
-  protected boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+  public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+                            Object expectedOldValue, boolean requireOldValue, long lastModified,
+                            boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     beginLocalWrite(event);
 
     try {
@@ -712,7 +712,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   protected void notifyGatewaySender(EnumListenerEvent operation, EntryEventImpl event) {
     // We don't need to clone the event for new Gateway Senders.
     // Preserve the bucket reference for resetting it later.
-    LocalRegion bucketRegion = event.getRegion();
+    InternalRegion bucketRegion = event.getRegion();
     try {
       event.setRegion(this.partitionedRegion);
       this.partitionedRegion.notifyGatewaySender(operation, event);
@@ -1338,10 +1338,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     Assert.assertTrue(!isTX());
     Assert.assertTrue(event.getOperation().isDistributed());
 
-    LocalRegion lr = event.getRegion();
-    AbstractRegionMap arm = ((AbstractRegionMap) lr.getRegionMap());
+    InternalRegion internalRegion = event.getRegion();
+    AbstractRegionMap arm = ((AbstractRegionMap) internalRegion.getRegionMap());
     try {
-      arm.lockForCacheModification(lr, event);
+      arm.lockForCacheModification(internalRegion, event);
       beginLocalWrite(event);
       try {
         if (!hasSeenEvent(event)) {
@@ -1432,7 +1432,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   public void fillInProfile(Profile profile) {
     super.fillInProfile(profile);
     BucketProfile bp = (BucketProfile) profile;
-    bp.isInitializing = this.initializationLatchAfterGetInitialImage.getCount() > 0;
+    bp.isInitializing = this.getInitializationLatchAfterGetInitialImage().getCount() > 0;
   }
 
   /** check to see if the partitioned region is locally destroyed or closed */

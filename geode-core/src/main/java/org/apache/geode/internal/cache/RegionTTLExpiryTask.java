@@ -34,7 +34,7 @@ class RegionTTLExpiryTask extends RegionExpiryTask {
     // then don't expire again until the full timeout from now.
     ExpirationAction action = getAction();
     if (action == ExpirationAction.INVALIDATE || action == ExpirationAction.LOCAL_INVALIDATE) {
-      if (getLocalRegion().regionInvalid) {
+      if (getLocalRegion().isRegionInvalid()) {
         int timeout = getTTLAttributes().getTimeout();
         if (timeout == 0)
           return 0L;

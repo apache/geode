@@ -48,7 +48,7 @@ public class TXEntryUserAttrState {
     return result;
   }
 
-  void checkForConflict(LocalRegion r, Object key) throws CommitConflictException {
+  void checkForConflict(InternalRegion r, Object key) throws CommitConflictException {
     Object curCmtValue = r.basicGetEntryUserAttribute(key);
     if (this.originalValue != curCmtValue) {
       throw new CommitConflictException(
@@ -57,7 +57,7 @@ public class TXEntryUserAttrState {
     }
   }
 
-  void applyChanges(LocalRegion r, Object key) {
+  void applyChanges(InternalRegion r, Object key) {
     try {
       Region.Entry re = r.getEntry(key);
       re.setUserAttribute(this.pendingValue);

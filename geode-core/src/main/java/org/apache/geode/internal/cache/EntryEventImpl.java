@@ -97,7 +97,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   private static final Logger logger = LogService.getLogger();
 
   // PACKAGE FIELDS //
-  private transient LocalRegion region;
+  private transient InternalRegion region;
 
   private transient RegionEntry re;
 
@@ -233,7 +233,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   @Retained
-  protected EntryEventImpl(LocalRegion region, Operation op, Object key, boolean originRemote,
+  protected EntryEventImpl(InternalRegion region, Operation op, Object key, boolean originRemote,
       DistributedMember distributedMember, boolean generateCallbacks, boolean fromRILocalDestroy) {
     this.region = region;
     this.op = op;
@@ -249,7 +249,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * or lets it default to null.
    */
   @Retained
-  protected EntryEventImpl(final LocalRegion region, Operation op, Object key,
+  protected EntryEventImpl(final InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newVal, Object callbackArgument, boolean originRemote,
       DistributedMember distributedMember, boolean generateCallbacks, boolean initializeId) {
 
@@ -278,7 +278,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * Called by BridgeEntryEventImpl to use existing EventID
    */
   @Retained
-  protected EntryEventImpl(LocalRegion region, Operation op, Object key,
+  protected EntryEventImpl(InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newValue, Object callbackArgument,
       boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks,
       EventID eventID) {
@@ -342,7 +342,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * if the region parameter is a PartitionedRegion.
    */
   @Retained
-  public static EntryEventImpl create(LocalRegion region, Operation op, Object key,
+  public static EntryEventImpl create(InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newValue, Object callbackArgument,
       boolean originRemote, DistributedMember distributedMember) {
     return create(region, op, key, newValue, callbackArgument, originRemote, distributedMember,
@@ -354,7 +354,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * if the region parameter is a PartitionedRegion.
    */
   @Retained
-  public static EntryEventImpl create(LocalRegion region, Operation op, Object key,
+  public static EntryEventImpl create(InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newValue, Object callbackArgument,
       boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks) {
     return create(region, op, key, newValue, callbackArgument, originRemote, distributedMember,
@@ -366,11 +366,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * if the region parameter is a PartitionedRegion.
    *
    * Called by BridgeEntryEventImpl to use existing EventID
-   *
-   * {@link EntryEventImpl#EntryEventImpl(LocalRegion, Operation, Object, Object, Object, boolean, DistributedMember, boolean, EventID)}
    */
   @Retained
-  public static EntryEventImpl create(LocalRegion region, Operation op, Object key,
+  public static EntryEventImpl create(InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newValue, Object callbackArgument,
       boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks,
       EventID eventID) {
@@ -381,11 +379,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * Creates and returns an EntryEventImpl. Generates and assigns a bucket id to the EntryEventImpl
    * if the region parameter is a PartitionedRegion.
-   *
-   * {@link EntryEventImpl#EntryEventImpl(LocalRegion, Operation, Object, boolean, DistributedMember, boolean, boolean)}
    */
   @Retained
-  public static EntryEventImpl create(LocalRegion region, Operation op, Object key,
+  public static EntryEventImpl create(InternalRegion region, Operation op, Object key,
       boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks,
       boolean fromRILocalDestroy) {
     return new EntryEventImpl(region, op, key, originRemote, distributedMember, generateCallbacks,
@@ -398,11 +394,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * This creator does not specify the oldValue as this will be filled in later as part of an
    * operation on the region, or lets it default to null.
-   *
-   * {@link EntryEventImpl#EntryEventImpl(LocalRegion, Operation, Object, Object, Object, boolean, DistributedMember, boolean, boolean)}
    */
   @Retained
-  public static EntryEventImpl create(final LocalRegion region, Operation op, Object key,
+  public static EntryEventImpl create(final InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newVal, Object callbackArgument, boolean originRemote,
       DistributedMember distributedMember, boolean generateCallbacks, boolean initializeId) {
     return new EntryEventImpl(region, op, key, newVal, callbackArgument, originRemote,
@@ -415,7 +409,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * @since GemFire 5.0
    */
   @Retained
-  static EntryEventImpl createPutAllEvent(DistributedPutAllOperation putAllOp, LocalRegion region,
+  static EntryEventImpl createPutAllEvent(DistributedPutAllOperation putAllOp, InternalRegion region,
       Operation entryOp, Object entryKey, @Retained(ENTRY_EVENT_NEW_VALUE) Object entryNewValue) {
     @Retained
     EntryEventImpl e;
@@ -442,7 +436,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
 
   @Retained
   protected static EntryEventImpl createRemoveAllEvent(DistributedRemoveAllOperation op,
-      LocalRegion region, Object entryKey) {
+      InternalRegion region, Object entryKey) {
     @Retained
     EntryEventImpl e;
     final Operation entryOp = Operation.REMOVEALL_DESTROY;
@@ -1106,14 +1100,14 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.op.isLoad();
   }
 
-  public void setRegion(LocalRegion r) {
+  public void setRegion(InternalRegion r) {
     this.region = r;
   }
 
   /**
    * @see org.apache.geode.cache.CacheEvent#getRegion()
    */
-  public LocalRegion getRegion() {
+  public InternalRegion getRegion() {
     return region;
   }
 
@@ -1543,7 +1537,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return EVENT_OLD_VALUE;
   }
 
-  void putExistingEntry(final LocalRegion owner, RegionEntry entry) throws RegionClearedException {
+  void putExistingEntry(final InternalRegion owner, RegionEntry entry) throws RegionClearedException {
     putExistingEntry(owner, entry, false, null);
   }
 
@@ -1553,7 +1547,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @param oldValueForDelta Used by Delta Propagation feature
    */
-  public void putExistingEntry(final LocalRegion owner, final RegionEntry reentry, boolean requireOldValue,
+  public void putExistingEntry(final InternalRegion owner, final RegionEntry reentry, boolean requireOldValue,
       Object oldValueForDelta) throws RegionClearedException {
     makeUpdate();
     // only set oldValue if it hasn't already been set to something
@@ -1612,7 +1606,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * Put a newValue into the given, write synced, new, region entry.
    */
-  public void putNewEntry(final LocalRegion owner, final RegionEntry reentry)
+  public void putNewEntry(final InternalRegion owner, final RegionEntry reentry)
       throws RegionClearedException {
     if (!this.op.guaranteesOldValue()) { // preserves oldValue for CM ops in clients
       basicSetOldValue(null);
@@ -1630,7 +1624,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   @Retained(ENTRY_EVENT_NEW_VALUE)
-  private void setNewValueInRegion(final LocalRegion owner, final RegionEntry reentry,
+  private void setNewValueInRegion(final InternalRegion owner, final RegionEntry reentry,
       Object oldValueForDelta) throws RegionClearedException {
 
     boolean wasTombstone = reentry.isTombstone();
@@ -1654,7 +1648,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (v == null) {
       v = isLocalInvalid() ? Token.LOCAL_INVALID : Token.INVALID;
     } else {
-      getRegion().regionInvalid = false;
+      getRegion().setRegionInvalid(false);
     }
 
     reentry.setValueResultOfSearch(this.op.isNetSearch());
@@ -1746,7 +1740,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.newValueBucketSize;
   }
 
-  private void setNewValueBucketSize(LocalRegion lr, Object v) {
+  private void setNewValueBucketSize(InternalRegion lr, Object v) {
     if (lr == null) {
       lr = getRegion();
     }
@@ -2533,7 +2527,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * establish the old value in this event as the current cache value, whether in memory or on disk
    */
   public void setOldValueForQueryProcessing() {
-    RegionEntry reentry = getRegion().entries.getEntry(this.getKey());
+    RegionEntry reentry = getRegion().getRegionMap().getEntry(this.getKey());
     if (reentry != null) {
       @Retained
       Object v = reentry.getValueOffHeapOrDiskWithoutFaultIn(getRegion());
@@ -2587,7 +2581,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       }
     }
     if (result <= 0) {
-      LocalRegion region = this.getRegion();
+      InternalRegion region = this.getRegion();
       if (region != null) {
         result = region.cacheTimeMillis();
       } else {
@@ -2835,7 +2829,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * Return true if this EntryEvent may have off-heap references.
    */
   private boolean mayHaveOffHeapReferences() {
-    LocalRegion lr = getRegion();
+    InternalRegion lr = getRegion();
     if (lr != null) {
       return lr.getOffHeap();
     }

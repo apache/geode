@@ -135,7 +135,7 @@ public class TXStateProxyImpl implements TXStateProxy {
    * @param r the region that is currently being modified
    * @return the state or a proxy for the state
    */
-  public TXStateInterface getRealDeal(KeyInfo key, LocalRegion r) {
+  public TXStateInterface getRealDeal(KeyInfo key, InternalRegion r) {
     if (this.realDeal == null) {
       if (r == null) { // TODO: stop gap to get tests working
         this.realDeal = new TXState(this, false);
@@ -144,7 +144,7 @@ public class TXStateProxyImpl implements TXStateProxy {
         if (r.hasServerProxy()) {
           this.realDeal =
               new ClientTXStateStub(r.getCache(), r.getDistributionManager(), this, target, r);
-          if (r.scope.isDistributed()) {
+          if (r.getScope().isDistributed()) {
             if (txDistributedClientWarningIssued.compareAndSet(false, true)) {
               logger.warn(LocalizedMessage.create(
                   LocalizedStrings.TXStateProxyImpl_Distributed_Region_In_Client_TX,
@@ -154,7 +154,7 @@ public class TXStateProxyImpl implements TXStateProxy {
         } else {
           target = null;
           // wait for the region to be initialized fixes bug 44652
-          r.waitOnInitialization(r.initializationLatchBeforeGetInitialImage);
+          r.waitOnInitialization(r.getInitializationLatchBeforeGetInitialImage());
           target = r.getOwnerForKey(key);
 
           if (target == null || target.equals(this.txMgr.getDM().getId())) {
@@ -347,7 +347,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Collection<LocalRegion> getRegions() {
+  public Collection<InternalRegion> getRegions() {
     assertBootstrapped();
     return getRealDeal(null, null).getRegions();
   }
@@ -393,7 +393,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public TXRegionState readRegion(LocalRegion r) {
+  public TXRegionState readRegion(InternalRegion r) {
     assertBootstrapped();
     return getRealDeal(null, r).readRegion(r);
   }
@@ -445,18 +445,18 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public TXRegionState txReadRegion(LocalRegion localRegion) {
+  public TXRegionState txReadRegion(InternalRegion internalRegion) {
     assertBootstrapped();
-    return getRealDeal(null, localRegion).txReadRegion(localRegion);
+    return getRealDeal(null, internalRegion).txReadRegion(internalRegion);
   }
 
   @Override
-  public TXRegionState txWriteRegion(LocalRegion localRegion, KeyInfo entryKey) {
-    return getRealDeal(entryKey, localRegion).txWriteRegion(localRegion, entryKey);
+  public TXRegionState txWriteRegion(InternalRegion internalRegion, KeyInfo entryKey) {
+    return getRealDeal(entryKey, internalRegion).txWriteRegion(internalRegion, entryKey);
   }
 
   @Override
-  public TXRegionState writeRegion(LocalRegion r) {
+  public TXRegionState writeRegion(InternalRegion r) {
     assertBootstrapped();
     return getRealDeal(null, r).writeRegion(r);
   }
@@ -848,34 +848,34 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion region) {
+                         InternalRegion reg) {
     if (putallOp.putAllData.length == 0) {
       return;
     }
-    region.getCancelCriterion().checkCancelInProgress(null); // fix for bug #43651
+    reg.getCancelCriterion().checkCancelInProgress(null); // fix for bug #43651
     Object key = null;
     if (putallOp.putAllData[0] != null) {
       key = putallOp.putAllData[0].key;
     }
     KeyInfo ki = new KeyInfo(key, null, null);
-    TXStateInterface tsi = getRealDeal(ki, region);
-    tsi.postPutAll(putallOp, successfulPuts, region);
+    TXStateInterface tsi = getRealDeal(ki, reg);
+    tsi.postPutAll(putallOp, successfulPuts, reg);
   }
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-      LocalRegion region) {
+                            InternalRegion reg) {
     if (op.removeAllData.length == 0) {
       return;
     }
-    region.getCancelCriterion().checkCancelInProgress(null); // fix for bug #43651
+    reg.getCancelCriterion().checkCancelInProgress(null); // fix for bug #43651
     Object key = null;
     if (op.removeAllData[0] != null) {
       key = op.removeAllData[0].key;
     }
     KeyInfo ki = new KeyInfo(key, null, null);
-    TXStateInterface tsi = getRealDeal(ki, region);
-    tsi.postRemoveAll(op, successfulOps, region);
+    TXStateInterface tsi = getRealDeal(ki, reg);
+    tsi.postRemoveAll(op, successfulOps, reg);
   }
 
   @Override

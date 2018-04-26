@@ -44,7 +44,7 @@ public class TXRegionState {
   private HashMap uaMods;
   private Set<InternalDistributedMember> otherMembers = null;
   private TXState txState;
-  private LocalRegion region;
+  private InternalRegion region;
   private final boolean needsRefCounts;
   private boolean cleanedUp;
   /*
@@ -53,7 +53,7 @@ public class TXRegionState {
    */
   private boolean createdDuringCommit;
 
-  public TXRegionState(LocalRegion r, TXState txState) {
+  public TXRegionState(InternalRegion r, TXState txState) {
     if (r.getPersistBackup() && !r.isMetaRegionWithTransactions()
         && !TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS) {
       throw new UnsupportedOperationException(
@@ -77,7 +77,7 @@ public class TXRegionState {
     r.setInUseByTransaction(true);
   }
 
-  public LocalRegion getRegion() {
+  public InternalRegion getRegion() {
     return region;
   }
 
@@ -189,7 +189,7 @@ public class TXRegionState {
   /**
    * Create a lock request on this region state and adds it to req
    */
-  void createLockRequest(LocalRegion r, TXLockRequest req) {
+  void createLockRequest(InternalRegion r, TXLockRequest req) {
     if (this.uaMods == null && this.entryMods.isEmpty()) {
       return;
     }
@@ -265,7 +265,7 @@ public class TXRegionState {
     return result;
   }
 
-  void checkForConflicts(LocalRegion r) throws CommitConflictException {
+  void checkForConflicts(InternalRegion r) throws CommitConflictException {
     if (this.isCreatedDuringCommit()) {
       return;
     }
@@ -294,8 +294,9 @@ public class TXRegionState {
    * For each entry that is not dirty (all we did was read it) decrement its refcount (so it can be
    * evicted as we apply our writes) and remove it from entryMods (so we don't keep iterating over
    * it and se we don't try to clean it up again later).
+   * @param r
    */
-  void cleanupNonDirtyEntries(LocalRegion r) {
+  void cleanupNonDirtyEntries(InternalRegion r) {
     if (!this.entryMods.isEmpty()) {
       Iterator it = this.entryMods.entrySet().iterator();
       while (it.hasNext()) {
@@ -309,7 +310,7 @@ public class TXRegionState {
     }
   }
 
-  void buildMessage(LocalRegion r, TXCommitMessage msg) {
+  void buildMessage(InternalRegion r, TXCommitMessage msg) {
     try {
       if (!r.getScope().isLocal() && !this.entryMods.isEmpty()) {
 
@@ -359,7 +360,7 @@ public class TXRegionState {
     }
   }
 
-  void buildMessageForAdjunctReceivers(LocalRegion r, TXCommitMessage msg) {
+  void buildMessageForAdjunctReceivers(InternalRegion r, TXCommitMessage msg) {
     try {
       if (!r.getScope().isLocal() && !this.entryMods.isEmpty()) {
 
@@ -404,7 +405,7 @@ public class TXRegionState {
   }
 
 
-  void buildCompleteMessage(LocalRegion r, TXCommitMessage msg) {
+  void buildCompleteMessage(InternalRegion r, TXCommitMessage msg) {
     try {
       if (!this.entryMods.isEmpty()) {
         msg.startRegion(r, entryMods.size());
@@ -430,7 +431,7 @@ public class TXRegionState {
 
 
 
-  void applyChangesStart(LocalRegion r, TXStateInterface txState) {
+  void applyChangesStart(InternalRegion r, TXStateInterface txState) {
     try {
       r.txLRUStart();
     } catch (RegionDestroyedException ex) {
@@ -444,7 +445,7 @@ public class TXRegionState {
     }
   }
 
-  void applyChangesEnd(LocalRegion r, TXStateInterface txState) {
+  void applyChangesEnd(InternalRegion r, TXStateInterface txState) {
     try {
       try {
         if (this.uaMods != null) {
@@ -470,7 +471,7 @@ public class TXRegionState {
     }
   }
 
-  void getEvents(LocalRegion r, ArrayList events, TXState txs) {
+  void getEvents(InternalRegion r, ArrayList events, TXState txs) {
     {
       Iterator it = this.entryMods.entrySet().iterator();
       while (it.hasNext()) {
@@ -489,7 +490,7 @@ public class TXRegionState {
    * Put all the entries this region knows about into the given "entries" list as instances of
    * TXEntryStateWithRegionAndKey.
    */
-  void getEntries(ArrayList/* <TXEntryStateWithRegionAndKey> */ entries, LocalRegion r) {
+  void getEntries(ArrayList/* <TXEntryStateWithRegionAndKey> */ entries, InternalRegion r) {
     Iterator it = this.entryMods.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry me = (Map.Entry) it.next();
@@ -499,7 +500,7 @@ public class TXRegionState {
     }
   }
 
-  void cleanup(LocalRegion r) {
+  void cleanup(InternalRegion r) {
     if (this.cleanedUp)
       return;
     this.cleanedUp = true;

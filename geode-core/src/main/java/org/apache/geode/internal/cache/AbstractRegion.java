@@ -545,6 +545,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    *
    * @since GemFire 5.7
    */
+  @Override
   public CacheWriter basicGetWriter() {
     return this.cacheWriter;
   }
@@ -894,6 +895,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   /**
    * This method call is guarded by imSync lock created for each region. Set IndexManger for region.
    */
+  @Override
   public IndexManager setIndexManager(IndexManager indexManager) {
     checkReadiness();
     IndexManager oldIdxManager = this.indexManager;
@@ -906,6 +908,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    *
    * @return {@link IndexManager} lock.
    */
+  @Override
   public Object getIMSync() {
     return this.imSync;
   }
@@ -1699,11 +1702,13 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * @since GemFire 5.0
    *
    */
-  protected void handleReliableDistribution(Set successfulRecipients) {
+  @Override
+  public void handleReliableDistribution(Set successfulRecipients) {
     // do nothing by default
   }
 
   /** Returns true if region requires a reliability check. */
+  @Override
   public boolean requiresReliabilityCheck() {
     return false;
   }

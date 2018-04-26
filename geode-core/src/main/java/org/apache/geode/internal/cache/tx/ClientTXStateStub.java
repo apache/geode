@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXCommitMessage;
 import org.apache.geode.internal.cache.TXLockRequest;
@@ -93,7 +94,7 @@ public class ClientTXStateStub extends TXStateStub {
   }
 
   public ClientTXStateStub(InternalCache cache, DistributionManager dm, TXStateProxy stateProxy,
-      DistributedMember target, LocalRegion firstRegion) {
+                           DistributedMember target, InternalRegion firstRegion) {
     super(stateProxy, target);
     this.cache = cache;
     this.dm = dm;
@@ -185,12 +186,12 @@ public class ClientTXStateStub extends TXStateStub {
   }
 
   @Override
-  protected TXRegionStub generateRegionStub(LocalRegion region) {
+  protected TXRegionStub generateRegionStub(InternalRegion region) {
     return new ClientTXRegionStub(region);
   }
 
   @Override
-  protected void validateRegionCanJoinTransaction(LocalRegion region) throws TransactionException {
+  protected void validateRegionCanJoinTransaction(InternalRegion region) throws TransactionException {
     if (!region.hasServerProxy()) {
       throw new TransactionException("Region " + region.getName()
           + " is local to this client and cannot be used in a transaction.");

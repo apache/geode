@@ -42,15 +42,17 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * Used by transaction operations that are doing a read operation on the specified region.
    *
    * @return the TXRegionState for the given LocalRegion or null if no state exists
+   * @param r
    */
-  TXRegionState readRegion(LocalRegion r);
+  TXRegionState readRegion(InternalRegion r);
 
   /**
    * Used by transaction operations that are doing a write operation on the specified region.
    *
    * @return the TXRegionState for the given LocalRegion
+   * @param r
    */
-  TXRegionState writeRegion(LocalRegion r);
+  TXRegionState writeRegion(InternalRegion r);
 
   /**
    * Returns a nanotimer timestamp that marks when begin was called on this transaction.
@@ -99,7 +101,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
   /** Implement TransactionEvent's getCache */
   InternalCache getCache();
 
-  Collection<LocalRegion> getRegions();
+  Collection<InternalRegion> getRegions();
 
   void invalidateExistingEntry(final EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry);
@@ -119,9 +121,9 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
   TXEvent getEvent();
 
-  TXRegionState txWriteRegion(final LocalRegion localRegion, final KeyInfo entryKey);
+  TXRegionState txWriteRegion(final InternalRegion internalRegion, final KeyInfo entryKey);
 
-  TXRegionState txReadRegion(LocalRegion localRegion);
+  TXRegionState txReadRegion(InternalRegion internalRegion);
 
   boolean txPutEntry(final EntryEventImpl event, boolean ifNew, boolean requireOldValue,
       boolean checkResources, Object expectedOldValue);

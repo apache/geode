@@ -877,7 +877,7 @@ public abstract class DynamicRegionFactory {
     }
 
     @Override
-    protected boolean isCopyOnRead() {
+    public boolean isCopyOnRead() {
       return false;
     }
 
@@ -990,7 +990,7 @@ public abstract class DynamicRegionFactory {
     // }
 
     @Override
-    protected boolean isCopyOnRead() {
+    public boolean isCopyOnRead() {
       return false;
     }
 

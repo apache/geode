@@ -28,7 +28,6 @@ import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -167,7 +166,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
     boolean retVal = false;
-    final LocalRegion r = event.getRegion();
+    final InternalRegion r = event.getRegion();
 
     try {
       RemotePutResponse response = RemotePutMessage.txSend(state.getTarget(), r, event,
@@ -189,7 +188,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion region) {
+                         InternalRegion region) {
     try {
       RemotePutAllMessage.PutAllResponse response =
           RemotePutAllMessage.send(state.getTarget(), putallOp.getBaseEvent(),
@@ -207,7 +206,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-      LocalRegion region) {
+                            InternalRegion region) {
     try {
       RemoteRemoveAllMessage.RemoveAllResponse response =
           RemoteRemoveAllMessage.send(state.getTarget(), op.getBaseEvent(),

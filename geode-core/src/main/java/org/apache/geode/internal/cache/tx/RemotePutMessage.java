@@ -55,6 +55,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
@@ -341,9 +342,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    *         indicate that no acknowledgement will be sent
    * @throws RemoteOperationException if the peer is no longer available
    */
-  public static RemotePutResponse txSend(DistributedMember recipient, LocalRegion r,
-      EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue) throws RemoteOperationException {
+  public static RemotePutResponse txSend(DistributedMember recipient, InternalRegion r,
+                                         EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
+                                         Object expectedOldValue, boolean requireOldValue) throws RemoteOperationException {
     return send(recipient, r, event, lastModified, ifNew, ifOld, expectedOldValue, requireOldValue,
         true, false);
   }
@@ -362,7 +363,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    *         indicate that no acknowledgement will be sent
    * @throws RemoteOperationException if the peer is no longer available
    */
-  public static RemotePutResponse send(DistributedMember recipient, LocalRegion r,
+  public static RemotePutResponse send(DistributedMember recipient, InternalRegion r,
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) throws RemoteOperationException {
@@ -669,7 +670,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   @Override
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, long startTime) {
+                           ReplyException ex, InternalRegion r, long startTime) {
     PutReplyMessage.send(member, procId, getReplySender(dm), result, getOperation(), ex, this,
         null);
   }
