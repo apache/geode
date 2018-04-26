@@ -66,7 +66,7 @@ public class ConfigurePDXCommandTest {
   public void errorOutIfCCNotRunning() {
     doReturn(null).when(command).getConfigurationService();
     gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING).statusIsError()
-        .containsOutput("Cluster configuration service is not running.");
+        .containsOutput("Configure pdx failed because cluster configuration is disabled.");
   }
 
   @Test

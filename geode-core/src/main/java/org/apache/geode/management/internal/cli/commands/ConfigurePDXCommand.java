@@ -67,7 +67,8 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
     ReflectionBasedAutoSerializer autoSerializer = null;
 
     if (getConfigurationService() == null) {
-      return ResultBuilder.createUserErrorResult("Cluster configuration service is not running.");
+      return ResultBuilder
+          .createUserErrorResult("Configure pdx failed because cluster configuration is disabled.");
     }
 
     InfoResultData infoResultData = ResultBuilder.createInfoResultData();
