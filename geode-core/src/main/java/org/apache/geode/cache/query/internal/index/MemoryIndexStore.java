@@ -75,7 +75,7 @@ public class MemoryIndexStore implements IndexStore {
 
   // Used as a place holder for an indexkey collection for when a thread is about to change
   // the collection from index elem to concurrent hash set. Solution for #47475 where
-  // we could be missing removes due to different threads grabbing occurences of the same
+  // we could be missing removes due to different threads grabbing occurrences of the same
   // index elem (or collection), one would transition and addAll to a new collection,
   // while the other would execute a remove on the index elem.
   // both would complete but the remove would have been lost because we had already added it to the

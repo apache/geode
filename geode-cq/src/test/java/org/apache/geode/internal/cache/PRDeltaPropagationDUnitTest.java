@@ -1079,7 +1079,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     return queryDestroyExecuted;
   }
 
-  public boolean checkVMRecievesDeltaObjectThrCQListner() {
+  public boolean checkVMReceivesDeltaObjectThrCQListner() {
     return notADeltaInstanceObj;
   }
 

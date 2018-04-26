@@ -375,7 +375,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
       // stripped of the index arg & see if it matches.
       if (condnExpr instanceof MapIndexable) {
         MapIndexable mi = (MapIndexable) condnExpr;
-        CompiledValue recvr = mi.getRecieverSansIndexArgs();
+        CompiledValue recvr = mi.getReceiverSansIndexArgs();
         StringBuilder sb = new StringBuilder();
         recvr.generateCanonicalizedExpression(sb, context);
         sb.append('[').append(']');

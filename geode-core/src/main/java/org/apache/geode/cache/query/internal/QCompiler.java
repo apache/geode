@@ -710,7 +710,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       this.indexList = indexList;
     }
 
-    public CompiledValue getRecieverSansIndexArgs() {
+    public CompiledValue getReceiverSansIndexArgs() {
       return rcvr;
     }
 

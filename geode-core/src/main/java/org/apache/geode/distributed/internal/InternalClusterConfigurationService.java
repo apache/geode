@@ -114,8 +114,6 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
 
   public static final String CLUSTER_CONFIG_DISK_DIR_PREFIX = "ConfigDiskDir_";
 
-  public static final String CLUSTER_CONFIG = "cluster";
-
   /**
    * Name of the lock service used for shared configuration
    */
@@ -237,7 +235,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     try {
       Region<String, Configuration> configRegion = getConfigurationRegion();
       if (groups == null || groups.length == 0) {
-        groups = new String[] {InternalClusterConfigurationService.CLUSTER_CONFIG};
+        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
       }
       for (String group : groups) {
         Configuration configuration = configRegion.get(group);
@@ -303,7 +301,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     lockSharedConfiguration();
     try {
       if (groups == null) {
-        groups = new String[] {InternalClusterConfigurationService.CLUSTER_CONFIG};
+        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
       }
       Region<String, Configuration> configRegion = getConfigurationRegion();
       for (String group : groups) {
@@ -349,7 +347,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     lockSharedConfiguration();
     try {
       if (groups == null) {
-        groups = new String[] {InternalClusterConfigurationService.CLUSTER_CONFIG};
+        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
       }
       Region<String, Configuration> configRegion = getConfigurationRegion();
       for (String group : groups) {
@@ -538,11 +536,10 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     Properties securityProps = this.cache.getDistributedSystem().getSecurityProperties();
 
     Configuration clusterPropertiesConfig =
-        configRegion.get(InternalClusterConfigurationService.CLUSTER_CONFIG);
+        configRegion.get(ClusterConfigurationService.CLUSTER_CONFIG);
     if (clusterPropertiesConfig == null) {
-      clusterPropertiesConfig =
-          new Configuration(InternalClusterConfigurationService.CLUSTER_CONFIG);
-      configRegion.put(InternalClusterConfigurationService.CLUSTER_CONFIG, clusterPropertiesConfig);
+      clusterPropertiesConfig = new Configuration(ClusterConfigurationService.CLUSTER_CONFIG);
+      configRegion.put(ClusterConfigurationService.CLUSTER_CONFIG, clusterPropertiesConfig);
     }
     // put security-manager and security-post-processor in the cluster config
     Properties clusterProperties = clusterPropertiesConfig.getGemfireProperties();
@@ -567,7 +564,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     try {
       if (isLocked) {
         configResponse = new ConfigurationResponse();
-        groups.add(InternalClusterConfigurationService.CLUSTER_CONFIG);
+        groups.add(ClusterConfigurationService.CLUSTER_CONFIG);
         logger.info("Building up configuration response with following configurations: {}", groups);
 
         for (String group : groups) {

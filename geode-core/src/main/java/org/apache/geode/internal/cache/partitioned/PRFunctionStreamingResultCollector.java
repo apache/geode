@@ -71,7 +71,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
 
   @Override
   public void addResult(DistributedMember memId, Object resultOfSingleExecution) {
-    if (!this.endResultRecieved) {
+    if (!this.endResultReceived) {
       if (!(this.userRC instanceof LocalResultCollectorImpl)
           && resultOfSingleExecution instanceof InternalFunctionException) {
         resultOfSingleExecution = ((InternalFunctionException) resultOfSingleExecution).getCause();
@@ -223,7 +223,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
       try {
         long timeBefore = System.currentTimeMillis();
         if (!this.waitForCacheOrFunctionException(timeoutInMillis)) {
-          throw new FunctionException("All results not recieved in time provided.");
+          throw new FunctionException("All results not received in time provided.");
         }
         long timeAfter = System.currentTimeMillis();
         timeoutInMillis = timeoutInMillis - (timeAfter - timeBefore);

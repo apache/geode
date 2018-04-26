@@ -79,7 +79,7 @@ public class GatewayReceiverImplJUnitTest {
   }
 
   @Test
-  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveRecieverFromCacheServers()
+  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromCacheServers()
       throws IOException {
     InternalCache cache = mock(InternalCache.class);
     CacheServerImpl server = mock(CacheServerImpl.class);
@@ -96,7 +96,7 @@ public class GatewayReceiverImplJUnitTest {
   }
 
   @Test
-  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveRecieverFromReceivers()
+  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromReceivers()
       throws IOException {
     InternalCache cache = mock(InternalCache.class);
     CacheServerImpl server = mock(CacheServerImpl.class);

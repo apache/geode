@@ -260,7 +260,7 @@ public class ExecuteFunctionOp {
       } catch (InternalFunctionInvocationTargetException e) {
         if (isDebugEnabled) {
           logger.debug(
-              "ExecuteFunctionOp#reexecute : Recieved InternalFunctionInvocationTargetException. The failed nodes are {}",
+              "ExecuteFunctionOp#reexecute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
               e.getFailedNodeSet());
         }
         reexecute = true;
@@ -309,7 +309,7 @@ public class ExecuteFunctionOp {
       } catch (InternalFunctionInvocationTargetException e) {
         if (isDebugEnabled) {
           logger.debug(
-              "ExecuteFunctionOp#reexecute : Recieved InternalFunctionInvocationTargetException. The failed nodes are {}",
+              "ExecuteFunctionOp#reexecute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
               e.getFailedNodeSet());
         }
         reexecute = true;

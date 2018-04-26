@@ -150,7 +150,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
           count++;
           encounteredObject = true;
         } else if (encounteredObject) {
-          // Asif: No possibility of its occurence again
+          // Asif: No possibility of its occurrence again
           break;
         }
       }
@@ -273,7 +273,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
 
   /**
    * Return an iterator over the elements in this collection. Duplicates will show up the number of
-   * times it has occurrances.
+   * times it has occurrences.
    */
   @Override
   public Iterator iterator() {

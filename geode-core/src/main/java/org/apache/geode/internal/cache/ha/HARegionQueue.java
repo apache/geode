@@ -284,7 +284,7 @@ public class HARegionQueue implements RegionQueue {
    *
    * @since GemFire 6.0
    */
-  public boolean isClientSlowReciever = false;
+  public boolean isClientSlowReceiver = false;
 
   /**
    * initialization flag - when true the queue has fully initialized
@@ -296,7 +296,7 @@ public class HARegionQueue implements RegionQueue {
    *
    * @since GemFire 6.0
    */
-  static boolean testMarkerMessageRecieved = false;
+  static boolean testMarkerMessageReceived = false;
   static boolean isUsedByTest = false;
 
   /**
@@ -1599,9 +1599,9 @@ public class HARegionQueue implements RegionQueue {
         Object old = ((ConcurrentMap) tempDispatchedMessagesMap).putIfAbsent(this.regionName,
             this.threadIdToSeqId);
         if (isUsedByTest) {
-          testMarkerMessageRecieved = true;
+          testMarkerMessageReceived = true;
           if (logger.isDebugEnabled()) {
-            logger.debug("testIsAckRecieved: {}", testMarkerMessageRecieved);
+            logger.debug("testIsAckReceived: {}", testMarkerMessageReceived);
           }
         }
         Assert.assertTrue(old == null);
@@ -2248,7 +2248,7 @@ public class HARegionQueue implements RegionQueue {
             synchronized (this.permitMon) {
               if (reconcilePutPermits() <= 0) {
                 if (region.getSystem().getConfig().getRemoveUnresponsiveClient()) {
-                  isClientSlowReciever = true;
+                  isClientSlowReceiver = true;
                 } else {
                   try {
                     long logFrequency = CacheClientNotifier.DEFAULT_LOG_FREQUENCY;
@@ -2656,7 +2656,7 @@ public class HARegionQueue implements RegionQueue {
 
   /**
    * A static class which is created only for for testing prposes as some existing tests extend the
-   * HARegionQueue. Since teh constructors of HAregionQueue are private , this class can act as a
+   * HARegionQueue. Since the constructors of HAregionQueue are private , this class can act as a
    * bridge between the user defined HARegionQueue class & the actual class. This class object will
    * be buggy as it will tend to publish the Object o QRM thread & the expiry thread before the
    * complete creation of the HARegionQueue instance
@@ -3787,19 +3787,19 @@ public class HARegionQueue implements RegionQueue {
 
   public void initializeTransients() {}
 
-  public static boolean isTestMarkerMessageRecieved() {
-    return testMarkerMessageRecieved;
+  public static boolean isTestMarkerMessageReceived() {
+    return testMarkerMessageReceived;
   }
 
   public static void setUsedByTest(boolean isUsedByTest) {
     HARegionQueue.isUsedByTest = isUsedByTest;
     if (!isUsedByTest) {
-      HARegionQueue.testMarkerMessageRecieved = isUsedByTest;
+      HARegionQueue.testMarkerMessageReceived = isUsedByTest;
     }
   }
 
-  public boolean isClientSlowReciever() {
-    return isClientSlowReciever;
+  public boolean isClientSlowReceiver() {
+    return isClientSlowReceiver;
   }
 
   @Override

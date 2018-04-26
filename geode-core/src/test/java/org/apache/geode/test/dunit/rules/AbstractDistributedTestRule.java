@@ -67,7 +67,7 @@ class AbstractDistributedTestRule implements SerializableTestRule {
   }
 
   private void beforeDistributedTest() throws Throwable {
-    DUnitLauncher.launchIfNeeded();
+    DUnitLauncher.launchIfNeeded(vmCount);
     beforeVmCount = getVMCount();
   }
 

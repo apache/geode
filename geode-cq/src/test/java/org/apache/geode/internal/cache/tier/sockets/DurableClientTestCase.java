@@ -1692,7 +1692,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
    */
   protected static boolean checkForAck(CacheClientProxy proxy) {
     // pause(5000);
-    return HARegionQueue.isTestMarkerMessageRecieved();
+    return HARegionQueue.isTestMarkerMessageReceived();
   }
 
   protected static void setTestFlagToVerifyActForMarker(Boolean flag) {

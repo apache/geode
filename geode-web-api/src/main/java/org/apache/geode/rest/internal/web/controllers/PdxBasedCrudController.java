@@ -197,7 +197,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    * Reading data for set of keys
    *
    * @param region gemfire region name
-   * @param keys string containing comma seperated keys
+   * @param keys string containing comma separated keys
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/{keys}",

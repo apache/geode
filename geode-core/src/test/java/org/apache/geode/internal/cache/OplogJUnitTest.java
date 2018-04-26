@@ -405,7 +405,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
     DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    // Populate data just below the switch over threshhold
+    // Populate data just below the switch over threshold
     byte[] val = new byte[5];
     for (int i = 0; i < val.length; ++i) {
       val[i] = (byte) i;

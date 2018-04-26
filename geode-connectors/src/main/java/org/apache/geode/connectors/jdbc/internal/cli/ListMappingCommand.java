@@ -14,18 +14,21 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.distributed.ClusterConfigurationService.CLUSTER_CONFIG;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
@@ -33,7 +36,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 
-public class ListMappingCommand extends InternalGfshCommand {
+public class ListMappingCommand extends GfshCommand {
   static final String LIST_MAPPING = "list jdbc-mappings";
   static final String LIST_MAPPING__HELP = "Display jdbc mappings for all members.";
 
@@ -52,10 +55,13 @@ public class ListMappingCommand extends InternalGfshCommand {
     // check if CC is available and use it to describe the connection
     ClusterConfigurationService ccService = getConfigurationService();
     if (ccService != null) {
-      ConnectorService service =
-          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
-      if (service != null) {
-        mappings = service.getRegionMapping();
+      CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
+      if (cacheConfig != null) {
+        ConnectorService service =
+            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
+        if (service != null) {
+          mappings = service.getRegionMapping();
+        }
       }
     } else {
       // otherwise get it from any member

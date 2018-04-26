@@ -114,12 +114,14 @@ popd
 
 export FILENAME=${BASE_FILENAME}-${FULL_PRODUCT_VERSION}.tgz
 
-if [ -n "${PARALLEL_DUNIT}" ]; then
+if [[ -n "${PARALLEL_DUNIT}" && "${PARALLEL_DUNIT}" == "true" ]]; then
   PARALLEL_DUNIT="-PparallelDunit"
-fi
-
-if [ -n "${DUNIT_PARALLEL_FORKS}" ]; then
-  DUNIT_PARALLEL_FORKS="-PdunitParallelForks=${DUNIT_PARALLEL_FORKS}"
+  if [ -n "${DUNIT_PARALLEL_FORKS}" ]; then
+    DUNIT_PARALLEL_FORKS="-PdunitParallelForks=${DUNIT_PARALLEL_FORKS}"
+  fi
+else
+  PARALLEL_DUNIT=""
+  DUNIT_PARALLEL_FORKS=""
 fi
 
 pushd ${GEODE_BUILD}

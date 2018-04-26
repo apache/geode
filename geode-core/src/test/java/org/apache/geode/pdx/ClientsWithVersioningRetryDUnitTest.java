@@ -269,7 +269,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        GemFireCacheImpl cache = (GemFireCacheImpl) basicGetCache();
         assertTrue(cache == null || cache.isClosed());
       }
     });
@@ -382,7 +382,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        GemFireCacheImpl cache = (GemFireCacheImpl) basicGetCache();
         assertTrue(cache == null || cache.isClosed());
       }
     });

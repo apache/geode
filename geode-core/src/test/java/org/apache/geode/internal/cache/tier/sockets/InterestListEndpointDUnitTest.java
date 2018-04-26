@@ -118,7 +118,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * tests wheteher upadets are sent to clients if put on server directly
+   * tests whetheer upadets are sent to clients if put on server directly
    *
    */
   @Test

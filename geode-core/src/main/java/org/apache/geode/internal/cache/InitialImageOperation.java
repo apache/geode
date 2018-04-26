@@ -1139,9 +1139,9 @@ public class InitialImageOperation {
     private volatile boolean abort = false;
 
     /**
-     * to know whether chunk recieved or not, since last checkpoint
+     * to know whether chunk received or not, since last checkpoint
      */
-    private volatile boolean recievedChunk = false;
+    private volatile boolean receivedChunk = false;
 
     /**
      * Tracks the status of this operation.
@@ -1262,9 +1262,9 @@ public class InitialImageOperation {
 
     @Override
     protected boolean processTimeout() {
-      // if chunk recieved then no need to process timeout
-      boolean ret = this.recievedChunk;
-      this.recievedChunk = false;
+      // if chunk received then no need to process timeout
+      boolean ret = this.receivedChunk;
+      this.receivedChunk = false;
       return !ret;
     }
 
@@ -1308,7 +1308,7 @@ public class InitialImageOperation {
                 if (isAborted) {
                   this.abort = true; // volatile store
                 } else {
-                  this.recievedChunk = true;
+                  this.receivedChunk = true;
                 }
               }
               isLast = trackMessage(m); // interpret series/msgNum

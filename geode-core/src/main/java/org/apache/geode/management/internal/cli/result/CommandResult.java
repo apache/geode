@@ -56,6 +56,7 @@ public class CommandResult implements Result {
   private ResultData resultData;
   private List<String> resultLines;
   private boolean failedToPersist = false;
+  private Object configObject;
 
   private transient int numTimesSaved;
 
@@ -97,6 +98,14 @@ public class CommandResult implements Result {
 
   private GfJsonObject getGfJsonObject() {
     return gfJsonObject;
+  }
+
+  public Object getConfigObject() {
+    return configObject;
+  }
+
+  public void setConfigObject(Object configObject) {
+    this.configObject = configObject;
   }
 
   @Override

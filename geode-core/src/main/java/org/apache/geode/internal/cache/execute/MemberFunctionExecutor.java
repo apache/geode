@@ -149,10 +149,10 @@ public class MemberFunctionExecutor extends AbstractExecution {
         memberArgs.put(recip, getArgumentsForMember(recip.getId()));
       }
       Assert.assertTrue(memberArgs.size() == dest.size());
-      MemberFunctionResultWaiter resultReciever = new MemberFunctionResultWaiter(this.ds, localRC,
+      MemberFunctionResultWaiter resultReceiver = new MemberFunctionResultWaiter(this.ds, localRC,
           function, memberArgs, dest, resultSender);
 
-      ResultCollector reply = resultReciever.getFunctionResultFrom(dest, function, this);
+      ResultCollector reply = resultReceiver.getFunctionResultFrom(dest, function, this);
       return reply;
     }
     return localRC;

@@ -139,7 +139,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get teh value in VM1 to assert
+   * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get the value in VM1 to assert
    * put has happened successfully 4) Create mirrored HARegion region1 in VM2 5) do a get in VM2 to
    * verify that value was got through GII 6) do a put in VM2 7) assert put in VM2 was successful
    *
@@ -157,7 +157,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get teh value in VM1 to assert
+   * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get the value in VM1 to assert
    * put has happened successfully 4) Create mirrored HARegion region1 in VM2 5) do a get in VM2 to
    * verify that value was got through GII 6) do a put in VM2 7) assert put in VM2 was successful
    *
@@ -188,7 +188,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get teh value in VM1 to assert
+   * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get the value in VM1 to assert
    * put has happened successfully 4) Create mirrored HARegion region1 in VM2 5) do a get in VM2 to
    * verify that value was got through GII 6) do a put in VM2 7) assert put in VM2 was successful
    *
