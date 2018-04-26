@@ -28,7 +28,6 @@ import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 
@@ -141,7 +140,7 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                         InternalRegion r) {
+      InternalRegion r) {
     /*
      * Don't do anything here , it's handled in proxy and elsewhere.
      */
@@ -149,7 +148,7 @@ public class ClientTXRegionStub implements TXRegionStub {
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-                            InternalRegion region) {
+      InternalRegion region) {
     // Don't do anything here , it's handled in proxy and elsewhere.
   }
 

@@ -297,8 +297,8 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    * @return the processor used to await the potential {@link org.apache.geode.cache.CacheException}
    */
   public static RemoteDestroyReplyProcessor send(DistributedMember recipient, InternalRegion r,
-                                                 EntryEventImpl event, Object expectedOldValue, boolean useOriginRemote,
-                                                 boolean possibleDuplicate) throws RemoteOperationException {
+      EntryEventImpl event, Object expectedOldValue, boolean useOriginRemote,
+      boolean possibleDuplicate) throws RemoteOperationException {
     RemoteDestroyReplyProcessor p =
         new RemoteDestroyReplyProcessor(r.getSystem(), recipient, false);
     p.requireResponse();

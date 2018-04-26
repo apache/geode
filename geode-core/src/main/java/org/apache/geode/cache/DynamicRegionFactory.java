@@ -910,7 +910,7 @@ public abstract class DynamicRegionFactory {
     // Over-ride the super behavior to perform the creation of the dynamic region
     @Override
     public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
-                              long lastModified, boolean clearConflict) {
+        long lastModified, boolean clearConflict) {
 
       boolean isCreate = event.getOperation().isCreate();
       boolean set = false;
@@ -1019,7 +1019,7 @@ public abstract class DynamicRegionFactory {
 
     @Override
     public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
-                              long lastModified, boolean clearConflict) {
+        long lastModified, boolean clearConflict) {
       boolean isCreate = event.getOperation().isCreate();
       boolean set = false;
       if (isCreate && !event.callbacksInvoked()) {

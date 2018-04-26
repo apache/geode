@@ -516,8 +516,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // 2) update local bs, gateway
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
-                            Object expectedOldValue, boolean requireOldValue, long lastModified,
-                            boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     beginLocalWrite(event);
 
     try {
@@ -652,7 +652,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    */
   @Override
   public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
-                            long lastModified, boolean clearConflict) {
+      long lastModified, boolean clearConflict) {
     // Assumed this is called with entry synchrony
 
     // Typically UpdateOperation is called with the
@@ -1983,8 +1983,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   @Override
   public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
-                                  CacheWriter localWriter, boolean requireOldValue,
-                                  Object expectedOldValue)
+      CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
 
     boolean origRemoteState = false;

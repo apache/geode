@@ -690,13 +690,13 @@ public abstract class TXStateStub implements TXStateInterface {
 
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                         InternalRegion reg) {
+      InternalRegion reg) {
     getTXRegionStub(reg).postPutAll(putallOp, successfulPuts, reg);
   }
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-                            InternalRegion reg) {
+      InternalRegion reg) {
     getTXRegionStub(reg).postRemoveAll(op, successfulOps, reg);
   }
 

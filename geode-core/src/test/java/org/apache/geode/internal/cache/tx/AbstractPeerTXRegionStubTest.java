@@ -107,11 +107,11 @@ public class AbstractPeerTXRegionStubTest {
 
     @Override
     public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                           InternalRegion region) {}
+        InternalRegion region) {}
 
     @Override
     public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-                              InternalRegion region) {}
+        InternalRegion region) {}
 
     @Override
     public void cleanup() {}

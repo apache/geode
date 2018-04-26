@@ -187,10 +187,10 @@ public interface InternalDataView {
   Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones);
 
   void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                  InternalRegion reg);
+      InternalRegion reg);
 
   void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-                     InternalRegion reg);
+      InternalRegion reg);
 
   Entry accessEntry(KeyInfo keyInfo, LocalRegion localRegion);
 

@@ -2114,8 +2114,9 @@ public abstract class AbstractRegionMap
       final boolean requireOldValue, final boolean overwriteDestroyed)
       throws CacheWriterException, TimeoutException {
 
-    final RegionMapPut regionMapPut = new RegionMapPut(this, _getOwner(), this, entryEventSerialization, event, ifNew, ifOld,
-        overwriteDestroyed, requireOldValue, expectedOldValue);
+    final RegionMapPut regionMapPut =
+        new RegionMapPut(this, _getOwner(), this, entryEventSerialization, event, ifNew, ifOld,
+            overwriteDestroyed, requireOldValue, expectedOldValue);
 
     return regionMapPut.put();
   }
@@ -2590,11 +2591,11 @@ public abstract class AbstractRegionMap
 
   /** create a callback event for applying a transactional change to the local cache */
   @Retained
-  public static EntryEventImpl createCBEvent(final InternalRegion internalRegion, Operation op, Object key,
-                                             Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
-                                             Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
-                                             ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
-                                             long tailKey) {
+  public static EntryEventImpl createCBEvent(final InternalRegion internalRegion, Operation op,
+      Object key, Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
+      Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      long tailKey) {
     DistributedMember originator = null;
     // txId should not be null even on localOrigin
     Assert.assertTrue(txId != null);
@@ -2606,8 +2607,8 @@ public abstract class AbstractRegionMap
     }
 
     @Retained
-    EntryEventImpl retVal = EntryEventImpl.create(internalRegion, op, key, newValue, aCallbackArgument,
-        txEntryState == null, originator);
+    EntryEventImpl retVal = EntryEventImpl.create(internalRegion, op, key, newValue,
+        aCallbackArgument, txEntryState == null, originator);
     boolean returnedRetVal = false;
     try {
 
@@ -2666,7 +2667,8 @@ public abstract class AbstractRegionMap
             if (logger.isTraceEnabled()) {
               logger.trace("createCBEvent computing routing for primary bucket");
             }
-            FilterProfile fp = ((BucketRegion) internalRegion).getPartitionedRegion().getFilterProfile();
+            FilterProfile fp =
+                ((BucketRegion) internalRegion).getPartitionedRegion().getFilterProfile();
             if (fp != null) {
               FilterRoutingInfo fri = fp.getFilterRoutingInfoPart2(filterRoutingInfo, retVal);
               if (fri != null) {

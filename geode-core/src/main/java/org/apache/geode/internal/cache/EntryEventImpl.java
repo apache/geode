@@ -409,8 +409,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * @since GemFire 5.0
    */
   @Retained
-  static EntryEventImpl createPutAllEvent(DistributedPutAllOperation putAllOp, InternalRegion region,
-      Operation entryOp, Object entryKey, @Retained(ENTRY_EVENT_NEW_VALUE) Object entryNewValue) {
+  static EntryEventImpl createPutAllEvent(DistributedPutAllOperation putAllOp,
+      InternalRegion region, Operation entryOp, Object entryKey,
+      @Retained(ENTRY_EVENT_NEW_VALUE) Object entryNewValue) {
     @Retained
     EntryEventImpl e;
     if (putAllOp != null) {
@@ -1537,7 +1538,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return EVENT_OLD_VALUE;
   }
 
-  void putExistingEntry(final InternalRegion owner, RegionEntry entry) throws RegionClearedException {
+  void putExistingEntry(final InternalRegion owner, RegionEntry entry)
+      throws RegionClearedException {
     putExistingEntry(owner, entry, false, null);
   }
 
@@ -1547,8 +1549,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @param oldValueForDelta Used by Delta Propagation feature
    */
-  public void putExistingEntry(final InternalRegion owner, final RegionEntry reentry, boolean requireOldValue,
-      Object oldValueForDelta) throws RegionClearedException {
+  public void putExistingEntry(final InternalRegion owner, final RegionEntry reentry,
+      boolean requireOldValue, Object oldValueForDelta) throws RegionClearedException {
     makeUpdate();
     // only set oldValue if it hasn't already been set to something
     if (this.oldValue == null && this.oldValueBytes == null) {

@@ -579,9 +579,9 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
   @Retained
   public static EntryEventImpl getEventFromEntry(InternalRegion r, InternalDistributedMember myId,
-                                                 InternalDistributedMember eventSender, int idx,
-                                                 RemoveAllEntryData[] data, boolean notificationOnly,
-                                                 ClientProxyMembershipID bridgeContext, boolean posDup, boolean skipCallbacks) {
+      InternalDistributedMember eventSender, int idx, RemoveAllEntryData[] data,
+      boolean notificationOnly, ClientProxyMembershipID bridgeContext, boolean posDup,
+      boolean skipCallbacks) {
     RemoveAllEntryData dataItem = data[idx];
     @Retained
     EntryEventImpl ev = EntryEventImpl.create(r, dataItem.getOp(), dataItem.getKey(), null, null,

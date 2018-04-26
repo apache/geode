@@ -188,7 +188,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                         InternalRegion region) {
+      InternalRegion region) {
     try {
       RemotePutAllMessage.PutAllResponse response =
           RemotePutAllMessage.send(state.getTarget(), putallOp.getBaseEvent(),
@@ -206,7 +206,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-                            InternalRegion region) {
+      InternalRegion region) {
     try {
       RemoteRemoveAllMessage.RemoveAllResponse response =
           RemoteRemoveAllMessage.send(state.getTarget(), op.getBaseEvent(),

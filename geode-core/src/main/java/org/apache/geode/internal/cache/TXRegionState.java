@@ -294,7 +294,6 @@ public class TXRegionState {
    * For each entry that is not dirty (all we did was read it) decrement its refcount (so it can be
    * evicted as we apply our writes) and remove it from entryMods (so we don't keep iterating over
    * it and se we don't try to clean it up again later).
-   * @param r
    */
   void cleanupNonDirtyEntries(InternalRegion r) {
     if (!this.entryMods.isEmpty()) {

@@ -343,8 +343,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    * @throws RemoteOperationException if the peer is no longer available
    */
   public static RemotePutResponse txSend(DistributedMember recipient, InternalRegion r,
-                                         EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
-                                         Object expectedOldValue, boolean requireOldValue) throws RemoteOperationException {
+      EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue) throws RemoteOperationException {
     return send(recipient, r, event, lastModified, ifNew, ifOld, expectedOldValue, requireOldValue,
         true, false);
   }
@@ -670,7 +670,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   @Override
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-                           ReplyException ex, InternalRegion r, long startTime) {
+      ReplyException ex, InternalRegion r, long startTime) {
     PutReplyMessage.send(member, procId, getReplySender(dm), result, getOperation(), ex, this,
         null);
   }

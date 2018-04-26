@@ -55,7 +55,7 @@ public interface DistTXCoordinatorInterface extends TXStateInterface {
       throws UnsupportedOperationInTransactionException;
 
   void gatherAffectedRegions(HashSet<InternalRegion> regionSet, boolean includePrimaryRegions,
-                             boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException;
+      boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException;
 
   void gatherAffectedRegionsName(TreeSet<String> sortedRegionName, boolean includePrimaryRegions,
       boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException;

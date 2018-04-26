@@ -384,10 +384,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
    * Create PutAllPRMsgs for each bucket, and send them.
    *
    * @param putallO DistributedPutAllOperation object.
-   * @param r
    */
   public void postPutAll(DistributedPutAllOperation putallO, VersionedObjectList successfulPuts,
-                         InternalRegion r) throws TransactionException {
+      InternalRegion r) throws TransactionException {
     if (r.getCache().isCacheAtShutdownAll()) {
       throw r.getCache().getCacheClosedException("Cache is shutting down");
     }
@@ -447,7 +446,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-                            InternalRegion r) {
+      InternalRegion r) {
     if (r.getCache().isCacheAtShutdownAll()) {
       throw r.getCache().getCacheClosedException("Cache is shutting down");
     }

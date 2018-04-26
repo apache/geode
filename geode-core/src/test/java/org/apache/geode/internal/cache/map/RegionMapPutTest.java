@@ -26,23 +26,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.cache.AbstractRegionMapTest;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventSerialization;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.Token;
@@ -82,8 +74,9 @@ public class RegionMapPutTest {
     final boolean requireOldValue = false;
     final Object expectedOldValue = null;
     final boolean overwriteDestroyed = false;
-    RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, internalRegion, cacheModificationLock,
-        entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed, requireOldValue, expectedOldValue);
+    RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, internalRegion,
+        cacheModificationLock, entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed,
+        requireOldValue, expectedOldValue);
 
     RegionEntry result = regionMapPut.put();
 
@@ -95,35 +88,35 @@ public class RegionMapPutTest {
   }
 
   /*
-  @Test
-  public void verifyConcurrentCreateHasCorrectResult() throws Exception {
-    CountDownLatch firstCreateAddedUninitializedEntry = new CountDownLatch(1);
-    CountDownLatch secondCreateFoundFirstCreatesEntry = new CountDownLatch(1);
-    TestableBasicPutMap arm = new TestableBasicPutMap(firstCreateAddedUninitializedEntry,
-        secondCreateFoundFirstCreatesEntry);
-    // The key needs to be long enough to not be stored inline on the region entry.
-    String key1 = "lonGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGkey";
-    String key2 = new String(key1);
-
-    Future<RegionEntry> future = doFirstCreateInAnotherThread(arm, key1);
-    if (!firstCreateAddedUninitializedEntry.await(5, TimeUnit.SECONDS)) {
-      // something is wrong with the other thread
-      // so count down the latch it may be waiting
-      // on and then call get to see what went wrong with him.
-      secondCreateFoundFirstCreatesEntry.countDown();
-      fail("other thread took too long. It returned " + future.get());
-    }
-    EntryEventImpl event = createEventForCreate(arm._getOwner(), key2);
-    // now do the second create
-    RegionEntry result = arm.basicPut(event, 0L, true, false, null, false, false);
-
-    RegionEntry resultFromOtherThread = future.get();
-
-    assertThat(result).isNull();
-    assertThat(resultFromOtherThread).isNotNull();
-    assertThat(resultFromOtherThread.getKey()).isSameAs(key1);
-  }
-  */
+   * @Test
+   * public void verifyConcurrentCreateHasCorrectResult() throws Exception {
+   * CountDownLatch firstCreateAddedUninitializedEntry = new CountDownLatch(1);
+   * CountDownLatch secondCreateFoundFirstCreatesEntry = new CountDownLatch(1);
+   * TestableBasicPutMap arm = new TestableBasicPutMap(firstCreateAddedUninitializedEntry,
+   * secondCreateFoundFirstCreatesEntry);
+   * // The key needs to be long enough to not be stored inline on the region entry.
+   * String key1 = "lonGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGkey";
+   * String key2 = new String(key1);
+   *
+   * Future<RegionEntry> future = doFirstCreateInAnotherThread(arm, key1);
+   * if (!firstCreateAddedUninitializedEntry.await(5, TimeUnit.SECONDS)) {
+   * // something is wrong with the other thread
+   * // so count down the latch it may be waiting
+   * // on and then call get to see what went wrong with him.
+   * secondCreateFoundFirstCreatesEntry.countDown();
+   * fail("other thread took too long. It returned " + future.get());
+   * }
+   * EntryEventImpl event = createEventForCreate(arm._getOwner(), key2);
+   * // now do the second create
+   * RegionEntry result = arm.basicPut(event, 0L, true, false, null, false, false);
+   *
+   * RegionEntry resultFromOtherThread = future.get();
+   *
+   * assertThat(result).isNull();
+   * assertThat(resultFromOtherThread).isNotNull();
+   * assertThat(resultFromOtherThread.getKey()).isSameAs(key1);
+   * }
+   */
 
   private EntryEventImpl createEventForCreate(InternalRegion lr, String key) {
     when(lr.getKeyInfo(key)).thenReturn(new KeyInfo(key, null, null));
@@ -134,51 +127,52 @@ public class RegionMapPutTest {
   }
 
   /*
-
-  private Future<RegionEntry> doFirstCreateInAnotherThread(TestableBasicPutMap arm, String key) {
-    Future<RegionEntry> result = CompletableFuture.supplyAsync(() -> {
-      EntryEventImpl event = createEventForCreate(arm._getOwner(), key);
-      return arm.basicPut(event, 0L, true, false, null, false, false);
-    });
-    return result;
-  }
-
-
-  private static class TestableBasicPutMap extends AbstractRegionMapTest.TestableAbstractRegionMap {
-    private final CountDownLatch firstCreateAddedUninitializedEntry;
-    private final CountDownLatch secondCreateFoundFirstCreatesEntry;
-    private boolean alreadyCalledPutIfAbsentNewEntry;
-    private boolean alreadyCalledAddRegionEntryToMapAndDoPut;
-
-    public TestableBasicPutMap(CountDownLatch removePhase1Completed,
-                               CountDownLatch secondCreateFoundFirstCreatesEntry) {
-      super();
-      this.firstCreateAddedUninitializedEntry = removePhase1Completed;
-      this.secondCreateFoundFirstCreatesEntry = secondCreateFoundFirstCreatesEntry;
-    }
-
-    @Override
-    protected boolean addRegionEntryToMapAndDoPut(final RegionMapPut putInfo) {
-      if (!alreadyCalledAddRegionEntryToMapAndDoPut) {
-        alreadyCalledAddRegionEntryToMapAndDoPut = true;
-      } else {
-        this.secondCreateFoundFirstCreatesEntry.countDown();
-      }
-      return super.addRegionEntryToMapAndDoPut(putInfo);
-    }
-
-    @Override
-    protected void putIfAbsentNewEntry(final RegionMapPut putInfo) {
-      super.putIfAbsentNewEntry(putInfo);
-      if (!alreadyCalledPutIfAbsentNewEntry) {
-        alreadyCalledPutIfAbsentNewEntry = true;
-        this.firstCreateAddedUninitializedEntry.countDown();
-        try {
-          this.secondCreateFoundFirstCreatesEntry.await(5, TimeUnit.SECONDS);
-        } catch (InterruptedException ignore) {
-        }
-      }
-    }
-  }
-  */
+   *
+   * private Future<RegionEntry> doFirstCreateInAnotherThread(TestableBasicPutMap arm, String key) {
+   * Future<RegionEntry> result = CompletableFuture.supplyAsync(() -> {
+   * EntryEventImpl event = createEventForCreate(arm._getOwner(), key);
+   * return arm.basicPut(event, 0L, true, false, null, false, false);
+   * });
+   * return result;
+   * }
+   *
+   *
+   * private static class TestableBasicPutMap extends
+   * AbstractRegionMapTest.TestableAbstractRegionMap {
+   * private final CountDownLatch firstCreateAddedUninitializedEntry;
+   * private final CountDownLatch secondCreateFoundFirstCreatesEntry;
+   * private boolean alreadyCalledPutIfAbsentNewEntry;
+   * private boolean alreadyCalledAddRegionEntryToMapAndDoPut;
+   *
+   * public TestableBasicPutMap(CountDownLatch removePhase1Completed,
+   * CountDownLatch secondCreateFoundFirstCreatesEntry) {
+   * super();
+   * this.firstCreateAddedUninitializedEntry = removePhase1Completed;
+   * this.secondCreateFoundFirstCreatesEntry = secondCreateFoundFirstCreatesEntry;
+   * }
+   *
+   * @Override
+   * protected boolean addRegionEntryToMapAndDoPut(final RegionMapPut putInfo) {
+   * if (!alreadyCalledAddRegionEntryToMapAndDoPut) {
+   * alreadyCalledAddRegionEntryToMapAndDoPut = true;
+   * } else {
+   * this.secondCreateFoundFirstCreatesEntry.countDown();
+   * }
+   * return super.addRegionEntryToMapAndDoPut(putInfo);
+   * }
+   *
+   * @Override
+   * protected void putIfAbsentNewEntry(final RegionMapPut putInfo) {
+   * super.putIfAbsentNewEntry(putInfo);
+   * if (!alreadyCalledPutIfAbsentNewEntry) {
+   * alreadyCalledPutIfAbsentNewEntry = true;
+   * this.firstCreateAddedUninitializedEntry.countDown();
+   * try {
+   * this.secondCreateFoundFirstCreatesEntry.await(5, TimeUnit.SECONDS);
+   * } catch (InterruptedException ignore) {
+   * }
+   * }
+   * }
+   * }
+   */
 }

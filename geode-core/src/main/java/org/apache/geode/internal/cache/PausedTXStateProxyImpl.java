@@ -325,11 +325,11 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
 
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                         InternalRegion reg) {}
+      InternalRegion reg) {}
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-                            InternalRegion reg) {}
+      InternalRegion reg) {}
 
   @Override
   public Entry accessEntry(KeyInfo keyInfo, LocalRegion localRegion) {

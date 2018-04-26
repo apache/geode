@@ -319,8 +319,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
-                            Object expectedOldValue, boolean requireOldValue, long lastModified,
-                            boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     final boolean isTraceEnabled = logger.isTraceEnabled();
 
     Lock dlock = null;
@@ -2583,8 +2583,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    */
   @Override
   public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
-                                  CacheWriter localWriter, boolean requireOldValue,
-                                  Object expectedOldValue)
+      CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
     if ((localWriter != null || (netWriteRecipients != null && !netWriteRecipients.isEmpty()))
         && !event.inhibitAllNotifications()) {

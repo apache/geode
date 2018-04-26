@@ -282,7 +282,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * message type
    */
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-                           ReplyException ex, InternalRegion r, long startTime) {
+      ReplyException ex, InternalRegion r, long startTime) {
     ReplyMessage.send(member, procId, ex, getReplySender(dm), r != null && r.isInternalRegion());
   }
 

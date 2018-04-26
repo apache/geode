@@ -848,7 +848,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                         InternalRegion reg) {
+      InternalRegion reg) {
     if (putallOp.putAllData.length == 0) {
       return;
     }
@@ -864,7 +864,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-                            InternalRegion reg) {
+      InternalRegion reg) {
     if (op.removeAllData.length == 0) {
       return;
     }

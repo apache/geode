@@ -533,7 +533,7 @@ public class DistTXState extends TXState {
    * org.apache.geode.internal.cache.LocalRegion)
    */
   public void postPutAll(final DistributedPutAllOperation putallOp,
-                         final VersionedObjectList successfulPuts, InternalRegion reg) {
+      final VersionedObjectList successfulPuts, InternalRegion reg) {
 
     final InternalRegion theRegion;
     if (reg instanceof BucketRegion) {
@@ -598,7 +598,7 @@ public class DistTXState extends TXState {
 
   @Override
   public void postRemoveAll(final DistributedRemoveAllOperation op,
-                            final VersionedObjectList successfulOps, InternalRegion reg) {
+      final VersionedObjectList successfulOps, InternalRegion reg) {
     final InternalRegion theRegion;
     if (reg instanceof BucketRegion) {
       theRegion = ((BucketRegion) reg).getPartitionedRegion();

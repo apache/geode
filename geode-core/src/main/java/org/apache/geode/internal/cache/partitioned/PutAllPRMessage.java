@@ -571,9 +571,9 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
   @Retained
   public static EntryEventImpl getEventFromEntry(InternalRegion r, InternalDistributedMember myId,
-                                                 InternalDistributedMember eventSender, int idx,
-                                                 PutAllEntryData[] data, boolean notificationOnly,
-                                                 ClientProxyMembershipID bridgeContext, boolean posDup, boolean skipCallbacks) {
+      InternalDistributedMember eventSender, int idx, PutAllEntryData[] data,
+      boolean notificationOnly, ClientProxyMembershipID bridgeContext, boolean posDup,
+      boolean skipCallbacks) {
     PutAllEntryData prd = data[idx];
     // EntryEventImpl ev = EntryEventImpl.create(r,
     // prd.getOp(),

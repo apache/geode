@@ -3109,8 +3109,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   @Override
-  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients, CacheWriter localWriter,
-      boolean requireOldValue, Object expectedOldValue)
+  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
+      CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
     Assert.assertTrue(netWriteRecipients == null);
     Operation operation = event.getOperation();
@@ -5635,9 +5635,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   @Override
   public boolean virtualPut(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
-                            Object expectedOldValue, boolean requireOldValue,
-                            final long lastModified,
-                            final boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      Object expectedOldValue, boolean requireOldValue, final long lastModified,
+      final boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
 
     if (!MemoryThresholds.isLowMemoryExceptionDisabled()) {
       checkIfAboveThreshold(event);
@@ -5752,7 +5751,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
-                            long lastModified, boolean clearConflict) {
+      long lastModified, boolean clearConflict) {
 
     final boolean isNewKey = event.getOperation().isCreate();
 
@@ -6428,7 +6427,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @see DistributedRegion#basicDestroy(EntryEventImpl, boolean, Object)
    */
   @Override
-  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite, Object expectedOldValue)
+  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
+      Object expectedOldValue)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
 
     if (!event.isOriginRemote()) {
@@ -6498,8 +6498,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   @Override
   public boolean mapDestroy(final EntryEventImpl event, final boolean cacheWrite,
-                            final boolean isEviction,
-                            Object expectedOldValue)
+      final boolean isEviction, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
 
     final boolean inGII = lockGII();

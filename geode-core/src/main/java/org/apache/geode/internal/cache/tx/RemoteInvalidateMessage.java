@@ -146,7 +146,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
    *         {@link org.apache.geode.cache.CacheException}
    */
   public static InvalidateResponse send(DistributedMember recipient, InternalRegion r,
-                                        EntryEventImpl event, boolean useOriginRemote, boolean possibleDuplicate)
+      EntryEventImpl event, boolean useOriginRemote, boolean possibleDuplicate)
       throws RemoteOperationException {
     InvalidateResponse p = new InvalidateResponse(r.getSystem(), recipient, event.getKey());
     RemoteInvalidateMessage m = new RemoteInvalidateMessage(recipient, r.getFullPath(), p, event,
@@ -231,12 +231,12 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
   @Override
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-                           ReplyException ex, InternalRegion r, long startTime) {
+      ReplyException ex, InternalRegion r, long startTime) {
     sendReply(member, procId, dm, ex, r, null, startTime);
   }
 
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-                           ReplyException ex, InternalRegion r, VersionTag<?> versionTag, long startTime) {
+      ReplyException ex, InternalRegion r, VersionTag<?> versionTag, long startTime) {
     InvalidateReplyMessage.send(member, procId, getReplySender(dm), versionTag, ex);
   }
 

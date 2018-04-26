@@ -185,7 +185,8 @@ public class PeerTXStateStub extends TXStateStub {
   }
 
   @Override
-  protected void validateRegionCanJoinTransaction(InternalRegion region) throws TransactionException {
+  protected void validateRegionCanJoinTransaction(InternalRegion region)
+      throws TransactionException {
     /*
      * Ok is this region legit to enter into tx?
      */

@@ -24,7 +24,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -106,6 +105,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   /**
    * Used by unit tests to get access to the EntryExpiryTask of the given key. Returns null if the
    * entry exists but does not have an expiry task.
+   *
    * @throws EntryNotFoundException if no entry exists key.
    */
   EntryExpiryTask getEntryExpiryTask(Object key);
@@ -136,18 +136,18 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   RegionEntry basicGetEntry(Object key);
 
   void invokePutCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
-                          final boolean callDispatchListenerEvent, boolean notifyGateways);
+      final boolean callDispatchListenerEvent, boolean notifyGateways);
 
   void invokeDestroyCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
-                              final boolean callDispatchListenerEvent, boolean notifyGateways);
+      final boolean callDispatchListenerEvent, boolean notifyGateways);
 
   void invokeInvalidateCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
-                                 final boolean callDispatchListenerEvent);
+      final boolean callDispatchListenerEvent);
 
   long getTotalEvictions();
 
   Region createSubregion(String subregionName, RegionAttributes attrs,
-                         InternalRegionArguments internalRegionArgs)
+      InternalRegionArguments internalRegionArgs)
       throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException;
 
   void addCacheServiceProfile(CacheServiceProfile profile);
@@ -171,7 +171,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event);
 
   void basicDestroyPart2(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
-                         boolean conflictWithClear, boolean duringRI, boolean invokeCallbacks);
+      boolean conflictWithClear, boolean duringRI, boolean invokeCallbacks);
 
   void notifyTimestampsToGateways(EntryEventImpl event);
 
@@ -188,7 +188,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   void checkReadiness();
 
   void basicDestroyPart3(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
-                         boolean duringRI, boolean invokeCallbacks, Object expectedOldValue);
+      boolean duringRI, boolean invokeCallbacks, Object expectedOldValue);
 
   void cancelExpiryTask(RegionEntry regionEntry);
 
@@ -217,7 +217,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   void handleCacheClose(Operation op);
 
   void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
-                  InternalRegionArguments internalRegionArgs)
+      InternalRegionArguments internalRegionArgs)
       throws TimeoutException, IOException, ClassNotFoundException;
 
   void cleanupFailedInitialization();
@@ -242,9 +242,11 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   /**
    * The default Region implementation will generate EvenTID in the EntryEvent object. This method
-   * is overridden in special Region objects like HARegion or SingleWriteSingleReadRegionQueue.SingleReadWriteMetaRegion
+   * is overridden in special Region objects like HARegion or
+   * SingleWriteSingleReadRegionQueue.SingleReadWriteMetaRegion
    * to return false as the event propagation from those regions do not need EventID objects. This
    * method is made abstract to directly use it in clear operations. (clear and localclear)
+   *
    * @return boolean indicating whether to generate eventID or not
    */
   boolean generateEventID();
@@ -254,16 +256,16 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   CacheWriter basicGetWriter();
 
   void basicPutPart3(EntryEventImpl event, RegionEntry regionEntry, boolean b,
-                     long lastModifiedTime, boolean invokeListeners, boolean ifNew, boolean ifOld,
-                     Object expectedOldValue, boolean requireOldValue);
+      long lastModifiedTime, boolean invokeListeners, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue);
 
   long basicPutPart2(EntryEventImpl event, RegionEntry re, boolean b, long lastModifiedTime,
-                     boolean clearOccured);
+      boolean clearOccured);
 
   int calculateValueSize(Object v);
 
   void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients, CacheWriter cacheWriter,
-                           boolean requireOldValue, Object expectedOldValue);
+      boolean requireOldValue, Object expectedOldValue);
 
   void updateSizeOnPut(Object key, int oldSize, int newBucketSize);
 
@@ -330,25 +332,23 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   boolean hasSeenEvent(EventID eventID);
 
   void txApplyDestroy(Object key, TransactionId rmtOrigin, TXRmtEvent event,
-                      boolean needTokensForGII, Operation op, EventID eventId,
-                      Object aCallbackArgument,
-                      List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
-                      ClientProxyMembershipID bridgeContext, boolean isOriginRemote,
-                      TXEntryState txEntryState,
-                      VersionTag versionTag, long tailKey);
+      boolean needTokensForGII, Operation op, EventID eventId, Object aCallbackArgument,
+      List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, boolean isOriginRemote, TXEntryState txEntryState,
+      VersionTag versionTag, long tailKey);
 
 
   void txApplyInvalidate(Object key, Object newValue, boolean didDestroy,
-                         TransactionId transactionId, TXRmtEvent event, boolean localOp, EventID eventId,
-                         Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
-                         FilterRoutingInfo filterRoutingInfo, ClientProxyMembershipID bridgeContext,
-                         TXEntryState txEntryState, VersionTag versionTag, long tailKey);
+      TransactionId transactionId, TXRmtEvent event, boolean localOp, EventID eventId,
+      Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
+      FilterRoutingInfo filterRoutingInfo, ClientProxyMembershipID bridgeContext,
+      TXEntryState txEntryState, VersionTag versionTag, long tailKey);
 
   void txApplyPut(Operation putOp, Object key, Object newValue, boolean didDestroy,
-                  TransactionId transactionId, TXRmtEvent event, EventID eventId, Object aCallbackArgument,
-                  List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
-                  ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
-                  long tailKey);
+      TransactionId transactionId, TXRmtEvent event, EventID eventId, Object aCallbackArgument,
+      List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      long tailKey);
 
   void handleReliableDistribution(Set successfulRecipients);
 
@@ -359,11 +359,12 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   boolean mapDestroy(EntryEventImpl event, boolean cacheWrite, boolean b, Object expectedOldValue);
 
   boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
-                  boolean requireOldValue, long lastModified, boolean overwriteDestroyed);
+      boolean requireOldValue, long lastModified, boolean overwriteDestroyed);
 
   long postPutAllSend(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts);
 
-  void postPutAllFireEvents(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts);
+  void postPutAllFireEvents(DistributedPutAllOperation putallOp,
+      VersionedObjectList successfulPuts);
 
   long postRemoveAllSend(DistributedRemoveAllOperation op, VersionedObjectList successfulOps);
 

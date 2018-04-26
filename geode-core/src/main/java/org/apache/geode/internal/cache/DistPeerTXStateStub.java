@@ -235,12 +235,11 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   }
 
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                         InternalRegion reg) {
+      InternalRegion reg) {
     super.postPutAll(putallOp, successfulPuts, reg);
     // TODO DISTTX: event is never released
-    EntryEventImpl event =
-        EntryEventImpl.createPutAllEvent(putallOp, reg, Operation.PUTALL_CREATE,
-            putallOp.getBaseEvent().getKey(), putallOp.getBaseEvent().getValue());
+    EntryEventImpl event = EntryEventImpl.createPutAllEvent(putallOp, reg, Operation.PUTALL_CREATE,
+        putallOp.getBaseEvent().getKey(), putallOp.getBaseEvent().getValue());
     event.setEventId(putallOp.getBaseEvent().getEventId());
     DistTxEntryEvent dtop = new DistTxEntryEvent(event);
     dtop.setPutAllOperation(putallOp);
@@ -248,11 +247,11 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   }
 
   public void postRemoveAll(DistributedRemoveAllOperation removeAllOp,
-                            VersionedObjectList successfulOps, InternalRegion reg) {
+      VersionedObjectList successfulOps, InternalRegion reg) {
     super.postRemoveAll(removeAllOp, successfulOps, reg);
     // TODO DISTTX: event is never released
-    EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(removeAllOp, reg,
-        removeAllOp.getBaseEvent().getKey());
+    EntryEventImpl event =
+        EntryEventImpl.createRemoveAllEvent(removeAllOp, reg, removeAllOp.getBaseEvent().getKey());
     event.setEventId(removeAllOp.getBaseEvent().getEventId());
     DistTxEntryEvent dtop = new DistTxEntryEvent(event);
     dtop.setRemoveAllOperation(removeAllOp);
@@ -305,8 +304,9 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   }
 
   @Override
-  public void gatherAffectedRegions(HashSet<InternalRegion> regionSet, boolean includePrimaryRegions,
-                                    boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException {
+  public void gatherAffectedRegions(HashSet<InternalRegion> regionSet,
+      boolean includePrimaryRegions, boolean includeRedundantRegions)
+      throws UnsupportedOperationInTransactionException {
     if (includePrimaryRegions) {
       for (DistTxEntryEvent dtos : this.primaryTransactionalOperations) {
         regionSet.add(dtos.getRegion());

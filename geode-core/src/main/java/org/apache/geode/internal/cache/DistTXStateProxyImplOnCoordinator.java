@@ -149,8 +149,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
           allNodes.remove(originalTarget);
           otherNodes = allNodes;
         } else if (internalRegion instanceof DistributedRegion) {
-          otherNodes =
-              ((DistributedRegion) internalRegion).getCacheDistributionAdvisor().adviseInitializedReplicates();
+          otherNodes = ((DistributedRegion) internalRegion).getCacheDistributionAdvisor()
+              .adviseInitializedReplicates();
           otherNodes.remove(originalTarget);
         }
 
@@ -740,7 +740,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    */
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                         InternalRegion reg) {
+      InternalRegion reg) {
     if (putallOp.putAllData.length == 0) {
       return;
     }
@@ -819,7 +819,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    */
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-                            InternalRegion reg) {
+      InternalRegion reg) {
     if (op.removeAllData.length == 0) {
       return;
     }

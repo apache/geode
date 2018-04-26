@@ -513,7 +513,6 @@ public class TXEntryState implements Releasable {
    * Returns true if this operation has an event for the tx listener
    *
    * @since GemFire 5.0
-   * @param r
    */
   boolean isOpAnyEvent(InternalRegion r) {
     return isOpPutEvent() || isOpCreateEvent() || isOpInvalidateEvent() || isOpDestroyEvent(r);
@@ -1573,7 +1572,7 @@ public class TXEntryState implements Releasable {
   }
 
   private void txApplyInvalidateLocally(InternalRegion r, Object key, Object newValue,
-                                        boolean didDestroy, TXState txState) {
+      boolean didDestroy, TXState txState) {
     try {
       r.txApplyInvalidate(key, newValue, didDestroy, txState.getTransactionId(), null,
           isOpLocalInvalidate() ? true : false, getNearSideEventId(txState), callBackArgument,
@@ -1585,7 +1584,7 @@ public class TXEntryState implements Releasable {
   }
 
   private void txApplyPutLocally(InternalRegion r, Operation putOp, Object key, Object newValue,
-                                 boolean didDestroy, TXState txState) {
+      boolean didDestroy, TXState txState) {
     try {
       r.txApplyPut(putOp, key, newValue, didDestroy, txState.getTransactionId(), null,
           getNearSideEventId(txState), callBackArgument, txState.getPendingCallbacks(),
@@ -1599,7 +1598,6 @@ public class TXEntryState implements Releasable {
    * If the entry is not dirty (read only) then clean it up.
    *
    * @return true if this entry is not dirty.
-   * @param r
    */
   boolean cleanupNonDirty(InternalRegion r) {
     if (isDirty()) {
@@ -1655,7 +1653,8 @@ public class TXEntryState implements Releasable {
   }
 
 
-  void buildCompleteMessage(InternalRegion r, Object key, TXCommitMessage msg, Set otherRecipients) {
+  void buildCompleteMessage(InternalRegion r, Object key, TXCommitMessage msg,
+      Set otherRecipients) {
     if (!isDirty()) {
       // all we do was read so just return
       return;

@@ -69,11 +69,9 @@ public class RegionMapPut {
   private Object oldValueForDelta;
 
   public RegionMapPut(FocusedRegionMap focusedRegionMap, InternalRegion owner,
-                      CacheModificationLock cacheModificationLock,
-                      EntryEventSerialization entryEventSerialization,
-                      EntryEventImpl event, boolean ifNew, boolean ifOld,
-                      boolean overwriteDestroyed, boolean requireOldValue,
-                      Object expectedOldValue) {
+      CacheModificationLock cacheModificationLock, EntryEventSerialization entryEventSerialization,
+      EntryEventImpl event, boolean ifNew, boolean ifOld, boolean overwriteDestroyed,
+      boolean requireOldValue, Object expectedOldValue) {
     if (owner == null) {
       // "fix" for bug 32440
       Assert.assertTrue(false, "The owner for RegionMap " + this + " is null for event " + event);
@@ -310,8 +308,8 @@ public class RegionMapPut {
     setCreate(getRegionEntry() == null);
     if (isCreate()) {
       final Object key = getEvent().getKey();
-      RegionEntry newEntry = getRegionMap()
-          .getEntryFactory().createEntry(getOwner(), key, Token.REMOVED_PHASE1);
+      RegionEntry newEntry =
+          getRegionMap().getEntryFactory().createEntry(getOwner(), key, Token.REMOVED_PHASE1);
       setRegionEntry(newEntry);
     }
   }
@@ -367,9 +365,8 @@ public class RegionMapPut {
     if (isCompleted()) {
       try {
         final boolean invokeListeners = getEvent().basicGetNewValue() != Token.TOMBSTONE;
-        getOwner().basicPutPart3(getEvent(), getRegionEntry(),
-            !isUninitialized(), getLastModifiedTime(), invokeListeners,
-            isIfNew(), isIfOld(), getExpectedOldValue(),
+        getOwner().basicPutPart3(getEvent(), getRegionEntry(), !isUninitialized(),
+            getLastModifiedTime(), invokeListeners, isIfNew(), isIfOld(), getExpectedOldValue(),
             isRequireOldValue());
       } finally {
         if (!getClearOccured()) {
@@ -391,8 +388,7 @@ public class RegionMapPut {
    *         the put should not be done.
    */
   private boolean shouldPutContinue() {
-    if (continueUpdate() && continueOverwriteDestroyed()
-        && satisfiesExpectedOldValue()) {
+    if (continueUpdate() && continueOverwriteDestroyed() && satisfiesExpectedOldValue()) {
       return true;
     }
     return false;
@@ -508,8 +504,7 @@ public class RegionMapPut {
       // Note that v will be null instead of INVALID because setOldValue
       // converts INVALID to null.
       // But checkExpectedOldValue handle this and says INVALID equals null.
-      if (!AbstractRegionEntry.checkExpectedOldValue(getExpectedOldValue(), v,
-          event.getRegion())) {
+      if (!AbstractRegionEntry.checkExpectedOldValue(getExpectedOldValue(), v, event.getRegion())) {
         return false;
       }
     }
@@ -520,8 +515,8 @@ public class RegionMapPut {
     final EntryEventImpl event = getEvent();
     final RegionEntry re = getRegionEntry();
     event.setRegionEntry(re);
-    boolean needToSetOldValue = isCacheWrite() || isRequireOldValue()
-        || event.getOperation().guaranteesOldValue();
+    boolean needToSetOldValue =
+        isCacheWrite() || isRequireOldValue() || event.getOperation().guaranteesOldValue();
     if (needToSetOldValue) {
       if (event.getOperation().guaranteesOldValue()) {
         // In these cases we want to even get the old value from disk if it is not in memory
@@ -585,8 +580,7 @@ public class RegionMapPut {
     final boolean wasTombstone = re.isTombstone();
     final int oldSize = event.getRegion().calculateRegionEntryValueSize(re);
     getRegionMap().processVersionTag(re, event);
-    event.putExistingEntry(event.getRegion(), re, isRequireOldValue(),
-        getOldValueForDelta());
+    event.putExistingEntry(event.getRegion(), re, isRequireOldValue(), getOldValueForDelta());
     EntryLogger.logPut(event);
     updateSize(oldSize, true/* isUpdate */, wasTombstone);
   }
@@ -616,8 +610,8 @@ public class RegionMapPut {
           event.makeUpdate();
         }
       }
-      getOwner().cacheWriteBeforePut(event, getNetWriteRecipients(),
-          getCacheWriter(), isRequireOldValue(), getExpectedOldValue());
+      getOwner().cacheWriteBeforePut(event, getNetWriteRecipients(), getCacheWriter(),
+          isRequireOldValue(), getExpectedOldValue());
     }
     if (!getOwner().isInitialized() && !isCacheWrite()) {
       // block setting of old value in putNewValueNoSync, don't need it
@@ -665,8 +659,7 @@ public class RegionMapPut {
     return true;
   }
 
-  private void updateSize(int oldSize, boolean isUpdate,
-                          boolean wasTombstone) {
+  private void updateSize(int oldSize, boolean isUpdate, boolean wasTombstone) {
     final EntryEventImpl event = getEvent();
     final Object key = event.getKey();
     final int newBucketSize = event.getNewValueBucketSize();

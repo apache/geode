@@ -787,8 +787,8 @@ public class TXState implements TXStateInterface {
    */
   protected void applyChanges(List/* <TXEntryStateWithRegionAndKey> */ entries) {
     // applyChangesStart for each region
-    for (Map.Entry<InternalRegion , TXRegionState> me : this.regions.entrySet()) {
-      InternalRegion  r = me.getKey();
+    for (Map.Entry<InternalRegion, TXRegionState> me : this.regions.entrySet()) {
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.applyChangesStart(r, this);
     }
@@ -819,8 +819,8 @@ public class TXState implements TXStateInterface {
     }
 
     // applyChangesEnd for each region
-    for (Map.Entry<InternalRegion , TXRegionState> me : this.regions.entrySet()) {
-      InternalRegion  r = me.getKey();
+    for (Map.Entry<InternalRegion, TXRegionState> me : this.regions.entrySet()) {
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.applyChangesEnd(r, this);
     }
@@ -865,10 +865,10 @@ public class TXState implements TXStateInterface {
           this.proxy.getTxMgr().getCachePerfStats()
               .incTxConflictCheckTime(CachePerfStats.getStatTime() - conflictStart);
       }
-      Iterator<Map.Entry<InternalRegion , TXRegionState>> it = this.regions.entrySet().iterator();
+      Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
       while (it.hasNext()) {
-        Map.Entry<InternalRegion , TXRegionState> me = it.next();
-        InternalRegion  r = me.getKey();
+        Map.Entry<InternalRegion, TXRegionState> me = it.next();
+        InternalRegion r = me.getKey();
         TXRegionState txrs = me.getValue();
         /*
          * Need to unlock the primary lock for rebalancing so that rebalancing can resume.
@@ -915,10 +915,10 @@ public class TXState implements TXStateInterface {
   @Override
   public List getEvents() {
     ArrayList events = new ArrayList();
-    Iterator<Map.Entry<InternalRegion , TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry me = it.next();
-      InternalRegion  r = (InternalRegion ) me.getKey();
+      InternalRegion r = (InternalRegion) me.getKey();
       TXRegionState txrs = (TXRegionState) me.getValue();
       txrs.getEvents(r, events, this);
     }
@@ -935,7 +935,7 @@ public class TXState implements TXStateInterface {
     Iterator it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry me = (Map.Entry) it.next();
-      InternalRegion  r = (InternalRegion ) me.getKey();
+      InternalRegion r = (InternalRegion) me.getKey();
       TXRegionState txrs = (TXRegionState) me.getValue();
       txrs.getEntries(entries, r);
     }
@@ -1223,14 +1223,13 @@ public class TXState implements TXStateInterface {
   }
 
   /**
-   * @param region
    * @param ifNew only write the entry if it currently does not exist
    * @param requireOldValue if true set the old value in the event, even if ifNew and entry doesn't
- *        currently exist (this is needed for putIfAbsent).
+   *        currently exist (this is needed for putIfAbsent).
    * @param expectedOldValue the required old value or null
    */
   TXEntryState txWriteEntry(InternalRegion region, EntryEventImpl event, boolean ifNew,
-                            boolean requireOldValue, Object expectedOldValue) throws EntryNotFoundException {
+      boolean requireOldValue, Object expectedOldValue) throws EntryNotFoundException {
     boolean createIfAbsent = true;
     if (event.getOperation() == Operation.REPLACE) {
       // replace(K,V) and replace(K,V,V) cannot create an entry
@@ -1453,8 +1452,9 @@ public class TXState implements TXStateInterface {
    * is not null it must match the current value of the entry or an EntryNotFoundException is
    * thrown.
    */
-  protected TXEntryState txReadEntry(KeyInfo keyInfo, InternalRegion internalRegion, boolean rememberRead,
-                                     Object expectedOldValue, boolean createIfAbsent) throws EntryNotFoundException {
+  protected TXEntryState txReadEntry(KeyInfo keyInfo, InternalRegion internalRegion,
+      boolean rememberRead, Object expectedOldValue, boolean createIfAbsent)
+      throws EntryNotFoundException {
     InternalRegion dataReg = internalRegion.getDataRegionForWrite(keyInfo);
     TXRegionState txr = txReadRegion(dataReg);
     TXEntryState result = null;
@@ -1932,7 +1932,7 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public void postPutAll(final DistributedPutAllOperation putallOp,
-                         final VersionedObjectList successfulPuts, InternalRegion reg) {
+      final VersionedObjectList successfulPuts, InternalRegion reg) {
 
     final InternalRegion theRegion;
     if (reg instanceof BucketRegion) {
@@ -1976,7 +1976,7 @@ public class TXState implements TXStateInterface {
 
   @Override
   public void postRemoveAll(final DistributedRemoveAllOperation op,
-                            final VersionedObjectList successfulOps, InternalRegion reg) {
+      final VersionedObjectList successfulOps, InternalRegion reg) {
     final InternalRegion theRegion;
     if (reg instanceof BucketRegion) {
       theRegion = ((BucketRegion) reg).getPartitionedRegion();

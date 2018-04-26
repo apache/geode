@@ -2048,9 +2048,8 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
-                            Object expectedOldValue,
-                            boolean requireOldValue, long lastModified, boolean overwriteDestroyed)
-      throws TimeoutException, CacheWriterException {
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     final long startTime = PartitionedRegionStats.startTime();
     boolean result = false;
     final DistributedPutAllOperation putAllOp_save = event.setPutAllOperation(null);
@@ -7737,8 +7736,7 @@ public class PartitionedRegion extends LocalRegion
    */
   @Override
   public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
-                                  CacheWriter localWriter, boolean requireOldValue,
-                                  Object expectedOldValue)
+      CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 

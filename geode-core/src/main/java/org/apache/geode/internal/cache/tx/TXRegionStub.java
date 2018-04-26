@@ -51,10 +51,10 @@ public interface TXRegionStub {
   Set getRegionKeysForIteration();
 
   void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                  InternalRegion region);
+      InternalRegion region);
 
   void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-                     InternalRegion region);
+      InternalRegion region);
 
   void cleanup();
 

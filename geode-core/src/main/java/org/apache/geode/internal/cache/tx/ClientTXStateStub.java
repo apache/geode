@@ -94,7 +94,7 @@ public class ClientTXStateStub extends TXStateStub {
   }
 
   public ClientTXStateStub(InternalCache cache, DistributionManager dm, TXStateProxy stateProxy,
-                           DistributedMember target, InternalRegion firstRegion) {
+      DistributedMember target, InternalRegion firstRegion) {
     super(stateProxy, target);
     this.cache = cache;
     this.dm = dm;
@@ -191,7 +191,8 @@ public class ClientTXStateStub extends TXStateStub {
   }
 
   @Override
-  protected void validateRegionCanJoinTransaction(InternalRegion region) throws TransactionException {
+  protected void validateRegionCanJoinTransaction(InternalRegion region)
+      throws TransactionException {
     if (!region.hasServerProxy()) {
       throw new TransactionException("Region " + region.getName()
           + " is local to this client and cannot be used in a transaction.");
