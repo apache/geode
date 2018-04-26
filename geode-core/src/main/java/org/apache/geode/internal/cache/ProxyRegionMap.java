@@ -271,12 +271,12 @@ class ProxyRegionMap implements RegionMap {
       if (event != null) {
         event.addDestroy(this.owner, markerEntry, key, aCallbackArgument);
       }
-      if (AbstractRegionMap.shouldCreateCBEvent(this.owner, !inTokenMode)) {
+      if (AbstractRegionMap.shouldCreateCallbackEvent(this.owner, !inTokenMode)) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, op, key, null, rmtOrigin,
-            event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
-            versionTag, tailKey);
+        EntryEventImpl e = AbstractRegionMap.createCallbackEvent(this.owner, op, key, null,
+            rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
+            txEntryState, versionTag, tailKey);
         AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
         pendingCallbacks.add(e);
       }
@@ -294,10 +294,10 @@ class ProxyRegionMap implements RegionMap {
       if (event != null) {
         event.addInvalidate(this.owner, markerEntry, key, newValue, aCallbackArgument);
       }
-      if (AbstractRegionMap.shouldCreateCBEvent(this.owner, this.owner.isInitialized())) {
+      if (AbstractRegionMap.shouldCreateCallbackEvent(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner,
+        EntryEventImpl e = AbstractRegionMap.createCallbackEvent(this.owner,
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, rmtOrigin,
             event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
             versionTag, tailKey);
@@ -320,12 +320,12 @@ class ProxyRegionMap implements RegionMap {
       if (event != null) {
         event.addPut(putOperation, this.owner, markerEntry, key, newValue, aCallbackArgument);
       }
-      if (AbstractRegionMap.shouldCreateCBEvent(this.owner, this.owner.isInitialized())) {
+      if (AbstractRegionMap.shouldCreateCallbackEvent(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, putOperation, key, newValue,
-            rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
-            txEntryState, versionTag, tailKey);
+        EntryEventImpl e = AbstractRegionMap.createCallbackEvent(this.owner, putOperation, key,
+            newValue, rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo,
+            bridgeContext, txEntryState, versionTag, tailKey);
         AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
         pendingCallbacks.add(e);
       }

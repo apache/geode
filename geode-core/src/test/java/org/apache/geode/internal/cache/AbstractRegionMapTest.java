@@ -1105,7 +1105,7 @@ public class AbstractRegionMapTest {
     }
 
     @Override
-    EntryEventImpl createCallBackEvent(final LocalRegion re, Operation op, Object key,
+    EntryEventImpl createTransactionCallbackEvent(final LocalRegion re, Operation op, Object key,
         Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
         Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
         ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
@@ -1131,7 +1131,7 @@ public class AbstractRegionMapTest {
     }
 
     @Override
-    EntryEventImpl createCallBackEvent(final LocalRegion re, Operation op, Object key,
+    EntryEventImpl createTransactionCallbackEvent(final LocalRegion re, Operation op, Object key,
         Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
         Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
         ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
