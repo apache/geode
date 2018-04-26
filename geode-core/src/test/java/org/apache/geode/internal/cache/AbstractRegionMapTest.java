@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -737,31 +736,6 @@ public class AbstractRegionMapTest {
         new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class), false,
         mock(EventID.class), null, null, null, null, null, null, 1);
     assertEquals(re.getValueAsToken(), token);
-  }
-
-  @Test
-  public void updateOnExistingEntryDoesUpdate() {
-    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
-    // do a create to get a region entry in the map
-    RegionEntry createdEntry = arm.basicPut(createEventForCreate(arm._getOwner(), "key"), 0L, true,
-        false, null, false, false);
-    final EntryEventImpl event = createEventForCreate(arm._getOwner(), "key");
-    event.setNewValue("update");
-    final boolean ifNew = false;
-    final boolean ifOld = true;
-    final boolean requireOldValue = false;
-    final Object expectedOldValue = null;
-
-    RegionEntry result =
-        arm.basicPut(event, 0L, ifNew, ifOld, expectedOldValue, requireOldValue, false);
-
-    assertThat(result).isSameAs(createdEntry);
-    assertThat(result.getKey()).isEqualTo("key");
-    assertThat(result.getValue()).isEqualTo("update");
-    verify(arm._getOwner(), times(1)).basicPutPart2(eq(event), eq(result), eq(true), anyLong(),
-        eq(false));
-    verify(arm._getOwner(), times(1)).basicPutPart3(eq(event), eq(result), eq(true), anyLong(),
-        eq(true), eq(ifNew), eq(ifOld), eq(expectedOldValue), eq(requireOldValue));
   }
 
   /**
