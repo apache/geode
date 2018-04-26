@@ -690,9 +690,6 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
 
   @Override
   public HashSet<PersistentMemberID> getPersistedOnlineOrEqualMembers() {
-    // DHE: On first call, we get all equal members (which the constructor decided to persist as
-    // online members)
-    // DHE: What is the significance of "online or equal"?
     HashSet<PersistentMemberID> members = new HashSet<>(persistentMemberView.getOnlineMembers());
     members.addAll(equalMembers);
     return members;
