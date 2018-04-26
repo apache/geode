@@ -26,6 +26,8 @@ sourceSets {
   }
 }
 
+
+
 configurations {
   //declaring new configuration that will be used to associate with artifacts
   archives
@@ -240,28 +242,3 @@ dependencies {
 
 tasks.eclipse.dependsOn(generateGrammarSource)
 
-task xjc (type: Exec){
-  description 'Generates initial, incomplete POJO configuration objects using JAXB / xjc.  ' +
-          'Use this task as a reference to keep etc/example-bindings.xjb ' +
-          'and the etc/*.episode files up to date.  ' +
-          'Intended as an internal developer tool only.'
-
-  def sourceXsd = "${projectDir}/src/main/resources/META-INF/schemas/geode.apache.org/schema/cache/configurationService.xsd"
-  def classPath = "${projectDir}/src/main/java"
-  def jaxBindings = "${projectDir}//src/main/resources/META-INF/schemas/geode.apache.org/schema/cache/bindings.xjb"
-
-  def outputDir = "${projectDir}/build/generated-src/main/"
-  def outputPackage = "org.apache.geode.cache.configuration"
-  def outputEpisode = "${projectDir}/../etc/geode-core.episode"
-
-  doFirst{
-    workingDir projectDir
-    mkdir outputDir
-  }
-
-  workingDir projectDir
-  commandLine 'sh', '-c',
-          "xjc -extension -p ${outputPackage} -d ${outputDir} -episode ${outputEpisode} " +
-                  "-no-header -b ${jaxBindings} -classpath ${classPath} -contentForWildcard -npa ${sourceXsd}"
-
-}

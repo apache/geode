@@ -41,37 +41,4 @@ dependencies {
     testCompile files(project(':geode-old-versions').sourceSets.main.output)
 }
 
-
-
-task xjc (type: Exec){
-    description 'Generates initial, incomplete POJO configuration objects using JAXB / xjc.  ' +
-            'Use this task as a reference to keep etc/example-bindings.xjb ' +
-            'and the etc/*.episode files up to date.  ' +
-            'Intended as an internal developer tool only.'
-    dependsOn(':geode-core:xjc')
-
-    def sourceXsd = "${projectDir}/src/main/resources/META-INF/schemas/geode.apache.org/schema/jdbc/jdbc-1.0.xsd"
-    def jaxBindings = "${projectDir}/src/main/resources/META-INF/schemas/geode.apache.org/schema/jdbc/bindings.xjb"
-    def classPath = "${projectDir}/../geode-core/src/main/java"
-
-    // It is not currently needed (and is currently breaking) to pass the core episode to this task.
-    // If it does become necessary, pass it as a binding (an additional -b) in the xjc command.
-    def coreEpisode = "${projectDir}/../etc/geode-core.episode"
-
-    def outputDir = "${projectDir}/build/generated-src/main/"
-    def outputPackage = "org.apache.geode.cache.configuration"
-    def outputEpisode = "${projectDir}/../etc/geode-connectors.episode"
-
-    doFirst{
-        workingDir projectDir
-        mkdir outputDir
-    }
-
-    workingDir projectDir
-    commandLine 'sh', '-c',
-            "xjc -extension -p ${outputPackage} -d ${outputDir} -episode ${outputEpisode} " +
-                "-no-header -b ${jaxBindings} -classpath ${classPath} -contentForWildcard -npa ${sourceXsd}"
-
-}
-
 integrationTest.forkEvery 0
