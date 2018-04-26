@@ -1,1 +1,0 @@
-echo $(dirname $0)
