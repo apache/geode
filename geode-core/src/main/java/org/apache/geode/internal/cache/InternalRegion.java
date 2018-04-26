@@ -255,12 +255,12 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   CacheWriter basicGetWriter();
 
-  void basicPutPart3(EntryEventImpl event, RegionEntry regionEntry, boolean b,
+  void basicPutPart3(EntryEventImpl event, RegionEntry regionEntry, boolean isInitialized,
       long lastModifiedTime, boolean invokeListeners, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue);
 
-  long basicPutPart2(EntryEventImpl event, RegionEntry re, boolean b, long lastModifiedTime,
-      boolean clearOccured);
+  long basicPutPart2(EntryEventImpl event, RegionEntry re, boolean isInitialized,
+      long lastModifiedTime, boolean clearOccured);
 
   int calculateValueSize(Object v);
 

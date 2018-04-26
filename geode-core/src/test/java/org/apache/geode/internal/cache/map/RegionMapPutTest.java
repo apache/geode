@@ -19,26 +19,35 @@ package org.apache.geode.internal.cache.map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventSerialization;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
+import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.test.junit.categories.UnitTest;
 
+@Category(UnitTest.class)
 public class RegionMapPutTest {
 
   private InternalRegion internalRegion;
@@ -59,6 +68,8 @@ public class RegionMapPutTest {
 
     when(internalRegion.getScope()).thenReturn(Scope.LOCAL);
     when(internalRegion.isInitialized()).thenReturn(true);
+    when(internalRegion.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
+    when(focusedRegionMap.getEntryMap()).thenReturn(mock(Map.class));
     when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(regionEntry);
     when(regionEntry.getValueAsToken()).thenReturn(Token.REMOVED_PHASE1);
@@ -66,9 +77,7 @@ public class RegionMapPutTest {
 
   @Test
   public void createOnEmptyMapAddsEntry() {
-
     final EntryEventImpl event = createEventForCreate(internalRegion, "key");
-    event.setNewValue("value");
     final boolean ifNew = true;
     final boolean ifOld = false;
     final boolean requireOldValue = false;
@@ -86,6 +95,99 @@ public class RegionMapPutTest {
     verify(internalRegion, times(1)).basicPutPart3(eq(event), eq(result), eq(true), anyLong(),
         eq(true), eq(ifNew), eq(ifOld), eq(expectedOldValue), eq(requireOldValue));
   }
+
+  @Test
+  public void updateOnEmptyMapReturnsNull() {
+    final EntryEventImpl event = createEventForCreate(internalRegion, "key");
+    final boolean ifNew = false;
+    final boolean ifOld = true;
+    final boolean requireOldValue = false;
+    final Object expectedOldValue = null;
+    final boolean overwriteDestroyed = false;
+    RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, internalRegion,
+        cacheModificationLock, entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed,
+        requireOldValue, expectedOldValue);
+
+    RegionEntry result = regionMapPut.put();
+
+    assertThat(result).isNull();
+    verify(internalRegion, never()).basicPutPart2(any(), any(), anyBoolean(), anyLong(),
+        anyBoolean());
+    verify(internalRegion, never()).basicPutPart3(any(), any(), anyBoolean(), anyLong(),
+        anyBoolean(), anyBoolean(), anyBoolean(), any(), anyBoolean());
+  }
+
+  @Test
+  public void createOnExistingEntryReturnsNull() {
+    final EntryEventImpl event = createEventForCreate(internalRegion, "key");
+    final boolean ifNew = true;
+    final boolean ifOld = false;
+    final boolean requireOldValue = false;
+    final Object expectedOldValue = null;
+    final boolean overwriteDestroyed = false;
+    RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, internalRegion,
+        cacheModificationLock, entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed,
+        requireOldValue, expectedOldValue);
+    when(focusedRegionMap.getEntry(event)).thenReturn(mock(RegionEntry.class));
+
+    RegionEntry result = regionMapPut.put();
+
+    assertThat(result).isNull();
+    verify(internalRegion, never()).basicPutPart2(any(), any(), anyBoolean(), anyLong(),
+        anyBoolean());
+    verify(internalRegion, never()).basicPutPart3(any(), any(), anyBoolean(), anyLong(),
+        anyBoolean(), anyBoolean(), anyBoolean(), any(), anyBoolean());
+  }
+
+  @Test
+  public void createOnEntryReturnedFromPutIfAbsentDoesNothing() {
+    final EntryEventImpl event = createEventForCreate(internalRegion, "key");
+    final boolean ifNew = true;
+    final boolean ifOld = false;
+    final boolean requireOldValue = false;
+    final Object expectedOldValue = null;
+    final boolean overwriteDestroyed = false;
+    RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, internalRegion,
+        cacheModificationLock, entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed,
+        requireOldValue, expectedOldValue);
+    when(focusedRegionMap.putEntryIfAbsent(event.getKey(), regionEntry))
+        .thenReturn(mock(RegionEntry.class));
+
+    RegionEntry result = regionMapPut.put();
+
+    assertThat(result).isNull();
+    verify(internalRegion, never()).basicPutPart2(any(), any(), anyBoolean(), anyLong(),
+        anyBoolean());
+    verify(internalRegion, never()).basicPutPart3(any(), any(), anyBoolean(), anyLong(),
+        anyBoolean(), anyBoolean(), anyBoolean(), any(), anyBoolean());
+  }
+
+  @Test
+  public void createOnExistingEntryWithRemovePhase2DoesCreate() throws RegionClearedException {
+    final EntryEventImpl event = createEventForCreate(internalRegion, "key");
+    final boolean ifNew = true;
+    final boolean ifOld = false;
+    final boolean requireOldValue = false;
+    final Object expectedOldValue = null;
+    final boolean overwriteDestroyed = false;
+    RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, internalRegion,
+        cacheModificationLock, entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed,
+        requireOldValue, expectedOldValue);
+    RegionEntry existingRegionEntry = mock(RegionEntry.class);
+    when(existingRegionEntry.isRemovedPhase2()).thenReturn(true);
+    when(focusedRegionMap.putEntryIfAbsent(event.getKey(), regionEntry))
+        .thenReturn(existingRegionEntry).thenReturn(null);
+
+    RegionEntry result = regionMapPut.put();
+
+    assertThat(result).isSameAs(regionEntry);
+    verify(internalRegion, times(1)).basicPutPart2(eq(event), eq(result), eq(true), anyLong(),
+        eq(false));
+    verify(internalRegion, times(1)).basicPutPart3(eq(event), eq(result), eq(true), anyLong(),
+        eq(true), eq(ifNew), eq(ifOld), eq(expectedOldValue), eq(requireOldValue));
+  }
+
+
 
   /*
    * @Test

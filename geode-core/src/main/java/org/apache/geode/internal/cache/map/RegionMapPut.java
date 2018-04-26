@@ -170,7 +170,7 @@ public class RegionMapPut {
     this.lastModifiedTime = lastModifiedTime;
   }
 
-  public RegionEntry getRegionEntry() {
+  private RegionEntry getRegionEntry() {
     return regionEntry;
   }
 
@@ -193,7 +193,7 @@ public class RegionMapPut {
     return event;
   }
 
-  public boolean isCompleted() {
+  private boolean isCompleted() {
     return this.completed;
   }
 
