@@ -90,6 +90,15 @@ public class GfshCommandRule extends DescribedExternalResource {
     }
   }
 
+  public GfshCommandRule(File parentForTempDirectory) {
+    this.temporaryFolder = new TemporaryFolder(parentForTempDirectory);
+    try {
+      temporaryFolder.create();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
   public GfshCommandRule(Supplier<Integer> portSupplier, PortType portType) {
     this();
     this.portType = portType;
