@@ -152,7 +152,7 @@ NameCharacter:
 
 protected
 RegionNameCharacter:
-        ( ALL_UNICODE | '_' | DIGIT | '+' | '-' | ':' | '#' | '@' | '$') // an internal $ is used for internal use identifiers
+        ( ALL_UNICODE | '_' | '+' | '-' | ':' | '#' | '@' | '$') // an internal $ is used for internal use identifiers
     ;
 
 QuotedIdentifier
@@ -556,11 +556,11 @@ projectionAttributes :
 
 projection!{ AST node  = null;}:
         
-            lb1:identifier TOK_COLON!  ( tok1:aggregateExpr{node = #tok1;} | tok2:expr{node = #tok2;})
+            lb1:identifier TOK_COLON!  (tok2:expr{node = #tok2;})
             { #projection = #([PROJECTION, "projection",
             "org.apache.geode.cache.query.internal.parse.ASTProjection"],  node, #lb1); } 
         |
-            (tok3:aggregateExpr{node = #tok3;} | tok4:expr{node = #tok4;})
+            (tok4:expr{node = #tok4;})
             (
                 "as"
                 lb2: identifier
@@ -943,7 +943,7 @@ collectionExpr :
 aggregateExpr  { int aggFunc = -1; boolean distinctOnly = false; }:
 
              !("sum" {aggFunc = SUM;} | "avg" {aggFunc = AVG;} )
-              TOK_LPAREN ("distinct"! {distinctOnly = true;} ) ? tokExpr1:expr TOK_RPAREN 
+              TOK_LPAREN ("distinct"! {distinctOnly = true;} ) ? tokExpr1:expr TOK_RPAREN
               { #aggregateExpr = #([AGG_FUNC, "aggregate", "org.apache.geode.cache.query.internal.parse.ASTAggregateFunc"],
               #tokExpr1); 
                 ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(aggFunc);
@@ -952,7 +952,7 @@ aggregateExpr  { int aggFunc = -1; boolean distinctOnly = false; }:
              
              |
              !("min" {aggFunc = MIN;} | "max" {aggFunc = MAX;} )
-              TOK_LPAREN  tokExpr2:expr TOK_RPAREN 
+              TOK_LPAREN  tokExpr2:expr TOK_RPAREN
               { #aggregateExpr = #([AGG_FUNC, "aggregate", "org.apache.geode.cache.query.internal.parse.ASTAggregateFunc"],
               #tokExpr2); 
                 ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(aggFunc);               
@@ -961,8 +961,8 @@ aggregateExpr  { int aggFunc = -1; boolean distinctOnly = false; }:
              |
               "count"^<AST=org.apache.geode.cache.query.internal.parse.ASTAggregateFunc>
               TOK_LPAREN!  ( TOK_STAR <AST=org.apache.geode.cache.query.internal.parse.ASTDummy>
-              | ("distinct"! {distinctOnly = true;} ) ? expr ) TOK_RPAREN! 
-              {  
+              | ("distinct"! {distinctOnly = true;} ) ? expr ) TOK_RPAREN!
+              {
                  ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(COUNT);
                  #aggregateExpr.setText("aggregate");
                  ((ASTAggregateFunc)#aggregateExpr).setDistinctOnly(distinctOnly);
