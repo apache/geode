@@ -14,25 +14,27 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static org.apache.geode.internal.lang.SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductIntegerProperty;
+
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class MembershipChangeListener implements MembershipListener, PersistentStateListener {
   private static final int PAUSE_MILLIS = 100;
-  static final int PERSISTENT_VIEW_RETRY =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "PERSISTENT_VIEW_RETRY", 5);
 
   private final int ackWaitThreshold;
   private final Runnable warning;
   private final BooleanSupplier cancelCondition;
+  private final long persistentViewRetryTimeoutNanos;
 
   private boolean membershipChanged;
   private boolean warned;
@@ -42,24 +44,23 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
         .getConfig().getAckWaitThreshold();
     cancelCondition = createCancelCondition(persistenceAdvisor);
     warning = persistenceAdvisor::logWaitingForMembers;
+    persistentViewRetryTimeoutNanos = TimeUnit.SECONDS
+        .toNanos(getProductIntegerProperty(PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS).orElse(5));
   }
 
   public synchronized void waitForChange() throws InterruptedException {
     long now = System.nanoTime();
-    long expirationTime = now + TimeUnit.SECONDS.toNanos(PERSISTENT_VIEW_RETRY);
+    long timeout = now + persistentViewRetryTimeoutNanos;
     long warningTime = now + TimeUnit.SECONDS.toNanos(ackWaitThreshold);
-    while (!membershipChanged && !cancelCondition.getAsBoolean()
-        && System.nanoTime() <= expirationTime) {
+    while (!membershipChanged && !cancelCondition.getAsBoolean() && System.nanoTime() <= timeout) {
       wait(PAUSE_MILLIS);
-      if (System.nanoTime() > warningTime) {
-        warnOnce();
-      }
+      warnOnce(warningTime);
     }
     membershipChanged = false;
   }
 
-  private void warnOnce() {
-    if (!warned) {
+  private void warnOnce(long warningTime) {
+    if (!warned && System.nanoTime() > warningTime) {
       warning.run();
       warned = true;
     }

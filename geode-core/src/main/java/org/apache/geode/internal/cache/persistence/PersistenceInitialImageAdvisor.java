@@ -66,7 +66,7 @@ public class PersistenceInitialImageAdvisor {
 
           if (hasReplicates(advice)) {
             if (hasDiskImageToRecoverFrom) {
-              preventGIIIfEqualToAnyReplicate(advice.getReplicates());
+              removeReplicatesIfWeAreEqualToAnyOrElseClearEqualMembers(advice.getReplicates());
             }
             return advice;
           } else if (hasNonPersistentMember(advice)) {
@@ -107,7 +107,7 @@ public class PersistenceInitialImageAdvisor {
                   shortDiskStoreID, regionPath, advice.getReplicates());
             }
             if (persistenceAdvisor.acquireTieLock()) {
-              return adviseGetInitialImageIfCompatibleWithReplicates(previousAdvice);
+              return refreshInitialImageAdviceAndThenCheckMyStateWithReplicates(previousAdvice);
             }
           } else {
             if (isPersistAdvisorDebugEnabled) {
@@ -117,7 +117,7 @@ public class PersistenceInitialImageAdvisor {
             }
           }
 
-          waitForOfflineMembersWithMissingDiskStore(listener, offlineMembers, membersToWaitFor);
+          waitForMembershipChangeForMissingDiskStores(listener, offlineMembers, membersToWaitFor);
         } catch (InterruptedException e) {
           logger.debug("Interrupted while trying to determine latest persisted copy", e);
         }
@@ -143,8 +143,7 @@ public class PersistenceInitialImageAdvisor {
     }
   }
 
-
-  private InitialImageAdvice adviseGetInitialImageIfCompatibleWithReplicates(
+  private InitialImageAdvice refreshInitialImageAdviceAndThenCheckMyStateWithReplicates(
       InitialImageAdvice previousAdvice) {
     if (isPersistAdvisorDebugEnabled()) {
       logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
@@ -169,9 +168,9 @@ public class PersistenceInitialImageAdvisor {
   /**
    * if one or more replicates are equal to this member: remove replicates from advice, return
    * advice for GII loop
-   *
    */
-  private void preventGIIIfEqualToAnyReplicate(Set<InternalDistributedMember> replicates) {
+  private void removeReplicatesIfWeAreEqualToAnyOrElseClearEqualMembers(
+      Set<InternalDistributedMember> replicates) {
     if (isPersistAdvisorDebugEnabled()) {
       logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
           "{}-{}: There are members currently online. Checking for our state on those members and then initializing",
@@ -207,7 +206,7 @@ public class PersistenceInitialImageAdvisor {
     replicates.clear();
   }
 
-  private void waitForOfflineMembersWithMissingDiskStore(MembershipChangeListener listener,
+  private void waitForMembershipChangeForMissingDiskStores(MembershipChangeListener listener,
       Set<PersistentMemberID> offlineMembers, Set<PersistentMemberID> membersToWaitFor)
       throws InterruptedException {
     persistenceAdvisor.beginWaitingForMembershipChange(membersToWaitFor);

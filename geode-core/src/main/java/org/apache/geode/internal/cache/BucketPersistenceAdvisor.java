@@ -222,7 +222,7 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
         Set<PersistentMemberID> membersToWaitFor = getPersistedMembers();
 
         if (!membersToWaitFor.isEmpty()) {
-          setWaitingOnMembers(allMembersWaitingFor, offlineMembersWaitingFor);
+          setWaitingOnMembers(membersToWaitFor, membersToWaitFor);
           try {
             listener.waitForChange();
           } catch (InterruptedException e) {
