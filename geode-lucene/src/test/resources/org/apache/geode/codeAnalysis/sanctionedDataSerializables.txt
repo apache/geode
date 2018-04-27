@@ -42,3 +42,9 @@ toData,94
 org/apache/geode/cache/lucene/internal/results/PageResults,2
 fromData,43
 toData,43
+org/apache/geode/cache/lucene/internal/LuceneIndexCreationProfileProcessor$LuceneIndexCreationProfileMessage,2
+fromData,45
+toData,42
+org/apache/geode/cache/lucene/internal/LuceneIndexCreationProfileProcessor$LuceneIndexCreationProfileReplyMessage,2
+fromData,44
+toData,48
