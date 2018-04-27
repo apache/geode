@@ -705,7 +705,7 @@ public class AbstractRegionMapTest {
     Object newValue = "value";
     arm.txApplyPut(Operation.CREATE, KEY, newValue, false,
         new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
-        mock(EventID.class), null, null, null, null, null, null, 1);
+        mock(EventID.class), null, new ArrayList<EntryEventImpl>(), null, null, null, null, 1);
     RegionEntry re = arm.getEntry(KEY);
     assertNotNull(re);
 
@@ -741,7 +741,7 @@ public class AbstractRegionMapTest {
     re.setValue(arm._getOwner(), token);
     arm.txApplyInvalidate(key, Token.INVALID, false,
         new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class), false,
-        mock(EventID.class), null, null, null, null, null, null, 1);
+        mock(EventID.class), null, new ArrayList<EntryEventImpl>(), null, null, null, null, 1);
     assertEquals(re.getValueAsToken(), token);
   }
 
@@ -1105,7 +1105,7 @@ public class AbstractRegionMapTest {
     }
 
     @Override
-    EntryEventImpl createCallBackEvent(final LocalRegion re, Operation op, Object key,
+    EntryEventImpl createTransactionCallbackEvent(final LocalRegion re, Operation op, Object key,
         Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
         Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
         ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
@@ -1131,7 +1131,7 @@ public class AbstractRegionMapTest {
     }
 
     @Override
-    EntryEventImpl createCallBackEvent(final LocalRegion re, Operation op, Object key,
+    EntryEventImpl createTransactionCallbackEvent(final LocalRegion re, Operation op, Object key,
         Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
         Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
         ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
