@@ -621,7 +621,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(3, tx.getRegions().size());// 2 buckets for the two puts we
                                                 // did in the accessor
                                                 // plus the dist. region
-        for (LocalRegion r : tx.getRegions()) {
+        for (InternalRegion r : tx.getRegions()) {
           assertTrue(r instanceof BucketRegion || r instanceof DistributedRegion);
           TXRegionState rs = tx.readRegion(r);
           for (Object key : rs.getEntryKeys()) {
@@ -803,7 +803,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(3, tx.getRegions().size());// 2 buckets for the two puts we
                                                 // did in the accessor
                                                 // +1 for the dist_region
-        for (LocalRegion r : tx.getRegions()) {
+        for (InternalRegion r : tx.getRegions()) {
           assertTrue(r instanceof BucketRegion || r instanceof DistributedRegion);
           TXRegionState rs = tx.readRegion(r);
           for (Object key : rs.getEntryKeys()) {
@@ -847,7 +847,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(3, tx.getRegions().size());// 2 buckets for the two puts we
         // did in the accessor
         // plus the dist. region
-        for (LocalRegion r : tx.getRegions()) {
+        for (InternalRegion r : tx.getRegions()) {
           assertTrue(r instanceof BucketRegion || r instanceof DistributedRegion);
           TXRegionState rs = tx.readRegion(r);
           for (Object key : rs.getEntryKeys()) {
@@ -889,7 +889,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(3, tx.getRegions().size());// 2 buckets for the two puts we
         // did in the accessor
         // plus the dist. region
-        for (LocalRegion r : tx.getRegions()) {
+        for (InternalRegion r : tx.getRegions()) {
           assertTrue(r instanceof BucketRegion || r instanceof DistributedRegion);
           TXRegionState rs = tx.readRegion(r);
           for (Object key : rs.getEntryKeys()) {
@@ -968,7 +968,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
                                                                             // puts we
         // did in the accessor one dist. region, and one more bucket if Cust1 and Cust10 resolve to
         // different buckets
-        for (LocalRegion r : tx.getRegions()) {
+        for (InternalRegion r : tx.getRegions()) {
           assertTrue(r instanceof BucketRegion || r instanceof DistributedRegion);
           TXRegionState rs = tx.readRegion(r);
           for (Object key : rs.getEntryKeys()) {
@@ -1046,7 +1046,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(2, tx.getRegions().size());// 2 buckets for the two puts we
         // did in the accessor one dist. region, and one more bucket if Cust1 and Cust10 resolve to
         // different buckets
-        for (LocalRegion r : tx.getRegions()) {
+        for (InternalRegion r : tx.getRegions()) {
           assertTrue(r instanceof BucketRegion || r instanceof DistributedRegion);
           TXRegionState rs = tx.readRegion(r);
           for (Object key : rs.getEntryKeys()) {
@@ -1122,7 +1122,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(4, tx.getRegions().size());// 2 buckets for the two puts we
         // did in the accessor one dist. region, and one more bucket if Cust1 and Cust10 resolve to
         // different buckets
-        for (LocalRegion r : tx.getRegions()) {
+        for (InternalRegion r : tx.getRegions()) {
           assertTrue(r instanceof BucketRegion || r instanceof DistributedRegion);
           TXRegionState rs = tx.readRegion(r);
           for (Object key : rs.getEntryKeys()) {
@@ -1312,7 +1312,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(2, tx.getRegions().size());// 2 buckets for the two puts we
         // did in the accessor one dist. region, and one more bucket if Cust1 and Cust10 resolve to
         // different buckets
-        for (LocalRegion r : tx.getRegions()) {
+        for (InternalRegion r : tx.getRegions()) {
           assertTrue(r instanceof BucketRegion || r instanceof DistributedRegion);
           TXRegionState rs = tx.readRegion(r);
           for (Object key : rs.getEntryKeys()) {
@@ -4160,7 +4160,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl txMgr = getGemfireCache().getTxManager();
         TXStateProxy tx = txMgr.getHostedTXState((TXId) txid);
         assertEquals(1, tx.getRegions().size());
-        for (LocalRegion r : tx.getRegions()) {
+        for (InternalRegion r : tx.getRegions()) {
           assertTrue(r instanceof DistributedRegion);
           TXRegionState rs = tx.readRegion(r);
           for (Object key : rs.getEntryKeys()) {
