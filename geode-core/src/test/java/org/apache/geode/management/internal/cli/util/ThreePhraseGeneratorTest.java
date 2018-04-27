@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.util;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,10 +27,27 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class ThreePhraseGeneratorTest {
   @Test
   public void testGenerate() {
-    ThreePhraseGenerator tpg = new ThreePhraseGenerator();
-    String phrase = tpg.generate('-');
+    final ThreePhraseGenerator tpg = new ThreePhraseGenerator();
 
-    assertNotNull(phrase);
-    assertNotEquals("", phrase);
+    final String phrase = tpg.generate('-');
+    assertNotNull("Generated string is not null", phrase);
+    assertNotEquals("Generated string is not empty", "", phrase);
+  }
+
+  @Test
+  public void testGeneratesOnlyLetters() {
+    final ThreePhraseGenerator tpg = new ThreePhraseGenerator();
+
+    // Since there is a random choice of word, try a bunch of times to get coverage.
+    for (int attempt = 1; attempt < 50000; ++attempt) {
+      final String phrase = tpg.generate('x');
+      assertTrue("Generated string has at least five characters", 5 <= phrase.length());
+      for (int index = 0; index < phrase.length(); ++index) {
+        final char c = phrase.charAt(index);
+        assertTrue(
+            "Character in \"" + phrase + "\" at index " + index + ", '" + c + "', is a letter",
+            Character.isLetter(c));
+      }
+    }
   }
 }
