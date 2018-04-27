@@ -16,8 +16,9 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.membership.*;
-import org.apache.geode.internal.admin.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.admin.ApplicationVM;
 
 /**
  * Represents an application VM (member of the distributed system).
