@@ -15,7 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.ExpirationAction;
 
 class RegionIdleExpiryTask extends RegionExpiryTask {
 
