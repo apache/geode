@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UTFDataFormatException;
 
 import org.apache.geode.DataSerializer;
 

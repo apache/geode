@@ -14,9 +14,26 @@
  */
 package org.apache.geode.internal;
 
-import java.io.*;
-import java.lang.management.*;
-import java.util.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.CharArrayWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.lang.management.LockInfo;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.Logger;
