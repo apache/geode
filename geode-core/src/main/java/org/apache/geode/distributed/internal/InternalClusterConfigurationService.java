@@ -179,8 +179,8 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     }
     // else, scan the classpath to find all the classes annotated with XSDRootElement
     else {
-      Set<Class<?>> scannedClasses = ClasspathScanLoadHelper
-          .scanClasspathForAnnotation(XSDRootElement.class, "org.apache.geode");
+      Set<Class<?>> scannedClasses =
+          ClasspathScanLoadHelper.scanClasspathForAnnotation(XSDRootElement.class, "");
       this.jaxbService = new JAXBService(scannedClasses.toArray(new Class[scannedClasses.size()]));
     }
     jaxbService.validateWithLocalCacheXSD();

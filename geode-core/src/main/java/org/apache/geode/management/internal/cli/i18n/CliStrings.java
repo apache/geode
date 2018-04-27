@@ -3098,7 +3098,7 @@ public class CliStrings {
       "Configures Geode's Portable Data eXchange for all the cache(s) in the cluster. This command would not take effect on the running members in the system.\n This command persists the pdx configuration in the locator with cluster configuration service. \n This command should be issued before starting any data members.";
   public static final String CONFIGURE_PDX__READ__SERIALIZED = "read-serialized";
   public static final String CONFIGURE_PDX__READ__SERIALIZED__HELP =
-      "Set to true to have PDX deserialization produce a PdxInstance instead of an instance of the domain class";
+      "Set to true to have PDX deserialization produce a PdxInstance instead of an instance of the domain class. The default value for this options is \"false\"";
   public static final String CONFIGURE_PDX__IGNORE__UNREAD_FIELDS = "ignore-unread-fields";
   public static final String CONFIGURE_PDX__IGNORE__UNREAD_FIELDS__HELP =
       "Control whether pdx ignores fields that were unread during deserialization. The default is to preserve unread fields be including their data during serialization. But if you configure the cache to ignore unread fields then their data will be lost during serialization."
@@ -3108,7 +3108,7 @@ public class CliStrings {
       "Control whether the type metadata for PDX objects is persisted to disk. The default for this setting is false. If you are using persistent regions with PDX then you must set this to true. If you are using a GatewaySender or AsyncEventQueue with PDX then you should set this to true";
   public static final String CONFIGURE_PDX__DISKSTORE = "disk-store";
   public static final String CONFIGURE_PDX__DISKSTORE__HELP =
-      "Named disk store where the PDX type data will be stored";
+      "Named disk store where the PDX type data will be stored. The default value for this options is \"DEFAULT\"";
 
   public static final String CONFIGURE_PDX__CHECK__PORTABILITY = "check-portability";
   public static final String CONFIGURE_PDX__CHECK__PORTABILITY__HELP =
