@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.ResultData;
 
 /**
@@ -42,39 +41,47 @@ import org.apache.geode.management.internal.cli.result.ResultData;
  * The order in which models are added is maintained and will be presented to the user in the same
  * order.
  * <br/>
- * A single error model can be added with {@link #createOrGetError()}. Once an error has been
- * created, the status of the {@code ResultModel} will also be set to {@link Result.Status#ERROR}
+ * Errors should just be added as {@code InfoResultModel}s and then the status should be set
+ * appropriately to indicate an error.
  *
  */
-// Only implement ResultData for API compatibility during migration
-public class ResultModel implements ResultData {
+public class ResultModel {
 
   private String header;
   private String footer;
   private Map<String, ResultData> sections = new LinkedHashMap<>();
   private int sectionCount = 0;
-  private ErrorResultModel error;
+  private Result.Status status = Result.Status.OK;
+  private Object configObject;
 
-  @Override
-  public Result.Status getStatus() {
-    return error == null ? Result.Status.OK : Result.Status.ERROR;
+  @JsonIgnore
+  public Object getConfigObject() {
+    return configObject;
   }
 
-  public ErrorResultModel createOrGetError() {
-    if (error == null) {
-      error = new ErrorResultModel();
-    }
-
-    return error;
+  public boolean getLegacy() {
+    return false;
   }
 
-  public ErrorResultModel getError() {
-    return error;
+  public void setLegacy(boolean legacy) {
+    // no-op
+  }
+
+  public void setConfigObject(Object configObject) {
+    this.configObject = configObject;
   }
 
   @JsonIgnore
-  public int getErrorCode() {
-    return error != null ? error.getErrorCode() : 0;
+  public boolean isSuccessful() {
+    return status == Result.Status.OK;
+  }
+
+  public void setStatus(Result.Status status) {
+    this.status = status;
+  }
+
+  public Result.Status getStatus() {
+    return status;
   }
 
   public String getHeader() {
@@ -160,18 +167,18 @@ public class ResultModel implements ResultData {
     return (DataResultModel) sections.get(name);
   }
 
-  public ResultModel createGemFireErrorResult(String message) {
-    ErrorResultModel error = createOrGetError();
-    error.setErrorCode(ResultBuilder.ERRORCODE_GEODE_ERROR);
-    error.addLine("Could not process command due to error. " + message);
-
-    return this;
+  /**
+   * Convenience method which creates an {@code InfoResultModel} section. The provided message is
+   * prepended with the string "Error processing command:". The status will be set to
+   * {@code Result.Status.ERROR}
+   */
+  public ResultModel createCommandProcessingError(String message) {
+    return createError("Error processing command: " + message);
   }
 
-  public ResultModel createUserErrorResult(String message) {
-    ErrorResultModel error = createOrGetError();
-    error.setErrorCode(ResultBuilder.ERRORCODE_USER_ERROR);
-    error.addLine(message);
+  public ResultModel createError(String message) {
+    addInfo().addLine(message);
+    setStatus(Result.Status.ERROR);
 
     return this;
   }

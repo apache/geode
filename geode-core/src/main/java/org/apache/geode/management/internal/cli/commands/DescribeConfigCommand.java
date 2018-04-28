@@ -29,6 +29,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 import org.apache.geode.management.internal.cli.functions.GetMemberConfigInformationFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -102,10 +103,11 @@ public class DescribeConfigCommand extends InternalGfshCommand {
       }
 
     } catch (FunctionInvocationTargetException e) {
-      result.createGemFireErrorResult(CliStrings
+      result.createCommandProcessingError(CliStrings
           .format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, CliStrings.DESCRIBE_CONFIG));
     } catch (Exception e) {
-      result.createOrGetError().addLine(e.getMessage());
+      result.createError(e.getMessage());
+      result.setStatus(Result.Status.ERROR);
     }
     return result;
   }

@@ -32,7 +32,7 @@ public interface CliAroundInterceptor {
   /**
    * called by the OperationInvoker before the command is executed
    */
-  default Result preExecution(GfshParseResult parseResult) {
+  default Object preExecution(GfshParseResult parseResult) {
     return ResultBuilder.createInfoResult("");
   }
 

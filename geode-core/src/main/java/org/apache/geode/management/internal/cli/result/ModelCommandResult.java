@@ -28,27 +28,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.ModelCommandResponse;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.ErrorResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 public class ModelCommandResult implements CommandResult {
 
-  private String header = "";
-  private String footer = "";
-  private ModelCommandResponse response;
+  private ResultModel result;
   private List<String> commandOutput;
   private int commandOutputIndex;
   private Object configObject;
-  private static final Map<String, String> EMPTY_MAP = new LinkedHashMap<>();
   private static final Map<String, List<String>> EMPTY_TABLE_MAP = new LinkedHashMap<>();
   private static final List<String> EMPTY_LIST = new ArrayList<>();
 
-  public ModelCommandResult(ModelCommandResponse response) {
-    this.response = response;
+  public ModelCommandResult(ResultModel result) {
+    this.result = result;
   }
 
   @Override
@@ -63,14 +59,14 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public Status getStatus() {
-    return response.getStatus() == 0 ? Status.OK : Status.ERROR;
+    return result.getStatus();
   }
 
   public void setStatus(Status status) {}
 
   @Override
-  public ResultData getResultData() {
-    return response.getData();
+  public ResultModel getResultData() {
+    return result;
   }
 
   @Override
@@ -136,12 +132,12 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public String getType() {
-    return response.getContentType();
+    return "model";
   }
 
   @Override
   public String getHeader() {
-    return header;
+    return result.getHeader();
   }
 
   @Override
@@ -156,7 +152,7 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public String getMessageFromContent() {
-    List<InfoResultModel> infos = response.getData().getInfoSections();
+    List<InfoResultModel> infos = result.getInfoSections();
     if (infos.size() == 0) {
       return "";
     }
@@ -167,13 +163,7 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public String getErrorMessage() {
-    ErrorResultModel error = response.getData().getError();
-    if (error == null) {
-      return "";
-    }
-
-    List<String> messages = error.getContent();
-    return messages.stream().collect(Collectors.joining(". "));
+    return getMessageFromContent();
   }
 
   @Override
@@ -188,7 +178,7 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public List<String> getColumnFromTableContent(String column, String tableId) {
-    TabularResultModel table = response.getData().getTableSection(tableId);
+    TabularResultModel table = result.getTableSection(tableId);
     if (table == null) {
       return EMPTY_LIST;
     }
@@ -198,7 +188,7 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public Map<String, List<String>> getMapFromTableContent(String tableId) {
-    TabularResultModel table = response.getData().getTableSection(tableId);
+    TabularResultModel table = result.getTableSection(tableId);
     if (table == null) {
       return EMPTY_TABLE_MAP;
     }
@@ -208,12 +198,12 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public Map<String, String> getMapFromSection(String sectionID) {
-    return response.getData().getDataSection(sectionID).getContent();
+    return result.getDataSection(sectionID).getContent();
   }
 
   @Override
   public String getFooter() {
-    return footer;
+    return result.getFooter();
   }
 
   @Override
@@ -234,7 +224,7 @@ public class ModelCommandResult implements CommandResult {
   // Convenience implementation using the first table found
   @Override
   public List<String> getTableColumnValues(String columnName) {
-    List<TabularResultModel> tables = response.getData().getTableSections();
+    List<TabularResultModel> tables = result.getTableSections();
     if (tables.size() == 0) {
       return EMPTY_LIST;
     }
@@ -244,7 +234,7 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public List<String> getTableColumnValues(String sectionId, String columnName) {
-    return response.getData().getTableSection(sectionId).getContent().get(columnName);
+    return result.getTableSection(sectionId).getContent().get(columnName);
   }
 
   // same as legacy buildData()
@@ -253,9 +243,9 @@ public class ModelCommandResult implements CommandResult {
     commandOutput = new ArrayList<>();
     TableBuilder.Table resultTable = TableBuilder.newTable();
 
-    addHeaderInTable(resultTable, response.getData());
+    addSpacedRowInTable(resultTable, result.getHeader());
 
-    for (ResultData section : response.getData().getContent().values()) {
+    for (ResultData section : result.getContent().values()) {
       if (section instanceof DataResultModel) {
         buildData(resultTable, (DataResultModel) section);
       } else if (section instanceof TabularResultModel) {
@@ -268,16 +258,12 @@ public class ModelCommandResult implements CommandResult {
       }
     }
 
-    if (response.getData().getError() != null) {
-      buildInfoOrErrorCommandOutput(resultTable, response.getData().createOrGetError());
-    }
-
-    addFooterInTable(resultTable, response.getData());
+    addSpacedRowInTable(resultTable, result.getFooter());
 
     commandOutput.addAll(resultTable.buildTableList());
   }
 
-  private void addHeaderInTable(TableBuilder.Table resultTable, ResultData model) {
+  private void addHeaderInTable(TableBuilder.Table resultTable, ResultModel model) {
     String header = model.getHeader();
     if (header != null && !header.isEmpty()) {
       resultTable.newRow().newLeftCol(header);
@@ -285,30 +271,21 @@ public class ModelCommandResult implements CommandResult {
     }
   }
 
-  private void addFooterInTable(TableBuilder.Table resultTable, ResultData model) {
-    String footer = model.getFooter();
-    if (footer != null && !footer.isEmpty()) {
-      resultTable.newRow().newLeftCol(footer);
+  private void addSpacedRowInTable(TableBuilder.Table resultTable, String row) {
+    if (row != null && !row.isEmpty()) {
+      resultTable.newRow().newLeftCol(row);
       resultTable.newRow().newLeftCol("");
     }
   }
 
-  private void addHeaderInRowGroup(TableBuilder.RowGroup rowGroup, ResultData model) {
-    String header = model.getHeader();
-    if (header != null && !header.isEmpty()) {
-      rowGroup.newRow().newLeftCol(header);
-    }
-  }
-
-  private void addFooterInRowGroup(TableBuilder.RowGroup rowGroup, ResultData model) {
-    String footer = model.getFooter();
-    if (footer != null && !footer.isEmpty()) {
-      rowGroup.newRow().newLeftCol(footer);
+  private void addRowInRowGroup(TableBuilder.RowGroup rowGroup, String row) {
+    if (row != null && !row.isEmpty()) {
+      rowGroup.newRow().newLeftCol(row);
     }
   }
 
   private void buildTabularCommandOutput(TableBuilder.Table resultTable, TabularResultModel model) {
-    addHeaderInTable(resultTable, model);
+    addSpacedRowInTable(resultTable, model.getHeader());
 
     resultTable.setColumnSeparator("   ");
     resultTable.setTabularResult(true);
@@ -316,7 +293,7 @@ public class ModelCommandResult implements CommandResult {
     TableBuilder.RowGroup rowGroup = resultTable.newRowGroup();
     buildTable(rowGroup, model);
 
-    addFooterInTable(resultTable, model);
+    addSpacedRowInTable(resultTable, model.getFooter());
   }
 
   private void buildTable(TableBuilder.RowGroup rowGroup, TabularResultModel model) {
@@ -344,7 +321,7 @@ public class ModelCommandResult implements CommandResult {
     TableBuilder.RowGroup rowGroup = resultTable.newRowGroup();
     rowGroup.setColumnSeparator(" : ");
 
-    addHeaderInRowGroup(rowGroup, section);
+    addRowInRowGroup(rowGroup, section.getHeader());
 
     // finally process map values
     for (Map.Entry<String, String> entry : section.getContent().entrySet()) {
@@ -367,7 +344,7 @@ public class ModelCommandResult implements CommandResult {
         }
       }
     }
-    addFooterInRowGroup(rowGroup, section);
+    addRowInRowGroup(rowGroup, section.getFooter());
   }
 
   private void buildInfoOrErrorCommandOutput(TableBuilder.Table resultTable,

@@ -154,9 +154,8 @@ public class LegacyVsResultModelComparisonTest {
 
     // Create the new model results
     ResultModel newCrm = new ResultModel();
-    ErrorResultModel newError = newCrm.createOrGetError();
-    newError.addLine("This is a bad line");
-    newError.addLine("This is another bad line");
+    newCrm.createError("This is a bad line");
+    newCrm.getInfoSections().get(0).addLine("This is another bad line");
 
     String newModelString = CommandResponseBuilder.createCommandResponseJson("server1", newCrm);
     CommandResult newErrorModelResult = ResultBuilder.fromJson(newModelString);
@@ -179,9 +178,7 @@ public class LegacyVsResultModelComparisonTest {
 
     // Create the new model results
     ResultModel newCrm = new ResultModel();
-    ErrorResultModel newError = newCrm.createOrGetError();
-    newError.setErrorCode(500);
-    newError.addLine("This is an error message");
+    newCrm.createError("This is an error message");
 
     String newModelString = CommandResponseBuilder.createCommandResponseJson("server1", newCrm);
     CommandResult newErrorModelResult = ResultBuilder.fromJson(newModelString);

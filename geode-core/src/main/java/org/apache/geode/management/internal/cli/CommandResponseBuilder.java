@@ -59,13 +59,10 @@ public class CommandResponseBuilder {
   }
 
   public static String createCommandResponseJson(String memberName, ResultModel result) {
-    CommandResponse response = new CommandResponse(result, memberName, "1/1",
-        CliMetaData.ANNOTATION_NULL_VALUE, getDebugInfo(), null);
-
     ObjectMapper mapper = new ObjectMapper();
 
     try {
-      String json = mapper.writeValueAsString(response);
+      String json = mapper.writeValueAsString(result);
       return json;
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);

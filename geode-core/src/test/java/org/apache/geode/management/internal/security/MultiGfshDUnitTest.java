@@ -31,7 +31,6 @@ import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -125,7 +124,7 @@ public class MultiGfshDUnitTest {
         LogService.getLogger().info("executing: " + command.getCommand());
 
         CommandResult result = gfsh.executeCommand(command.getCommand());
-        if (result.getResultData().getStatus() == Status.OK) {
+        if (result.getStatus() == Status.OK) {
           continue;
         }
 
@@ -133,7 +132,7 @@ public class MultiGfshDUnitTest {
         if (result.getResultData() instanceof ErrorResultData) {
           errorResultCode = ((ErrorResultData) result.getResultData()).getErrorCode();
         } else {
-          errorResultCode = ((ResultModel) result.getResultData()).getErrorCode();
+          errorResultCode = 9999; // ((ResultModel) result.getResultData()).getErrorCode();
         }
         assertNotEquals("Did not expect an Unauthorized exception: " + result.toString(),
             ResultBuilder.ERRORCODE_UNAUTHORIZED, errorResultCode);

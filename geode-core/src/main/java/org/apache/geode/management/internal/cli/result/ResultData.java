@@ -20,9 +20,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.result.model.ErrorResultModel;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 /**
@@ -31,9 +30,8 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY,
     property = "modelClass")
 @JsonSubTypes({@JsonSubTypes.Type(value = TabularResultModel.class),
-    @JsonSubTypes.Type(value = ResultModel.class),
-    @JsonSubTypes.Type(value = InfoResultModel.class),
-    @JsonSubTypes.Type(value = ErrorResultModel.class)})
+    @JsonSubTypes.Type(value = DataResultModel.class),
+    @JsonSubTypes.Type(value = InfoResultModel.class)})
 public interface ResultData {
   String RESULT_HEADER = "header";
   String RESULT_CONTENT = "content";

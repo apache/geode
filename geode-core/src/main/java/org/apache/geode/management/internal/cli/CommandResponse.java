@@ -60,27 +60,6 @@ public class CommandResponse {
     this.isLegacy = true;
   }
 
-  // Constructor for new model-based result objects
-  CommandResponse(ResultData result, String sender, String page, String tokenAccessor,
-      String debugInfo, Path fileToDownload) {
-    this.sender = sender;
-    this.contentType = "";
-    this.status = result.getStatus().getCode();
-    this.page = page;
-    this.tokenAccessor = tokenAccessor;
-    this.debugInfo = debugInfo;
-    this.data = result;
-    this.when = DateFormat.getInstance().format(new java.util.Date());
-    this.version = GemFireVersion.getGemFireVersion();
-    this.failedToPersist = false; // result.failedToPersist();
-    if (fileToDownload != null) {
-      this.fileToDownload = fileToDownload.toString();
-    } else {
-      this.fileToDownload = null;
-    }
-    this.isLegacy = false;
-  }
-
   // For de-serializing
   CommandResponse(GfJsonObject jsonObject) {
     this.sender = jsonObject.getString("sender");

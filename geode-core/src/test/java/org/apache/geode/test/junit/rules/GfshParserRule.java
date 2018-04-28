@@ -31,7 +31,6 @@ import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.ModelCommandResponse;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
@@ -79,18 +78,22 @@ public class GfshParserRule extends ExternalResource {
           throw new RuntimeException(e);
         }
 
-        Result preExecResult = interceptor.preExecution(parseResult);
-        if (Result.Status.ERROR.equals(preExecResult.getStatus())) {
-          return (CommandResult) preExecResult;
+        Object preExecResult = interceptor.preExecution(parseResult);
+        if (preExecResult instanceof ResultModel) {
+          if (((ResultModel) preExecResult).getStatus() != Result.Status.OK) {
+            return new ModelCommandResult((ResultModel) preExecResult);
+          }
+        } else {
+          if (Result.Status.ERROR.equals(((Result) preExecResult).getStatus())) {
+            return (CommandResult) preExecResult;
+          }
         }
       }
     }
 
     Object exeResult = commandExecutor.execute(instance, parseResult);
     if (exeResult instanceof ResultModel) {
-      ModelCommandResponse mcr = new ModelCommandResponse();
-      mcr.setData((ResultModel) exeResult);
-      return new ModelCommandResult(mcr);
+      return new ModelCommandResult((ResultModel) exeResult);
     }
 
     return (CommandResult) exeResult;

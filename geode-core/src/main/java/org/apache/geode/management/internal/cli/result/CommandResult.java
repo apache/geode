@@ -32,7 +32,7 @@ public interface CommandResult extends Result {
 
   void setStatus(Status status);
 
-  ResultData getResultData();
+  Object getResultData();
 
   Object getConfigObject();
 

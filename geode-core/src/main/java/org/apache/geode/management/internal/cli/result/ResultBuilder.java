@@ -22,10 +22,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.ModelCommandResponse;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 /**
  * Provides methods for creating {@link Result} objects to return from Gfsh command functions
@@ -285,9 +285,9 @@ public class ResultBuilder {
   public static CommandResult createModelBasedCommandResult(String json) {
     ObjectMapper mapper = new ObjectMapper();
 
-    ModelCommandResponse response;
+    ResultModel response;
     try {
-      response = mapper.readValue(json, ModelCommandResponse.class);
+      response = mapper.readValue(json, ResultModel.class);
     } catch (IOException iox) {
       throw new RuntimeException(iox);
     }
