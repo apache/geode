@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.persistence;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductIntegerProperty;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
