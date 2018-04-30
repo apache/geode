@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.LogServiceIntegrationTestSupport.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.logging.LogServiceIntegrationTestSupport.writeConfigFile;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.net.URL;
