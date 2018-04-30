@@ -19,8 +19,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -99,18 +97,6 @@ public class IgnoredException implements Serializable, AutoCloseable {
     SerializableRunnable removeRunnable =
         new SerializableRunnable(IgnoredException.class.getSimpleName() + " remove") {
           public void run() {
-            // TODO: delete use of system.getLogWriter
-            DistributedSystem system = InternalDistributedSystem.getConnectedInstance();
-            if (system != null) {
-              system.getLogWriter().info(removeMessage);
-            }
-
-            // TODO: delete use of LogWriterUtils
-            try {
-              LogWriterUtils.getLogWriter().info(removeMessage);
-            } catch (Exception noHydraLogger) {
-            }
-
             logger.info(removeMessage);
           }
         };
@@ -158,18 +144,6 @@ public class IgnoredException implements Serializable, AutoCloseable {
     SerializableRunnable addRunnable =
         new SerializableRunnable(IgnoredException.class.getSimpleName() + " addIgnoredException") {
           public void run() {
-            // TODO: delete use of system.getLogWriter
-            DistributedSystem system = InternalDistributedSystem.getConnectedInstance();
-            if (system != null) {
-              system.getLogWriter().info(addMessage);
-            }
-
-            // TODO: delete use of LogWriterUtils
-            try {
-              LogWriterUtils.getLogWriter().info(addMessage);
-            } catch (Exception noHydraLogger) {
-            }
-
             logger.info(addMessage);
           }
         };
