@@ -162,23 +162,23 @@ public class TXFarSideCMTracker {
    * departed/ing Originator (this will most likely be called nearly the same time as
    * commitProcessReceived
    */
-  public void waitToProcess(TXLockId lk, DistributionManager dm) {
-    waitForMemberToDepart(lk.getMemberId(), dm);
-    final TXCommitMessage mess;
+  public void waitToProcess(TXLockId lockId, DistributionManager dm) {
+    waitForMemberToDepart(lockId.getMemberId(), dm);
+    final TXCommitMessage commitMessage;
     synchronized (this.txInProgress) {
-      mess = (TXCommitMessage) this.txInProgress.get(lk);
+      commitMessage = (TXCommitMessage) this.txInProgress.get(lockId);
     }
-    if (mess != null) {
-      synchronized (mess) {
+    if (commitMessage != null) {
+      synchronized (commitMessage) {
         // tx in progress, we must wait until its done
-        while (!(mess.wasProcessed() || mess.isDepartureNoticed())) {
+        while (!(commitMessage.wasProcessed() || commitMessage.isDepartureNoticed())) {
           try {
-            mess.wait(100);
+            commitMessage.wait(100);
           } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             logger.error(LocalizedMessage.create(
                 LocalizedStrings.TxFarSideTracker_WAITING_TO_COMPLETE_ON_MESSAGE_0_CAUGHT_AN_INTERRUPTED_EXCEPTION,
-                mess), ie);
+                commitMessage), ie);
             break;
           }
         }
@@ -186,7 +186,7 @@ public class TXFarSideCMTracker {
     } else {
       // tx may have completed
       for (int i = this.txHistory.length - 1; i >= 0; --i) {
-        if (lk.equals(this.txHistory[i])) {
+        if (lockId.equals(this.txHistory[i])) {
           return;
         }
       }
