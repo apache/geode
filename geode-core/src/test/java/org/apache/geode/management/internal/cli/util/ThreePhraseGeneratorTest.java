@@ -30,8 +30,8 @@ public class ThreePhraseGeneratorTest {
     final ThreePhraseGenerator tpg = new ThreePhraseGenerator();
 
     final String phrase = tpg.generate('-');
-    assertNotNull("Generated string is not null", phrase);
-    assertNotEquals("Generated string is not empty", "", phrase);
+    assertNotNull("Generated string is null", phrase);
+    assertNotEquals("Generated string is empty", "", phrase);
   }
 
   @Test
@@ -41,11 +41,11 @@ public class ThreePhraseGeneratorTest {
     // Since there is a random choice of word, try a bunch of times to get coverage.
     for (int attempt = 1; attempt < 50000; ++attempt) {
       final String phrase = tpg.generate('x');
-      assertTrue("Generated string has at least five characters", 5 <= phrase.length());
+      assertTrue("Generated string does not have at least five characters", 5 <= phrase.length());
       for (int index = 0; index < phrase.length(); ++index) {
         final char c = phrase.charAt(index);
         assertTrue(
-            "Character in \"" + phrase + "\" at index " + index + ", '" + c + "', is a letter",
+            "Character in \"" + phrase + "\" at index " + index + ", '" + c + "', is a not letter",
             Character.isLetter(c));
       }
     }
