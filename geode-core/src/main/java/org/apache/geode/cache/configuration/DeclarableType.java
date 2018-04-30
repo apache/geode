@@ -20,6 +20,8 @@ package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -27,6 +29,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 
 
 /**
@@ -66,6 +69,22 @@ public class DeclarableType {
   protected String className;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected List<ParameterType> parameter;
+
+  public DeclarableType() {}
+
+  public DeclarableType(String className) {
+    this.className = className;
+  }
+
+  public DeclarableType(String className, String jsonProperties) {
+    ClassName cn = new ClassName(className, jsonProperties);
+    this.className = cn.getClassName();
+    Properties properties = cn.getInitProperties();
+    parameter = properties.stringPropertyNames().stream()
+        .map(k -> new ParameterType(k, properties.getProperty(k))).collect(Collectors.toList());
+  }
+
+
 
   /**
    * Gets the value of the className property.
