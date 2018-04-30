@@ -47,8 +47,8 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
   }
 
   private Duration warningDelay(InternalPersistenceAdvisor persistenceAdvisor) {
-    return Duration.ofSeconds(persistenceAdvisor.getCacheDistributionAdvisor().getDistributionManager()
-        .getConfig().getAckWaitThreshold());
+    return Duration.ofSeconds(persistenceAdvisor.getCacheDistributionAdvisor()
+        .getDistributionManager().getConfig().getAckWaitThreshold());
   }
 
   public synchronized void waitForChange() throws InterruptedException {
@@ -56,7 +56,8 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
     Instant timeoutTime = now.plus(pollDuration);
     Instant warningTime = now.plus(warningDelay);
 
-    while (!membershipChanged && !cancelCondition.getAsBoolean() && Instant.now().isBefore(timeoutTime)) {
+    while (!membershipChanged && !cancelCondition.getAsBoolean()
+        && Instant.now().isBefore(timeoutTime)) {
       warnOnceAfter(warningTime);
       wait(POLL_INTERVAL_MILLIS);
     }
@@ -109,8 +110,7 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
     afterMembershipChange();
   }
 
-  private static BooleanSupplier cancelCondition(
-      InternalPersistenceAdvisor persistenceAdvisor) {
+  private static BooleanSupplier cancelCondition(InternalPersistenceAdvisor persistenceAdvisor) {
     CancelCriterion cancelCriterion =
         persistenceAdvisor.getCacheDistributionAdvisor().getAdvisee().getCancelCriterion();
     return () -> {
@@ -121,6 +121,7 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
   }
 
   private static Duration pollDuration() {
-    return Duration.ofSeconds(getProductIntegerProperty(PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS).orElse(5));
+    return Duration
+        .ofSeconds(getProductIntegerProperty(PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS).orElse(5));
   }
 }
