@@ -835,11 +835,13 @@ public class AbstractRegionMapTest {
       throws Exception {
     AbstractRegionMap arm = new TxRegionEntryTestableAbstractRegionMap();
     List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
+    TXId txId = new TXId(mock(InternalDistributedMember.class), 1);
+    TXRmtEvent txRmtEvent = mock(TXRmtEvent.class);
+    EventID eventId = mock(EventID.class);
 
     Object newValue = "value";
-    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false,
-        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
-        mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false, txId, txRmtEvent, eventId, null,
+        pendingCallbacks, null, null, null, null, 1);
 
     assertEquals(1, pendingCallbacks.size());
     verify(arm._getOwner(), never()).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
