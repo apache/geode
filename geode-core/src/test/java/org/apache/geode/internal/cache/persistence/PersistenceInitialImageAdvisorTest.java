@@ -34,17 +34,22 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class PersistenceInitialImageAdvisorTest {
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private InternalPersistenceAdvisor persistenceAdvisor;
   private CacheDistributionAdvisor cacheDistributionAdvisor;
@@ -65,6 +70,7 @@ public class PersistenceInitialImageAdvisorTest {
 
   @Test
   public void publishesListOfMissingMembersWhenWaitingForMissingMembers() {
+    System.setProperty("geode." + SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS, "0");
     Set<PersistentMemberID> offlineMembersToWaitFor = givenOfflineMembersToWaitFor(1);
 
     when(cacheDistributionAdvisor.adviseInitialImage(null, true))
