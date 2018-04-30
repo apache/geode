@@ -171,9 +171,9 @@ public class TXFarSideCMTracker {
     if (mess != null) {
       synchronized (mess) {
         // tx in progress, we must wait until its done
-        while (!mess.wasProcessed()) {
+        while (!mess.wasProcessed() || mess.isDepartureNoticed()) {
           try {
-            mess.wait();
+            mess.wait(100);
           } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             logger.error(LocalizedMessage.create(

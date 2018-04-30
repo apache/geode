@@ -104,7 +104,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   private transient boolean wasProcessed;
   private transient boolean isProcessing;
   private transient boolean dontProcess;
-  private transient boolean departureNoticed = false;
+  private transient volatile boolean departureNoticed = false;
   private transient boolean lockNeedsUpdate = false;
   private transient boolean ackRequired = true;
   /**
@@ -1943,15 +1943,20 @@ public class TXCommitMessage extends PooledDistributionMessage
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
+  /** return true if the member initiating this transaction has left the cluster */
+  public boolean isDepartureNoticed() {
+    return departureNoticed;
+  }
+
   @Override
   public void memberDeparted(DistributionManager distributionManager,
       final InternalDistributedMember id, boolean crashed) {
+
     if (!getSender().equals(id)) {
       return;
     }
     this.dm.removeMembershipListener(this);
 
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup("TXCommitMessage Threads", logger);
     synchronized (this) {
       if (isProcessing() || this.departureNoticed) {
         if (logger.isDebugEnabled()) {
@@ -1962,6 +1967,8 @@ public class TXCommitMessage extends PooledDistributionMessage
       }
       this.departureNoticed = true;
     }
+
+    ThreadGroup group = LoggingThreadGroup.createThreadGroup("TXCommitMessage Threads", logger);
 
     // Send message to fellow FarSiders (aka recipients), if any, to
     // determine if any one of them have received a CommitProcessMessage
