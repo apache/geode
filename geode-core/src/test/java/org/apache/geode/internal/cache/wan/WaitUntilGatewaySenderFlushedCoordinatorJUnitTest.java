@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.wan;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.spy;
 
 import org.junit.After;
 import org.junit.Before;
