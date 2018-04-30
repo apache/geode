@@ -194,6 +194,7 @@ public class DescribeClientCommandDUnitTest {
       cf.setPoolStatisticInterval(100);
       cf.setPoolSubscriptionRedundancy(1);
       cf.setPoolMinConnections(1);
+      // TODO: Remove this once GEODE-5157 is fixed
       SocketCreator.use_client_host_name = false;
     };
 
