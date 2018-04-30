@@ -17,9 +17,10 @@ package org.apache.geode.internal.cache.persistence;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductIntegerProperty;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 import org.apache.geode.CancelCriterion;
@@ -28,38 +29,42 @@ import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class MembershipChangeListener implements MembershipListener, PersistentStateListener {
-  private static final int PAUSE_MILLIS = 100;
+  private static final int POLL_INTERVAL_MILLIS = 100;
 
-  private final int ackWaitThreshold;
   private final Runnable warning;
   private final BooleanSupplier cancelCondition;
-  private final long persistentViewRetryTimeoutNanos;
+  private final Duration pollDuration;
+  private final Duration warningDelay;
 
   private boolean membershipChanged;
   private boolean warned;
 
   public MembershipChangeListener(InternalPersistenceAdvisor persistenceAdvisor) {
-    ackWaitThreshold = persistenceAdvisor.getCacheDistributionAdvisor().getDistributionManager()
-        .getConfig().getAckWaitThreshold();
-    cancelCondition = createCancelCondition(persistenceAdvisor);
+    warningDelay = warningDelay(persistenceAdvisor);
+    cancelCondition = cancelCondition(persistenceAdvisor);
     warning = persistenceAdvisor::logWaitingForMembers;
-    persistentViewRetryTimeoutNanos = TimeUnit.SECONDS
-        .toNanos(getProductIntegerProperty(PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS).orElse(5));
+    pollDuration = pollDuration();
+  }
+
+  private Duration warningDelay(InternalPersistenceAdvisor persistenceAdvisor) {
+    return Duration.ofSeconds(persistenceAdvisor.getCacheDistributionAdvisor().getDistributionManager()
+        .getConfig().getAckWaitThreshold());
   }
 
   public synchronized void waitForChange() throws InterruptedException {
-    long now = System.nanoTime();
-    long timeout = now + persistentViewRetryTimeoutNanos;
-    long warningTime = now + TimeUnit.SECONDS.toNanos(ackWaitThreshold);
-    while (!membershipChanged && !cancelCondition.getAsBoolean() && System.nanoTime() <= timeout) {
-      wait(PAUSE_MILLIS);
-      warnOnce(warningTime);
+    Instant now = Instant.now();
+    Instant timeoutTime = now.plus(pollDuration);
+    Instant warningTime = now.plus(warningDelay);
+
+    while (!membershipChanged && !cancelCondition.getAsBoolean() && Instant.now().isBefore(timeoutTime)) {
+      warnOnceAfter(warningTime);
+      wait(POLL_INTERVAL_MILLIS);
     }
     membershipChanged = false;
   }
 
-  private void warnOnce(long warningTime) {
-    if (!warned && System.nanoTime() > warningTime) {
+  private void warnOnceAfter(Instant warningTime) {
+    if (!warned && warningTime.isBefore(Instant.now())) {
       warning.run();
       warned = true;
     }
@@ -104,7 +109,7 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
     afterMembershipChange();
   }
 
-  private static BooleanSupplier createCancelCondition(
+  private static BooleanSupplier cancelCondition(
       InternalPersistenceAdvisor persistenceAdvisor) {
     CancelCriterion cancelCriterion =
         persistenceAdvisor.getCacheDistributionAdvisor().getAdvisee().getCancelCriterion();
@@ -113,5 +118,9 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
       cancelCriterion.checkCancelInProgress(null);
       return persistenceAdvisor.isClosed();
     };
+  }
+
+  private static Duration pollDuration() {
+    return Duration.ofSeconds(getProductIntegerProperty(PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS).orElse(5));
   }
 }
