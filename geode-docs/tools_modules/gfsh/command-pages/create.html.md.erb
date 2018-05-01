@@ -948,7 +948,7 @@ If this option is specified without a value or is specified with a value of <cod
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-cache-loader</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>initialize()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -1095,6 +1095,8 @@ create region --name=region4 --type=REPLICATE_PROXY \
 create region --name=myRegion --type=REPLICATE --eviction-max-memory=100 \
 --eviction-action=overflow-to-disk --eviction-object-sizer=my.company.geode.MySizer
 
+create region --name=r1 --type=PARTITION \
+--cache-loader=org.example.myLoader{'duplicate':'false'}
 ```
 
 **Sample Output:**
