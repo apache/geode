@@ -57,7 +57,7 @@ public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
       @CliOption(key = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExists) {
 
-    boolean persisted = false;
+    boolean persisted = true;
     Set<DistributedMember> members = getMembers(onGroups, onMember);
 
     List<CliFunctionResult> functionResults =
@@ -68,7 +68,9 @@ public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
     // Only update the cluster config if the command is not executed on specific members.
     InternalClusterConfigurationService service =
         (InternalClusterConfigurationService) getConfigurationService();
-    if (onMember == null && result.getStatus().equals(Result.Status.OK) && service != null) {
+    if (onMember != null || service == null) {
+      persisted = false;
+    } else if (result.getStatus().equals(Result.Status.OK)/* && service != null */) {
       if (onGroups == null) {
         onGroups = new String[] {"cluster"};
       }
@@ -82,7 +84,6 @@ public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
         }
         return cc;
       }));
-      persisted = true;
     }
 
     result.setCommandPersisted(persisted);
