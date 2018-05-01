@@ -52,6 +52,7 @@ import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.functions.GetRegionNamesFunction;
@@ -105,7 +106,7 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
 
       InfoResultData infoData = ResultBuilder.createInfoResultData();
       byte[] byteData = FileUtils.readFileToByteArray(zipFile);
-      infoData.addAsFile(zipFileName, byteData, InfoResultData.FILE_TYPE_BINARY,
+      infoData.addAsFile(zipFileName, byteData, ResultData.FILE_TYPE_BINARY,
           CliStrings.EXPORT_SHARED_CONFIG__DOWNLOAD__MSG, false);
       result = ResultBuilder.buildResult(infoData);
     } catch (Exception e) {
