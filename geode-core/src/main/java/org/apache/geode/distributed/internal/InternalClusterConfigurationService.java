@@ -88,6 +88,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -179,11 +180,21 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     }
     // else, scan the classpath to find all the classes annotated with XSDRootElement
     else {
+      String[] packages = getPackagesToScan();
       Set<Class<?>> scannedClasses =
-          ClasspathScanLoadHelper.scanClasspathForAnnotation(XSDRootElement.class, "");
+          ClasspathScanLoadHelper.scanClasspathForAnnotation(XSDRootElement.class, packages);
       this.jaxbService = new JAXBService(scannedClasses.toArray(new Class[scannedClasses.size()]));
     }
     jaxbService.validateWithLocalCacheXSD();
+  }
+
+  protected String[] getPackagesToScan() {
+    String sysProperty = SystemPropertyHelper.getProperty(SystemPropertyHelper.PACKAGES_TO_SCAN);
+    String[] packages = {""};
+    if (sysProperty != null) {
+      packages = sysProperty.split(",");
+    }
+    return packages;
   }
 
   /**

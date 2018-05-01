@@ -66,6 +66,16 @@ public class SystemPropertyHelper {
   public static final String THREAD_ID_EXPIRY_TIME_PROPERTY = "threadIdExpiryTime";
 
   /**
+   * a comma separated string to list out the packages to scan. If not specified, the entire
+   * classpath is scanned.
+   * This is used by the FastPathScanner to scan for:
+   * 1. XSDRootElement annotation
+   *
+   * @since Geode 1.7.0
+   */
+  public static final String PACKAGES_TO_SCAN = "packagesToScan";
+
+  /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It
    * will check and prefer "geode." setting first, then try to check "gemfire." setting.
    *
@@ -109,7 +119,7 @@ public class SystemPropertyHelper {
     return property != null ? Optional.of(property) : Optional.empty();
   }
 
-  private static String getProperty(String name) {
+  public static String getProperty(String name) {
     String property = getGeodeProperty(name);
     return property != null ? property : getGemfireProperty(name);
   }

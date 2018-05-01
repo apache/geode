@@ -28,7 +28,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
@@ -38,6 +40,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.config.JAXBServiceTest;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementOne;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementTwo;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -46,6 +49,9 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class InternalClusterConfigurationServiceTest {
   private InternalClusterConfigurationService service, service2;
   private Configuration configuration;
+
+  @Rule
+  public RestoreSystemProperties restore = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
@@ -173,5 +179,21 @@ public class InternalClusterConfigurationServiceTest {
     service.updateCacheConfig("non-existing-group", cc -> cc);
 
     verify(region).put(eq("non-existing-group"), any());
+  }
+
+  @Test
+  public void getPackagesToScanWithoutSystemProperty() {
+    String[] packages = service.getPackagesToScan();
+    assertThat(packages).hasSize(1);
+    assertThat(packages[0]).isEqualTo("");
+  }
+
+  @Test
+  public void getPackagesToScanWithSystemProperty() {
+    System.setProperty("geode." + SystemPropertyHelper.PACKAGES_TO_SCAN,
+        "org.apache.geode,io.pivotal");
+    String[] packages = service.getPackagesToScan();
+    assertThat(packages).hasSize(2);
+    assertThat(packages).contains("org.apache.geode", "io.pivotal");
   }
 }
