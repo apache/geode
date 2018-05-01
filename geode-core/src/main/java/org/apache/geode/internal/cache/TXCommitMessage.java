@@ -104,7 +104,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   private transient boolean wasProcessed;
   private transient boolean isProcessing;
   private transient boolean dontProcess;
-  private transient boolean departureNoticed = false;
+  private transient volatile boolean departureNoticed = false;
   private transient boolean lockNeedsUpdate = false;
   private transient boolean ackRequired = true;
   /**
