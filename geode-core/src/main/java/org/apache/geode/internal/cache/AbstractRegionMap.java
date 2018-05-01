@@ -2402,68 +2402,9 @@ public abstract class AbstractRegionMap
     if (re != null) {
       synchronized (re) {
         if (!re.isRemoved()) {
-          txApplyPutContext.setOpCompleted(true);
-          txApplyPutContext.makeUpdate();
-          // Net writers are not called for received transaction data
-          final int oldSize = owner.calculateRegionEntryValueSize(re);
-          if (callbackEvent != null) {
-            callbackEvent.setRegionEntry(re);
-            callbackEvent.setOldValue(re.getValueInVM(owner)); // OFFHEAP eei
-          }
-
-          boolean clearOccured = false;
-          // Set RegionEntry updateInProgress
-          if (owner.getIndexMaintenanceSynchronous()) {
-            re.setUpdateInProgress(true);
-          }
-          try {
-            txRemoveOldIndexEntry(txApplyPutContext.getPutOp(), re);
-            if (didDestroy) {
-              re.txDidDestroy(owner.cacheTimeMillis());
-            }
-            if (txEvent != null) {
-              txEvent.addPut(txApplyPutContext.getPutOp(), owner, re, re.getKey(), newValue,
-                  aCallbackArgument);
-            }
-            re.setValueResultOfSearch(txApplyPutContext.getPutOp().isNetSearch());
-            try {
-              processAndGenerateTXVersionTag(owner, callbackEvent, re, txEntryState);
-              {
-                re.setValue(owner, re.prepareValueForCache(owner, newValue, callbackEvent,
-                    !txApplyPutContext.getPutOp().isCreate()));
-              }
-              if (txApplyPutContext.getPutOp().isCreate()) {
-                owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(re));
-              } else if (txApplyPutContext.getPutOp().isUpdate()) {
-                // Rahul : fix for 41694. Negative bucket size can also be
-                // an issue with normal GFE Delta and will have to be fixed
-                // in a similar manner and may be this fix the the one for
-                // other delta can be combined.
-                {
-                  owner.updateSizeOnPut(key, oldSize, owner.calculateRegionEntryValueSize(re));
-                }
-              }
-            } catch (RegionClearedException rce) {
-              clearOccured = true;
-            }
-            {
-              long lastMod = owner.cacheTimeMillis();
-              EntryLogger.logTXPut(_getOwnerObject(), key, nv);
-              re.updateStatsForPut(lastMod, lastMod);
-              owner.txApplyPutPart2(re, re.getKey(), lastMod, false, didDestroy, clearOccured);
-            }
-          } finally {
-            if (re != null && owner.getIndexMaintenanceSynchronous()) {
-              re.setUpdateInProgress(false);
-            }
-          }
-          if (invokeCallbacks) {
-            prepareUpdateCallbacks(pendingCallbacks, owner, hasRemoteOrigin, callbackEvent);
-            txApplyPutContext.setCallbackEventInPending(true);
-          }
-          if (!clearOccured) {
-            lruEntryUpdate(re);
-          }
+          txApplyPutExistingRegionEntry(txApplyPutContext, key, nv, didDestroy, txEvent,
+              aCallbackArgument, pendingCallbacks, txEntryState, owner, newValue, hasRemoteOrigin,
+              callbackEvent, invokeCallbacks, re);
         }
       }
       if (didDestroy && !txApplyPutContext.isOpCompleted()) {
@@ -2477,13 +2418,6 @@ public abstract class AbstractRegionMap
     if (owner.getConcurrencyChecksEnabled() && txEntryState != null && callbackEvent != null) {
       txEntryState.setVersionTag(callbackEvent.getVersionTag());
     }
-  }
-
-  private void prepareUpdateCallbacks(List<EntryEventImpl> pendingCallbacks, LocalRegion owner,
-      boolean hasRemoteOrigin, EntryEventImpl callbackEvent) {
-    callbackEvent.makeUpdate();
-    switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
-    pendingCallbacks.add(callbackEvent);
   }
 
   private void txHandleWANEvent(final LocalRegion owner, EntryEventImpl callbackEvent,
