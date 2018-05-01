@@ -30,7 +30,6 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -57,12 +56,11 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
   @Test
   public void testLocatorWithUDPSecurityButServer() throws Exception {
     disconnectAllFromDS();
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
+    VM vm0 = VM.getVM(0);
 
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     DistributedTestUtils.deleteLocatorStateFile(port1);
-    final String locators = NetworkUtils.getServerHostName(host) + "[" + port + "]";
+    final String locators = NetworkUtils.getServerHostName() + "[" + port + "]";
 
     vm0.invoke("Start locator " + locators, () -> startLocator(port));
     try {

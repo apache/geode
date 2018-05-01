@@ -40,6 +40,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -77,7 +78,6 @@ import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeaveTestHelper;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -110,7 +110,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   static volatile InternalDistributedSystem system = null;
 
-  static TestHook hook;
+  private static TestHook hook;
 
   /**
    * Creates a new <code>LocatorDUnitTest</code>
@@ -150,6 +150,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void postTearDown() throws Exception {
+    disconnectAllFromDS();
     if (system != null) {
       system.disconnect();
       system = null;
@@ -301,6 +302,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     addDSProps(properties);
+
     startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
     // GEODE-3052 - split brain on restart from persistent view data
     startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
@@ -311,9 +313,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       throws IOException {
     try {
       Locator.startLocatorAndDS(port, new File(""), properties);
-    } catch (SystemConnectException e) {
-      return Boolean.FALSE;
-    } catch (GemFireConfigException e) {
+    } catch (SystemConnectException | GemFireConfigException e) {
       return Boolean.FALSE;
     }
     return Boolean.TRUE;
@@ -425,20 +425,17 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       getBlackboard().waitForGate("locator2", 60, TimeUnit.SECONDS);
       getBlackboard().signalGate("go");
 
-      async1.await();
-      async2.await();
+      assertTrue("locator 1 started", async1.get());
+      assertTrue("locator 2 started", async2.get());
 
+      // verify that they found each other
+      loc2.invoke("expectSystemToContainThisManyMembers",
+          () -> expectSystemToContainThisManyMembers(2));
+      loc1.invoke("expectSystemToContainThisManyMembers",
+          () -> expectSystemToContainThisManyMembers(2));
     } finally {
-      try {
-        // verify that they found each other
-        loc2.invoke("expectSystemToContainThisManyMembers",
-            () -> expectSystemToContainThisManyMembers(2));
-        loc1.invoke("expectSystemToContainThisManyMembers",
-            () -> expectSystemToContainThisManyMembers(2));
-      } finally {
-        loc2.invoke("stop locator", () -> stopLocator());
-        loc1.invoke("stop locator", () -> stopLocator());
-      }
+      loc2.invoke("stop locator", () -> stopLocator());
+      loc1.invoke("stop locator", () -> stopLocator());
     }
   }
 
@@ -617,13 +614,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private Object expectSystemToContainThisManyMembers(final int expectedMembers) {
+  private static void expectSystemToContainThisManyMembers(final int expectedMembers) {
     InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
-    if (sys == null) {
-      Assert.fail("no distributed system found");
-    }
+    assertNotNull(sys);
     assertEquals(expectedMembers, sys.getDM().getViewMembers().size());
-    return true;
   }
 
   private void startLocator(final int port, final Properties properties) throws IOException {
@@ -638,7 +632,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     return locator;
   }
 
-  public int startLocatorWithRandomPort(Properties properties) throws IOException {
+  private int startLocatorWithRandomPort(Properties properties) throws IOException {
     Locator locator = startLocatorInternal(0, properties);
     return locator.getPort();
   }
@@ -673,27 +667,23 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     try {
       DistributedSystem sys = locator.getDistributedSystem();
 
-      Object[] connectArgs = new Object[] {properties};
-
       assertTrue(MembershipManagerHelper.getLeadMember(sys) == null);
 
       // connect three vms and then watch the lead member selection as they
       // are disconnected/reconnected
       properties.put("name", "vm1");
-      DistributedMember mem1 =
-          (DistributedMember) vm1.invoke(this.getClass(), "getDistributedMember", connectArgs);
+
+      DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
 
       // assertTrue(MembershipManagerHelper.getLeadMember(sys) != null);
       assertLeadMember(mem1, sys, 5000);
 
       properties.put("name", "vm2");
-      DistributedMember mem2 =
-          (DistributedMember) vm2.invoke(this.getClass(), "getDistributedMember", connectArgs);
+      DistributedMember mem2 = vm2.invoke(() -> getDistributedMember(properties));
       assertLeadMember(mem1, sys, 5000);
 
       properties.put("name", "vm3");
-      DistributedMember mem3 =
-          (DistributedMember) vm3.invoke(this.getClass(), "getDistributedMember", connectArgs);
+      DistributedMember mem3 = vm3.invoke(() -> getDistributedMember(properties));
       assertLeadMember(mem1, sys, 5000);
 
       // after disconnecting the first vm, the second one should become the leader
@@ -702,7 +692,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       assertLeadMember(mem2, sys, 5000);
 
       properties.put("name", "vm1");
-      mem1 = (DistributedMember) vm1.invoke(this.getClass(), "getDistributedMember", connectArgs);
+      mem1 = vm1.invoke(() -> getDistributedMember(properties));
       assertLeadMember(mem2, sys, 5000);
 
       vm2.invoke(() -> disconnectDistributedSystem());
@@ -791,12 +781,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           try {
             Locator.startLocatorAndDS(port2, lf, properties);
           } catch (IOException ios) {
-            org.apache.geode.test.dunit.Assert.fail("Unable to start locator2", ios);
+            throw new RuntimeException("Unable to start locator2", ios);
           }
         }
       });
-
-      Object[] connectArgs = new Object[] {properties};
 
       SerializableRunnable crashLocator = new SerializableRunnable("Crash locator") {
         public void run() {
@@ -811,9 +799,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       // properties.put("log-level", getDUnitLogLevel());
 
-      DistributedMember mem1 =
-          (DistributedMember) vm1.invoke(this.getClass(), "getDistributedMember", connectArgs);
-      vm2.invoke(this.getClass(), "getDistributedMember", connectArgs);
+      DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
+      vm2.invoke(() -> getDistributedMember(properties));
       assertLeadMember(mem1, sys, 5000);
 
       assertEquals(sys.getDistributedMember(), MembershipManagerHelper.getCoordinator(sys));
@@ -912,7 +899,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     addDSProps(properties);
 
     try {
-      final String uname = getUniqueName();
       File logFile = new File("");
       locator = Locator.startLocatorAndDS(port1, logFile, properties);
       DistributedSystem sys = locator.getDistributedSystem();
@@ -923,12 +909,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
             Locator.startLocatorAndDS(port2, lf, properties);
             MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
           } catch (IOException ios) {
-            org.apache.geode.test.dunit.Assert.fail("Unable to start locator2", ios);
+            throw new RuntimeException("Unable to start locator2", ios);
           }
         }
       });
-
-      Object[] connectArgs = new Object[] {properties};
 
       SerializableRunnable crashSystem = new SerializableRunnable("Crash system") {
         public void run() {
@@ -945,10 +929,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       assertTrue(MembershipManagerHelper.getLeadMember(sys) == null);
 
-      DistributedMember mem1 =
-          (DistributedMember) vm1.invoke(this.getClass(), "getDistributedMember", connectArgs);
-      DistributedMember mem2 =
-          (DistributedMember) vm2.invoke(this.getClass(), "getDistributedMember", connectArgs);
+      DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
+      DistributedMember mem2 = vm2.invoke(() -> getDistributedMember(properties));
 
       assertEquals(mem1, MembershipManagerHelper.getLeadMember(sys));
 
@@ -1070,11 +1052,9 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         try {
           Locator.startLocatorAndDS(port2, lf, properties);
         } catch (IOException ios) {
-          org.apache.geode.test.dunit.Assert.fail("Unable to start locator2", ios);
+          throw new RuntimeException("Unable to start locator2", ios);
         }
       });
-
-      Object[] connectArgs = new Object[] {properties};
 
       SerializableRunnable crashSystem = new SerializableRunnable("Crash system") {
         public void run() {
@@ -1097,12 +1077,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         }
       };
 
-      assertTrue(MembershipManagerHelper.getLeadMember(sys) == null);
+      assertNull(MembershipManagerHelper.getLeadMember(sys));
 
-      final DistributedMember mem1 =
-          (DistributedMember) vm1.invoke(this.getClass(), "getDistributedMember", connectArgs);
-      final DistributedMember mem2 =
-          (DistributedMember) vm2.invoke(this.getClass(), "getDistributedMember", connectArgs);
+      final DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
+      final DistributedMember mem2 = vm2.invoke(() -> getDistributedMember(properties));
 
       assertEquals(mem1, MembershipManagerHelper.getLeadMember(sys));
 
@@ -1195,13 +1173,12 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
     addDSProps(properties);
     try {
-      final String uname = getUniqueName();
       locvm.invoke(() -> {
         File lf = new File("");
         try {
           Locator.startLocatorAndDS(port2, lf, properties);
         } catch (IOException ios) {
-          org.apache.geode.test.dunit.Assert.fail("Unable to start locator1", ios);
+          throw new RuntimeException("Unable to start locator1", ios);
         }
       });
 
@@ -1210,17 +1187,14 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       DistributedSystem sys = locator.getDistributedSystem();
       sys.getLogWriter().info(
           "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
-      Object[] connectArgs = new Object[] {properties};
 
       assertTrue(MembershipManagerHelper.getLeadMember(sys) == null);
 
-      DistributedMember mem1 =
-          (DistributedMember) vm1.invoke(this.getClass(), "getDistributedMember", connectArgs);
+      DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
 
       vm1.invoke(() -> MembershipManagerHelper.inhibitForcedDisconnectLogging(true));
 
-      DistributedMember mem2 =
-          (DistributedMember) vm2.invoke(this.getClass(), "getDistributedMember", connectArgs);
+      DistributedMember mem2 = vm2.invoke(() -> getDistributedMember(properties));
 
       DistributedMember loc1Mbr = locvm.invoke(() -> this.getLocatorDistributedMember());
 
@@ -1315,7 +1289,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     } catch (Exception ex) {
       // if you see this fail, determine if unexpected exception is expected
       // if expected then add in a catch block for it above this catch
-      org.apache.geode.test.dunit.Assert.fail("Failed with unexpected exception", ex);
+      throw new RuntimeException("Failed with unexpected exception", ex);
     } finally {
       bgexecLogger.info(removeExpected);
     }
@@ -1343,7 +1317,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     DistributedTestUtils.deleteLocatorStateFile(port1);
     final String locators = NetworkUtils.getServerHostName(host) + "[" + port + "]";
-    final String uniqueName = getUniqueName();
 
     vm0.invoke("Start locator " + locators, () -> startLocator(port));
     try {
@@ -1407,7 +1380,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       addDSProps(locProps);
       Locator.startLocatorAndDS(port, logFile, locProps);
     } catch (IOException ex) {
-      org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port, ex);
+      throw new RuntimeException("While starting locator on port " + port, ex);
     }
   }
 
@@ -1452,7 +1425,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         sys.getLogWriter().info(addExpected);
       });
 
-      system = (InternalDistributedSystem) getSystem(props);
+      system = getSystem(props);
 
       final DistributedMember coord = MembershipManagerHelper.getCoordinator(system);
       org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
@@ -1485,11 +1458,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       LogWriter bgexecLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
       bgexecLogger.info(removeExpected);
 
-      SerializableRunnable disconnect = new SerializableRunnable("Disconnect from " + locators) {
-        public void run() {
-
-        }
-      };
       vm1.invoke(() -> {
         DistributedSystem sys = InternalDistributedSystem.getAnyInstance();
         if (sys != null && sys.isConnected()) {
@@ -1517,16 +1485,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-  public static boolean isSystemConnected() {
+  private static boolean isSystemConnected() {
     DistributedSystem sys = InternalDistributedSystem.getAnyInstance();
-    if (sys != null && sys.isConnected()) {
-      return true;
-    }
-    return false;
+    return sys != null && sys.isConnected();
   }
-
-  static boolean beforeFailureNotificationReceived;
-  static boolean afterFailureNotificationReceived;
 
   /**
    * Tests starting multiple locators in multiple VMs.
@@ -1599,7 +1561,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private void disconnectDistributedSystem() {
+  private static void disconnectDistributedSystem() {
     DistributedSystem sys = InternalDistributedSystem.getAnyInstance();
     if (sys != null && sys.isConnected()) {
       sys.disconnect();
@@ -1655,15 +1617,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       system = (InternalDistributedSystem) DistributedSystem.connect(dsProps);
 
       Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
-          .until(() -> {
-            try {
-              return system.getDM().getViewMembers().size() == 6;
-            } catch (Exception e) {
-              e.printStackTrace();
-              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
-            }
-            return false; // NOTREACHED
-          });
+          .until(() -> system.getDM().getViewMembers().size() == 6);
 
       // three applications plus
       assertEquals(6, system.getDM().getViewMembers().size());
@@ -1673,15 +1627,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       vm2.invoke(() -> stopLocator());
 
       Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
-          .until(() -> {
-            try {
-              return system.getDM().getMembershipManager().getView().size() <= 3;
-            } catch (Exception e) {
-              e.printStackTrace();
-              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
-            }
-            return false; // NOTREACHED
-          });
+          .until(() -> system.getDM().getMembershipManager().getView().size() <= 3);
 
       final String newLocators = host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
       dsProps.setProperty(LOCATORS, newLocators);
@@ -1697,20 +1643,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       vm2.invoke(() -> startLocatorAsync(new Object[] {port3, dsProps}));
 
       Awaitility.waitAtMost(30000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
-          .until(() -> {
-            try {
-              InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
-              if (c.equals(currentCoordinator)) {
-                // now locator should be new coordinator
-                return false;
-              }
-              return system.getDM().getAllHostedLocators().size() == 2;
-            } catch (Exception e) {
-              e.printStackTrace();
-              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
-            }
-            return false; // NOTREACHED
-          });
+          .until(() -> !GMSJoinLeaveTestHelper.getCurrentCoordinator().equals(currentCoordinator)
+              && system.getDM().getAllHostedLocators().size() == 2);
 
       vm1.invoke("waitUntilLocatorBecomesCoordinator", () -> waitUntilLocatorBecomesCoordinator());
       vm2.invoke("waitUntilLocatorBecomesCoordinator", () -> waitUntilLocatorBecomesCoordinator());
@@ -1785,16 +1719,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         DistributedSystem.connect(dsProps);
 
         Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
-            .until(() -> {
-              try {
-                return InternalDistributedSystem.getConnectedInstance().getDM().getViewMembers()
-                    .size() == 5;
-              } catch (Exception e) {
-                e.printStackTrace();
-                org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
-              }
-              return false; // NOTREACHED
-            });
+            .until(() -> InternalDistributedSystem.getConnectedInstance().getDM().getViewMembers()
+                .size() == 5);
         return true;
       });
 
@@ -1805,14 +1731,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       SerializableRunnable waitForDisconnect = new SerializableRunnable("waitForDisconnect") {
         public void run() {
           Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS)
-              .pollInterval(200, TimeUnit.MILLISECONDS).until(() -> {
-                try {
-                  return InternalDistributedSystem.getConnectedInstance() == null;
-                } catch (Exception e) {
-                  org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
-                }
-                return false; // NOTREACHED
-              });
+              .pollInterval(200, TimeUnit.MILLISECONDS)
+              .until(() -> InternalDistributedSystem.getConnectedInstance() == null);
         }
       };
       vm0.invoke(() -> waitForDisconnect);
@@ -1862,25 +1782,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   private void waitUntilLocatorBecomesCoordinator() {
     Awaitility.waitAtMost(30000, TimeUnit.MILLISECONDS).pollInterval(1000, TimeUnit.MILLISECONDS)
-        .until(() -> {
-          try {
-            InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
-            return c.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
-          } catch (Exception e) {
-            e.printStackTrace();
-            org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
-          }
-          return false; // NOTREACHED
-        });
-  }
-
-  private void startLocatorSync(Object[] args) {
-    File logFile = new File("");
-    try {
-      Locator.startLocatorAndDS((int) args[0], logFile, (Properties) args[1]);
-    } catch (IOException ex) {
-      org.apache.geode.test.dunit.Assert.fail("While starting process on port " + args[0], ex);
-    }
+        .until(() -> GMSJoinLeaveTestHelper.getCurrentCoordinator()
+            .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE);
   }
 
   private void startLocatorAsync(Object[] args) {
@@ -1890,7 +1793,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     try {
       Locator.startLocatorAndDS((int) args[0], logFile, properties);
     } catch (IOException ex) {
-      org.apache.geode.test.dunit.Assert.fail("While starting process on port " + args[0], ex);
+      throw new RuntimeException("While starting process on port " + args[0], ex);
     }
   }
 
@@ -2083,19 +1986,19 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   /**
    * find a running locator and return its distributed member id
    */
-  public static DistributedMember getLocatorDistributedMember() {
+  private static DistributedMember getLocatorDistributedMember() {
     return (Locator.getLocators().iterator().next()).getDistributedSystem().getDistributedMember();
   }
 
   /**
    * find the lead member and return its id
    */
-  public static DistributedMember getLeadMember() {
+  private static DistributedMember getLeadMember() {
     DistributedSystem sys = InternalDistributedSystem.getAnyInstance();
     return MembershipManagerHelper.getLeadMember(sys);
   }
 
-  protected void stopLocator() {
+  protected static void stopLocator() {
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
     Locator loc = Locator.getLocator();
     if (loc != null) {
@@ -2104,7 +2007,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  protected void forceDisconnect() {
+  private void forceDisconnect() {
     DistributedTestUtils.crashDistributedSystem(InternalDistributedSystem.getConnectedInstance());
   }
 
@@ -2118,30 +2021,14 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       addDSProps(locProps);
       Locator.startLocatorAndDS(port, logFile, locProps);
     } catch (IOException ex) {
-      org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port, ex);
+      throw new RuntimeException("While starting locator on port " + port, ex);
     } finally {
       System.getProperties().remove(InternalLocator.LOCATORS_PREFERRED_AS_COORDINATORS);
     }
   }
 
-  protected void nukeJChannel(DistributedSystem sys) {
-    sys.getLogWriter().info("<ExpectedException action=add>service failure</ExpectedException>");
-    sys.getLogWriter().info(
-        "<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
-    sys.getLogWriter().info(
-        "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
-    try {
-      MembershipManagerHelper.crashDistributedSystem(sys);
-    } catch (DistributedSystemDisconnectedException se) {
-      // it's okay for the system to already be shut down
-    }
-    sys.getLogWriter().info("<ExpectedException action=remove>service failure</ExpectedException>");
-    sys.getLogWriter().info(
-        "<ExpectedException action=remove>org.apache.geode.ForcedDisconnectException</ExpectedException>");
-  }
-
   // New test hook which blocks before closing channel.
-  class TestHook implements MembershipTestHook {
+  private static class TestHook implements MembershipTestHook {
 
     volatile boolean unboundedWait = true;
 
@@ -2167,7 +2054,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-  class MyMembershipListener implements MembershipListener {
+  private static class MyMembershipListener implements MembershipListener {
 
     boolean quorumLostInvoked;
     List<String> suspectReasons = new ArrayList<>(50);
