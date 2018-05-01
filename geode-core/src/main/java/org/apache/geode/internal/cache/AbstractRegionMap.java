@@ -2453,7 +2453,7 @@ public abstract class AbstractRegionMap
         }
         processVersionTag(re, callbackEvent);
       } catch (ConcurrentCacheModificationException ignore) {
-        // ignore this execption, however invoke callbacks for this operation
+        // ignore this exception, however invoke callbacks for this operation
       }
 
       // For distributed transactions, stuff the next region version generated
