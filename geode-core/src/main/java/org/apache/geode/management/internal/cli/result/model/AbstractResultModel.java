@@ -15,10 +15,17 @@
 
 package org.apache.geode.management.internal.cli.result.model;
 
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.ResultData;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public abstract class AbstractResultModel implements ResultData {
+import org.apache.geode.management.cli.Result;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY,
+    property = "modelClass")
+@JsonSubTypes({@JsonSubTypes.Type(value = TabularResultModel.class),
+    @JsonSubTypes.Type(value = DataResultModel.class),
+    @JsonSubTypes.Type(value = InfoResultModel.class)})
+public abstract class AbstractResultModel {
 
   private String header = "";
 
@@ -28,7 +35,6 @@ public abstract class AbstractResultModel implements ResultData {
 
   public abstract Object getContent();
 
-  @Override
   public String getHeader() {
     return header;
   }
@@ -37,7 +43,6 @@ public abstract class AbstractResultModel implements ResultData {
     this.header = header;
   }
 
-  @Override
   public String getFooter() {
     return footer;
   }

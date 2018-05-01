@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -245,7 +246,7 @@ public class ModelCommandResult implements CommandResult {
 
     addSpacedRowInTable(resultTable, result.getHeader());
 
-    for (ResultData section : result.getContent().values()) {
+    for (AbstractResultModel section : result.getContent().values()) {
       if (section instanceof DataResultModel) {
         buildData(resultTable, (DataResultModel) section);
       } else if (section instanceof TabularResultModel) {

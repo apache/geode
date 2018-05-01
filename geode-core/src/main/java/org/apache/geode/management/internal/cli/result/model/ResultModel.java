@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.ResultData;
 
 /**
  * This class is the primary container for results returned from a {@link GfshCommand}.
@@ -49,7 +48,7 @@ public class ResultModel {
 
   private String header;
   private String footer;
-  private Map<String, ResultData> sections = new LinkedHashMap<>();
+  private Map<String, AbstractResultModel> sections = new LinkedHashMap<>();
   private int sectionCount = 0;
   private Result.Status status = Result.Status.OK;
   private Object configObject;
@@ -100,11 +99,11 @@ public class ResultModel {
     this.footer = footer;
   }
 
-  public Map<String, ResultData> getContent() {
+  public Map<String, AbstractResultModel> getContent() {
     return sections;
   }
 
-  public void setContent(Map<String, ResultData> content) {
+  public void setContent(Map<String, AbstractResultModel> content) {
     this.sections = content;
   }
 

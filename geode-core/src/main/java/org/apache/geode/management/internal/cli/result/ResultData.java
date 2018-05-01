@@ -14,24 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 /**
  * @since GemFire 7.0
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY,
-    property = "modelClass")
-@JsonSubTypes({@JsonSubTypes.Type(value = TabularResultModel.class),
-    @JsonSubTypes.Type(value = DataResultModel.class),
-    @JsonSubTypes.Type(value = InfoResultModel.class)})
 public interface ResultData {
   String RESULT_HEADER = "header";
   String RESULT_CONTENT = "content";
@@ -47,19 +35,16 @@ public interface ResultData {
 
   String getFooter();
 
-  @JsonIgnore
   default GfJsonObject getGfJsonObject() {
     throw new UnsupportedOperationException(
         "This should never be called and only exists during migration from GfJsonObject to POJOs - use getContent() instead");
   }
 
-  @JsonIgnore
   default String getType() {
     throw new UnsupportedOperationException(
         "This should never be called and only exists during migration from GfJsonObject to POJOs");
   }
 
-  @JsonIgnore
   default Status getStatus() {
     throw new UnsupportedOperationException(
         "This should never be called and only exists during migration from GfJsonObject to POJOs");
