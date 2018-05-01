@@ -25,7 +25,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
@@ -58,8 +58,8 @@ public class DestroyJndiBindingCommand extends InternalGfshCommand {
 
     Result result;
     boolean persisted = false;
-    InternalClusterConfigurationService service =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService service =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
     if (service != null) {
       service.updateCacheConfig("cluster", cc -> {
         List<JndiBindingsType.JndiBinding> bindings = cc.getJndiBindings();

@@ -18,8 +18,6 @@ import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
- *
- *
  * @since GemFire 7.0
  */
 public interface ResultData {
@@ -37,11 +35,28 @@ public interface ResultData {
 
   String getFooter();
 
-  GfJsonObject getGfJsonObject();
+  default GfJsonObject getGfJsonObject() {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs - use getContent() instead");
+  }
 
-  String getType();
+  default String getType() {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs");
+  }
 
-  Status getStatus();
+  default Status getStatus() {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs");
+  }
 
-  void setStatus(final Status status);
+  default void setStatus(final Status status) {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs");
+  }
+
+  default Object getContent() {
+    throw new UnsupportedOperationException(
+        "This should never be called from a legacy ResultData object");
+  }
 }

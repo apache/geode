@@ -25,7 +25,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
@@ -70,8 +70,8 @@ public class CreateJndiBindingCommandDUnitTest {
 
     // verify cluster config is updated
     locator.invoke(() -> {
-      InternalClusterConfigurationService ccService =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService ccService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
       Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");

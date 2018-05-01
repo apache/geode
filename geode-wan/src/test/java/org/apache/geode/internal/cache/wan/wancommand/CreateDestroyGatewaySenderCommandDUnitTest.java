@@ -105,7 +105,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         server3);
 
     locatorSite1.invoke(() -> {
-      String xml = ClusterStartupRule.getLocator().getSharedConfiguration()
+      String xml = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).contains("<gateway-sender id=\"ln\" remote-distributed-system-id=\"2\"/>");
     });
@@ -120,7 +120,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         server3);
 
     locatorSite1.invoke(() -> {
-      String xml = ClusterStartupRule.getLocator().getSharedConfiguration()
+      String xml = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
           .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).doesNotContain("gateway-sender id=\"ln\"");
     });

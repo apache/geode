@@ -43,15 +43,15 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 
 @Category(UnitTest.class)
-public class InternalClusterConfigurationServiceTest {
-  private InternalClusterConfigurationService service, service2;
+public class InternalConfigurationPersistenceServiceTest {
+  private InternalConfigurationPersistenceService service, service2;
   private Configuration configuration;
 
   @Before
   public void setUp() throws Exception {
-    service = spy(new InternalClusterConfigurationService(CacheConfig.class, ElementOne.class,
+    service = spy(new InternalConfigurationPersistenceService(CacheConfig.class, ElementOne.class,
         ElementTwo.class));
-    service2 = spy(new InternalClusterConfigurationService(CacheConfig.class));
+    service2 = spy(new InternalConfigurationPersistenceService(CacheConfig.class));
     configuration = new Configuration("cluster");
     doReturn(configuration).when(service).getConfiguration(any());
     doReturn(configuration).when(service2).getConfiguration(any());

@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.util.ReflectionUtils;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -113,7 +113,7 @@ public class CommandExecutor {
     }
 
     // if command result is ok, we will need to see if we need to update cluster configuration
-    ClusterConfigurationService ccService = gfshCommand.getConfigurationService();
+    ConfigurationPersistenceService ccService = gfshCommand.getConfigurationPersistenceService();
     if (parseResult.getParamValue("member") != null || ccService == null) {
       commandResult.setCommandPersisted(false);
       return commandResult;

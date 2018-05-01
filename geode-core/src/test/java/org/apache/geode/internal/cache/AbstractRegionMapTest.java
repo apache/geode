@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -822,6 +823,7 @@ public class AbstractRegionMapTest {
     protected TxTestableAbstractRegionMap() {
       super(null);
       LocalRegion owner = mock(LocalRegion.class);
+      when(owner.getMyId()).thenReturn(mock(InternalDistributedMember.class));
       when(owner.getCache()).thenReturn(mock(InternalCache.class));
       when(owner.isAllEvents()).thenReturn(true);
       when(owner.isInitialized()).thenReturn(true);
@@ -835,13 +837,37 @@ public class AbstractRegionMapTest {
       throws Exception {
     AbstractRegionMap arm = new TxRegionEntryTestableAbstractRegionMap();
     List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
-
+    TXId txId = new TXId(mock(InternalDistributedMember.class), 1);
+    TXRmtEvent txRmtEvent = mock(TXRmtEvent.class);
+    EventID eventId = mock(EventID.class);
     Object newValue = "value";
-    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false,
-        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
-        mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
+
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false, txId, txRmtEvent, eventId, null,
+        pendingCallbacks, null, null, null, null, 1);
 
     assertEquals(1, pendingCallbacks.size());
+    verify(arm._getOwner(), times(1)).txApplyPutPart2(any(), any(), anyLong(), anyBoolean(),
+        anyBoolean(), anyBoolean());
+    verify(arm._getOwner(), never()).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
+        false);
+  }
+
+  @Test
+  public void txApplyPutOnPrimaryConstructsPendingCallbacksWhenPutIfAbsentReturnsExistingEntry()
+      throws Exception {
+    AbstractRegionMap arm = new TxPutIfAbsentTestableAbstractRegionMap();
+    List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
+    TXId txId = new TXId(arm._getOwner().getMyId(), 1);
+    TXRmtEvent txRmtEvent = mock(TXRmtEvent.class);
+    EventID eventId = mock(EventID.class);
+    Object newValue = "value";
+
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false, txId, txRmtEvent, eventId, null,
+        pendingCallbacks, null, null, null, null, 1);
+
+    assertEquals(1, pendingCallbacks.size());
+    verify(arm._getOwner(), times(1)).txApplyPutPart2(any(), any(), anyLong(), anyBoolean(),
+        anyBoolean(), anyBoolean());
     verify(arm._getOwner(), never()).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
         false);
   }
@@ -850,13 +876,17 @@ public class AbstractRegionMapTest {
   public void txApplyPutOnSecondaryNotifiesClientsWhenRegionEntryIsRemoved() throws Exception {
     AbstractRegionMap arm = new TxRemovedRegionEntryTestableAbstractRegionMap();
     List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
-
+    TXId txId = new TXId(mock(InternalDistributedMember.class), 1);
+    TXRmtEvent txRmtEvent = mock(TXRmtEvent.class);
+    EventID eventId = mock(EventID.class);
     Object newValue = "value";
-    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false,
-        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
-        mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
+
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false, txId, txRmtEvent, eventId, null,
+        pendingCallbacks, null, null, null, null, 1);
 
     assertEquals(0, pendingCallbacks.size());
+    verify(arm._getOwner(), never()).txApplyPutPart2(any(), any(), anyLong(), anyBoolean(),
+        anyBoolean(), anyBoolean());
     verify(arm._getOwner(), times(1)).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
         false);
   }
@@ -865,13 +895,17 @@ public class AbstractRegionMapTest {
   public void txApplyPutOnSecondaryNotifiesClientsWhenRegionEntryIsNull() throws Exception {
     AbstractRegionMap arm = new TxNoRegionEntryTestableAbstractRegionMap();
     List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
-
+    TXId txId = new TXId(mock(InternalDistributedMember.class), 1);
+    TXRmtEvent txRmtEvent = mock(TXRmtEvent.class);
+    EventID eventId = mock(EventID.class);
     Object newValue = "value";
-    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false,
-        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
-        mock(EventID.class), null, pendingCallbacks, null, null, null, null, 1);
+
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false, txId, txRmtEvent, eventId, null,
+        pendingCallbacks, null, null, null, null, 1);
 
     assertEquals(0, pendingCallbacks.size());
+    verify(arm._getOwner(), never()).txApplyPutPart2(any(), any(), anyLong(), anyBoolean(),
+        anyBoolean(), anyBoolean());
     verify(arm._getOwner(), times(1)).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
         false);
   }
@@ -904,6 +938,13 @@ public class AbstractRegionMapTest {
   private static class TxRegionEntryTestableAbstractRegionMap extends TxTestableAbstractRegionMap {
     @Override
     public RegionEntry getEntry(Object key) {
+      return mock(RegionEntry.class);
+    }
+  }
+
+  private static class TxPutIfAbsentTestableAbstractRegionMap extends TxTestableAbstractRegionMap {
+    @Override
+    public RegionEntry putEntryIfAbsent(Object key, RegionEntry newRe) {
       return mock(RegionEntry.class);
     }
   }

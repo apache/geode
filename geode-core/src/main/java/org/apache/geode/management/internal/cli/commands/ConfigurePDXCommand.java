@@ -25,7 +25,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.cache.configuration.StringType;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
@@ -66,7 +66,7 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
     Result result;
     ReflectionBasedAutoSerializer autoSerializer = null;
 
-    if (getConfigurationService() == null) {
+    if (getConfigurationPersistenceService() == null) {
       return ResultBuilder
           .createUserErrorResult("Configure pdx failed because cluster configuration is disabled.");
     }
@@ -105,8 +105,8 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
 
     result = ResultBuilder.buildResult(infoResultData);
     ReflectionBasedAutoSerializer finalAutoSerializer = autoSerializer;
-    getConfigurationService().updateCacheConfig(InternalClusterConfigurationService.CLUSTER_CONFIG,
-        config -> {
+    getConfigurationPersistenceService()
+        .updateCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG, config -> {
           if (config.getPdx() == null) {
             config.setPdx(new PdxType());
           }

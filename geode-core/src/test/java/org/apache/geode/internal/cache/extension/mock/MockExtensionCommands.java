@@ -26,7 +26,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -202,8 +202,8 @@ public class MockExtensionCommands extends GfshCommand {
 
     final Result result = ResultBuilder.buildResult(tabularResultData);
 
-    InternalClusterConfigurationService ccService =
-        InternalLocator.getLocator().getSharedConfiguration();
+    InternalConfigurationPersistenceService ccService =
+        InternalLocator.getLocator().getConfigurationPersistenceService();
     System.out.println("MockExtensionCommands: persisting xmlEntity=" + xmlEntity);
     if (null != xmlEntity.get()) {
       if (addXmlElement) {
