@@ -37,6 +37,7 @@ import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
+import org.apache.geode.management.internal.cli.result.LegacyCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -62,7 +63,7 @@ public class ShellCommandsControllerProcessCommandTest {
 
   @Test
   public void infoOkResult() throws IOException {
-    fakeResult = new CommandResult(new InfoResultData("Some info message"));
+    fakeResult = new LegacyCommandResult(new InfoResultData("Some info message"));
 
     ResponseEntity<InputStreamResource> responseJsonStream = controller.command("xyz", null);
     assertThatContentTypeEquals(responseJsonStream, MediaType.APPLICATION_JSON);
@@ -76,7 +77,7 @@ public class ShellCommandsControllerProcessCommandTest {
   @Test
   public void errorResult() throws IOException {
     ErrorResultData errorResultData = new ErrorResultData("Some error message");
-    fakeResult = new CommandResult(errorResultData);
+    fakeResult = new LegacyCommandResult(errorResultData);
 
     ResponseEntity<InputStreamResource> responseJsonStream = controller.command("xyz", null);
     assertThatContentTypeEquals(responseJsonStream, MediaType.APPLICATION_JSON);
@@ -92,7 +93,7 @@ public class ShellCommandsControllerProcessCommandTest {
     File tempFile = temporaryFolder.newFile();
     FileUtils.writeStringToFile(tempFile, "some file contents", "UTF-8");
 
-    fakeResult = new CommandResult(tempFile.toPath());
+    fakeResult = new LegacyCommandResult(tempFile.toPath());
 
     ResponseEntity<InputStreamResource> responseFileStream = controller.command("xyz", null);
 

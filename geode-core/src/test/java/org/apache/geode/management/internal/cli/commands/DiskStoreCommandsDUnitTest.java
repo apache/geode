@@ -124,7 +124,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores").statusIsSuccess()
         .containsOutput("Missing Disk Stores", "No missing colocated region found");
 
-    List<String> diskstoreIDs = gfsh.getCommandResult().getColumnValues("Disk Store ID");
+    List<String> diskstoreIDs = gfsh.getCommandResult().getTableColumnValues("Disk Store ID");
     assertThat(diskstoreIDs.size()).isEqualTo(1);
 
     gfsh.executeAndAssertThat("revoke missing-disk-store --id=" + diskstoreIDs.get(0))
