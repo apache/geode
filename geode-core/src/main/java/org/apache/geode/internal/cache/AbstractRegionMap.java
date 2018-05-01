@@ -2178,76 +2178,10 @@ public abstract class AbstractRegionMap
                   if (!oldRe.isRemoved()) {
                     putOp = putOp.getCorrespondingUpdateOp();
                   }
-                  // Net writers are not called for received transaction data
-                  final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
-                  final boolean oldIsRemoved = oldRe.isDestroyedOrRemoved();
-                  if (callbackEvent != null) {
-                    callbackEvent.setRegionEntry(oldRe);
-                    callbackEvent.setOldValue(oldRe.getValueInVM(owner)); // OFFHEAP eei
-                  }
-                  boolean clearOccured = false;
-                  // Set RegionEntry updateInProgress
-                  if (owner.getIndexMaintenanceSynchronous()) {
-                    oldRe.setUpdateInProgress(true);
-                  }
-                  try {
-                    txRemoveOldIndexEntry(putOp, oldRe);
-                    if (didDestroy) {
-                      oldRe.txDidDestroy(owner.cacheTimeMillis());
-                    }
-                    if (txEvent != null) {
-                      txEvent.addPut(putOp, owner, oldRe, oldRe.getKey(), newValue,
-                          aCallbackArgument);
-                    }
-                    oldRe.setValueResultOfSearch(putOp.isNetSearch());
-                    try {
-                      processAndGenerateTXVersionTag(owner, callbackEvent, oldRe, txEntryState);
-                      boolean wasTombstone = oldRe.isTombstone();
-                      {
-                        oldRe.setValue(owner, oldRe.prepareValueForCache(owner, newValue,
-                            callbackEvent, !putOp.isCreate()));
-                        if (wasTombstone) {
-                          owner.unscheduleTombstone(oldRe);
-                        }
-                      }
-                      if (putOp.isCreate()) {
-                        owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(oldRe));
-                      } else if (putOp.isUpdate()) {
-                        // Rahul : fix for 41694. Negative bucket size can also be
-                        // an issue with normal GFE Delta and will have to be fixed
-                        // in a similar manner and may be this fix the the one for
-                        // other delta can be combined.
-                        {
-                          owner.updateSizeOnPut(key, oldSize,
-                              owner.calculateRegionEntryValueSize(oldRe));
-                        }
-                      }
-                    } catch (RegionClearedException rce) {
-                      clearOccured = true;
-                    }
-                    {
-                      long lastMod = owner.cacheTimeMillis();
-                      EntryLogger.logTXPut(_getOwnerObject(), key, nv);
-                      oldRe.updateStatsForPut(lastMod, lastMod);
-                      owner.txApplyPutPart2(oldRe, oldRe.getKey(), lastMod, false, didDestroy,
-                          clearOccured);
-                    }
-                  } finally {
-                    if (oldRe != null && owner.getIndexMaintenanceSynchronous()) {
-                      oldRe.setUpdateInProgress(false);
-                    }
-                  }
-                  if (invokeCallbacks) {
-                    if (!oldIsRemoved) {
-                      callbackEvent.makeUpdate();
-                    }
-                    switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
-                    pendingCallbacks.add(callbackEvent);
-                    callbackEventInPending = true;
-                  }
-                  if (!clearOccured) {
-                    lruEntryUpdate(oldRe);
-                  }
+                  callbackEventInPending =
+                      txApplyPutExistingRegionEntry(key, nv, didDestroy, txEvent, aCallbackArgument,
+                          pendingCallbacks, txEntryState, owner, putOp, newValue, hasRemoteOrigin,
+                          callbackEvent, invokeCallbacks, callbackEventInPending, oldRe);
                 }
               }
             }
@@ -2330,6 +2264,81 @@ public abstract class AbstractRegionMap
       if (!callbackEventInPending)
         callbackEvent.release();
     }
+  }
+
+  private boolean txApplyPutExistingRegionEntry(Object key, Object nv, boolean didDestroy,
+      TXRmtEvent txEvent, Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
+      TXEntryState txEntryState, final LocalRegion owner, Operation putOp, Object newValue,
+      final boolean hasRemoteOrigin, EntryEventImpl callbackEvent, boolean invokeCallbacks,
+      boolean callbackEventInPending, RegionEntry oldRe) {
+    // Net writers are not called for received transaction data
+    final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
+    final boolean oldIsRemoved = oldRe.isDestroyedOrRemoved();
+    if (callbackEvent != null) {
+      callbackEvent.setRegionEntry(oldRe);
+      callbackEvent.setOldValue(oldRe.getValueInVM(owner)); // OFFHEAP eei
+    }
+    boolean clearOccured = false;
+    // Set RegionEntry updateInProgress
+    if (owner.getIndexMaintenanceSynchronous()) {
+      oldRe.setUpdateInProgress(true);
+    }
+    try {
+      txRemoveOldIndexEntry(putOp, oldRe);
+      if (didDestroy) {
+        oldRe.txDidDestroy(owner.cacheTimeMillis());
+      }
+      if (txEvent != null) {
+        txEvent.addPut(putOp, owner, oldRe, oldRe.getKey(), newValue, aCallbackArgument);
+      }
+      oldRe.setValueResultOfSearch(putOp.isNetSearch());
+      try {
+        processAndGenerateTXVersionTag(owner, callbackEvent, oldRe, txEntryState);
+        boolean wasTombstone = oldRe.isTombstone();
+        {
+          oldRe.setValue(owner,
+              oldRe.prepareValueForCache(owner, newValue, callbackEvent, !putOp.isCreate()));
+          if (wasTombstone) {
+            owner.unscheduleTombstone(oldRe);
+          }
+        }
+        if (putOp.isCreate()) {
+          owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(oldRe));
+        } else if (putOp.isUpdate()) {
+          // Rahul : fix for 41694. Negative bucket size can also be
+          // an issue with normal GFE Delta and will have to be fixed
+          // in a similar manner and may be this fix the the one for
+          // other delta can be combined.
+          {
+            owner.updateSizeOnPut(key, oldSize, owner.calculateRegionEntryValueSize(oldRe));
+          }
+        }
+      } catch (RegionClearedException rce) {
+        clearOccured = true;
+      }
+      {
+        long lastMod = owner.cacheTimeMillis();
+        EntryLogger.logTXPut(_getOwnerObject(), key, nv);
+        oldRe.updateStatsForPut(lastMod, lastMod);
+        owner.txApplyPutPart2(oldRe, oldRe.getKey(), lastMod, false, didDestroy, clearOccured);
+      }
+    } finally {
+      if (oldRe != null && owner.getIndexMaintenanceSynchronous()) {
+        oldRe.setUpdateInProgress(false);
+      }
+    }
+    if (invokeCallbacks) {
+      if (!oldIsRemoved) {
+        callbackEvent.makeUpdate();
+      }
+      switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
+      pendingCallbacks.add(callbackEvent);
+      callbackEventInPending = true;
+    }
+    if (!clearOccured) {
+      lruEntryUpdate(oldRe);
+    }
+    return callbackEventInPending;
   }
 
   private boolean applyTxUpdateOnReplicateOrRedundantCopy(Object key, Object nv, boolean didDestroy,
