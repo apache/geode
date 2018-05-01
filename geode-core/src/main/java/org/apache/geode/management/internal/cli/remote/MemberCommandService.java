@@ -47,7 +47,7 @@ public class MemberCommandService extends CommandService {
   }
 
   public Result processCommand(String commandString, Map<String, String> env) {
-    return onlineCommandProcessor.executeCommand(commandString, env, null);
+    return (Result) onlineCommandProcessor.executeCommand(commandString, env, null);
   }
 
   @Deprecated

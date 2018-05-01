@@ -23,7 +23,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 import org.apache.geode.management.cli.CliMetaData;
@@ -138,14 +138,14 @@ public class CreateGatewaySenderCommand extends InternalGfshCommand {
     }
 
     // has xml but unable to persist to cluster config, need to print warning message and return
-    if (onMember != null || getConfigurationService() == null) {
+    if (onMember != null || getConfigurationPersistenceService() == null) {
       result.setCommandPersisted(false);
       return result;
     }
 
     // update cluster config
-    ((InternalClusterConfigurationService) getConfigurationService()).addXmlEntity(xmlEntity,
-        onGroups);
+    ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
+        .addXmlEntity(xmlEntity, onGroups);
     return result;
   }
 

@@ -36,7 +36,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -136,8 +136,8 @@ public class DeployCommand extends InternalGfshCommand {
     }
 
     Result result = ResultBuilder.buildResult(tabularData);
-    InternalClusterConfigurationService sc =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService sc =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
     if (sc == null) {
       result.setCommandPersisted(false);
     } else {

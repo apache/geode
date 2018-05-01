@@ -33,6 +33,9 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXState;
+import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -54,6 +57,8 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
+  private static Object commitLock = new Object();
+  private static boolean committing;
 
   @Override
   public Properties getDistributedSystemProperties() {
@@ -148,13 +153,11 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
       }
 
       Throwable failure = null;
-      int asyncIndex = 0;
       for (AsyncInvocation asyncInvocation : asyncInvocations) {
         asyncInvocation.join(30000);
         if (asyncInvocation.exceptionOccurred()) {
           failure = asyncInvocation.getException();
         }
-        asyncIndex++;
       }
       if (failure != null) {
         throw new RuntimeException("test failed", failure);
@@ -170,8 +173,14 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
     }
   }
 
-  public void forceDisconnect() {
+  public void forceDisconnect() throws Exception {
     Cache existingCache = basicGetCache();
+    synchronized (commitLock) {
+      committing = false;
+      while (!committing) {
+        commitLock.wait();
+      }
+    }
     if (existingCache != null && !existingCache.isClosed()) {
       DistributedTestUtils.crashDistributedSystem(getCache().getDistributedSystem());
     }
@@ -208,6 +217,16 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
         cache.getCacheTransactionManager().begin();
 
         region.put("TestKey", "TestValue" + random.nextInt(100000));
+
+        TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+        TXStateProxyImpl txProxy = (TXStateProxyImpl) mgr.getTXState();
+        TXState txState = (TXState) txProxy.getRealDeal(null, null);
+        txState.setBeforeSend(() -> {
+          synchronized (commitLock) {
+            committing = true;
+            commitLock.notifyAll();
+          }
+        });
 
         try {
           cache.getCacheTransactionManager().commit();

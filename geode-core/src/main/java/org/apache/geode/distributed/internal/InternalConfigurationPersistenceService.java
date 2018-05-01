@@ -76,7 +76,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.XSDRootElement;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -103,7 +103,7 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 @SuppressWarnings({"deprecation", "unchecked"})
-public class InternalClusterConfigurationService implements ClusterConfigurationService {
+public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -141,7 +141,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
   private JAXBService jaxbService;
 
   @TestingOnly
-  InternalClusterConfigurationService(Class<?>... xsdClasses) {
+  InternalConfigurationPersistenceService(Class<?>... xsdClasses) {
     configDirPath = null;
     configDiskDirPath = null;
     cache = null;
@@ -149,7 +149,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     jaxbService.validateWithLocalCacheXSD();
   }
 
-  public InternalClusterConfigurationService(InternalCache cache, Class<?>... xsdClasses)
+  public InternalConfigurationPersistenceService(InternalCache cache, Class<?>... xsdClasses)
       throws IOException {
     this.cache = cache;
     Properties properties = cache.getDistributedSystem().getProperties();
@@ -246,7 +246,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     try {
       Region<String, Configuration> configRegion = getConfigurationRegion();
       if (groups == null || groups.length == 0) {
-        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
+        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
       }
       for (String group : groups) {
         Configuration configuration = configRegion.get(group);
@@ -312,7 +312,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     lockSharedConfiguration();
     try {
       if (groups == null) {
-        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
+        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
       }
       Region<String, Configuration> configRegion = getConfigurationRegion();
       for (String group : groups) {
@@ -358,7 +358,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     lockSharedConfiguration();
     try {
       if (groups == null) {
-        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
+        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
       }
       Region<String, Configuration> configRegion = getConfigurationRegion();
       for (String group : groups) {
@@ -520,7 +520,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     try {
       if (loadSharedConfigFromDir) {
         logger.info("Reading cluster configuration from '{}' directory",
-            InternalClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
+            InternalConfigurationPersistenceService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
         loadSharedConfigurationFromDisk();
       } else {
         persistSecuritySettings(configRegion);
@@ -547,10 +547,10 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     Properties securityProps = this.cache.getDistributedSystem().getSecurityProperties();
 
     Configuration clusterPropertiesConfig =
-        configRegion.get(ClusterConfigurationService.CLUSTER_CONFIG);
+        configRegion.get(ConfigurationPersistenceService.CLUSTER_CONFIG);
     if (clusterPropertiesConfig == null) {
-      clusterPropertiesConfig = new Configuration(ClusterConfigurationService.CLUSTER_CONFIG);
-      configRegion.put(ClusterConfigurationService.CLUSTER_CONFIG, clusterPropertiesConfig);
+      clusterPropertiesConfig = new Configuration(ConfigurationPersistenceService.CLUSTER_CONFIG);
+      configRegion.put(ConfigurationPersistenceService.CLUSTER_CONFIG, clusterPropertiesConfig);
     }
     // put security-manager and security-post-processor in the cluster config
     Properties clusterProperties = clusterPropertiesConfig.getGemfireProperties();
@@ -566,7 +566,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
 
   /**
    * Creates a ConfigurationResponse based on the configRequest, configuration response contains the
-   * requested shared configuration This method locks the ClusterConfigurationService
+   * requested shared configuration This method locks the ConfigurationPersistenceService
    */
   public ConfigurationResponse createConfigurationResponse(Set<String> groups) {
     ConfigurationResponse configResponse = null;
@@ -575,7 +575,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
     try {
       if (isLocked) {
         configResponse = new ConfigurationResponse();
-        groups.add(ClusterConfigurationService.CLUSTER_CONFIG);
+        groups.add(ConfigurationPersistenceService.CLUSTER_CONFIG);
         logger.info("Building up configuration response with following configurations: {}", groups);
 
         for (String group : groups) {
@@ -649,7 +649,7 @@ public class InternalClusterConfigurationService implements ClusterConfiguration
   }
 
   /**
-   * Gets the current status of the ClusterConfigurationService If the status is started , it
+   * Gets the current status of the ConfigurationPersistenceService If the status is started , it
    * determines if the shared configuration is waiting for new configuration on other locators
    *
    * @return {@link SharedConfigurationStatus}

@@ -21,7 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
-import static org.apache.geode.distributed.internal.InternalClusterConfigurationService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
+import static org.apache.geode.distributed.internal.InternalConfigurationPersistenceService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;

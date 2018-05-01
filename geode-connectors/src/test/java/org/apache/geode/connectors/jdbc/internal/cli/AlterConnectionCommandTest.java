@@ -34,8 +34,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -47,7 +47,7 @@ public class AlterConnectionCommandTest {
   private AlterConnectionCommand command;
   private List<CliFunctionResult> results;
   private CliFunctionResult result;
-  private ClusterConfigurationService ccService;
+  private ConfigurationPersistenceService ccService;
   private ConnectorService.Connection connection;
   private List<ConnectorService.Connection> connections;
   private ConnectorService connectorService;
@@ -66,10 +66,10 @@ public class AlterConnectionCommandTest {
     when(result.isSuccessful()).thenReturn(true);
     when(result.getMemberIdOrName()).thenReturn("memberName");
     when(result.getStatus()).thenReturn("message");
-    ccService = mock(InternalClusterConfigurationService.class);
+    ccService = mock(InternalConfigurationPersistenceService.class);
     cacheConfig = mock(CacheConfig.class);
     when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     connectorService = mock(ConnectorService.class);
     connections = new ArrayList<>();
     connection = new ConnectorService.Connection();
@@ -102,7 +102,7 @@ public class AlterConnectionCommandTest {
 
   @Test
   public void whenCCServiceIsNotAvailable() {
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     results.add(result);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), any(), any());

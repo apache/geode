@@ -16,6 +16,7 @@ package org.apache.geode.internal.lang;
 
 import java.util.Optional;
 
+
 /**
  * The SystemPropertyHelper class is an helper class for accessing system properties used in geode.
  * The method name to get the system property should be the same as the system property name.
@@ -64,6 +65,9 @@ public class SystemPropertyHelper {
   public static final String HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY = "MessageTimeToLive";
 
   public static final String THREAD_ID_EXPIRY_TIME_PROPERTY = "threadIdExpiryTime";
+
+  public static final String PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS =
+      "PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS";
 
   /**
    * a comma separated string to list out the packages to scan. If not specified, the entire

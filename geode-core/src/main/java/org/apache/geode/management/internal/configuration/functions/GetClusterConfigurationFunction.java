@@ -19,7 +19,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
@@ -45,8 +45,8 @@ public class GetClusterConfigurationFunction implements InternalFunction {
     // Shared configuration enabled.
     if (internalLocator.isSharedConfigurationRunning()) {
       // Cluster configuration is up and running already.
-      InternalClusterConfigurationService clusterConfigurationService =
-          internalLocator.getSharedConfiguration();
+      InternalConfigurationPersistenceService clusterConfigurationService =
+          internalLocator.getConfigurationPersistenceService();
 
       try {
         ConfigurationResponse response =

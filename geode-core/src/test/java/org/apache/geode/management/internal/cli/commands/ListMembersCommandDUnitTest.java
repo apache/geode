@@ -19,6 +19,8 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_MEMB
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.BeforeClass;
@@ -27,6 +29,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -60,10 +64,14 @@ public class ListMembersCommandDUnitTest {
 
   @Test
   public void listAllMembers() throws Exception {
-    gfsh.executeAndAssertThat(LIST_MEMBER).statusIsSuccess().tableHasRowCount("Name", 4)
-        .tableHasColumnWithExactValuesInAnyOrder("Name", "locator-0", "server-1", "server-2",
-            "server-3")
-        .containsOutput("[Coordinator]");
+    CommandResult result = gfsh.executeCommand(LIST_MEMBER);
+
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    Map<String, List<String>> table = result.getMapFromTableContent("0");
+
+    assertThat(table.get("Name").size()).isEqualTo(4);
+    assertThat(table.get("Name")).contains("locator-0", "server-1", "server-2", "server-3");
   }
 
   @Test
@@ -98,8 +106,11 @@ public class ListMembersCommandDUnitTest {
 
   @Test
   public void listMembersInNonExistentGroup() throws Exception {
-    gfsh.executeAndAssertThat(LIST_MEMBER + " --group=foo").statusIsSuccess();
-    String output = gfsh.getGfshOutput();
+    CommandResult result = gfsh.executeCommand(LIST_MEMBER + " --group=foo");
+
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    String output = result.getMessageFromContent();
 
     assertThat(output).doesNotContain("locator-0");
     assertThat(output).doesNotContain("server-1");

@@ -28,7 +28,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.domain.Stock;
@@ -86,8 +86,8 @@ public class IndexCommandsShareConfigurationDUnitTest {
     gfsh.executeAndAssertThat(CliStrings.LIST_INDEX).statusIsSuccess().containsOutput(indexName);
 
     locator.invoke(() -> {
-      InternalClusterConfigurationService sharedConfig =
-          ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+      InternalConfigurationPersistenceService sharedConfig =
+          ((InternalLocator) Locator.getLocator()).getConfigurationPersistenceService();
       String xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
       assertThat(xmlFromConfig).contains(indexName);
     });
@@ -99,8 +99,8 @@ public class IndexCommandsShareConfigurationDUnitTest {
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      InternalClusterConfigurationService sharedConfig =
-          ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+      InternalConfigurationPersistenceService sharedConfig =
+          ((InternalLocator) Locator.getLocator()).getConfigurationPersistenceService();
       String xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
       assertThat(xmlFromConfig).doesNotContain(indexName);
     });

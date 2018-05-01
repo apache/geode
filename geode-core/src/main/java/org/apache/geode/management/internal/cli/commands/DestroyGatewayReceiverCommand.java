@@ -22,7 +22,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -66,8 +66,8 @@ public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
     CommandResult result = ResultBuilder.buildResult(functionResults);
 
     // Only update the cluster config if the command is not executed on specific members.
-    InternalClusterConfigurationService service =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService service =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
     if (onMember == null && result.getStatus().equals(Result.Status.OK) && service != null) {
       if (onGroups == null) {
         onGroups = new String[] {"cluster"};
