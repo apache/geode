@@ -34,10 +34,6 @@ public interface CommandResult extends Result {
 
   Object getResultData();
 
-  Object getConfigObject();
-
-  void setConfigObject(Object configObject);
-
   void resetToFirstLine();
 
   boolean hasIncomingFiles();

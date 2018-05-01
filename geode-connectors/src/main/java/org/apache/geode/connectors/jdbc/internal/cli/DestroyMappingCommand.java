@@ -25,12 +25,10 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -46,9 +44,10 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result destroyMapping(@CliOption(key = DESTROY_MAPPING__REGION_NAME, mandatory = true,
+  public ResultModel destroyMapping(@CliOption(key = DESTROY_MAPPING__REGION_NAME, mandatory = true,
       help = DESTROY_MAPPING__REGION_NAME__HELP) String regionName) {
 
+    ResultModel result = new ResultModel();
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
 
@@ -56,9 +55,9 @@ public class DestroyMappingCommand extends SingleGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new DestroyMappingFunction(), regionName, targetMembers);
 
-    CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setConfigObject(regionName);
-    return commandResult;
+    result.buildResult(results);
+    result.setConfigObject(regionName);
+    return result;
   }
 
   @Override

@@ -215,7 +215,6 @@ public class ResultBuilder {
     return ResultBuilder.buildResult(tabularData);
   }
 
-
   /**
    * Prepare Result from JSON. Type of result is expected to there in the JSON as 'contentType'
    * which should be one of {@link ResultData#TYPE_TABULAR}, {@link ResultData#TYPE_COMPOSITE},

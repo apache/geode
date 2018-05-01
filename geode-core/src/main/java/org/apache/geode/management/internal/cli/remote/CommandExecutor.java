@@ -25,8 +25,8 @@ import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
@@ -45,11 +45,12 @@ public class CommandExecutor {
 
   // used by the GfshParserRule to pass in a mock command
   public Object execute(Object command, GfshParseResult parseResult) {
+    ResultModel resultModel = new ResultModel();
     try {
       Object result = invokeCommand(command, parseResult);
 
       if (result == null) {
-        return ResultBuilder.createGemFireErrorResult("Command returned null: " + parseResult);
+        return resultModel.createError("Command returned null: " + parseResult);
       }
       return result;
     }
@@ -63,23 +64,23 @@ public class CommandExecutor {
     // for these exceptions, needs to create a UserErrorResult (still reported as error by gfsh)
     // no need to log since this is a user error
     catch (UserErrorException | IllegalStateException | IllegalArgumentException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
+      return resultModel.createError(e.getMessage());
     }
 
     // if entity not found, depending on the thrower's intention, report either as success or error
     // no need to log since this is a user error
     catch (EntityNotFoundException e) {
       if (e.isStatusOK()) {
-        return ResultBuilder.createInfoResult("Skipping: " + e.getMessage());
+        return resultModel.createInfo("Skipping: " + e.getMessage());
       } else {
-        return ResultBuilder.createUserErrorResult(e.getMessage());
+        return resultModel.createError(e.getMessage());
       }
     }
 
     // all other exceptions, log it and build an error result.
     catch (Exception e) {
       logger.error("Could not execute \"" + parseResult + "\".", e);
-      return ResultBuilder.createGemFireErrorResult(
+      return resultModel.createError(
           "Error while processing command <" + parseResult + "> Reason : " + e.getMessage());
     }
 
@@ -107,16 +108,18 @@ public class CommandExecutor {
     }
 
     SingleGfshCommand gfshCommand = (SingleGfshCommand) command;
-    CommandResult commandResult = (CommandResult) result;
-    if (commandResult.getStatus() == Result.Status.ERROR) {
+    ResultModel resultModel = (ResultModel) result;
+    if (resultModel.getStatus() == Result.Status.ERROR) {
       return result;
     }
 
     // if command result is ok, we will need to see if we need to update cluster configuration
+    InfoResultModel infoResultModel = resultModel.addInfo();
     ConfigurationPersistenceService ccService = gfshCommand.getConfigurationPersistenceService();
     if (parseResult.getParamValue("member") != null || ccService == null) {
-      commandResult.setCommandPersisted(false);
-      return commandResult;
+      infoResultModel.addLine(
+          "Cluster configuration is not updated because the command is executed on specific member.");
+      return resultModel;
     }
 
     String groupInput = parseResult.getParamValueAsString("group");
@@ -127,17 +130,18 @@ public class CommandExecutor {
     for (String group : groups) {
       ccService.updateCacheConfig(group, cc -> {
         try {
-          gfshCommand.updateClusterConfig(group, cc, commandResult.getConfigObject());
+          gfshCommand.updateClusterConfig(group, cc, resultModel.getConfigObject());
         } catch (Exception e) {
-          logger.error("failed to update cluster config for " + group, e);
+          String message = "failed to update cluster config for " + group;
+          logger.error(message, e);
           // for now, if one cc update failed, we will set this flag. Will change this when we can
           // add lines to the result returned by the command
-          commandResult.setCommandPersisted(false);
+          infoResultModel.addLine(message + ". Reason: " + e.getMessage());
           return null;
         }
         return cc;
       });
     }
-    return commandResult;
+    return resultModel;
   }
 }

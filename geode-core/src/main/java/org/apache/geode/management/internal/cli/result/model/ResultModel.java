@@ -15,15 +15,19 @@
 
 package org.apache.geode.management.internal.cli.result.model;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 /**
  * This class is the primary container for results returned from a {@link GfshCommand}.
@@ -45,7 +49,6 @@ import org.apache.geode.management.cli.Result;
  *
  */
 public class ResultModel {
-
   private String header;
   private String footer;
   private Map<String, AbstractResultModel> sections = new LinkedHashMap<>();
@@ -178,7 +181,51 @@ public class ResultModel {
   public ResultModel createError(String message) {
     addInfo().addLine(message);
     setStatus(Result.Status.ERROR);
-
     return this;
+  }
+
+  public ResultModel createInfo(String message) {
+    addInfo().addLine(message);
+    setStatus(Result.Status.OK);
+    return this;
+  }
+
+  public ResultModel buildResult(List<CliFunctionResult> functionResults) {
+    return buildResult(functionResults, null, null);
+  }
+
+  public ResultModel buildResult(List<CliFunctionResult> functionResults, String header,
+      String footer) {
+    boolean atLeastOneSuccess = false;
+    TabularResultModel tabularResultModel = addTable();
+    tabularResultModel.setHeader(header);
+    tabularResultModel.setFooter(footer);
+    tabularResultModel.setColumnHeader("Member", "Status");
+    for (CliFunctionResult functionResult : functionResults) {
+      tabularResultModel.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus());
+      if (functionResult.isSuccessful()) {
+        atLeastOneSuccess = true;
+      }
+    }
+    if (!atLeastOneSuccess) {
+      status = Result.Status.ERROR;
+    }
+    return this;
+  }
+
+  public String toJson() {
+    ObjectMapper mapper = new ObjectMapper();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try {
+      mapper.writeValue(baos, this);
+    } catch (IOException e) {
+      return e.getMessage();
+    }
+    return baos.toString();
+  }
+
+  @Override
+  public String toString() {
+    return toJson();
   }
 }
