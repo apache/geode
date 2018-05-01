@@ -375,4 +375,8 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   Object getIMSync();
 
   IndexManager setIndexManager(IndexManager idxMgr);
+
+  RegionTTLExpiryTask getRegionTTLExpiryTask();
+
+  RegionIdleExpiryTask getRegionIdleExpiryTask();
 }

@@ -8094,6 +8094,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Used by unit tests to get access to the RegionIdleExpiryTask of this region. Returns null if no
    * task exists.
    */
+  @Override
   public RegionIdleExpiryTask getRegionIdleExpiryTask() {
     return this.regionIdleExpiryTask;
   }
@@ -8102,6 +8103,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Used by unit tests to get access to the RegionTTLExpiryTask of this region. Returns null if no
    * task exists.
    */
+  @Override
   public RegionTTLExpiryTask getRegionTTLExpiryTask() {
     return this.regionTTLExpiryTask;
   }
