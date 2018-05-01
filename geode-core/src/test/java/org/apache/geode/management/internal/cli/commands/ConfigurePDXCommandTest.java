@@ -34,8 +34,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -46,7 +46,7 @@ public class ConfigurePDXCommandTest {
 
   private InternalCache cache;
   private ConfigurePDXCommand command;
-  private InternalClusterConfigurationService clusterConfigurationService;
+  private ConfigurationPersistenceService clusterConfigurationService;
 
   @Rule
   public GfshParserRule gfshParserRule = new GfshParserRule();
@@ -55,16 +55,16 @@ public class ConfigurePDXCommandTest {
   public void setUp() throws Exception {
     cache = mock(InternalCache.class);
     command = spy(ConfigurePDXCommand.class);
-    clusterConfigurationService = mock(InternalClusterConfigurationService.class);
+    clusterConfigurationService = mock(ConfigurationPersistenceService.class);
 
     doReturn(cache).when(command).getCache();
     doReturn(Collections.emptySet()).when(command).getAllNormalMembers();
-    doReturn(clusterConfigurationService).when(command).getConfigurationService();
+    doReturn(clusterConfigurationService).when(command).getConfigurationPersistenceService();
   }
 
   @Test
   public void errorOutIfCCNotRunning() {
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING).statusIsError()
         .containsOutput("Configure pdx failed because cluster configuration is disabled.");
   }

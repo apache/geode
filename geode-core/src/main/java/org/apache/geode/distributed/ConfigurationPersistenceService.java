@@ -23,7 +23,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 
 @Experimental
-public interface ClusterConfigurationService {
+public interface ConfigurationPersistenceService {
   String CLUSTER_CONFIG = "cluster";
 
   /**

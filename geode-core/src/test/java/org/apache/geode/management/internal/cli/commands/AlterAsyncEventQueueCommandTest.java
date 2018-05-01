@@ -40,7 +40,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -54,14 +54,14 @@ public class AlterAsyncEventQueueCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private AlterAsyncEventQueueCommand command;
-  private InternalClusterConfigurationService service;
+  private InternalConfigurationPersistenceService service;
   private Region<String, Configuration> configRegion;
 
   @Before
   public void before() throws Exception {
     command = spy(AlterAsyncEventQueueCommand.class);
-    service = mock(InternalClusterConfigurationService.class);
-    doReturn(service).when(command).getConfigurationService();
+    service = mock(InternalConfigurationPersistenceService.class);
+    doReturn(service).when(command).getConfigurationPersistenceService();
     configRegion = mock(Region.class);
     when(service.getConfigurationRegion()).thenReturn(configRegion);
     when(service.lockSharedConfiguration()).thenReturn(true);
@@ -111,7 +111,7 @@ public class AlterAsyncEventQueueCommandTest {
 
   @Test
   public void cluster_config_service_not_available() throws Exception {
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     gfsh.executeAndAssertThat(command, "alter async-event-queue --id=test --batch-size=100")
         .statusIsError().containsOutput("Cluster Configuration Service is not available");
   }

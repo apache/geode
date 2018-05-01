@@ -40,8 +40,8 @@ import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
-import org.apache.geode.distributed.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -263,8 +263,9 @@ public class LuceneClusterConfigurationDUnitTest {
   SerializableRunnableIF verifyClusterConfiguration(boolean verifyIndexesExist) {
     return () -> {
       InternalLocator internalLocator = ClusterStartupRule.getLocator();
-      InternalClusterConfigurationService sc = internalLocator.getSharedConfiguration();
-      Configuration config = sc.getConfiguration(ClusterConfigurationService.CLUSTER_CONFIG);
+      InternalConfigurationPersistenceService sc =
+          internalLocator.getConfigurationPersistenceService();
+      Configuration config = sc.getConfiguration(ConfigurationPersistenceService.CLUSTER_CONFIG);
       String xmlContent = config.getCacheXmlContent();
       String luceneIndex0Config = "<" + LuceneXmlConstants.PREFIX + ":" + LuceneXmlConstants.INDEX
           + " xmlns:lucene=\"" + LuceneXmlConstants.NAMESPACE + "\" " + LuceneXmlConstants.NAME

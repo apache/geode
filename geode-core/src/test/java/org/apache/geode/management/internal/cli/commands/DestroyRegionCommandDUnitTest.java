@@ -28,7 +28,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -113,8 +113,8 @@ public class DestroyRegionCommandDUnitTest {
     locator.waitTillRegionsAreReadyOnServers("/region1", 3);
 
     locator.invoke(() -> {
-      InternalClusterConfigurationService service =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService service =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration group1Config = service.getConfiguration("group1");
       assertThat(group1Config.getCacheXmlContent()).contains("<region name=\"region1\">\n"
           + "    <region-attributes data-policy=\"empty\" scope=\"distributed-ack\"/>");
@@ -129,8 +129,8 @@ public class DestroyRegionCommandDUnitTest {
 
     // verify that all cc entries are deleted, no matter what the scope is
     locator.invoke(() -> {
-      InternalClusterConfigurationService service =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService service =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration group1Config = service.getConfiguration("group1");
       assertThat(group1Config.getCacheXmlContent()).doesNotContain("region1");
 
@@ -151,8 +151,8 @@ public class DestroyRegionCommandDUnitTest {
 
     // Make sure the region exists in the cluster config
     locator.invoke(() -> {
-      InternalClusterConfigurationService sharedConfig =
-          ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+      InternalConfigurationPersistenceService sharedConfig =
+          ((InternalLocator) Locator.getLocator()).getConfigurationPersistenceService();
       assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent())
           .contains("Customer");
     });
@@ -163,8 +163,8 @@ public class DestroyRegionCommandDUnitTest {
 
     // make sure the region was removed from cluster config
     locator.invoke(() -> {
-      InternalClusterConfigurationService sharedConfig =
-          ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+      InternalConfigurationPersistenceService sharedConfig =
+          ((InternalLocator) Locator.getLocator()).getConfigurationPersistenceService();
       assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent())
           .doesNotContain("Customer");
     });

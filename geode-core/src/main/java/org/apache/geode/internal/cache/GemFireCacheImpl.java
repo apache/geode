@@ -147,7 +147,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
-import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
@@ -1076,7 +1076,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       logger.info(response.describeConfig());
 
       Configuration clusterConfig =
-          response.getRequestedConfiguration().get(ClusterConfigurationService.CLUSTER_CONFIG);
+          response.getRequestedConfiguration().get(ConfigurationPersistenceService.CLUSTER_CONFIG);
       Properties clusterSecProperties =
           clusterConfig == null ? new Properties() : clusterConfig.getGemfireProperties();
 

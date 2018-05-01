@@ -42,7 +42,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
@@ -2413,7 +2413,8 @@ public class CliStrings {
       "Deprecated: Since Geode 1.6, use import cluster-configuration command instead. When \" "
           + START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM
           + " \" is set to true, the locator loads the cluster configuration from the \""
-          + InternalClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME + "\" directory.";
+          + InternalConfigurationPersistenceService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME
+          + "\" directory.";
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR = "cluster-config-dir";
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR__HELP =
       "Directory used by the cluster configuration service to store the cluster configuration on the filesystem";
