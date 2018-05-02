@@ -38,7 +38,7 @@ public abstract class InternalGfshCommand extends GfshCommand {
     if (result == null) {
       throw new IllegalArgumentException("Result should not be null");
     }
-    if (getConfigurationService() == null) {
+    if (getConfigurationPersistenceService() == null) {
       result.setCommandPersisted(false);
     } else {
       runnable.run();

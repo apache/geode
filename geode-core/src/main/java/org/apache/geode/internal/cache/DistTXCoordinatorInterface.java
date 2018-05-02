@@ -54,7 +54,7 @@ public interface DistTXCoordinatorInterface extends TXStateInterface {
   void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException;
 
-  void gatherAffectedRegions(HashSet<LocalRegion> regionSet, boolean includePrimaryRegions,
+  void gatherAffectedRegions(HashSet<InternalRegion> regionSet, boolean includePrimaryRegions,
       boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException;
 
   void gatherAffectedRegionsName(TreeSet<String> sortedRegionName, boolean includePrimaryRegions,

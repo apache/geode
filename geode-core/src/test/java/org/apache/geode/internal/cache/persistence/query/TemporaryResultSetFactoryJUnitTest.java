@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.persistence.query;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;

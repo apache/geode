@@ -18,7 +18,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ServiceLoader;
 
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.EntityResolver2;
 
 import org.apache.geode.cache.CacheXmlException;

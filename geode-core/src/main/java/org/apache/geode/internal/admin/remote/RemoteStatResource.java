@@ -15,10 +15,16 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.admin.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Statistics;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.Stat;
+import org.apache.geode.internal.admin.StatResource;
 
 public class RemoteStatResource implements StatResource, DataSerializable {
   private static final long serialVersionUID = -3118720083415516133L;

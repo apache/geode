@@ -16,12 +16,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.GemFireHealth;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.HealthMonitor;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * The response to fetching the health diagnosis.

@@ -249,7 +249,6 @@ public class GfshCommandRule extends DescribedExternalResource {
     return new CommandResultAssert(gfsh.outputString, commandResult);
   }
 
-
   public String getGfshOutput() {
     return gfsh.outputString;
   }

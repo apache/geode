@@ -14,7 +14,11 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,7 +27,11 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.*;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.ManagerLogWriter;
+import org.apache.geode.internal.logging.SecurityManagerLogWriter;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.util.LogFileUtils;
 

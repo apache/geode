@@ -27,7 +27,7 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -70,7 +70,7 @@ public class JmxManagerLocator implements TcpHandler {
 
   @Override
   public void restarting(DistributedSystem ds, GemFireCache cache,
-      InternalClusterConfigurationService sharedConfig) {
+      InternalConfigurationPersistenceService sharedConfig) {
     this.cache = (InternalCache) cache;
   }
 

@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -53,15 +53,15 @@ public class DestroyRegionCommandTest {
   private DestroyRegionCommand command;
   private CommandResult result;
   private CliFunctionResult result1, result2;
-  private InternalClusterConfigurationService ccService;
+  private InternalConfigurationPersistenceService ccService;
   XmlEntity xmlEntity;
 
   @Before
   public void before() throws Exception {
     xmlEntity = mock(XmlEntity.class);
     command = spy(DestroyRegionCommand.class);
-    ccService = mock(InternalClusterConfigurationService.class);
-    doReturn(ccService).when(command).getConfigurationService();
+    ccService = mock(InternalConfigurationPersistenceService.class);
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     doReturn(mock(InternalCache.class)).when(command).getCache();
 
     List<CliFunctionResult> functionResults = new ArrayList<>();

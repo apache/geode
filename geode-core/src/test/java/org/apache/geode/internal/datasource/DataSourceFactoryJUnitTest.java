@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.datasource;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 import java.sql.Connection;
 import java.util.Properties;

@@ -16,7 +16,11 @@ package org.apache.geode.internal.sequencelog;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.offheap.StoredObject;

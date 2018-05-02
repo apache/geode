@@ -14,7 +14,12 @@
  */
 package org.apache.geode.internal;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * Abstract class for subclasses that want to be Externalizable in addition to being
