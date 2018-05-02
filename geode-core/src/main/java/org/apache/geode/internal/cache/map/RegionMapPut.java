@@ -348,7 +348,7 @@ public class RegionMapPut {
       setOldValueForDelta();
       try {
         setOldValueInEvent();
-        doPutIfPreconditionsPass();
+        doPutIfPreconditionsSatisified();
         return true;
       } finally {
         OffHeapHelper.release(getOldValueForDelta());
@@ -394,7 +394,7 @@ public class RegionMapPut {
     return false;
   }
 
-  private void doPutIfPreconditionsPass() {
+  private void doPutIfPreconditionsSatisified() {
     if (!checkPreconditions()) {
       return;
     }
