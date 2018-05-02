@@ -39,7 +39,7 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
@@ -183,7 +183,7 @@ public class TcpServerJUnitTest {
     }
 
     public void restarting(DistributedSystem ds, GemFireCache cache,
-        InternalClusterConfigurationService sharedConfig) {}
+        InternalConfigurationPersistenceService sharedConfig) {}
 
     public void endRequest(Object request, long startTime) {}
 
@@ -216,7 +216,7 @@ public class TcpServerJUnitTest {
     public void shutDown() {}
 
     public void restarting(DistributedSystem ds, GemFireCache cache,
-        InternalClusterConfigurationService sharedConfig) {}
+        InternalConfigurationPersistenceService sharedConfig) {}
 
     public void endRequest(Object request, long startTime) {}
 

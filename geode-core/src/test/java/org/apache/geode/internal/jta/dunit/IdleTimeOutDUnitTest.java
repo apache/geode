@@ -15,7 +15,8 @@
 package org.apache.geode.internal.jta.dunit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

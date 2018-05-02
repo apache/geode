@@ -24,13 +24,12 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -46,25 +45,24 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
   @CliMetaData
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result describeJndiBinding(@CliOption(key = "name", mandatory = true,
+  public ResultModel describeJndiBinding(@CliOption(key = "name", mandatory = true,
       help = "Name of the binding to describe") String bindingName) {
-    Result result = null;
-    TabularResultData tabularData = ResultBuilder.createTabularResultData();
 
-    InternalClusterConfigurationService ccService =
-        (InternalClusterConfigurationService) getConfigurationService();
+    ResultModel crm = new ResultModel();
+    TabularResultModel tabularData = crm.addTable();
+
+    InternalConfigurationPersistenceService ccService =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
     if (ccService != null) {
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       if (cacheConfig == null) {
-        return ResultBuilder
-            .createUserErrorResult(String.format("JNDI binding : %s not found", bindingName));
+        return crm.createError(String.format("JNDI binding : %s not found", bindingName));
       }
       List<JndiBindingsType.JndiBinding> jndiBindings = cacheConfig.getJndiBindings();
 
       if (jndiBindings.stream().noneMatch(b -> b.getJndiName().equals(bindingName)
           || b.getJndiName().equals("java:" + bindingName))) {
-        return ResultBuilder
-            .createUserErrorResult(String.format("JNDI binding : %s not found", bindingName));
+        return crm.createError(String.format("JNDI binding : %s not found", bindingName));
       }
 
       for (JndiBindingsType.JndiBinding binding : jndiBindings) {
@@ -104,12 +102,10 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
       }
     }
 
-    result = ResultBuilder.buildResult(tabularData);
-
-    return result;
+    return crm;
   }
 
-  private void addTableRow(TabularResultData table, String property, String value) {
+  private void addTableRow(TabularResultModel table, String property, String value) {
     table.accumulate("Property", property);
     table.accumulate("Value", value != null ? value : "");
   }

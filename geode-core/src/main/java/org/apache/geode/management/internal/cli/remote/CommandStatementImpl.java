@@ -51,7 +51,7 @@ public class CommandStatementImpl implements CommandStatement {
 
   @Override
   public Result process() {
-    return cmdProcessor.executeCommand(commandString, env, null);
+    return (Result) cmdProcessor.executeCommand(commandString, env, null);
   }
 
   public boolean validate() {

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;

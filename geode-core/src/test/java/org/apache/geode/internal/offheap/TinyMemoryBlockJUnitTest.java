@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.offheap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import java.nio.ByteBuffer;

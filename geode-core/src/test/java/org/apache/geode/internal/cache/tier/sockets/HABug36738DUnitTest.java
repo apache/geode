@@ -14,10 +14,11 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.awaitility.Awaitility.*;
-import static org.awaitility.Duration.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.Duration.TEN_SECONDS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

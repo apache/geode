@@ -224,12 +224,11 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
 
 
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion region) {
-    super.postPutAll(putallOp, successfulPuts, region);
+      InternalRegion reg) {
+    super.postPutAll(putallOp, successfulPuts, reg);
     // TODO DISTTX: event is never released
-    EntryEventImpl event =
-        EntryEventImpl.createPutAllEvent(putallOp, region, Operation.PUTALL_CREATE,
-            putallOp.getBaseEvent().getKey(), putallOp.getBaseEvent().getValue());
+    EntryEventImpl event = EntryEventImpl.createPutAllEvent(putallOp, reg, Operation.PUTALL_CREATE,
+        putallOp.getBaseEvent().getKey(), putallOp.getBaseEvent().getValue());
     event.setEventId(putallOp.getBaseEvent().getEventId());
     DistTxEntryEvent dtop = new DistTxEntryEvent(event);
     dtop.setPutAllOperation(putallOp);
@@ -237,11 +236,11 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   }
 
   public void postRemoveAll(DistributedRemoveAllOperation removeAllOp,
-      VersionedObjectList successfulOps, LocalRegion region) {
-    super.postRemoveAll(removeAllOp, successfulOps, region);
+      VersionedObjectList successfulOps, InternalRegion reg) {
+    super.postRemoveAll(removeAllOp, successfulOps, reg);
     // TODO DISTTX: event is never released
-    EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(removeAllOp, region,
-        removeAllOp.getBaseEvent().getKey());
+    EntryEventImpl event =
+        EntryEventImpl.createRemoveAllEvent(removeAllOp, reg, removeAllOp.getBaseEvent().getKey());
     event.setEventId(removeAllOp.getBaseEvent().getEventId());
     DistTxEntryEvent dtop = new DistTxEntryEvent(event);
     dtop.setRemoveAllOperation(removeAllOp);
@@ -283,8 +282,9 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   }
 
   @Override
-  public void gatherAffectedRegions(HashSet<LocalRegion> regionSet, boolean includePrimaryRegions,
-      boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException {
+  public void gatherAffectedRegions(HashSet<InternalRegion> regionSet,
+      boolean includePrimaryRegions, boolean includeRedundantRegions)
+      throws UnsupportedOperationInTransactionException {
     if (includePrimaryRegions) {
       for (DistTxEntryEvent dtos : this.primaryTransactionalOperations) {
         regionSet.add(dtos.getRegion());
@@ -312,12 +312,12 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   public static void gatherAffectedRegions(TreeSet<String> sortedRegionName,
       ArrayList<DistTxEntryEvent> regionOps) {
     for (DistTxEntryEvent dtos : regionOps) {
-      LocalRegion lr = dtos.getRegion();
-      if (lr instanceof PartitionedRegion) {
-        sortedRegionName.add(PartitionedRegionHelper.getBucketFullPath(lr.getFullPath(),
+      InternalRegion ir = dtos.getRegion();
+      if (ir instanceof PartitionedRegion) {
+        sortedRegionName.add(PartitionedRegionHelper.getBucketFullPath(ir.getFullPath(),
             dtos.getKeyInfo().getBucketId()));
       } else {
-        sortedRegionName.add(lr.getFullPath());
+        sortedRegionName.add(ir.getFullPath());
       }
     }
   }

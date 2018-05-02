@@ -238,7 +238,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   }
 
   @Override
-  protected boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+  public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     try {

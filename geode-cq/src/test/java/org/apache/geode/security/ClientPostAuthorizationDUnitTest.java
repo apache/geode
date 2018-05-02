@@ -14,8 +14,9 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.util.ArrayList;
 import java.util.Iterator;

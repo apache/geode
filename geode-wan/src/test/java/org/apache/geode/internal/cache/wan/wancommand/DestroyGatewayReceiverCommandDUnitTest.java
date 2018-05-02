@@ -97,7 +97,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
   private void verifyConfigHasGatewayReceiver(String groupName) {
     locatorSite1.invoke(() -> {
-      String sharedConfigXml = ClusterStartupRule.getLocator().getSharedConfiguration()
+      String sharedConfigXml = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
           .getConfiguration(groupName).getCacheXmlContent();
       assertThat(sharedConfigXml).contains("<gateway-receiver");
     });
@@ -105,8 +105,8 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
   private void verifyConfigDoesNotHaveGatewayReceiver(String groupName) {
     locatorSite1.invoke(() -> {
-      Configuration groupConfig =
-          ClusterStartupRule.getLocator().getSharedConfiguration().getConfiguration(groupName);
+      Configuration groupConfig = ClusterStartupRule.getLocator()
+          .getConfigurationPersistenceService().getConfiguration(groupName);
       String sharedConfigXml = groupConfig == null ? "" : groupConfig.getCacheXmlContent();
       // Null or emnpty XML doesn't have gateway-receiver element, so it's OK
       if (StringUtils.isNotEmpty(sharedConfigXml)) {

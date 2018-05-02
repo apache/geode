@@ -45,7 +45,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -62,13 +62,13 @@ public class CreateAsyncEventQueueCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private CreateAsyncEventQueueCommand command;
-  private InternalClusterConfigurationService service;
+  private InternalConfigurationPersistenceService service;
 
   @Before
   public void before() throws Exception {
     command = spy(CreateAsyncEventQueueCommand.class);
-    service = mock(InternalClusterConfigurationService.class);
-    doReturn(service).when(command).getConfigurationService();
+    service = mock(InternalConfigurationPersistenceService.class);
+    doReturn(service).when(command).getConfigurationPersistenceService();
   }
 
   @Test
@@ -188,7 +188,7 @@ public class CreateAsyncEventQueueCommandTest {
 
   @Test
   public void command_succeeded_but_no_cluster_config_service() throws Exception {
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(Collections.emptySet()).when(command).getMembers(any(), any());
 
     List<CliFunctionResult> functionResults = new ArrayList<>();

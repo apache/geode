@@ -20,12 +20,12 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -33,7 +33,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateMappingCommand extends InternalGfshCommand {
+public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING = "create jdbc-mapping";
   static final String CREATE_MAPPING__HELP =
       "Create a mapping for a region for use with a JDBC database connection.";
@@ -54,8 +54,6 @@ public class CreateMappingCommand extends InternalGfshCommand {
   static final String CREATE_MAPPING__FIELD_MAPPING = "field-mapping";
   static final String CREATE_MAPPING__FIELD_MAPPING__HELP =
       "Key value pairs of PDX field names to database column names formatted like \"key:value(,key:value)*\".";
-
-  private static final String ERROR_PREFIX = "ERROR: ";
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -86,22 +84,21 @@ public class CreateMappingCommand extends InternalGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new CreateMappingFunction(), mapping, targetMembers);
 
-    boolean persisted = false;
-    ClusterConfigurationService ccService = getConfigurationService();
-
-    if (ccService != null && results.stream().filter(CliFunctionResult::isSuccessful).count() > 0) {
-      ConnectorService service =
-          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
-      if (service == null) {
-        service = new ConnectorService();
-      }
-      service.getRegionMapping().add(mapping);
-      ccService.saveCustomCacheElement("cluster", service);
-      persisted = true;
-    }
 
     CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setCommandPersisted(persisted);
+    commandResult.setConfigObject(mapping);
     return commandResult;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+    ConnectorService.RegionMapping mapping = (ConnectorService.RegionMapping) element;
+    ConnectorService service =
+        config.findCustomCacheElement("connector-service", ConnectorService.class);
+    if (service == null) {
+      service = new ConnectorService();
+      config.getCustomCacheElements().add(service);
+    }
+    service.getRegionMapping().add(mapping);
   }
 }

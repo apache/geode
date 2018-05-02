@@ -47,7 +47,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   private final HashMap<DistributedMember, DistTXCoordinatorInterface> target2realDeals =
       new HashMap<>();
 
-  private HashMap<LocalRegion, DistributedMember> rrTargets;
+  private HashMap<InternalRegion, DistributedMember> rrTargets;
 
   private Set<DistributedMember> txRemoteParticpants = null; // other than local
 
@@ -140,17 +140,17 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       ArrayList<DistTxEntryEvent> primaryTxOps =
           distPeerTxStateStub.getPrimaryTransactionalOperations();
       for (DistTxEntryEvent dtop : primaryTxOps) {
-        LocalRegion lr = dtop.getRegion();
+        InternalRegion internalRegion = dtop.getRegion();
         // replicas or secondaries
         Set<InternalDistributedMember> otherNodes = null;
-        if (lr instanceof PartitionedRegion) {
+        if (internalRegion instanceof PartitionedRegion) {
           Set<InternalDistributedMember> allNodes = ((PartitionedRegion) dtop.getRegion())
               .getRegionAdvisor().getBucketOwners(dtop.getKeyInfo().getBucketId());
           allNodes.remove(originalTarget);
           otherNodes = allNodes;
-        } else if (lr instanceof DistributedRegion) {
-          otherNodes =
-              ((DistributedRegion) lr).getCacheDistributionAdvisor().adviseInitializedReplicates();
+        } else if (internalRegion instanceof DistributedRegion) {
+          otherNodes = ((DistributedRegion) internalRegion).getCacheDistributionAdvisor()
+              .adviseInitializedReplicates();
           otherNodes.remove(originalTarget);
         }
 
@@ -304,11 +304,11 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    * {@inheritDoc}
    */
   @Override
-  public TXStateInterface getRealDeal(KeyInfo key, LocalRegion r) {
+  public TXStateInterface getRealDeal(KeyInfo key, InternalRegion r) {
     if (r != null) {
       target = null;
       // wait for the region to be initialized fixes bug 44652
-      r.waitOnInitialization(r.initializationLatchBeforeGetInitialImage);
+      r.waitOnInitialization(r.getInitializationLatchBeforeGetInitialImage());
       if (r instanceof PartitionedRegion) {
         target = getOwnerForKey(r, key);
       } else if (r instanceof BucketRegion) {
@@ -330,7 +330,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
           // TODO [DISTTX] See what we need for client?
           this.realDeal =
               new DistClientTXStateStub(r.getCache(), r.getDistributionManager(), this, target, r);
-          if (r.scope.isDistributed()) {
+          if (r.getScope().isDistributed()) {
             if (txDistributedClientWarningIssued.compareAndSet(false, true)) {
               logger.warn(LocalizedMessage.create(
                   LocalizedStrings.TXStateProxyImpl_Distributed_Region_In_Client_TX,
@@ -403,7 +403,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   /*
    * [DISTTX] TODO Do some optimization
    */
-  private DistributedMember getRRTarget(KeyInfo key, LocalRegion r) {
+  private DistributedMember getRRTarget(KeyInfo key, InternalRegion r) {
     if (this.rrTargets == null) {
       this.rrTargets = new HashMap();
     }
@@ -740,21 +740,21 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    */
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion region) {
+      InternalRegion reg) {
     if (putallOp.putAllData.length == 0) {
       return;
     }
-    if (region instanceof DistributedRegion) {
-      super.postPutAll(putallOp, successfulPuts, region);
+    if (reg instanceof DistributedRegion) {
+      super.postPutAll(putallOp, successfulPuts, reg);
     } else {
-      region.getCancelCriterion().checkCancelInProgress(null); // fix for bug
+      reg.getCancelCriterion().checkCancelInProgress(null); // fix for bug
       // #43651
 
       if (logger.isDebugEnabled()) {
         logger.debug(
             "DistTXStateProxyImplOnCoordinator.postPutAll "
                 + "processing putAll op for region {}, size of putAllOp " + "is {}",
-            region, putallOp.putAllData.length);
+            reg, putallOp.putAllData.length);
       }
 
 
@@ -774,8 +774,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         DistributedPutAllOperation putAllForBucket = bucketToPutallMap.get(bucketId);;
         if (putAllForBucket == null) {
           // TODO DISTTX: event is never released
-          EntryEventImpl event = EntryEventImpl.createPutAllEvent(null, region,
-              Operation.PUTALL_CREATE, key, putallOp.putAllData[i].getValue(region.getCache()));
+          EntryEventImpl event = EntryEventImpl.createPutAllEvent(null, reg,
+              Operation.PUTALL_CREATE, key, putallOp.putAllData[i].getValue(reg.getCache()));
           event.setEventId(putallOp.putAllData[i].getEventID());
           putAllForBucket =
               new DistributedPutAllOperation(event, putallOp.putAllDataSize, putallOp.isBridgeOp);
@@ -785,7 +785,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         putAllForBucket.addEntry(putallOp.putAllData[i]);
 
         KeyInfo ki = new KeyInfo(key, null, null);
-        DistTXCoordinatorInterface tsi = (DistTXCoordinatorInterface) getRealDeal(ki, region);
+        DistTXCoordinatorInterface tsi = (DistTXCoordinatorInterface) getRealDeal(ki, reg);
         bucketToTxStateStubMap.put(bucketId, tsi);
       }
 
@@ -807,7 +807,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
                   + " putAll for ##bucketId = {}, ##txStateStub = {}, " + "##putAllOp = {}",
               bucketId, dtsi, putAllForBucket);
         }
-        dtsi.postPutAll(putAllForBucket, successfulPuts, region);
+        dtsi.postPutAll(putAllForBucket, successfulPuts, reg);
       }
     }
   }
@@ -819,20 +819,20 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    */
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-      LocalRegion region) {
+      InternalRegion reg) {
     if (op.removeAllData.length == 0) {
       return;
     }
-    if (region instanceof DistributedRegion) {
-      super.postRemoveAll(op, successfulOps, region);
+    if (reg instanceof DistributedRegion) {
+      super.postRemoveAll(op, successfulOps, reg);
     } else {
-      region.getCancelCriterion().checkCancelInProgress(null); // fix for bug
+      reg.getCancelCriterion().checkCancelInProgress(null); // fix for bug
       // #43651
       if (logger.isDebugEnabled()) {
         logger.debug(
             "DistTXStateProxyImplOnCoordinator.postRemoveAll "
                 + "processing removeAll op for region {}, size of removeAll " + "is {}",
-            region, op.removeAllDataSize);
+            reg, op.removeAllDataSize);
       }
 
       // map of bucketId to removeAll op for this bucket
@@ -851,7 +851,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         DistributedRemoveAllOperation removeAllForBucket = bucketToRemoveAllMap.get(bucketId);
         if (removeAllForBucket == null) {
           // TODO DISTTX: event is never released
-          EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, region, key);
+          EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, reg, key);
           event.setEventId(op.removeAllData[i].getEventID());
           removeAllForBucket =
               new DistributedRemoveAllOperation(event, op.removeAllDataSize, op.isBridgeOp);
@@ -861,7 +861,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         removeAllForBucket.addEntry(op.removeAllData[i]);
 
         KeyInfo ki = new KeyInfo(key, null, null);
-        DistTXCoordinatorInterface tsi = (DistTXCoordinatorInterface) getRealDeal(ki, region);
+        DistTXCoordinatorInterface tsi = (DistTXCoordinatorInterface) getRealDeal(ki, reg);
         bucketToTxStateStubMap.put(bucketId, tsi);
       }
 
@@ -883,7 +883,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
                   + " removeAll for ##bucketId = {}, ##txStateStub = {}, " + "##removeAllOp = {}",
               bucketId, dtsi, removeAllForBucket);
         }
-        dtsi.postRemoveAll(removeAllForBucket, successfulOps, region);
+        dtsi.postRemoveAll(removeAllForBucket, successfulOps, reg);
       }
 
     }
@@ -929,7 +929,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   /*
    * Do not return null
    */
-  public DistributedMember getOwnerForKey(LocalRegion r, KeyInfo key) {
+  public DistributedMember getOwnerForKey(InternalRegion r, KeyInfo key) {
     DistributedMember m = r.getOwnerForKey(key);
     if (m == null) {
       m = getCache().getDistributedSystem().getDistributedMember();

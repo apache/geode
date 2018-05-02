@@ -14,8 +14,8 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 
 import java.util.Collection;
 import java.util.List;

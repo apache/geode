@@ -656,7 +656,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
    *
    */
   @Override
-  protected void lruEntryCreate(RegionEntry re) {
+  public void lruEntryCreate(RegionEntry re) {
     EvictableEntry e = (EvictableEntry) re;
     if (logger.isTraceEnabled(LogMarker.LRU_VERBOSE)) {
       logger.trace(LogMarker.LRU_VERBOSE,
@@ -675,7 +675,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  protected void lruEntryUpdate(RegionEntry re) {
+  public void lruEntryUpdate(RegionEntry re) {
     final EvictableEntry e = (EvictableEntry) re;
     setDelta(e.updateEntrySize(getEvictionController()));
     if (logger.isDebugEnabled()) {

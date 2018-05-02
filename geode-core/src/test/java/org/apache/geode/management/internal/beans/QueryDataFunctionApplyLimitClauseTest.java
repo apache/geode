@@ -16,7 +16,7 @@
 
 package org.apache.geode.management.internal.beans;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;

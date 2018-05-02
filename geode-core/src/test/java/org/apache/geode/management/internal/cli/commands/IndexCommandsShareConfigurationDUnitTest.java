@@ -14,41 +14,26 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.junit.Assert.assertFalse;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.query.Index;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -71,35 +56,21 @@ public class IndexCommandsShareConfigurationDUnitTest {
 
   @Before
   public void before() throws Exception {
-    int jmxPort, httpPort;
+    locator = startupRule.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    serverVM = startupRule.startServerVM(1,
+        s -> s.withConnectionToLocator(locatorPort).withProperty(GROUPS, groupName).withProperty(
+            SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.management.internal.cli.domain.Stock"));
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    jmxPort = ports[0];
-    httpPort = ports[1];
+    gfsh.connectAndVerify(locator);
 
-    final Properties locatorProps = new Properties();
-    locatorProps.setProperty(NAME, "Locator");
-    locatorProps.setProperty(LOG_LEVEL, "fine");
-    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
-    locatorProps.setProperty(JMX_MANAGER, "true");
-    locatorProps.setProperty(JMX_MANAGER_START, "true");
-    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
-    locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+    gfsh.executeAndAssertThat(
+        "create region  --group=group1 --name=partitionedRegion --type=PARTITION "
+            + "--key-constraint=java.lang.String --value-constraint=org.apache.geode.management.internal.cli.domain.Stock");
 
-    locator = startupRule.startLocatorVM(0, x -> x.withProperties(locatorProps));
-
-    gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-
-    Properties props = new Properties();
-    props.setProperty(GROUPS, groupName);
-    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.management.internal.cli.domain.Stock");
-    serverVM = startupRule.startServerVM(1, props, locator.getPort());
     serverVM.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      Region parReg =
-          createPartitionedRegion(partitionedRegionName, cache, String.class, Stock.class);
-      parReg.put("VMW", new Stock("VMW", 98));
+      Region region = ClusterStartupRule.getCache().getRegion(partitionedRegionName);
+      region.put("VMW", new Stock("VMW", 98));
     });
   }
 
@@ -112,18 +83,13 @@ public class IndexCommandsShareConfigurationDUnitTest {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
 
-    assertTrue(indexIsListed());
+    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX).statusIsSuccess().containsOutput(indexName);
 
     locator.invoke(() -> {
-      InternalClusterConfigurationService sharedConfig =
-          ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
-      String xmlFromConfig;
-      try {
-        xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
-        assertTrue(xmlFromConfig.contains(indexName));
-      } catch (Exception e) {
-        Assert.fail("Error occurred in cluster configuration service", e);
-      }
+      InternalConfigurationPersistenceService sharedConfig =
+          ((InternalLocator) Locator.getLocator()).getConfigurationPersistenceService();
+      String xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
+      assertThat(xmlFromConfig).contains(indexName);
     });
 
     createStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
@@ -133,15 +99,10 @@ public class IndexCommandsShareConfigurationDUnitTest {
     gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      InternalClusterConfigurationService sharedConfig =
-          ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
-      String xmlFromConfig;
-      try {
-        xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
-        assertFalse(xmlFromConfig.contains(indexName));
-      } catch (Exception e) {
-        Assert.fail("Error occurred in cluster configuration service", e);
-      }
+      InternalConfigurationPersistenceService sharedConfig =
+          ((InternalLocator) Locator.getLocator()).getConfigurationPersistenceService();
+      String xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
+      assertThat(xmlFromConfig).doesNotContain(indexName);
     });
 
     // Restart the data member cache to make sure that the index is destroyed.
@@ -158,17 +119,4 @@ public class IndexCommandsShareConfigurationDUnitTest {
     });
   }
 
-  private static Region<?, ?> createPartitionedRegion(String regionName, Cache cache,
-      Class keyConstraint, Class valueConstraint) {
-    RegionFactory regionFactory = cache.createRegionFactory();
-    regionFactory.setDataPolicy(DataPolicy.PARTITION);
-    regionFactory.setKeyConstraint(keyConstraint);
-    regionFactory.setValueConstraint(valueConstraint);
-    return regionFactory.create(regionName);
-  }
-
-  private boolean indexIsListed() throws Exception {
-    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX).statusIsSuccess();
-    return gfsh.getGfshOutput().contains(indexName);
-  }
 }

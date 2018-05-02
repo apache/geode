@@ -24,7 +24,9 @@ package org.apache.geode.internal.jta;
  * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
  *             transactions.
  */
-import javax.transaction.xa.*;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
 
 @Deprecated
 public class XidImpl implements Xid {
