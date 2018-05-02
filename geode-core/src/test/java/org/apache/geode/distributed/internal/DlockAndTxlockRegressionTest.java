@@ -218,7 +218,7 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
 
         region.put("TestKey", "TestValue" + random.nextInt(100000));
 
-        TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+        TXManagerImpl mgr = (TXManagerImpl) cache.getCacheTransactionManager();
         TXStateProxyImpl txProxy = (TXStateProxyImpl) mgr.getTXState();
         TXState txState = (TXState) txProxy.getRealDeal(null, null);
         txState.setBeforeSend(() -> {
