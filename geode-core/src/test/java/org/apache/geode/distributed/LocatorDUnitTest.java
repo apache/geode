@@ -112,13 +112,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   private static TestHook hook;
 
-  /**
-   * Creates a new <code>LocatorDUnitTest</code>
-   */
-  public LocatorDUnitTest() {
-    super();
-  }
-
   protected int port1;
   private int port2;
 

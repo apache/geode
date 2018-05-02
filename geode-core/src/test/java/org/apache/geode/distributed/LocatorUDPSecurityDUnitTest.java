@@ -22,7 +22,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_
 import java.util.Properties;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -33,24 +32,13 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({DistributedTest.class, MembershipTest.class, FlakyTest.class}) // Flaky: GEODE-2542
+@Category({DistributedTest.class, MembershipTest.class})
 public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
-
-  public LocatorUDPSecurityDUnitTest() {}
-
   @Override
   protected void addDSProps(Properties p) {
     p.setProperty(SECURITY_UDP_DHALGO, "AES:128");
-  }
-
-  @Override
-  @Test
-  @Ignore // GEODE-3094
-  public void testMultipleLocatorsRestartingAtSameTimeWithMissingServers() throws Exception {
-    super.testMultipleLocatorsRestartingAtSameTimeWithMissingServers();
   }
 
   @Test
