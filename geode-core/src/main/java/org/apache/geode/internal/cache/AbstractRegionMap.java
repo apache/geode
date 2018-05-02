@@ -2167,11 +2167,11 @@ public abstract class AbstractRegionMap
           txApplyPutCreateNewEntryIfNeeded(txApplyPutContext);
         } while (!addRegionEntryToMapAndDoTxPut(txApplyPutContext));
 
-        if (onlyExisting) {
-          if (didDestroy && !txApplyPutContext.isOpCompleted()) {
+        if (onlyExisting && !txApplyPutContext.isOpCompleted()) {
+          if (didDestroy) {
             owner.txApplyPutHandleDidDestroy(key);
           }
-          if (invokeCallbacks && !txApplyPutContext.isOpCompleted()) {
+          if (invokeCallbacks) {
             callbackEvent.makeUpdate();
             owner.invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, callbackEvent, false);
           }
@@ -2215,11 +2215,7 @@ public abstract class AbstractRegionMap
         return false;
       }
       try {
-        if (txApplyPutContext.isCreate()) {
-          txApplyPutNewRegionEntry(txApplyPutContext);
-        } else {
-          txApplyPutExistingRegionEntry(txApplyPutContext);
-        }
+        txApplyPutRegionEntry(txApplyPutContext);
         return true;
       } finally {
         if (!txApplyPutContext.isOpCompleted() && txApplyPutContext.isCreate()) {
@@ -2262,7 +2258,7 @@ public abstract class AbstractRegionMap
     return true;
   }
 
-  private void txApplyPutNewRegionEntry(TxApplyPutContext txApplyPutContext) {
+  private void txApplyPutRegionEntry(TxApplyPutContext txApplyPutContext) {
     final Object key = txApplyPutContext.getEvent().getKey();
     final boolean didDestroy = txApplyPutContext.isDidDestroy();
     final TXRmtEvent txEvent = txApplyPutContext.getTxEvent();
@@ -2274,65 +2270,94 @@ public abstract class AbstractRegionMap
     final boolean hasRemoteOrigin = txApplyPutContext.isHasRemoteOrigin();
     final EntryEventImpl callbackEvent = txApplyPutContext.getEvent();
     final boolean invokeCallbacks = txApplyPutContext.isInvokeCallbacks();
-    final RegionEntry newRe = txApplyPutContext.getRegionEntry();
+    final RegionEntry regionEntry = txApplyPutContext.getRegionEntry();
+    final boolean onlyExisting = txApplyPutContext.isOnlyExisting();
+    final boolean isCreate = txApplyPutContext.isCreate();
 
-    if (txApplyPutContext.isOpCompleted()) {
-      return;
+    if (isCreate) {
+      txApplyPutContext.makeCreate();
+    } else {
+      if (onlyExisting && regionEntry.isRemoved()) {
+        return;
+      }
+      txApplyPutContext.setOpCompleted(true);
+      if (!regionEntry.isRemoved()) {
+        txApplyPutContext.makeUpdate();
+      }
     }
-    txApplyPutContext.makeCreate();
+    final int oldSize = isCreate ? 0 : owner.calculateRegionEntryValueSize(regionEntry);
+    final boolean oldIsRemoved = isCreate ? true : regionEntry.isDestroyedOrRemoved();
     if (callbackEvent != null) {
-      callbackEvent.setRegionEntry(newRe);
-      callbackEvent.setOldValue(null);
+      callbackEvent.setRegionEntry(regionEntry);
+      callbackEvent.setOldValue(isCreate ? null : regionEntry.getValueInVM(owner));
     }
     boolean clearOccured = false;
-    // Set RegionEntry updateInProgress
     if (owner.getIndexMaintenanceSynchronous()) {
-      newRe.setUpdateInProgress(true);
+      regionEntry.setUpdateInProgress(true);
     }
     try {
-      txRemoveOldIndexEntry(txApplyPutContext.getPutOp(), newRe);
-      // creating a new entry
+      txRemoveOldIndexEntry(txApplyPutContext.getPutOp(), regionEntry);
       if (didDestroy) {
-        newRe.txDidDestroy(owner.cacheTimeMillis());
+        regionEntry.txDidDestroy(owner.cacheTimeMillis());
       }
       if (txEvent != null) {
-        txEvent.addPut(txApplyPutContext.getPutOp(), owner, newRe, newRe.getKey(), newValue,
-            callbackArgument);
+        txEvent.addPut(txApplyPutContext.getPutOp(), owner, regionEntry, regionEntry.getKey(),
+            newValue, callbackArgument);
       }
-      newRe.setValueResultOfSearch(txApplyPutContext.getPutOp().isNetSearch());
+      regionEntry.setValueResultOfSearch(txApplyPutContext.getPutOp().isNetSearch());
       try {
-
-        processAndGenerateTXVersionTag(owner, callbackEvent, newRe, txEntryState);
+        processAndGenerateTXVersionTag(owner, callbackEvent, regionEntry, txEntryState);
         {
-          newRe.setValue(owner, newRe.prepareValueForCache(owner, newValue, callbackEvent,
-              !txApplyPutContext.getPutOp().isCreate()));
+          boolean wasTombstone = regionEntry.isTombstone();
+          regionEntry.setValue(owner, regionEntry.prepareValueForCache(owner, newValue,
+              callbackEvent, !txApplyPutContext.getPutOp().isCreate()));
+          if (wasTombstone) {
+            owner.unscheduleTombstone(regionEntry);
+          }
         }
-        owner.updateSizeOnCreate(newRe.getKey(), owner.calculateRegionEntryValueSize(newRe));
+        if (txApplyPutContext.getPutOp().isCreate()) {
+          owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(regionEntry));
+        } else if (txApplyPutContext.getPutOp().isUpdate()) {
+          owner.updateSizeOnPut(key, oldSize, owner.calculateRegionEntryValueSize(regionEntry));
+        }
       } catch (RegionClearedException rce) {
         clearOccured = true;
       }
       {
         long lastMod = owner.cacheTimeMillis();
         EntryLogger.logTXPut(_getOwnerObject(), key, newValue);
-        newRe.updateStatsForPut(lastMod, lastMod);
-        owner.txApplyPutPart2(newRe, newRe.getKey(), lastMod, true, didDestroy, clearOccured);
+        regionEntry.updateStatsForPut(lastMod, lastMod);
+        owner.txApplyPutPart2(regionEntry, regionEntry.getKey(), lastMod, isCreate, didDestroy,
+            clearOccured);
       }
     } finally {
-      if (newRe != null && owner.getIndexMaintenanceSynchronous()) {
-        newRe.setUpdateInProgress(false);
+      if (regionEntry != null && owner.getIndexMaintenanceSynchronous()) {
+        regionEntry.setUpdateInProgress(false);
       }
     }
-    txApplyPutContext.setOpCompleted(true);
+    if (isCreate) {
+      txApplyPutContext.setOpCompleted(true);
+    }
     if (invokeCallbacks) {
-      callbackEvent.makeCreate();
-      callbackEvent.setOldValue(null);
+      if (isCreate) {
+        callbackEvent.makeCreate();
+        callbackEvent.setOldValue(null);
+      } else {
+        if (!oldIsRemoved) {
+          callbackEvent.makeUpdate();
+        }
+      }
       switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
       pendingCallbacks.add(callbackEvent);
       txApplyPutContext.setCallbackEventInPending(true);
     }
     if (!clearOccured) {
-      lruEntryCreate(newRe);
-      incEntryCount(1);
+      if (isCreate) {
+        lruEntryCreate(regionEntry);
+        incEntryCount(1);
+      } else {
+        lruEntryUpdate(regionEntry);
+      }
     }
   }
 
@@ -2397,10 +2422,6 @@ public abstract class AbstractRegionMap
       return putOp;
     }
 
-    public void setPutOp(Operation putOp) {
-      this.putOp = putOp;
-    }
-
     public boolean isCreate() {
       return create;
     }
@@ -2463,98 +2484,6 @@ public abstract class AbstractRegionMap
 
     public void makeUpdate() {
       putOp = putOp.getCorrespondingUpdateOp();
-    }
-
-  }
-
-  private void txApplyPutExistingRegionEntry(TxApplyPutContext txApplyPutContext) {
-    final Object key = txApplyPutContext.getEvent().getKey();
-    final boolean didDestroy = txApplyPutContext.isDidDestroy();
-    final TXRmtEvent txEvent = txApplyPutContext.getTxEvent();
-    final Object callbackArgument = txApplyPutContext.getCallbackArgument();
-    final List<EntryEventImpl> pendingCallbacks = txApplyPutContext.getPendingCallbacks();
-    final TXEntryState txEntryState = txApplyPutContext.getTxEntryState();
-    final LocalRegion owner = _getOwner();
-    final Object newValue = txApplyPutContext.getNewValue();
-    final boolean hasRemoteOrigin = txApplyPutContext.isHasRemoteOrigin();
-    final EntryEventImpl callbackEvent = txApplyPutContext.getEvent();
-    final boolean invokeCallbacks = txApplyPutContext.isInvokeCallbacks();
-    final RegionEntry oldRe = txApplyPutContext.getRegionEntry();
-    final boolean onlyExisting = txApplyPutContext.isOnlyExisting();
-
-    if (!onlyExisting || !oldRe.isRemoved()) {
-      txApplyPutContext.setOpCompleted(true);
-      if (!oldRe.isRemoved()) {
-        txApplyPutContext.makeUpdate();
-      }
-      // Net writers are not called for received transaction data
-      final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
-      final boolean oldIsRemoved = oldRe.isDestroyedOrRemoved();
-      if (callbackEvent != null) {
-        callbackEvent.setRegionEntry(oldRe);
-        callbackEvent.setOldValue(oldRe.getValueInVM(owner)); // OFFHEAP eei
-      }
-      boolean clearOccured = false;
-      // Set RegionEntry updateInProgress
-      if (owner.getIndexMaintenanceSynchronous()) {
-        oldRe.setUpdateInProgress(true);
-      }
-      try {
-        txRemoveOldIndexEntry(txApplyPutContext.getPutOp(), oldRe);
-        if (didDestroy) {
-          oldRe.txDidDestroy(owner.cacheTimeMillis());
-        }
-        if (txEvent != null) {
-          txEvent.addPut(txApplyPutContext.getPutOp(), owner, oldRe, oldRe.getKey(), newValue,
-              callbackArgument);
-        }
-        oldRe.setValueResultOfSearch(txApplyPutContext.getPutOp().isNetSearch());
-        try {
-          processAndGenerateTXVersionTag(owner, callbackEvent, oldRe, txEntryState);
-          boolean wasTombstone = oldRe.isTombstone();
-          {
-            oldRe.setValue(owner, oldRe.prepareValueForCache(owner, newValue, callbackEvent,
-                !txApplyPutContext.getPutOp().isCreate()));
-            if (wasTombstone) {
-              owner.unscheduleTombstone(oldRe);
-            }
-          }
-          if (txApplyPutContext.getPutOp().isCreate()) {
-            owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(oldRe));
-          } else if (txApplyPutContext.getPutOp().isUpdate()) {
-            // Rahul : fix for 41694. Negative bucket size can also be
-            // an issue with normal GFE Delta and will have to be fixed
-            // in a similar manner and may be this fix the the one for
-            // other delta can be combined.
-            {
-              owner.updateSizeOnPut(key, oldSize, owner.calculateRegionEntryValueSize(oldRe));
-            }
-          }
-        } catch (RegionClearedException rce) {
-          clearOccured = true;
-        }
-        {
-          long lastMod = owner.cacheTimeMillis();
-          EntryLogger.logTXPut(_getOwnerObject(), key, newValue);
-          oldRe.updateStatsForPut(lastMod, lastMod);
-          owner.txApplyPutPart2(oldRe, oldRe.getKey(), lastMod, false, didDestroy, clearOccured);
-        }
-      } finally {
-        if (oldRe != null && owner.getIndexMaintenanceSynchronous()) {
-          oldRe.setUpdateInProgress(false);
-        }
-      }
-      if (invokeCallbacks) {
-        if (!oldIsRemoved) {
-          callbackEvent.makeUpdate();
-        }
-        switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
-        pendingCallbacks.add(callbackEvent);
-        txApplyPutContext.setCallbackEventInPending(true);
-      }
-      if (!clearOccured) {
-        lruEntryUpdate(oldRe);
-      }
     }
   }
 
