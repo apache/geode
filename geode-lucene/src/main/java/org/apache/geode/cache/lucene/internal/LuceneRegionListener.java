@@ -22,6 +22,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
@@ -107,7 +108,12 @@ public class LuceneRegionListener implements RegionListener {
   public void afterCreate(Region region) {
     if (region.getFullPath().equals(this.regionPath)
         && this.afterCreateInvoked.compareAndSet(false, true)) {
-      this.service.afterDataRegionCreated(this.luceneIndex);
+      try {
+        this.service.afterDataRegionCreated(this.luceneIndex);
+      } catch (LuceneIndexDestroyedException e) {
+        // @todo log a warning here?
+        return;
+      }
       this.service.createLuceneIndexOnDataRegion((PartitionedRegion) region, luceneIndex);
     }
   }

@@ -14,10 +14,8 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +38,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFun
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.management.cli.CliMetaData;
@@ -288,11 +287,27 @@ public class LuceneIndexCommands extends InternalGfshCommand {
     }
 
     authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
-    Result result;
-    List<CliFunctionResult> accumulatedResults = new ArrayList<>();
-    final XmlEntity xmlEntity =
-        executeDestroyIndexFunction(accumulatedResults, indexName, regionPath);
-    result = getDestroyIndexResult(accumulatedResults, indexName, regionPath);
+
+    // Get members >= 1.6
+    Set<DistributedMember> validVersionMembers =
+        getNormalMembersWithSameOrNewerVersion(Version.GEODE_160);
+    if (validVersionMembers.isEmpty()) {
+      return ResultBuilder.createInfoResult(CliStrings.format(
+          LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
+          Version.GEODE_160));
+    }
+
+    // Execute the destroy index function
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath);
+    ResultCollector<?, ?> rc =
+        executeFunction(destroyIndexFunction, indexInfo, validVersionMembers);
+
+    // Get the result
+    List<CliFunctionResult> cliFunctionResults = (List<CliFunctionResult>) rc.getResult();
+    Result result = getDestroyIndexResult(cliFunctionResults, indexName, regionPath);
+
+    // Get and process the xml entity
+    XmlEntity xmlEntity = findXmlEntity(cliFunctionResults);
     if (xmlEntity != null) {
       persistClusterConfiguration(result, () -> {
         // Delete the xml entity to remove the index(es) in all groups
@@ -302,61 +317,6 @@ public class LuceneIndexCommands extends InternalGfshCommand {
     }
 
     return result;
-  }
-
-  private XmlEntity executeDestroyIndexFunction(List<CliFunctionResult> accumulatedResults,
-      String indexName, String regionPath) {
-    // Destroy has three cases:
-    //
-    // - no members define the region
-    // In this case, send the request to all members to handle the case where the index has been
-    // created, but not the region
-    //
-    // - all members define the region
-    // In this case, send the request to one of the region members to destroy the index on all
-    // member
-    //
-    // - some members define the region; some don't
-    // In this case, send the request to one of the region members to destroy the index in all the
-    // region members. Then send the function to the remaining members to handle the case where
-    // the index has been created, but not the region
-    XmlEntity xmlEntity = null;
-    Set<DistributedMember> regionMembers = findMembersForRegion(regionPath);
-    Set<DistributedMember> normalMembers = getAllNormalMembers();
-    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath);
-    ResultCollector<?, ?> rc;
-    if (regionMembers.isEmpty()) {
-      // Attempt to destroy the proxy index on all members
-      indexInfo.setDefinedDestroyOnly(true);
-      rc = executeFunction(destroyIndexFunction, indexInfo, normalMembers);
-      accumulatedResults.addAll((List<CliFunctionResult>) rc.getResult());
-    } else {
-      // Attempt to destroy the index on a region member
-      indexInfo.setDefinedDestroyOnly(false);
-      Set<DistributedMember> singleMember = new HashSet<>();
-      singleMember.add(regionMembers.iterator().next());
-      rc = executeFunction(destroyIndexFunction, indexInfo, singleMember);
-      List<CliFunctionResult> cliFunctionResults = (List<CliFunctionResult>) rc.getResult();
-      CliFunctionResult cliFunctionResult = cliFunctionResults.get(0);
-      xmlEntity = cliFunctionResult.getXmlEntity();
-      for (DistributedMember regionMember : regionMembers) {
-        accumulatedResults.add(new CliFunctionResult(regionMember.getId(),
-            cliFunctionResult.isSuccessful(), cliFunctionResult.getMessage()));
-      }
-      // If that succeeds, destroy the proxy index(es) on all other members if necessary
-      if (cliFunctionResult.isSuccessful()) {
-        normalMembers.removeAll(regionMembers);
-        if (!normalMembers.isEmpty()) {
-          indexInfo.setDefinedDestroyOnly(true);
-          rc = executeFunction(destroyIndexFunction, indexInfo, normalMembers);
-          accumulatedResults.addAll((List<CliFunctionResult>) rc.getResult());
-        }
-      } else {
-        // @todo Should dummy results be added to the accumulatedResults for the non-region
-        // members in the failed case
-      }
-    }
-    return xmlEntity;
   }
 
   private Result getDestroyIndexResult(List<CliFunctionResult> cliFunctionResults, String indexName,

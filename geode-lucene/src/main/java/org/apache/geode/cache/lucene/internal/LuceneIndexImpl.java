@@ -226,6 +226,10 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
       getDataRegion().getExtensionPoint().removeExtension(extensionToDelete);
     }
 
+    // Remove cache service profile
+    dataRegion
+        .removeCacheServiceProfile(LuceneIndexCreationProfile.generateId(indexName, regionPath));
+
     // Destroy the async event queue
     destroyAsyncEventQueue(initiator);
 

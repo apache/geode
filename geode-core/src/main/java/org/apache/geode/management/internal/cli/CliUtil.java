@@ -49,7 +49,9 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.lang.StringUtils;
@@ -181,6 +183,31 @@ public class CliUtil {
   public static Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
     return new HashSet<DistributedMember>(
         cache.getDistributionManager().getNormalDistributionManagerIds());
+  }
+
+  /**
+   * Returns a set of all the members of the distributed system of a specific version excluding
+   * locators.
+   */
+  @SuppressWarnings("unchecked")
+  public static Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(InternalCache cache,
+      Version version) {
+    return getAllNormalMembers(cache).stream().filter(
+        member -> ((InternalDistributedMember) member).getVersionObject().compareTo(version) >= 0)
+        .collect(Collectors.toSet());
+  }
+
+  /**
+   * Returns a set of all the members of the distributed system older than a specific version
+   * excluding locators.
+   */
+  @SuppressWarnings("unchecked")
+  public static Set<DistributedMember> getNormalMembersWithSameOrOlderVersion(InternalCache cache,
+      Version version) {
+    return getAllNormalMembers(cache).stream()
+        .filter(member -> ((InternalDistributedMember) member).getVersionObject().equals(version))
+        .collect(Collectors.toSet());
+    // dm.removeMembersWithSameOrNewerVersion(oldMembers, version);
   }
 
   /**

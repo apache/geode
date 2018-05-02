@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+import static org.apache.geode.management.internal.cli.result.ResultData.TYPE_TABULAR;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.any;
@@ -59,6 +61,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunct
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.security.SecurityService;
@@ -427,34 +430,15 @@ public class LuceneIndexCommandsJUnitTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
-  public void testDestroySingleIndexNoRegionMembers(boolean expectedToSucceed) throws Exception {
+  public void testDestroySingleIndexNoRegionMembers() throws Exception {
     LuceneIndexCommands commands = createTestLuceneIndexCommandsForDestroyIndex();
-    String indexName = "index";
-    String regionPath = "regionPath";
-
-    final ResultCollector mockResultCollector = mock(ResultCollector.class);
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
-    String expectedStatus;
-    if (expectedToSucceed) {
-      expectedStatus = CliStrings.format(
-          LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-          new Object[] {indexName, regionPath});
-      cliFunctionResults.add(new CliFunctionResult("member0"));
-    } else {
-      Exception e = new IllegalStateException("failed");
-      expectedStatus = e.getMessage();
-      cliFunctionResults.add(new CliFunctionResult("member0", e, e.getMessage()));
-    }
-
-    doReturn(mockResultCollector).when(commands).executeFunction(
-        isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
-    doReturn(cliFunctionResults).when(mockResultCollector).getResult();
-
-    doReturn(Collections.emptySet()).when(commands).getAllNormalMembers();
-    doReturn(Collections.emptySet()).when(commands).findMembersForRegion(any());
-
-    CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
+    String expectedStatus = CliStrings.format(
+        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
+        new Object[] {Version.GEODE_160}) + LINE_SEPARATOR;
+    cliFunctionResults.add(new CliFunctionResult("member0"));
+    doReturn(Collections.emptySet()).when(commands).getNormalMembersWithSameOrNewerVersion(any());
+    CommandResult result = (CommandResult) commands.destroyIndex("index", "regionPath");
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
   }
 
@@ -488,42 +472,22 @@ public class LuceneIndexCommandsJUnitTest {
         isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
-    doReturn(members).when(commands).getAllNormalMembers();
-    doReturn(members).when(commands).findMembersForRegion(any());
+    doReturn(members).when(commands).getNormalMembersWithSameOrNewerVersion(any());
 
     CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
   }
 
   @Test
-  @Parameters({"true", "false"})
-  public void testDestroyAllIndexesNoRegionMembers(boolean expectedToSucceed) throws Exception {
+  public void testDestroyAllIndexesNoRegionMembers() throws Exception {
     LuceneIndexCommands commands = createTestLuceneIndexCommandsForDestroyIndex();
-    String indexName = null;
-    String regionPath = "regionPath";
-
-    final ResultCollector mockResultCollector = mock(ResultCollector.class);
+    doReturn(Collections.emptySet()).when(commands).getNormalMembersWithSameOrNewerVersion(any());
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
-    String expectedStatus;
-    if (expectedToSucceed) {
-      expectedStatus = CliStrings.format(
-          LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
-          new Object[] {regionPath});
-      cliFunctionResults.add(new CliFunctionResult("member0"));
-    } else {
-      Exception e = new IllegalStateException("failed");
-      expectedStatus = e.getMessage();
-      cliFunctionResults.add(new CliFunctionResult("member0", e, e.getMessage()));
-    }
-
-    doReturn(mockResultCollector).when(commands).executeFunction(
-        isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
-    doReturn(cliFunctionResults).when(mockResultCollector).getResult();
-
-    doReturn(Collections.emptySet()).when(commands).getAllNormalMembers();
-    doReturn(Collections.emptySet()).when(commands).findMembersForRegion(any());
-
-    CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
+    String expectedStatus = CliStrings.format(
+        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
+        new Object[] {Version.GEODE_160}) + LINE_SEPARATOR;
+    cliFunctionResults.add(new CliFunctionResult("member0"));
+    CommandResult result = (CommandResult) commands.destroyIndex(null, "regionPath");
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
   }
 
@@ -557,8 +521,7 @@ public class LuceneIndexCommandsJUnitTest {
         isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
-    doReturn(Collections.emptySet()).when(commands).getAllNormalMembers();
-    doReturn(Collections.emptySet()).when(commands).findMembersForRegion(any());
+    doReturn(members).when(commands).getNormalMembersWithSameOrNewerVersion(any());
 
     CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
@@ -580,17 +543,22 @@ public class LuceneIndexCommandsJUnitTest {
   private void verifyDestroyIndexCommandResult(CommandResult result,
       List<CliFunctionResult> cliFunctionResults, String expectedStatus) {
     assertEquals(Status.OK, result.getStatus());
-    TabularResultData data = (TabularResultData) result.getResultData();
-    List<String> members = data.retrieveAllValues("Member");
-    assertEquals(cliFunctionResults.size(), members.size());
-    // Verify each member
-    for (int i = 0; i < members.size(); i++) {
-      assertEquals("member" + i, members.get(i));
-    }
-    // Verify each status
-    List<String> status = data.retrieveAllValues("Status");
-    for (String statu : status) {
-      assertEquals(expectedStatus, statu);
+    if (result.getType().equals(TYPE_TABULAR)) {
+      TabularResultData data = (TabularResultData) result.getResultData();
+      List<String> members = data.retrieveAllValues("Member");
+      assertEquals(cliFunctionResults.size(), members.size());
+      // Verify each member
+      for (int i = 0; i < members.size(); i++) {
+        assertEquals("member" + i, members.get(i));
+      }
+      // Verify each status
+      List<String> status = data.retrieveAllValues("Status");
+      for (String statu : status) {
+        assertEquals(expectedStatus, statu);
+      }
+    } else {
+      // Info result. Verify next lines are equal.
+      assertEquals(result.nextLine(), expectedStatus);
     }
   }
 

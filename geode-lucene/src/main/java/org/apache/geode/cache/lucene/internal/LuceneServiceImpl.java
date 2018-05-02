@@ -20,11 +20,11 @@ import static org.apache.geode.internal.DataSerializableFixedID.CREATE_REGION_ME
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -46,6 +46,7 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
@@ -94,8 +95,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private static final Logger logger = LogService.getLogger();
 
   private InternalCache cache;
-  private final HashMap<String, LuceneIndex> indexMap = new HashMap<String, LuceneIndex>();
-  private final HashMap<String, LuceneIndexCreationProfile> definedIndexMap = new HashMap<>();
+  private final Map<String, LuceneIndex> indexMap = new ConcurrentHashMap<>();
+  private final Map<String, LuceneIndexCreationProfile> definedIndexMap = new ConcurrentHashMap<>();
   private IndexListener managementListener;
   public static boolean LUCENE_REINDEX =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "luceneReindex");
@@ -265,7 +266,12 @@ public class LuceneServiceImpl implements InternalLuceneService {
     LuceneIndexImpl luceneIndex = beforeDataRegionCreated(indexName, regionPath,
         region.getAttributes(), analyzer, fieldAnalyzers, aeqId, serializer, fields);
 
-    afterDataRegionCreated(luceneIndex);
+    try {
+      afterDataRegionCreated(luceneIndex);
+    } catch (LuceneIndexDestroyedException e) {
+      // @todo log a warning here?
+      return;
+    }
 
     createLuceneIndexOnDataRegion(region, luceneIndex);
   }
@@ -557,12 +563,21 @@ public class LuceneServiceImpl implements InternalLuceneService {
     // nothing to do there.
   }
 
-  public void registerIndex(LuceneIndex index) {
+  private boolean hasIndexBeenDestroyed(String uniqueIndexName) {
+    return !definedIndexMap.containsKey(uniqueIndexName);
+  }
+
+  private void registerIndex(LuceneIndex index) {
     String regionAndIndex = getUniqueIndexName(index.getName(), index.getRegionPath());
-    if (!indexMap.containsKey(regionAndIndex)) {
-      indexMap.put(regionAndIndex, index);
+    if (hasIndexBeenDestroyed(regionAndIndex)) {
+      ((InternalLuceneIndex) index).destroy(true);
+      throw new LuceneIndexDestroyedException(index.getName(), index.getRegionPath());
+    } else {
+      if (!indexMap.containsKey(regionAndIndex)) {
+        indexMap.put(regionAndIndex, index);
+      }
+      definedIndexMap.remove(regionAndIndex);
     }
-    definedIndexMap.remove(regionAndIndex);
   }
 
   public void unregisterIndex(final String region) {
