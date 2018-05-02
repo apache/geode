@@ -139,6 +139,23 @@ public class JAXBServiceTest {
     assertThat(newXml).isEqualTo(prettyXml);
   }
 
+  @Test
+  public void unmarshallIgnoresUnknownProperties() {
+    // say xml has a type attribute that is removed in the new version
+    String existingXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+        + "<cache version=\"1.0\" xsi:schemaLocation=\"http://geode.apache.org/schema/cache "
+        + "http://geode.apache.org/schema/cache/cache-1.0.xsd\" "
+        + "xmlns=\"http://geode.apache.org/schema/cache\" "
+        + "xmlns:ns2=\"http://geode.apache.org/schema/CustomOne\" "
+        + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" + "    <ns2:custom-one>\n"
+        + "        <ns2:id>one</ns2:id>\n" + "        <ns2:type>onetype</ns2:type>\n"
+        + "        <ns2:value>onevalue</ns2:value>\n" + "    </ns2:custom-one>\n" + "</cache>";
+
+    CacheConfig cacheConfig = service.unMarshall(existingXML);
+    List elements = cacheConfig.getCustomCacheElements();
+    assertThat(elements.get(0)).isInstanceOf(ElementOne.class);
+  }
+
   public static void setBasicValues(CacheConfig cache) {
     cache.setCopyOnRead(true);
     CacheConfig.GatewayReceiver receiver = new CacheConfig.GatewayReceiver();
