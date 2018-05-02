@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.stats50.VMStats50;
 
 /**

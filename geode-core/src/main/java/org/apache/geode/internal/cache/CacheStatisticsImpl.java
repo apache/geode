@@ -15,7 +15,9 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 
 class CacheStatisticsImpl implements CacheStatistics {

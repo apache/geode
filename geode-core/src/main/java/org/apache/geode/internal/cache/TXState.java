@@ -75,7 +75,7 @@ public class TXState implements TXStateInterface {
   // The nano-timestamp of when the transaction began
   private final long beginTime;
   // A map of transaction state by Region
-  final IdentityHashMap<LocalRegion, TXRegionState> regions;
+  final IdentityHashMap<InternalRegion, TXRegionState> regions;
 
   /** whether completion has been started */
   protected boolean completionStarted;
@@ -138,7 +138,7 @@ public class TXState implements TXStateInterface {
 
   public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
     this.beginTime = CachePerfStats.getStatTime();
-    this.regions = new IdentityHashMap<LocalRegion, TXRegionState>();
+    this.regions = new IdentityHashMap<>();
 
     this.internalAfterConflictCheck = null;
     this.internalAfterApplyChanges = null;
@@ -231,7 +231,7 @@ public class TXState implements TXStateInterface {
    * LocalRegion)
    */
   @Override
-  public TXRegionState readRegion(LocalRegion r) {
+  public TXRegionState readRegion(InternalRegion r) {
     return this.regions.get(r);
   }
 
@@ -251,7 +251,7 @@ public class TXState implements TXStateInterface {
    * LocalRegion)
    */
   @Override
-  public TXRegionState writeRegion(LocalRegion r) {
+  public TXRegionState writeRegion(InternalRegion r) {
     TXRegionState result = readRegion(r);
     if (result == null) {
       if (r instanceof BucketRegion) {
@@ -510,20 +510,20 @@ public class TXState implements TXStateInterface {
     }
   }
 
-  private void lockTXRegions(IdentityHashMap<LocalRegion, TXRegionState> regions) {
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = regions.entrySet().iterator();
+  private void lockTXRegions(IdentityHashMap<InternalRegion, TXRegionState> regions) {
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       r.getRegionMap().lockRegionForAtomicTX(r);
     }
   }
 
-  private void unlockTXRegions(IdentityHashMap<LocalRegion, TXRegionState> regions) {
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = regions.entrySet().iterator();
+  private void unlockTXRegions(IdentityHashMap<InternalRegion, TXRegionState> regions) {
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       r.getRegionMap().unlockRegionForAtomicTX(r);
     }
   }
@@ -639,10 +639,10 @@ public class TXState implements TXStateInterface {
 
   private TXLockRequest createLockRequest() {
     TXLockRequest result = new TXLockRequest();
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.createLockRequest(r, result);
     }
@@ -650,10 +650,10 @@ public class TXState implements TXStateInterface {
   }
 
   private void checkForConflicts() throws CommitConflictException, PrimaryBucketException {
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       try {
         txrs.checkForConflicts(r);
@@ -670,11 +670,11 @@ public class TXState implements TXStateInterface {
     boolean lockingSucceeded;
     do {
       lockingSucceeded = true;
-      Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+      Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
       Set<BucketRegion> obtained = new HashSet<BucketRegion>();
       while (it.hasNext()) {
-        Map.Entry<LocalRegion, TXRegionState> me = it.next();
-        LocalRegion r = me.getKey();
+        Map.Entry<InternalRegion, TXRegionState> me = it.next();
+        InternalRegion r = me.getKey();
         if (r instanceof BucketRegion) {
           if (isDistTx() && !((BucketRegion) r).getBucketAdvisor().isPrimary()) {
             // For distTx we skip for taking locks on secondary.
@@ -735,10 +735,10 @@ public class TXState implements TXStateInterface {
 
 
   protected void cleanupNonDirtyRegions() {
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.cleanupNonDirtyEntries(r);
     }
@@ -752,10 +752,10 @@ public class TXState implements TXStateInterface {
   protected TXCommitMessage buildMessage() {
     TXCommitMessage msg =
         new TXCommitMessage(this.proxy.getTxId(), this.proxy.getTxMgr().getDM(), this);
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.buildMessage(r, msg);
     }
@@ -771,10 +771,10 @@ public class TXState implements TXStateInterface {
   protected TXCommitMessage buildCompleteMessage() {
     TXCommitMessage msg =
         new TXCommitMessage(this.proxy.getTxId(), this.proxy.getTxMgr().getDM(), this);
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.buildCompleteMessage(r, msg);
       // rcl.add(r);
@@ -787,8 +787,8 @@ public class TXState implements TXStateInterface {
    */
   protected void applyChanges(List/* <TXEntryStateWithRegionAndKey> */ entries) {
     // applyChangesStart for each region
-    for (Map.Entry<LocalRegion, TXRegionState> me : this.regions.entrySet()) {
-      LocalRegion r = me.getKey();
+    for (Map.Entry<InternalRegion, TXRegionState> me : this.regions.entrySet()) {
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.applyChangesStart(r, this);
     }
@@ -819,8 +819,8 @@ public class TXState implements TXStateInterface {
     }
 
     // applyChangesEnd for each region
-    for (Map.Entry<LocalRegion, TXRegionState> me : this.regions.entrySet()) {
-      LocalRegion r = me.getKey();
+    for (Map.Entry<InternalRegion, TXRegionState> me : this.regions.entrySet()) {
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.applyChangesEnd(r, this);
     }
@@ -865,10 +865,10 @@ public class TXState implements TXStateInterface {
           this.proxy.getTxMgr().getCachePerfStats()
               .incTxConflictCheckTime(CachePerfStats.getStatTime() - conflictStart);
       }
-      Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+      Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
       while (it.hasNext()) {
-        Map.Entry<LocalRegion, TXRegionState> me = it.next();
-        LocalRegion r = me.getKey();
+        Map.Entry<InternalRegion, TXRegionState> me = it.next();
+        InternalRegion r = me.getKey();
         TXRegionState txrs = me.getValue();
         /*
          * Need to unlock the primary lock for rebalancing so that rebalancing can resume.
@@ -915,10 +915,10 @@ public class TXState implements TXStateInterface {
   @Override
   public List getEvents() {
     ArrayList events = new ArrayList();
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry me = it.next();
-      LocalRegion r = (LocalRegion) me.getKey();
+      InternalRegion r = (InternalRegion) me.getKey();
       TXRegionState txrs = (TXRegionState) me.getValue();
       txrs.getEvents(r, events, this);
     }
@@ -935,7 +935,7 @@ public class TXState implements TXStateInterface {
     Iterator it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry me = (Map.Entry) it.next();
-      LocalRegion r = (LocalRegion) me.getKey();
+      InternalRegion r = (InternalRegion) me.getKey();
       TXRegionState txrs = (TXRegionState) me.getValue();
       txrs.getEntries(entries, r);
     }
@@ -955,10 +955,10 @@ public class TXState implements TXStateInterface {
    */
   static class TXEntryStateWithRegionAndKey implements Comparable {
     public final TXEntryState es;
-    public final LocalRegion r;
+    public final InternalRegion r;
     public final Object key;
 
-    public TXEntryStateWithRegionAndKey(TXEntryState es, LocalRegion r, Object key) {
+    public TXEntryStateWithRegionAndKey(TXEntryState es, InternalRegion r, Object key) {
       this.es = es;
       this.r = r;
       this.key = key;
@@ -1207,28 +1207,28 @@ public class TXState implements TXStateInterface {
    * @see org.apache.geode.internal.cache.TXStateInterface#getRegions()
    */
   @Override
-  public Collection<LocalRegion> getRegions() {
+  public Collection<InternalRegion> getRegions() {
     return this.regions.keySet();
   }
 
   @Override
-  public TXRegionState txWriteRegion(final LocalRegion localRegion, final KeyInfo entryKey) {
-    LocalRegion lr = localRegion.getDataRegionForWrite(entryKey);
-    return writeRegion(lr);
+  public TXRegionState txWriteRegion(final InternalRegion internalRegion, final KeyInfo entryKey) {
+    InternalRegion ir = internalRegion.getDataRegionForWrite(entryKey);
+    return writeRegion(ir);
   }
 
   @Override
-  public TXRegionState txReadRegion(LocalRegion localRegion) {
-    return readRegion(localRegion);
+  public TXRegionState txReadRegion(InternalRegion internalRegion) {
+    return readRegion(internalRegion);
   }
 
   /**
+   * @param ifNew only write the entry if it currently does not exist
    * @param requireOldValue if true set the old value in the event, even if ifNew and entry doesn't
    *        currently exist (this is needed for putIfAbsent).
-   * @param ifNew only write the entry if it currently does not exist
    * @param expectedOldValue the required old value or null
    */
-  TXEntryState txWriteEntry(LocalRegion region, EntryEventImpl event, boolean ifNew,
+  TXEntryState txWriteEntry(InternalRegion region, EntryEventImpl event, boolean ifNew,
       boolean requireOldValue, Object expectedOldValue) throws EntryNotFoundException {
     boolean createIfAbsent = true;
     if (event.getOperation() == Operation.REPLACE) {
@@ -1268,7 +1268,7 @@ public class TXState implements TXStateInterface {
   public boolean txPutEntry(final EntryEventImpl event, boolean ifNew, boolean requireOldValue,
       boolean checkResources, Object expectedOldValue) {
 
-    LocalRegion region = event.getRegion();
+    InternalRegion region = event.getRegion();
     if (checkResources) {
       if (!MemoryThresholds.isLowMemoryExceptionDisabled()) {
         region.checkIfAboveThreshold(event);
@@ -1343,7 +1343,7 @@ public class TXState implements TXStateInterface {
       return;
     }
     TXEntryState tx = txWriteExistingEntry(event, expectedOldValue);
-    final LocalRegion region = event.getRegion();
+    final InternalRegion region = event.getRegion();
     if (tx.destroy(event, cacheWrite, isOriginRemoteForEvents())) {
       Object key = event.getKey();
       LocalRegion rr = region.getDataRegionForRead(event.getKeyInfo());
@@ -1383,7 +1383,7 @@ public class TXState implements TXStateInterface {
       throws EntryNotFoundException {
     assert !event.isExpiration();
     final Object entryKey = event.getKey();
-    final LocalRegion region = event.getRegion();
+    final InternalRegion region = event.getRegion();
     final Operation op = event.getOperation();
     TXEntryState tx = txReadEntry(event.getKeyInfo(), region, true, expectedOldValue,
         true/* create txEntry is absent */);
@@ -1452,9 +1452,10 @@ public class TXState implements TXStateInterface {
    * is not null it must match the current value of the entry or an EntryNotFoundException is
    * thrown.
    */
-  protected TXEntryState txReadEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean rememberRead,
-      Object expectedOldValue, boolean createIfAbsent) throws EntryNotFoundException {
-    LocalRegion dataReg = localRegion.getDataRegionForWrite(keyInfo);
+  protected TXEntryState txReadEntry(KeyInfo keyInfo, InternalRegion internalRegion,
+      boolean rememberRead, Object expectedOldValue, boolean createIfAbsent)
+      throws EntryNotFoundException {
+    InternalRegion dataReg = internalRegion.getDataRegionForWrite(keyInfo);
     TXRegionState txr = txReadRegion(dataReg);
     TXEntryState result = null;
     if (txr != null) {
@@ -1463,7 +1464,7 @@ public class TXState implements TXStateInterface {
     if (result == null && rememberRead) {
       // to support repeatable read create an tx entry that reflects current committed state
       if (txr == null) {
-        txr = txWriteRegion(localRegion, keyInfo);
+        txr = txWriteRegion(internalRegion, keyInfo);
       }
       result = dataReg.createReadEntry(txr, keyInfo, createIfAbsent);
     }
@@ -1471,8 +1472,8 @@ public class TXState implements TXStateInterface {
     if (result != null) {
       if (expectedOldValue != null) {
         Object val = result.getNearSidePendingValue();
-        if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, val, localRegion)) {
-          txr.cleanupNonDirtyEntries(localRegion);
+        if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, val, internalRegion)) {
+          txr.cleanupNonDirtyEntries(internalRegion);
           throw new EntryNotFoundException(
               LocalizedStrings.AbstractRegionMap_THE_CURRENT_VALUE_WAS_NOT_EQUAL_TO_EXPECTED_VALUE
                   .toLocalizedString());
@@ -1931,9 +1932,9 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public void postPutAll(final DistributedPutAllOperation putallOp,
-      final VersionedObjectList successfulPuts, LocalRegion reg) {
+      final VersionedObjectList successfulPuts, InternalRegion reg) {
 
-    final LocalRegion theRegion;
+    final InternalRegion theRegion;
     if (reg instanceof BucketRegion) {
       theRegion = ((BucketRegion) reg).getPartitionedRegion();
     } else {
@@ -1975,8 +1976,8 @@ public class TXState implements TXStateInterface {
 
   @Override
   public void postRemoveAll(final DistributedRemoveAllOperation op,
-      final VersionedObjectList successfulOps, LocalRegion reg) {
-    final LocalRegion theRegion;
+      final VersionedObjectList successfulOps, InternalRegion reg) {
+    final InternalRegion theRegion;
     if (reg instanceof BucketRegion) {
       theRegion = ((BucketRegion) reg).getPartitionedRegion();
     } else {

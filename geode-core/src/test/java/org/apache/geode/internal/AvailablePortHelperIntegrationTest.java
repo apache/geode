@@ -14,10 +14,12 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.distributed.internal.DistributionConfig.*;
-import static org.apache.geode.internal.AvailablePort.*;
-import static org.apache.geode.internal.AvailablePortHelper.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
+import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRangeKeepers;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

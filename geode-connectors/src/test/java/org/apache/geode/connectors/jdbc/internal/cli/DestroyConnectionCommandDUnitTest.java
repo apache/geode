@@ -86,8 +86,8 @@ public class DestroyConnectionCommandDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
-          .getCacheXmlContent();
+      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).contains("jdbc:connector-service");
     });
 

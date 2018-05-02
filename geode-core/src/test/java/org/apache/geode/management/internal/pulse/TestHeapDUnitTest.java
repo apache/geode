@@ -14,7 +14,8 @@
  */
 package org.apache.geode.management.internal.pulse;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

@@ -14,10 +14,34 @@
  */
 package org.apache.geode.internal.lang;
 
-import static org.apache.geode.internal.lang.SystemUtils.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import static org.apache.geode.internal.lang.SystemUtils.APPLE_JVM_VENDOR_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.IBM_J9_JVM_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.JAVA_HOTSPOT_JVM_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.LINUX_OS_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.MAC_OSX_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.ORACLE_JROCKIT_JVM_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.ORACLE_JVM_VENDOR_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.WINDOWS_OS_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.getBootClassPath;
+import static org.apache.geode.internal.lang.SystemUtils.getClassPath;
+import static org.apache.geode.internal.lang.SystemUtils.getJavaVersion;
+import static org.apache.geode.internal.lang.SystemUtils.getOsArchitecture;
+import static org.apache.geode.internal.lang.SystemUtils.getOsName;
+import static org.apache.geode.internal.lang.SystemUtils.getOsVersion;
+import static org.apache.geode.internal.lang.SystemUtils.isAppleJVM;
+import static org.apache.geode.internal.lang.SystemUtils.isHotSpotVM;
+import static org.apache.geode.internal.lang.SystemUtils.isJ9VM;
+import static org.apache.geode.internal.lang.SystemUtils.isJRockitVM;
+import static org.apache.geode.internal.lang.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.geode.internal.lang.SystemUtils.isLinux;
+import static org.apache.geode.internal.lang.SystemUtils.isMacOSX;
+import static org.apache.geode.internal.lang.SystemUtils.isOracleJVM;
+import static org.apache.geode.internal.lang.SystemUtils.isWindows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeNotNull;
 
 import java.lang.management.ManagementFactory;
 

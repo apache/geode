@@ -26,9 +26,9 @@ import static org.mockito.Mockito.spy;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -37,13 +37,13 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class CommandExecutorTest {
-  ParseResult parseResult;
+  GfshParseResult parseResult;
   CommandExecutor executor;
   Result result;
 
   @Before
   public void before() {
-    parseResult = mock(ParseResult.class);
+    parseResult = mock(GfshParseResult.class);
     result = mock(Result.class);
     executor = spy(CommandExecutor.class);
   }

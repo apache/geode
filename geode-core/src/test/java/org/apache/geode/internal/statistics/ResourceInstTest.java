@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.MockitoAnnotations.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.lang.reflect.Field;
 

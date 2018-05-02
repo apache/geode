@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Iterator;

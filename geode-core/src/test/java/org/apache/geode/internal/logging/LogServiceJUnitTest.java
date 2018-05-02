@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.logging;
 
-import static junitparams.JUnitParamsRunner.*;
-import static org.assertj.core.api.Assertions.*;
+import static junitparams.JUnitParamsRunner.$;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URL;
 

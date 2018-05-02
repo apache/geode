@@ -27,14 +27,15 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -43,7 +44,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeConnectionCommand extends InternalGfshCommand {
+public class DescribeConnectionCommand extends GfshCommand {
   private static Logger logger = LogService.getLogger();
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
   static final String DESCRIBE_CONNECTION__HELP = "Describe the specified jdbc connection.";
@@ -63,12 +64,15 @@ public class DescribeConnectionCommand extends InternalGfshCommand {
     ConnectorService.Connection connection = null;
 
     // check if CC is available and use it to describe the connection
-    ClusterConfigurationService ccService = getConfigurationService();
+    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
     if (ccService != null) {
-      ConnectorService service =
-          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
-      if (service != null) {
-        connection = CacheElement.findElement(service.getConnection(), name);
+      CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
+      if (cacheConfig != null) {
+        ConnectorService service =
+            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
+        if (service != null) {
+          connection = CacheElement.findElement(service.getConnection(), name);
+        }
       }
     } else {
       // otherwise get it from any member

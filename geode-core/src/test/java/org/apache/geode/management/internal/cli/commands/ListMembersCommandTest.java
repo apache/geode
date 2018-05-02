@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -22,6 +23,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -30,6 +33,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -74,8 +78,11 @@ public class ListMembersCommandTest {
   public void basicListMembers() {
     members.add(member1);
 
-    gfsh.executeAndAssertThat(command, "list members").tableHasRowCount("Name", 1)
-        .tableHasRowWithValues("Name", "Id", "name", "id [Coordinator]").statusIsSuccess();
+    CommandResult result = gfsh.executeCommandWithInstance(command, "list members");
+    Map<String, List<String>> table = result.getMapFromTableContent("0");
+
+    assertThat(table.get("Name")).contains("name");
+    assertThat(table.get("Id")).contains("id [Coordinator]");
   }
 
   @Test
@@ -83,8 +90,11 @@ public class ListMembersCommandTest {
     members.add(member1);
     doReturn(null).when(command).getCoordinator();
 
-    gfsh.executeAndAssertThat(command, "list members").tableHasRowCount("Name", 1)
-        .tableHasRowWithValues("Name", "Id", "name", "id").statusIsSuccess();
+    CommandResult result = gfsh.executeCommandWithInstance(command, "list members");
+    Map<String, List<String>> table = result.getMapFromTableContent("0");
+
+    assertThat(table.get("Name")).contains("name");
+    assertThat(table.get("Id")).contains("id");
   }
 
   @Test
@@ -92,10 +102,10 @@ public class ListMembersCommandTest {
     members.add(member1);
     members.add(member2);
 
-    gfsh.executeAndAssertThat(command, "list members").tableHasRowCount("Name", 2)
-        .tableHasRowWithValues("Name", "Id", "name", "id [Coordinator]")
-        .tableHasRowWithValues("Name", "Id", "name2", "id2")
-        .tableHasColumnWithExactValuesInExactOrder("Name", member1.getName(), member2.getName())
-        .statusIsSuccess();
+    CommandResult result = gfsh.executeCommandWithInstance(command, "list members");
+    Map<String, List<String>> table = result.getMapFromTableContent("0");
+
+    assertThat(table.get("Name")).contains("name", "name2");
+    assertThat(table.get("Id")).contains("id [Coordinator]", "id2");
   }
 }

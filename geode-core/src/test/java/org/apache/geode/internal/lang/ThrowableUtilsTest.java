@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.lang;
 
-import static com.googlecode.catchexception.CatchException.*;
+import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

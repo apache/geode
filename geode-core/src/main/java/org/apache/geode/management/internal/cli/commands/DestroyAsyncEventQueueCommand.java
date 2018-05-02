@@ -24,7 +24,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -73,7 +73,7 @@ public class DestroyAsyncEventQueueCommand extends InternalGfshCommand {
     XmlEntity xmlEntity = findXmlEntity(functionResults);
     if (xmlEntity != null) {
       persistClusterConfiguration(commandResult,
-          () -> ((InternalClusterConfigurationService) getConfigurationService())
+          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
               .deleteXmlEntity(xmlEntity, onGroups));
     }
     return commandResult;

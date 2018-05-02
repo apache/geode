@@ -62,7 +62,7 @@ public class CommandOverHttpTest {
   public void testDescribeClient() throws Exception {
     CommandResult result = gfshRule.executeCommand("describe client --clientID=xyz");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.toString()).contains("Specified Client ID xyz not present");
+    assertThat(result.getErrorMessage()).contains("Specified Client ID xyz not present");
   }
 
   @Test

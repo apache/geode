@@ -32,7 +32,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -50,18 +50,18 @@ public class CreateGatewayReceiverCommandTest {
   private CreateGatewayReceiverCommand command;
   private InternalCache cache;
   private List<CliFunctionResult> functionResults;
-  private InternalClusterConfigurationService ccService;
+  private InternalConfigurationPersistenceService ccService;
   private CliFunctionResult result1;
   private XmlEntity xmlEntity;
 
   @Before
   public void before() {
     command = spy(CreateGatewayReceiverCommand.class);
-    ccService = mock(InternalClusterConfigurationService.class);
+    ccService = mock(InternalConfigurationPersistenceService.class);
     xmlEntity = mock(XmlEntity.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     functionResults = new ArrayList<>();
     doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(),
         any(Set.class));
@@ -92,7 +92,7 @@ public class CreateGatewayReceiverCommandTest {
   @Test
   public void whenNoCCService() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", xmlEntity, "result1");
     functionResults.add(result1);
     gfsh.executeAndAssertThat(command, "create gateway-receiver").statusIsSuccess()
@@ -103,7 +103,7 @@ public class CreateGatewayReceiverCommandTest {
   @Test
   public void whenCommandOnMember() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", xmlEntity, "result1");
     functionResults.add(result1);
     gfsh.executeAndAssertThat(command, "create gateway-receiver --member=xyz").statusIsSuccess()
@@ -114,7 +114,7 @@ public class CreateGatewayReceiverCommandTest {
   @Test
   public void whenNoXml() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", false, "result1");
     functionResults.add(result1);
 

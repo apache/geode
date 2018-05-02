@@ -33,10 +33,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -122,15 +122,31 @@ public class CreateIndexCommandTest {
     DistributedMember member = mock(DistributedMember.class);
     doReturn(Collections.singleton(member)).when(command).findMembers(any(), any());
 
-    ArgumentCaptor<IndexInfo> indexTypeCaptor = ArgumentCaptor.forClass(IndexInfo.class);
+    ArgumentCaptor<RegionConfig.Index> indexTypeCaptor =
+        ArgumentCaptor.forClass(RegionConfig.Index.class);
     gfshParser.executeAndAssertThat(command,
         "create index --name=abc --expression=abc --region=abc");
 
     verify(command).executeAndGetFunctionResult(any(), indexTypeCaptor.capture(),
         eq(Collections.singleton(member)));
 
-    assertThat(indexTypeCaptor.getValue().getIndexType()).isEqualTo(IndexType.FUNCTIONAL);
+    assertThat(indexTypeCaptor.getValue().getType()).isEqualTo("range");
   }
 
+  @Test
+  public void getValidRegionName() {
+    CacheConfig cacheConfig = mock(CacheConfig.class);
+    RegionConfig region = new RegionConfig("regionA.regionB", "REPLICATE");
+    when(cacheConfig.findRegionConfiguration("/regionA.regionB")).thenReturn(region);
 
+    assertThat(command.getValidRegionName("regionB", cacheConfig)).isEqualTo("regionB");
+    assertThat(command.getValidRegionName("/regionB", cacheConfig)).isEqualTo("/regionB");
+    assertThat(command.getValidRegionName("/regionB b", cacheConfig)).isEqualTo("/regionB");
+    assertThat(command.getValidRegionName("/regionB.entrySet()", cacheConfig))
+        .isEqualTo("/regionB");
+    assertThat(command.getValidRegionName("/regionA.regionB.entrySet() A", cacheConfig))
+        .isEqualTo("/regionA.regionB");
+    assertThat(command.getValidRegionName("/regionB.regionA.entrySet() B", cacheConfig))
+        .isEqualTo("/regionB");
+  }
 }
