@@ -2110,7 +2110,6 @@ public abstract class AbstractRegionMap
     assert pendingCallbacks != null;
     final LocalRegion owner = _getOwner();
     if (owner == null) {
-      // "fix" for bug 32440
       Assert.assertTrue(false, "The owner for RegionMap " + this + " is null");
     }
     final boolean hasRemoteOrigin = !((TXId) txId).getMemberId().equals(owner.getMyId());
@@ -2119,13 +2118,13 @@ public abstract class AbstractRegionMap
     final boolean isRegionReady = owner.isInitialized();
     boolean onlyExisting = false;
     if (hasRemoteOrigin && !isTXHost && !isClientTXOriginator) {
-      // If we are not a mirror then only apply the update to existing
-      // entries
+      // If we are not a replicate or partitioned (i.e. !isAllEvents)
+      // then only apply the update to existing entries.
       //
-      // If we are a mirror then then only apply the update to
+      // If we are a replicate or partitioned then only apply the update to
       // existing entries when the operation is an update and we
       // are initialized.
-      // Otherwise use the standard create/update logic
+      // Otherwise use the standard create/update logic.
       if (!owner.isAllEvents() || (!p_putOp.isCreate() && isRegionReady)) {
         onlyExisting = true;
       }
