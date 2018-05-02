@@ -59,7 +59,6 @@ public class OnlineCommandProcessorTest {
         new OnlineCommandProcessor(properties, securityService, executor, null);
   }
 
-
   @Test
   public void executeWithNullThrowsNPE() throws Exception {
     assertThatThrownBy(() -> onlineCommandProcessor.executeCommand(null))
@@ -73,13 +72,13 @@ public class OnlineCommandProcessorTest {
 
   @Test
   public void executeStripsComments() throws Exception {
-    Result commandResult = onlineCommandProcessor.executeCommand("/*comment*/");
+    Object commandResult = onlineCommandProcessor.executeCommand("/*comment*/");
     assertThat(commandResult).isNull();
   }
 
   @Test
   public void executeReturnsExecutorResult() throws Exception {
-    Result commandResult = onlineCommandProcessor.executeCommand("start locator");
+    Object commandResult = onlineCommandProcessor.executeCommand("start locator");
     assertThat(commandResult).isSameAs(result);
   }
 
@@ -92,7 +91,7 @@ public class OnlineCommandProcessorTest {
 
   @Test
   public void handlesParsingError() throws Exception {
-    Result commandResult = onlineCommandProcessor.executeCommand("foo --bar");
+    Object commandResult = onlineCommandProcessor.executeCommand("foo --bar");
     assertThat(commandResult).isInstanceOf(CommandResult.class);
     assertThat(commandResult.toString()).contains("Could not parse command string. foo --bar");
   }

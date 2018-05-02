@@ -23,7 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
@@ -63,8 +63,8 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess();
 
     locator.invoke(() -> {
-      InternalClusterConfigurationService service =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService service =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration config = service.getConfiguration("cluster");
       assertThat(config.getCacheXmlContent()).contains("id=\"queue1\"");
     });
@@ -75,8 +75,8 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
 
     // verify that aeq entry is deleted from cluster config
     locator.invoke(() -> {
-      InternalClusterConfigurationService service =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService service =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration config = service.getConfiguration("cluster");
       assertThat(config.getCacheXmlContent()).doesNotContain("id=\"queue1\"");
     });
@@ -114,8 +114,8 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
 
     // verify that aeq entry is deleted from cluster config
     locator.invoke(() -> {
-      InternalClusterConfigurationService service =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService service =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration config = service.getConfiguration("cluster");
       assertThat(config.getCacheXmlContent()).doesNotContain("id=\"queue1\"");
     });
@@ -135,8 +135,8 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
 
     // verify that aeq entry is deleted from cluster config
     locator.invoke(() -> {
-      InternalClusterConfigurationService service =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService service =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration config = service.getConfiguration("group1");
       assertThat(config.getCacheXmlContent()).doesNotContain("id=\"queue1\"");
     });
@@ -155,8 +155,8 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
 
     // verify that aeq entry is not deleted from cluster config
     locator.invoke(() -> {
-      InternalClusterConfigurationService service =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService service =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration config = service.getConfiguration("group1");
       assertThat(config.getCacheXmlContent()).contains("id=\"queue1\"");
     });
@@ -205,8 +205,8 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
 
     // verify that cluster config aeq entry for destroyed queue is deleted
     locator.invoke(() -> {
-      InternalClusterConfigurationService service =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      InternalConfigurationPersistenceService service =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       System.out.println("cluster config: " + service.getConfiguration("cluster"));
       Configuration config1 = service.getConfiguration("group1");
       assertThat(config1.getCacheXmlContent()).doesNotContain("id=\"queue1\"");

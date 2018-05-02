@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.logging.log4j.custom;
 
-import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.CONFIG_LAYOUT_PREFIX;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.createConfigFileIn;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.defineLogStatementRegex;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 

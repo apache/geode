@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -47,7 +47,8 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Unit tests for {@link XmlUtils#addNewNode(Document, XmlEntity)} and
  * {@link XmlUtils#deleteNode(Document, XmlEntity)}. Simulates the
- * {@link InternalClusterConfigurationService} method of extracting {@link XmlEntity} from the new
+ * {@link InternalConfigurationPersistenceService} method of extracting {@link XmlEntity} from the
+ * new
  * config
  * and applying it to the current shared config.
  *

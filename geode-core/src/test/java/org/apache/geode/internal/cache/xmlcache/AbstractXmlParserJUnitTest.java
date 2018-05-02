@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
 
 import java.util.Stack;
 

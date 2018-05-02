@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import static org.apache.geode.test.dunit.IgnoredException.*;
-import static org.apache.geode.test.dunit.Wait.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.Wait.pause;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;

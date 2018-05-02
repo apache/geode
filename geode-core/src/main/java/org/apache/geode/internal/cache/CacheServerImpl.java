@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.lang.Integer.*;
+import static java.lang.Integer.MAX_VALUE;
+import static java.lang.Integer.getInteger;
+import static java.lang.Integer.valueOf;
 
 import java.io.File;
 import java.io.IOException;

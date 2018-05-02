@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.diskPerf;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.Arrays;

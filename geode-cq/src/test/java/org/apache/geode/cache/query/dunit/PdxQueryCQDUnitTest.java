@@ -14,7 +14,8 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
-import org.apache.geode.cache.query.dunit.PdxQueryCQTestBase.TestObject;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.test.dunit.Assert;

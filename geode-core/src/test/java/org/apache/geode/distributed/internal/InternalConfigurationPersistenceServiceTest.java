@@ -17,9 +17,7 @@
 
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.internal.config.JAXBServiceTest.setBasicValues;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -30,7 +28,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
@@ -40,21 +40,24 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.config.JAXBServiceTest;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementOne;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementTwo;
-import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
 @Category(UnitTest.class)
-public class InternalClusterConfigurationServiceTest {
-  private InternalClusterConfigurationService service, service2;
+public class InternalConfigurationPersistenceServiceTest {
+  private InternalConfigurationPersistenceService service, service2;
   private Configuration configuration;
+
+  @Rule
+  public RestoreSystemProperties restore = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
-    service = spy(new InternalClusterConfigurationService(CacheConfig.class, ElementOne.class,
+    service = spy(new InternalConfigurationPersistenceService(CacheConfig.class, ElementOne.class,
         ElementTwo.class));
-    service2 = spy(new InternalClusterConfigurationService(CacheConfig.class));
+    service2 = spy(new InternalConfigurationPersistenceService(CacheConfig.class));
     configuration = new Configuration("cluster");
     doReturn(configuration).when(service).getConfiguration(any());
     doReturn(configuration).when(service2).getConfiguration(any());
@@ -104,12 +107,18 @@ public class InternalClusterConfigurationServiceTest {
   @Test
   public void addCustomCacheElement() {
     ElementOne customOne = new ElementOne("testOne");
-    service.saveCustomCacheElement("cluster", customOne);
+    service.updateCacheConfig("cluster", config -> {
+      config.getCustomCacheElements().add(customOne);
+      return config;
+    });
     System.out.println(configuration.getCacheXmlContent());
     assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
 
     JAXBServiceTest.ElementTwo customTwo = new ElementTwo("testTwo");
-    service.saveCustomCacheElement("cluster", customTwo);
+    service.updateCacheConfig("cluster", config -> {
+      config.getCustomCacheElements().add(customTwo);
+      return config;
+    });
     System.out.println(configuration.getCacheXmlContent());
     assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
     assertThat(configuration.getCacheXmlContent()).contains("custom-two>");
@@ -118,8 +127,11 @@ public class InternalClusterConfigurationServiceTest {
   @Test
   // in case a locator in the cluster doesn't have the plugin installed
   public void xmlWithCustomElementsCanBeUnMarshalledByAnotherService() {
-    service.saveCustomCacheElement("cluster", new ElementOne("one"));
-    service.saveCustomCacheElement("cluster", new ElementTwo("two"));
+    service.updateCacheConfig("cluster", config -> {
+      config.getCustomCacheElements().add(new ElementOne("one"));
+      config.getCustomCacheElements().add(new ElementTwo("two"));
+      return config;
+    });
 
     String prettyXml = configuration.getCacheXmlContent();
     System.out.println(prettyXml);
@@ -127,8 +139,8 @@ public class InternalClusterConfigurationServiceTest {
     // the xml is sent to another locator with no such plugin installed, it can be parsed
     // but the element couldn't be recognized by the locator without the plugin
     service2.updateCacheConfig("cluster", cc -> cc);
-    ElementOne elementOne = service2.getCustomCacheElement("cluster", "one", ElementOne.class);
-    assertThat(elementOne).isNull();
+    CacheConfig config = service2.getCacheConfig("cluster");
+    assertThat(config.findCustomCacheElement("one", ElementOne.class)).isNull();
 
     String uglyXml = configuration.getCacheXmlContent();
     System.out.println(uglyXml);
@@ -142,69 +154,6 @@ public class InternalClusterConfigurationServiceTest {
     assertThat(cacheConfig.getCustomCacheElements().get(1)).isInstanceOf(ElementTwo.class);
 
     assertThat(configuration.getCacheXmlContent()).isEqualTo(prettyXml);
-  }
-
-
-  @Test
-  public void updateCustomCacheElement() {
-    ElementOne customOne = new ElementOne("testOne");
-    service.saveCustomCacheElement("cluster", customOne);
-    System.out.println(configuration.getCacheXmlContent());
-    assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
-    assertThat(configuration.getCacheXmlContent()).containsPattern("<ns\\d:id>testOne</ns\\d:id>");
-    assertThat(configuration.getCacheXmlContent()).doesNotContain("<value>");
-
-    customOne = service.getCustomCacheElement("cluster", "testOne", ElementOne.class);
-    customOne.setValue("valueOne");
-    service.saveCustomCacheElement("cluster", customOne);
-    System.out.println(configuration.getCacheXmlContent());
-    assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
-    assertThat(configuration.getCacheXmlContent()).containsPattern("<ns\\d:id>testOne</ns\\d:id>");
-    assertThat(configuration.getCacheXmlContent())
-        .containsPattern("<ns\\d:value>valueOne</ns\\d:value>");
-  }
-
-  @Test
-  public void deleteCustomCacheElement() {
-    ElementOne customOne = new ElementOne("testOne");
-    service.saveCustomCacheElement("cluster", customOne);
-    System.out.println(configuration.getCacheXmlContent());
-    assertThat(configuration.getCacheXmlContent()).contains("custom-one>");
-
-    service.deleteCustomCacheElement("cluster", "testOne", ElementOne.class);
-    System.out.println(configuration.getCacheXmlContent());
-    assertThat(configuration.getCacheXmlContent()).doesNotContain("custom-one>");
-  }
-
-  @Test
-  public void updateCustomRegionElement() {
-    // start with a cache.xml that has region info
-    service.updateCacheConfig("cluster", cacheConfig -> {
-      setBasicValues(cacheConfig);
-      return cacheConfig;
-    });
-
-    ElementOne one = new ElementOne("elementOne");
-    one.setValue("valueOne");
-
-    assertThatThrownBy(() -> service.saveCustomRegionElement("cluster", "noSuchRegion", one))
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessageContaining("region noSuchRegion does not exist in group cluster");
-
-    service.saveCustomRegionElement("cluster", "testRegion", one);
-    System.out.println(configuration.getCacheXmlContent());
-    assertThat(configuration.getCacheXmlContent()).contains("region name=\"testRegion\"");
-    assertThat(configuration.getCacheXmlContent())
-        .containsPattern("</ns\\d:custom-one>\n" + "    </region>");
-
-    ElementOne retrieved =
-        service.getCustomRegionElement("cluster", "testRegion", "elementOne", ElementOne.class);
-    assertThat(retrieved.getId()).isEqualTo("elementOne");
-    assertThat(retrieved.getValue()).isEqualTo("valueOne");
-
-    service.deleteCustomRegionElement("cluster", "testRegion", "elementOne", ElementOne.class);
-    System.out.println(configuration.getCacheXmlContent());
-    assertThat(configuration.getCacheXmlContent()).doesNotContain("custom-one>");
   }
 
   @Test
@@ -230,5 +179,21 @@ public class InternalClusterConfigurationServiceTest {
     service.updateCacheConfig("non-existing-group", cc -> cc);
 
     verify(region).put(eq("non-existing-group"), any());
+  }
+
+  @Test
+  public void getPackagesToScanWithoutSystemProperty() {
+    String[] packages = service.getPackagesToScan();
+    assertThat(packages).hasSize(1);
+    assertThat(packages[0]).isEqualTo("");
+  }
+
+  @Test
+  public void getPackagesToScanWithSystemProperty() {
+    System.setProperty("geode." + SystemPropertyHelper.PACKAGES_TO_SCAN,
+        "org.apache.geode,io.pivotal");
+    String[] packages = service.getPackagesToScan();
+    assertThat(packages).hasSize(2);
+    assertThat(packages).contains("org.apache.geode", "io.pivotal");
   }
 }

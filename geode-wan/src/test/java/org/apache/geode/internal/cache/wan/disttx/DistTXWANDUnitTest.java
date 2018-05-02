@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.disttx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
 import org.junit.Ignore;
 import org.junit.Test;

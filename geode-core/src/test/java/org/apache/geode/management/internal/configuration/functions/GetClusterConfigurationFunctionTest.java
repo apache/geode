@@ -39,7 +39,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -52,7 +52,7 @@ public class GetClusterConfigurationFunctionTest {
   private InternalLocator mockedLocator;
   private FunctionContext mockedFunctionContext;
   private ResultSender<Object> mockedResultSender;
-  private InternalClusterConfigurationService mockedConfigurationService;
+  private InternalConfigurationPersistenceService mockedConfigurationService;
   private GetClusterConfigurationFunction getClusterConfigurationFunction;
 
   @Before
@@ -60,7 +60,7 @@ public class GetClusterConfigurationFunctionTest {
     mockedResultSender = mock(ResultSender.class);
     mockedLocator = mock(InternalLocator.class);
     mockedFunctionContext = mock(FunctionContext.class);
-    mockedConfigurationService = mock(InternalClusterConfigurationService.class);
+    mockedConfigurationService = mock(InternalConfigurationPersistenceService.class);
     getClusterConfigurationFunction = new GetClusterConfigurationFunction();
 
     when(mockedLocator.isSharedConfigurationEnabled()).thenReturn(true);
@@ -89,7 +89,7 @@ public class GetClusterConfigurationFunctionTest {
   public void executeShouldReturnExceptionWhenClusterConfigurationServiceIsEnabledButFailuresOccurWhileRetrievingIt() {
     when(mockedConfigurationService.createConfigurationResponse(any()))
         .thenThrow(new RuntimeException("Mocked Exception."));
-    when(mockedLocator.getSharedConfiguration()).thenReturn(mockedConfigurationService);
+    when(mockedLocator.getConfigurationPersistenceService()).thenReturn(mockedConfigurationService);
     ArgumentCaptor<Exception> argumentCaptor = ArgumentCaptor.forClass(Exception.class);
 
     assertThatCode(() -> getClusterConfigurationFunction.execute(mockedFunctionContext))
@@ -113,7 +113,7 @@ public class GetClusterConfigurationFunctionTest {
   public void executeShouldReturnTheRequestConfigurationWhenClusterConfigurationServiceIsEnabled() {
     Set<String> requestedGroups = new HashSet<>(Arrays.asList("group1", "group2"));
     when(mockedFunctionContext.getArguments()).thenReturn(requestedGroups);
-    when(mockedLocator.getSharedConfiguration()).thenReturn(mockedConfigurationService);
+    when(mockedLocator.getConfigurationPersistenceService()).thenReturn(mockedConfigurationService);
     ConfigurationResponse mockedResponse = new ConfigurationResponse();
     when(mockedConfigurationService.createConfigurationResponse(any())).thenReturn(mockedResponse);
     ArgumentCaptor<ConfigurationResponse> argumentCaptor =

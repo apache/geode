@@ -39,12 +39,12 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public TXRegionState readRegion(LocalRegion r) {
+  public TXRegionState readRegion(InternalRegion r) {
     return null;
   }
 
   @Override
-  public TXRegionState writeRegion(LocalRegion r) {
+  public TXRegionState writeRegion(InternalRegion r) {
     return null;
   }
 
@@ -94,7 +94,7 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Collection<LocalRegion> getRegions() {
+  public Collection<InternalRegion> getRegions() {
     return null;
   }
 
@@ -120,12 +120,12 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public TXRegionState txWriteRegion(LocalRegion localRegion, KeyInfo entryKey) {
+  public TXRegionState txWriteRegion(InternalRegion internalRegion, KeyInfo entryKey) {
     return null;
   }
 
   @Override
-  public TXRegionState txReadRegion(LocalRegion localRegion) {
+  public TXRegionState txReadRegion(InternalRegion internalRegion) {
     return null;
   }
 
@@ -325,11 +325,11 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
 
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion region) {}
+      InternalRegion reg) {}
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-      LocalRegion region) {}
+      InternalRegion reg) {}
 
   @Override
   public Entry accessEntry(KeyInfo keyInfo, LocalRegion localRegion) {

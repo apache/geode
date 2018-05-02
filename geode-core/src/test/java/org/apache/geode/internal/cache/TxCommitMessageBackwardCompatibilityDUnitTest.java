@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

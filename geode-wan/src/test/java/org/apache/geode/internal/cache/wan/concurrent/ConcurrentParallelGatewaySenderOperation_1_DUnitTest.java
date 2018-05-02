@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import org.junit.Ignore;
 import org.junit.Test;

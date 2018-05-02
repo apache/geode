@@ -18,20 +18,22 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.internal.cache.tier.sockets.DataSerializerPropagationDUnitTest;
 
 public class TestDataSerializer extends DataSerializer {
-
-  static {
-    DataSerializerPropagationDUnitTest.successfullyLoadedTestDataSerializer = true;
-  }
+  public static boolean successfullyInstantiated = false;
 
   private String name;
   private int age;
 
-  public TestDataSerializer() {}
+  /**
+   * Marks this class as loaded
+   */
+  public TestDataSerializer() {
+    successfullyInstantiated = true;
+  }
 
   public TestDataSerializer(String str, int val) {
+    this();
     this.name = str;
     this.age = val;
   }

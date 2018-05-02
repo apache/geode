@@ -20,13 +20,13 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ClusterConfigurationService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyConnectionCommand extends InternalGfshCommand {
+public class DestroyConnectionCommand extends SingleGfshCommand {
   static final String DESTROY_CONNECTION = "destroy jdbc-connection";
   static final String DESTROY_CONNECTION__HELP = "Destroy/Remove the specified jdbc connection.";
   static final String DESTROY_CONNECTION__NAME = "name";
@@ -54,24 +54,17 @@ public class DestroyConnectionCommand extends InternalGfshCommand {
     // action
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new DestroyConnectionFunction(), name, targetMembers);
-
-    boolean persisted = false;
-    ClusterConfigurationService ccService = getConfigurationService();
-
-    if (ccService != null && results.stream().filter(CliFunctionResult::isSuccessful).count() > 0) {
-      ConnectorService service =
-          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
-      if (service != null) {
-        ConnectorService.Connection conn = CacheElement.findElement(service.getConnection(), name);
-        service.getConnection().remove(conn);
-        ccService.saveCustomCacheElement("cluster", service);
-        persisted = true;
-      }
-    }
-
     CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setCommandPersisted(persisted);
-
+    commandResult.setConfigObject(name);
     return commandResult;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+    ConnectorService service =
+        config.findCustomCacheElement("connector-service", ConnectorService.class);
+    if (service != null) {
+      CacheElement.removeElement(service.getConnection(), (String) element);
+    }
   }
 }

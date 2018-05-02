@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import static org.junit.Assert.*;
-
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.concurrent.ConcurrentParallelGatewaySenderOperation_2_DUnitTest;

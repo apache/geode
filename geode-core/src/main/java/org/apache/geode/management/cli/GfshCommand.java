@@ -27,7 +27,7 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
@@ -77,9 +77,9 @@ public abstract class GfshCommand implements CommandMarker {
     return cache;
   }
 
-  public ClusterConfigurationService getConfigurationService() {
+  public ConfigurationPersistenceService getConfigurationPersistenceService() {
     InternalLocator locator = InternalLocator.getLocator();
-    return locator == null ? null : locator.getSharedConfiguration();
+    return locator == null ? null : locator.getConfigurationPersistenceService();
   }
 
   public void setCache(Cache cache) {

@@ -15,7 +15,9 @@
 
 package org.apache.geode.internal.cache;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ExternalizableDSFID;

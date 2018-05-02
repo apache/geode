@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

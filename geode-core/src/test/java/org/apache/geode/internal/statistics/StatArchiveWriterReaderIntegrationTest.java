@@ -15,9 +15,15 @@
 package org.apache.geode.internal.statistics;
 
 import static org.apache.geode.internal.statistics.StatArchiveFormat.NANOS_PER_MILLI;
-import static org.apache.geode.internal.statistics.TestStatArchiveWriter.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.apache.geode.internal.statistics.TestStatArchiveWriter.WRITER_INITIAL_DATE_MILLIS;
+import static org.apache.geode.internal.statistics.TestStatArchiveWriter.WRITER_PREVIOUS_TIMESTAMP_NANOS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.BufferedInputStream;
 import java.io.File;

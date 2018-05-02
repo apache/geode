@@ -14,8 +14,9 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.*;
-import static org.apache.geode.test.junit.rules.serializable.FieldsOfTestName.*;
+import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
+import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.writeField;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTestName.FIELD_NAME;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
