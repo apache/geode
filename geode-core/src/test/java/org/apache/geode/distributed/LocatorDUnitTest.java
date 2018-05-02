@@ -302,14 +302,9 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
   }
 
-  private Boolean startLocatorWithPortAndProperties(final int port, final Properties properties)
+  private void startLocatorWithPortAndProperties(final int port, final Properties properties)
       throws IOException {
-    try {
-      Locator.startLocatorAndDS(port, new File(""), properties);
-    } catch (SystemConnectException | GemFireConfigException e) {
-      return Boolean.FALSE;
-    }
-    return Boolean.TRUE;
+    assertNotNull(Locator.startLocatorAndDS(port, new File(""), properties));
   }
 
   private String getSingleKeyKeystore() {
@@ -402,24 +397,24 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       Properties properties) throws Exception {
     try {
       getBlackboard().initBlackboard();
-      AsyncInvocation<Boolean> async1 = loc1.invokeAsync("startLocator1", () -> {
+      AsyncInvocation<Void> async1 = loc1.invokeAsync("startLocator1", () -> {
         getBlackboard().signalGate("locator1");
         getBlackboard().waitForGate("go", 60, TimeUnit.SECONDS);
-        return startLocatorWithPortAndProperties(port1, properties);
+        startLocatorWithPortAndProperties(port1, properties);
       });
 
-      AsyncInvocation<Boolean> async2 = loc2.invokeAsync("startLocator2", () -> {
+      AsyncInvocation<Void> async2 = loc2.invokeAsync("startLocator2", () -> {
         getBlackboard().signalGate("locator2");
         getBlackboard().waitForGate("go", 60, TimeUnit.SECONDS);
-        return startLocatorWithPortAndProperties(port2, properties);
+        startLocatorWithPortAndProperties(port2, properties);
       });
 
       getBlackboard().waitForGate("locator1", 60, TimeUnit.SECONDS);
       getBlackboard().waitForGate("locator2", 60, TimeUnit.SECONDS);
       getBlackboard().signalGate("go");
 
-      assertTrue("locator 1 started", async1.get());
-      assertTrue("locator 2 started", async2.get());
+      async1.await();
+      async2.await();
 
       // verify that they found each other
       loc2.invoke("expectSystemToContainThisManyMembers",
