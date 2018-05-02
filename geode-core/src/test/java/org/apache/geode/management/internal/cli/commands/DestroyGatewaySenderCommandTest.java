@@ -32,7 +32,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -49,18 +49,18 @@ public class DestroyGatewaySenderCommandTest {
   private DestroyGatewaySenderCommand command;
   private InternalCache cache;
   private List<CliFunctionResult> functionResults;
-  private InternalClusterConfigurationService ccService;
+  private InternalConfigurationPersistenceService ccService;
   private CliFunctionResult result1, result2;
   private XmlEntity xmlEntity;
 
   @Before
   public void before() throws Exception {
     command = spy(DestroyGatewaySenderCommand.class);
-    ccService = mock(InternalClusterConfigurationService.class);
+    ccService = mock(InternalConfigurationPersistenceService.class);
     xmlEntity = mock(XmlEntity.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     functionResults = new ArrayList<>();
     doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(),
         any(Set.class));
@@ -115,7 +115,7 @@ public class DestroyGatewaySenderCommandTest {
   @Test
   public void whenNoCCService() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", xmlEntity, "result1");
     functionResults.add(result1);
     parser.executeAndAssertThat(command, "destroy gateway-sender --id=1").statusIsSuccess()
@@ -126,7 +126,7 @@ public class DestroyGatewaySenderCommandTest {
   @Test
   public void whenCommandOnMember() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", xmlEntity, "result1");
     functionResults.add(result1);
     parser.executeAndAssertThat(command, "destroy gateway-sender --member=xyz --id=1")
@@ -137,7 +137,7 @@ public class DestroyGatewaySenderCommandTest {
   @Test
   public void whenNoXml() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", false, "result1");
     functionResults.add(result1);
 

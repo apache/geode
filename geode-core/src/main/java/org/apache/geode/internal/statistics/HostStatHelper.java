@@ -17,7 +17,8 @@ package org.apache.geode.internal.statistics;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.apache.geode.*;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.Statistics;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;

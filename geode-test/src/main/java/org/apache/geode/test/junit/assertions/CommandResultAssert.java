@@ -147,7 +147,7 @@ public class CommandResultAssert
    */
   public CommandResultAssert tableHasColumnWithExactValuesInExactOrder(String header,
       String... expectedValues) {
-    List<String> actualValues = actual.getCommandResult().getColumnValues(header);
+    List<String> actualValues = actual.getCommandResult().getTableColumnValues(header);
     assertThat(actualValues).containsExactly(expectedValues);
 
     return this;
@@ -175,7 +175,7 @@ public class CommandResultAssert
    */
   public CommandResultAssert tableHasColumnWithExactValuesInAnyOrder(String header,
       String... expectedValues) {
-    List<String> actualValues = actual.getCommandResult().getColumnValues(header);
+    List<String> actualValues = actual.getCommandResult().getTableColumnValues(header);
     assertThat(actualValues).containsExactlyInAnyOrder(expectedValues);
 
     return this;
@@ -196,7 +196,7 @@ public class CommandResultAssert
     Map<String, List<String>> allValues = new HashMap<>();
     int numberOfRows = -1;
     for (String header : headers) {
-      List<String> columnValues = actual.getCommandResult().getColumnValues(header);
+      List<String> columnValues = actual.getCommandResult().getTableColumnValues(header);
       if (numberOfRows > 0) {
         assertThat(columnValues.size()).isEqualTo(numberOfRows);
       }
@@ -222,7 +222,7 @@ public class CommandResultAssert
   }
 
   public CommandResultAssert tableHasRowCount(String anyColumnHeader, int rowSize) {
-    assertThat(actual.getCommandResult().getColumnValues(anyColumnHeader).size())
+    assertThat(actual.getCommandResult().getTableColumnValues(anyColumnHeader).size())
         .isEqualTo(rowSize);
     return this;
   }
@@ -233,7 +233,7 @@ public class CommandResultAssert
    */
   public CommandResultAssert tableHasColumnWithValuesContaining(String header,
       String... expectedValues) {
-    List<String> actualValues = actual.getCommandResult().getColumnValues(header);
+    List<String> actualValues = actual.getCommandResult().getTableColumnValues(header);
 
     for (Object actualValue : actualValues) {
       String actualValueString = (String) actualValue;
@@ -254,7 +254,7 @@ public class CommandResultAssert
    * one of the expectedValues.
    */
   public CommandResultAssert tableHasColumnOnlyWithValues(String header, String... expectedValues) {
-    List<String> actualValues = actual.getCommandResult().getColumnValues(header);
+    List<String> actualValues = actual.getCommandResult().getTableColumnValues(header);
     assertThat(actualValues).containsOnly(expectedValues);
 
     return this;

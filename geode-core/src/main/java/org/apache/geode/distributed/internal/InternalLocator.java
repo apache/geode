@@ -173,7 +173,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
 
-  private InternalClusterConfigurationService sharedConfig;
+  private InternalConfigurationPersistenceService configurationPersistenceService;
 
   private volatile boolean isSharedConfigurationStarted = false;
 
@@ -188,8 +188,8 @@ public class InternalLocator extends Locator implements ConnectListener {
   }
 
   public boolean isSharedConfigurationRunning() {
-    return this.sharedConfig != null
-        && this.sharedConfig.getStatus() == SharedConfigurationStatus.RUNNING;
+    return this.configurationPersistenceService != null
+        && this.configurationPersistenceService.getStatus() == SharedConfigurationStatus.RUNNING;
   }
 
   /**
@@ -485,8 +485,8 @@ public class InternalLocator extends Locator implements ConnectListener {
     this.server.start();
   }
 
-  public InternalClusterConfigurationService getSharedConfiguration() {
-    return this.sharedConfig;
+  public InternalConfigurationPersistenceService getConfigurationPersistenceService() {
+    return this.configurationPersistenceService;
   }
 
   public DistributionConfigImpl getConfig() {
@@ -1036,13 +1036,14 @@ public class InternalLocator extends Locator implements ConnectListener {
       this.myDs.setDependentLocator(this);
       logger.info("Locator restart: initializing TcpServer");
 
-      this.server.restarting(newSystem, newCache, this.sharedConfig);
+      this.server.restarting(newSystem, newCache, this.configurationPersistenceService);
       if (this.productUseLog.isClosed()) {
         this.productUseLog.reopen();
       }
       this.productUseLog.monitorUse(newSystem);
       if (isSharedConfigurationEnabled()) {
-        this.sharedConfig = new InternalClusterConfigurationService(newCache);
+        this.configurationPersistenceService =
+            new InternalConfigurationPersistenceService(newCache);
         startSharedConfigurationService();
       }
       if (!this.server.isAlive()) {
@@ -1107,8 +1108,8 @@ public class InternalLocator extends Locator implements ConnectListener {
       final InternalLocator locator = InternalLocator.this;
 
       SharedConfigurationStatusResponse response;
-      if (locator.sharedConfig != null) {
-        response = locator.sharedConfig.createStatusResponse();
+      if (locator.configurationPersistenceService != null) {
+        response = locator.configurationPersistenceService.createStatusResponse();
       } else {
         response = new SharedConfigurationStatusResponse();
         response.setStatus(SharedConfigurationStatus.UNDETERMINED);
@@ -1163,7 +1164,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
     @Override
     public void restarting(DistributedSystem ds, GemFireCache cache,
-        InternalClusterConfigurationService sharedConfig) {
+        InternalConfigurationPersistenceService sharedConfig) {
       if (ds != null) {
         for (TcpHandler handler : this.allHandlers) {
           handler.restarting(ds, cache, sharedConfig);
@@ -1325,11 +1326,13 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
 
     try {
-      if (locator.sharedConfig == null) {
-        // locator.sharedConfig will already be created in case of auto-reconnect
-        locator.sharedConfig = new InternalClusterConfigurationService(locator.myCache);
+      if (locator.configurationPersistenceService == null) {
+        // locator.configurationPersistenceService will already be created in case of auto-reconnect
+        locator.configurationPersistenceService =
+            new InternalConfigurationPersistenceService(locator.myCache);
       }
-      locator.sharedConfig.initSharedConfiguration(locator.loadFromSharedConfigDir());
+      locator.configurationPersistenceService
+          .initSharedConfiguration(locator.loadFromSharedConfigDir());
       logger.info(
           "Cluster configuration service start up completed successfully and is now running ....");
       isSharedConfigurationStarted = true;

@@ -57,7 +57,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ForceReattemptException;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
@@ -578,10 +578,10 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Retained
-  public static EntryEventImpl getEventFromEntry(LocalRegion r, InternalDistributedMember myId,
-      InternalDistributedMember eventSender, int idx,
-      DistributedRemoveAllOperation.RemoveAllEntryData[] data, boolean notificationOnly,
-      ClientProxyMembershipID bridgeContext, boolean posDup, boolean skipCallbacks) {
+  public static EntryEventImpl getEventFromEntry(InternalRegion r, InternalDistributedMember myId,
+      InternalDistributedMember eventSender, int idx, RemoveAllEntryData[] data,
+      boolean notificationOnly, ClientProxyMembershipID bridgeContext, boolean posDup,
+      boolean skipCallbacks) {
     RemoveAllEntryData dataItem = data[idx];
     @Retained
     EntryEventImpl ev = EntryEventImpl.create(r, dataItem.getOp(), dataItem.getKey(), null, null,

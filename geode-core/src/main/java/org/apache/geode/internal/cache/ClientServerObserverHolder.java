@@ -50,4 +50,9 @@ public class ClientServerObserverHolder {
     return _instance;
   }
 
+  public static ClientServerObserver clearInstance() {
+    ClientServerObserver oldObserver = _instance;
+    _instance = NO_OBSERVER;
+    return oldObserver;
+  }
 }

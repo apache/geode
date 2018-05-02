@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

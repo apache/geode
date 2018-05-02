@@ -59,6 +59,7 @@ import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.FindVersionTagOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -209,13 +210,8 @@ public abstract class BaseCommand implements Command {
    * the operation.
    */
   public boolean recoverVersionTagForRetriedOperation(EntryEventImpl clientEvent) {
-    LocalRegion r = clientEvent.getRegion();
-    VersionTag tag;
-    if (clientEvent.getVersionTag() != null && clientEvent.getVersionTag().isGatewayTag()) {
-      tag = r.findVersionTagForEvent(clientEvent.getEventId());
-    } else {
-      tag = r.findVersionTagForEvent(clientEvent.getEventId());
-    }
+    InternalRegion r = clientEvent.getRegion();
+    VersionTag tag = r.findVersionTagForEvent(clientEvent.getEventId());
     if (tag == null) {
       if (r instanceof DistributedRegion || r instanceof PartitionedRegion) {
         // TODO this could be optimized for partitioned regions by sending the key

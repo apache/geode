@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.region.entry;
 
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.entries.VMStatsDiskLRURegionEntryHeap;
 import org.apache.geode.internal.cache.entries.VMStatsDiskLRURegionEntryOffHeap;
 import org.apache.geode.internal.cache.entries.VMStatsDiskRegionEntryHeap;

@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
@@ -50,18 +50,18 @@ public class DestroyGatewayReceiverCommandTest {
   private DestroyGatewayReceiverCommand command;
   private InternalCache cache;
   private List<CliFunctionResult> functionResults;
-  private InternalClusterConfigurationService ccService;
+  private InternalConfigurationPersistenceService ccService;
   private CliFunctionResult result1;
   private XmlEntity xmlEntity;
 
   @Before
   public void setUp() throws Exception {
     command = spy(DestroyGatewayReceiverCommand.class);
-    ccService = mock(InternalClusterConfigurationService.class);
+    ccService = mock(InternalConfigurationPersistenceService.class);
     xmlEntity = mock(XmlEntity.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     functionResults = new ArrayList<>();
     doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(),
         any(Set.class));

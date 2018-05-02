@@ -24,7 +24,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.AsyncEventQueueFunctionArgs;
@@ -125,7 +125,7 @@ public class CreateAsyncEventQueueCommand extends InternalGfshCommand {
     XmlEntity xmlEntity = findXmlEntity(results);
     if (xmlEntity != null) {
       persistClusterConfiguration(commandResult,
-          () -> ((InternalClusterConfigurationService) getConfigurationService())
+          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
               .addXmlEntity(xmlEntity, groups));
     }
     return commandResult;

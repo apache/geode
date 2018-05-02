@@ -24,14 +24,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 
 @Category(DistributedTest.class)
-public class ClusterConfigurationServiceDUnitTest {
+public class CacheConfigDAODUnitTest {
 
 
   @Rule
@@ -42,8 +42,8 @@ public class ClusterConfigurationServiceDUnitTest {
     MemberVM locator = cluster.startLocatorVM(0);
 
     locator.invoke(() -> {
-      ClusterConfigurationService ccService =
-          ClusterStartupRule.getLocator().getSharedConfiguration();
+      ConfigurationPersistenceService ccService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       ccService.updateCacheConfig("cluster", cc -> {
         RegionConfig regionConfig = new RegionConfig();
         regionConfig.setName("regionB");

@@ -60,7 +60,7 @@ import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -416,7 +416,7 @@ public class AutoConnectionSourceImplJUnitTest {
     public void endResponse(Object request, long startTime) {}
 
     public void restarting(DistributedSystem ds, GemFireCache cache,
-        InternalClusterConfigurationService sharedConfig) {}
+        InternalConfigurationPersistenceService sharedConfig) {}
 
   }
 

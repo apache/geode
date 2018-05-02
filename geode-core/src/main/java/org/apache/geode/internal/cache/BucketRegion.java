@@ -515,7 +515,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // 1) apply op locally
   // 2) update local bs, gateway
   @Override
-  protected boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+  public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     beginLocalWrite(event);
@@ -651,7 +651,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * distribute the operation in basicPutPart2 so the region entry lock is held
    */
   @Override
-  protected long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
+  public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
       long lastModified, boolean clearConflict) {
     // Assumed this is called with entry synchrony
 
@@ -712,7 +712,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   protected void notifyGatewaySender(EnumListenerEvent operation, EntryEventImpl event) {
     // We don't need to clone the event for new Gateway Senders.
     // Preserve the bucket reference for resetting it later.
-    LocalRegion bucketRegion = event.getRegion();
+    InternalRegion bucketRegion = event.getRegion();
     try {
       event.setRegion(this.partitionedRegion);
       this.partitionedRegion.notifyGatewaySender(operation, event);
@@ -1338,10 +1338,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     Assert.assertTrue(!isTX());
     Assert.assertTrue(event.getOperation().isDistributed());
 
-    LocalRegion lr = event.getRegion();
-    AbstractRegionMap arm = ((AbstractRegionMap) lr.getRegionMap());
+    InternalRegion internalRegion = event.getRegion();
+    AbstractRegionMap arm = ((AbstractRegionMap) internalRegion.getRegionMap());
     try {
-      arm.lockForCacheModification(lr, event);
+      arm.lockForCacheModification(internalRegion, event);
       beginLocalWrite(event);
       try {
         if (!hasSeenEvent(event)) {
@@ -1432,7 +1432,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   public void fillInProfile(Profile profile) {
     super.fillInProfile(profile);
     BucketProfile bp = (BucketProfile) profile;
-    bp.isInitializing = this.initializationLatchAfterGetInitialImage.getCount() > 0;
+    bp.isInitializing = this.getInitializationLatchAfterGetInitialImage().getCount() > 0;
   }
 
   /** check to see if the partitioned region is locally destroyed or closed */
@@ -1982,7 +1982,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
+  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
       CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
 
@@ -2144,12 +2144,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  void updateSizeOnPut(Object key, int oldSize, int newSize) {
+  public void updateSizeOnPut(Object key, int oldSize, int newSize) {
     updateBucket2Size(oldSize, newSize, SizeOp.UPDATE);
   }
 
   @Override
-  void updateSizeOnCreate(Object key, int newSize) {
+  public void updateSizeOnCreate(Object key, int newSize) {
     this.partitionedRegion.getPrStats().incDataStoreEntryCount(1);
     updateBucket2Size(0, newSize, SizeOp.CREATE);
   }

@@ -56,6 +56,7 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -295,7 +296,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    * @param event the event causing this message
    * @return the processor used to await the potential {@link org.apache.geode.cache.CacheException}
    */
-  public static RemoteDestroyReplyProcessor send(DistributedMember recipient, LocalRegion r,
+  public static RemoteDestroyReplyProcessor send(DistributedMember recipient, InternalRegion r,
       EntryEventImpl event, Object expectedOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) throws RemoteOperationException {
     RemoteDestroyReplyProcessor p =

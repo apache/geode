@@ -33,7 +33,9 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
 public class GfshParserRule extends ExternalResource {
@@ -76,14 +78,25 @@ public class GfshParserRule extends ExternalResource {
           throw new RuntimeException(e);
         }
 
-        Result preExecResult = interceptor.preExecution(parseResult);
-        if (Result.Status.ERROR.equals(preExecResult.getStatus())) {
-          return (CommandResult) preExecResult;
+        Object preExecResult = interceptor.preExecution(parseResult);
+        if (preExecResult instanceof ResultModel) {
+          if (((ResultModel) preExecResult).getStatus() != Result.Status.OK) {
+            return new ModelCommandResult((ResultModel) preExecResult);
+          }
+        } else {
+          if (Result.Status.ERROR.equals(((Result) preExecResult).getStatus())) {
+            return (CommandResult) preExecResult;
+          }
         }
       }
     }
 
-    return (CommandResult) commandExecutor.execute(instance, parseResult);
+    Object exeResult = commandExecutor.execute(instance, parseResult);
+    if (exeResult instanceof ResultModel) {
+      return new ModelCommandResult((ResultModel) exeResult);
+    }
+
+    return (CommandResult) exeResult;
   }
 
   public <T> CommandResultAssert executeAndAssertThat(T instance, String command) {

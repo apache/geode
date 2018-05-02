@@ -31,14 +31,14 @@ public class CommandResultTest {
 
   @Test
   public void emptyResultHasOneEmptyLine() {
-    CommandResult commandResult = new CommandResult(new InfoResultData());
+    CommandResult commandResult = new LegacyCommandResult(new InfoResultData());
     Assertions.assertThat(commandResult.nextLine()).isEqualTo("");
     Assertions.assertThat(commandResult.hasNextLine()).isFalse();
   }
 
   @Test
   public void resultWithOneLineHasOneLine() {
-    CommandResult commandResult = new CommandResult(new InfoResultData("oneLine"));
+    CommandResult commandResult = new LegacyCommandResult(new InfoResultData("oneLine"));
 
     assertThat(commandResult.nextLine()).isEqualTo("oneLine" + LINE_SEPARATOR);
     assertThat(commandResult.hasNextLine()).isFalse();
@@ -49,7 +49,7 @@ public class CommandResultTest {
     InfoResultData resultData = new InfoResultData();
     resultData.addLine("lineOne");
     resultData.addLine("lineTwo");
-    CommandResult commandResult = new CommandResult(resultData);
+    CommandResult commandResult = new LegacyCommandResult(resultData);
 
     assertThat(commandResult.nextLine())
         .isEqualTo("lineOne" + LINE_SEPARATOR + "lineTwo" + LINE_SEPARATOR);
@@ -58,14 +58,14 @@ public class CommandResultTest {
 
   @Test
   public void emptyResultDoesNotHaveFileToDownload() {
-    CommandResult commandResult = new CommandResult(new InfoResultData());
+    CommandResult commandResult = new LegacyCommandResult(new InfoResultData());
     Assertions.assertThat(commandResult.hasFileToDownload()).isFalse();
   }
 
   @Test
   public void resultWithFileDoesHaveFileToDownload() {
     Path fileToDownload = Paths.get(".").toAbsolutePath();
-    CommandResult commandResult = new CommandResult(fileToDownload);
+    CommandResult commandResult = new LegacyCommandResult(fileToDownload);
 
     assertThat(commandResult.hasFileToDownload()).isTrue();
     assertThat(commandResult.nextLine()).isEqualTo(fileToDownload.toString() + LINE_SEPARATOR);

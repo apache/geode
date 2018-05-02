@@ -40,12 +40,12 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
   }
 
   @Override
-  public TXStateInterface getRealDeal(KeyInfo key, LocalRegion r) {
+  public TXStateInterface getRealDeal(KeyInfo key, InternalRegion r) {
     if (this.realDeal == null) {
       this.realDeal = new DistTXState(this, false);
       if (r != null) {
         // wait for the region to be initialized fixes bug 44652
-        r.waitOnInitialization(r.initializationLatchBeforeGetInitialImage);
+        r.waitOnInitialization(r.getInitializationLatchBeforeGetInitialImage());
         target = r.getOwnerForKey(key);
       }
       if (logger.isDebugEnabled()) {

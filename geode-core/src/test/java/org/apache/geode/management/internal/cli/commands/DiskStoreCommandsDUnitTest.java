@@ -33,7 +33,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
@@ -124,7 +124,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores").statusIsSuccess()
         .containsOutput("Missing Disk Stores", "No missing colocated region found");
 
-    List<String> diskstoreIDs = gfsh.getCommandResult().getColumnValues("Disk Store ID");
+    List<String> diskstoreIDs = gfsh.getCommandResult().getTableColumnValues("Disk Store ID");
     assertThat(diskstoreIDs.size()).isEqualTo(1);
 
     gfsh.executeAndAssertThat("revoke missing-disk-store --id=" + diskstoreIDs.get(0))
@@ -197,8 +197,8 @@ public class DiskStoreCommandsDUnitTest {
 
   private boolean diskStoreExistsInClusterConfig(MemberVM jmxManager) {
     boolean result = jmxManager.invoke(() -> {
-      InternalClusterConfigurationService sharedConfig =
-          ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+      InternalConfigurationPersistenceService sharedConfig =
+          ((InternalLocator) Locator.getLocator()).getConfigurationPersistenceService();
       String xmlFromConfig;
       xmlFromConfig = sharedConfig.getConfiguration(GROUP).getCacheXmlContent();
       return xmlFromConfig.contains(DISKSTORE);

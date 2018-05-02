@@ -189,7 +189,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     return map.waitForMessage(id, dm);
   }
 
-  void startRegion(LocalRegion r, int maxSize) {
+  void startRegion(InternalRegion r, int maxSize) {
     this.currentRegion = new RegionCommit(this, r, maxSize);
     if (r.requiresReliabilityCheck()) {
       this.hasReliableRegions = true;
@@ -252,7 +252,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     this.currentRegion = null;
   }
 
-  private Map<InternalDistributedMember, PersistentMemberID> getPersistentIds(LocalRegion r) {
+  private Map<InternalDistributedMember, PersistentMemberID> getPersistentIds(InternalRegion r) {
     if (r instanceof DistributedRegion) {
       return ((CacheDistributionAdvisee) r).getCacheDistributionAdvisor().advisePersistentMembers();
     } else {
@@ -307,7 +307,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     return this.msgMap == null || this.msgMap.isEmpty();
   }
 
-  void addOp(LocalRegion r, Object key, TXEntryState entry, Set otherRecipients) {
+  void addOp(InternalRegion r, Object key, TXEntryState entry, Set otherRecipients) {
     this.currentRegion.addOp(key, entry);
   }
 
@@ -1052,7 +1052,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     /**
      * The region that this commit represents. Valid on both nearside and farside.
      */
-    protected transient LocalRegion r;
+    protected transient InternalRegion r;
     /**
      * Valid only on farside.
      */
@@ -1098,7 +1098,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     /**
      * Used on nearside
      */
-    RegionCommit(TXCommitMessage msg, LocalRegion r, int maxSize) {
+    RegionCommit(TXCommitMessage msg, InternalRegion r, int maxSize) {
       this.msg = msg;
       this.r = r;
       this.maxSize = maxSize;
@@ -1241,7 +1241,7 @@ public class TXCommitMessage extends PooledDistributionMessage
          */
         // No need to release because it is added to pendingCallbacks and they will be released
         // later
-        EntryEventImpl eei = AbstractRegionMap.createCBEvent(this.r, entryOp.op, entryOp.key,
+        EntryEventImpl eei = AbstractRegionMap.createCallbackEvent(this.r, entryOp.op, entryOp.key,
             entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,
             entryOp.filterRoutingInfo, this.msg.bridgeContext, null, entryOp.versionTag,
             entryOp.tailKey);
@@ -1316,7 +1316,7 @@ public class TXCommitMessage extends PooledDistributionMessage
          * This happens when we don't have the bucket and are getting adjunct notification
          */
         @Released
-        EntryEventImpl eei = AbstractRegionMap.createCBEvent(this.r, entryOp.op, entryOp.key,
+        EntryEventImpl eei = AbstractRegionMap.createCallbackEvent(this.r, entryOp.op, entryOp.key,
             entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,
             entryOp.filterRoutingInfo, this.msg.bridgeContext, null, entryOp.versionTag,
             entryOp.tailKey);
@@ -1943,15 +1943,20 @@ public class TXCommitMessage extends PooledDistributionMessage
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
+  /** return true if the member initiating this transaction has left the cluster */
+  public boolean isDepartureNoticed() {
+    return departureNoticed;
+  }
+
   @Override
   public void memberDeparted(DistributionManager distributionManager,
       final InternalDistributedMember id, boolean crashed) {
+
     if (!getSender().equals(id)) {
       return;
     }
     this.dm.removeMembershipListener(this);
 
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup("TXCommitMessage Threads", logger);
     synchronized (this) {
       if (isProcessing() || this.departureNoticed) {
         if (logger.isDebugEnabled()) {
@@ -1962,6 +1967,8 @@ public class TXCommitMessage extends PooledDistributionMessage
       }
       this.departureNoticed = true;
     }
+
+    ThreadGroup group = LoggingThreadGroup.createThreadGroup("TXCommitMessage Threads", logger);
 
     // Send message to fellow FarSiders (aka recipients), if any, to
     // determine if any one of them have received a CommitProcessMessage

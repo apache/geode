@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.OSProcess;
 
 /**

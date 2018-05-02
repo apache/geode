@@ -40,7 +40,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
@@ -58,7 +58,7 @@ public class DestroyJndiBindingCommandTest {
   private DestroyJndiBindingCommand command;
   private InternalCache cache;
   private CacheConfig cacheConfig;
-  private InternalClusterConfigurationService ccService;
+  private InternalConfigurationPersistenceService ccService;
 
   private static String COMMAND = "destroy jndi-binding ";
 
@@ -68,10 +68,10 @@ public class DestroyJndiBindingCommandTest {
     command = spy(DestroyJndiBindingCommand.class);
     doReturn(cache).when(command).getCache();
     cacheConfig = mock(CacheConfig.class);
-    ccService = mock(InternalClusterConfigurationService.class);
+    ccService = mock(InternalConfigurationPersistenceService.class);
 
 
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     when(ccService.getCacheConfig(any())).thenReturn(cacheConfig);
     doCallRealMethod().when(ccService).updateCacheConfig(any(), any());
     when(ccService.getConfigurationRegion()).thenReturn(mock(Region.class));
@@ -110,7 +110,7 @@ public class DestroyJndiBindingCommandTest {
   @Test
   public void whenNoMembersFoundAndNoClusterConfigServiceRunningThenError() {
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .containsOutput("No members found").hasFailToPersistError();
@@ -140,7 +140,7 @@ public class DestroyJndiBindingCommandTest {
     results.add(result);
 
     doReturn(members).when(command).findMembers(any(), any());
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()

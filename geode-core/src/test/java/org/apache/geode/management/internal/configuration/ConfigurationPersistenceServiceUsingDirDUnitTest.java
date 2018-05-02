@@ -44,7 +44,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -53,7 +53,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.util.test.TestUtil;
 
 @Category({DistributedTest.class, FlakyTest.class}) // GEODE-1165
-public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTestCase {
+public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -65,7 +65,8 @@ public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTes
           return;
         }
 
-        InternalClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
+        InternalConfigurationPersistenceService sharedConfig =
+            locator.getConfigurationPersistenceService();
         if (sharedConfig != null) {
           sharedConfig.destroySharedConfiguration();
         }
@@ -261,8 +262,8 @@ public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTes
 
   private void copyClusterXml(final VM vm, final String clusterXml) {
     vm.invoke("Copying new cluster.xml from " + clusterXml, () -> {
-      String clusterXmlPath =
-          TestUtil.getResourcePath(ClusterConfigurationServiceUsingDirDUnitTest.class, clusterXml);
+      String clusterXmlPath = TestUtil
+          .getResourcePath(ConfigurationPersistenceServiceUsingDirDUnitTest.class, clusterXml);
       InputStream cacheXml = new FileInputStream(clusterXmlPath);
       assertNotNull("Could not create InputStream from " + clusterXmlPath, cacheXml);
       Files.createDirectories(Paths.get("cluster_config", "cluster"));
