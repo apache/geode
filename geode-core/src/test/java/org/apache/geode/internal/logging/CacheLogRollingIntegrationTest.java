@@ -14,8 +14,13 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_DISK_SPACE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_FILE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.File;

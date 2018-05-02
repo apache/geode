@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.size;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

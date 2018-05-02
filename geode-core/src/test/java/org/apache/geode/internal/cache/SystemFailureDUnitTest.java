@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.ArrayList;

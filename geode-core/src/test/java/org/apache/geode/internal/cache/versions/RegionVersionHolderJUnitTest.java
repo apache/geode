@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
 import java.util.BitSet;

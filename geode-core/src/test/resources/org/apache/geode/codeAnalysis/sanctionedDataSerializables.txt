@@ -1407,7 +1407,7 @@ toData,118
 
 org/apache/geode/internal/cache/UpdateOperation$UpdateMessage,2
 fromData,144
-toData,235
+toData,237
 
 org/apache/geode/internal/cache/UpdateOperation$UpdateWithContextMessage,2
 fromData,14
@@ -1952,7 +1952,7 @@ toDataPre_GFE_8_0_0_0,20
 
 org/apache/geode/internal/cache/tx/DistTxEntryEvent,2
 fromData,100
-toData,121
+toData,123
 
 org/apache/geode/internal/cache/versions/RVVException,2
 fromData,1

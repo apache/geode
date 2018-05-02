@@ -73,10 +73,10 @@ public class DistTXState extends TXState {
    */
   public void updateRegionVersions() {
 
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
 
       // Generate next region version only on the primary
@@ -115,14 +115,14 @@ public class DistTXState extends TXState {
    * should use this tail key to enqueue into parallel queues.
    */
   public void generateTailKeysForParallelDispatcherEvents() {
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
 
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
 
-      LocalRegion region = txrs.getRegion();
+      InternalRegion region = txrs.getRegion();
       // Check if it is a bucket region
       if (region.isUsedForPartitionedRegionBucket()) {
         // Check if it is a primary bucket
@@ -320,10 +320,10 @@ public class DistTXState extends TXState {
   protected TXCommitMessage buildMessageForAdjunctReceivers() {
     TXCommitMessage msg =
         new DistTXAdjunctCommitMessage(this.proxy.getTxId(), this.proxy.getTxMgr().getDM(), this);
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
 
       // only on the primary
@@ -495,7 +495,7 @@ public class DistTXState extends TXState {
   }
 
   @Override
-  public TXRegionState writeRegion(LocalRegion r) {
+  public TXRegionState writeRegion(InternalRegion r) {
     TXRegionState result = readRegion(r);
     if (result == null) {
       if (r instanceof BucketRegion) {
@@ -533,9 +533,9 @@ public class DistTXState extends TXState {
    * org.apache.geode.internal.cache.LocalRegion)
    */
   public void postPutAll(final DistributedPutAllOperation putallOp,
-      final VersionedObjectList successfulPuts, LocalRegion reg) {
+      final VersionedObjectList successfulPuts, InternalRegion reg) {
 
-    final LocalRegion theRegion;
+    final InternalRegion theRegion;
     if (reg instanceof BucketRegion) {
       theRegion = ((BucketRegion) reg).getPartitionedRegion();
     } else {
@@ -598,8 +598,8 @@ public class DistTXState extends TXState {
 
   @Override
   public void postRemoveAll(final DistributedRemoveAllOperation op,
-      final VersionedObjectList successfulOps, LocalRegion reg) {
-    final LocalRegion theRegion;
+      final VersionedObjectList successfulOps, InternalRegion reg) {
+    final InternalRegion theRegion;
     if (reg instanceof BucketRegion) {
       theRegion = ((BucketRegion) reg).getPartitionedRegion();
     } else {
@@ -666,8 +666,8 @@ public class DistTXState extends TXState {
    */
   public boolean populateDistTxEntryStateList(
       TreeMap<String, ArrayList<DistTxThinEntryState>> entryStateSortedMap) {
-    for (Map.Entry<LocalRegion, TXRegionState> me : this.regions.entrySet()) {
-      LocalRegion r = me.getKey();
+    for (Map.Entry<InternalRegion, TXRegionState> me : this.regions.entrySet()) {
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       String regionFullPath = r.getFullPath();
       if (!txrs.isCreatedDuringCommit()) {

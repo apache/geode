@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.apache.geode.internal.statistics.StatUtils.*;
+import static org.apache.geode.internal.statistics.StatUtils.compareStatArchiveFiles;
 
 import java.io.File;
 import java.io.IOException;

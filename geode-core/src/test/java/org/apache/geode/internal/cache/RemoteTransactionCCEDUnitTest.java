@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-
 import java.util.Properties;
 
 import org.junit.experimental.categories.Category;

@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -38,10 +38,10 @@ import org.apache.geode.management.internal.configuration.domain.Configuration;
 public class ConfigurationChangeListener extends CacheListenerAdapter<String, Configuration> {
   private static final Logger logger = LogService.getLogger();
 
-  private final InternalClusterConfigurationService sharedConfig;
+  private final InternalConfigurationPersistenceService sharedConfig;
   private final InternalCache cache;
 
-  public ConfigurationChangeListener(InternalClusterConfigurationService sharedConfig,
+  public ConfigurationChangeListener(InternalConfigurationPersistenceService sharedConfig,
       InternalCache cache) {
     this.sharedConfig = sharedConfig;
     this.cache = cache;

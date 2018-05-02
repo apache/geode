@@ -15,8 +15,12 @@
 
 package org.apache.geode.internal.cache.extension.mock;
 
-import static org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser.*;
-import static org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils.*;
+import static org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser.ATTRIBUTE_VALUE;
+import static org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser.ELEMENT_REGION;
+import static org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser.NAMESPACE;
+import static org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser.PREFIX;
+import static org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils.addAttribute;
+import static org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils.emptyElement;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;

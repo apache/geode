@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexInvalidException;
@@ -22,10 +23,7 @@ import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /***
  * Function to create index in a member, based on different arguments passed to it
@@ -38,81 +36,45 @@ public class CreateIndexFunction implements InternalFunction {
 
   @Override
   public void execute(FunctionContext context) {
-    final IndexInfo indexInfo = (IndexInfo) context.getArguments();
+    final RegionConfig.Index indexInfo = (RegionConfig.Index) context.getArguments();
     String memberId = null;
     try {
       Cache cache = context.getCache();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       QueryService queryService = cache.getQueryService();
-      String indexName = indexInfo.getIndexName();
-      String indexedExpression = indexInfo.getIndexedExpression();
-      String fromClause = indexInfo.getRegionPath();
-      // Check to see if the region path contains an alias e.g "/region1 r1"
-      // Then the first string will be the regionPath
-      String[] regionPathTokens = fromClause.trim().split(" ");
-      String regionPath = regionPathTokens[0];
-
-      switch (indexInfo.getIndexType()) {
-        case FUNCTIONAL:
-          queryService.createIndex(indexName, indexedExpression, fromClause);
-          break;
-        case PRIMARY_KEY:
-          queryService.createKeyIndex(indexName, indexedExpression, fromClause);
-          break;
-        case HASH:
-          queryService.createHashIndex(indexName, indexedExpression, fromClause);
-          break;
-        default:
-          queryService.createIndex(indexName, indexedExpression, fromClause);
+      String indexName = indexInfo.getName();
+      String indexedExpression = indexInfo.getExpression();
+      String fromClause = indexInfo.getFromClause();
+      if (indexInfo.isKeyIndex()) {
+        queryService.createKeyIndex(indexName, indexedExpression, fromClause);
+      } else if ("hash".equals(indexInfo.getType())) {
+        queryService.createHashIndex(indexName, indexedExpression, fromClause);
+      } else {
+        queryService.createIndex(indexName, indexedExpression, fromClause);
       }
 
-      regionPath = getValidRegionName(cache, regionPath);
-      setResultInSender(context, indexInfo, memberId, cache, regionPath);
+      context.getResultSender()
+          .lastResult(new CliFunctionResult(memberId, null, "Index successfully created"));
+
     } catch (IndexExistsException e) {
       String message =
-          CliStrings.format(CliStrings.CREATE_INDEX__INDEX__EXISTS, indexInfo.getIndexName());
+          CliStrings.format(CliStrings.CREATE_INDEX__INDEX__EXISTS, indexInfo.getName());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, false, message));
     } catch (IndexNameConflictException e) {
       String message =
-          CliStrings.format(CliStrings.CREATE_INDEX__NAME__CONFLICT, indexInfo.getIndexName());
+          CliStrings.format(CliStrings.CREATE_INDEX__NAME__CONFLICT, indexInfo.getName());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, false, message));
     } catch (RegionNotFoundException e) {
       String message = CliStrings.format(CliStrings.CREATE_INDEX__INVALID__REGIONPATH,
-          indexInfo.getRegionPath());
+          indexInfo.getFromClause());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, false, message));
     } catch (IndexInvalidException e) {
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
     } catch (Exception e) {
       String exceptionMessage = CliStrings.format(CliStrings.EXCEPTION_CLASS_AND_MESSAGE,
           e.getClass().getName(), e.getMessage());
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
+      context.getResultSender().lastResult(new CliFunctionResult(memberId, e, exceptionMessage));
     }
-  }
-
-  private void setResultInSender(FunctionContext context, IndexInfo indexInfo, String memberId,
-      Cache cache, String regionPath) {
-    if (regionPath == null) {
-      String message = CliStrings.format(CliStrings.CREATE_INDEX__INVALID__REGIONPATH,
-          indexInfo.getRegionPath());
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, false, message));
-    } else {
-      XmlEntity xmlEntity =
-          new XmlEntity(CacheXml.REGION, "name", cache.getRegion(regionPath).getName());
-      context.getResultSender()
-          .lastResult(new CliFunctionResult(memberId, xmlEntity, "Index successfully created"));
-    }
-  }
-
-  private String getValidRegionName(Cache cache, String regionPath) {
-    while (regionPath != null && cache.getRegion(regionPath) == null) {
-      int dotPosition;
-      if (regionPath.contains(".") && ((dotPosition = regionPath.lastIndexOf('.')) != -1)) {
-        regionPath = regionPath.substring(0, dotPosition);
-      } else {
-        regionPath = null;
-      }
-    }
-    return regionPath;
   }
 
   @Override

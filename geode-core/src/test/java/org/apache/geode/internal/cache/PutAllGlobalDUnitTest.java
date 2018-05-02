@@ -19,7 +19,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.InetAddress;

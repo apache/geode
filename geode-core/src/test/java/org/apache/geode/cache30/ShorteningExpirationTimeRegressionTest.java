@@ -14,19 +14,21 @@
  */
 package org.apache.geode.cache30;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.awaitility.Awaitility.with;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -34,10 +36,9 @@ import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -52,115 +53,75 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class ShorteningExpirationTimeRegressionTest {
 
-  /**
-   * Initial expiration time for entry
-   */
-  private static final int LONG_WAIT_MS = 1000 * 60 * 3;
-
-  /**
-   * How long to wait for entry to expire
-   */
-  private static final int TEST_WAIT_MS = 1000 * 60 * 1;
-
-  /**
-   * New short expiration time for entry
-   */
+  private static final int LONG_WAIT_MS = 2 * 60 * 1000;
   private static final int SHORT_WAIT_MS = 1;
 
-  /**
-   * How often to check for expiration
-   */
-  private static final int POLL_INTERVAL_MS = 1;
+  private static final String KEY = "key";
 
-  private static final String TEST_KEY = "key";
+  private String uniqueName;
+  private String regionName;
 
-  private DistributedSystem ds;
   private Cache cache;
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @Rule
+  public TestName testName = new TestName();
 
   @Before
   public void setUp() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    ds = DistributedSystem.connect(props);
-    cache = CacheFactory.create(ds);
+    Properties config = new Properties();
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
+
+    uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
+    regionName = uniqueName + "_region";
+
+    cache = new CacheFactory(config).create();
+
+    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
   }
 
   @After
   public void tearDown() throws Exception {
     if (cache != null) {
       cache.close();
-      cache = null;
-    }
-    if (ds != null) {
-      ds.disconnect();
-      ds = null;
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1139: time sensitive, thread sleep, expiration
   @Test
-  public void testPut() throws Exception {
+  public void customEntryTimeToLiveCanBeShortened() throws Exception {
+    RegionFactory<String, String> rf = cache.createRegionFactory(RegionShortcut.LOCAL);
+    rf.setCustomEntryTimeToLive(new CustomExpiryTestClass<>());
+    rf.setStatisticsEnabled(true);
 
-    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-    try {
-      final Region r = cache.createRegionFactory(RegionShortcut.LOCAL).setStatisticsEnabled(true)
-          .setCustomEntryTimeToLive(new CustomExpiryTestClass()).create("bug44418");
+    Region<String, String> region = rf.create(regionName);
 
-      r.put(TEST_KEY, "longExpire");
-      // should take LONG_WAIT_MS to expire.
+    region.put(KEY, "longExpire");
+    region.put(KEY, "quickExpire");
+    assertThat(region.get(KEY)).isEqualTo("quickExpire");
 
-      // Now update it with a short time to live
-      r.put(TEST_KEY, "quickExpire");
-
-      if (!awaitExpiration(r, TEST_KEY)) {
-        fail(SHORT_WAIT_MS + " ms expire did not happen after waiting " + TEST_WAIT_MS + " ms");
-      }
-    } finally {
-      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-    }
+    await().atMost(1, MINUTES).until(() -> !region.containsValueForKey(KEY));
   }
 
-  @Category(FlakyTest.class) // GEODE-924: expiration, time sensitive, expects action in 1 second
   @Test
-  public void testGet() throws Exception {
+  public void customEntryIdleTimeoutCanBeShortened() throws Exception {
+    RegionFactory<String, String> rf = cache.createRegionFactory(RegionShortcut.LOCAL);
+    rf.setCustomEntryIdleTimeout(new CustomExpiryTestClass<>());
+    rf.setStatisticsEnabled(true);
 
-    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-    try {
-      final Region r = cache.createRegionFactory(RegionShortcut.LOCAL).setStatisticsEnabled(true)
-          .setCustomEntryIdleTimeout(new CustomExpiryTestClass()).create("bug44418");
+    Region<String, String> region = rf.create(regionName);
 
-      r.put(TEST_KEY, "longExpire");
-      // should take LONG_WAIT_MS to expire.
+    region.put(KEY, "longExpire");
+    assertThat(region.get(KEY)).isEqualTo("longExpire");
 
-      // Now set a short idle time
-      r.get(TEST_KEY);
-
-      if (!awaitExpiration(r, TEST_KEY)) {
-        fail(SHORT_WAIT_MS + " ms expire did not happen after waiting " + TEST_WAIT_MS + " ms");
-      }
-    } finally {
-      System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-    }
+    await().atMost(1, MINUTES).until(() -> !region.containsValueForKey(KEY));
   }
 
-  private boolean awaitExpiration(Region r, Object key) {
-    // Return true if entry expires. We only wait
-    // TEST_WAIT_MS. If we need to wait that long for
-    // a SHORT_WAIT_MS to expire then the expiration
-    // is probably still set at LONG_WAIT_MS.
-    try {
-      with().pollInterval(POLL_INTERVAL_MS, TimeUnit.MILLISECONDS).await()
-          .atMost(TEST_WAIT_MS, TimeUnit.MILLISECONDS).until(() -> !r.containsValueForKey(key));
-    } catch (ConditionTimeoutException toe) {
-      return false;
-    }
-    return true;
-  }
+  private class CustomExpiryTestClass<K, V> implements CustomExpiry<K, V> {
 
-  private class CustomExpiryTestClass implements CustomExpiry {
-
-    private boolean secondTime;
+    private volatile boolean useShortExpiration;
 
     @Override
     public void close() {
@@ -170,10 +131,10 @@ public class ShorteningExpirationTimeRegressionTest {
     @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       ExpirationAttributes result;
-      if (!secondTime) {
+      if (!useShortExpiration) {
         // Set long expiration first time entry referenced
         result = new ExpirationAttributes(LONG_WAIT_MS);
-        secondTime = true;
+        useShortExpiration = true;
       } else {
         // Set short expiration second time entry referenced
         result = new ExpirationAttributes(SHORT_WAIT_MS);

@@ -141,7 +141,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   }
 
   @Override
-  protected long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
+  public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
       long lastModified, boolean clearConflict) {
     return System.currentTimeMillis();
   }
@@ -325,7 +325,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   }
 
   @Override
-  protected boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+  public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     try {

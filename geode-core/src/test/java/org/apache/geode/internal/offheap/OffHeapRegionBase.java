@@ -16,7 +16,11 @@ package org.apache.geode.internal.offheap;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -39,7 +43,10 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Released;

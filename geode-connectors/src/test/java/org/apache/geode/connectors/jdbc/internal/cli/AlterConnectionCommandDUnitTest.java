@@ -87,8 +87,8 @@ public class AlterConnectionCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
-          .getCacheXmlContent();
+      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("jdbc:connector-service");
     });
 
@@ -116,8 +116,8 @@ public class AlterConnectionCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
-          .getCacheXmlContent();
+      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("jdbc:connector-service");
     });
 

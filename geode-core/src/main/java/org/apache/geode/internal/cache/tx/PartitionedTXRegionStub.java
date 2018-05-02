@@ -38,7 +38,6 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
@@ -358,7 +357,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
     boolean retVal = false;
-    final LocalRegion r = event.getRegion();
+    final InternalRegion r = event.getRegion();
     PartitionedRegion pr = (PartitionedRegion) r;
     try {
       retVal =
@@ -387,7 +386,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
    * @param putallO DistributedPutAllOperation object.
    */
   public void postPutAll(DistributedPutAllOperation putallO, VersionedObjectList successfulPuts,
-      LocalRegion r) throws TransactionException {
+      InternalRegion r) throws TransactionException {
     if (r.getCache().isCacheAtShutdownAll()) {
       throw r.getCache().getCacheClosedException("Cache is shutting down");
     }
@@ -447,7 +446,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-      LocalRegion r) {
+      InternalRegion r) {
     if (r.getCache().isCacheAtShutdownAll()) {
       throw r.getCache().getCacheClosedException("Cache is shutting down");
     }

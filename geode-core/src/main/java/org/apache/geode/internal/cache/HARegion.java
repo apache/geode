@@ -67,7 +67,7 @@ public class HARegion extends DistributedRegion {
   }
 
   @Override
-  protected boolean isCopyOnRead() {
+  public boolean isCopyOnRead() {
     return false;
   }
 
