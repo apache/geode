@@ -38,7 +38,7 @@ import org.apache.geode.internal.logging.LogService;
 public class FindVersionTagOperation {
   private static final Logger logger = LogService.getLogger();
 
-  public static VersionTag findVersionTag(LocalRegion r, EventID eventId, boolean isBulkOp) {
+  public static VersionTag findVersionTag(InternalRegion r, EventID eventId, boolean isBulkOp) {
     DistributionManager dm = r.getDistributionManager();
     Set recipients;
     if (r instanceof DistributedRegion) {

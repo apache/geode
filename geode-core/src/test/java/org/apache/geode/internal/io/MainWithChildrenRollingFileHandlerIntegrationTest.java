@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.io;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.util.regex.Pattern;

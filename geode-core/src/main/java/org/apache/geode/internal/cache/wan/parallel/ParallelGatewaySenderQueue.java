@@ -1787,7 +1787,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
 
     @Override
-    protected boolean isCopyOnRead() {
+    public boolean isCopyOnRead() {
       return false;
     }
 

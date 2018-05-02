@@ -66,7 +66,7 @@ public class TabularResultData extends AbstractResultData {
       return 0;
     }
 
-    return jsonArray.getInternalJsonArray().length();
+    return jsonArray.size();
   }
 
   /**

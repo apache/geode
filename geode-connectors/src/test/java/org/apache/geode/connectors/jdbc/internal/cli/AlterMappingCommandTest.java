@@ -32,9 +32,10 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -46,10 +47,11 @@ public class AlterMappingCommandTest {
   private AlterMappingCommand command;
   private List<CliFunctionResult> results;
   private CliFunctionResult result;
-  private ClusterConfigurationService ccService;
+  private ConfigurationPersistenceService ccService;
   private ConnectorService.RegionMapping mapping;
   private List<ConnectorService.RegionMapping> mappings;
   private ConnectorService connectorService;
+  private CacheConfig cacheConfig;
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
@@ -64,8 +66,10 @@ public class AlterMappingCommandTest {
     when(result.isSuccessful()).thenReturn(true);
     when(result.getMemberIdOrName()).thenReturn("memberName");
     when(result.getStatus()).thenReturn("message");
-    ccService = mock(InternalClusterConfigurationService.class);
-    doReturn(ccService).when(command).getConfigurationService();
+    ccService = mock(InternalConfigurationPersistenceService.class);
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
+    cacheConfig = mock(CacheConfig.class);
+    when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
     connectorService = mock(ConnectorService.class);
     mappings = new ArrayList<>();
     mapping = new ConnectorService.RegionMapping();
@@ -105,7 +109,7 @@ public class AlterMappingCommandTest {
 
   @Test
   public void whenCCServiceIsNotAvailable() {
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     results.add(result);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), any(), any());
@@ -121,7 +125,7 @@ public class AlterMappingCommandTest {
   @Test
   public void whenCCServiceIsRunningAndNoMappingFound() {
     ConnectorService connectorService = mock(ConnectorService.class);
-    when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
+    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("mapping with name 'region' does not exist.");
     verify(command, times(0)).executeAndGetFunctionResult(any(), any(), any());
@@ -130,7 +134,7 @@ public class AlterMappingCommandTest {
   @Test
   public void noSuccessfulResult() {
     // mapping found in CC
-    when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
+    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
     when(connectorService.getRegionMapping()).thenReturn(mappings);
     mappings.add(mapping);
     // result is not successful
@@ -144,7 +148,7 @@ public class AlterMappingCommandTest {
   @Test
   public void successfulResult() {
     // mapping found in CC
-    when(ccService.getCustomCacheElement(any(), any(), any())).thenReturn(connectorService);
+    when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
     when(connectorService.getRegionMapping()).thenReturn(mappings);
     mappings.add(mapping);
 

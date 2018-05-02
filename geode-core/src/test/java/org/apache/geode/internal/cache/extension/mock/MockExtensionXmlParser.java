@@ -15,7 +15,8 @@
 
 package org.apache.geode.internal.cache.extension.mock;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

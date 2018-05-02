@@ -14,135 +14,73 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
-import static org.apache.geode.test.dunit.VM.getHostName;
-import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import java.io.Serializable;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class JdbcClusterConfigDistributedTest implements Serializable {
+public class JdbcClusterConfigDistributedTest {
 
-  private transient InternalCache cache;
-  private transient VM locator;
-
-  private String regionName;
-  private String connectionName;
-  private String connectionUrl;
-  private String tableName;
-  private String pdxClass;
-  private String locators;
-  private String[] fieldMappings;
-  private boolean keyInValue;
-
+  private static MemberVM locator, server;
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule();
 
   @Rule
-  public DistributedRestoreSystemProperties restoreSystemProperties =
-      new DistributedRestoreSystemProperties();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
-  @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
-
-  @Rule
-  public SerializableTestName testName = new SerializableTestName();
-
-  @Before
-  public void setUp() {
-    regionName = "regionName";
-    connectionName = "connection";
-    connectionUrl = "url";
-    tableName = "testTable";
-    pdxClass = "myPdxClass";
-    keyInValue = true;
-    fieldMappings = new String[] {"field1:column1", "field2:column2"};
-
-    locator = getVM(0);
-    String locatorFolder = "vm-" + locator.getId() + "-" + testName.getMethodName();
-
-    int port = locator.invoke(() -> {
-      System.setProperty("user.dir", temporaryFolder.newFolder(locatorFolder).getAbsolutePath());
-      Properties config = new Properties();
-      config.setProperty(LOCATORS, "");
-      InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(0, null, config);
-      await().atMost(2, MINUTES).until(() -> assertTrue(locator.isSharedConfigurationRunning()));
-      return Locator.getLocator().getPort();
-    });
-    locators = getHostName() + "[" + port + "]";
-
-    cache = (InternalCache) new CacheFactory().set(LOCATORS, locators).create();
-
-    locator.invoke(() -> {
-      CreateConnectionCommand command = new CreateConnectionCommand();
-      command.setCache(CacheFactory.getAnyInstance());
-      Result result = command.createConnection(connectionName, connectionUrl, null, null, null);
-      assertThat(result.getStatus()).isSameAs(Result.Status.OK);
-      CreateMappingCommand mappingCommand = new CreateMappingCommand();
-      mappingCommand.setCache(CacheFactory.getAnyInstance());
-      result = mappingCommand.createMapping(regionName, connectionName, tableName, pdxClass,
-          keyInValue, fieldMappings);
-
-      assertThat(result.getStatus()).isSameAs(Result.Status.OK);
-    });
-
-    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    validateRegionMapping(service.getMappingForRegion(regionName));
-
-    cache.close();
-  }
-
-  @After
-  public void tearDown() {
-    disconnectAllFromDS();
+  @BeforeClass
+  public static void beforeClass() {
+    locator = cluster.startLocatorVM(0);
+    server = cluster.startServerVM(1, locator.getPort());
   }
 
   @Test
-  public void recreatesCacheFromClusterConfig() {
-    cache = (InternalCache) new CacheFactory().set(LOCATORS, locators).create();
+  public void recreateCacheFromClusterConfig() throws Exception {
+    gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create jdbc-connection --name=connection --url=url")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create jdbc-mapping --region=regionName --connection=connection --table=testTable --pdx-class-name=myPdxClass --value-contains-primary-key --field-mapping=field1:column1,field2:column2")
+        .statusIsSuccess();
 
-    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    assertThat(service.getConnectionConfig(connectionName)).isNotNull();
-    validateRegionMapping(service.getMappingForRegion(regionName));
+    server.invoke(() -> {
+      JdbcConnectorService service =
+          ClusterStartupRule.getCache().getService(JdbcConnectorService.class);
+      validateRegionMapping(service.getMappingForRegion("regionName"));
+    });
+
+    server.stopVM(false);
+
+    server = cluster.startServerVM(1, locator.getPort());
+    server.invoke(() -> {
+      JdbcConnectorService service =
+          ClusterStartupRule.getCache().getService(JdbcConnectorService.class);
+      assertThat(service.getConnectionConfig("connection")).isNotNull();
+      validateRegionMapping(service.getMappingForRegion("regionName"));
+    });
   }
 
-  private void validateRegionMapping(ConnectorService.RegionMapping regionMapping) {
+  private static void validateRegionMapping(ConnectorService.RegionMapping regionMapping) {
     assertThat(regionMapping).isNotNull();
-    assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
-    assertThat(regionMapping.getConnectionConfigName()).isEqualTo(connectionName);
-    assertThat(regionMapping.getTableName()).isEqualTo(tableName);
-    assertThat(regionMapping.getPdxClassName()).isEqualTo(pdxClass);
-    assertThat(regionMapping.isPrimaryKeyInValue()).isEqualTo(keyInValue);
+    assertThat(regionMapping.getRegionName()).isEqualTo("regionName");
+    assertThat(regionMapping.getConnectionConfigName()).isEqualTo("connection");
+    assertThat(regionMapping.getTableName()).isEqualTo("testTable");
+    assertThat(regionMapping.getPdxClassName()).isEqualTo("myPdxClass");
+    assertThat(regionMapping.isPrimaryKeyInValue()).isEqualTo(true);
     assertThat(regionMapping.getColumnNameForField("field1", mock(TableMetaDataView.class)))
         .isEqualTo("column1");
     assertThat(regionMapping.getColumnNameForField("field2", mock(TableMetaDataView.class)))

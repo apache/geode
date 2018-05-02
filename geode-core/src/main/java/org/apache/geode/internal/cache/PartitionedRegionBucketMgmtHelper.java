@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.*;
+import java.util.Set;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SetUtils;

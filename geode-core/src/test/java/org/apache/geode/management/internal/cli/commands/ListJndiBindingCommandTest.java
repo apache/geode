@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -41,22 +41,22 @@ public class ListJndiBindingCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private ListJndiBindingCommand command;
-  private InternalClusterConfigurationService ccService;
+  private InternalConfigurationPersistenceService ccService;
   private CacheConfig cacheConfig;
 
 
   @Before
   public void setUp() throws Exception {
     command = spy(ListJndiBindingCommand.class);
-    ccService = mock(InternalClusterConfigurationService.class);
-    doReturn(ccService).when(command).getConfigurationService();
+    ccService = mock(InternalConfigurationPersistenceService.class);
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     cacheConfig = mock(CacheConfig.class);
     when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
   }
 
   @Test
   public void noServiceNoMember() {
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(Collections.emptySet()).when(command).findMembers(null, null);
     gfsh.executeAndAssertThat(command, "list jndi-binding").statusIsError()
         .containsOutput("No members found");
@@ -64,7 +64,7 @@ public class ListJndiBindingCommandTest {
 
   @Test
   public void hasServiceNoBindingNoMember() {
-    doReturn(ccService).when(command).getConfigurationService();
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
     when(cacheConfig.getJndiBindings()).thenReturn(Collections.emptyList());
     doReturn(Collections.emptySet()).when(command).findMembers(null, null);
     gfsh.executeAndAssertThat(command, "list jndi-binding").statusIsSuccess()

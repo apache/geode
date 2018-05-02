@@ -73,7 +73,7 @@ public class ListJndiBindingCommandDUnitTest {
 
     // member table
     List<String> jndiNames =
-        commandResultAssert.getCommandResult().getColumnFromTableContent("JNDI Name", 0, 1);
+        commandResultAssert.getCommandResult().getColumnFromTableContent("JNDI Name", "0", "1");
     assertThat(jndiNames.size()).isEqualTo(3);
     assertThat(jndiNames).containsExactlyInAnyOrder("java:jndi1", "java:UserTransaction",
         "java:TransactionManager");
