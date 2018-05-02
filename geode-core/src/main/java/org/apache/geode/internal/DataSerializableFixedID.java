@@ -823,6 +823,9 @@ public interface DataSerializableFixedID extends SerializationVersions {
   short GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_ENTRY = 2182;
   short ABORT_BACKUP_REQUEST = 2183;
 
+  short VALIDATE_CACHE_PROFILE_MESSAGE = 2184;
+  short VALIDATE_CACHE_SERVER_REPLY_MESSAGE = 2185;
+
   // NOTE, codes > 65535 will take 4 bytes to serialize
 
   /**

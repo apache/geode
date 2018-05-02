@@ -102,6 +102,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
   @Override
   public String checkCompatibility(String regionPath, CacheServiceProfile profile) {
     String result = null;
+
     LuceneIndexCreationProfile remoteProfile = (LuceneIndexCreationProfile) profile;
 
     // Verify fields are the same

@@ -806,3 +806,4 @@ org/apache/geode/security/AuthenticationFailedException,true,-820286647227908887
 org/apache/geode/security/AuthenticationRequiredException,true,4675976651103154919
 org/apache/geode/security/GemFireSecurityException,true,3814254578203076926,cause:java/lang/Throwable
 org/apache/geode/security/NotAuthorizedException,true,419215768216387745,principal:java/security/Principal
+org/apache/geode/internal/cache/IncompatibleCacheServiceProfileException,false

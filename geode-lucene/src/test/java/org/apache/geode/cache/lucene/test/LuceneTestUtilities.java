@@ -83,10 +83,8 @@ public class LuceneTestUtilities {
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER =
       "Cannot create Lucene index index on region /region with serializer DummyLuceneSerializer because another member defines the same index with different serializer HeterogeneousLuceneSerializer.";
 
-  public static String Quarter1 = "Q1";
-  public static String Quarter2 = "Q2";
-  public static String Quarter3 = "Q3";
-  public static String Quarter4 = "Q4";
+  private static String Quarter1 = "Q1";
+  private static String Quarter2 = "Q2";
 
   public static void verifyResultOrder(Collection<EntryScore<String>> list,
       EntryScore<String>... expectedEntries) {
