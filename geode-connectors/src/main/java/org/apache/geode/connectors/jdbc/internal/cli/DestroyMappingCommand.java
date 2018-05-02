@@ -46,8 +46,6 @@ public class DestroyMappingCommand extends SingleGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel destroyMapping(@CliOption(key = DESTROY_MAPPING__REGION_NAME, mandatory = true,
       help = DESTROY_MAPPING__REGION_NAME__HELP) String regionName) {
-
-    ResultModel result = new ResultModel();
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
 
@@ -55,7 +53,7 @@ public class DestroyMappingCommand extends SingleGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new DestroyMappingFunction(), regionName, targetMembers);
 
-    result.buildResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results);
     result.setConfigObject(regionName);
     return result;
   }

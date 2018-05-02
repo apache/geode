@@ -32,6 +32,7 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -41,6 +42,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class GfshExecutionStrategyTest {
   private static final String COMMAND1_SUCCESS = "Command1 Executed successfully";
   private static final String COMMAND2_SUCCESS = "Command2 Executed successfully";
+  private static final String COMMAND3_SUCCESS = "Command3 Executed successfully";
 
   private Gfsh gfsh;
   private GfshParseResult parsedCommand;
@@ -63,6 +65,14 @@ public class GfshExecutionStrategyTest {
     when(parsedCommand.getInstance()).thenReturn(new Commands());
     Result result = (Result) gfshExecutionStrategy.execute(parsedCommand);
     assertThat(result.nextLine().trim()).isEqualTo(COMMAND1_SUCCESS);
+  }
+
+  @Test
+  public void testOfflineCommandThatReturnsResultModel() throws NoSuchMethodException {
+    when(parsedCommand.getMethod()).thenReturn(Commands.class.getDeclaredMethod("offlineCommand2"));
+    when(parsedCommand.getInstance()).thenReturn(new Commands());
+    Result result = (Result) gfshExecutionStrategy.execute(parsedCommand);
+    assertThat(result.nextLine().trim()).isEqualTo(COMMAND3_SUCCESS);
   }
 
   /**
@@ -100,6 +110,11 @@ public class GfshExecutionStrategyTest {
     @CliMetaData(shellOnly = true)
     public Result offlineCommand() {
       return ResultBuilder.createInfoResult(COMMAND1_SUCCESS);
+    }
+
+    @CliMetaData(shellOnly = true)
+    public ResultModel offlineCommand2() {
+      return ResultModel.createInfo(COMMAND3_SUCCESS);
     }
 
     @CliMetaData(shellOnly = false)

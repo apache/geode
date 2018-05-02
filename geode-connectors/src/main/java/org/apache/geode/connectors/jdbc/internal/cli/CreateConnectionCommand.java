@@ -72,7 +72,6 @@ public class CreateConnectionCommand extends SingleGfshCommand {
       @CliOption(key = CREATE_CONNECTION__PARAMS,
           help = CREATE_CONNECTION__PARAMS__HELP) String[] params) {
 
-    ResultModel result = new ResultModel();
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     ConnectorService.Connection connection =
@@ -82,7 +81,7 @@ public class CreateConnectionCommand extends SingleGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new CreateConnectionFunction(), connection, targetMembers);
 
-    result = result.buildResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results);
     result.setConfigObject(connection);
     return result;
   }

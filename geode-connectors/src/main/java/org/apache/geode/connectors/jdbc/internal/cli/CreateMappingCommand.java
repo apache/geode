@@ -71,7 +71,6 @@ public class CreateMappingCommand extends SingleGfshCommand {
           specifiedDefaultValue = "true") boolean keyInValue,
       @CliOption(key = CREATE_MAPPING__FIELD_MAPPING,
           help = CREATE_MAPPING__FIELD_MAPPING__HELP) String[] fieldMappings) {
-    ResultModel result = new ResultModel();
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     ConnectorService.RegionMapping mapping = new ConnectorService.RegionMapping(regionName,
@@ -82,7 +81,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new CreateMappingFunction(), mapping, targetMembers);
 
-    result.buildResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results);
     result.setConfigObject(mapping);
     return result;
   }

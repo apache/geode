@@ -45,14 +45,13 @@ public class DestroyConnectionCommand extends SingleGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel destroyConnection(@CliOption(key = DESTROY_CONNECTION__NAME, mandatory = true,
       help = DESTROY_CONNECTION__NAME__HELP) String name) {
-    ResultModel result = new ResultModel();
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
 
     // action
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new DestroyConnectionFunction(), name, targetMembers);
-    result.buildResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results);
     result.setConfigObject(name);
     return result;
   }

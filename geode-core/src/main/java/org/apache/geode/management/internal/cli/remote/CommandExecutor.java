@@ -45,12 +45,11 @@ public class CommandExecutor {
 
   // used by the GfshParserRule to pass in a mock command
   public Object execute(Object command, GfshParseResult parseResult) {
-    ResultModel resultModel = new ResultModel();
     try {
       Object result = invokeCommand(command, parseResult);
 
       if (result == null) {
-        return resultModel.createError("Command returned null: " + parseResult);
+        return ResultModel.createError("Command returned null: " + parseResult);
       }
       return result;
     }
@@ -64,23 +63,23 @@ public class CommandExecutor {
     // for these exceptions, needs to create a UserErrorResult (still reported as error by gfsh)
     // no need to log since this is a user error
     catch (UserErrorException | IllegalStateException | IllegalArgumentException e) {
-      return resultModel.createError(e.getMessage());
+      return ResultModel.createError(e.getMessage());
     }
 
     // if entity not found, depending on the thrower's intention, report either as success or error
     // no need to log since this is a user error
     catch (EntityNotFoundException e) {
       if (e.isStatusOK()) {
-        return resultModel.createInfo("Skipping: " + e.getMessage());
+        return ResultModel.createInfo("Skipping: " + e.getMessage());
       } else {
-        return resultModel.createError(e.getMessage());
+        return ResultModel.createError(e.getMessage());
       }
     }
 
     // all other exceptions, log it and build an error result.
     catch (Exception e) {
       logger.error("Could not execute \"" + parseResult + "\".", e);
-      return resultModel.createError(
+      return ResultModel.createError(
           "Error while processing command <" + parseResult + "> Reason : " + e.getMessage());
     }
 

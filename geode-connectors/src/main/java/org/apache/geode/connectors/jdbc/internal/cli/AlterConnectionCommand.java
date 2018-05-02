@@ -70,7 +70,6 @@ public class AlterConnectionCommand extends SingleGfshCommand {
           help = ALTER_CONNECTION__PASSWORD__HELP) String password,
       @CliOption(key = ALTER_CONNECTION__PARAMS, specifiedDefaultValue = "",
           help = ALTER_CONNECTION__PARAMS__HELP) String[] params) {
-    ResultModel result = new ResultModel();
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     ConnectorService.Connection newConnection =
@@ -102,7 +101,7 @@ public class AlterConnectionCommand extends SingleGfshCommand {
     ConnectorService.Connection mergedConnection =
         (ConnectorService.Connection) successResult.getResultObject();
 
-    result = result.buildResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results);
     result.setConfigObject(mergedConnection);
     return result;
   }

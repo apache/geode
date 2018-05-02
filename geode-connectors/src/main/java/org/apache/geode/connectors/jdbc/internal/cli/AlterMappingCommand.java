@@ -76,7 +76,6 @@ public class AlterMappingCommand extends SingleGfshCommand {
           specifiedDefaultValue = "true") Boolean keyInValue,
       @CliOption(key = ALTER_MAPPING__FIELD_MAPPING, help = ALTER_MAPPING__FIELD_MAPPING__HELP,
           specifiedDefaultValue = "") String[] fieldMappings) {
-    ResultModel result = new ResultModel();
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     ConnectorService.RegionMapping newMapping = new ConnectorService.RegionMapping(regionName,
@@ -103,7 +102,7 @@ public class AlterMappingCommand extends SingleGfshCommand {
     // action
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new AlterMappingFunction(), newMapping, targetMembers);
-    result = result.buildResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results);
 
     // find the merged regionMapping from the function result
     CliFunctionResult successResult =

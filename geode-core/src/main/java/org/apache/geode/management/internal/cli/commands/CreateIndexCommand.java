@@ -65,11 +65,10 @@ public class CreateIndexCommand extends SingleGfshCommand {
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_INDEX__GROUP__HELP) final String[] groups) {
 
-    ResultModel result = new ResultModel();
     final Set<DistributedMember> targetMembers = findMembers(groups, memberNameOrID);
 
     if (targetMembers.isEmpty()) {
-      return result.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     RegionConfig.Index index = new RegionConfig.Index();
@@ -85,7 +84,7 @@ public class CreateIndexCommand extends SingleGfshCommand {
 
     List<CliFunctionResult> functionResults =
         executeAndGetFunctionResult(createIndexFunction, index, targetMembers);
-    result = result.buildResult(functionResults);
+    ResultModel result = ResultModel.createMemberStatusResult(functionResults);
     result.setConfigObject(index);
     return result;
   }
