@@ -15,7 +15,9 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -48,7 +50,7 @@ public class TXEntryUserAttrState {
     return result;
   }
 
-  void checkForConflict(LocalRegion r, Object key) throws CommitConflictException {
+  void checkForConflict(InternalRegion r, Object key) throws CommitConflictException {
     Object curCmtValue = r.basicGetEntryUserAttribute(key);
     if (this.originalValue != curCmtValue) {
       throw new CommitConflictException(
@@ -57,7 +59,7 @@ public class TXEntryUserAttrState {
     }
   }
 
-  void applyChanges(LocalRegion r, Object key) {
+  void applyChanges(InternalRegion r, Object key) {
     try {
       Region.Entry re = r.getEntry(key);
       re.setUserAttribute(this.pendingValue);

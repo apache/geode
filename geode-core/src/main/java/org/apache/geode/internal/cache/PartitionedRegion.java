@@ -2047,9 +2047,9 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
-      boolean requireOldValue, long lastModified, boolean overwriteDestroyed)
-      throws TimeoutException, CacheWriterException {
+  public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     final long startTime = PartitionedRegionStats.startTime();
     boolean result = false;
     final DistributedPutAllOperation putAllOp_save = event.setPutAllOperation(null);
@@ -5136,7 +5136,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
+  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
       final Object expectedOldValue)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
 
@@ -7735,7 +7735,7 @@ public class PartitionedRegion extends LocalRegion
    * @see BucketRegion#cacheWriteBeforePut(EntryEventImpl, Set, CacheWriter, boolean, Object)
    */
   @Override
-  protected void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
+  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
       CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
     final boolean isDebugEnabled = logger.isDebugEnabled();

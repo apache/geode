@@ -57,6 +57,12 @@ public class StringType {
   @XmlValue
   protected String value;
 
+  public StringType() {}
+
+  public StringType(String value) {
+    this.value = value;
+  }
+
   /**
    * Gets the value of the value property.
    *

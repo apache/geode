@@ -18,6 +18,8 @@
 
 package org.apache.geode.cache.configuration;
 
+import static org.apache.geode.cache.configuration.CacheElement.findElement;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.w3c.dom.Element;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Region;
 
 
 /**
@@ -1020,6 +1023,50 @@ public class CacheConfig {
    */
   public void setVersion(String value) {
     this.version = value;
+  }
+
+  public RegionConfig findRegionConfiguration(String regionPath) {
+    if (regionPath.startsWith(Region.SEPARATOR)) {
+      regionPath = regionPath.substring(1);
+    }
+    return findElement(getRegion(), regionPath);
+  }
+
+  public <T extends CacheElement> List<T> findCustomCacheElements(Class<T> classT) {
+    List<T> newList = new ArrayList<>();
+    // streaming won't work here, because it's trying to cast element into CacheElement
+    for (Object element : getCustomCacheElements()) {
+      if (classT.isInstance(element)) {
+        newList.add(classT.cast(element));
+      }
+    }
+    return newList;
+  }
+
+  public <T extends CacheElement> T findCustomCacheElement(String elementId, Class<T> classT) {
+    return findElement(findCustomCacheElements(classT), elementId);
+  }
+
+  public <T extends CacheElement> List<T> findCustomRegionElements(String regionPath,
+      Class<T> classT) {
+    List<T> newList = new ArrayList<>();
+    RegionConfig regionConfig = findRegionConfiguration(regionPath);
+    if (regionConfig == null) {
+      return newList;
+    }
+
+    // streaming won't work here, because it's trying to cast element into CacheElement
+    for (Object element : regionConfig.getCustomRegionElements()) {
+      if (classT.isInstance(element)) {
+        newList.add(classT.cast(element));
+      }
+    }
+    return newList;
+  }
+
+  public <T extends CacheElement> T findCustomRegionElement(String regionPath, String elementId,
+      Class<T> classT) {
+    return findElement(findCustomRegionElements(regionPath, classT), elementId);
   }
 
   /**

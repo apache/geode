@@ -15,7 +15,8 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.io.*;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 /**
  * Singleton token indicating that all interest registrations should be removed.

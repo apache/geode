@@ -14,8 +14,11 @@
  */
 package org.apache.geode.internal.util;
 
-import static org.apache.geode.internal.util.BlobHelper.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.util.BlobHelper.deserializeBlob;
+import static org.apache.geode.internal.util.BlobHelper.serializeTo;
+import static org.apache.geode.internal.util.BlobHelper.serializeToBlob;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.EOFException;
 import java.io.NotSerializableException;

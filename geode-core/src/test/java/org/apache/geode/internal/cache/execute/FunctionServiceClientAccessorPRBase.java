@@ -15,7 +15,8 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.test.dunit.Wait.pause;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.HashSet;
 import java.util.Iterator;

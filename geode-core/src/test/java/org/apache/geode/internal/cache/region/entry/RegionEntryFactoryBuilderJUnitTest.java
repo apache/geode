@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.region.entry;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;

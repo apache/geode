@@ -15,12 +15,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.*;
-import org.apache.geode.internal.admin.*;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.admin.EntrySnapshot;
 
 public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
   private static final long serialVersionUID = 1360498801579593535L;

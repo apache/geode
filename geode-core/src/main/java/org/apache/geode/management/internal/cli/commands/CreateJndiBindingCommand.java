@@ -29,7 +29,7 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -148,8 +148,8 @@ public class CreateJndiBindingCommand extends InternalGfshCommand {
 
     Result result;
     boolean persisted = false;
-    InternalClusterConfigurationService service =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService service =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
 
     if (service != null) {
       CacheConfig cacheConfig = service.getCacheConfig("cluster");

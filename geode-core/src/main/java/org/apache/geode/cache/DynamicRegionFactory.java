@@ -877,7 +877,7 @@ public abstract class DynamicRegionFactory {
     }
 
     @Override
-    protected boolean isCopyOnRead() {
+    public boolean isCopyOnRead() {
       return false;
     }
 
@@ -909,7 +909,7 @@ public abstract class DynamicRegionFactory {
 
     // Over-ride the super behavior to perform the creation of the dynamic region
     @Override
-    protected long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
+    public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
         long lastModified, boolean clearConflict) {
 
       boolean isCreate = event.getOperation().isCreate();
@@ -990,7 +990,7 @@ public abstract class DynamicRegionFactory {
     // }
 
     @Override
-    protected boolean isCopyOnRead() {
+    public boolean isCopyOnRead() {
       return false;
     }
 
@@ -1018,7 +1018,7 @@ public abstract class DynamicRegionFactory {
     }
 
     @Override
-    protected long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
+    public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
         long lastModified, boolean clearConflict) {
       boolean isCreate = event.getOperation().isCreate();
       boolean set = false;

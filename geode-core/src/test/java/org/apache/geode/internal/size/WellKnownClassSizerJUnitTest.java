@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.size;
 
-import static org.apache.geode.internal.size.SizeTestUtil.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.internal.size.SizeTestUtil.OBJECT_SIZE;
+import static org.apache.geode.internal.size.SizeTestUtil.roundup;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

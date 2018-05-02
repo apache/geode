@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.partitioned.fixed;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;

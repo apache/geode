@@ -22,12 +22,13 @@ import java.io.UncheckedIOException;
 
 import org.apache.geode.pdx.internal.InternalPdxInstance;
 
-class EntryEventSerialization {
+public class EntryEventSerialization {
 
   private final boolean enabled =
       getProductBooleanProperty(EARLY_ENTRY_EVENT_SERIALIZATION).orElse(false);
 
-  void serializeNewValueIfNeeded(final InternalRegion region, final InternalEntryEvent event) {
+  public void serializeNewValueIfNeeded(final InternalRegion region,
+      final InternalEntryEvent event) {
     if (enabled) {
       doWork(region, event);
     }

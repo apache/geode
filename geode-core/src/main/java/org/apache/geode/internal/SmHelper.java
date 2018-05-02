@@ -16,8 +16,10 @@
 package org.apache.geode.internal;
 
 import java.io.InvalidClassException;
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 

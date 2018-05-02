@@ -79,7 +79,7 @@ echo "TMPDIR = ${TMPDIR}"
 echo "GRADLE_TASK = ${GRADLE_TASK}"
 echo "BASE_FILENAME = ${BASE_FILENAME}"
 
-DOCKER_RESOURCE="docker-test-image"
+DOCKER_RESOURCE="docker-geode-build-image"
 DOCKER_PIDFILE="/var/run/docker.pid"
 
 if [ -e ${DOCKER_RESOURCE}/rootfs.tar ]; then
