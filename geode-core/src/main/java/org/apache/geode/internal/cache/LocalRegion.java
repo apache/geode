@@ -5053,6 +5053,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
+   * Called by AbstractRegionMap txApplyPut when it was told a destroy was also done
+   * by the transaction.
+   */
+  void txApplyPutHandleDidDestroy(Object key) {
+    if (this.entryUserAttributes != null) {
+      this.entryUserAttributes.remove(key);
+    }
+  }
+
+  /**
    * Allows null as new value to accomodate create with a null value. Assumes all key, value, and
    * callback validations have been performed.
    *

@@ -823,6 +823,9 @@ public class AbstractRegionMapTest {
     protected TxTestableAbstractRegionMap() {
       super(null);
       LocalRegion owner = mock(LocalRegion.class);
+      KeyInfo keyInfo = mock(KeyInfo.class);
+      when(keyInfo.getKey()).thenReturn(KEY);
+      when(owner.getKeyInfo(eq(KEY), any(), any())).thenReturn(keyInfo);
       when(owner.getMyId()).thenReturn(mock(InternalDistributedMember.class));
       when(owner.getCache()).thenReturn(mock(InternalCache.class));
       when(owner.isAllEvents()).thenReturn(true);

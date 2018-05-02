@@ -320,7 +320,7 @@ public class RegionMapPut {
   private boolean addRegionEntryToMapAndDoPut() {
     synchronized (getRegionEntry()) {
       putIfAbsentNewEntry();
-      return doPutOnRegionEntry();
+      return doPutOnRegionEntryInMap();
     }
   }
 
@@ -335,9 +335,9 @@ public class RegionMapPut {
   }
 
   /**
-   * @return false if caller should retry
+   * @return false if caller should retry because entry is no longer in the map
    */
-  private boolean doPutOnRegionEntry() {
+  private boolean doPutOnRegionEntryInMap() {
     final RegionEntry re = getRegionEntry();
 
     synchronized (re) {
@@ -348,7 +348,7 @@ public class RegionMapPut {
       setOldValueForDelta();
       try {
         setOldValueInEvent();
-        doCreateOrUpdate();
+        doPutIfPreconditionsPass();
         return true;
       } finally {
         OffHeapHelper.release(getOldValueForDelta());
@@ -384,36 +384,37 @@ public class RegionMapPut {
   }
 
   /**
-   * @return false if an early out check indicated that
+   * @return false if precondition indicates that
    *         the put should not be done.
    */
-  private boolean shouldPutContinue() {
+  private boolean checkPreconditions() {
     if (continueUpdate() && continueOverwriteDestroyed() && satisfiesExpectedOldValue()) {
       return true;
     }
     return false;
   }
 
-  private void doCreateOrUpdate() {
-    if (!shouldPutContinue()) {
+  private void doPutIfPreconditionsPass() {
+    if (!checkPreconditions()) {
       return;
     }
     invokeCacheWriter();
+    runWithIndexUpdatingInProgress(this::doPutAndDeliverEvent);
+  }
 
-    runWithIndexUpdatingInProgress(() -> {
-      final EntryEventImpl event = getEvent();
-      createOrUpdateEntry();
-      if (isUninitialized()) {
-        event.inhibitCacheListenerNotification(true);
-      }
-      updateLru();
+  private void doPutAndDeliverEvent() {
+    final EntryEventImpl event = getEvent();
+    createOrUpdateEntry();
+    if (isUninitialized()) {
+      event.inhibitCacheListenerNotification(true);
+    }
+    updateLru();
 
-      final RegionEntry re = getRegionEntry();
-      long lastModTime = getOwner().basicPutPart2(event, re, !isUninitialized(),
-          getLastModifiedTime(), getClearOccured());
-      setLastModifiedTime(lastModTime);
-      setCompleted(true);
-    });
+    final RegionEntry re = getRegionEntry();
+    long lastModTime = getOwner().basicPutPart2(event, re, !isUninitialized(),
+        getLastModifiedTime(), getClearOccured());
+    setLastModifiedTime(lastModTime);
+    setCompleted(true);
   }
 
   private void runWithIndexUpdatingInProgress(Runnable r) {
