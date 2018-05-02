@@ -26,7 +26,7 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -54,8 +54,8 @@ public class ListJndiBindingCommand extends InternalGfshCommand {
     TabularResultData configTable = null;
     TabularResultData memberTable = null;
 
-    InternalClusterConfigurationService ccService =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService ccService =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
     if (ccService != null) {
       configTable = resultSection.addTable();
       // we don't support creating jndi binding with random group name yet

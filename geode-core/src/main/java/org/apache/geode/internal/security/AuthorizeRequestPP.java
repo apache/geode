@@ -22,7 +22,12 @@ import java.security.Principal;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.operations.*;
+import org.apache.geode.cache.operations.ExecuteCQOperationContext;
+import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
+import org.apache.geode.cache.operations.GetOperationContext;
+import org.apache.geode.cache.operations.KeySetOperationContext;
+import org.apache.geode.cache.operations.OperationContext;
+import org.apache.geode.cache.operations.QueryOperationContext;
 import org.apache.geode.cache.operations.internal.GetOperationContextImpl;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.ClassLoadUtil;

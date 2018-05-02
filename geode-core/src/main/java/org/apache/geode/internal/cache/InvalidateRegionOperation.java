@@ -18,10 +18,11 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
+import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 

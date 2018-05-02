@@ -15,7 +15,8 @@
 package org.apache.geode.internal.cache;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireException;

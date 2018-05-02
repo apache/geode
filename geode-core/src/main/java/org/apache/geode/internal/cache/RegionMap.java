@@ -344,9 +344,9 @@ public interface RegionMap extends EvictableMap {
 
   void close(BucketRegion bucketRegion);
 
-  default void lockRegionForAtomicTX(LocalRegion r) {}
+  default void lockRegionForAtomicTX(InternalRegion r) {}
 
-  default void unlockRegionForAtomicTX(LocalRegion r) {}
+  default void unlockRegionForAtomicTX(InternalRegion r) {}
 
   ARMLockTestHook getARMLockTestHook();
 

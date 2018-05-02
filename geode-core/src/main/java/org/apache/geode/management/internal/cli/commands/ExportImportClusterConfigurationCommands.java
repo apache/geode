@@ -38,7 +38,7 @@ import org.xml.sax.SAXException;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -94,7 +94,7 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
     }
 
     File zipFile = tempDir.resolve("exportedCC.zip").toFile();
-    InternalClusterConfigurationService sc = locator.getSharedConfiguration();
+    InternalConfigurationPersistenceService sc = locator.getConfigurationPersistenceService();
 
     Result result;
     try {
@@ -134,8 +134,8 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
           help = CliStrings.IMPORT_SHARED_CONFIG__ZIP__HELP) String zip)
       throws IOException, TransformerException, SAXException, ParserConfigurationException {
 
-    InternalClusterConfigurationService sc =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService sc =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
 
     if (sc == null) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);

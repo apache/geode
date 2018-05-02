@@ -14,9 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.cache.query.functional.QueryREUpdateInProgressJUnitTest.regionName;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 import java.util.Iterator;

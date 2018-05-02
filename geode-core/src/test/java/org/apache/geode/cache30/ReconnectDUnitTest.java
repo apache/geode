@@ -25,6 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;

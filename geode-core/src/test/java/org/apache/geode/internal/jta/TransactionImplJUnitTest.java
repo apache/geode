@@ -26,7 +26,11 @@ import java.util.Properties;
 import javax.transaction.Synchronization;
 import javax.transaction.UserTransaction;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedSystem;

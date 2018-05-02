@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 
 import java.util.Properties;
 

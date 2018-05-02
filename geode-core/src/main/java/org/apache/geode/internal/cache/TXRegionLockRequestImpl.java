@@ -41,7 +41,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
 
   private transient InternalCache cache;
 
-  private transient LocalRegion r;
+  private transient InternalRegion r;
 
   private String regionPath;
 
@@ -52,7 +52,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     this.cache = null;
   }
 
-  public TXRegionLockRequestImpl(InternalCache cache, LocalRegion r) {
+  public TXRegionLockRequestImpl(InternalCache cache, InternalRegion r) {
     this.cache = cache;
     this.r = r;
     this.regionPath = null;
@@ -173,7 +173,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
    * Only safe to call in the vm that creates this request. Once it is serialized this method will
    * return null.
    */
-  public LocalRegion getLocalRegion() {
+  public InternalRegion getLocalRegion() {
     return this.r;
   }
 

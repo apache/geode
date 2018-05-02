@@ -18,7 +18,12 @@ import java.io.IOException;
 
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.Command;
-import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
 
 public class PeriodicAck extends BaseCommand {

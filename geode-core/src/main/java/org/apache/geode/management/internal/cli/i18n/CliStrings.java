@@ -42,7 +42,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
@@ -2413,7 +2413,8 @@ public class CliStrings {
       "Deprecated: Since Geode 1.6, use import cluster-configuration command instead. When \" "
           + START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM
           + " \" is set to true, the locator loads the cluster configuration from the \""
-          + InternalClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME + "\" directory.";
+          + InternalConfigurationPersistenceService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME
+          + "\" directory.";
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR = "cluster-config-dir";
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR__HELP =
       "Directory used by the cluster configuration service to store the cluster configuration on the filesystem";
@@ -3098,7 +3099,7 @@ public class CliStrings {
       "Configures Geode's Portable Data eXchange for all the cache(s) in the cluster. This command would not take effect on the running members in the system.\n This command persists the pdx configuration in the locator with cluster configuration service. \n This command should be issued before starting any data members.";
   public static final String CONFIGURE_PDX__READ__SERIALIZED = "read-serialized";
   public static final String CONFIGURE_PDX__READ__SERIALIZED__HELP =
-      "Set to true to have PDX deserialization produce a PdxInstance instead of an instance of the domain class";
+      "Set to true to have PDX deserialization produce a PdxInstance instead of an instance of the domain class. The default value for this options is \"false\"";
   public static final String CONFIGURE_PDX__IGNORE__UNREAD_FIELDS = "ignore-unread-fields";
   public static final String CONFIGURE_PDX__IGNORE__UNREAD_FIELDS__HELP =
       "Control whether pdx ignores fields that were unread during deserialization. The default is to preserve unread fields be including their data during serialization. But if you configure the cache to ignore unread fields then their data will be lost during serialization."
@@ -3108,7 +3109,7 @@ public class CliStrings {
       "Control whether the type metadata for PDX objects is persisted to disk. The default for this setting is false. If you are using persistent regions with PDX then you must set this to true. If you are using a GatewaySender or AsyncEventQueue with PDX then you should set this to true";
   public static final String CONFIGURE_PDX__DISKSTORE = "disk-store";
   public static final String CONFIGURE_PDX__DISKSTORE__HELP =
-      "Named disk store where the PDX type data will be stored";
+      "Named disk store where the PDX type data will be stored. The default value for this options is \"DEFAULT\"";
 
   public static final String CONFIGURE_PDX__CHECK__PORTABILITY = "check-portability";
   public static final String CONFIGURE_PDX__CHECK__PORTABILITY__HELP =

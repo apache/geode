@@ -3242,10 +3242,6 @@ public class WANTestBase extends DistributedTestCase {
           break;
         }
       }
-      RegionQueue regionQueue =
-          ((AbstractGatewaySender) sender).getQueues().toArray(new RegionQueue[1])[0];
-      Set<BucketRegion> buckets = ((PartitionedRegion) regionQueue.getRegion()).getDataStore()
-          .getAllLocalPrimaryBucketRegions();
       final AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
       RegionQueue queue = abstractSender.getEventProcessor().queue;
       Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {

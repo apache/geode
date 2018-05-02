@@ -39,7 +39,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunct
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.management.cli.CliMetaData;
@@ -200,8 +200,8 @@ public class LuceneIndexCommands extends InternalGfshCommand {
     result = ResultBuilder.buildResult(tabularResult);
     if (xmlEntity != null) {
       persistClusterConfiguration(result, () -> {
-        ((InternalClusterConfigurationService) getConfigurationService()).addXmlEntity(xmlEntity,
-            null);
+        ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
+            .addXmlEntity(xmlEntity, null);
       });
     }
     return result;
@@ -294,8 +294,8 @@ public class LuceneIndexCommands extends InternalGfshCommand {
     if (xmlEntity != null) {
       persistClusterConfiguration(result, () -> {
         // Delete the xml entity to remove the index(es) in all groups
-        ((InternalClusterConfigurationService) getConfigurationService()).deleteXmlEntity(xmlEntity,
-            null);
+        ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
+            .deleteXmlEntity(xmlEntity, null);
       });
     }
 

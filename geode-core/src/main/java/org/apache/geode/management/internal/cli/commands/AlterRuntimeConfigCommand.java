@@ -30,7 +30,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogLevel;
@@ -217,7 +217,7 @@ public class AlterRuntimeConfigCommand extends InternalGfshCommand {
       final XmlEntity xmlEntity = XmlEntity.builder().withType(CacheXml.CACHE)
           .withAttributes(rumTimeCacheAttributes).build();
       persistClusterConfiguration(result,
-          () -> ((InternalClusterConfigurationService) getConfigurationService())
+          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
               .modifyXmlAndProperties(properties, xmlEntity, group));
       return result;
     } else {

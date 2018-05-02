@@ -33,8 +33,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.management.*;
-import javax.management.remote.*;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
+import javax.management.ReflectionException;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXConnectorServerFactory;
+import javax.management.remote.JMXServiceURL;
 
 import org.junit.After;
 import org.junit.Before;

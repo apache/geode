@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.eviction;
 
 import static org.apache.geode.internal.lang.SystemPropertyHelper.EVICTION_SCAN_ASYNC;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

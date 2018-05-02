@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.apache.geode.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.ARCHIVE_FILE_NAME;
+import static org.apache.geode.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.STATS_SPEC_STRING;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.net.URL;

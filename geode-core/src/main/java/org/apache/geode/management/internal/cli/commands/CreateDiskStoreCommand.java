@@ -23,7 +23,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -120,7 +120,7 @@ public class CreateDiskStoreCommand extends InternalGfshCommand {
 
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> ((InternalClusterConfigurationService) getConfigurationService())
+          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
               .addXmlEntity(xmlEntity, groups));
     }
 

@@ -14,14 +14,18 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.ToDataException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.PartitionAttributesFactory;

@@ -955,7 +955,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     private final Map<InternalDistributedMember, CacheProfile> memberProfiles;
 
 
-    protected InitialImageAdvice(Set<InternalDistributedMember> replicates,
+    public InitialImageAdvice(Set<InternalDistributedMember> replicates,
         Set<InternalDistributedMember> others, Set<InternalDistributedMember> preloaded,
         Set<InternalDistributedMember> empties, Set<InternalDistributedMember> uninitialized,
         Set<InternalDistributedMember> nonPersistent,

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
