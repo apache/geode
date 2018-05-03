@@ -424,18 +424,30 @@ public class RegionConfig implements CacheElement {
   public static class Entry {
 
     @XmlElement(namespace = "http://geode.apache.org/schema/cache", required = true)
-    protected RegionConfig.Entry.Key key;
+    protected RegionConfig.Entry.Type key;
     @XmlElement(namespace = "http://geode.apache.org/schema/cache", required = true)
-    protected RegionConfig.Entry.Value value;
+    protected RegionConfig.Entry.Type value;
+
+    public Entry() {};
+
+    public Entry(String key, String value) {
+      this.key = new Type(key);
+      this.value = new Type(value);
+    }
+
+    public Entry(Type key, Type value) {
+      this.key = key;
+      this.value = value;
+    }
 
     /**
      * Gets the value of the key property.
      *
      * possible object is
-     * {@link RegionConfig.Entry.Key }
+     * {@link RegionConfig.Entry.Type }
      *
      */
-    public RegionConfig.Entry.Key getKey() {
+    public RegionConfig.Entry.Type getKey() {
       return key;
     }
 
@@ -443,10 +455,10 @@ public class RegionConfig implements CacheElement {
      * Sets the value of the key property.
      *
      * allowed object is
-     * {@link RegionConfig.Entry.Key }
+     * {@link RegionConfig.Entry.Type }
      *
      */
-    public void setKey(RegionConfig.Entry.Key value) {
+    public void setKey(RegionConfig.Entry.Type value) {
       this.key = value;
     }
 
@@ -454,10 +466,10 @@ public class RegionConfig implements CacheElement {
      * Gets the value of the value property.
      *
      * possible object is
-     * {@link RegionConfig.Entry.Value }
+     * {@link RegionConfig.Entry.Type }
      *
      */
-    public RegionConfig.Entry.Value getValue() {
+    public RegionConfig.Entry.Type getValue() {
       return value;
     }
 
@@ -465,14 +477,13 @@ public class RegionConfig implements CacheElement {
      * Sets the value of the value property.
      *
      * allowed object is
-     * {@link RegionConfig.Entry.Value }
+     * {@link RegionConfig.Entry.Type }
      *
      */
-    public void setValue(RegionConfig.Entry.Value value) {
+    public void setValue(RegionConfig.Entry.Type value) {
       this.value = value;
     }
 
-
     /**
      * <p>
      * Java class for anonymous complex type.
@@ -497,12 +508,21 @@ public class RegionConfig implements CacheElement {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {"string", "declarable"})
-    public static class Key {
-
+    public static class Type {
       @XmlElement(namespace = "http://geode.apache.org/schema/cache")
       protected StringType string;
       @XmlElement(namespace = "http://geode.apache.org/schema/cache")
       protected DeclarableType declarable;
+
+      public Type() {}
+
+      public Type(String string) {
+        this.string = new StringType(string);
+      }
+
+      public Type(DeclarableType declarable) {
+        this.declarable = declarable;
+      }
 
       /**
        * Gets the value of the string property.
@@ -522,86 +542,8 @@ public class RegionConfig implements CacheElement {
        * {@link StringType }
        *
        */
-      public void setString(StringType value) {
-        this.string = value;
-      }
-
-      /**
-       * Gets the value of the declarable property.
-       *
-       * possible object is
-       * {@link DeclarableType }
-       *
-       */
-      public DeclarableType getDeclarable() {
-        return declarable;
-      }
-
-      /**
-       * Sets the value of the declarable property.
-       *
-       * allowed object is
-       * {@link DeclarableType }
-       *
-       */
-      public void setDeclarable(DeclarableType value) {
-        this.declarable = value;
-      }
-
-    }
-
-
-    /**
-     * <p>
-     * Java class for anonymous complex type.
-     *
-     * <p>
-     * The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;choice>
-     *         &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
-     *         &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
-     *       &lt;/choice>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     *
-     *
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"string", "declarable"})
-    public static class Value {
-
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected StringType string;
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected DeclarableType declarable;
-
-      /**
-       * Gets the value of the string property.
-       *
-       * possible object is
-       * {@link StringType }
-       *
-       */
-      public StringType getString() {
-        return string;
-      }
-
-      /**
-       * Sets the value of the string property.
-       *
-       * allowed object is
-       * {@link StringType }
-       *
-       */
-      public void setString(StringType value) {
-        this.string = value;
+      public void setString(String value) {
+        this.string = new StringType(value);
       }
 
       /**

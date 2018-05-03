@@ -24,7 +24,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.cache.configuration.PdxType;
-import org.apache.geode.cache.configuration.StringType;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -123,7 +122,7 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
                 finalAutoSerializer.getConfig().entrySet().stream().map(entry -> {
                   ParameterType parameterType = new ParameterType();
                   parameterType.setName((String) entry.getKey());
-                  parameterType.setString(new StringType((String) entry.getValue()));
+                  parameterType.setString((String) entry.getValue());
                   return parameterType;
                 }).collect(Collectors.toList());
             pdxSerializer.getParameter().addAll(parameters);
