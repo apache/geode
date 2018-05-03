@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

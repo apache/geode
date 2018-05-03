@@ -20,7 +20,7 @@
 
 package org.apache.geode.cache.query.data;
 
-import java.io.*;
+import java.io.Serializable;
 
 public class Village implements Serializable {
   public String name;
