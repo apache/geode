@@ -165,6 +165,11 @@ public class LuceneServiceImplJUnitTest {
     }
 
     @Override
+    protected void validateLuceneIndexProfile(PartitionedRegion region) {
+
+    }
+
+    @Override
     protected void validateAllMembersAreTheSameVersion(PartitionedRegion region) {
 
     }
