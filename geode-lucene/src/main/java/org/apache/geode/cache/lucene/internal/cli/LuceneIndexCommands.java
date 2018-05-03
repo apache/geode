@@ -123,10 +123,12 @@ public class LuceneIndexCommands extends InternalGfshCommand {
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
         indexData.accumulate("Serializer", indexDetails.getSerializerString());
-        indexData.accumulate("Status", indexDetails.getInitialized() ? "Initialized" : "Defined");
+        indexData.accumulate("Status", indexDetails.getStatus().toString());
 
         if (stats) {
-          if (!indexDetails.getInitialized()) {
+          LuceneIndexStatus luceneIndexStatus = indexDetails.getStatus();
+          if (luceneIndexStatus == LuceneIndexStatus.NOT_INITIALIZED
+              || luceneIndexStatus == LuceneIndexStatus.INDEXING_IN_PROGRESS) {
             indexData.accumulate("Query Executions", "NA");
             indexData.accumulate("Updates", "NA");
             indexData.accumulate("Commits", "NA");

@@ -130,7 +130,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
 
     gfsh.executeAndAssertThat(csb.toString())
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Defined")
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "NOT_INITIALIZED")
         .tableHasColumnWithExactValuesInAnyOrder("Index Name", INDEX_NAME);
   }
 
@@ -149,7 +149,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Index Name", INDEX_NAME)
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Initialized")
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "INITIALIZED")
         .tableHasColumnWithExactValuesInAnyOrder("Region Path", "/region")
         .tableHasColumnWithExactValuesInAnyOrder("Query Executions", "1")
         .tableHasColumnWithExactValuesInAnyOrder("Documents", "2");

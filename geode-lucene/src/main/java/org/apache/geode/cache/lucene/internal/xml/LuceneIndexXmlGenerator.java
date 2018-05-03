@@ -29,7 +29,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
@@ -38,9 +37,9 @@ import org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils;
 public class LuceneIndexXmlGenerator implements XmlGenerator<Region<?, ?>> {
   private static final AttributesImpl EMPTY = new AttributesImpl();
 
-  private final LuceneIndex index;
+  private final LuceneIndexCreation index;
 
-  public LuceneIndexXmlGenerator(LuceneIndex index) {
+  public LuceneIndexXmlGenerator(LuceneIndexCreation index) {
     this.index = index;
   }
 

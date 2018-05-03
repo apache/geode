@@ -28,7 +28,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
@@ -39,7 +38,7 @@ import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
-public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>> {
+public class LuceneIndexCreation implements Extension<Region<?, ?>> {
   private Region region;
   private String name;
   private Set<String> fieldNames = new LinkedHashSet<String>();
@@ -61,7 +60,6 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
     this.fieldAnalyzers = fieldAnalyzers;
   }
 
-  @Override
   public Map<String, Analyzer> getFieldAnalyzers() {
     if (this.fieldAnalyzers == null) {
       this.fieldAnalyzers = new HashMap<>();
@@ -77,12 +75,10 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
     return fieldNames.toArray(new String[fieldNames.size()]);
   }
 
-  @Override
   public String getRegionPath() {
     return region.getFullPath();
   }
 
-  @Override
   public LuceneSerializer getLuceneSerializer() {
     return this.luceneSerializer;
   }
