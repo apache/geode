@@ -71,4 +71,11 @@ public class AlterRegionCommandTest {
     GfshParseResult result = parser.parse(command);
     assertThat(result.getParamValue("entry-idle-time-custom-expiry")).isEqualTo(ClassName.EMPTY);
   }
+
+  @Test
+  public void regionNameIsConverted() {
+    String command = "alter region --name=Person";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo("/Person");
+  }
 }
