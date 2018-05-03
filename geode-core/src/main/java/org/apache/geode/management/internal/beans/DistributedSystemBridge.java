@@ -1405,13 +1405,14 @@ public class DistributedSystemBridge {
       Map<String, Boolean> senderMap = new HashMap<>();
       for (GatewaySenderMXBean bean : mapOfGatewaySenders.values()) {
         Integer dsId = bean.getRemoteDSId();
-        if (dsId > -1) {
-          if (bean.isParallel()) {
-            senderMap.merge(dsId.toString(), bean.isConnected(), Boolean::logicalAnd);
-          } else {
-            if (bean.isPrimary()) {
-              senderMap.put(dsId.toString(), bean.isConnected());
-            }
+        if (dsId == null || dsId <= -1) {
+          continue;
+        }
+        if (bean.isParallel()) {
+          senderMap.merge(dsId.toString(), bean.isConnected(), Boolean::logicalAnd);
+        } else {
+          if (bean.isPrimary()) {
+            senderMap.put(dsId.toString(), bean.isConnected());
           }
         }
       }
