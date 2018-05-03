@@ -18,7 +18,13 @@ package org.apache.geode.cache.query.internal.types;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
@@ -27,7 +33,8 @@ import org.apache.geode.cache.query.internal.ResultsSet;
 import org.apache.geode.cache.query.internal.SortedResultSet;
 import org.apache.geode.cache.query.internal.SortedStructSet;
 import org.apache.geode.cache.query.internal.StructSet;
-import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
 
 /**
  * Implementation of CollectionType

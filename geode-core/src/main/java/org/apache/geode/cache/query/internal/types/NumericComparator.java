@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.query.internal.types;
 
-import java.util.*;
+import java.util.Comparator;
 
 
 /**

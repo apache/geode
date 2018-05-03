@@ -14,14 +14,40 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
+import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
