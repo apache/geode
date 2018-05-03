@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.internal.DataSerializableFixedID.CREATE_REGION_MESSAGE_LUCENE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -244,9 +246,17 @@ public class LuceneServiceImpl implements InternalLuceneService {
       LuceneSerializer serializer) {
     validateRegionAttributes(region.getAttributes());
 
-    region.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName, regionPath, fields,
-        analyzer, fieldAnalyzers, serializer));
+    LuceneIndexCreationProfile luceneIndexCreationProfile = new LuceneIndexCreationProfile(
+        indexName, regionPath, fields, analyzer, fieldAnalyzers, serializer);
 
+    region.addCacheServiceProfile(luceneIndexCreationProfile);
+
+    try {
+      validateLuceneIndexProfile(region);
+    } catch (Exception e) {
+      region.removeCacheServiceProfile(luceneIndexCreationProfile.getId());
+      throw new UnsupportedOperationException("Lucene indexes cannot be created", e);
+    }
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     region.updatePRConfigWithNewGatewaySender(aeqId);
     LuceneIndexImpl luceneIndex = beforeDataRegionCreated(indexName, regionPath,
@@ -255,6 +265,10 @@ public class LuceneServiceImpl implements InternalLuceneService {
     afterDataRegionCreated(luceneIndex);
 
     createLuceneIndexOnDataRegion(region, luceneIndex);
+  }
+
+  protected void validateLuceneIndexProfile(PartitionedRegion region) {
+    new CreateRegionProcessorForLucene(region).initializeRegion();
   }
 
   protected boolean createLuceneIndexOnDataRegion(final PartitionedRegion userRegion,
@@ -555,6 +569,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   /** Public for test purposes */
   public static void registerDataSerializables() {
+    DSFIDFactory.registerDSFID(CREATE_REGION_MESSAGE_LUCENE,
+        CreateRegionProcessorForLucene.CreateRegionMessage.class);
     DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_CHUNK_KEY, ChunkKey.class);
 
     DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_FILE, File.class);

@@ -35,31 +35,46 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
   private final String[] searchableFieldNames;
   private Map<String, String> fieldAnalyzers = null;
   private final Map<String, Integer> indexStats;
-  private boolean initialized;
+  private LuceneIndexStatus status;
   private String serializer;
 
   public LuceneIndexDetails(final String indexName, final String regionPath,
       final String[] searchableFieldNames, final Map<String, Analyzer> fieldAnalyzers,
-      LuceneIndexStats indexStats, boolean initialized, final String serverName,
+      LuceneIndexStats indexStats, LuceneIndexStatus status, final String serverName,
       LuceneSerializer serializer) {
     super(indexName, regionPath);
     this.serverName = serverName;
     this.searchableFieldNames = searchableFieldNames;
     this.fieldAnalyzers = getFieldAnalyzerStrings(fieldAnalyzers);
     this.indexStats = getIndexStatsMap(indexStats);
-    this.initialized = initialized;
+    this.status = status;
     this.serializer = serializer != null ? serializer.getClass().getSimpleName()
         : HeterogeneousLuceneSerializer.class.getSimpleName();
   }
 
   public LuceneIndexDetails(LuceneIndexImpl index, final String serverName) {
     this(index.getName(), index.getRegionPath(), index.getFieldNames(), index.getFieldAnalyzers(),
-        index.getIndexStats(), true, serverName, index.getLuceneSerializer());
+        index.getIndexStats(), LuceneIndexStatus.INITIALIZED, serverName,
+        index.getLuceneSerializer());
+  }
+
+  public LuceneIndexDetails(LuceneIndexImpl index, final String serverName,
+      final LuceneIndexStatus status) {
+    this(index.getName(), index.getRegionPath(), index.getFieldNames(), index.getFieldAnalyzers(),
+        index.getIndexStats(), status, serverName, index.getLuceneSerializer());
   }
 
   public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile, final String serverName) {
     this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(),
-        null, null, false, serverName, null);
+        null, null, LuceneIndexStatus.NOT_INITIALIZED, serverName, null);
+    this.fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
+    this.serializer = indexProfile.getSerializerClass();
+  }
+
+  public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile, final String serverName,
+      final LuceneIndexStatus status) {
+    this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(),
+        null, null, status, serverName, null);
     this.fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
     this.serializer = indexProfile.getSerializerClass();
   }
@@ -137,14 +152,14 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
     buffer.append(",\tIndexed Fields = " + getSearchableFieldNamesString());
     buffer.append(",\tField Analyzer = " + getFieldAnalyzersString());
     buffer.append(",\tSerializer = " + getSerializerString());
-    buffer.append(",\tStatus =\n\t" + getInitialized());
+    buffer.append(",\tStatus =\n\t" + getStatus());
     buffer.append(",\tIndex Statistics =\n\t" + getIndexStatsString());
     buffer.append("\n}\n");
     return buffer.toString();
   }
 
-  public boolean getInitialized() {
-    return initialized;
+  public LuceneIndexStatus getStatus() {
+    return status;
   }
 
   private static <T extends Comparable<T>> int compare(final T obj1, final T obj2) {

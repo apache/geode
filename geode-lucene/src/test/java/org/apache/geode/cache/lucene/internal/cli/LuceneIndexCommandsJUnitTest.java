@@ -113,11 +113,12 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field3", null);
     LuceneSerializer serializer = new HeterogeneousLuceneSerializer();
     final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees",
-        searchableFields, fieldAnalyzers, true, serverName, serializer);
-    final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees",
-        searchableFields, fieldAnalyzers, false, serverName, serializer);
+        searchableFields, fieldAnalyzers, LuceneIndexStatus.INITIALIZED, serverName, serializer);
+    final LuceneIndexDetails indexDetails2 =
+        createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers,
+            LuceneIndexStatus.NOT_INITIALIZED, serverName, serializer);
     final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees",
-        searchableFields, fieldAnalyzers, true, serverName, serializer);
+        searchableFields, fieldAnalyzers, LuceneIndexStatus.INITIALIZED, serverName, serializer);
 
     final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
 
@@ -142,7 +143,7 @@ public class LuceneIndexCommandsJUnitTest {
             "{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
             "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"),
         data.retrieveAllValues("Field Analyzer"));
-    assertEquals(Arrays.asList("Initialized", "Defined", "Initialized"),
+    assertEquals(Arrays.asList("INITIALIZED", "NOT_INITIALIZED", "INITIALIZED"),
         data.retrieveAllValues("Status"));
   }
 
@@ -161,12 +162,15 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     fieldAnalyzers.put("field3", null);
     LuceneSerializer serializer = new HeterogeneousLuceneSerializer();
-    final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees",
-        searchableFields, fieldAnalyzers, mockIndexStats1, true, serverName, serializer);
-    final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees",
-        searchableFields, fieldAnalyzers, mockIndexStats2, true, serverName, serializer);
-    final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees",
-        searchableFields, fieldAnalyzers, mockIndexStats3, true, serverName, serializer);
+    final LuceneIndexDetails indexDetails1 =
+        createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers,
+            mockIndexStats1, LuceneIndexStatus.INITIALIZED, serverName, serializer);
+    final LuceneIndexDetails indexDetails2 =
+        createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers,
+            mockIndexStats2, LuceneIndexStatus.INITIALIZED, serverName, serializer);
+    final LuceneIndexDetails indexDetails3 =
+        createIndexDetails("memberTen", "/Employees", searchableFields, fieldAnalyzers,
+            mockIndexStats3, LuceneIndexStatus.INITIALIZED, serverName, serializer);
 
     final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
 
@@ -248,7 +252,7 @@ public class LuceneIndexCommandsJUnitTest {
     final List<LuceneIndexDetails> indexDetails = new ArrayList<>();
     LuceneSerializer serializer = new HeterogeneousLuceneSerializer();
     indexDetails.add(createIndexDetails("memberFive", "/Employees", searchableFields,
-        fieldAnalyzers, mockIndexStats, true, serverName, serializer));
+        fieldAnalyzers, mockIndexStats, LuceneIndexStatus.INITIALIZED, serverName, serializer));
 
     doReturn(mockResultCollector).when(commands).executeFunctionOnRegion(
         isA(LuceneDescribeIndexFunction.class), any(LuceneIndexInfo.class), eq(true));
@@ -263,7 +267,7 @@ public class LuceneIndexCommandsJUnitTest {
         data.retrieveAllValues("Indexed Fields"));
     assertEquals(Collections.singletonList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}"),
         data.retrieveAllValues("Field Analyzer"));
-    assertEquals(Collections.singletonList("Initialized"), data.retrieveAllValues("Status"));
+    assertEquals(Collections.singletonList("INITIALIZED"), data.retrieveAllValues("Status"));
     assertEquals(Collections.singletonList("1"), data.retrieveAllValues("Query Executions"));
     assertEquals(Collections.singletonList("10"), data.retrieveAllValues("Commits"));
     assertEquals(Collections.singletonList("5"), data.retrieveAllValues("Updates"));
@@ -629,15 +633,15 @@ public class LuceneIndexCommandsJUnitTest {
 
   private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath,
       final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers,
-      LuceneIndexStats indexStats, boolean status, final String serverName,
+      LuceneIndexStats indexStats, LuceneIndexStatus status, final String serverName,
       LuceneSerializer serializer) {
     return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers,
         indexStats, status, serverName, serializer);
   }
 
   private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath,
-      final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers, boolean status,
-      final String serverName, LuceneSerializer serializer) {
+      final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers,
+      LuceneIndexStatus status, final String serverName, LuceneSerializer serializer) {
     return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers, null,
         status, serverName, serializer);
   }
