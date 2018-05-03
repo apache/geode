@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.distributed;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

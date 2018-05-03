@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.junit.rules.examples;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
 import org.junit.Rule;

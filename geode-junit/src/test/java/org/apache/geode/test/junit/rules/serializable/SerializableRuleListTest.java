@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
