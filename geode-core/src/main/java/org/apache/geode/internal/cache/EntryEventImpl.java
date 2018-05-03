@@ -2895,4 +2895,15 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   public boolean isOldValueOffHeap() {
     return isOffHeapReference(this.oldValue);
   }
+
+  /**
+   * If region is currently a bucket
+   * then change it to be the partitioned region that owns that bucket.
+   * Otherwise do nothing.
+   */
+  public void changeRegionToBucketsOwner() {
+    if (getRegion().isUsedForPartitionedRegionBucket()) {
+      setRegion(getRegion().getPartitionedRegion());
+    }
+  }
 }

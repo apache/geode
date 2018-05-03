@@ -350,6 +350,11 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey);
 
+  void txApplyPutPart2(RegionEntry regionEntry, Object key, long lastModified, boolean isCreate,
+      boolean didDestroy, boolean clearConflict);
+
+  void txApplyPutHandleDidDestroy(Object key);
+
   void handleReliableDistribution(Set successfulRecipients);
 
   StoppableCountDownLatch getInitializationLatchBeforeGetInitialImage();
@@ -379,4 +384,11 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   RegionTTLExpiryTask getRegionTTLExpiryTask();
 
   RegionIdleExpiryTask getRegionIdleExpiryTask();
+
+  boolean isAllEvents();
+
+  boolean shouldDispatchListenerEvent();
+
+  boolean shouldNotifyBridgeClients();
+
 }

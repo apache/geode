@@ -1804,7 +1804,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
 
     @Override
-    protected boolean shouldNotifyBridgeClients() {
+    public boolean shouldNotifyBridgeClients() {
       return false;
     }
 
