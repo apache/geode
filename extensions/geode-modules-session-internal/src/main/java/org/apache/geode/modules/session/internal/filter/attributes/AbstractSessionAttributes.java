@@ -155,11 +155,11 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
    */
   @Override
   public void toData(DataOutput out) throws IOException {
-    toDataPre_GEODE_1_3_0_0(out);
+    toDataPre_1_3_0_0(out);
     out.writeLong(creationTime);
   }
 
-  public void toDataPre_GEODE_1_3_0_0(DataOutput out) throws IOException {
+  public void toDataPre_1_3_0_0(DataOutput out) throws IOException {
     out.writeInt(maxInactiveInterval);
     out.writeLong(lastAccessedTime);
 
@@ -176,11 +176,11 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    fromDataPre_GEODE_1_3_0_0(in);
+    fromDataPre_1_3_0_0(in);
     creationTime = in.readLong();
   }
 
-  private void fromDataPre_GEODE_1_3_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  private void fromDataPre_1_3_0_0(DataInput in) throws IOException, ClassNotFoundException {
     maxInactiveInterval = in.readInt();
     lastAccessedTime = in.readLong();
     int size = in.readInt();

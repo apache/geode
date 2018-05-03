@@ -611,7 +611,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       }
     }
 
-    public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromDataPre_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.Id = DataSerializer.readString(in);
       this.startTime = in.readLong();
@@ -636,7 +636,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       }
     }
 
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+    public void toDataPre_8_0_0_0(DataOutput out) throws IOException {
       super.toData(out);
       DataSerializer.writeString(Id, out);
       out.writeLong(startTime);

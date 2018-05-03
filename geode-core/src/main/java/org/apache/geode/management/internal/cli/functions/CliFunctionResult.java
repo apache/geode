@@ -171,7 +171,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     DataSerializer.writeByteArray(this.byteData, out);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+  public void toDataPre_8_0_0_0(DataOutput out) throws IOException {
     DataSerializer.writeString(this.memberIdOrName, out);
     DataSerializer.writeObjectArray(this.serializables, out);
     DataSerializer.writeObject(this.resultObject, out);
@@ -187,7 +187,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.byteData = DataSerializer.readByteArray(in);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
     this.resultObject = DataSerializer.readObject(in);
     this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);

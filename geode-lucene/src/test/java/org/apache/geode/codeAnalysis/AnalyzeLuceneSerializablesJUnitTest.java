@@ -18,9 +18,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
 
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category({IntegrationTest.class, SerializationTest.class, LuceneTest.class})
 public class AnalyzeLuceneSerializablesJUnitTest extends AnalyzeSerializablesJUnitTest {
 
   @Override

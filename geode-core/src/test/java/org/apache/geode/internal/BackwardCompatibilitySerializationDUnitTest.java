@@ -242,11 +242,11 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
       toDataCalled = true;
     }
 
-    public void toDataPre_GFE_6_6_0_0(DataOutput out) throws IOException {
+    public void toDataPre_6_6_0_0(DataOutput out) throws IOException {
       toDataPre66Called = true;
     }
 
-    public void toDataPre_GFE_7_0_0_0(DataOutput out) throws IOException {
+    public void toDataPre_7_0_0_0(DataOutput out) throws IOException {
       toDataPre70called = true;
     }
 
@@ -255,11 +255,11 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
       fromDataCalled = true;
     }
 
-    public void fromDataPre_GFE_6_6_0_0(DataInput out) throws IOException {
+    public void fromDataPre_6_6_0_0(DataInput out) throws IOException {
       fromDataPre66Called = true;
     }
 
-    public void fromDataPre_GFE_7_0_0_0(DataInput out) throws IOException {
+    public void fromDataPre_7_0_0_0(DataInput out) throws IOException {
       fromDataPre70Called = true;
     }
 

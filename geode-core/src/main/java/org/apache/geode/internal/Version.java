@@ -246,8 +246,8 @@ public class Version implements Comparable<Version> {
     this.release = release;
     this.patch = patch;
     this.ordinal = ordinal;
-    this.methodSuffix = this.productName + "_" + this.majorVersion + "_" + this.minorVersion + "_"
-        + this.release + "_" + this.patch;
+    this.methodSuffix =
+        this.majorVersion + "_" + this.minorVersion + "_" + this.release + "_" + this.patch;
     if (ordinal != TOKEN_ORDINAL) {
       VALUES[this.ordinal] = this;
     }
@@ -540,10 +540,6 @@ public class Version implements Comparable<Version> {
     bytes[0] = (byte) (ordinal >> 8);
     bytes[1] = (byte) ordinal;
     return bytes;
-  }
-
-  public boolean isPre65() {
-    return compareTo(Version.GFE_65) < 0;
   }
 
   public static Iterable<? extends Version> getAllVersions() {

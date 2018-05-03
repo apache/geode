@@ -475,12 +475,12 @@ public class XmlEntity implements VersionedDataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    toDataPre_GEODE_1_1_1_0(out);
+    toDataPre_1_1_1_0(out);
     DataSerializer.writeString(this.childPrefix, out);
     DataSerializer.writeString(this.childNamespace, out);
   }
 
-  public void toDataPre_GEODE_1_1_1_0(DataOutput out) throws IOException {
+  public void toDataPre_1_1_1_0(DataOutput out) throws IOException {
     DataSerializer.writeString(this.type, out);
     DataSerializer.writeObject(this.attributes, out);
     DataSerializer.writeString(this.xmlDefinition, out);
@@ -491,12 +491,12 @@ public class XmlEntity implements VersionedDataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    fromDataPre_GEODE_1_1_1_0(in);
+    fromDataPre_1_1_1_0(in);
     this.childPrefix = DataSerializer.readString(in);
     this.childNamespace = DataSerializer.readString(in);
   }
 
-  public void fromDataPre_GEODE_1_1_1_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_1_1_1_0(DataInput in) throws IOException, ClassNotFoundException {
     this.type = DataSerializer.readString(in);
     this.attributes = DataSerializer.readObject(in);
     this.xmlDefinition = DataSerializer.readString(in);

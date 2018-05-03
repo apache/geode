@@ -231,7 +231,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writeHashMap((poolStats), out);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+  public void toDataPre_8_0_0_0(DataOutput out) throws IOException {
     DataSerializer.writePrimitiveInt(numOfGets, out);
     DataSerializer.writePrimitiveInt(numOfPuts, out);
     DataSerializer.writePrimitiveInt(numOfMisses, out);
@@ -254,7 +254,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.poolStats = DataSerializer.readHashMap(in);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.numOfGets = DataSerializer.readPrimitiveInt(in);
     this.numOfPuts = DataSerializer.readPrimitiveInt(in);
     this.numOfMisses = DataSerializer.readPrimitiveInt(in);
