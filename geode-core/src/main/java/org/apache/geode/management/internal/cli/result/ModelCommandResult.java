@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.result;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -23,9 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
@@ -40,7 +36,6 @@ public class ModelCommandResult implements CommandResult {
   private ResultModel result;
   private List<String> commandOutput;
   private int commandOutputIndex;
-  private Object configObject;
   private static final Map<String, List<String>> EMPTY_TABLE_MAP = new LinkedHashMap<>();
   private static final List<String> EMPTY_LIST = new ArrayList<>();
 
@@ -90,18 +85,6 @@ public class ModelCommandResult implements CommandResult {
 
   }
 
-  @JsonIgnore
-  @Override
-  public Object getConfigObject() {
-    return configObject;
-  }
-
-  @JsonIgnore
-  @Override
-  public void setConfigObject(Object configObject) {
-    this.configObject = configObject;
-  }
-
   @Override
   public boolean hasNextLine() {
     if (commandOutput == null) {
@@ -120,15 +103,7 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public String toJson() {
-    ObjectMapper mapper = new ObjectMapper();
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    try {
-      mapper.writeValue(baos, getResultData());
-    } catch (IOException e) {
-      return e.getMessage();
-    }
-
-    return baos.toString();
+    return getResultData().toJson();
   }
 
   @Override

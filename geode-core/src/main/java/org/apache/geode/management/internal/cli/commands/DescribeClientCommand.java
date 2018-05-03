@@ -67,7 +67,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
     ManagementService service = getManagementService();
     ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
     if (cacheServers.length == 0) {
-      return result.createCommandProcessingError(
+      return ResultModel.createCommandProcessingError(
           CliStrings.format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
     }
 
@@ -82,11 +82,11 @@ public class DescribeClientCommand extends InternalGfshCommand {
           try {
             clientHealthStatus = serverMbean.showClientStats(clientId);
             if (clientHealthStatus == null) {
-              return result.createCommandProcessingError(CliStrings.format(
+              return ResultModel.createCommandProcessingError(CliStrings.format(
                   CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0, clientId));
             }
           } catch (Exception eee) {
-            return result.createCommandProcessingError(CliStrings.format(
+            return ResultModel.createCommandProcessingError(CliStrings.format(
                 CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1, clientId,
                 eee.getMessage()));
           }
@@ -95,7 +95,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
     }
 
     if (clientHealthStatus == null) {
-      return result.createCommandProcessingError(
+      return ResultModel.createCommandProcessingError(
           CliStrings.format(CliStrings.DESCRIBE_CLIENT__CLIENT__ID__NOT__FOUND__0, clientId));
     }
 
@@ -145,7 +145,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
 
       buildTableResult(result, clientHealthStatus, isDurable, primaryServers, secondaryServers);
     } else {
-      result.createCommandProcessingError(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
+      result = ResultModel.createCommandProcessingError(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
     }
 
     LogWrapper.getInstance(getCache()).info("describe client result " + result);

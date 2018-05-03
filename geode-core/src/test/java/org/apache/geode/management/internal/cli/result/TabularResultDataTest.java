@@ -65,6 +65,7 @@ public class TabularResultDataTest {
     data.accumulate("col1", "value3");
 
     assertThat(data.retrieveAllValues("col1")).containsExactly("value1", "value2", "value3");
+
   }
 
   @Test

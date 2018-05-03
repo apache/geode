@@ -63,7 +63,6 @@ public class LegacyCommandResult implements CommandResult {
   }
 
   private Path fileToDownload;
-  private Object configObject;
 
   public LegacyCommandResult(ResultData resultData) {
     this.resultData = resultData;
@@ -75,16 +74,6 @@ public class LegacyCommandResult implements CommandResult {
   public LegacyCommandResult(Path fileToDownload) {
     this(new InfoResultData(fileToDownload.toString()));
     this.fileToDownload = fileToDownload.toAbsolutePath();
-  }
-
-  @Override
-  public Object getConfigObject() {
-    return configObject;
-  }
-
-  @Override
-  public void setConfigObject(Object configObject) {
-    this.configObject = configObject;
   }
 
   public boolean hasFileToDownload() {

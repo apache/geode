@@ -15,15 +15,19 @@
 
 package org.apache.geode.management.internal.cli.result.model;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 /**
  * This class is the primary container for results returned from a {@link GfshCommand}.
@@ -45,7 +49,6 @@ import org.apache.geode.management.cli.Result;
  *
  */
 public class ResultModel {
-
   private String header;
   private String footer;
   private Map<String, AbstractResultModel> sections = new LinkedHashMap<>();
@@ -76,6 +79,9 @@ public class ResultModel {
   }
 
   public void setStatus(Result.Status status) {
+    if (this.status == Result.Status.ERROR && status != this.status) {
+      throw new IllegalStateException("Can't change the error state of the result.");
+    }
     this.status = status;
   }
 
@@ -166,19 +172,66 @@ public class ResultModel {
     return (DataResultModel) sections.get(name);
   }
 
-  /**
-   * Convenience method which creates an {@code InfoResultModel} section. The provided message is
-   * prepended with the string "Error processing command:". The status will be set to
-   * {@code Result.Status.ERROR}
-   */
-  public ResultModel createCommandProcessingError(String message) {
+  public String toJson() {
+    ObjectMapper mapper = new ObjectMapper();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try {
+      mapper.writeValue(baos, this);
+    } catch (IOException e) {
+      return e.getMessage();
+    }
+    return baos.toString();
+  }
+
+  @Override
+  public String toString() {
+    return toJson();
+  }
+
+
+  // ********************************************
+  // static convenience methods
+  // ********************************************
+
+  public static ResultModel createCommandProcessingError(String message) {
     return createError("Error processing command: " + message);
   }
 
-  public ResultModel createError(String message) {
-    addInfo().addLine(message);
-    setStatus(Result.Status.ERROR);
+  public static ResultModel createError(String message) {
+    ResultModel result = new ResultModel();
+    result.addInfo().addLine(message);
+    result.setStatus(Result.Status.ERROR);
+    return result;
+  }
 
-    return this;
+  public static ResultModel createInfo(String message) {
+    ResultModel result = new ResultModel();
+    result.addInfo().addLine(message);
+    result.setStatus(Result.Status.OK);
+    return result;
+  }
+
+  public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults) {
+    return createMemberStatusResult(functionResults, null, null);
+  }
+
+  public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
+      String header, String footer) {
+    ResultModel result = new ResultModel();
+    boolean atLeastOneSuccess = false;
+    TabularResultModel tabularResultModel = result.addTable();
+    tabularResultModel.setHeader(header);
+    tabularResultModel.setFooter(footer);
+    tabularResultModel.setColumnHeader("Member", "Status");
+    for (CliFunctionResult functionResult : functionResults) {
+      tabularResultModel.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus());
+      if (functionResult.isSuccessful()) {
+        atLeastOneSuccess = true;
+      }
+    }
+    if (!atLeastOneSuccess) {
+      result.setStatus(Result.Status.ERROR);
+    }
+    return result;
   }
 }
