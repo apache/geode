@@ -38,6 +38,7 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -144,7 +145,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
    * @throws IllegalStateException if gfsh doesn't have an active connection.
    */
   private Result executeOnRemote(GfshParseResult parseResult) {
-    Result commandResult = null;
+    CommandResult commandResult = null;
     Object response = null;
     Path tempFile = null;
 
@@ -250,7 +251,8 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
 
     // 3. Post Remote Execution
     if (interceptor != null) {
-      Result postExecResult = interceptor.postExecution(parseResult, commandResult, tempFile);
+      CommandResult postExecResult =
+          interceptor.postExecution(parseResult, commandResult, tempFile);
       if (postExecResult != null) {
         if (Status.ERROR.equals(postExecResult.getStatus())) {
           if (logWrapper.infoEnabled()) {

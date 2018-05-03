@@ -28,14 +28,13 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ExportConfigFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -107,41 +106,42 @@ public class ExportConfigCommand extends InternalGfshCommand {
     private String saveDirString;
 
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       String dir = parseResult.getParamValueAsString("dir");
       if (StringUtils.isBlank(dir)) {
         saveDirString = new File(".").getAbsolutePath();
-        return ResultBuilder.createInfoResult("OK");
+        return new ResultModel();
       }
 
       File saveDirFile = new File(dir.trim());
 
       if (!saveDirFile.exists() && !saveDirFile.mkdirs()) {
-        return ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__CANNOT_CREATE_DIR, dir));
+        return ResultModel
+            .createError(CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__CANNOT_CREATE_DIR, dir));
       }
 
       if (!saveDirFile.isDirectory()) {
-        return ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__NOT_A_DIRECTORY, dir));
+        return ResultModel
+            .createError(CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__NOT_A_DIRECTORY, dir));
       }
 
       try {
         if (!saveDirFile.canWrite()) {
-          return ResultBuilder.createGemFireErrorResult(CliStrings.format(
+          return ResultModel.createError(CliStrings.format(
               CliStrings.EXPORT_CONFIG__MSG__NOT_WRITEABLE, saveDirFile.getCanonicalPath()));
         }
       } catch (IOException ioex) {
-        return ResultBuilder.createGemFireErrorResult(
+        return ResultModel.createError(
             CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__NOT_WRITEABLE, saveDirFile.getName()));
       }
 
       saveDirString = saveDirFile.getAbsolutePath();
-      return ResultBuilder.createInfoResult("OK");
+      return new ResultModel();
     }
 
     @Override
-    public Result postExecution(GfshParseResult parseResult, Result commandResult, Path tempFile) {
+    public CommandResult postExecution(GfshParseResult parseResult, CommandResult commandResult,
+        Path tempFile) {
       if (commandResult.hasIncomingFiles()) {
         try {
           commandResult.saveIncomingFiles(saveDirString);

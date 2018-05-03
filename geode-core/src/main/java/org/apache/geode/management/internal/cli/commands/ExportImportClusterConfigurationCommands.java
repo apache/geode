@@ -48,6 +48,7 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
@@ -238,7 +239,8 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
     }
 
     @Override
-    public Result postExecution(GfshParseResult parseResult, Result commandResult, Path tempFile) {
+    public CommandResult postExecution(GfshParseResult parseResult, CommandResult commandResult,
+        Path tempFile) {
       if (commandResult.hasIncomingFiles()) {
         try {
           commandResult.saveIncomingFiles(System.getProperty("user.dir"));
