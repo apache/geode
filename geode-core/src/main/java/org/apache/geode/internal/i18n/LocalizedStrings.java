@@ -7713,7 +7713,9 @@ public class LocalizedStrings {
       new StringId(6665, "{0}: Enqueueing synchronization event: {1}");
   public static final StringId PoolImpl_CACHE_MUST_BE_CREATED_BEFORE_CREATING_POOL =
       new StringId(6666, "Cache must be created before creating pool");
-
+  public static final StringId LuceneIndexCreation_INDEX_CANNOT_BE_CREATED_DUE_TO_PROFILE_VIOLATION =
+      new StringId(6667,
+          "Lucene index {0} cannot be created because its parameters are incompatible with another Lucene index");
   /** Testing strings, messageId 90000-99999 **/
 
   /**
