@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.doThrow;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -40,11 +41,38 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.test.junit.categories.UnitTest;
+
+// Test ideas:
+// - replicates && disk image && at least one equal
+// - return advice with empty replicates (load from disk)
+//
+// - replicates && disk image && none equal
+// - clear equal members
+// - return advice with all replicates (attempt GII)
+//
+// - replicates && no disk image
+// - return advice with all replicates (attempt GII)
+//
+// - no replicates && non-persistent
+// - update membership view from non-persistent
+//
+// - no replicates && previous replicates
+// - clear previous advice
+// - fetch new advice from cache distribution advisor (which will have replicates)
+// - react to new advice
+//
+// - no replicates && no previous replicates && members to wait for
+// - return advice from cache distribution advisor
+//
+// - no replicates && no previous replicates && members to wait for
+// - tests scenarios TBD
 
 @Category(UnitTest.class)
 public class PersistenceInitialImageAdvisorTest {
@@ -52,12 +80,12 @@ public class PersistenceInitialImageAdvisorTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private InternalPersistenceAdvisor persistenceAdvisor;
-  private CacheDistributionAdvisor cacheDistributionAdvisor;
+  private CacheDistributionAdvisor cacheDistributionAdvisor =
+      mock(CacheDistributionAdvisor.class, RETURNS_DEEP_STUBS);
   private PersistenceInitialImageAdvisor persistenceInitialImageAdvisor;
 
   @Before
   public void setup() {
-    cacheDistributionAdvisor = mock(CacheDistributionAdvisor.class, RETURNS_DEEP_STUBS);
     when(cacheDistributionAdvisor.getDistributionManager().getConfig().getAckWaitThreshold())
         .thenReturn(15);
 
@@ -68,6 +96,15 @@ public class PersistenceInitialImageAdvisorTest {
         "short disk store ID", "region path", cacheDistributionAdvisor, true);
   }
 
+  @Test(expected = CacheClosedException.class)
+  public void propagatesThrownExceptionIfCancelInProgress() {
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    when(cacheDistributionAdvisor.getAdvisee().getCancelCriterion()).thenReturn(cancelCriterion);
+    doThrow(new CacheClosedException()).when(cancelCriterion).checkCancelInProgress(any());
+
+    persistenceInitialImageAdvisor.getAdvice(null);
+  }
+  
   @Test
   public void publishesListOfMissingMembersWhenWaitingForMissingMembers() {
     System.setProperty("geode." + SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS, "0");
