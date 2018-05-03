@@ -85,9 +85,9 @@ import org.apache.geode.annotations.Experimental;
 public class CacheTransactionManagerType {
 
   @XmlElement(name = "transaction-listener", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheTransactionManagerType.TransactionListener> transactionListener;
+  protected List<DeclarableType> transactionListener;
   @XmlElement(name = "transaction-writer", namespace = "http://geode.apache.org/schema/cache")
-  protected CacheTransactionManagerType.TransactionWriter transactionWriter;
+  protected DeclarableType transactionWriter;
 
   /**
    * Gets the value of the transactionListener property.
@@ -108,13 +108,13 @@ public class CacheTransactionManagerType {
    *
    * <p>
    * Objects of the following type(s) are allowed in the list
-   * {@link CacheTransactionManagerType.TransactionListener }
+   * {@link DeclarableType }
    *
    *
    */
-  public List<CacheTransactionManagerType.TransactionListener> getTransactionListener() {
+  public List<DeclarableType> getTransactionListener() {
     if (transactionListener == null) {
-      transactionListener = new ArrayList<CacheTransactionManagerType.TransactionListener>();
+      transactionListener = new ArrayList<DeclarableType>();
     }
     return this.transactionListener;
   }
@@ -123,10 +123,10 @@ public class CacheTransactionManagerType {
    * Gets the value of the transactionWriter property.
    *
    * possible object is
-   * {@link CacheTransactionManagerType.TransactionWriter }
+   * {@link DeclarableType }
    *
    */
-  public CacheTransactionManagerType.TransactionWriter getTransactionWriter() {
+  public DeclarableType getTransactionWriter() {
     return transactionWriter;
   }
 
@@ -134,185 +134,11 @@ public class CacheTransactionManagerType {
    * Sets the value of the transactionWriter property.
    *
    * allowed object is
-   * {@link CacheTransactionManagerType.TransactionWriter }
+   * {@link DeclarableType }
    *
    */
-  public void setTransactionWriter(CacheTransactionManagerType.TransactionWriter value) {
+  public void setTransactionWriter(DeclarableType value) {
     this.transactionWriter = value;
-  }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"className", "parameter"})
-  public static class TransactionListener {
-
-    @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected String className;
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected List<ParameterType> parameter;
-
-    /**
-     * Gets the value of the className property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getClassName() {
-      return className;
-    }
-
-    /**
-     * Sets the value of the className property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setClassName(String value) {
-      this.className = value;
-    }
-
-    /**
-     * Gets the value of the parameter property.
-     *
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the parameter property.
-     *
-     * <p>
-     * For example, to add a new item, do as follows:
-     *
-     * <pre>
-     * getParameter().add(newItem);
-     * </pre>
-     *
-     *
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link ParameterType }
-     *
-     *
-     */
-    public List<ParameterType> getParameter() {
-      if (parameter == null) {
-        parameter = new ArrayList<ParameterType>();
-      }
-      return this.parameter;
-    }
-
-  }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"className", "parameter"})
-  public static class TransactionWriter {
-
-    @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected String className;
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected List<ParameterType> parameter;
-
-    /**
-     * Gets the value of the className property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getClassName() {
-      return className;
-    }
-
-    /**
-     * Sets the value of the className property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setClassName(String value) {
-      this.className = value;
-    }
-
-    /**
-     * Gets the value of the parameter property.
-     *
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the parameter property.
-     *
-     * <p>
-     * For example, to add a new item, do as follows:
-     *
-     * <pre>
-     * getParameter().add(newItem);
-     * </pre>
-     *
-     *
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link ParameterType }
-     *
-     *
-     */
-    public List<ParameterType> getParameter() {
-      if (parameter == null) {
-        parameter = new ArrayList<ParameterType>();
-      }
-      return this.parameter;
-    }
-
   }
 
 }
