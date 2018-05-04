@@ -159,7 +159,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     final FocusedRegionMap regionMap = getRegionMap();
     final boolean isCreate = isCreate();
     final Object key = callbackEvent.getKey();
-    final Object newValue = callbackEvent.getNewValue();
+    final Object newValue = callbackEvent.getRawNewValueAsHeapObject();
 
     if (isCreate) {
       makeCreate();
