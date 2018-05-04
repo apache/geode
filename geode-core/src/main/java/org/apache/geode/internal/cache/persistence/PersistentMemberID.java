@@ -79,7 +79,7 @@ public class PersistentMemberID implements DataSerializable {
     this.name = DataSerializer.readString(in);
   }
 
-  public void fromData662(DataInput in) throws IOException, ClassNotFoundException {
+  public void _fromData662(DataInput in) throws IOException, ClassNotFoundException {
     long diskStoreIdHigh = in.readLong();
     long diskStoreIdLow = in.readLong();
     this.diskStoreId = new DiskStoreID(diskStoreIdHigh, diskStoreIdLow);
