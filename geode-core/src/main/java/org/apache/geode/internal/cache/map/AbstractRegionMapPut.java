@@ -191,11 +191,7 @@ public abstract class AbstractRegionMapPut {
   }
 
   private IndexManager getInitializedIndexManager() {
-    IndexManager oqlIndexManager;
-    // Fix for Bug #44431. We do NOT want to update the region and wait
-    // later for index INIT as region.clear() can cause inconsistency if
-    // happened in parallel as it also does index INIT.
-    oqlIndexManager = getOwner().getIndexManager();
+    final IndexManager oqlIndexManager = getOwner().getIndexManager();
     if (oqlIndexManager != null) {
       oqlIndexManager.waitForIndexInit();
     }
@@ -204,8 +200,7 @@ public abstract class AbstractRegionMapPut {
 
   private void doPutRetryingIfNeeded() {
     do {
-      setRegionEntry(null);
-      if (!findExistingEntry()) {
+      if (!findAndSaveExistingEntry()) {
         return;
       }
       createNewEntryIfNeeded();
@@ -213,21 +208,21 @@ public abstract class AbstractRegionMapPut {
   }
 
   /**
+   * If an existing one is found, save it by calling setRegionEntry.
+   *
    * @return false if an existing entry was not found and this put requires
    *         an existing one; otherwise returns true.
    */
-  private boolean findExistingEntry() {
+  private boolean findAndSaveExistingEntry() {
     RegionEntry re = getRegionMap().getEntry(getEvent());
     if (isOnlyExisting() && !entryExists(re)) {
+      setRegionEntry(null);
       return false;
     }
     setRegionEntry(re);
     return true;
   }
 
-  /**
-   * Stores the created entry in getRegionEntry.
-   */
   private void createNewEntryIfNeeded() {
     setCreate(getRegionEntry() == null);
     if (isCreate()) {
@@ -314,9 +309,7 @@ public abstract class AbstractRegionMapPut {
   }
 
   /**
-   * If the re goes into removed2 state, it will be removed from the map.
-   *
-   * @return true if re was remove phase 2
+   * @return true if the entry is in the final stage of removal
    */
   private boolean isRegionEntryRemoved() {
     final RegionEntry re = getRegionEntry();
@@ -328,5 +321,4 @@ public abstract class AbstractRegionMapPut {
       return false;
     }
   }
-
 }
