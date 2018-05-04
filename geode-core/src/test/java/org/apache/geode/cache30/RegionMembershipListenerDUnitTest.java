@@ -14,9 +14,13 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -31,7 +35,8 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionMembershipListener;
 import org.apache.geode.cache.util.RegionMembershipListenerAdapter;
-import org.apache.geode.distributed.*;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
