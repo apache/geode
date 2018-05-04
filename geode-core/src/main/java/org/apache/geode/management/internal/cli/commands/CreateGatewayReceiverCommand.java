@@ -29,7 +29,6 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
@@ -38,7 +37,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction;
 import org.apache.geode.management.internal.cli.functions.GatewayReceiverFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -150,7 +148,7 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
 
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       Integer startPort = (Integer) parseResult.getParamValue("start-port");
       Integer endPort = (Integer) parseResult.getParamValue("end-port");
 
@@ -163,10 +161,10 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
       }
 
       if (startPort > endPort) {
-        return ResultBuilder.createUserErrorResult("start-port must be smaller than end-port.");
+        return ResultModel.createError("start-port must be smaller than end-port.");
       }
 
-      return ResultBuilder.createInfoResult("");
+      return ResultModel.createInfo("");
     }
   }
 }
