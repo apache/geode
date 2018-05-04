@@ -18,8 +18,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({IntegrationTest.class, RestAPITest.class})
+@Category({IntegrationTest.class, SerializationTest.class, RestAPITest.class})
 public class AnalyzeWebApiSerializablesJUnitTest extends AnalyzeSerializablesJUnitTest {
 
   @Override

@@ -360,7 +360,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     dop.writeByte(this.breadcrumbCounter);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput dop) throws IOException {
+  public void toDataPre_8_0_0_0(DataOutput dop) throws IOException {
     DataSerializer.writeByteArray(this.membershipID, dop);
     DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),
         dop);
@@ -375,7 +375,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     this.breadcrumbCounter = di.readByte();
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput di) throws IOException, ClassNotFoundException {
+  public void fromDataPre_8_0_0_0(DataInput di) throws IOException, ClassNotFoundException {
     this.membershipID = DataSerializer.readByteArray(di);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));
     this.threadID = readEventIdPartsFromOptmizedByteArray(eventIdParts);

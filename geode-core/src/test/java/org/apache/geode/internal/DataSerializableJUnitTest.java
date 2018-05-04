@@ -3002,12 +3002,12 @@ public class DataSerializableJUnitTest implements Serializable {
       super(random);
     }
 
-    public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
+    public void toDataPre_7_1_0_0(DataOutput out) throws IOException {
       this.preMethodInvoked = true;
       toData(out);
     }
 
-    public void fromDataPre_GFE_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromDataPre_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
       this.preMethodInvoked = true;
       fromData(in);
     }

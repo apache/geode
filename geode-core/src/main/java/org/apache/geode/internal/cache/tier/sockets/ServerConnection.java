@@ -1803,7 +1803,7 @@ public abstract class ServerConnection implements Runnable {
   public long getUniqueId() {
     long uniqueId = 0;
 
-    if (this.handshake.getVersion().isPre65() || communicationMode.isWAN()) {
+    if (this.handshake.getVersion().compareTo(Version.GFE_65) < 0 || communicationMode.isWAN()) {
       uniqueId = this.userAuthId;
     } else if (this.requestMsg.isSecureMode()) {
       uniqueId = messageIdExtractor.getUniqueIdFromMessage(this.requestMsg,

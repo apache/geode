@@ -301,12 +301,12 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     return serializationVersions;
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+  public void toDataPre_8_0_0_0(DataOutput out) throws IOException {
     getCanonicalIDs();
     toData(out);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
     fromData(in);
   }
 
@@ -740,7 +740,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
       throw new IOException("this fromData method should never be invoked");
     }
 
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+    public void toDataPre_8_0_0_0(DataOutput out) throws IOException {
       if (this.index == 0) {
         this.list.getCanonicalIDs();
       }
@@ -749,7 +749,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
     // when deserialized a VersionedObjectList is created, not a Chunker, so this method isn't
     // needed
-    // public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException
+    // public void fromDataPre_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException
     // {
     // fromData(in);
     // }

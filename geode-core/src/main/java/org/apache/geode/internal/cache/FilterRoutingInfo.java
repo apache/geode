@@ -248,7 +248,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     return serializationVersions;
   }
 
-  public void fromDataPre_GFE_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
     DistributedMember myID = null;
     InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
@@ -267,7 +267,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     }
   }
 
-  public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
+  public void toDataPre_7_1_0_0(DataOutput out) throws IOException {
     int size = this.serverFilterInfo.size();
     out.writeInt(size);
     for (Map.Entry<InternalDistributedMember, FilterInfo> e : this.serverFilterInfo.entrySet()) {
@@ -397,7 +397,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       }
     }
 
-    public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromDataPre_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
       if (OLD_MEMBERS_OPTIMIZED) {
         this.myDataVersion = InternalDataSerializer.getVersionForDataStreamOrNull(in);
         this.myData = DataSerializer.readByteArray(in);
@@ -408,7 +408,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       }
     }
 
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+    public void toDataPre_8_0_0_0(DataOutput out) throws IOException {
       if (OLD_MEMBERS_OPTIMIZED) {
         HeapDataOutputStream hdos =
             new HeapDataOutputStream(1000, InternalDataSerializer.getVersionForDataStream(out));

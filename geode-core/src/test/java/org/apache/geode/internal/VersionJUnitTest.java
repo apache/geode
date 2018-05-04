@@ -57,9 +57,9 @@ public class VersionJUnitTest {
 
   @Test
   public void testIsPre65() {
-    assertTrue(Version.GFE_61.isPre65());
-    assertFalse(Version.GFE_65.isPre65());
-    assertFalse(Version.GFE_70.isPre65());
+    assertTrue(Version.GFE_61.compareTo(Version.GFE_65) < 0);
+    assertFalse(Version.GFE_65.compareTo(Version.GFE_65) < 0);
+    assertFalse(Version.GFE_70.compareTo(Version.GFE_65) < 0);
   }
 
   @Test
