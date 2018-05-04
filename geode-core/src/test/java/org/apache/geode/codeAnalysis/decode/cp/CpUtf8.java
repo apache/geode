@@ -14,8 +14,9 @@
  */
 package org.apache.geode.codeAnalysis.decode.cp;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.Vector;
 
 public class CpUtf8 extends Cp {
   private StringBuffer value;

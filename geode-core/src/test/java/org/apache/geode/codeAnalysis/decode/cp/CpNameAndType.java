@@ -14,7 +14,8 @@
  */
 package org.apache.geode.codeAnalysis.decode.cp;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 public class CpNameAndType extends Cp {
   int name_index; // utf8 unqualified field/method name

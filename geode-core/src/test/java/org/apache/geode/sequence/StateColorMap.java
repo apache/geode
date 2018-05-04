@@ -16,7 +16,7 @@ package org.apache.geode.sequence;
 
 import static java.lang.Math.random;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
