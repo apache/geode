@@ -225,7 +225,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
    * internal.cache.EntryEventImpl)
    */
   @Override
-  protected void setModifiedEventId(EntryEventImpl clonedEvent) {
+  public void setModifiedEventId(EntryEventImpl clonedEvent) {
     EventID originalEventId = clonedEvent.getEventId();
     long originalThreadId = originalEventId.getThreadID();
     long newThreadId = originalThreadId;

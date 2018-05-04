@@ -173,6 +173,9 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
 
   protected volatile ConcurrentLinkedQueue<TmpQueueEvent> tmpQueuedEvents =
       new ConcurrentLinkedQueue<>();
+
+  protected volatile ConcurrentLinkedQueue<EntryEventImpl> tmpDroppedEvents =
+      new ConcurrentLinkedQueue<>();
   /**
    * The number of seconds to wait before stopping the GatewaySender. Default is 0 seconds.
    */
@@ -836,40 +839,43 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    // If this gateway is not running, return
-    if (!isRunning()) {
-      if (isDebugEnabled) {
-        logger.debug("Returning back without putting into the gateway sender queue:" + event);
-      }
-      if (this.eventProcessor != null) {
-        this.eventProcessor.registerEventDroppedInPrimaryQueue(event);
-      }
-      return;
-    }
-
-    final GatewaySenderStats stats = getStatistics();
-    stats.incEventsReceived();
-
-    if (!checkForDistribution(event, stats)) {
-      stats.incEventsNotQueued();
-      return;
-    }
-
-    // this filter is defined by Asif which exist in old wan too. new wan has
-    // other GatewaEventFilter. Do we need to get rid of this filter. Cheetah is
-    // not considering this filter
-    if (!this.filter.enqueueEvent(event)) {
-      stats.incEventsFiltered();
-      return;
-    }
     // released by this method or transfers ownership to TmpQueueEvent
     @Released
     EntryEventImpl clonedEvent = new EntryEventImpl(event, false);
     boolean freeClonedEvent = true;
     try {
 
-      Region region = event.getRegion();
+      // If this gateway is not running, return
+      if (!isRunning()) {
+        if (this.isPrimary()) {
+          tmpDroppedEvents.add(clonedEvent);
+          if (isDebugEnabled) {
+            logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
+          }
+        }
+        if (isDebugEnabled) {
+          logger.debug("Returning back without putting into the gateway sender queue:" + event);
+        }
+        return;
+      }
 
+      final GatewaySenderStats stats = getStatistics();
+      stats.incEventsReceived();
+
+      if (!checkForDistribution(event, stats)) {
+        stats.incEventsNotQueued();
+        return;
+      }
+
+      // this filter is defined by Asif which exist in old wan too. new wan has
+      // other GatewaEventFilter. Do we need to get rid of this filter. Cheetah is
+      // not considering this filter
+      if (!this.filter.enqueueEvent(event)) {
+        stats.incEventsFiltered();
+        return;
+      }
+
+      // start to distribute
       setModifiedEventId(clonedEvent);
       Object callbackArg = clonedEvent.getRawCallbackArgument();
 
@@ -1016,6 +1022,12 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
    */
   public void enqueueTempEvents() {
     if (this.eventProcessor != null) {// Fix for defect #47308
+      // process tmpDroppedEvents
+      EntryEventImpl droppedEvent = null;
+      while ((droppedEvent = tmpDroppedEvents.poll()) != null) {
+        this.eventProcessor.registerEventDroppedInPrimaryQueue(droppedEvent);
+      }
+
       TmpQueueEvent nextEvent = null;
       final GatewaySenderStats stats = getStatistics();
       try {
@@ -1216,7 +1228,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return region;
   }
 
-  protected abstract void setModifiedEventId(EntryEventImpl clonedEvent);
+  public abstract void setModifiedEventId(EntryEventImpl clonedEvent);
 
   public static class DefaultGatewayEventFilter
       implements org.apache.geode.internal.cache.GatewayEventFilter {

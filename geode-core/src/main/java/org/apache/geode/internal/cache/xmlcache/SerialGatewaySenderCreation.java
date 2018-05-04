@@ -87,7 +87,7 @@ public class SerialGatewaySenderCreation extends AbstractGatewaySender implement
   }
 
   @Override
-  protected void setModifiedEventId(EntryEventImpl clonedEvent) {}
+  public void setModifiedEventId(EntryEventImpl clonedEvent) {}
 
   protected GatewayQueueEvent getSynchronizationEvent(Object key, long timestamp) {
     throw new UnsupportedOperationException();

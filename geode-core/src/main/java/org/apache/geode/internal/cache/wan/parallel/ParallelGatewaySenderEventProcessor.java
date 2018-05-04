@@ -149,6 +149,12 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     }
   }
 
+  @Override
+  protected void registerEventDroppedInPrimaryQueue(EntryEventImpl droppedEvent) {
+    logger.info("ParallelGatewaySenderEventProcessor should not process dropped event {}",
+        droppedEvent);
+  }
+
   public void clear(PartitionedRegion pr, int bucketId) {
     ((ParallelGatewaySenderQueue) this.queue).clear(pr, bucketId);
   }

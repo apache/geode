@@ -211,7 +211,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   @Override
-  protected void setModifiedEventId(EntryEventImpl clonedEvent) {
+  public void setModifiedEventId(EntryEventImpl clonedEvent) {
     EventID originalEventId = clonedEvent.getEventId();
     long originalThreadId = originalEventId.getThreadID();
     long newThreadId = originalThreadId;
@@ -226,7 +226,9 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     if (logger.isDebugEnabled()) {
       logger.debug(
           "{}: Generated event id for event with key={}, original event id={}, originalThreadId={}, new event id={}, newThreadId={}",
-          this, clonedEvent.getKey(), originalEventId, originalThreadId, newEventId, newThreadId);
+          this, clonedEvent.getKey(), originalEventId,
+          ThreadIdentifier.toDisplayString(originalThreadId), newEventId,
+          ThreadIdentifier.toDisplayString(newThreadId));
     }
     clonedEvent.setEventId(newEventId);
   }
