@@ -17,19 +17,19 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertNotEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertNotSame;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+import static org.assertj.core.api.Java6Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -40,8 +40,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -68,13 +66,10 @@ import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.dto.Value1;
 import org.apache.geode.management.internal.cli.dto.Value2;
-import org.apache.geode.management.internal.cli.json.GfJsonArray;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
 import org.apache.geode.management.internal.cli.result.ResultData;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -715,7 +710,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
       vm1.invoke(clearTask);
 
-      // Do put from shell check from gemfire do remove from shell get from shell exepct false
+      // Do put from shell check from gemfire do remove from shell get from shell expect false
       cmdResult = executeCommand(putCommand);
       printCommandOutput(cmdResult);
       validateResult(cmdResult, true);
@@ -755,149 +750,30 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
   }
 
 
-  private void validateResult(CommandResult cmdResult, boolean expected) {
-    if (ResultData.TYPE_COMPOSITE.equals(cmdResult.getType())) {
-      CompositeResultData rd = (CompositeResultData) cmdResult.getResultData();
-      SectionResultData section = rd.retrieveSectionByIndex(0);
-      boolean result = (Boolean) section.retrieveObject("Result");
-      assertEquals(expected, result);
+  private void validateResult(CommandResult cmdResult, Boolean expected) {
+    if (ResultData.TYPE_MODEL.equals(cmdResult.getType())) {
+      ResultModel rd = (ResultModel) cmdResult.getResultData();
+      DataResultModel result = rd.getDataSection("0");
+      assertThat(result.getContent().get("Result")).isEqualTo(expected.toString());
     } else
       fail("Expected CompositeResult Returned Result Type " + cmdResult.getType());
   }
 
-  private void validateLocationsResult(CommandResult cmdResult, int expected) {
-    if (ResultData.TYPE_COMPOSITE.equals(cmdResult.getType())) {
-      CompositeResultData rd = (CompositeResultData) cmdResult.getResultData();
-      SectionResultData section = rd.retrieveSectionByIndex(0);
-      int result = (Integer) section.retrieveObject("Locations Found");
-      assertEquals(expected, result);
-    } else
-      fail("Expected CompositeResult Returned Result Type " + cmdResult.getType());
-  }
-
-  private void validateJSONGetResult(CommandResult cmdResult, String[] expectedCols) {
-    CompositeResultData rd = (CompositeResultData) cmdResult.getResultData();
-    SectionResultData section = rd.retrieveSectionByIndex(0);
-    TabularResultData table = section.retrieveTableByIndex(0);
-    GfJsonArray array = table.getHeaders();
-    assertEquals(expectedCols.length, array.size());
-    try {
-      for (String col : expectedCols) {
-        boolean found = false;
-        getLogWriter().info("Validating column " + col);
-        for (int i = 0; i < array.size(); i++) {
-          String header = (String) array.get(i);
-          if (col.equals(header))
-            found = true;
-        }
-        assertEquals(true, found);
-      }
-    } catch (GfJsonException e) {
-      fail("Error accessing table data", e);
-    }
-  }
-
-  private void validateJSONGetResultValues(CommandResult cmdResult, String[] expectedCols) {
-    CompositeResultData rd = (CompositeResultData) cmdResult.getResultData();
-    SectionResultData section = rd.retrieveSectionByIndex(0);
-    TabularResultData table = section.retrieveTableByIndex(0);
-    GfJsonArray array = table.getHeaders();
-    assertEquals(expectedCols.length, array.size());
-    try {
-      for (String col : expectedCols) {
-        boolean found = false;
-        getLogWriter().info("Validating column " + col);
-        for (int i = 0; i < array.size(); i++) {
-          String header = (String) array.get(i);
-          if (col.equals(header))
-            found = true;
-        }
-        assertEquals(true, found);
-
-        List<String> values = table.retrieveAllValues(col);
-        for (String value : values) {
-          assertNotSame("null", value);
-        }
-
-      }
-    } catch (GfJsonException e) {
-      fail("Error accessing table data", e);
-    }
-  }
-
-  private void validateSelectResult(CommandResult cmdResult, boolean expectedFlag, int expectedRows,
-      String[] cols) {
-    if (ResultData.TYPE_COMPOSITE.equals(cmdResult.getType())) {
-      CompositeResultData rd = (CompositeResultData) cmdResult.getResultData();
-      SectionResultData section = rd.retrieveSectionByIndex(0);
-      boolean result = (Boolean) section.retrieveObject("Result");
-      assertEquals(expectedFlag, result);
+  private void validateSelectResult(CommandResult cmdResult, Boolean expectedFlag,
+      Integer expectedRows, String[] cols) {
+    if (ResultData.TYPE_MODEL.equals(cmdResult.getType())) {
+      ResultModel rd = (ResultModel) cmdResult.getResultData();
+      Map<String, String> data = rd.getDataSection("0").getContent();
+      assertThat(data.get("Result")).isEqualTo(expectedFlag.toString());
       if (expectedFlag && expectedRows != -1) {
-        int rowsReturned = (Integer) section.retrieveObject("Rows");
-        assertEquals(expectedRows, rowsReturned);
-        if (rowsReturned > 0 && cols != null) {
-          try {
-            TabularResultData table = section.retrieveTableByIndex(0);
-            GfJsonArray array = table.getHeaders();
-            assertEquals(cols.length, array.size());
-            for (String col : cols) {
-              boolean found = false;
-              getLogWriter().info("Validating column " + col);
-              for (int i = 0; i < array.size(); i++) {
-                String header = (String) array.get(i);
-                if (col.equals(header))
-                  found = true;
-              }
-              assertEquals(true, found);
-            }
-          } catch (GfJsonException e) {
-            fail("Error accessing table data", e);
-          }
+        assertThat(data.get("Rows")).isEqualTo(expectedRows.toString());
+        if (expectedRows > 0 && cols != null) {
+          Map<String, List<String>> table = rd.getTableSection("1").getContent();
+          assertThat(table.keySet()).contains(cols);
         }
       }
     } else
       fail("Expected CompositeResult Returned Result Type " + cmdResult.getType());
-  }
-
-  private Region<?, ?> createParReg(String regionName, Cache cache) {
-    RegionFactory regionFactory = cache.createRegionFactory();
-    regionFactory.setDataPolicy(DataPolicy.PARTITION);
-    return regionFactory.create(regionName);
-  }
-
-  private Region<?, ?> createReplicatedRegion(String regionName, Cache cache) {
-    RegionFactory regionFactory = cache.createRegionFactory();
-    regionFactory.setDataPolicy(DataPolicy.REPLICATE);
-    return regionFactory.create(regionName);
-  }
-
-  private SerializableRunnable addCacheListenerInvocations(final String regionName) {
-    return new SerializableRunnable() {
-      public void run() {
-        Region region = getCache().getRegion(regionName);
-        region.getAttributesMutator().addCacheListener(new CountingCacheListener());
-      }
-    };
-  }
-
-  private SerializableRunnable verifyCacheListenerInvocations(final String regionName,
-      boolean callbacksShouldHaveBeenInvoked) {
-    return new SerializableRunnable() {
-      public void run() {
-        Region region = getCache().getRegion(regionName);
-        CacheListener<?, ?>[] listeners = region.getAttributes().getCacheListeners();
-        for (CacheListener<?, ?> listener : listeners) {
-          if (listener instanceof CountingCacheListener) {
-            CountingCacheListener ccl = (CountingCacheListener) listener;
-            if (callbacksShouldHaveBeenInvoked) {
-              assertNotEquals(0, ccl.getEvents());
-            } else {
-              assertEquals(0, ccl.getEvents());
-            }
-          }
-        }
-      }
-    };
   }
 
   void setupWith2Regions() {

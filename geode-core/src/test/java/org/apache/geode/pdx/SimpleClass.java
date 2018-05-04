@@ -38,6 +38,18 @@ public class SimpleClass implements PdxSerializable {
     this.myEnum = enumVal;
   }
 
+  public int getMyInt() {
+    return myInt;
+  }
+
+  public byte getMyByte() {
+    return myByte;
+  }
+
+  public SimpleEnum getMyEnum() {
+    return myEnum;
+  }
+
   public void toData(PdxWriter out) {
     out.writeInt("myInt", this.myInt);
     out.writeByte("myByte", this.myByte);
