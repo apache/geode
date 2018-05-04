@@ -14,7 +14,8 @@
  */
 package org.apache.geode;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 

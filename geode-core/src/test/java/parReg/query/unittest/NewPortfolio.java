@@ -16,7 +16,11 @@ package parReg.query.unittest;
 
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 
 /**
  * A version of the Portfolio Object used for query.

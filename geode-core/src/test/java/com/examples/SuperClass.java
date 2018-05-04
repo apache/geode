@@ -14,7 +14,8 @@
  */
 package com.examples;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The super class of another class. Neither is <code>Serializable</code>.
