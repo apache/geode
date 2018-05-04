@@ -178,7 +178,8 @@ public class EquiJoinIntegrationTest {
         new String[] {"select * from /region1 c, /region2 s where c.pkid=1 and c.pkid = s.pkid",
             "select * from /region1 c, /region2 s where c.pkid=1 and s.pkid = c.pkid",
             "select * from /region1 c, /region2 s where c.pkid = s.pkid and c.pkid=1",
-            "select * from /region1 c, /region2 s where s.pkid = c.pkid and c.pkid=1",};
+            "select * from /region1 c, /region2 s where s.pkid = c.pkid and c.pkid=1",
+            "select distinct * from /region1 c, /region2 s where s.pkid = c.pkid and c.pkid=1"};
 
     for (int i = 0; i < 1000; i++) {
       region1.put(i, new Customer(i, i));

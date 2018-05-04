@@ -190,7 +190,6 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes attrs = factory.create();
-    // cache.createRegion(regionName, attrs);
     createRegion(regions[0], "root", attrs);
     createRegion(regions[1], "root", attrs);
     Thread.sleep(2000);
