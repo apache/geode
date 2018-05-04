@@ -30,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -107,7 +108,7 @@ public class PersistenceInitialImageAdvisorTest {
   
   @Test
   public void publishesListOfMissingMembersWhenWaitingForMissingMembers() {
-    System.setProperty("geode." + SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS, "0");
+    setMembershipChangePollDuration(Duration.ofSeconds(0));
     Set<PersistentMemberID> offlineMembersToWaitFor = givenOfflineMembersToWaitFor(1);
 
     when(cacheDistributionAdvisor.adviseInitialImage(null, true))
@@ -140,6 +141,13 @@ public class PersistenceInitialImageAdvisorTest {
     return offlineMembersToWaitFor;
   }
 
+  private static InitialImageAdvice adviceWithReplicates(int replicateCount) {
+    Set<InternalDistributedMember> replicates = IntStream.range(0, replicateCount)
+        .mapToObj(i -> internalDistributedMember("replicate " + i)).collect(toSet());
+    return new InitialImageAdvice(replicates, emptySet(), emptySet(), emptySet(), emptySet(),
+        emptySet(), emptyMap());
+  }
+
   private static InternalDistributedMember internalDistributedMember(String name) {
     return mock(InternalDistributedMember.class, name);
   }
@@ -148,10 +156,7 @@ public class PersistenceInitialImageAdvisorTest {
     return mock(PersistentMemberID.class, name);
   }
 
-  private static InitialImageAdvice adviceWithReplicates(int replicateCount) {
-    Set<InternalDistributedMember> replicates = IntStream.range(0, replicateCount)
-        .mapToObj(i -> internalDistributedMember("replicate " + i)).collect(toSet());
-    return new InitialImageAdvice(replicates, emptySet(), emptySet(), emptySet(), emptySet(),
-        emptySet(), emptyMap());
+  private static void setMembershipChangePollDuration(Duration timeout) {
+    System.setProperty("geode." + SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS, String.valueOf(timeout.getSeconds()));
   }
 }
