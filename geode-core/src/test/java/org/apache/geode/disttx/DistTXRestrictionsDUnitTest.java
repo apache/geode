@@ -14,7 +14,7 @@
  */
 package org.apache.geode.disttx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_TRANSACTIONS;
 
 import java.util.Properties;
 
