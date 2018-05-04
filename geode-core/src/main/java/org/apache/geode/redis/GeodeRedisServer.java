@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
 import java.io.IOException;
 import java.net.InetAddress;

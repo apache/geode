@@ -17,7 +17,11 @@ package org.apache.geode.admin.internal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 

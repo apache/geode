@@ -19,7 +19,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.geode.*;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**

@@ -15,7 +15,8 @@
 
 package org.apache.geode.distributed.internal;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
 
 
 /**

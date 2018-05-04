@@ -22,7 +22,7 @@ import java.util.Properties;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
-import org.apache.geode.distributed.internal.tcpserver.*;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
