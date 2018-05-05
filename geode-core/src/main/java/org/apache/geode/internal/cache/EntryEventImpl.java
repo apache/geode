@@ -698,8 +698,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.context;
   }
 
-  // INTERNAL
-  boolean isLocalInvalid() {
+  public boolean isLocalInvalid() {
     return testEventFlag(EventFlags.FLAG_LOCAL_INVALID);
   }
 

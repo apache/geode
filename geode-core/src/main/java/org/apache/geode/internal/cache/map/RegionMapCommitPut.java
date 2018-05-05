@@ -28,6 +28,7 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TXEntryState;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXRmtEvent;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 
@@ -159,7 +160,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     final FocusedRegionMap regionMap = getRegionMap();
     final boolean isCreate = isCreate();
     final Object key = callbackEvent.getKey();
-    final Object newValue = callbackEvent.getRawNewValueAsHeapObject();
+    final Object newValue = computeNewValue(callbackEvent);
 
     if (isCreate) {
       makeCreate();
@@ -209,6 +210,18 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     if (wasTombstone) {
       owner.unscheduleTombstone(regionEntry);
     }
+  }
+
+  private static Object computeNewValue(EntryEventImpl callbackEvent) {
+    Object newValue = callbackEvent.getRawNewValueAsHeapObject();
+    if (newValue == null) {
+      if (callbackEvent.isLocalInvalid()) {
+        newValue = Token.LOCAL_INVALID;
+      } else {
+        newValue = Token.INVALID;
+      }
+    }
+    return newValue;
   }
 
   @Override
