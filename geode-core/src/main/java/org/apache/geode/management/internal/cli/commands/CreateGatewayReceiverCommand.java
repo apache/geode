@@ -99,10 +99,11 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
 
     ResultModel result = ResultModel.createMemberStatusResult(gatewayReceiverCreateResults);
 
-    boolean allSuccessful = gatewayReceiverCreateResults.stream()
-        .map(CliFunctionResult::isSuccessful).reduce(true, (x, y) -> x && y);
-    if (!allSuccessful) {
+    boolean anySuccessful = gatewayReceiverCreateResults.stream()
+        .map(CliFunctionResult::isSuccessful).reduce(true, (x, y) -> x || y);
+    if (!anySuccessful) {
       result.setStatus(Status.ERROR);
+      return result;
     }
 
     result.setConfigObject(configuration);

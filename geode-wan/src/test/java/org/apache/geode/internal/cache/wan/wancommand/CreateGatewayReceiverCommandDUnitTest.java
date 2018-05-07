@@ -96,7 +96,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
   }
 
   @Test
-  public void commandFailsIfAnyReceiverFailsToCreateWithoutSkipOption() {
+  public void commandSucceedsIfAnyReceiverFailsToCreateEvenWithoutSkipOption() {
     // Create a receiver on one server (but not all) so that the command to create receivers on all
     // will fail on one (but not all). Such a failure should be reported as a failure to GFSH,
     // unless --skip-if-exists is present.
@@ -109,7 +109,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
         .tableHasColumnWithValuesContaining("Status",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"");
-    gfsh.executeAndAssertThat(createOnBoth).statusIsError()
+    gfsh.executeAndAssertThat(createOnBoth).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
         .tableHasColumnWithValuesContaining("Status",
             "ERROR: java.lang.IllegalStateException: "

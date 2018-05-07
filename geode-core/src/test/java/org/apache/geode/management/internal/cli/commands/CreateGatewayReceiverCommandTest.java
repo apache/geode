@@ -135,7 +135,7 @@ public class CreateGatewayReceiverCommandTest {
   }
 
   @Test
-  public void configurationIsNotPersistedWhenCreationOnAnyMemberFails() {
+  public void configurationIsPersistedWhenCreationOnAnyMemberFails() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     result1 = new CliFunctionResult("member", false, "result1");
@@ -144,8 +144,8 @@ public class CreateGatewayReceiverCommandTest {
     functionResults.add(result2);
 
     // does not delete because command failed, so hasNoFailToPersistError should still be true
-    gfsh.executeAndAssertThat(command, "create gateway-receiver").statusIsError()
-        .containsOutput("Cluster configuration is not updated");
+    gfsh.executeAndAssertThat(command, "create gateway-receiver").statusIsSuccess()
+        .doesNotContainOutput("Cluster configuration is not updated");
     verify(ccService, never()).deleteXmlEntity(any(), any());
   }
 }
