@@ -74,21 +74,21 @@ public class PersistenceInitialImageAdvisorTest {
     when(persistenceAdvisor.getCacheDistributionAdvisor()).thenReturn(cacheDistributionAdvisor);
   }
 
+  @Test
+  public void clearsEqualMembers_ifHasDiskImageAndAllReplicatesAreUnequal() {
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
 
-  // TODO:
-  // - no replicates && no previous replicates && members to wait for
-  // - return advice from cache distribution advisor
+    InitialImageAdvice adviceFromCacheDistributionAdvisor = adviceWithReplicates(3);
+    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
+        .thenReturn(adviceFromCacheDistributionAdvisor);
 
-  // TODO:
-  // - no replicates && no previous replicates && members to wait for
-  // - tests scenarios TBD
+    InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
 
-  // TODO:
-  // - replicates && disk image && none equal
-  // - clear equal members
+    verify(persistenceAdvisor, times(1)).clearEqualMembers();
+  }
 
   @Test
-  public void adviceContainsAllReplicates_ifAllReplicatesAreUnequal() {
+  public void adviceIncludesAllReplicates_ifHasDiskImageAndAllReplicatesAreUnequal() {
     persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
 
     InitialImageAdvice adviceFromCacheDistributionAdvisor = adviceWithReplicates(3);
@@ -102,7 +102,7 @@ public class PersistenceInitialImageAdvisorTest {
   }
 
   @Test
-  public void adviceContainsNoReplicates_ifAnyReplicateIsEqual() {
+  public void adviceIncludesNoReplicates_ifHasDiskImageAndAnyReplicateIsEqual() {
     persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
 
     when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
@@ -112,6 +112,22 @@ public class PersistenceInitialImageAdvisorTest {
     InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
 
     assertThat(result.getReplicates()).isEmpty();
+  }
+
+  @Test
+  public void adviceIncludesAllReplicates_ifReplicatesAndNoDiskImage() {
+    boolean hasDiskImage = false;
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisor(hasDiskImage);
+
+    InitialImageAdvice adviceFromCacheDistributionAdvisor = adviceWithReplicates(9);
+
+    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
+        .thenReturn(adviceFromCacheDistributionAdvisor);
+
+    InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
+
+    assertThat(result.getReplicates())
+        .isEqualTo(adviceFromCacheDistributionAdvisor.getReplicates());
   }
 
   @Test
@@ -173,22 +189,6 @@ public class PersistenceInitialImageAdvisorTest {
     verify(persistenceAdvisor, times(2)).updateMembershipView(any(), anyBoolean());
   }
 
-  @Test
-  public void adviceIncludesAllReplicates_ifReplicatesAndNoDiskImage() {
-    boolean hasDiskImage = false;
-    persistenceInitialImageAdvisor = persistenceInitialImageAdvisor(hasDiskImage);
-
-    InitialImageAdvice adviceFromCacheDistributionAdvisor = adviceWithReplicates(9);
-
-    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
-        .thenReturn(adviceFromCacheDistributionAdvisor);
-
-    InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
-
-    assertThat(result.getReplicates())
-        .isEqualTo(adviceFromCacheDistributionAdvisor.getReplicates());
-  }
-
   @Test(expected = CacheClosedException.class)
   public void propagatesThrownException_ifCancelInProgress() {
     persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
@@ -199,6 +199,26 @@ public class PersistenceInitialImageAdvisorTest {
 
     persistenceInitialImageAdvisor.getAdvice(null);
   }
+
+  @Test
+  public void returnsAdviceFromCacheDistributionAdvisor_ifNoOnlineOrPreviouslyOnlineMembers() {
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
+
+    InitialImageAdvice adviceFromCacheDistributionAdvisor = new InitialImageAdvice();
+
+    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
+        .thenReturn(adviceFromCacheDistributionAdvisor);
+    when(persistenceAdvisor.getPersistedOnlineOrEqualMembers()).thenReturn(new HashSet<>());
+
+    InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
+
+    assertThat(result).isSameAs(adviceFromCacheDistributionAdvisor);
+  }
+
+  // TODO:
+  // - no replicates && no previous replicates && members to wait for
+  // - tests scenarios TBD
+
 
   @Test
   public void publishesListOfMissingMembers_whenWaitingForMissingMembers() {
