@@ -88,15 +88,16 @@ public class PersistenceInitialImageAdvisorTest {
   // - no replicates && no previous replicates && members to wait for
   // - tests scenarios TBD
 
-  // - replicates && disk image && at least one equal
-  // - return advice with empty replicates (load from disk)
-  //
-  @Ignore("Complication: Checks state on peers")
   @Test
-  public void equalReplicates() {
+  public void adviceContainsNoReplicates_ifAnyReplicateIsEqual() {
     persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
 
+    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
+        .thenReturn(adviceWithReplicates(9));
+    when(persistenceAdvisor.checkMyStateOnMembers(any())).thenReturn(true);
+
     InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
+
     assertThat(result.getReplicates()).isEmpty();
   }
 
