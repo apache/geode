@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -120,7 +119,6 @@ public class AlterMappingFunctionTest {
     when(service.getMappingForRegion(REGION_NAME)).thenReturn(existingMapping);
 
     AlterMappingFunction function = spy(new AlterMappingFunction());
-    doReturn(null).when(function).createXmlEntity(context);
     function.execute(context);
 
     verify(service, times(1)).replaceRegionMapping(any());
