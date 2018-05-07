@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -88,7 +89,6 @@ public class PersistenceInitialImageAdvisorTest {
   // - no replicates && no previous replicates && members to wait for
   // - return advice from cache distribution advisor
 
-
   // TODO:
   // - no replicates && no previous replicates && members to wait for
   // - tests scenarios TBD
@@ -114,7 +114,8 @@ public class PersistenceInitialImageAdvisorTest {
     when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
         .thenReturn(adviceWithNonPersistentReplicates, adviceWithReplicates(1));
 
-    doThrow(new ReplyException()).when(persistenceAdvisor).updateMembershipView(any(),
+    // Make every attempt fail, forcing the advisor to try them all.
+    doThrow(ReplyException.class).when(persistenceAdvisor).updateMembershipView(any(),
         anyBoolean());
 
     persistenceInitialImageAdvisor.getAdvice(null);
@@ -122,6 +123,25 @@ public class PersistenceInitialImageAdvisorTest {
     for (InternalDistributedMember peer : adviceWithNonPersistentReplicates.getNonPersistent()) {
       verify(persistenceAdvisor, times(1)).updateMembershipView(peer, true);
     }
+  }
+
+  @Test
+  public void updatesMembershipViewFromFirstNonPersistentReplicateThatReplies() {
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
+
+    InitialImageAdvice adviceWithNonPersistentReplicates = adviceWithNonPersistentReplicates(4);
+
+    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
+        .thenReturn(adviceWithNonPersistentReplicates, adviceWithReplicates(1));
+
+    doThrow(ReplyException.class) // Throw on first call
+        .doNothing() // Then return without throwing
+        .when(persistenceAdvisor).updateMembershipView(any(), anyBoolean());
+
+    persistenceInitialImageAdvisor.getAdvice(null);
+
+    // The second call succeeds. Expect no further calls.
+    verify(persistenceAdvisor, times(2)).updateMembershipView(any(), anyBoolean());
   }
 
   @Test
