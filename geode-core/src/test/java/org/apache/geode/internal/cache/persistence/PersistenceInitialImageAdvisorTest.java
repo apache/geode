@@ -28,6 +28,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
 
@@ -46,6 +47,7 @@ import org.mockito.InOrder;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
@@ -77,10 +79,6 @@ public class PersistenceInitialImageAdvisorTest {
   // - return advice with all replicates (attempt GII)
 
   // TODO:
-  // - no replicates && non-persistent
-  // - update membership view from non-persistent
-
-  // TODO:
   // - no replicates && previous replicates
   // - clear previous advice
   // - fetch new advice from cache distribution advisor (which will have replicates)
@@ -95,17 +93,35 @@ public class PersistenceInitialImageAdvisorTest {
   // - no replicates && no previous replicates && members to wait for
   // - tests scenarios TBD
 
-  // TODO:
   // - replicates && disk image && at least one equal
   // - return advice with empty replicates (load from disk)
   //
-  @Ignore("Too complicated to set up. Leave for later.")
+  @Ignore("Complication: Checks state on peers")
   @Test
   public void equalReplicates() {
     persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
 
     InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
     assertThat(result.getReplicates()).isEmpty();
+  }
+
+  @Test
+  public void attemptsToUpdateMembershipViewFromEachNonPersistentReplicate_ifAllReplicatesAreNonPersistent() {
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
+
+    InitialImageAdvice adviceWithNonPersistentReplicates = adviceWithNonPersistentReplicates(4);
+
+    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
+        .thenReturn(adviceWithNonPersistentReplicates, adviceWithReplicates(1));
+
+    doThrow(new ReplyException()).when(persistenceAdvisor).updateMembershipView(any(),
+        anyBoolean());
+
+    persistenceInitialImageAdvisor.getAdvice(null);
+
+    for (InternalDistributedMember peer : adviceWithNonPersistentReplicates.getNonPersistent()) {
+      verify(persistenceAdvisor, times(1)).updateMembershipView(peer, true);
+    }
   }
 
   @Test
@@ -181,11 +197,21 @@ public class PersistenceInitialImageAdvisorTest {
         "region path", cacheDistributionAdvisor, hasDiskImage);
   }
 
-  private static InitialImageAdvice adviceWithReplicates(int replicateCount) {
-    Set<InternalDistributedMember> replicates = IntStream.range(0, replicateCount)
-        .mapToObj(i -> internalDistributedMember("replicate " + i)).collect(toSet());
+  private static InitialImageAdvice adviceWithReplicates(int count) {
+    Set<InternalDistributedMember> replicates = members("replicate", count);
     return new InitialImageAdvice(replicates, emptySet(), emptySet(), emptySet(), emptySet(),
         emptySet(), emptyMap());
+  }
+
+  private static InitialImageAdvice adviceWithNonPersistentReplicates(int count) {
+    Set<InternalDistributedMember> nonPersistentReplicates = members("non-persistent", count);
+    return new InitialImageAdvice(emptySet(), emptySet(), emptySet(), emptySet(), emptySet(),
+        nonPersistentReplicates, emptyMap());
+  }
+
+  private static Set<InternalDistributedMember> members(String namePrefix, int count) {
+    return IntStream.range(0, count).mapToObj(i -> internalDistributedMember(namePrefix + ' ' + i))
+        .collect(toSet());
   }
 
   private static InternalDistributedMember internalDistributedMember(String name) {
