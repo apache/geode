@@ -24,12 +24,10 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
 
@@ -54,31 +52,6 @@ import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvi
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-// Test ideas:
-// - replicates && disk image && at least one equal
-// - return advice with empty replicates (load from disk)
-//
-// - replicates && disk image && none equal
-// - clear equal members
-// - return advice with all replicates (attempt GII)
-//
-// - replicates && no disk image
-// - return advice with all replicates (attempt GII)
-//
-// - no replicates && non-persistent
-// - update membership view from non-persistent
-//
-// - no replicates && previous replicates
-// - clear previous advice
-// - fetch new advice from cache distribution advisor (which will have replicates)
-// - react to new advice
-//
-// - no replicates && no previous replicates && members to wait for
-// - return advice from cache distribution advisor
-//
-// - no replicates && no previous replicates && members to wait for
-// - tests scenarios TBD
-
 @Category(UnitTest.class)
 public class PersistenceInitialImageAdvisorTest {
   @Rule
@@ -96,13 +69,36 @@ public class PersistenceInitialImageAdvisorTest {
 
     persistenceAdvisor = mock(InternalPersistenceAdvisor.class);
     when(persistenceAdvisor.getCacheDistributionAdvisor()).thenReturn(cacheDistributionAdvisor);
-
   }
 
-  // Test ideas:
-// - replicates && disk image && at least one equal
-// - return advice with empty replicates (load from disk)
-//
+  // TODO:
+  // - replicates && disk image && none equal
+  // - clear equal members
+  // - return advice with all replicates (attempt GII)
+
+  // TODO:
+  // - no replicates && non-persistent
+  // - update membership view from non-persistent
+
+  // TODO:
+  // - no replicates && previous replicates
+  // - clear previous advice
+  // - fetch new advice from cache distribution advisor (which will have replicates)
+  // - react to new advice
+
+  // TODO:
+  // - no replicates && no previous replicates && members to wait for
+  // - return advice from cache distribution advisor
+
+
+  // TODO:
+  // - no replicates && no previous replicates && members to wait for
+  // - tests scenarios TBD
+
+  // TODO:
+  // - replicates && disk image && at least one equal
+  // - return advice with empty replicates (load from disk)
+  //
   @Ignore("Too complicated to set up. Leave for later.")
   @Test
   public void equalReplicates() {
@@ -119,7 +115,8 @@ public class PersistenceInitialImageAdvisorTest {
 
     InitialImageAdvice adviceFromCacheDistributionAdvisor = adviceWithReplicates(9);
 
-    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean())).thenReturn(adviceFromCacheDistributionAdvisor);
+    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
+        .thenReturn(adviceFromCacheDistributionAdvisor);
 
     InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
 
@@ -180,8 +177,8 @@ public class PersistenceInitialImageAdvisorTest {
   }
 
   private PersistenceInitialImageAdvisor persistenceInitialImageAdvisor(boolean hasDiskImage) {
-    return new PersistenceInitialImageAdvisor(persistenceAdvisor,
-        "short disk store ID", "region path", cacheDistributionAdvisor, hasDiskImage);
+    return new PersistenceInitialImageAdvisor(persistenceAdvisor, "short disk store ID",
+        "region path", cacheDistributionAdvisor, hasDiskImage);
   }
 
   private static InitialImageAdvice adviceWithReplicates(int replicateCount) {
