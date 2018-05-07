@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -80,12 +81,6 @@ public class PersistenceInitialImageAdvisorTest {
   // - return advice with all replicates (attempt GII)
 
   // TODO:
-  // - no replicates && previous replicates
-  // - clear previous advice
-  // - fetch new advice from cache distribution advisor (which will have replicates)
-  // - react to new advice
-
-  // TODO:
   // - no replicates && no previous replicates && members to wait for
   // - return advice from cache distribution advisor
 
@@ -103,6 +98,26 @@ public class PersistenceInitialImageAdvisorTest {
 
     InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
     assertThat(result.getReplicates()).isEmpty();
+  }
+
+  @Test
+  public void obtainsFreshAdvice_ifAdviceIncludesNoReplicatesAndPreviousAdviceHasReplicates() {
+    InitialImageAdvice previousAdviceWithReplicates = adviceWithReplicates(1);
+
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
+
+    when(cacheDistributionAdvisor.adviseInitialImage(isNotNull(), anyBoolean()))
+        .thenReturn(adviceWithReplicates(0));
+    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
+        .thenReturn(adviceWithReplicates(1));
+
+    persistenceInitialImageAdvisor.getAdvice(previousAdviceWithReplicates);
+
+    InOrder inOrder = inOrder(cacheDistributionAdvisor);
+    inOrder.verify(cacheDistributionAdvisor, times(1))
+        .adviseInitialImage(same(previousAdviceWithReplicates), anyBoolean());
+    inOrder.verify(cacheDistributionAdvisor, times(1)).adviseInitialImage(isNull(), anyBoolean());
+    inOrder.verify(cacheDistributionAdvisor, times(0)).adviseInitialImage(any(), anyBoolean());
   }
 
   @Test
