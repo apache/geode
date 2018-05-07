@@ -10487,12 +10487,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         || isUsedForPartitionedRegionBucket();
   }
 
-  Map<String, CacheServiceProfile> getCacheServiceProfiles() {
+  public Map<String, CacheServiceProfile> getCacheServiceProfiles() {
     return this.cacheServiceProfiles.getSnapshot();
   }
 
   public void addCacheServiceProfile(CacheServiceProfile profile) {
     this.cacheServiceProfiles.put(profile.getId(), profile);
+  }
+
+  public void removeCacheServiceProfile(String profileID) {
+    this.cacheServiceProfiles.remove(profileID);
   }
 
   @Override

@@ -243,9 +243,17 @@ public class LuceneServiceImpl implements InternalLuceneService {
       String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers,
       LuceneSerializer serializer) {
     validateRegionAttributes(region.getAttributes());
+    LuceneIndexCreationProfile luceneIndexCreationProfile = new LuceneIndexCreationProfile(
+        indexName, regionPath, fields, analyzer, fieldAnalyzers, serializer);
+    region.addCacheServiceProfile(luceneIndexCreationProfile);
 
-    region.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName, regionPath, fields,
-        analyzer, fieldAnalyzers, serializer));
+    try {
+      validateLuceneIndexCreationProfile(region);
+    } catch (Exception e) {
+      region.removeCacheServiceProfile(luceneIndexCreationProfile.getId());
+      throw new UnsupportedOperationException(
+          "Lucene indexes cannot be created because of profile incompatibility", e);
+    }
 
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     region.updatePRConfigWithNewGatewaySender(aeqId);
@@ -255,6 +263,10 @@ public class LuceneServiceImpl implements InternalLuceneService {
     afterDataRegionCreated(luceneIndex);
 
     createLuceneIndexOnDataRegion(region, luceneIndex);
+  }
+
+  protected void validateLuceneIndexCreationProfile(PartitionedRegion region) {
+    new LuceneIndexCreationProfileProcessor(region).validateLuceneIndexCreationProfiles();
   }
 
   protected boolean createLuceneIndexOnDataRegion(final PartitionedRegion userRegion,
@@ -555,6 +567,12 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   /** Public for test purposes */
   public static void registerDataSerializables() {
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_INDEX_CREATION_PROFILE_MSG,
+        LuceneIndexCreationProfileProcessor.LuceneIndexCreationProfileMessage.class);
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_INDEX_CREATION_PROFILE_REPLY_MSG,
+        LuceneIndexCreationProfileProcessor.LuceneIndexCreationProfileReplyMessage.class);
+
     DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_CHUNK_KEY, ChunkKey.class);
 
     DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_FILE, File.class);

@@ -128,7 +128,6 @@ public class LuceneServiceImplJUnitTest {
     when(cache.getDistributionManager()).thenReturn(mock(DistributionManager.class));
     when(cache.getDistributionManager().getWaitingThreadPool())
         .thenReturn(Executors.newSingleThreadExecutor());
-
     RegionAttributes ratts = mock(RegionAttributes.class);
     when(region.getAttributes()).thenReturn(ratts);
     when(ratts.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
@@ -168,5 +167,8 @@ public class LuceneServiceImplJUnitTest {
     protected void validateAllMembersAreTheSameVersion(PartitionedRegion region) {
 
     }
+
+    @Override
+    protected void validateLuceneIndexCreationProfile(PartitionedRegion region) {}
   }
 }
