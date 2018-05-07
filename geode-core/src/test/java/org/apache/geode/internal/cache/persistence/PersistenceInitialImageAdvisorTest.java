@@ -40,7 +40,6 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -75,10 +74,6 @@ public class PersistenceInitialImageAdvisorTest {
     when(persistenceAdvisor.getCacheDistributionAdvisor()).thenReturn(cacheDistributionAdvisor);
   }
 
-  // TODO:
-  // - replicates && disk image && none equal
-  // - clear equal members
-  // - return advice with all replicates (attempt GII)
 
   // TODO:
   // - no replicates && no previous replicates && members to wait for
@@ -87,6 +82,24 @@ public class PersistenceInitialImageAdvisorTest {
   // TODO:
   // - no replicates && no previous replicates && members to wait for
   // - tests scenarios TBD
+
+  // TODO:
+  // - replicates && disk image && none equal
+  // - clear equal members
+
+  @Test
+  public void adviceContainsAllReplicates_ifAllReplicatesAreUnequal() {
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
+
+    InitialImageAdvice adviceFromCacheDistributionAdvisor = adviceWithReplicates(3);
+    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
+        .thenReturn(adviceFromCacheDistributionAdvisor);
+
+    InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
+
+    assertThat(result.getReplicates())
+        .isEqualTo(adviceFromCacheDistributionAdvisor.getReplicates());
+  }
 
   @Test
   public void adviceContainsNoReplicates_ifAnyReplicateIsEqual() {
