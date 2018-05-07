@@ -158,6 +158,11 @@ public class LuceneServiceImplJUnitTest {
   private class TestLuceneServiceImpl extends LuceneServiceImpl {
 
     @Override
+    protected void validateLuceneIndexProfile(PartitionedRegion region) {
+
+    }
+
+    @Override
     public void afterDataRegionCreated(InternalLuceneIndex index) {
       PartitionedRegion userRegion =
           (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());

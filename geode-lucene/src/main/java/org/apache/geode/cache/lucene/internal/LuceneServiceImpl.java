@@ -71,6 +71,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CacheService;
+import org.apache.geode.internal.cache.CreateRegionProcessor;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PrimaryBucketException;
@@ -244,9 +245,16 @@ public class LuceneServiceImpl implements InternalLuceneService {
       LuceneSerializer serializer) {
     validateRegionAttributes(region.getAttributes());
 
-    region.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName, regionPath, fields,
-        analyzer, fieldAnalyzers, serializer));
+    LuceneIndexCreationProfile luceneIndexCreationProfile = new LuceneIndexCreationProfile(
+        indexName, regionPath, fields, analyzer, fieldAnalyzers, serializer, true);
 
+    region.addCacheServiceProfile(luceneIndexCreationProfile);
+    try {
+      validateLuceneIndexProfile(region);
+    } catch (Exception e) {
+      region.removeCacheServiceProfile(luceneIndexCreationProfile.getId());
+      throw new UnsupportedOperationException("Lucene indexes cannot be created", e);
+    }
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     region.updatePRConfigWithNewGatewaySender(aeqId);
     LuceneIndexImpl luceneIndex = beforeDataRegionCreated(indexName, regionPath,
@@ -255,6 +263,10 @@ public class LuceneServiceImpl implements InternalLuceneService {
     afterDataRegionCreated(luceneIndex);
 
     createLuceneIndexOnDataRegion(region, luceneIndex);
+  }
+
+  protected void validateLuceneIndexProfile(PartitionedRegion region) {
+    new CreateRegionProcessor(region).initializeRegion();
   }
 
   protected boolean createLuceneIndexOnDataRegion(final PartitionedRegion userRegion,

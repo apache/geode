@@ -2,9 +2,9 @@ org/apache/geode/cache/lucene/internal/DestroyLuceneIndexMessage,2
 fromData,32
 toData,32
 org/apache/geode/cache/lucene/internal/LuceneIndexCreationProfile,4
-fromData,14
+fromData,25
 fromDataPre_GEODE_1_4_0_0,41
-toData,14
+toData,25
 toDataPre_GEODE_1_4_0_0,41
 org/apache/geode/cache/lucene/internal/LuceneResultStructImpl,2
 fromData,27
