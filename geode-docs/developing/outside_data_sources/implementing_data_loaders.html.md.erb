@@ -65,8 +65,8 @@ hurting the performance of the distributed system.
 
 Use one of these three ways to configure and deploy the cache loader:
 
-**Option 1:** Configure within a `cache.xml` file and deploy
-by adding the cache loader to the classpath when starting servers.
+**Option 1:** If configuring a cluster by defining a `cache.xml` file,
+deploy by adding the cache loader to the classpath when starting servers.
 
 Here is an example configuration within the `cache.xml` file
 that specifies the loader without parameters:
@@ -99,7 +99,8 @@ gfsh>start server --name=s2 --classpath=/var/data/lib/myLoader.jar
 ```
 
 **Option 2:** 
-Deploy by the JAR file by adding it to classpath and use gfsh to apply the
+If deploying the JAR file at server startup,
+add the JAR file to the classpath and use gfsh to apply the
 configuration to the region.
 
 To deploy the JAR file,
@@ -126,7 +127,8 @@ gfsh>alter region --name=r3 --cache-loader=com.example.appname.myCacheLoader
 ```
 
 **Option 3:** 
-Deploy the JAR file with the gfsh deploy command and
+If deploying the JAR file with the gfsh deploy command
+after servers have been started,
 use gfsh to apply the configuration to the region.
 
 After server creation use gfsh to deploy the JAR file to all the
