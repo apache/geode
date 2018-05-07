@@ -18,10 +18,13 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -36,6 +39,7 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -93,21 +97,51 @@ public class PersistenceInitialImageAdvisorTest {
     persistenceAdvisor = mock(InternalPersistenceAdvisor.class);
     when(persistenceAdvisor.getCacheDistributionAdvisor()).thenReturn(cacheDistributionAdvisor);
 
-    persistenceInitialImageAdvisor = new PersistenceInitialImageAdvisor(persistenceAdvisor,
-        "short disk store ID", "region path", cacheDistributionAdvisor, true);
+  }
+
+  // Test ideas:
+// - replicates && disk image && at least one equal
+// - return advice with empty replicates (load from disk)
+//
+  @Ignore("Too complicated to set up. Leave for later.")
+  @Test
+  public void equalReplicates() {
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
+
+    InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
+    assertThat(result.getReplicates()).isEmpty();
+  }
+
+  @Test
+  public void adviceIncludesAllReplicates_ifReplicatesAndNoDiskImage() {
+    boolean hasDiskImage = false;
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisor(hasDiskImage);
+
+    InitialImageAdvice adviceFromCacheDistributionAdvisor = adviceWithReplicates(9);
+
+    when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean())).thenReturn(adviceFromCacheDistributionAdvisor);
+
+    InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
+
+    assertThat(result.getReplicates())
+        .isEqualTo(adviceFromCacheDistributionAdvisor.getReplicates());
   }
 
   @Test(expected = CacheClosedException.class)
-  public void propagatesThrownExceptionIfCancelInProgress() {
+  public void propagatesThrownException_ifCancelInProgress() {
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
+
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(cacheDistributionAdvisor.getAdvisee().getCancelCriterion()).thenReturn(cancelCriterion);
     doThrow(new CacheClosedException()).when(cancelCriterion).checkCancelInProgress(any());
 
     persistenceInitialImageAdvisor.getAdvice(null);
   }
-  
+
   @Test
-  public void publishesListOfMissingMembersWhenWaitingForMissingMembers() {
+  public void publishesListOfMissingMembers_whenWaitingForMissingMembers() {
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
+
     setMembershipChangePollDuration(Duration.ofSeconds(0));
     Set<PersistentMemberID> offlineMembersToWaitFor = givenOfflineMembersToWaitFor(1);
 
@@ -116,12 +150,11 @@ public class PersistenceInitialImageAdvisorTest {
 
     persistenceInitialImageAdvisor.getAdvice(null);
 
-    verify(persistenceAdvisor, times(2)).setWaitingOnMembers(any(), any());
-
     InOrder inOrder = inOrder(persistenceAdvisor);
     inOrder.verify(persistenceAdvisor, times(1)).setWaitingOnMembers(isNotNull(),
         eq(offlineMembersToWaitFor));
     inOrder.verify(persistenceAdvisor, times(1)).setWaitingOnMembers(isNull(), isNull());
+    inOrder.verify(persistenceAdvisor, times(0)).setWaitingOnMembers(any(), any());
   }
 
   private Set<PersistentMemberID> givenOfflineMembersToWaitFor(int memberCount) {
@@ -141,6 +174,16 @@ public class PersistenceInitialImageAdvisorTest {
     return offlineMembersToWaitFor;
   }
 
+  private PersistenceInitialImageAdvisor persistenceInitialImageAdvisorWithDiskImage() {
+    boolean hasDiskImage = true;
+    return persistenceInitialImageAdvisor(hasDiskImage);
+  }
+
+  private PersistenceInitialImageAdvisor persistenceInitialImageAdvisor(boolean hasDiskImage) {
+    return new PersistenceInitialImageAdvisor(persistenceAdvisor,
+        "short disk store ID", "region path", cacheDistributionAdvisor, hasDiskImage);
+  }
+
   private static InitialImageAdvice adviceWithReplicates(int replicateCount) {
     Set<InternalDistributedMember> replicates = IntStream.range(0, replicateCount)
         .mapToObj(i -> internalDistributedMember("replicate " + i)).collect(toSet());
@@ -157,6 +200,7 @@ public class PersistenceInitialImageAdvisorTest {
   }
 
   private static void setMembershipChangePollDuration(Duration timeout) {
-    System.setProperty("geode." + SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS, String.valueOf(timeout.getSeconds()));
+    System.setProperty("geode." + SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS,
+        String.valueOf(timeout.getSeconds()));
   }
 }
