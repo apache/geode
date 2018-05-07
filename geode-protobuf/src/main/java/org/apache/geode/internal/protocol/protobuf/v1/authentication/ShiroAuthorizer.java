@@ -32,4 +32,14 @@ public class ShiroAuthorizer implements Authorizer {
   public void authorize(ResourcePermission permission) {
     securityService.authorize(permission, subject);
   }
+
+  @Override
+  public Object postProcess(String regionPath, Object key, Object value) {
+    return securityService.postProcess(subject.getPrincipal(), regionPath, key, value, false);
+  }
+
+  @Override
+  public boolean needsPostProcessing() {
+    return securityService.getPostProcessor() != null;
+  }
 }

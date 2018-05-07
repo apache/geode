@@ -27,4 +27,8 @@ public interface Authorizer {
   }
 
   void authorize(ResourcePermission resourcePermission);
+
+  Object postProcess(String regionPath, Object key, Object value);
+
+  boolean needsPostProcessing();
 }

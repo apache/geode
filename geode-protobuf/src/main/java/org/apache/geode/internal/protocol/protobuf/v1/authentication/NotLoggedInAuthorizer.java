@@ -25,4 +25,14 @@ public class NotLoggedInAuthorizer implements Authorizer {
   public void authorize(ResourcePermission permission) {
     throw new NotAuthorizedException("User has not yet logged in");
   }
+
+  @Override
+  public Object postProcess(String regionPath, Object key, Object value) {
+    throw new NotAuthorizedException("User has not yet logged in");
+  }
+
+  @Override
+  public boolean needsPostProcessing() {
+    throw new NotAuthorizedException("User has not yet logged in");
+  }
 }

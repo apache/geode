@@ -27,4 +27,14 @@ public class NoSecurityAuthorizer implements Authorizer {
   public void authorize(ResourcePermission resourcePermission) {
 
   }
+
+  @Override
+  public Object postProcess(String regionPath, Object key, Object value) {
+    return value;
+  }
+
+  @Override
+  public boolean needsPostProcessing() {
+    return false;
+  }
 }
