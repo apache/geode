@@ -83,7 +83,7 @@ public class PersistenceInitialImageAdvisorTest {
     when(cacheDistributionAdvisor.adviseInitialImage(isNull(), anyBoolean()))
         .thenReturn(adviceFromCacheDistributionAdvisor);
 
-    InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
+    persistenceInitialImageAdvisor.getAdvice(null);
 
     verify(persistenceAdvisor, times(1)).clearEqualMembers();
   }
@@ -307,8 +307,8 @@ public class PersistenceInitialImageAdvisorTest {
   }
 
   private static Set<InternalDistributedMember> members(String namePrefix, int count) {
-    return IntStream.range(0, count).mapToObj(i -> internalDistributedMember(namePrefix + ' ' + i))
-        .collect(toSet());
+    return IntStream.range(0, count).mapToObj(i -> namePrefix + ' ' + i)
+        .map(PersistenceInitialImageAdvisorTest::internalDistributedMember).collect(toSet());
   }
 
   private static InternalDistributedMember internalDistributedMember(String name) {
@@ -320,19 +320,19 @@ public class PersistenceInitialImageAdvisorTest {
   }
 
   private static HashSet<PersistentMemberID> persistentMemberIDs(int count) {
-    String prefix = "persisted online or equal member";
-    return memberIDs(prefix, count);
+    return memberIDs("persisted online or equal member", count);
   }
 
   private static HashSet<PersistentMemberID> memberIDs(String prefix, int count) {
-    return IntStream.range(0, count)
-        .mapToObj(i -> prefix + ' ' + i)
+    return IntStream.range(0, count).mapToObj(i -> prefix + ' ' + i)
         .map(PersistenceInitialImageAdvisorTest::persistentMemberID)
         .collect(toCollection(HashSet::new));
   }
 
   private static void setMembershipChangePollDuration(Duration timeout) {
-    System.setProperty(SystemPropertyHelper.GEODE_PREFIX + SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS,
+    System.setProperty(
+        SystemPropertyHelper.GEODE_PREFIX
+            + SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS,
         String.valueOf(timeout.getSeconds()));
   }
 }
