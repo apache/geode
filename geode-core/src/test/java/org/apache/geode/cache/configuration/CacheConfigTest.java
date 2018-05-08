@@ -37,11 +37,9 @@ public class CacheConfigTest {
   private String regionXml;
   private DeclarableType declarableWithString;
   private String declarableWithStringXml;
-  private ClassNameType classNameType;
   private String classNameTypeXml;
   private DeclarableType declarableWithParam;
   private String declarableWithParamXml;
-  private String stringTypeXml;
   private String cacheXml;
 
   @Before
@@ -56,7 +54,6 @@ public class CacheConfigTest {
     regionConfig.setRefid("REPLICATE");
     regionXml = "<region name=\"regionA\" refid=\"REPLICATE\">";
 
-    classNameType = new ClassNameType("my.className");
     classNameTypeXml = "<class-name>my.className</class-name>";
     declarableWithString = new DeclarableType("my.className", "{'key':'value'}");
     declarableWithStringXml =
@@ -68,8 +65,6 @@ public class CacheConfigTest {
     declarableWithParam.getParameter().add(param);
     declarableWithParamXml = classNameTypeXml + "<parameter name=\"key\"><declarable>"
         + declarableWithStringXml + "</declarable></parameter>";
-
-    stringTypeXml = "<string>string value</string>";
   }
 
   @After
@@ -168,6 +163,7 @@ public class CacheConfigTest {
 
     RegionAttributesType regionAttributes = cacheConfig.getRegionAttributes().get(0);
     assertThat(regionAttributes.getCacheListener().get(0)).isEqualTo(declarableWithString);
+    assertThat(regionAttributes.getCompressor().toString()).isEqualTo("my.className");
     assertThat(regionAttributes.getCacheLoader()).isEqualTo(declarableWithString);
     assertThat(regionAttributes.getCacheWriter()).isEqualTo(declarableWithString);
     assertThat(regionAttributes.getRegionTimeToLive().getExpirationAttributes().getCustomExpiry())
