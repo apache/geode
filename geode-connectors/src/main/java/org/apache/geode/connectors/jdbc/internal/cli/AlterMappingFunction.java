@@ -20,19 +20,16 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingNotFoundException;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 
-public class AlterMappingFunction
-    extends JdbcCliFunction<ConnectorService.RegionMapping, CliFunctionResult> {
-
-  AlterMappingFunction() {
-    super();
-  }
+public class AlterMappingFunction extends CliFunction<ConnectorService.RegionMapping> {
 
   @Override
-  CliFunctionResult getFunctionResult(JdbcConnectorService service,
-      FunctionContext<ConnectorService.RegionMapping> context) throws Exception {
+  public CliFunctionResult executeFunction(FunctionContext<ConnectorService.RegionMapping> context)
+      throws Exception {
+    JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
     ConnectorService.RegionMapping mapping = context.getArguments();
     ConnectorService.RegionMapping existingMapping =
         service.getMappingForRegion(mapping.getRegionName());

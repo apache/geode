@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -35,6 +36,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -129,8 +131,9 @@ public class DescribeMappingCommandTest {
         .add(new ConnectorService.RegionMapping.FieldMapping("field2", "value2"));
 
     ResultCollector rc = mock(ResultCollector.class);
-    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
-    when(rc.getResult()).thenReturn(Collections.singletonList(mapping));
+    doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
+    when(rc.getResult()).thenReturn(
+        Collections.singletonList(new CliFunctionResult("server-1", mapping, "success")));
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
         .containsOutput("connection", "name1").containsOutput("table", "table1")
@@ -146,7 +149,7 @@ public class DescribeMappingCommandTest {
         null);
 
     ResultCollector rc = mock(ResultCollector.class);
-    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
+    doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
     when(rc.getResult()).thenReturn(Collections.emptyList());
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
