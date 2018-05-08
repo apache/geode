@@ -284,14 +284,14 @@ public class PersistenceInitialImageAdvisorTest {
     inOrder.verify(persistenceAdvisor, times(0)).setWaitingOnMembers(any(), any());
   }
 
-  private PersistenceInitialImageAdvisor persistenceInitialImageAdvisorWithDiskImage() {
-    boolean hasDiskImage = true;
-    return persistenceInitialImageAdvisor(hasDiskImage);
-  }
-
   private PersistenceInitialImageAdvisor persistenceInitialImageAdvisor(boolean hasDiskImage) {
     return new PersistenceInitialImageAdvisor(persistenceAdvisor, "short disk store ID",
         "region path", cacheDistributionAdvisor, hasDiskImage);
+  }
+
+  private PersistenceInitialImageAdvisor persistenceInitialImageAdvisorWithDiskImage() {
+    boolean hasDiskImage = true;
+    return persistenceInitialImageAdvisor(hasDiskImage);
   }
 
   private static InitialImageAdvice adviceWithReplicates(int count) {
@@ -308,25 +308,16 @@ public class PersistenceInitialImageAdvisorTest {
 
   private static Set<InternalDistributedMember> members(String namePrefix, int count) {
     return IntStream.range(0, count).mapToObj(i -> namePrefix + ' ' + i)
-        .map(PersistenceInitialImageAdvisorTest::internalDistributedMember).collect(toSet());
+        .map(name -> mock(InternalDistributedMember.class, name)).collect(toSet());
   }
 
-  private static InternalDistributedMember internalDistributedMember(String name) {
-    return mock(InternalDistributedMember.class, name);
-  }
-
-  private static PersistentMemberID persistentMemberID(String name) {
-    return mock(PersistentMemberID.class, name);
+  private static HashSet<PersistentMemberID> memberIDs(String namePrefix, int count) {
+    return IntStream.range(0, count).mapToObj(i -> namePrefix + ' ' + i)
+        .map(name -> mock(PersistentMemberID.class, name)).collect(toCollection(HashSet::new));
   }
 
   private static HashSet<PersistentMemberID> persistentMemberIDs(int count) {
     return memberIDs("persisted online or equal member", count);
-  }
-
-  private static HashSet<PersistentMemberID> memberIDs(String prefix, int count) {
-    return IntStream.range(0, count).mapToObj(i -> prefix + ' ' + i)
-        .map(PersistenceInitialImageAdvisorTest::persistentMemberID)
-        .collect(toCollection(HashSet::new));
   }
 
   private static void setMembershipChangePollDuration(Duration timeout) {
