@@ -98,7 +98,7 @@ public abstract class AbstractRegionMapPut {
     return completed;
   }
 
-  protected void setCompleted(boolean b) {
+  private void setCompleted(boolean b) {
     completed = b;
   }
 

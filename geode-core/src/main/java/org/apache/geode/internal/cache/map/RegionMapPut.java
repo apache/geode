@@ -250,7 +250,6 @@ public class RegionMapPut extends AbstractRegionMapPut {
 
   @Override
   protected void createOrUpdateEntry() {
-    final EntryEventImpl event = getEvent();
     try {
       if (isUpdate()) {
         updateEntry();
@@ -260,18 +259,19 @@ public class RegionMapPut extends AbstractRegionMapPut {
     } catch (RegionClearedException rce) {
       setClearOccurred(true);
     } catch (ConcurrentCacheModificationException ccme) {
+      final EntryEventImpl event = getEvent();
       VersionTag tag = event.getVersionTag();
       if (tag != null && tag.isTimeStampUpdated()) {
         getOwner().notifyTimestampsToGateways(event);
       }
       throw ccme;
     }
-    getOwner().recordEvent(getEvent());
   }
 
   @Override
   protected void doBeforeCompletionActions() {
     final EntryEventImpl event = getEvent();
+    getOwner().recordEvent(event);
     if (isOwnerUninitialized()) {
       event.inhibitCacheListenerNotification(true);
     }

@@ -26,7 +26,6 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TXEntryState;
-import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXRmtEvent;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -41,12 +40,11 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
   private final TXRmtEvent txEvent;
   private final List<EntryEventImpl> pendingCallbacks;
   private final TXEntryState txEntryState;
-  private final boolean hasRemoteOrigin;
+  private final boolean remoteOrigin;
   private final boolean invokeCallbacks;
 
   private boolean callbackEventInPending;
   private Operation putOp;
-  private boolean oldIsRemoved;
 
   public RegionMapCommitPut(FocusedRegionMap focusedRegionMap, InternalRegion owner,
       @Released EntryEventImpl callbackEvent, Operation putOp, boolean didDestroy,
@@ -58,22 +56,35 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     this.txEvent = txEvent;
     this.pendingCallbacks = pendingCallbacks;
     this.txEntryState = txEntryState;
-    this.hasRemoteOrigin = !((TXId) txId).getMemberId().equals(owner.getMyId());
+    this.remoteOrigin = !txId.getMemberId().equals(owner.getMyId());
     this.invokeCallbacks = shouldInvokeCallbacks();
     final boolean isTXHost = txEntryState != null;
-    final boolean isClientTXOriginator = owner.getCache().isClient() && !hasRemoteOrigin;
-    // If we are not a replicate or partitioned (i.e. !isAllEvents)
+    // If we do not host the transaction entry and are not a replicate or partitioned (i.e.
+    // !isAllEvents)
     // then only apply the update to existing entries.
-    // If we are a replicate or partitioned then only apply the update to
+    // If we do not host the transaction entry and we are a replicate or partitioned then only apply
+    // the update to
     // existing entries when the operation is an update and we
     // are initialized.
     // Otherwise use the standard create/update logic.
-    this.onlyExisting = hasRemoteOrigin && !isTXHost && !isClientTXOriginator
-        && (!owner.isAllEvents() || (!putOp.isCreate() && isOwnerInitialized()));
+    this.onlyExisting =
+        !isTXHost && (!owner.isAllEvents() || (!putOp.isCreate() && isOwnerInitialized()));
+  }
+
+  boolean isRemoteOrigin() {
+    return remoteOrigin;
+  }
+
+  boolean isInvokeCallbacks() {
+    return invokeCallbacks;
   }
 
   private Operation getPutOp() {
-    return this.putOp;
+    return putOp;
+  }
+
+  private boolean isPutOpCreate() {
+    return getPutOp().isCreate();
   }
 
   private boolean shouldInvokeCallbacks() {
@@ -90,15 +101,15 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     this.callbackEventInPending = v;
   }
 
-  private boolean isCallbackEventInPending() {
+  boolean isCallbackEventInPending() {
     return this.callbackEventInPending;
   }
 
-  private void makeCreate() {
+  private void makePutOpCreate() {
     putOp = putOp.getCorrespondingCreateOp();
   }
 
-  private void makeUpdate() {
+  private void makePutOpUpdate() {
     putOp = putOp.getCorrespondingUpdateOp();
   }
 
@@ -109,7 +120,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
 
   @Override
   protected boolean entryExists(RegionEntry regionEntry) {
-    return regionEntry != null && !regionEntry.isRemoved();
+    return regionEntry != null && !regionEntry.isDestroyedOrRemoved();
   }
 
   @Override
@@ -130,7 +141,20 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
 
   @Override
   protected void setOldValueInEvent() {
-    if (!isCreate()) {
+    if (isCreate()) {
+      makePutOpCreate();
+    } else {
+      if (!getRegionEntry().isDestroyedOrRemoved()) {
+        makePutOpUpdate();
+      } else {
+        makePutOpCreate();
+      }
+    }
+    if (isPutOpCreate()) {
+      getEvent().makeCreate();
+      getEvent().setOldValue(null);
+    } else {
+      getEvent().makeUpdate();
       Object oldValue = getRegionEntry().getValueInVM(getOwner());
       getEvent().setOldValue(oldValue);
     }
@@ -143,7 +167,9 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
 
   @Override
   protected boolean checkPreconditions() {
-    // nothing needed
+    if (isOnlyExisting() && isPutOpCreate()) {
+      return false;
+    }
     return true;
   }
 
@@ -158,23 +184,10 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     final EntryEventImpl callbackEvent = getEvent();
     final InternalRegion owner = getOwner();
     final FocusedRegionMap regionMap = getRegionMap();
-    final boolean isCreate = isCreate();
     final Object key = callbackEvent.getKey();
     final Object newValue = computeNewValue(callbackEvent);
 
-    if (isCreate) {
-      makeCreate();
-    } else {
-      if (isOnlyExisting() && regionEntry.isRemoved()) {
-        return;
-      }
-      setCompleted(true);
-      if (!regionEntry.isRemoved()) {
-        makeUpdate();
-      }
-    }
-    final int oldSize = isCreate ? 0 : getOwner().calculateRegionEntryValueSize(regionEntry);
-    this.oldIsRemoved = isCreate ? true : regionEntry.isDestroyedOrRemoved();
+    final int oldSize = isPutOpCreate() ? 0 : owner.calculateRegionEntryValueSize(regionEntry);
     callbackEvent.setRegionEntry(regionEntry);
     regionMap.txRemoveOldIndexEntry(getPutOp(), regionEntry);
     setLastModifiedTime(owner.cacheTimeMillis());
@@ -189,10 +202,11 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     try {
       regionMap.processAndGenerateTXVersionTag(callbackEvent, regionEntry, txEntryState);
       setNewValueOnRegionEntry(newValue);
-      if (getPutOp().isCreate()) {
-        owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(regionEntry));
-      } else if (getPutOp().isUpdate()) {
-        owner.updateSizeOnPut(key, oldSize, owner.calculateRegionEntryValueSize(regionEntry));
+      int newSize = owner.calculateRegionEntryValueSize(regionEntry);
+      if (isPutOpCreate()) {
+        owner.updateSizeOnCreate(key, newSize);
+      } else {
+        owner.updateSizeOnPut(key, oldSize, newSize);
       }
     } catch (RegionClearedException rce) {
       setClearOccurred(true);
@@ -205,7 +219,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     final InternalRegion owner = getOwner();
     final boolean wasTombstone = regionEntry.isTombstone();
     final Object preparedValue =
-        regionEntry.prepareValueForCache(owner, newValue, getEvent(), !getPutOp().isCreate());
+        regionEntry.prepareValueForCache(owner, newValue, getEvent(), !isPutOpCreate());
     regionEntry.setValue(owner, preparedValue);
     if (wasTombstone) {
       owner.unscheduleTombstone(regionEntry);
@@ -226,7 +240,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
 
   @Override
   protected boolean shouldCreatedEntryBeRemoved() {
-    return !this.isCompleted();
+    return !isCompleted();
   }
 
   @Override
@@ -235,31 +249,19 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     final EntryEventImpl callbackEvent = getEvent();
     final InternalRegion owner = getOwner();
     final FocusedRegionMap regionMap = getRegionMap();
-    final boolean isCreate = isCreate();
     final Object key = callbackEvent.getKey();
 
     regionEntry.updateStatsForPut(getLastModifiedTime(), getLastModifiedTime());
-    owner.txApplyPutPart2(regionEntry, key, getLastModifiedTime(), isCreate, didDestroy,
+    owner.txApplyPutPart2(regionEntry, key, getLastModifiedTime(), isPutOpCreate(), didDestroy,
         isClearOccurred());
-    if (isCreate) {
-      setCompleted(true);
-    }
-    if (invokeCallbacks) {
-      if (isCreate) {
-        callbackEvent.makeCreate();
-        callbackEvent.setOldValue(null);
-      } else {
-        if (!oldIsRemoved) {
-          callbackEvent.makeUpdate();
-        }
-      }
+    if (isInvokeCallbacks()) {
       callbackEvent.changeRegionToBucketsOwner();
-      callbackEvent.setOriginRemote(hasRemoteOrigin);
+      callbackEvent.setOriginRemote(isRemoteOrigin());
       pendingCallbacks.add(callbackEvent);
       setCallbackEventInPending(true);
     }
     if (!isClearOccurred()) {
-      if (isCreate) {
+      if (isCreate()) {
         regionMap.lruEntryCreate(regionEntry);
         regionMap.incEntryCount(1);
       } else {
@@ -274,7 +276,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
       if (didDestroy) {
         getOwner().txApplyPutHandleDidDestroy(getEvent().getKey());
       }
-      if (invokeCallbacks) {
+      if (isInvokeCallbacks()) {
         getEvent().makeUpdate();
         getOwner().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, getEvent(), false);
       }
