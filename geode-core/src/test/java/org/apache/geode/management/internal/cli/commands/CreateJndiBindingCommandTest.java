@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -29,9 +31,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -138,8 +140,7 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
-  public void skipsIfBindingAlreadyExistsAndIfSpecifiedTrue()
-      throws ParserConfigurationException, SAXException, IOException {
+  public void skipsIfBindingAlreadyExistsAndIfSpecifiedTrue() {
     InternalConfigurationPersistenceService clusterConfigService =
         mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
@@ -180,7 +181,9 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
-        .statusIsSuccess().containsOutput("No members found").hasFailToPersistError();
+        .statusIsSuccess().containsOutput("No members found")
+        .containsOutput("Cluster configuration is not updated because the command is executed "
+            + "on specific member or cluster configuration is not enabled.");
   }
 
   @Test
@@ -193,14 +196,19 @@ public class CreateJndiBindingCommandTest {
     doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
 
+    doAnswer(invocation -> {
+      UnaryOperator<CacheConfig> mutator = invocation.getArgument(1);
+      mutator.apply(cacheConfig);
+      return null;
+    }).when(clusterConfigService).updateCacheConfig(any(), any());
+
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
-        .statusIsSuccess()
-        .containsOutput(
-            "No members found. Cluster configuration is updated with jndi-binding \\\"name\\\".")
-        .hasNoFailToPersistError();
+        .statusIsSuccess().containsOutput("No members found.")
+        .containsOutput("Changes to cluster configuration is persisted.");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
+    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
   }
 
   @Test
@@ -240,8 +248,7 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
-  public void whenMembersFoundAndClusterConfigRunningThenUpdateClusterConfigAndInvokeFunction()
-      throws IOException, ParserConfigurationException, SAXException, TransformerException {
+  public void whenMembersFoundAndClusterConfigRunningThenUpdateClusterConfigAndInvokeFunction() {
     Set<DistributedMember> members = new HashSet<>();
     members.add(mock(DistributedMember.class));
 
@@ -257,6 +264,11 @@ public class CreateJndiBindingCommandTest {
     doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
+    doAnswer(invocation -> {
+      UnaryOperator<CacheConfig> mutator = invocation.getArgument(1);
+      mutator.apply(cacheConfig);
+      return null;
+    }).when(clusterConfigService).updateCacheConfig(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND
@@ -266,6 +278,7 @@ public class CreateJndiBindingCommandTest {
             "Tried creating jndi binding \"name\" on \"server1\"");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
+    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
 
     ArgumentCaptor<CreateJndiBindingFunction> function =
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);

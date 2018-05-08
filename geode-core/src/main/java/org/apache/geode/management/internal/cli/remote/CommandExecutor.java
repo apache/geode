@@ -117,7 +117,8 @@ public class CommandExecutor {
     ConfigurationPersistenceService ccService = gfshCommand.getConfigurationPersistenceService();
     if (parseResult.getParamValue("member") != null || ccService == null) {
       infoResultModel.addLine(
-          "Cluster configuration is not updated because the command is executed on specific member.");
+          "Cluster configuration is not updated because the command is executed on specific member "
+              + "or cluster configuration is not enabled.");
       return resultModel;
     }
 
@@ -130,6 +131,7 @@ public class CommandExecutor {
       ccService.updateCacheConfig(group, cc -> {
         try {
           gfshCommand.updateClusterConfig(group, cc, resultModel.getConfigObject());
+          infoResultModel.addLine("Changes to cluster configuration is persisted.");
         } catch (Exception e) {
           String message = "failed to update cluster config for " + group;
           logger.error(message, e);
