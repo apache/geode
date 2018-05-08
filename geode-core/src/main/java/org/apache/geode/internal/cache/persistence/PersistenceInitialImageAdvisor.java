@@ -107,6 +107,7 @@ public class PersistenceInitialImageAdvisor {
                   shortDiskStoreID, regionPath, advice.getReplicates());
             }
             if (persistenceAdvisor.acquireTieLock()) {
+              // TODO: Pass current advice here?
               return refreshInitialImageAdviceAndThenCheckMyStateWithReplicates(previousAdvice);
             }
           } else {

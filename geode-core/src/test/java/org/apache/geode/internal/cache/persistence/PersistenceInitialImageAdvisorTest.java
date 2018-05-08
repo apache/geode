@@ -219,6 +219,28 @@ public class PersistenceInitialImageAdvisorTest {
   // - no replicates && no previous replicates && members to wait for
   // - tests scenarios TBD
 
+  // TODO:
+  // - no replicates && no previous replicates && no members to wait for
+  // - tests scenarios TBD
+
+  @Test
+  public void adviceIncludesReplicatesThatAppearWhileAcquiringTieLock() {
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
+
+    InitialImageAdvice adviceBeforeAcquiringTieLock = new InitialImageAdvice();
+    InitialImageAdvice adviceAfterAcquiringTieLock = adviceWithReplicates(4);
+
+    when(persistenceAdvisor.getPersistedOnlineOrEqualMembers()).thenReturn(persistentMemberIDs(1));
+    when(persistenceAdvisor.getMembersToWaitFor(any(), any())).thenReturn(emptySet());
+    when(persistenceAdvisor.acquireTieLock()).thenReturn(true);
+
+    when(cacheDistributionAdvisor.adviseInitialImage(any(), anyBoolean()))
+        .thenReturn(adviceBeforeAcquiringTieLock, adviceAfterAcquiringTieLock);
+
+    InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
+
+    assertThat(result.getReplicates()).isEqualTo(adviceAfterAcquiringTieLock.getReplicates());
+  }
 
   @Test
   public void publishesListOfMissingMembers_whenWaitingForMissingMembers() {
@@ -289,6 +311,13 @@ public class PersistenceInitialImageAdvisorTest {
 
   private static PersistentMemberID persistentMemberID(String name) {
     return mock(PersistentMemberID.class, name);
+  }
+
+  private static HashSet<PersistentMemberID> persistentMemberIDs(int count) {
+    return IntStream.range(0, count)
+        .mapToObj(i -> "persisted online or equal member " + i)
+        .map(PersistenceInitialImageAdvisorTest::persistentMemberID)
+        .collect(toCollection(HashSet::new));
   }
 
   private static void setMembershipChangePollDuration(Duration timeout) {
