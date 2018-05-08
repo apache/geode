@@ -38,6 +38,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -379,4 +380,6 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   RegionTTLExpiryTask getRegionTTLExpiryTask();
 
   RegionIdleExpiryTask getRegionIdleExpiryTask();
+
+  EvictionController getEvictionController();
 }
