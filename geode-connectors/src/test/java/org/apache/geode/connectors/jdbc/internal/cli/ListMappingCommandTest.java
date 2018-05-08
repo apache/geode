@@ -70,7 +70,7 @@ public class ListMappingCommandTest {
   public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("No mappings found");
+        .containsOutput("(Experimental) \\nNo mappings found");
   }
 
   @Test
@@ -80,7 +80,7 @@ public class ListMappingCommandTest {
     ConnectorService connectorService = mock(ConnectorService.class);
     when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("No mappings found");
+        .containsOutput("(Experimental) \\nNo mappings found");
   }
 
   @Test

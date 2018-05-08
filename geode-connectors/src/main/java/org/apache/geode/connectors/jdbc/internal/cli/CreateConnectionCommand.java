@@ -18,13 +18,16 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -37,11 +40,13 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class CreateConnectionCommand extends SingleGfshCommand {
+  private static final Logger logger = LogService.getLogger();
 
   static final String CREATE_CONNECTION = "create jdbc-connection";
   static final String CREATE_CONNECTION__HELP =
-      "Create a connection for communicating with a database through jdbc.";
+      EXPERIMENTAL + "Create a connection for communicating with a database through jdbc.";
   static final String CREATE_CONNECTION__NAME = "name";
   static final String CREATE_CONNECTION__NAME__HELP = "Name of the connection to be created.";
   static final String CREATE_CONNECTION__URL = "url";
@@ -81,7 +86,7 @@ public class CreateConnectionCommand extends SingleGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new CreateConnectionFunction(), connection, targetMembers);
 
-    ResultModel result = ResultModel.createMemberStatusResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null);
     result.setConfigObject(connection);
     return result;
   }

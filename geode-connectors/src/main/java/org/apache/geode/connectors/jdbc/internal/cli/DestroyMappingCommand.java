@@ -20,6 +20,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
@@ -32,9 +33,10 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class DestroyMappingCommand extends SingleGfshCommand {
   static final String DESTROY_MAPPING = "destroy jdbc-mapping";
-  static final String DESTROY_MAPPING__HELP = "Destroy the specified mapping.";
+  static final String DESTROY_MAPPING__HELP = EXPERIMENTAL + "Destroy the specified mapping.";
   static final String DESTROY_MAPPING__REGION_NAME = "region";
   static final String DESTROY_MAPPING__REGION_NAME__HELP = "Name of the region mapping to destroy.";
 
@@ -53,7 +55,7 @@ public class DestroyMappingCommand extends SingleGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new DestroyMappingFunction(), regionName, targetMembers);
 
-    ResultModel result = ResultModel.createMemberStatusResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null);
     result.setConfigObject(regionName);
     return result;
   }
