@@ -216,14 +216,6 @@ public class PersistenceInitialImageAdvisorTest {
     assertThat(result).isSameAs(adviceFromCacheDistributionAdvisor);
   }
 
-  // TODO:
-  // - no replicates && no previous replicates && members to wait for
-  // - tests scenarios TBD
-
-  // TODO:
-  // - no replicates && no previous replicates && no members to wait for
-  // - tests scenarios TBD
-
   @Test
   public void adviceIncludesReplicatesThatAppearWhileAcquiringTieLock() {
     persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
@@ -257,17 +249,26 @@ public class PersistenceInitialImageAdvisorTest {
     when(cacheDistributionAdvisor.adviseInitialImage(any(), anyBoolean()))
         .thenReturn(adviceBeforeAcquiringTieLock, adviceAfterAcquiringTieLock);
 
-    doThrow(ConflictingPersistentDataException.class).when(persistenceAdvisor).checkMyStateOnMembers(any());
+    doThrow(ConflictingPersistentDataException.class).when(persistenceAdvisor)
+        .checkMyStateOnMembers(any());
 
     persistenceInitialImageAdvisor.getAdvice(null);
   }
 
   @Test
-  public void publishesListOfMissingMembers_whenWaitingForMissingMembers() {
+  public void announcesProgressToPersistenceAdvisor_whenWaitingForMissingMembers() {
     persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
 
     setMembershipChangePollDuration(Duration.ofSeconds(0));
-    Set<PersistentMemberID> offlineMembersToWaitFor = givenOfflineMembersToWaitFor(1);
+    HashSet<PersistentMemberID> offlineMembersToWaitFor = memberIDs("offline member", 1);
+    Set<PersistentMemberID> membersToWaitFor = new HashSet<>(offlineMembersToWaitFor);
+
+    when(persistenceAdvisor.getPersistedOnlineOrEqualMembers()).thenReturn(offlineMembersToWaitFor);
+    when(persistenceAdvisor.getMembersToWaitFor(any(), any())).thenAnswer(invocation -> {
+      Set<PersistentMemberID> offlineMembers = invocation.getArgument(1);
+      offlineMembers.addAll(offlineMembersToWaitFor);
+      return membersToWaitFor;
+    });
 
     when(cacheDistributionAdvisor.adviseInitialImage(null, true))
         .thenReturn(adviceWithReplicates(0), adviceWithReplicates(1));
@@ -275,27 +276,12 @@ public class PersistenceInitialImageAdvisorTest {
     persistenceInitialImageAdvisor.getAdvice(null);
 
     InOrder inOrder = inOrder(persistenceAdvisor);
+    inOrder.verify(persistenceAdvisor, times(1)).beginWaitingForMembershipChange(membersToWaitFor);
     inOrder.verify(persistenceAdvisor, times(1)).setWaitingOnMembers(isNotNull(),
         eq(offlineMembersToWaitFor));
+    inOrder.verify(persistenceAdvisor, times(1)).endWaitingForMembershipChange();
     inOrder.verify(persistenceAdvisor, times(1)).setWaitingOnMembers(isNull(), isNull());
     inOrder.verify(persistenceAdvisor, times(0)).setWaitingOnMembers(any(), any());
-  }
-
-  private Set<PersistentMemberID> givenOfflineMembersToWaitFor(int memberCount) {
-    HashSet<PersistentMemberID> offlineMembersToWaitFor =
-        IntStream.range(0, memberCount).mapToObj(i -> persistentMemberID("offline member " + i))
-            .distinct().collect(toCollection(HashSet::new));
-    Set<PersistentMemberID> membersToWaitFor = new HashSet<>(offlineMembersToWaitFor);
-
-    when(persistenceAdvisor.getPersistedOnlineOrEqualMembers()).thenReturn(offlineMembersToWaitFor);
-    when(persistenceAdvisor.getMembersToWaitFor(any(), any())).thenAnswer(invocation -> {
-      Set<PersistentMemberID> previouslyOnlineMembers = invocation.getArgument(0);
-      Set<PersistentMemberID> offlineMembers = invocation.getArgument(1);
-      offlineMembers.addAll(previouslyOnlineMembers);
-      return membersToWaitFor;
-    });
-
-    return offlineMembersToWaitFor;
   }
 
   private PersistenceInitialImageAdvisor persistenceInitialImageAdvisorWithDiskImage() {
@@ -334,14 +320,19 @@ public class PersistenceInitialImageAdvisorTest {
   }
 
   private static HashSet<PersistentMemberID> persistentMemberIDs(int count) {
+    String prefix = "persisted online or equal member";
+    return memberIDs(prefix, count);
+  }
+
+  private static HashSet<PersistentMemberID> memberIDs(String prefix, int count) {
     return IntStream.range(0, count)
-        .mapToObj(i -> "persisted online or equal member " + i)
+        .mapToObj(i -> prefix + ' ' + i)
         .map(PersistenceInitialImageAdvisorTest::persistentMemberID)
         .collect(toCollection(HashSet::new));
   }
 
   private static void setMembershipChangePollDuration(Duration timeout) {
-    System.setProperty("geode." + SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS,
+    System.setProperty(SystemPropertyHelper.GEODE_PREFIX + SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS,
         String.valueOf(timeout.getSeconds()));
   }
 }
