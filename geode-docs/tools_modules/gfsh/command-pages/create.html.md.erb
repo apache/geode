@@ -1096,7 +1096,7 @@ create region --name=myRegion --type=REPLICATE --eviction-max-memory=100 \
 --eviction-action=overflow-to-disk --eviction-object-sizer=my.company.geode.MySizer
 
 create region --name=r1 --type=PARTITION \
---cache-loader=org.example.myLoader{'duplicate':'false'}
+--cache-loader=org.example.myLoader{'URL':'jdbc:cloudscape:rmi:MyData'}
 ```
 
 **Sample Output:**

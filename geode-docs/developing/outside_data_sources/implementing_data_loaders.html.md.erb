@@ -35,11 +35,14 @@ returned to the caller.
 
 `org.apache.geode.cache.CacheLoader` inherits from `Declarable`,
 so implement the `Declarable.initialize` method if
-an argument is to be passed to the the `load` method
-by using `get` with a callback argument.
+the initialization of an object instantiated from the class
+implementing the `CacheLoader` interface uses an argument.
 Also implement the `Declarable.initialize` method if
 the argument is defined in a `cache.xml` file.
 Do not define the `Declarable.init()` method; it is deprecated.
+Specify the argument in the your configuration.
+This will either be in the `cache.xml` file or in a gfsh
+`create region` or `alter region` command.
 
 Here is an example implementation:
 
@@ -69,7 +72,7 @@ Use one of these three ways to configure and deploy the cache loader:
 deploy by adding the cache loader to the classpath when starting servers.
 
 Here is an example configuration within the `cache.xml` file
-that specifies the loader without parameters:
+that specifies the loader without arguments:
 
 ``` pre
 <region-attributes>
@@ -79,7 +82,7 @@ that specifies the loader without parameters:
 </region-attributes>
 ```
 Or, here is an example configuration within the `cache.xml` file
-that specifies the loader with parameters:
+that specifies the loader with an argument:
 
 ``` pre
 <cache-loader>
@@ -91,7 +94,7 @@ that specifies the loader with parameters:
 ```
 
 To deploy the JAR file,
-add the cache loader JAR file to the classpath when starting all servers.
+add the cache loader JAR file to the classpath when starting servers.
 For example:
 
 ``` pre
@@ -104,8 +107,7 @@ add the JAR file to the classpath and use gfsh to apply the
 configuration to the region.
 
 To deploy the JAR file,
-add the cache loader JAR file to the classpath when starting all
-servers.
+add the cache loader JAR file to the classpath when starting servers.
 For example:
 
 ``` pre
@@ -114,10 +116,17 @@ gfsh>start server --name=s2 --classpath=/var/data/lib/myLoader.jar
 
 Use gfsh to apply the configuration of the `CacheLoader` implementation
 to the region with `gfsh create region` or `gfsh alter region`.
-Here is an example of region creation:
+Here is an example of region creation without arguments:
 
 ``` pre
 gfsh>create region --name=r3 --cache-loader=com.example.appname.myCacheLoader
+```
+
+Here is an example of region creation with an argument:
+
+``` pre
+gfsh>create region --name=r3 \
+--cache-loader=com.example.appname.myCacheLoader{'URL':'jdbc:cloudscape:rmi:MyData'}
 ```
 
 Here is an example of altering a region:
@@ -126,7 +135,7 @@ Here is an example of altering a region:
 gfsh>alter region --name=r3 --cache-loader=com.example.appname.myCacheLoader
 ```
 
-**Option 3:** 
+**Option 3 applies to partitioned regions:** 
 If deploying the JAR file with the gfsh deploy command
 after servers have been started,
 use gfsh to apply the configuration to the region.
@@ -139,12 +148,23 @@ For example:
 gfsh>deploy --jars=/var/data/lib/myLoader.jar
 ```
 
+We do not generally use the gfsh deploy command when
+the servers host replicated regions,
+as detailed in [How Data Loaders Work](how_data_loaders_work.html).
+
 Use gfsh to apply the configuration of the `CacheLoader` implementation
 to the region with `gfsh create region` or `gfsh alter region`.
-Here is an example of region creation:
+Here is an example of region creation without arguments:
 
 ``` pre
 gfsh>create region --name=r3 --cache-loader=com.example.appname.myCacheLoader
+```
+
+Here is an example of region creation with an argument:
+
+``` pre
+gfsh>create region --name=r3 \
+--cache-loader=com.example.appname.myCacheLoader{'URL':'jdbc:cloudscape:rmi:MyData'}
 ```
 
 Here is an example of altering a region:
