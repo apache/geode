@@ -50,15 +50,15 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
   }
 
   @Override
-  public Result postExecution(GfshParseResult parseResult, Result result, Path tempFile) {
+  public CommandResult postExecution(GfshParseResult parseResult, CommandResult result,
+      Path tempFile) {
     File outputFile = getOutputFile(parseResult);
 
     if (outputFile == null) {
       return result;
     }
 
-    CommandResult commandResult = (CommandResult) result;
-    CompositeResultData resultData = (CompositeResultData) commandResult.getResultData();
+    CompositeResultData resultData = (CompositeResultData) result.getResultData();
     CompositeResultData.SectionResultData sectionResultData = resultData.retrieveSectionByIndex(0);
 
     String limit = sectionResultData.retrieveString("Limit");

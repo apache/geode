@@ -35,15 +35,14 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UserFunctionExecution;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 public class ExecuteFunctionCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION},
       interceptor = "org.apache.geode.management.internal.cli.commands.ExecuteFunctionCommand$ExecuteFunctionCommandInterceptor")
-  public Result executeFunction(
+  public ResultModel executeFunction(
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__ID, mandatory = true,
           help = CliStrings.EXECUTE_FUNCTION__ID__HELP) String functionId,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
@@ -62,8 +61,8 @@ public class ExecuteFunctionCommand extends InternalGfshCommand {
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__FILTER,
           help = CliStrings.EXECUTE_FUNCTION__FILTER__HELP) String filterString) {
 
-    CompositeResultData executeFunctionResultTable = ResultBuilder.createCompositeResultData();
-    TabularResultData resultTable = executeFunctionResultTable.addSection().addTable("Table1");
+    ResultModel resultModel = new ResultModel();
+    TabularResultModel resultTable = resultModel.addTable("Table1");
     String headerText = "Execution summary";
     resultTable.setHeader(headerText);
 
@@ -78,7 +77,7 @@ public class ExecuteFunctionCommand extends InternalGfshCommand {
     }
 
     if (dsMembers.size() == 0) {
-      return ResultBuilder.createUserErrorResult("No members found.");
+      return new ResultModel().createError("No members found.");
     }
 
     // Build up our argument list
@@ -116,16 +115,16 @@ public class ExecuteFunctionCommand extends InternalGfshCommand {
       resultTable.accumulate("Member ID/Name", r.getMemberIdOrName());
       resultTable.accumulate("Function Execution Result", r.getMessage());
       if (!r.isSuccessful()) {
-        resultTable.setStatus(Result.Status.ERROR);
+        resultModel.setStatus(Result.Status.ERROR);
       }
     }
 
-    return ResultBuilder.buildResult(resultTable);
+    return resultModel;
   }
 
   public static class ExecuteFunctionCommandInterceptor implements CliAroundInterceptor {
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       String onRegion = parseResult.getParamValueAsString(CliStrings.EXECUTE_FUNCTION__ONREGION);
       String onMember = parseResult.getParamValueAsString(CliStrings.MEMBER);
       String onGroup = parseResult.getParamValueAsString(CliStrings.GROUP);
@@ -134,16 +133,17 @@ public class ExecuteFunctionCommand extends InternalGfshCommand {
       boolean moreThanOne =
           Stream.of(onRegion, onMember, onGroup).filter(Objects::nonNull).count() > 1;
 
+      ResultModel result = new ResultModel();
       if (moreThanOne) {
-        return ResultBuilder.createUserErrorResult(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
+        return result.createError(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
       }
 
       if (onRegion == null && filter != null) {
-        return ResultBuilder.createUserErrorResult(
+        return result.createError(
             CliStrings.EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION);
       }
 
-      return ResultBuilder.createInfoResult("");
+      return result;
     }
   }
 }
