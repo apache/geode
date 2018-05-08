@@ -12217,6 +12217,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
+  @Override
   public EvictionController getEvictionController() {
     return getRegionMap().getEvictionController();
   }
