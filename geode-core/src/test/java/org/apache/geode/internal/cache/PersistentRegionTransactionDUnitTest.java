@@ -69,9 +69,9 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testClientTransactionWorksOnRecoveredPersistentOverflowRegion() throws Exception {
+  public void clientTransactionCanGetNotRecoveredEntryOnPersistentOverflowRegion()
+      throws Exception {
     createServer(server, true);
-
     putData(server);
     server.invoke(() -> getCache().close());
     int port = createServer(server, true);
@@ -119,10 +119,9 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testClientTransactionWorksOnPersistentOverflowRegion() throws Exception {
+  public void clientTransactionCanGetEvictedEntryOnPersistentOverflowRegion() throws Exception {
     int port = createServer(server, true);
     putData(server);
-
     client.invoke(() -> {
       ClientCacheFactory factory = new ClientCacheFactory().addPoolServer("localhost", port);
       ClientCache cache = getClientCache(factory);
@@ -137,10 +136,9 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testTransactionWorksOnPersistentOverflowRegion() throws Exception {
+  public void transactionCanGetEvictedEntryOnPersistentOverflowRegion() throws Exception {
     createServer(server, true);
     putData(server);
-
     server.invoke(() -> {
       LocalRegion region = (LocalRegion) getCache().getRegion(REGIONNAME);
       Awaitility.await().atMost(10, SECONDS)
@@ -155,7 +153,7 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testTransactionWorksOnRecoveredPersistentOverflowRegion() throws Exception {
+  public void transactionCanGetNotRecoveredEntryOnPersistentOverflowRegion() throws Exception {
     createServer(server, true);
     putData(server);
     server.invoke(() -> getCache().close());
@@ -172,7 +170,7 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testTransactionWorksOnRecoveredPersistentRegion() throws Exception {
+  public void TransactionCanGetNotRecoveredEntryOnPersistentRegion() throws Exception {
     createServer(server, false);
     putData(server);
     server.invoke(() -> getCache().close());
@@ -190,9 +188,8 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testClientTransactionWorksOnRecoveredPersistentRegion() throws Exception {
+  public void clientTransactionCanGetNotRecoveredEntryOnPersistentRegion() throws Exception {
     createServer(server, false);
-
     putData(server);
     server.invoke(() -> getCache().close());
     int port = createServer(server, false);
