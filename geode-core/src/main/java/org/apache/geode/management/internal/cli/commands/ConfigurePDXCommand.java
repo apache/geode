@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -115,7 +116,7 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
           config.getPdx().setPersistent(diskStore != null);
 
           if (portableClassesPatterns != null || nonPortableClassesPatterns != null) {
-            PdxType.PdxSerializer pdxSerializer = new PdxType.PdxSerializer();
+            DeclarableType pdxSerializer = new DeclarableType();
             pdxSerializer.setClassName(ReflectionBasedAutoSerializer.class.getName());
 
             List<ParameterType> parameters =

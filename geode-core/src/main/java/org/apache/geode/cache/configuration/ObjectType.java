@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with
@@ -22,32 +21,24 @@ import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.geode.annotations.Experimental;
-
-
 /**
- *
- * A "parameter" element describes a parameter used to initialize a Declarable object.
- *
- *
  * <p>
- * Java class for parameter-type complex type.
+ * Java class for anonymous complex type.
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="parameter-type">
+ * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;choice>
  *         &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
  *         &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
  *       &lt;/choice>
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -56,44 +47,59 @@ import org.apache.geode.annotations.Experimental;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "parameter-type", namespace = "http://geode.apache.org/schema/cache")
-@Experimental
-public class ParameterType extends ObjectType {
+@XmlType(name = "", propOrder = {"string", "declarable"})
+public class ObjectType {
+  @XmlElement(name = "string", namespace = "http://geode.apache.org/schema/cache")
+  protected String string;
+  @XmlElement(name = "declarable", namespace = "http://geode.apache.org/schema/cache")
+  protected DeclarableType declarable;
 
-  @XmlAttribute(name = "name", required = true)
-  protected String name;
+  public ObjectType() {}
 
-  public ParameterType() {};
-
-  public ParameterType(String name) {
-    this.name = name;
+  public ObjectType(String string) {
+    this.string = string;
   }
 
-  public ParameterType(String name, String value) {
-    this.name = name;
-    setString(value);
+  public ObjectType(DeclarableType declarable) {
+    this.declarable = declarable;
   }
 
   /**
-   * Gets the value of the name property.
+   * Gets the value of the string property.
+   *
+   */
+  public String getString() {
+    return string;
+  }
+
+  /**
+   * Sets the value of the string property.
+   *
+   */
+  public void setString(String string) {
+    this.string = string;
+  }
+
+  /**
+   * Gets the value of the declarable property.
    *
    * possible object is
-   * {@link String }
+   * {@link DeclarableType }
    *
    */
-  public String getName() {
-    return name;
+  public DeclarableType getDeclarable() {
+    return declarable;
   }
 
   /**
-   * Sets the value of the name property.
+   * Sets the value of the declarable property.
    *
    * allowed object is
-   * {@link String }
+   * {@link DeclarableType }
    *
    */
-  public void setName(String value) {
-    this.name = value;
+  public void setDeclarable(DeclarableType value) {
+    this.declarable = value;
   }
 
   @Override
@@ -104,17 +110,24 @@ public class ParameterType extends ObjectType {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ParameterType that = (ParameterType) o;
-    return Objects.equals(name, that.name) && super.equals(o);
+    ObjectType that = (ObjectType) o;
+    return Objects.equals(string, that.string) && Objects.equals(declarable, that.declarable);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name);
+    return Objects.hash(string, declarable);
   }
 
   @Override
   public String toString() {
-    return name + ":" + super.toString();
+    if (string != null) {
+      return string;
+    }
+
+    if (declarable != null) {
+      return declarable.toString();
+    }
+    return "";
   }
 }

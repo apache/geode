@@ -424,18 +424,18 @@ public class RegionConfig implements CacheElement {
   public static class Entry {
 
     @XmlElement(namespace = "http://geode.apache.org/schema/cache", required = true)
-    protected RegionConfig.Entry.Type key;
+    protected ObjectType key;
     @XmlElement(namespace = "http://geode.apache.org/schema/cache", required = true)
-    protected RegionConfig.Entry.Type value;
+    protected ObjectType value;
 
     public Entry() {};
 
     public Entry(String key, String value) {
-      this.key = new Type(key);
-      this.value = new Type(value);
+      this.key = new ObjectType(key);
+      this.value = new ObjectType(value);
     }
 
-    public Entry(Type key, Type value) {
+    public Entry(ObjectType key, ObjectType value) {
       this.key = key;
       this.value = value;
     }
@@ -444,10 +444,10 @@ public class RegionConfig implements CacheElement {
      * Gets the value of the key property.
      *
      * possible object is
-     * {@link RegionConfig.Entry.Type }
+     * {@link ObjectType }
      *
      */
-    public RegionConfig.Entry.Type getKey() {
+    public ObjectType getKey() {
       return key;
     }
 
@@ -455,10 +455,10 @@ public class RegionConfig implements CacheElement {
      * Sets the value of the key property.
      *
      * allowed object is
-     * {@link RegionConfig.Entry.Type }
+     * {@link ObjectType }
      *
      */
-    public void setKey(RegionConfig.Entry.Type value) {
+    public void setKey(ObjectType value) {
       this.key = value;
     }
 
@@ -466,10 +466,10 @@ public class RegionConfig implements CacheElement {
      * Gets the value of the value property.
      *
      * possible object is
-     * {@link RegionConfig.Entry.Type }
+     * {@link ObjectType }
      *
      */
-    public RegionConfig.Entry.Type getValue() {
+    public ObjectType getValue() {
       return value;
     }
 
@@ -477,97 +477,11 @@ public class RegionConfig implements CacheElement {
      * Sets the value of the value property.
      *
      * allowed object is
-     * {@link RegionConfig.Entry.Type }
+     * {@link ObjectType }
      *
      */
-    public void setValue(RegionConfig.Entry.Type value) {
+    public void setValue(ObjectType value) {
       this.value = value;
-    }
-
-    /**
-     * <p>
-     * Java class for anonymous complex type.
-     *
-     * <p>
-     * The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;choice>
-     *         &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
-     *         &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
-     *       &lt;/choice>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     *
-     *
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"string", "declarable"})
-    public static class Type {
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected StringType string;
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected DeclarableType declarable;
-
-      public Type() {}
-
-      public Type(String string) {
-        this.string = new StringType(string);
-      }
-
-      public Type(DeclarableType declarable) {
-        this.declarable = declarable;
-      }
-
-      /**
-       * Gets the value of the string property.
-       *
-       * possible object is
-       * {@link StringType }
-       *
-       */
-      public StringType getString() {
-        return string;
-      }
-
-      /**
-       * Sets the value of the string property.
-       *
-       * allowed object is
-       * {@link StringType }
-       *
-       */
-      public void setString(String value) {
-        this.string = new StringType(value);
-      }
-
-      /**
-       * Gets the value of the declarable property.
-       *
-       * possible object is
-       * {@link DeclarableType }
-       *
-       */
-      public DeclarableType getDeclarable() {
-        return declarable;
-      }
-
-      /**
-       * Sets the value of the declarable property.
-       *
-       * allowed object is
-       * {@link DeclarableType }
-       *
-       */
-      public void setDeclarable(DeclarableType value) {
-        this.declarable = value;
-      }
-
     }
 
   }
