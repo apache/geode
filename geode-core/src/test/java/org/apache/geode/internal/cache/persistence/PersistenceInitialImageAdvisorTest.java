@@ -48,6 +48,7 @@ import org.mockito.InOrder;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
@@ -190,7 +191,7 @@ public class PersistenceInitialImageAdvisorTest {
   }
 
   @Test(expected = CacheClosedException.class)
-  public void propagatesThrownException_ifCancelInProgress() {
+  public void propagatesException_ifCancelInProgress() {
     persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
 
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
@@ -240,6 +241,25 @@ public class PersistenceInitialImageAdvisorTest {
     InitialImageAdvice result = persistenceInitialImageAdvisor.getAdvice(null);
 
     assertThat(result.getReplicates()).isEqualTo(adviceAfterAcquiringTieLock.getReplicates());
+  }
+
+  @Test(expected = ConflictingPersistentDataException.class)
+  public void propagatesException_ifIncompatibleWithReplicateThatAppearsWhileAcquiringTieLock() {
+    persistenceInitialImageAdvisor = persistenceInitialImageAdvisorWithDiskImage();
+
+    InitialImageAdvice adviceBeforeAcquiringTieLock = new InitialImageAdvice();
+    InitialImageAdvice adviceAfterAcquiringTieLock = adviceWithReplicates(4);
+
+    when(persistenceAdvisor.getPersistedOnlineOrEqualMembers()).thenReturn(persistentMemberIDs(1));
+    when(persistenceAdvisor.getMembersToWaitFor(any(), any())).thenReturn(emptySet());
+    when(persistenceAdvisor.acquireTieLock()).thenReturn(true);
+
+    when(cacheDistributionAdvisor.adviseInitialImage(any(), anyBoolean()))
+        .thenReturn(adviceBeforeAcquiringTieLock, adviceAfterAcquiringTieLock);
+
+    doThrow(ConflictingPersistentDataException.class).when(persistenceAdvisor).checkMyStateOnMembers(any());
+
+    persistenceInitialImageAdvisor.getAdvice(null);
   }
 
   @Test
