@@ -21,7 +21,8 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 /**
- * An adapter interface to be implemented by cli functions and to return CliFunctionResult.
+ * An abstract function implementation to be extended by cli functions. Any cli function extending
+ * this class has to return a CliFunctionResult.
  */
 public abstract class CliFunction<T> implements InternalFunction<T> {
 
