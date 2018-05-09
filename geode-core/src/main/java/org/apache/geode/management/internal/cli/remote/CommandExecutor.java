@@ -115,9 +115,15 @@ public class CommandExecutor {
     // if command result is ok, we will need to see if we need to update cluster configuration
     InfoResultModel infoResultModel = resultModel.addInfo();
     ConfigurationPersistenceService ccService = gfshCommand.getConfigurationPersistenceService();
-    if (parseResult.getParamValue("member") != null || ccService == null) {
+    if (ccService == null) {
       infoResultModel.addLine(
-          "Cluster configuration is not updated because the command is executed on specific member.");
+          "Cluster configuration service is not running. Configuration change is not persisted.");
+      return resultModel;
+    }
+
+    if (parseResult.getParamValue("member") != null) {
+      infoResultModel.addLine(
+          "Configuration change is not persisted because the command is executed on specific member.");
       return resultModel;
     }
 

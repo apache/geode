@@ -72,11 +72,15 @@ public class DeclarableType extends ClassNameType {
   }
 
   public DeclarableType(String className, String jsonProperties) {
-    ClassName cn = new ClassName(className, jsonProperties);
-    this.className = cn.getClassName();
-    Properties properties = cn.getInitProperties();
-    parameter = properties.stringPropertyNames().stream()
-        .map(k -> new ParameterType(k, properties.getProperty(k))).collect(Collectors.toList());
+    this(className, new ClassName(className, jsonProperties).getInitProperties());
+  }
+
+  public DeclarableType(String className, Properties properties) {
+    this.className = className;
+    if (properties != null) {
+      parameter = properties.stringPropertyNames().stream()
+          .map(k -> new ParameterType(k, properties.getProperty(k))).collect(Collectors.toList());
+    }
   }
 
   /**
