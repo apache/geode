@@ -314,7 +314,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void setInUseByTransaction(boolean b);
 
-  boolean txLRUStart();
+  void txLRUStart();
 
   void txLRUEnd();
 
