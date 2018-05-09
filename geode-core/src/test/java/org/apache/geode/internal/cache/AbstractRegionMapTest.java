@@ -949,7 +949,7 @@ public class AbstractRegionMapTest {
     @Override
     public RegionEntry getEntry(Object key) {
       RegionEntry regionEntry = mock(RegionEntry.class);
-      when(regionEntry.isRemoved()).thenReturn(true);
+      when(regionEntry.isDestroyedOrRemoved()).thenReturn(true);
       return regionEntry;
     }
 
