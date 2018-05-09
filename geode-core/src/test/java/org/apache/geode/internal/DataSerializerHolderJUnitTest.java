@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import junit.framework.TestCase;
@@ -29,9 +28,9 @@ import org.junit.After;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(IntegrationTest.class)
+@Category(UnitTest.class)
 public class DataSerializerHolderJUnitTest extends TestCase {
 
   @After
@@ -40,56 +39,36 @@ public class DataSerializerHolderJUnitTest extends TestCase {
   }
 
   public void testHandshakeDatSerializerRegistrationDoesNotHitNPE() throws Throwable {
-    final Throwable[] error = new Throwable[1];
-
-    final CountDownLatch serializersRegistered = new CountDownLatch(1);
-    final CountDownLatch serializersQueried = new CountDownLatch(1);
-
-    Thread handshakeThread = new Thread("Fake handshake thread") {
-      public void run() {
-        try {
-          Class[] serializers = new Class[] {DataSerializer1.class, DataSerializer2.class,
-              DataSerializer3.class, DataSerializer4.class, DataSerializer5.class,
-              DataSerializer6.class, DataSerializer7.class, DataSerializer8.class,
-              DataSerializer9.class, DataSerializer10.class, DataSerializer11.class,
-              DataSerializer12.class, DataSerializer13.class};
-          for (int index = 0; index < serializers.length; index++) {
-            int id = InternalDataSerializer.newInstance(serializers[index]).getId();
-            InternalDataSerializer.register(serializers[index].getName(), false, null, null, id);
-          }
-          serializersRegistered.countDown();
-          serializersQueried.await();
-          Map<Integer, List<String>> supportedClasses = new HashMap<>();
-          for (int index = 0; index < serializers.length; index++) {
-            DataSerializer serializer = InternalDataSerializer.newInstance(serializers[index]);
-            List<String> classes = Arrays.<Class>asList(serializer.getSupportedClasses()).stream()
-                .map((clazz) -> clazz.getName()).collect(Collectors.toList());
-            supportedClasses.put(serializer.getId(), classes);
-          }
-          InternalDataSerializer.updateSupportedClassesMap(supportedClasses);
-        } catch (Throwable t) {
-          error[0] = t;
-        }
-      }
-    };
-    handshakeThread.setDaemon(true);
-    handshakeThread.start();
-
-    // wait until serializers have been registered but not their supported classes
-    serializersRegistered.await();
-
-    // find all of the serializers. This should resolve all of the DataSerializer holders
-    // that were used to avoid loading the classes in InternalDataSerializer and clear
-    // out the idsToHolders collection. This was causing an NPE when supportedClasses were
-    // registered by the client/server handshake code
-    InternalDataSerializer.getSerializers();
-    serializersQueried.countDown();
-
-    handshakeThread.join(10000);
-
-    if (error[0] != null) {
-      throw error[0];
+    // a thread performing a handshake from the client side may receive a list of
+    // DataSerializer class names. It registers these with InternalDataSerializer to
+    // create placeholders for later lazy loading of the classes
+    Class[] serializers = new Class[] {DataSerializer1.class, DataSerializer2.class,
+        DataSerializer3.class, DataSerializer4.class, DataSerializer5.class, DataSerializer6.class,
+        DataSerializer7.class, DataSerializer8.class, DataSerializer9.class, DataSerializer10.class,
+        DataSerializer11.class, DataSerializer12.class, DataSerializer13.class};
+    for (int index = 0; index < serializers.length; index++) {
+      int id = InternalDataSerializer.newInstance(serializers[index]).getId();
+      InternalDataSerializer.register(serializers[index].getName(), false, null, null, id);
     }
+
+    // The thread will then register classes handled by the DataSerializers, but if
+    // getSerializers() or a similar method is invoked by some other thread first the
+    // placeholders will be wiped out, causing an NPE when registering the handled
+    // classes. The NPE is caused by the placeholder being null in updateSupportedClassesMap().
+    // Here we avoid creating a multithreaded test by invoking getSerializers() in-line
+    InternalDataSerializer.getSerializers();
+
+
+    // Now we perform the second step in the handshake code of registering the classes
+    // handled by the DataSerializers. Without the bugfix this causes an NPE
+    Map<Integer, List<String>> supportedClasses = new HashMap<>();
+    for (int index = 0; index < serializers.length; index++) {
+      DataSerializer serializer = InternalDataSerializer.newInstance(serializers[index]);
+      List<String> classes = Arrays.<Class>asList(serializer.getSupportedClasses()).stream()
+          .map((clazz) -> clazz.getName()).collect(Collectors.toList());
+      supportedClasses.put(serializer.getId(), classes);
+    }
+    InternalDataSerializer.updateSupportedClassesMap(supportedClasses);
   }
 
   public static class DataSerializer1 extends DataSerializer {
