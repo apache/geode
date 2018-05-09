@@ -28,11 +28,10 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -50,7 +49,7 @@ public class ListMappingCommand extends GfshCommand {
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result listMapping() {
+  public ResultModel listMapping() {
     Collection<ConnectorService.RegionMapping> mappings = null;
 
     // check if CC is available and use it to describe the connection
@@ -78,21 +77,17 @@ public class ListMappingCommand extends GfshCommand {
     }
 
     if (mappings == null) {
-      return ResultBuilder.createInfoResult(EXPERIMENTAL + "\n" + NO_MAPPINGS_FOUND);
+      return ResultModel.createInfo(EXPERIMENTAL + "\n" + "No mappings found");
     }
 
     // output
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean mappingsExist = fillTabularResultData(mappings, tabularResultData);
-    return createResult(tabularResultData, mappingsExist);
-  }
-
-  private Result createResult(TabularResultData tabularResultData, boolean mappingsExist) {
+    ResultModel resultModel = new ResultModel();
+    boolean mappingsExist = fillTabularResultData(mappings, resultModel.addTable());
     if (mappingsExist) {
-      tabularResultData.setHeader(EXPERIMENTAL);
-      return ResultBuilder.buildResult(tabularResultData);
+      resultModel.setHeader(EXPERIMENTAL);
+      return resultModel;
     } else {
-      return ResultBuilder.createInfoResult(EXPERIMENTAL + "\n" + NO_MAPPINGS_FOUND);
+      return ResultModel.createInfo(EXPERIMENTAL + "\n" + NO_MAPPINGS_FOUND);
     }
   }
 
@@ -100,9 +95,9 @@ public class ListMappingCommand extends GfshCommand {
    * Returns true if any connections exist
    */
   private boolean fillTabularResultData(Collection<ConnectorService.RegionMapping> mappings,
-      TabularResultData tabularResultData) {
+      TabularResultModel tableModel) {
     for (ConnectorService.RegionMapping mapping : mappings) {
-      tabularResultData.accumulate(LIST_OF_MAPPINGS, mapping.getRegionName());
+      tableModel.accumulate(LIST_OF_MAPPINGS, mapping.getRegionName());
     }
     return !mappings.isEmpty();
   }
