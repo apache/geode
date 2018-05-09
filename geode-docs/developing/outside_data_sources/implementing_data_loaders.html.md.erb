@@ -28,21 +28,18 @@ To use a data loader:
 ## <a id="implementing_data_loaders__section_88076AF5EC184FE88AAF4C806A0CA9DF" class="no-quick-link"></a>Implement the CacheLoader Interface
 
 For a get operation, if the key is not in the cache,
-the thread invokes the `CacheLoader.load` method.
+the thread serving the get operation invokes the `CacheLoader.load` method.
 Implement `load` to return the value for the key,
 which will be placed into the region in addition to being
 returned to the caller.
 
 `org.apache.geode.cache.CacheLoader` inherits from `Declarable`,
 so implement the `Declarable.initialize` method if
-the initialization of an object instantiated from the class
-implementing the `CacheLoader` interface uses an argument.
-Also implement the `Declarable.initialize` method if
-the argument is defined in a `cache.xml` file.
+your `CacheLoader` implementation needs to be initialized
+with some arguments.
+Specify the required arguments either in your `cache.xml` file or in
+a gfsh `create region` or `alter region` command.
 Do not define the `Declarable.init()` method; it is deprecated.
-Specify the argument in the your configuration.
-This will either be in the `cache.xml` file or in a gfsh
-`create region` or `alter region` command.
 
 Here is an example implementation:
 
