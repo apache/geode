@@ -131,7 +131,8 @@ public class CommandExecutor {
       ccService.updateCacheConfig(group, cc -> {
         try {
           gfshCommand.updateClusterConfig(group, cc, resultModel.getConfigObject());
-          infoResultModel.addLine("Changes to cluster configuration is persisted.");
+          infoResultModel
+              .addLine("Changes to configuration for group '" + group + "' is persisted.");
         } catch (Exception e) {
           String message = "failed to update cluster config for " + group;
           logger.error(message, e);
