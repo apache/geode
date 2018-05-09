@@ -79,6 +79,12 @@ public class PerTestClassLoaderRunner extends NamedRunner {
     List<URL> urls = new ArrayList<>();
     while (st.hasMoreTokens()) {
       String u = st.nextToken();
+      // Because of LOG4J2-2266 and LOG4J-2152 ignore all log4j related jars and let them be picked
+      // up from the system classloader. Although it's supposed to be fixed in log4j 2.10, it does
+      // not seem to be.
+      if (u.contains("log4j")) {
+        continue;
+      }
       try {
         if (!u.endsWith(".jar")) {
           u += "/";
