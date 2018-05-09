@@ -391,4 +391,8 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   boolean shouldNotifyBridgeClients();
 
+  default Set adviseNetWrite() {
+    return null;
+  }
+
 }

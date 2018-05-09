@@ -22,7 +22,6 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventSerialization;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -70,20 +69,14 @@ public class RegionMapPut extends AbstractRegionMapPut {
     this.overwriteDestroyed = overwriteDestroyed;
     this.requireOldValue = requireOldValue;
     this.retrieveOldValueForDelta = event.getDeltaBytes() != null && event.getRawNewValue() == null;
-    this.replaceOnClient =
-        event.getOperation() == Operation.REPLACE && owner.getServerProxy() != null;
+    this.replaceOnClient = event.getOperation() == Operation.REPLACE && owner.hasServerProxy();
     this.onlyExisting = ifOld && !isReplaceOnClient();
     this.cacheWriter = owner.basicGetWriter();
     this.cacheWrite = !event.isOriginRemote() && !event.isNetSearch() && event.isGenerateCallbacks()
         && (getCacheWriter() != null || owner.hasServerProxy() || owner.getScope().isDistributed());
     this.expectedOldValue = expectedOldValue;
-    if (isCacheWrite()) {
-      if (getCacheWriter() == null && owner.getScope().isDistributed()) {
-        this.netWriteRecipients =
-            ((DistributedRegion) owner).getCacheDistributionAdvisor().adviseNetWrite();
-      } else {
-        this.netWriteRecipients = null;
-      }
+    if (isCacheWrite() && getCacheWriter() == null) {
+      this.netWriteRecipients = owner.adviseNetWrite();
     } else {
       this.netWriteRecipients = null;
     }
@@ -105,15 +98,15 @@ public class RegionMapPut extends AbstractRegionMapPut {
     return requireOldValue;
   }
 
-  private boolean isRetrieveOldValueForDelta() {
+  boolean isRetrieveOldValueForDelta() {
     return retrieveOldValueForDelta;
   }
 
-  private boolean isReplaceOnClient() {
+  boolean isReplaceOnClient() {
     return replaceOnClient;
   }
 
-  private boolean isCacheWrite() {
+  boolean isCacheWrite() {
     return cacheWrite;
   }
 
