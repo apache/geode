@@ -182,6 +182,13 @@ public abstract class GfshCommand implements CommandMarker {
     return executeFunction(function, args, Collections.singleton(targetMember));
   }
 
+  public CliFunctionResult executeFunctionAndGetFunctionResult(Function function, Object args,
+      final DistributedMember targetMember) {
+    ResultCollector rc = executeFunction(function, args, Collections.singleton(targetMember));
+    List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
+    return results.size() > 0 ? results.get(0) : null;
+  }
+
   public List<CliFunctionResult> executeAndGetFunctionResult(Function function, Object args,
       Set<DistributedMember> targetMembers) {
     ResultCollector rc = executeFunction(function, args, targetMembers);

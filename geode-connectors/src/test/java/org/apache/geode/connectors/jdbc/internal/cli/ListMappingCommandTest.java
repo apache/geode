@@ -22,6 +22,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.Before;
@@ -35,6 +36,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -70,7 +72,7 @@ public class ListMappingCommandTest {
   public void whenCCServiceIsRunningAndNoConnectorServiceFound() {
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("No mappings found");
+        .containsOutput("(Experimental) \\nNo mappings found");
   }
 
   @Test
@@ -80,7 +82,7 @@ public class ListMappingCommandTest {
     ConnectorService connectorService = mock(ConnectorService.class);
     when(cacheConfig.findCustomCacheElement(any(), any())).thenReturn(connectorService);
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("No mappings found");
+        .containsOutput("(Experimental) \\nNo mappings found");
   }
 
   @Test
@@ -117,7 +119,7 @@ public class ListMappingCommandTest {
   }
 
   @Test
-  public void whenExistingMemberIsSpecified() {
+  public void whenCCIsNotAvailableAndMemberExists() {
     doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
         null);
@@ -137,9 +139,9 @@ public class ListMappingCommandTest {
         .add(new ConnectorService.RegionMapping.FieldMapping("field4", "value4"));
 
     ResultCollector rc = mock(ResultCollector.class);
-    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
-    when(rc.getResult())
-        .thenReturn(Collections.singletonList(Stream.of(mapping1, mapping2).collect(toSet())));
+    doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
+    when(rc.getResult()).thenReturn(Collections.singletonList(new CliFunctionResult("server-1",
+        Stream.of(mapping1, mapping2).collect(toSet()), "success")));
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region1",
         "region2");
@@ -153,7 +155,7 @@ public class ListMappingCommandTest {
         null);
 
     ResultCollector rc = mock(ResultCollector.class);
-    doReturn(rc).when(command).executeFunction(any(), any(), any(DistributedMember.class));
+    doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
     when(rc.getResult()).thenReturn(Collections.emptyList());
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()

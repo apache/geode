@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc;
 
 import java.sql.SQLException;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.LoaderHelper;
@@ -28,7 +29,7 @@ import org.apache.geode.internal.cache.InternalCache;
  *
  * @since Geode 1.4
  */
-
+@Experimental
 public class JdbcLoader<K, V> extends AbstractJdbcCallback implements CacheLoader<K, V> {
 
   @SuppressWarnings("unused")

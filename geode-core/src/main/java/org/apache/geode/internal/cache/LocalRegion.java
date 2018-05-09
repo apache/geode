@@ -10433,6 +10433,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return this.isUsedForParallelGatewaySenderQueue;
   }
 
+  public void removeCacheServiceProfile(String profileID) {
+    this.cacheServiceProfiles.remove(profileID);
+  }
+
   public AbstractGatewaySender getSerialGatewaySender() {
     return this.serialGatewaySender;
   }
@@ -10487,7 +10491,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         || isUsedForPartitionedRegionBucket();
   }
 
-  Map<String, CacheServiceProfile> getCacheServiceProfiles() {
+  public Map<String, CacheServiceProfile> getCacheServiceProfiles() {
     return this.cacheServiceProfiles.getSnapshot();
   }
 
@@ -12217,6 +12221,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
+  @Override
   public EvictionController getEvictionController() {
     return getRegionMap().getEvictionController();
   }

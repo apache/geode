@@ -30,6 +30,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
 /**
@@ -77,7 +78,8 @@ public class ExportLogsInterceptor extends AbstractCliAroundInterceptor {
   }
 
   @Override
-  public Result postExecution(GfshParseResult parseResult, Result commandResult, Path tempFile) {
+  public CommandResult postExecution(GfshParseResult parseResult, CommandResult commandResult,
+      Path tempFile) {
     // in the command over http case, the command result is in the downloaded temp file
     if (tempFile != null) {
       Path dirPath;
@@ -92,14 +94,14 @@ public class ExportLogsInterceptor extends AbstractCliAroundInterceptor {
       try {
         FileUtils.copyFile(tempFile.toFile(), exportedLogFile);
         FileUtils.deleteQuietly(tempFile.toFile());
-        commandResult = ResultBuilder
+        commandResult = (CommandResult) ResultBuilder
             .createInfoResult("Logs exported to: " + exportedLogFile.getAbsolutePath());
       } catch (IOException e) {
         logger.error(e.getMessage(), e);
         commandResult = ResultBuilder.createGemFireErrorResult(e.getMessage());
       }
     } else if (commandResult.getStatus() == Result.Status.OK) {
-      commandResult = ResultBuilder.createInfoResult(
+      commandResult = (CommandResult) ResultBuilder.createInfoResult(
           "Logs exported to the connected member's file system: " + commandResult.nextLine());
     }
     return commandResult;

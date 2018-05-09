@@ -187,9 +187,6 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     vm5.invoke(() -> WANTestBase.pauseSender("tk"));
 
-    // need to have this pause since pauseSender doesn't take effect immediately
-    Wait.pause(1000);
-
     // do puts on site1
     vm3.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 100));
 
@@ -203,6 +200,8 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     // resume sender on site1 so that events reach site2 and from there to site3
     vm3.invoke(() -> WANTestBase.resumeSender("ln"));
     vm6.invoke(() -> WANTestBase.resumeSender("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm3.invoke(() -> waitForSenderRunningState("ln"));
 
     // validate region size on site2 (should have 100) and site3 (should have 200)
     vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
@@ -214,6 +213,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     // resume sender on site3
     vm5.invoke(() -> WANTestBase.resumeSender("tk"));
+    vm5.invoke(() -> waitForSenderRunningState("tk"));
 
     // validate region size
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 200));

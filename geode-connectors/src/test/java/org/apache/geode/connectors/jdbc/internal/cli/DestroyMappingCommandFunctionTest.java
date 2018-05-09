@@ -93,13 +93,14 @@ public class DestroyMappingCommandFunctionTest {
   @Test
   public void destroyRegionMappingReturnsTrueIfConnectionDestroyed() {
     when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
-
-    assertThat(function.destroyRegionMapping(service, regionName)).isTrue();
+    CliFunctionResult result = function.executeFunction(context);
+    assertThat(result.isSuccessful()).isTrue();
   }
 
   @Test
   public void destroyRegionMappingReturnsFalseIfMappingDoesNotExist() {
-    assertThat(function.destroyRegionMapping(service, regionName)).isFalse();
+    CliFunctionResult result = function.executeFunction(context);
+    assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test

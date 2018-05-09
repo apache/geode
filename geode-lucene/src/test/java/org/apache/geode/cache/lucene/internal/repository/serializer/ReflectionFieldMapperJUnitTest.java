@@ -15,7 +15,8 @@
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import static org.apache.geode.cache.lucene.internal.repository.serializer.SerializerTestHelper.invokeSerializer;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.apache.lucene.document.Document;
 import org.junit.Test;

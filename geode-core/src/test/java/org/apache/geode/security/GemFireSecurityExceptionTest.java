@@ -14,8 +14,9 @@
  */
 package org.apache.geode.security;
 
-import static com.googlecode.catchexception.CatchException.*;
-import static org.assertj.core.api.Assertions.*;
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;

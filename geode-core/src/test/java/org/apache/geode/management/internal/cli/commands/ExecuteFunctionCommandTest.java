@@ -12,40 +12,41 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.assertj.core.api.Assertions.assertThat;
+package org.apache.geode.management.internal.cli.commands;
+
+import static org.mockito.Mockito.spy;
 
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(UnitTest.class)
-public class JdbcCliFunctionTest {
+public class ExecuteFunctionCommandTest {
 
-  private JdbcCliFunction<Void, Void> function;
+  @ClassRule
+  public static GfshParserRule gfsh = new GfshParserRule();
+
+  private ExecuteFunctionCommand command;
 
   @Before
-  public void setup() {
-    function = new JdbcCliFunction<Void, Void>() {
-      @Override
-      Void getFunctionResult(JdbcConnectorService service, FunctionContext<Void> context) {
-        return null;
-      }
-    };
+  public void before() throws Exception {
+    command = spy(ExecuteFunctionCommand.class);
   }
 
   @Test
-  public void isHAReturnsFalse() {
-    assertThat(function.isHA()).isFalse();
+  public void conflictingExecutionLocations() {
+    gfsh.executeAndAssertThat(command, "execute function --id=foo --region=bar --member=baz")
+        .statusIsError().containsOutput("Provide Only one of region/member/groups");
   }
 
   @Test
-  public void getIdReturnsNameOfClass() {
-    assertThat(function.getId()).isEqualTo(function.getClass().getName());
+  public void filterWithoutRegion() {
+    gfsh.executeAndAssertThat(command, "execute function --id=foo --filter=bar").statusIsError()
+        .containsOutput("Filters for executing on member or group is not supported");
   }
 }

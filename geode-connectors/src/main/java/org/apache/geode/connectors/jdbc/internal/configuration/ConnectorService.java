@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.XSDRootElement;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
@@ -103,6 +104,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *
  *
  */
+@Experimental
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {"connection", "regionMapping"})
 @XmlRootElement(name = "connector-service", namespace = "http://geode.apache.org/schema/jdbc")

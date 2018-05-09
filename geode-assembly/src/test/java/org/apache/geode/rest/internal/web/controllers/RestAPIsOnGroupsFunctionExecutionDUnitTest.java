@@ -14,7 +14,7 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Arrays;

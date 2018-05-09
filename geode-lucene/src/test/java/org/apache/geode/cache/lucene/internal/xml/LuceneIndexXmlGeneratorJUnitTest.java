@@ -14,8 +14,13 @@
  */
 package org.apache.geode.cache.lucene.internal.xml;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -28,7 +33,6 @@ import org.mockito.ArgumentCaptor;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 
-import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
@@ -43,7 +47,7 @@ public class LuceneIndexXmlGeneratorJUnitTest {
    */
   @Test
   public void generateWithFields() throws Exception {
-    LuceneIndex index = mock(LuceneIndex.class);
+    LuceneIndexCreation index = mock(LuceneIndexCreation.class);
     when(index.getName()).thenReturn("index");
     String[] fields = new String[] {"field1", "field2"};
     when(index.getFieldNames()).thenReturn(fields);
@@ -79,7 +83,7 @@ public class LuceneIndexXmlGeneratorJUnitTest {
    */
   @Test
   public void generateWithSerializer() throws Exception {
-    LuceneIndex index = mock(LuceneIndex.class);
+    LuceneIndexCreation index = mock(LuceneIndexCreation.class);
     LuceneSerializer mySerializer =
         mock(LuceneSerializer.class, withSettings().extraInterfaces(Declarable2.class));
     Properties props = new Properties();

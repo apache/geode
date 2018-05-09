@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
-
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;

@@ -24,18 +24,16 @@ import java.util.stream.Collectors;
 import javax.naming.Context;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.management.cli.CliFunction;
 
-public class ListJndiBindingFunction implements InternalFunction {
+public class ListJndiBindingFunction extends CliFunction<Void> {
 
   private static final long serialVersionUID = 5254506785395069200L;
 
   @Override
-  public void execute(FunctionContext context) {
+  public CliFunctionResult executeFunction(FunctionContext context) {
     CliFunctionResult result;
-
     try {
       Context ctx = JNDIInvoker.getJNDIContext();
       Map<String, String> bindings = JNDIInvoker.getBindingNamesRecursively(ctx);
@@ -48,8 +46,6 @@ public class ListJndiBindingFunction implements InternalFunction {
       result =
           new CliFunctionResult(context.getMemberName(), e, "Unable to retrieve JNDI bindings");
     }
-
-    ResultSender<Object> sender = context.getResultSender();
-    sender.lastResult(result);
+    return result;
   }
 }

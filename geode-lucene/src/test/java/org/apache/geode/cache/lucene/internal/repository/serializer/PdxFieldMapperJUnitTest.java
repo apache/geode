@@ -15,8 +15,10 @@
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import static org.apache.geode.cache.lucene.internal.repository.serializer.SerializerTestHelper.invokeSerializer;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.lucene.document.Document;
 import org.junit.Test;

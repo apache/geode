@@ -16,8 +16,11 @@
 package org.apache.geode.cache.lucene.internal.xml;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,7 +35,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.lucene.*;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.test.LuceneDeclarable2TestSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestSerializer;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;

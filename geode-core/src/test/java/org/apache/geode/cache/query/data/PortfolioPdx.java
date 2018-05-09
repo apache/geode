@@ -20,7 +20,6 @@
 
 package org.apache.geode.cache.query.data;
 
-import java.io.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -29,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.*;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;

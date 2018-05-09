@@ -2704,7 +2704,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void validateRegionSize(String regionName, final int regionSize) {
-    validateRegionSize(regionName, regionSize, 30000);
+    validateRegionSize(regionName, regionSize, 60000);
   }
 
   public static void validateRegionSize(String regionName, final int regionSize,

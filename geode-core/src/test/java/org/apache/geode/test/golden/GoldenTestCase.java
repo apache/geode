@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.golden;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.IOException;

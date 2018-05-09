@@ -20,12 +20,12 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
@@ -35,6 +35,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -42,9 +43,10 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class DescribeMappingCommand extends GfshCommand {
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
-  static final String DESCRIBE_MAPPING__HELP = "Describe the specified jdbc mapping";
+  static final String DESCRIBE_MAPPING__HELP = EXPERIMENTAL + "Describe the specified jdbc mapping";
   static final String DESCRIBE_MAPPING__REGION_NAME = "region";
   static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
       "Region name of the jdbc mapping to be described.";
@@ -76,21 +78,22 @@ public class DescribeMappingCommand extends GfshCommand {
       Set<DistributedMember> members = findMembers(null, null);
       if (members.size() > 0) {
         DistributedMember targetMember = members.iterator().next();
-        List<?> result =
-            (List<?>) executeFunction(new DescribeMappingFunction(), regionName, targetMember)
-                .getResult();
-        if (!result.isEmpty()) {
-          mapping = (ConnectorService.RegionMapping) result.get(0);
+        CliFunctionResult result = executeFunctionAndGetFunctionResult(
+            new DescribeMappingFunction(), regionName, targetMember);
+        if (result != null) {
+          mapping = (ConnectorService.RegionMapping) result.getResultObject();
         }
       }
     }
 
     if (mapping == null) {
-      throw new EntityNotFoundException("mapping for region '" + regionName + "' not found");
+      throw new EntityNotFoundException(
+          EXPERIMENTAL + "\n" + "mapping for region '" + regionName + "' not found");
     }
 
     CompositeResultData resultData = ResultBuilder.createCompositeResultData();
     fillResultData(mapping, resultData);
+    resultData.setHeader(EXPERIMENTAL);
     return ResultBuilder.buildResult(resultData);
   }
 

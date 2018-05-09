@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with
@@ -20,6 +19,9 @@ package org.apache.geode.cache.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -27,7 +29,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.geode.annotations.Experimental;
-
+import org.apache.geode.management.internal.cli.domain.ClassName;
 
 /**
  *
@@ -57,36 +59,28 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "declarable-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"className", "parameter"})
+    propOrder = {"parameter"})
 @Experimental
-public class DeclarableType {
-
-  @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
-      required = true)
-  protected String className;
+public class DeclarableType extends ClassNameType {
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected List<ParameterType> parameter;
 
-  /**
-   * Gets the value of the className property.
-   *
-   * possible object is
-   * {@link String }
-   *
-   */
-  public String getClassName() {
-    return className;
+  public DeclarableType() {}
+
+  public DeclarableType(String className) {
+    this.className = className;
   }
 
-  /**
-   * Sets the value of the className property.
-   *
-   * allowed object is
-   * {@link String }
-   *
-   */
-  public void setClassName(String value) {
-    this.className = value;
+  public DeclarableType(String className, String jsonProperties) {
+    this(className, new ClassName(className, jsonProperties).getInitProperties());
+  }
+
+  public DeclarableType(String className, Properties properties) {
+    this.className = className;
+    if (properties != null) {
+      parameter = properties.stringPropertyNames().stream()
+          .map(k -> new ParameterType(k, properties.getProperty(k))).collect(Collectors.toList());
+    }
   }
 
   /**
@@ -119,4 +113,30 @@ public class DeclarableType {
     return this.parameter;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    DeclarableType that = (DeclarableType) o;
+    return Objects.equals(className, that.className) && Objects.equals(parameter, that.parameter);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(className, parameter);
+  }
+
+  @Override
+  public String toString() {
+    if (parameter == null) {
+      return className;
+    }
+
+    return className + "{"
+        + parameter.stream().map(Objects::toString).collect(Collectors.joining(",")) + "}";
+  }
 }

@@ -27,6 +27,7 @@ import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -72,7 +73,7 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public boolean hasIncomingFiles() {
-    return false;
+    return result.getFiles().size() > 0;
   }
 
   @Override
@@ -82,7 +83,9 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public void saveIncomingFiles(String directory) throws IOException {
-
+    for (FileResultModel file : result.getFiles().values()) {
+      file.writeFile(directory);
+    }
   }
 
   @Override

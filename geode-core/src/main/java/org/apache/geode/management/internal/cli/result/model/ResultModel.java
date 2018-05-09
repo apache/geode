@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal.cli.result.model;
 
+import static org.apache.geode.management.internal.cli.result.AbstractResultData.FILE_TYPE_BINARY;
+import static org.apache.geode.management.internal.cli.result.AbstractResultData.FILE_TYPE_TEXT;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -49,12 +52,14 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
  *
  */
 public class ResultModel {
+
   private String header;
   private String footer;
   private Map<String, AbstractResultModel> sections = new LinkedHashMap<>();
   private int sectionCount = 0;
   private Result.Status status = Result.Status.OK;
   private Object configObject;
+  private Map<String, FileResultModel> files = new LinkedHashMap<>();
 
   @JsonIgnore
   public Object getConfigObject() {
@@ -111,6 +116,24 @@ public class ResultModel {
 
   public void setContent(Map<String, AbstractResultModel> content) {
     this.sections = content;
+  }
+
+  public Map<String, FileResultModel> getFiles() {
+    return files;
+  }
+
+  public void setFiles(Map<String, FileResultModel> files) {
+    this.files = files;
+  }
+
+  public void addFile(String fileName, byte[] data, int fileType, String message,
+      boolean addTimestampToName) {
+    if (fileType != FILE_TYPE_BINARY && fileType != FILE_TYPE_TEXT) {
+      throw new IllegalArgumentException("Unsupported file type is specified.");
+    }
+
+    FileResultModel fileModel = new FileResultModel(fileName, data, fileType, message + fileName);
+    files.put(fileName, fileModel);
   }
 
   public InfoResultModel addInfo() {
