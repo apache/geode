@@ -40,6 +40,7 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
   private static final String DESCRIBE_JNDIBINDING__HELP =
       "Describe the configuration of the given jndi binding.";
   private static final Function LIST_BINDING_FUNCTION = new ListJndiBindingFunction();
+  public static final String JNDI_PROPERTIES_SECTION = "jndi-properties";
 
   @CliCommand(value = DESCRIBE_JNDI_BINDING, help = DESCRIBE_JNDIBINDING__HELP)
   @CliMetaData
@@ -49,7 +50,7 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
       help = "Name of the binding to describe") String bindingName) {
 
     ResultModel crm = new ResultModel();
-    TabularResultModel tabularData = crm.addTable();
+    TabularResultModel tabularData = crm.addTable(JNDI_PROPERTIES_SECTION);
 
     InternalConfigurationPersistenceService ccService =
         (InternalConfigurationPersistenceService) getConfigurationPersistenceService();

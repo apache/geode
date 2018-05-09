@@ -69,7 +69,7 @@ public class ExportConfigCommand extends InternalGfshCommand {
           help = CliStrings.EXPORT_CONFIG__DIR__HELP) String dir) {
 
     ResultModel crm = new ResultModel();
-    InfoResultModel infoData = crm.addInfo();
+    InfoResultModel infoData = crm.addInfo(ResultModel.INFO_SECTION);
 
     Set<DistributedMember> targetMembers = findMembers(group, member);
     if (targetMembers.isEmpty()) {

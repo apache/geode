@@ -79,7 +79,8 @@ public class ListMembersCommandTest {
     members.add(member1);
 
     CommandResult result = gfsh.executeCommandWithInstance(command, "list members");
-    Map<String, List<String>> table = result.getMapFromTableContent("0");
+    Map<String, List<String>> table =
+        result.getMapFromTableContent(ListMembersCommand.MEMBERS_SECTION);
 
     assertThat(table.get("Name")).contains("name");
     assertThat(table.get("Id")).contains("id [Coordinator]");
@@ -91,7 +92,8 @@ public class ListMembersCommandTest {
     doReturn(null).when(command).getCoordinator();
 
     CommandResult result = gfsh.executeCommandWithInstance(command, "list members");
-    Map<String, List<String>> table = result.getMapFromTableContent("0");
+    Map<String, List<String>> table =
+        result.getMapFromTableContent(ListMembersCommand.MEMBERS_SECTION);
 
     assertThat(table.get("Name")).contains("name");
     assertThat(table.get("Id")).contains("id");
@@ -103,7 +105,8 @@ public class ListMembersCommandTest {
     members.add(member2);
 
     CommandResult result = gfsh.executeCommandWithInstance(command, "list members");
-    Map<String, List<String>> table = result.getMapFromTableContent("0");
+    Map<String, List<String>> table =
+        result.getMapFromTableContent(ListMembersCommand.MEMBERS_SECTION);
 
     assertThat(table.get("Name")).contains("name", "name2");
     assertThat(table.get("Id")).contains("id [Coordinator]", "id2");
