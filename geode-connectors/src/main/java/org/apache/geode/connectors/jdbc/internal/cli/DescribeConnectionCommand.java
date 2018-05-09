@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
@@ -44,10 +45,12 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class DescribeConnectionCommand extends GfshCommand {
   private static Logger logger = LogService.getLogger();
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
-  static final String DESCRIBE_CONNECTION__HELP = "Describe the specified jdbc connection.";
+  static final String DESCRIBE_CONNECTION__HELP =
+      EXPERIMENTAL + "Describe the specified jdbc connection .";
   static final String DESCRIBE_CONNECTION__NAME = "name";
   static final String DESCRIBE_CONNECTION__NAME__HELP =
       "Name of the jdbc connection to be described.";
@@ -88,11 +91,13 @@ public class DescribeConnectionCommand extends GfshCommand {
     }
 
     if (connection == null) {
-      throw new EntityNotFoundException("connection named '" + name + "' not found");
+      throw new EntityNotFoundException(
+          EXPERIMENTAL + "\n" + "connection named '" + name + "' not found");
     }
 
     CompositeResultData resultData = ResultBuilder.createCompositeResultData();
     fillResultData(connection, resultData);
+    resultData.setHeader(EXPERIMENTAL);
     return ResultBuilder.buildResult(resultData);
   }
 

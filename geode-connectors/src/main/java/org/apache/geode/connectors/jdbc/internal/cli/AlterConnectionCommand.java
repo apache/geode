@@ -22,6 +22,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
@@ -36,10 +37,11 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class AlterConnectionCommand extends SingleGfshCommand {
   static final String ALTER_JDBC_CONNECTION = "alter jdbc-connection";
   static final String ALTER_JDBC_CONNECTION__HELP =
-      "Alter properties for an existing jdbc connection.";
+      EXPERIMENTAL + "Alter properties for an existing jdbc connection.";
 
   static final String ALTER_CONNECTION__NAME = "name";
   static final String ALTER_CONNECTION__NAME__HELP = "Name of the connection to be altered.";
@@ -101,7 +103,7 @@ public class AlterConnectionCommand extends SingleGfshCommand {
     ConnectorService.Connection mergedConnection =
         (ConnectorService.Connection) successResult.getResultObject();
 
-    ResultModel result = ResultModel.createMemberStatusResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null);
     result.setConfigObject(mergedConnection);
     return result;
   }

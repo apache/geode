@@ -181,9 +181,8 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
-        .statusIsSuccess().containsOutput("No members found")
-        .containsOutput("Cluster configuration is not updated because the command is executed "
-            + "on specific member or cluster configuration is not enabled.");
+        .statusIsSuccess().containsOutput("No members found").containsOutput(
+            "Cluster configuration service is not running. Configuration change is not persisted.");
   }
 
   @Test

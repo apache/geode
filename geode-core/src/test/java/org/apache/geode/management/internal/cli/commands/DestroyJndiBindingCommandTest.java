@@ -120,9 +120,8 @@ public class DestroyJndiBindingCommandTest {
     doReturn(null).when(command).getConfigurationPersistenceService();
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
-        .containsOutput("No members found")
-        .containsOutput("Cluster configuration is not updated because the command is executed on "
-            + "specific member or cluster configuration is not enabled.");
+        .containsOutput("No members found").containsOutput(
+            "Cluster configuration service is not running. Configuration change is not persisted.");
   }
 
   @Test
