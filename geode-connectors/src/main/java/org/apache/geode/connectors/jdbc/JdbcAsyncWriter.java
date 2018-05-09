@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.LongAdder;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CopyHelper;
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.connectors.jdbc.internal.AbstractJdbcCallback;
@@ -30,12 +31,11 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
 /**
- * This class provides write behind cache semantics for a JDBC data source using
- * AsyncEventListener.
+ * This class provides write behind cache semantics for a JDBC data source using AsyncEventListener.
  *
  * @since Geode 1.4
  */
-
+@Experimental
 public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventListener {
   private static final Logger logger = LogService.getLogger();
 

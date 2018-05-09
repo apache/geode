@@ -14,7 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.sql.SQLException;
 

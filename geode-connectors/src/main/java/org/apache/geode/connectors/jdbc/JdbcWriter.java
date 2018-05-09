@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.geode.CopyHelper;
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryEvent;
@@ -33,7 +34,7 @@ import org.apache.geode.pdx.PdxInstance;
  *
  * @since Geode 1.4
  */
-
+@Experimental
 public class JdbcWriter<K, V> extends AbstractJdbcCallback implements CacheWriter<K, V> {
 
   private final LongAdder totalEvents = new LongAdder();
