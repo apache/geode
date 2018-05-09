@@ -109,9 +109,6 @@ public class CommandExecutor {
     SingleGfshCommand gfshCommand = (SingleGfshCommand) command;
     ResultModel resultModel = (ResultModel) result;
     if (resultModel.getStatus() == Result.Status.ERROR) {
-      InfoResultModel errorInfo = resultModel.addInfo();
-      errorInfo.addLine(
-          "Cluster configuration is not updated because the command exited with an ERROR status.");
       return result;
     }
 

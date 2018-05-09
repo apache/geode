@@ -24,12 +24,11 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.ClassWithParametersType;
+import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -98,14 +97,6 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
             gatewayReceiverFunctionArgs, membersToCreateGatewayReceiverOn);
 
     ResultModel result = ResultModel.createMemberStatusResult(gatewayReceiverCreateResults);
-
-    boolean anySuccessful = gatewayReceiverCreateResults.stream()
-        .map(CliFunctionResult::isSuccessful).reduce(true, (x, y) -> x || y);
-    if (!anySuccessful) {
-      result.setStatus(Status.ERROR);
-      return result;
-    }
-
     result.setConfigObject(configuration);
     return result;
   }
@@ -121,9 +112,9 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
     CacheConfig.GatewayReceiver configuration = new CacheConfig.GatewayReceiver();
 
     if (gatewayTransportFilters != null) {
-      List<ClassWithParametersType> filters =
+      List<DeclarableType> filters =
           Arrays.stream(gatewayTransportFilters).map(fullyQualifiedClassName -> {
-            ClassWithParametersType thisFilter = new ClassWithParametersType();
+            DeclarableType thisFilter = new DeclarableType();
             thisFilter.setClassName(fullyQualifiedClassName);
             return thisFilter;
           }).collect(Collectors.toList());
