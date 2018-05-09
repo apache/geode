@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.dunit;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
 import java.util.Properties;
 

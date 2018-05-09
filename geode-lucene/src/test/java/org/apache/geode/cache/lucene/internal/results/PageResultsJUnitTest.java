@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.results;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 

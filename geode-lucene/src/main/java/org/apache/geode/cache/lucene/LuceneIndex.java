@@ -20,6 +20,7 @@ import java.util.Map;
 import org.apache.lucene.analysis.Analyzer;
 
 
+
 /**
  * <p>
  * LuceneIndex represents the Lucene index created over the data stored in Apache Geode regions. The
@@ -82,5 +83,13 @@ public interface LuceneIndex {
    * Return the {@link LuceneSerializer} associated with this index
    */
   LuceneSerializer getLuceneSerializer();
+
+  /**
+   * Returns a boolean value to indicate if reindexing is in progress.
+   *
+   * @return a boolean value indicating indexing progress
+   */
+
+  boolean isIndexingInProgress();
 
 }

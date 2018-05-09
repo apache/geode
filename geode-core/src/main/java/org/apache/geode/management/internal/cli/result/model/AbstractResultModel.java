@@ -50,4 +50,5 @@ public abstract class AbstractResultModel {
   public void setFooter(String footer) {
     this.footer = footer;
   }
+
 }

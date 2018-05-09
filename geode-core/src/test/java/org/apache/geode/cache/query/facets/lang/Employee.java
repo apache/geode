@@ -15,7 +15,10 @@
 
 package org.apache.geode.cache.query.facets.lang;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 public class Employee {
   static Random rand = new Random();

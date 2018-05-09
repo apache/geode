@@ -84,7 +84,7 @@ public class CommandOverHttpTest {
   public void exportConfig() throws Exception {
     String dir = temporaryFolder.getRoot().getAbsolutePath();
     gfshRule.executeAndAssertThat("export config --dir=" + dir).statusIsSuccess()
-        .containsOutput("Downloading Cache XML file: " + dir + "/server-cache.xml")
-        .containsOutput("Downloading properties file: " + dir + "/server-gf.properties");
+        .containsOutput("Downloading Cache XML file: server-cache.xml")
+        .containsOutput("Downloading properties file: server-gf.properties");
   }
 }

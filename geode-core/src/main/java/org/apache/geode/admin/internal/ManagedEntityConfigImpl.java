@@ -15,7 +15,9 @@
 package org.apache.geode.admin.internal;
 
 import java.io.File;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
 
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.GemFireVersion;

@@ -48,10 +48,12 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.functions.GetRegionNamesFunction;
@@ -105,7 +107,7 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
 
       InfoResultData infoData = ResultBuilder.createInfoResultData();
       byte[] byteData = FileUtils.readFileToByteArray(zipFile);
-      infoData.addAsFile(zipFileName, byteData, InfoResultData.FILE_TYPE_BINARY,
+      infoData.addAsFile(zipFileName, byteData, ResultData.FILE_TYPE_BINARY,
           CliStrings.EXPORT_SHARED_CONFIG__DOWNLOAD__MSG, false);
       result = ResultBuilder.buildResult(infoData);
     } catch (Exception e) {
@@ -237,7 +239,8 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
     }
 
     @Override
-    public Result postExecution(GfshParseResult parseResult, Result commandResult, Path tempFile) {
+    public CommandResult postExecution(GfshParseResult parseResult, CommandResult commandResult,
+        Path tempFile) {
       if (commandResult.hasIncomingFiles()) {
         try {
           commandResult.saveIncomingFiles(System.getProperty("user.dir"));

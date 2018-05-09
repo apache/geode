@@ -27,14 +27,12 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -45,7 +43,7 @@ public class CreateIndexCommand extends SingleGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  public Result createIndex(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
+  public ResultModel createIndex(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
       help = CliStrings.CREATE_INDEX__NAME__HELP) final String indexName,
 
       @CliOption(key = CliStrings.CREATE_INDEX__EXPRESSION, mandatory = true,
@@ -67,11 +65,10 @@ public class CreateIndexCommand extends SingleGfshCommand {
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_INDEX__GROUP__HELP) final String[] groups) {
 
-    CommandResult result;
     final Set<DistributedMember> targetMembers = findMembers(groups, memberNameOrID);
 
     if (targetMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     RegionConfig.Index index = new RegionConfig.Index();
@@ -87,7 +84,7 @@ public class CreateIndexCommand extends SingleGfshCommand {
 
     List<CliFunctionResult> functionResults =
         executeAndGetFunctionResult(createIndexFunction, index, targetMembers);
-    result = ResultBuilder.buildResult(functionResults);
+    ResultModel result = ResultModel.createMemberStatusResult(functionResults);
     result.setConfigObject(index);
     return result;
   }

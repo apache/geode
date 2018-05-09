@@ -63,7 +63,6 @@ public class LegacyCommandResult implements CommandResult {
   }
 
   private Path fileToDownload;
-  private Object configObject;
 
   public LegacyCommandResult(ResultData resultData) {
     this.resultData = resultData;
@@ -75,16 +74,6 @@ public class LegacyCommandResult implements CommandResult {
   public LegacyCommandResult(Path fileToDownload) {
     this(new InfoResultData(fileToDownload.toString()));
     this.fileToDownload = fileToDownload.toAbsolutePath();
-  }
-
-  @Override
-  public Object getConfigObject() {
-    return configObject;
-  }
-
-  @Override
-  public void setConfigObject(Object configObject) {
-    this.configObject = configObject;
   }
 
   public boolean hasFileToDownload() {
@@ -194,7 +183,7 @@ public class LegacyCommandResult implements CommandResult {
 
         for (Iterator<String> it = content.keys(); it.hasNext();) {
           String key = it.next();
-          if (key.startsWith(CompositeResultData.SECTION_DATA_ACCESSOR)) {
+          if (key.startsWith(ResultData.SECTION_DATA_ACCESSOR)) {
             GfJsonObject subSection = content.getJSONObject(key);
             buildSection(resultTable, null, subSection, 0);
           } else if (key.equals(CompositeResultData.SEPARATOR)) {
@@ -229,7 +218,7 @@ public class LegacyCommandResult implements CommandResult {
     while (keys.hasNext()) {
       String key = keys.next();
       Object object = section.get(key);
-      if (key.startsWith(CompositeResultData.TABLE_DATA_ACCESSOR)) {
+      if (key.startsWith(ResultData.TABLE_DATA_ACCESSOR)) {
         GfJsonObject tableObject = section.getJSONObject(key);
 
         addHeaderInTable(table, tableObject);
@@ -284,7 +273,7 @@ public class LegacyCommandResult implements CommandResult {
     // build Table Header first
     for (int i = 0; i < numOfColumns; i++) {
       Object object = columnNames.get(i);
-      if (AbstractResultData.BYTE_DATA_ACCESSOR.equals(object)) {
+      if (ResultData.BYTE_DATA_ACCESSOR.equals(object)) {
         // skip file data if any
         continue;
       }
@@ -295,7 +284,7 @@ public class LegacyCommandResult implements CommandResult {
     Row[] dataRows = null;
     for (int i = 0; i < numOfColumns; i++) {
       Object object = columnNames.get(i);
-      if (AbstractResultData.BYTE_DATA_ACCESSOR.equals(object)) {
+      if (ResultData.BYTE_DATA_ACCESSOR.equals(object)) {
         // skip file data if any
         continue;
       }
@@ -331,7 +320,7 @@ public class LegacyCommandResult implements CommandResult {
     try {
       GfJsonObject content = getContent();
       if (content != null) {
-        fileDataArray = content.getJSONArray(CompositeResultData.BYTE_DATA_ACCESSOR);
+        fileDataArray = content.getJSONArray(ResultData.BYTE_DATA_ACCESSOR);
       }
     } catch (GfJsonException e) {
       e.printStackTrace();
@@ -350,7 +339,7 @@ public class LegacyCommandResult implements CommandResult {
     try {
       GfJsonObject content = getContent();
       if (content != null) {
-        GfJsonArray bytesArray = content.getJSONArray(CompositeResultData.BYTE_DATA_ACCESSOR);
+        GfJsonArray bytesArray = content.getJSONArray(ResultData.BYTE_DATA_ACCESSOR);
         AbstractResultData.readFileDataAndDump(bytesArray, directory);
       } else {
         throw new RuntimeException("No associated files to save .. ");

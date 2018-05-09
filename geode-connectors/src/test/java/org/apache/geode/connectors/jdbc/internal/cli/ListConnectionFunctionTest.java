@@ -107,7 +107,7 @@ public class ListConnectionFunctionTest {
     expected.add(connectionConfig3);
 
     Set<ConnectorService.Connection> actual =
-        function.getFunctionResult(service, mock(FunctionContext.class));
+        (Set<ConnectorService.Connection>) function.executeFunction(context).getResultObject();
 
     assertThat(actual).containsExactlyInAnyOrder(connectionConfig1, connectionConfig2,
         connectionConfig3);
@@ -116,7 +116,7 @@ public class ListConnectionFunctionTest {
   @Test
   public void getConnectionConfigsReturnsEmpty() {
     Set<ConnectorService.Connection> actual =
-        function.getFunctionResult(service, mock(FunctionContext.class));
+        (Set<ConnectorService.Connection>) function.executeFunction(context).getResultObject();
 
     assertThat(actual).isEmpty();
   }
@@ -129,19 +129,19 @@ public class ListConnectionFunctionTest {
 
     function.execute(context);
 
-    ArgumentCaptor<Set<ConnectorService.Connection>> argument = ArgumentCaptor.forClass(Set.class);
+    ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue()).containsExactlyInAnyOrder(connectionConfig1, connectionConfig2,
-        connectionConfig3);
+    assertThat((Set) argument.getValue().getResultObject())
+        .containsExactlyInAnyOrder(connectionConfig1, connectionConfig2, connectionConfig3);
   }
 
   @Test
   public void executeReturnsEmptyResultForNoConfigs() {
     function.execute(context);
 
-    ArgumentCaptor<Set<ConnectorService.Connection>> argument = ArgumentCaptor.forClass(Set.class);
+    ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue()).isEmpty();
+    assertThat((Set) argument.getValue().getResultObject()).isEmpty();
   }
 
   @Test
@@ -163,7 +163,6 @@ public class ListConnectionFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getStatus()).contains("some message")
-        .doesNotContain(IllegalArgumentException.class.getName());
+    assertThat(argument.getValue().getStatus()).contains("some message");
   }
 }

@@ -14,12 +14,20 @@
  */
 package org.apache.geode.sequence;
 
-import java.awt.*;
+import java.awt.AlphaComposite;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Composite;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.JViewport;
 
 /**
  * Created by IntelliJ IDEA. User: dan Date: Oct 28, 2010 Time: 10:30:40 PM To change this template

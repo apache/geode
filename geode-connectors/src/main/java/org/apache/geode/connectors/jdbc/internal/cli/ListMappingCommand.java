@@ -17,7 +17,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.apache.geode.distributed.ConfigurationPersistenceService.CLUSTER_CONFIG;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -29,6 +28,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
@@ -68,10 +68,10 @@ public class ListMappingCommand extends GfshCommand {
       Set<DistributedMember> members = findMembers(null, null);
       if (members.size() > 0) {
         DistributedMember targetMember = members.iterator().next();
-        List<?> result =
-            (List<?>) executeFunction(new ListMappingFunction(), null, targetMember).getResult();
-        if (!result.isEmpty()) {
-          mappings = (Collection<ConnectorService.RegionMapping>) result.get(0);
+        CliFunctionResult result =
+            executeFunctionAndGetFunctionResult(new ListMappingFunction(), null, targetMember);
+        if (result != null) {
+          mappings = (Collection<ConnectorService.RegionMapping>) result.getResultObject();
         }
       }
     }

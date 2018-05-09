@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.test.dunit.Invoke.*;
+import static org.apache.geode.test.dunit.Invoke.invokeInLocator;
 
 import java.io.Serializable;
 

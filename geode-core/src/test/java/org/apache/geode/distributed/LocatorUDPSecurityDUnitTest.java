@@ -22,7 +22,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_
 import java.util.Properties;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,39 +29,26 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({DistributedTest.class, MembershipTest.class, FlakyTest.class}) // Flaky: GEODE-2542
+@Category({DistributedTest.class, MembershipTest.class})
 public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
-
-  public LocatorUDPSecurityDUnitTest() {}
-
   @Override
   protected void addDSProps(Properties p) {
     p.setProperty(SECURITY_UDP_DHALGO, "AES:128");
   }
 
-  @Override
-  @Test
-  @Ignore // GEODE-3094
-  public void testMultipleLocatorsRestartingAtSameTimeWithMissingServers() throws Exception {
-    super.testMultipleLocatorsRestartingAtSameTimeWithMissingServers();
-  }
-
   @Test
   public void testLocatorWithUDPSecurityButServer() throws Exception {
     disconnectAllFromDS();
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
+    VM vm0 = VM.getVM(0);
 
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     DistributedTestUtils.deleteLocatorStateFile(port1);
-    final String locators = NetworkUtils.getServerHostName(host) + "[" + port + "]";
+    final String locators = NetworkUtils.getServerHostName() + "[" + port + "]";
 
     vm0.invoke("Start locator " + locators, () -> startLocator(port));
     try {

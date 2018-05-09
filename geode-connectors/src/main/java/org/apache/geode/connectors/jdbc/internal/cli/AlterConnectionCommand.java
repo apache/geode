@@ -28,13 +28,11 @@ import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -61,7 +59,7 @@ public class AlterConnectionCommand extends SingleGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result alterConnection(
+  public ResultModel alterConnection(
       @CliOption(key = ALTER_CONNECTION__NAME, mandatory = true,
           help = ALTER_CONNECTION__NAME__HELP) String name,
       @CliOption(key = ALTER_CONNECTION__URL, specifiedDefaultValue = "",
@@ -103,9 +101,9 @@ public class AlterConnectionCommand extends SingleGfshCommand {
     ConnectorService.Connection mergedConnection =
         (ConnectorService.Connection) successResult.getResultObject();
 
-    CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setConfigObject(mergedConnection);
-    return commandResult;
+    ResultModel result = ResultModel.createMemberStatusResult(results);
+    result.setConfigObject(mergedConnection);
+    return result;
   }
 
   @Override

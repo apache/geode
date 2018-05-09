@@ -20,12 +20,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang.ArrayUtils;
+
 public class TabularResultModel extends AbstractResultModel {
 
   /*
    * Table data mapped by column name. The map needs to be able to maintain insertion order.
    */
   private Map<String, List<String>> table = new LinkedHashMap<>();
+
+  @JsonIgnore
+  private String[] columnHeaders = new String[0];
 
   TabularResultModel() {}
 
@@ -36,6 +42,7 @@ public class TabularResultModel extends AbstractResultModel {
       List<String> list = new ArrayList<>();
       list.add(value);
       table.put(column, list);
+      columnHeaders = (String[]) ArrayUtils.add(columnHeaders, column);
     }
 
     return this;
@@ -44,5 +51,21 @@ public class TabularResultModel extends AbstractResultModel {
   @Override
   public Map<String, List<String>> getContent() {
     return table;
+  }
+
+  public void setColumnHeader(String... columnHeaders) {
+    this.columnHeaders = columnHeaders;
+    for (String columnHeader : columnHeaders) {
+      table.put(columnHeader, new ArrayList<>());
+    }
+  }
+
+  public void addRow(String... values) {
+    if (values.length != columnHeaders.length) {
+      throw new IllegalStateException("row size is different than the column header size.");
+    }
+    for (int i = 0; i < values.length; i++) {
+      table.get(columnHeaders[i]).add(values[i]);
+    }
   }
 }

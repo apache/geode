@@ -14,8 +14,8 @@
  */
 package org.apache.geode.test.dunit;
 
-import static org.apache.geode.test.dunit.Jitter.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.test.dunit.Jitter.jitterInterval;
+import static org.junit.Assert.fail;
 
 import org.apache.logging.log4j.Logger;
 

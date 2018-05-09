@@ -16,7 +16,8 @@
 
 package org.apache.geode.cache;
 
-import java.io.*;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 

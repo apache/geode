@@ -15,10 +15,14 @@
 
 package org.apache.geode.cache.query.internal.types;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.query.types.MapType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
 
 
 /**

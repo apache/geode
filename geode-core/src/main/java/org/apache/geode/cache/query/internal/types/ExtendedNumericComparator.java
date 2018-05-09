@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.query.internal.types;
 
-import java.util.*;
+import java.util.Comparator;
 
 import org.apache.geode.cache.query.internal.NullToken;
 import org.apache.geode.cache.query.internal.Undefined;

@@ -14,7 +14,10 @@
  */
 package org.apache.geode.cache30;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.RegionEvent;
 
 /**
  * A <code>CacheWriter</code> used in testing. Its callback methods are implemented to thrown

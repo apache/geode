@@ -30,6 +30,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
@@ -37,7 +38,11 @@ import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.LuceneTest;
 
+@Category({DistributedTest.class, LuceneTest.class})
 public class LuceneIndexCommandsWithReindexAllowedDUnitTest extends LuceneIndexCommandsDUnitTest {
 
   @After
@@ -48,6 +53,31 @@ public class LuceneIndexCommandsWithReindexAllowedDUnitTest extends LuceneIndexC
   @Before
   public void setLuceneReindexFeatureFlag() {
     serverVM.invoke(() -> LuceneServiceImpl.LUCENE_REINDEX = true);
+  }
+
+  @Test
+  public void whenLuceneReindexingInProgressThenListIndexCommandMustExecuteSuccessfully() {
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "__REGION_VALUE_FIELD");
+
+    serverVM.invoke(() -> createRegion());
+    AsyncInvocation ai = serverVM.invokeAsync(() -> {
+      int count = 0;
+      while (true) {
+        getCache().getRegion(REGION_NAME).put(count, "hello world" + count);
+      }
+    });
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Successfully created lucene index");
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    ai.cancel(true);
+
   }
 
   @Test

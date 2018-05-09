@@ -14,8 +14,24 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.security.SecurityTestUtils.NOTAUTHZ_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.REGION_NAME;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.createCacheClient;
+import static org.apache.geode.security.SecurityTestUtils.createCacheClientForMultiUserMode;
+import static org.apache.geode.security.SecurityTestUtils.doMultiUserContainsKeys;
+import static org.apache.geode.security.SecurityTestUtils.doMultiUserDestroys;
+import static org.apache.geode.security.SecurityTestUtils.doMultiUserFE;
+import static org.apache.geode.security.SecurityTestUtils.doMultiUserGetAll;
+import static org.apache.geode.security.SecurityTestUtils.doMultiUserGets;
+import static org.apache.geode.security.SecurityTestUtils.doMultiUserInvalidates;
+import static org.apache.geode.security.SecurityTestUtils.doMultiUserPuts;
+import static org.apache.geode.security.SecurityTestUtils.doMultiUserQueries;
+import static org.apache.geode.security.SecurityTestUtils.doMultiUserQueryExecute;
+import static org.apache.geode.security.SecurityTestUtils.doMultiUserRegionDestroys;
+import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.util.Iterator;
 import java.util.Properties;

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.CacheHealthConfig;
 
 /**
  * The implementation of <code>CacheHealthConfig</code>

@@ -14,19 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.apache.geode.test.dunit.VM.getHostName;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
-import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
@@ -34,17 +32,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.UninterruptibleFileChannel;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.ClientCacheRule;
+import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
@@ -57,32 +58,41 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #39079: Regions with persistence remain in use after IOException have occurred
  */
 @Category(DistributedTest.class)
-public class InitializedDiskRegionWithIoExceptionRegressionTest extends CacheTestCase {
+@SuppressWarnings("serial")
+public class InitializedDiskRegionWithIoExceptionRegressionTest implements Serializable {
 
-  private String hostName;
   private String uniqueName;
-
-  private File[] serverDiskDirs;
+  private String hostName;
 
   private VM server;
   private VM client;
 
   @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  public DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Rule
-  public SerializableTestName testName = new SerializableTestName();
+  public CacheRule cacheRule = new CacheRule();
+
+  @Rule
+  public ClientCacheRule clientCacheRule = new ClientCacheRule();
+
+  /** DistributedDiskDirRule invokes before and after for SerializableTemporaryFolder */
+  private SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  /** DistributedDiskDirRule invokes before and after for SerializableTestName */
+  private SerializableTestName testName = new SerializableTestName();
+
+  @Rule
+  public DistributedDiskDirRule diskDirsRule =
+      new DistributedDiskDirRule(temporaryFolder, testName);
 
   @Before
   public void setUp() throws Exception {
-    server = getHost(0).getVM(0);
-    client = getHost(0).getVM(1);
+    server = getVM(0);
+    client = getVM(1);
 
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
-
-    serverDiskDirs = new File[] {temporaryFolder.newFolder(uniqueName + "_server1_disk")};
-
-    hostName = getServerHostName(server.getHost());
+    hostName = getHostName();
 
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = true;
 
@@ -95,8 +105,6 @@ public class InitializedDiskRegionWithIoExceptionRegressionTest extends CacheTes
 
   @After
   public void tearDown() throws Exception {
-    disconnectAllFromDS();
-
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = false;
 
     invokeInEveryVM(() -> {
@@ -117,23 +125,25 @@ public class InitializedDiskRegionWithIoExceptionRegressionTest extends CacheTes
   }
 
   private int createServerCache() throws IOException {
-    DiskRegionProperties props = new DiskRegionProperties();
-    props.setRegionName(uniqueName);
-    props.setOverflow(true);
-    props.setRolling(true);
-    props.setDiskDirs(serverDiskDirs);
-    props.setPersistBackup(true);
+    cacheRule.createCache();
 
-    DiskRegionHelperFactory.getSyncPersistOnlyRegion(getCache(), props, Scope.DISTRIBUTED_ACK);
+    DiskRegionProperties diskRegionProps = new DiskRegionProperties();
+    diskRegionProps.setRegionName(uniqueName);
+    diskRegionProps.setOverflow(true);
+    diskRegionProps.setRolling(true);
+    diskRegionProps.setPersistBackup(true);
 
-    CacheServer cacheServer = getCache().addCacheServer();
+    DiskRegionHelperFactory.getSyncPersistOnlyRegion(cacheRule.getCache(), diskRegionProps,
+        Scope.DISTRIBUTED_ACK);
+
+    CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setPort(0);
     cacheServer.start();
     return cacheServer.getPort();
   }
 
   private void validateNoCacheServersRunning() throws IOException {
-    Region<String, byte[]> region = getCache().getRegion(uniqueName);
+    Region<String, byte[]> region = cacheRule.getCache().getRegion(uniqueName);
 
     region.create("key1", new byte[16]);
     region.create("key2", new byte[16]);
@@ -149,26 +159,19 @@ public class InitializedDiskRegionWithIoExceptionRegressionTest extends CacheTes
     ((DiskRecoveryStore) region).getDiskStore().waitForClose();
     assertThat(region.getRegionService().isClosed()).isTrue();
 
-    List<CacheServer> cacheServers = getCache().getCacheServers();
+    List<CacheServer> cacheServers = cacheRule.getCache().getCacheServers();
     assertThat(cacheServers).isEmpty();
   }
 
   private void createClientCache(String host, int port) {
-    Properties config = new Properties();
-    config.setProperty(MCAST_PORT, "0");
-    config.setProperty(LOCATORS, "");
-    getCache(config);
+    clientCacheRule.createClientCache();
 
-    Pool pool = PoolManager.createFactory().addServer(host, port).setSubscriptionEnabled(true)
+    Pool pool = PoolManager.createFactory().addServer(host, port).setSubscriptionEnabled(false)
         .setSubscriptionRedundancy(0).setThreadLocalConnections(true).setMinConnections(0)
         .setReadTimeout(20000).setRetryAttempts(1).create(uniqueName);
 
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setPoolName(pool.getName());
-
-    Region region = getCache().createRegion(uniqueName, factory.create());
-
-    region.registerInterest("ALL_KEYS");
+    ClientRegionFactory crf = clientCacheRule.getClientCache().createClientRegionFactory(LOCAL);
+    crf.setPoolName(pool.getName());
+    crf.create(uniqueName);
   }
 }

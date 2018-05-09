@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with
@@ -18,31 +17,26 @@
 
 package org.apache.geode.cache.configuration;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.geode.annotations.Experimental;
-
-
 /**
  * <p>
- * Java class for class-with-parameters-type complex type.
+ * Java class for anonymous complex type.
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="class-with-parameters-type">
+ * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -52,16 +46,18 @@ import org.apache.geode.annotations.Experimental;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "class-with-parameters-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"className", "parameter"})
-@Experimental
-public class ClassWithParametersType {
+@XmlType(name = "", propOrder = {"className"})
+public class ClassNameType {
 
   @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
       required = true)
   protected String className;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<ParameterType> parameter;
+
+  public ClassNameType() {}
+
+  public ClassNameType(String className) {
+    this.className = className;
+  }
 
   /**
    * Gets the value of the className property.
@@ -85,34 +81,25 @@ public class ClassWithParametersType {
     this.className = value;
   }
 
-  /**
-   * Gets the value of the parameter property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the parameter property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   *
-   * <pre>
-   * getParameter().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link ParameterType }
-   *
-   *
-   */
-  public List<ParameterType> getParameter() {
-    if (parameter == null) {
-      parameter = new ArrayList<ParameterType>();
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
-    return this.parameter;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ClassNameType that = (ClassNameType) o;
+    return Objects.equals(className, that.className);
   }
 
+  @Override
+  public String toString() {
+    return className;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(className);
+  }
 }

@@ -14,7 +14,8 @@
  */
 package org.apache.geode.codeAnalysis.decode.cp;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 public class CpLong extends Cp {
   byte b1;

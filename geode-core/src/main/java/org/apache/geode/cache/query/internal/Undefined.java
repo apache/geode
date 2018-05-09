@@ -15,7 +15,10 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
 
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.DataSerializableFixedID;

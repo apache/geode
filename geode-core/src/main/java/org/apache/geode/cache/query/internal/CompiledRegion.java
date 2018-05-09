@@ -14,11 +14,13 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.Set;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;

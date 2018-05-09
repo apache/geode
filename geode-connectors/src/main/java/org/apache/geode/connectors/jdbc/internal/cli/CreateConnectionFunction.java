@@ -18,25 +18,19 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-
-public class CreateConnectionFunction
-    extends JdbcCliFunction<ConnectorService.Connection, CliFunctionResult> {
-
-  CreateConnectionFunction() {
-    super();
-  }
+public class CreateConnectionFunction extends CliFunction<ConnectorService.Connection> {
 
   @Override
-  CliFunctionResult getFunctionResult(JdbcConnectorService service,
-      FunctionContext<ConnectorService.Connection> context) throws Exception {
+  public CliFunctionResult executeFunction(FunctionContext<ConnectorService.Connection> context)
+      throws Exception {
+    JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
     ConnectorService.Connection connectionConfig = context.getArguments();
     createConnectionConfig(service, connectionConfig);
-    String member = getMember(context);
-    XmlEntity xmlEntity = createXmlEntity(context);
-    return createSuccessResult(connectionConfig.getName(), member, xmlEntity);
+    String member = context.getMemberName();
+    return createSuccessResult(connectionConfig.getName(), member);
   }
 
   /**
@@ -47,9 +41,8 @@ public class CreateConnectionFunction
     service.createConnectionConfig(connectionConfig);
   }
 
-  private CliFunctionResult createSuccessResult(String connectionName, String member,
-      XmlEntity xmlEntity) {
+  private CliFunctionResult createSuccessResult(String connectionName, String member) {
     String message = "Created JDBC connection " + connectionName + " on " + member;
-    return new CliFunctionResult(member, xmlEntity, message);
+    return new CliFunctionResult(member, message);
   }
 }

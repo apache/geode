@@ -14,7 +14,8 @@
  */
 package org.apache.geode.test.junit.rules.examples;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.concurrent.atomic.AtomicInteger;

@@ -19,7 +19,11 @@
  */
 package org.apache.geode.cache30;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.EntryEvent;

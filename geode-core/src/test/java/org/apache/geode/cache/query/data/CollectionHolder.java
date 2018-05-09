@@ -21,10 +21,14 @@
 
 package org.apache.geode.cache.query.data;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 
 public class CollectionHolder implements Serializable, DataSerializable {
 

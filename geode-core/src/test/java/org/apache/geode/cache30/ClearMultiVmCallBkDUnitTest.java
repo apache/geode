@@ -20,7 +20,8 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import java.util.Properties;
 
