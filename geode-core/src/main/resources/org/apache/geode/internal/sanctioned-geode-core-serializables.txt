@@ -468,6 +468,7 @@ org/apache/geode/management/DependenciesNotFoundException,true,90823049292381598
 org/apache/geode/management/JVMMetrics,false,committedMemory:long,gcCount:long,gcTimeMillis:long,initMemory:long,maxMemory:long,totalThreads:int,usedMemory:long
 org/apache/geode/management/ManagementException,true,879398950879472121
 org/apache/geode/management/OSMetrics,false,arch:java/lang/String,availableProcessors:int,committedVirtualMemorySize:long,freePhysicalMemorySize:long,freeSwapSpaceSize:long,maxFileDescriptorCount:long,name:java/lang/String,openFileDescriptorCount:long,processCpuTime:long,systemLoadAverage:double,totalPhysicalMemorySize:long,totalSwapSpaceSize:long,version:java/lang/String
+org/apache/geode/management/cli/CliFunction,false
 org/apache/geode/management/cli/CommandProcessingException,true,-1398779521639575884,errorData:java/lang/Object,errorType:int
 org/apache/geode/management/cli/CommandServiceException,true,7316102209844678329
 org/apache/geode/management/cli/Result$Status,false,code:int

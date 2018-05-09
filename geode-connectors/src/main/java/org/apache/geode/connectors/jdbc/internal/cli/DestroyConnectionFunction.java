@@ -18,62 +18,25 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 @Experimental
-public class DestroyConnectionFunction extends JdbcCliFunction<String, CliFunctionResult> {
-
-  DestroyConnectionFunction() {
-    super();
-  }
+public class DestroyConnectionFunction extends CliFunction<String> {
 
   @Override
-  CliFunctionResult getFunctionResult(JdbcConnectorService service,
-      FunctionContext<String> context) {
+  public CliFunctionResult executeFunction(FunctionContext<String> context) {
+    JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
     String connectionName = context.getArguments();
-    boolean success = destroyConnectionConfig(service, connectionName);
-
-    // output
-    String member = getMember(context);
-    return createResult(success, context, member, connectionName);
-  }
-
-  /**
-   * Destroys the named connection configuration
-   *
-   * @return true if the connection was found and destroyed
-   */
-  boolean destroyConnectionConfig(JdbcConnectorService service, String connectionName) {
     ConnectorService.Connection connectionConfig = service.getConnectionConfig(connectionName);
     if (connectionConfig != null) {
       service.destroyConnectionConfig(connectionName);
-      return true;
-    }
-    return false;
-  }
-
-  private CliFunctionResult createResult(boolean success, FunctionContext<String> context,
-      String member, String connectionName) {
-    CliFunctionResult result;
-    if (success) {
-      XmlEntity xmlEntity = createXmlEntity(context);
-      result = createSuccessResult(member, connectionName, xmlEntity);
-
+      String message =
+          "Destroyed JDBC connection \"" + connectionName + "\" on " + context.getMemberName();
+      return new CliFunctionResult(context.getMemberName(), true, message);
     } else {
-      result = createNotFoundResult(member, connectionName);
+      String message = "Connection named \"" + connectionName + "\" not found";
+      return new CliFunctionResult(context.getMemberName(), false, message);
     }
-    return result;
-  }
-
-  private CliFunctionResult createSuccessResult(String member, String connectionName,
-      XmlEntity xmlEntity) {
-    String message = "Destroyed JDBC connection \"" + connectionName + "\" on " + member;
-    return new CliFunctionResult(member, xmlEntity, message);
-  }
-
-  private CliFunctionResult createNotFoundResult(String member, String connectionName) {
-    String message = "Connection named \"" + connectionName + "\" not found";
-    return new CliFunctionResult(member, false, message);
   }
 }

@@ -20,7 +20,6 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -36,6 +35,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -78,11 +78,10 @@ public class DescribeMappingCommand extends GfshCommand {
       Set<DistributedMember> members = findMembers(null, null);
       if (members.size() > 0) {
         DistributedMember targetMember = members.iterator().next();
-        List<?> result =
-            (List<?>) executeFunction(new DescribeMappingFunction(), regionName, targetMember)
-                .getResult();
-        if (!result.isEmpty()) {
-          mapping = (ConnectorService.RegionMapping) result.get(0);
+        CliFunctionResult result = executeFunctionAndGetFunctionResult(
+            new DescribeMappingFunction(), regionName, targetMember);
+        if (result != null) {
+          mapping = (ConnectorService.RegionMapping) result.getResultObject();
         }
       }
     }

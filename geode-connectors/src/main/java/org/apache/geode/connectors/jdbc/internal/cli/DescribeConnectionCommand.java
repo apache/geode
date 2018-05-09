@@ -20,7 +20,6 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionComm
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__URL;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__USER;
 
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -38,6 +37,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -82,11 +82,10 @@ public class DescribeConnectionCommand extends GfshCommand {
       Set<DistributedMember> members = findMembers(null, null);
       if (members.size() > 0) {
         DistributedMember targetMember = members.iterator().next();
-        List<?> result =
-            (List<?>) executeFunction(new DescribeConnectionFunction(), name, targetMember)
-                .getResult();
-        if (!result.isEmpty()) {
-          connection = (ConnectorService.Connection) result.get(0);
+        CliFunctionResult result = executeFunctionAndGetFunctionResult(
+            new DescribeConnectionFunction(), name, targetMember);
+        if (result != null) {
+          connection = (ConnectorService.Connection) result.getResultObject();
         }
       }
     }

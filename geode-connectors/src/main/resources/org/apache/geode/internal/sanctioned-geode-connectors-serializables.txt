@@ -11,7 +11,6 @@ org/apache/geode/connectors/jdbc/internal/cli/DescribeConnectionFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DescribeMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DestroyConnectionFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DestroyMappingFunction,false
-org/apache/geode/connectors/jdbc/internal/cli/JdbcCliFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/ListConnectionFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/ListMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/configuration/ConnectorService,false,connection:java/util/List,name:java/lang/String,regionMapping:java/util/List

@@ -87,7 +87,7 @@ public interface LuceneIndex {
   /**
    * Returns a boolean value to indicate if reindexing is in progress.
    *
-   * @Return a boolean value indicating indexing progress
+   * @return a boolean value indicating indexing progress
    */
 
   boolean isIndexingInProgress();
