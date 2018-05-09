@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,6 +60,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -448,6 +450,13 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private ThrottlingMemLinkedQueueWithDMStats serialQueue;
 
+  /**
+   * Thread Monitor mechanism to monitor system threads
+   *
+   * @see org.apache.geode.distributed.ThreadMonitoring
+   */
+  private ThreadMonitoring threadMonitor = null;
+
   /** a map keyed on InternalDistributedMember, to direct channels to other systems */
   // protected final Map channelMap = CFactory.createCM();
 
@@ -676,6 +685,19 @@ public class ClusterDistributionManager implements DistributionManager {
     final LoggingThreadGroup group =
         LoggingThreadGroup.createThreadGroup("DistributionManager Threads", logger);
     this.threadGroup = group;
+
+    {
+      Properties nonDefault = new Properties();
+      DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
+
+      if (distributionConfigImpl.getThreadMonitorEnabled()) {
+        this.threadMonitor = new ThreadMonitoringImpl();
+        logger.info("[ThreadsMonitor] a New Monitor object and process were created.\n");
+      } else {
+        this.threadMonitor = new ThreadMonitoringImplDummy();
+        logger.info("[ThreadsMonitor] Monitoring is disabled and will not be run.\n");
+      }
+    }
 
     boolean finishedConstructor = false;
     try {
@@ -3551,6 +3573,12 @@ public class ClusterDistributionManager implements DistributionManager {
     } else {
       return this.serialQueue;
     }
+  }
+
+  @Override
+  /** returns the Threads Monitoring instance */
+  public ThreadMonitoring getThreadMonitoring() {
+    return this.threadMonitor;
   }
 
   /**

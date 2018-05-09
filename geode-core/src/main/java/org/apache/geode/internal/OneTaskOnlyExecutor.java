@@ -20,8 +20,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.admin.ThreadMonitoring;
-import org.apache.geode.admin.internal.ThreadMonitoringProvider;
+import org.apache.geode.distributed.ThreadMonitoring;
+import org.apache.geode.distributed.internal.ThreadMonitoringUtils;
 
 /**
  * A decorator for a ScheduledExecutorService which tries to make sure that there is only one task
@@ -169,10 +169,11 @@ public class OneTaskOnlyExecutor {
   }
 
   protected void beforeExecute() {
-    ThreadMonitoringProvider.getInstance().startMonitor(ThreadMonitoring.Mode.OneTaskOnlyEx);
+    ThreadMonitoringUtils.getThreadMonitorObj()
+        .startMonitor(ThreadMonitoring.Mode.OneTaskOnlyExecutor);
   }
 
   protected void afterExecute() {
-    ThreadMonitoringProvider.getInstance().endMonitor();
+    ThreadMonitoringUtils.getThreadMonitorObj().endMonitor();
   }
 }

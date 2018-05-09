@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.admin.internal;
+package org.apache.geode.distributed.internal;
 
 
 import java.util.Properties;
@@ -21,8 +21,7 @@ import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.geode.admin.ThreadMonitoring;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.statistics.AbstractExecutorGroup;
 import org.apache.geode.internal.statistics.FunctionExecutionPooledExecutorGroup;
@@ -34,27 +33,23 @@ import org.apache.geode.internal.statistics.SerialQueuedExecutorGroup;
 
 public class ThreadMonitoringImpl implements ThreadMonitoring {
 
-  private static ConcurrentMap<Long, AbstractExecutorGroup> monitorMap;
+  private ConcurrentMap<Long, AbstractExecutorGroup> monitorMap;
 
   /** Monitors the health of the entire distributed system */
   private ThreadMonitoringProcess tmProcess = null;
 
-  static Properties nonDefault = new Properties();
-  static DistributionConfigImpl dcI = new DistributionConfigImpl(nonDefault);
+  private Properties nonDefault = new Properties();
+  private DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
 
-  Timer timer = new Timer(LocalizedStrings.THREAD_MONITOR_NAME.toLocalizedString(), true);
+  private Timer timer = new Timer(LocalizedStrings.THREAD_MONITOR_NAME.toLocalizedString(), true);
 
   /** Is this ThreadMonitoringImpl closed? */
   private boolean isClosed = true;
 
-  protected ThreadMonitoringImpl() {
+  public ThreadMonitoringImpl() {
     monitorMap = new ConcurrentHashMap<>();
     this.isClosed = false;
     setThreadMonitoringProcess();
-  }
-
-  public static boolean isEnabled() {
-    return dcI.getThreadMonitorEnabled();
   }
 
   @Override
@@ -77,40 +72,38 @@ public class ThreadMonitoringImpl implements ThreadMonitoring {
       tmProcess = null;
     }
     monitorMap.clear();
-    // ThreadMonitoringProvider.deleteInstance();
   }
 
-  /*
-   * private static void deleteInstance() { instance = null; }
-   */
-
-  /** Starts a new {@link org.apache.geode.admin.internal.ThreadMonitoringProcess} */
+  /** Starts a new {@link org.apache.geode.distributed.internal.ThreadMonitoringProcess} */
   public void setThreadMonitoringProcess() {
-
     tmProcess = new ThreadMonitoringProcess();
-    timer.schedule(tmProcess, 0, dcI.getThreadMonitorInterval());
+    timer.schedule(tmProcess, 0, distributionConfigImpl.getThreadMonitorInterval());
+  }
+
+  public ThreadMonitoringProcess getThreadMonitoringProcess() {
+    return this.tmProcess;
   }
 
   @Override
   public boolean startMonitor(Mode mode) {
     AbstractExecutorGroup absExtgroup;
     switch (mode) {
-      case FunctionEx:
+      case FunctionExecutor:
         absExtgroup = new FunctionExecutionPooledExecutorGroup();
         break;
-      case PooledEx:
+      case PooledExecutor:
         absExtgroup = new PooledExecutorGroup();
         break;
-      case SerialQueuedEx:
+      case SerialQueuedExecutor:
         absExtgroup = new SerialQueuedExecutorGroup();
         break;
-      case OneTaskOnlyEx:
+      case OneTaskOnlyExecutor:
         absExtgroup = new OneTaskOnlyExecutorGroup();
         break;
-      case ScheduledThreadEx:
+      case ScheduledThreadExecutor:
         absExtgroup = new ScheduledThreadPoolExecutorWKAGroup();
         break;
-      case AGSEx:
+      case AGSExecutor:
         absExtgroup = new GatewaySenderEventProcessorGroup();
         break;
       default:
@@ -123,6 +116,10 @@ public class ThreadMonitoringImpl implements ThreadMonitoring {
   @Override
   public void endMonitor() {
     monitorMap.remove(Thread.currentThread().getId());
+  }
+
+  public Timer getTimer() {
+    return this.timer;
   }
 
 }

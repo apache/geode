@@ -19,8 +19,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.admin.ThreadMonitoring;
-import org.apache.geode.admin.internal.ThreadMonitoringProvider;
+import org.apache.geode.distributed.ThreadMonitoring;
 
 /**
  * This class is used for the DM's serial executor. The only thing it currently does is increment
@@ -40,7 +39,8 @@ public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
     if (this.stats != null) {
       this.stats.startJob();
     }
-    ThreadMonitoringProvider.getInstance().startMonitor(ThreadMonitoring.Mode.SerialQueuedEx);
+    ThreadMonitoringUtils.getThreadMonitorObj()
+        .startMonitor(ThreadMonitoring.Mode.SerialQueuedExecutor);
   }
 
   @Override
@@ -48,6 +48,6 @@ public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
     if (this.stats != null) {
       this.stats.endJob();
     }
-    ThreadMonitoringProvider.getInstance().endMonitor();
+    ThreadMonitoringUtils.getThreadMonitorObj().endMonitor();
   }
 }

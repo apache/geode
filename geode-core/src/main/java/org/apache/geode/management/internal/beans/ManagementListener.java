@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import org.apache.geode.admin.internal.ThreadMonitoringProvider;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -105,7 +104,6 @@ public class ManagementListener implements ResourceEventsListener {
       case CACHE_CREATE:
         InternalCache createdCache = (InternalCache) resource;
         adapter.handleCacheCreation(createdCache);
-        ThreadMonitoringProvider.init();
         break;
       case CACHE_REMOVE:
         InternalCache removedCache = (InternalCache) resource;

@@ -13,9 +13,8 @@
  * the License.
  */
 
-package org.apache.geode.admin.internal;
+package org.apache.geode.distributed.internal;
 
-import java.util.Date;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TimerTask;
@@ -23,8 +22,6 @@ import java.util.TimerTask;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.logging.LogService;
@@ -35,29 +32,27 @@ public class ThreadMonitoringProcess extends TimerTask {
 
   private ResourceManagerStats resourceManagerStats = null;
   private static final Logger logger = LogService.getLogger();
-  private static int timeLimit;
+  private int timeLimit;
 
-  Properties nonDefault = new Properties();
-  DistributionConfigImpl dcI = new DistributionConfigImpl(nonDefault);
+  private Properties nonDefault = new Properties();
+  private DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
 
   protected ThreadMonitoringProcess() {
-    timeLimit = dcI.getThreadMonitorTimeLimit();
+    timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
   }
 
   public boolean mapValidation() {
     boolean isStuck = false;
     int numOfStuck = 0;
-    long delta;
-    Date date = new Date();
-    long currentTime = date.getTime();
-    for (Entry<Long, AbstractExecutorGroup> entry1 : ThreadMonitoringProvider.getInstance()
+    for (Entry<Long, AbstractExecutorGroup> entry1 : ThreadMonitoringUtils.getThreadMonitorObj()
         .getMonitorMap().entrySet()) {
       logger.trace("Checking Thread {}\n", entry1.getKey());
-      delta = currentTime - entry1.getValue().getStartTime();
+      long currentTime = System.currentTimeMillis();
+      long delta = currentTime - entry1.getValue().getStartTime();
       if (delta >= timeLimit) {
         isStuck = true;
         numOfStuck++;
-        logger.warn("Thread {} is stuck , initiating handleExpiry\n", entry1.getKey());
+        logger.warn("Thread <{}> is stuck , initiating handleExpiry\n", entry1.getKey());
         entry1.getValue().handleExpiry(delta);
       }
     }
@@ -78,13 +73,20 @@ public class ThreadMonitoringProcess extends TimerTask {
   public void run() {
     if (resourceManagerStats == null) {
       try {
-        InternalCache cache = GemFireCacheImpl.getExisting();
+        InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
+        if (ds == null)
+          return;
+        DistributionManager distributionManager = ds.getDistributionManager();
+        InternalCache cache = distributionManager.getExistingCache();
         this.resourceManagerStats = cache.getInternalResourceManager().getStats();
       } catch (CacheClosedException e1) {
-        e1.printStackTrace();
+        logger.trace("No cache exists yet - process will run on next iteration\n");
       }
     } else
       mapValidation();
   }
 
+  public ResourceManagerStats getResourceManagerStats() {
+    return this.resourceManagerStats;
+  }
 }

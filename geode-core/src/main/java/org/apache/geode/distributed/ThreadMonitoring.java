@@ -13,29 +13,31 @@
  * the License.
  */
 
-package org.apache.geode.admin.internal;
+package org.apache.geode.distributed;
 
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
-import org.apache.geode.admin.ThreadMonitoring;
 import org.apache.geode.internal.statistics.AbstractExecutorGroup;
 
-public class ThreadMonitoringImplDummy implements ThreadMonitoring {
+public interface ThreadMonitoring {
 
-  @Override
-  public void close() {}
+  public enum Mode {
+    FunctionExecutor,
+    PooledExecutor,
+    SerialQueuedExecutor,
+    OneTaskOnlyExecutor,
+    ScheduledThreadExecutor,
+    AGSExecutor
+  };
 
-  @Override
-  public boolean startMonitor(Mode mode) {
-    return true;
-  }
+  Map<Long, AbstractExecutorGroup> getMonitorMap();
 
-  @Override
-  public void endMonitor() {}
+  /**
+   * Closes this ThreadMonitoring and releases all resources associated with it.
+   */
+  void close();
 
-  @Override
-  public ConcurrentMap<Long, AbstractExecutorGroup> getMonitorMap() {
-    return null;
-  }
+  public boolean startMonitor(Mode mode);
 
+  public void endMonitor();
 }

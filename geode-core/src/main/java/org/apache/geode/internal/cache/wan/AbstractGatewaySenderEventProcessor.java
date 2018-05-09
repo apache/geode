@@ -31,8 +31,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.ThreadMonitoring;
-import org.apache.geode.admin.internal.ThreadMonitoringProvider;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryOperation;
@@ -42,7 +40,9 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.ThreadMonitoringUtils;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -1344,11 +1344,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   }
 
   protected void beforeExecute() {
-    ThreadMonitoringProvider.getInstance().startMonitor(ThreadMonitoring.Mode.AGSEx);
+    ThreadMonitoringUtils.getThreadMonitorObj().startMonitor(ThreadMonitoring.Mode.AGSExecutor);
   }
 
   protected void afterExecute() {
-    ThreadMonitoringProvider.getInstance().endMonitor();
+    ThreadMonitoringUtils.getThreadMonitorObj().endMonitor();
   }
 
   protected abstract void enqueueEvent(GatewayQueueEvent event);

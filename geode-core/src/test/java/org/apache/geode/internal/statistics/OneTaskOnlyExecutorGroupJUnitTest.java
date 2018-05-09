@@ -12,27 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.statistics;
 
-package org.apache.geode.admin;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Map;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.statistics.AbstractExecutorGroup;
+import org.apache.geode.test.junit.categories.UnitTest;
 
-public interface ThreadMonitoring {
+/**
+ * Contains simple tests for the {@link OneTaskOnlyExecutorGroup}.
+ *
+ *
+ * @since Geode 1.5
+ */
+@Category({UnitTest.class})
+public class OneTaskOnlyExecutorGroupJUnitTest {
 
-  public enum Mode {
-    FunctionEx, PooledEx, SerialQueuedEx, OneTaskOnlyEx, ScheduledThreadEx, AGSEx
-  };
-
-  Map<Long, AbstractExecutorGroup> getMonitorMap();
+  public static final String GRPNAME = "OneTaskOnlyExecutor";
 
   /**
-   * Closes this ThreadMonitoring and releases all resources associated with it.
+   * Tests that {@link OneTaskOnlyExecutorGroup} is setting the correct Group name
    */
-  void close();
-
-  public boolean startMonitor(Mode mode);
-
-  public void endMonitor();
+  @Test
+  public void testVerifyGroupName() {
+    AbstractExecutorGroup oneTaskOnlyExecutorGroup = new OneTaskOnlyExecutorGroup();
+    assertTrue(oneTaskOnlyExecutorGroup.getGrpName().equals(GRPNAME));
+  }
 }

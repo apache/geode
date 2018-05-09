@@ -20,6 +20,8 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.*;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.admin.GemFireHealthConfig;
@@ -27,6 +29,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
@@ -36,6 +39,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -50,6 +54,12 @@ public class LonerDistributionManager implements DistributionManager {
   private final InternalLogWriter logger;
   private ElderState elderState;
 
+  /**
+   * Thread Monitor mechanism to monitor system threads
+   *
+   * @see org.apache.geode.distributed.ThreadMonitoring
+   */
+  private ThreadMonitoring threadMonitor = null;
 
   //////////////////////// Constructors ////////////////////////
 
@@ -66,9 +76,24 @@ public class LonerDistributionManager implements DistributionManager {
     this.allIds = Collections.singleton(localAddress);
     this.viewMembers = new ArrayList<InternalDistributedMember>(allIds);
     DistributionStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
+    startThreadMonitor();
   }
 
   ////////////////////// Instance Methods //////////////////////
+
+  private void startThreadMonitor() {
+    Logger logger = LogService.getLogger();
+    Properties nonDefault = new Properties();
+    DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
+
+    if (distributionConfigImpl.getThreadMonitorEnabled()) {
+      this.threadMonitor = new ThreadMonitoringImpl();
+      logger.info("[ThreadsMonitor] New Monitor object and process were created.\n");
+    } else {
+      this.threadMonitor = new ThreadMonitoringImplDummy();
+      logger.info("[ThreadsMonitor] Monitoring is disabled and will not be run.\n");
+    }
+  }
 
   protected void startThreads() {
     // no threads needed
@@ -1443,5 +1468,11 @@ public class LonerDistributionManager implements DistributionManager {
   @Override
   public void clearExceptionInThreads() {
     // no-op
+  }
+
+  @Override
+  /** returns the Threads Monitoring instance */
+  public ThreadMonitoring getThreadMonitoring() {
+    return this.threadMonitor;
   }
 }

@@ -29,6 +29,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
@@ -493,4 +494,7 @@ public interface DistributionManager extends ReplySender {
    * returns the ID of a member having the given name, or null if no such member exists
    */
   DistributedMember getMemberWithName(String name);
+
+  /** returns the Threads Monitoring instance */
+  public ThreadMonitoring getThreadMonitoring();
 }
