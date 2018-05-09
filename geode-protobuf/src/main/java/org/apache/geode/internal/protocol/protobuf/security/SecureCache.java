@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.internal.protocol.protobuf.security;
 
 import java.util.Collection;
 import java.util.Map;
@@ -28,7 +28,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
  * Access layer for cache operations that performs the appropriate authorization checks before
  * performing the operation
  */
-public interface AuthorizingCache {
+public interface SecureCache {
   <K, V> void getAll(String regionName, Iterable<K> keys, BiConsumer<K, V> successConsumer,
       BiConsumer<K, Exception> failureConsumer);
 
@@ -47,7 +47,7 @@ public interface AuthorizingCache {
 
   <K> Set<K> keySet(String regionName);
 
-  AuthorizingFunctionService getFunctionService();
+  SecureFunctionService getFunctionService();
 
   void clear(String regionName);
 

@@ -12,18 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.internal.protocol.protobuf.security;
 
 import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShiroAuthorizer implements Authorizer {
+public class ShiroSecurity implements Security {
   private final Subject subject;
   private final SecurityService securityService;
 
-  public ShiroAuthorizer(SecurityService securityService, Subject subject) {
+  public ShiroSecurity(SecurityService securityService, Subject subject) {
     this.securityService = securityService;
     this.subject = subject;
   }

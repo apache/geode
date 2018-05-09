@@ -18,9 +18,9 @@ import java.util.Properties;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCache;
+import org.apache.geode.internal.protocol.protobuf.security.SecureLocator;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
 import org.apache.geode.internal.protocol.protobuf.v1.state.RequireVersion;
 import org.apache.geode.internal.protocol.serialization.NoOpCustomValueSerializer;
@@ -49,10 +49,9 @@ public abstract class MessageExecutionContext {
     return serializationService;
   }
 
-  public abstract AuthorizingCache getAuthorizingCache() throws InvalidExecutionContextException;
+  public abstract SecureCache getSecureCache() throws InvalidExecutionContextException;
 
-  public abstract AuthorizingLocator getAuthorizingLocator()
-      throws InvalidExecutionContextException;
+  public abstract SecureLocator getSecureLocator() throws InvalidExecutionContextException;
 
   /**
    * Returns the statistics for recording operation stats. In a unit test environment this may not

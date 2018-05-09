@@ -43,8 +43,8 @@ public class PutIfAbsentRequestOperationHandler implements
     Object decodedValue = serializationService.decode(entry.getValue());
     Object decodedKey = serializationService.decode(entry.getKey());
 
-    final Object oldValue = messageExecutionContext.getAuthorizingCache().putIfAbsent(regionName,
-        decodedKey, decodedValue);
+    final Object oldValue =
+        messageExecutionContext.getSecureCache().putIfAbsent(regionName, decodedKey, decodedValue);
 
     return Success.of(RegionAPI.PutIfAbsentResponse.newBuilder()
         .setOldValue(serializationService.encode(oldValue)).build());

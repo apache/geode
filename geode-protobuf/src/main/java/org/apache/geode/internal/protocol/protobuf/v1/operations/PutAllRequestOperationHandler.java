@@ -27,13 +27,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCache;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -49,7 +49,7 @@ public class PutAllRequestOperationHandler
     String regionName = putAllRequest.getRegionName();
 
     RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder();
-    AuthorizingCache cache = messageExecutionContext.getAuthorizingCache();
+    SecureCache cache = messageExecutionContext.getSecureCache();
     Map<Object, Object> entries = new HashMap<>(putAllRequest.getEntryList().size());
 
     putAllRequest.getEntryList()

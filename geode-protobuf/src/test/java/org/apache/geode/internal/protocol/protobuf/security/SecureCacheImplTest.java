@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.internal.protocol.protobuf.security;
 
 import static org.apache.geode.security.ResourcePermission.ALL;
 import static org.apache.geode.security.ResourcePermission.Operation.READ;
@@ -59,12 +59,12 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, ClientServerTest.class})
-public class AuthorizingCacheImplTest {
+public class SecureCacheImplTest {
 
   public static final String REGION = "TestRegion";
-  private AuthorizingCacheImpl authorizingCache;
+  private SecureCacheImpl authorizingCache;
   private InternalCache cache;
-  private Authorizer authorizer;
+  private Security security;
   private Region region;
 
   @Before
@@ -72,12 +72,12 @@ public class AuthorizingCacheImplTest {
     cache = mock(InternalCache.class);
     region = mock(Region.class);
     when(cache.getRegion(REGION)).thenReturn(region);
-    authorizer = mock(Authorizer.class);
-    doThrow(NotAuthorizedException.class).when(authorizer).authorize(any());
-    doThrow(NotAuthorizedException.class).when(authorizer).authorize(any(), any(), any(), any());
-    when(authorizer.postProcess(any(), any(), any())).then(invocation -> invocation.getArgument(2));
-    when(authorizer.needsPostProcessing()).thenReturn(true);
-    authorizingCache = new AuthorizingCacheImpl(cache, authorizer);
+    security = mock(Security.class);
+    doThrow(NotAuthorizedException.class).when(security).authorize(any());
+    doThrow(NotAuthorizedException.class).when(security).authorize(any(), any(), any(), any());
+    when(security.postProcess(any(), any(), any())).then(invocation -> invocation.getArgument(2));
+    when(security.needsPostProcessing()).thenReturn(true);
+    authorizingCache = new SecureCacheImpl(cache, security);
   }
 
   @Test
@@ -135,7 +135,7 @@ public class AuthorizingCacheImplTest {
   public void getAllIsPostProcessed() throws Exception {
     authorize(DATA, READ, REGION, "a");
     authorize(DATA, READ, REGION, "b");
-    when(authorizer.postProcess(any(), any(), any())).thenReturn("spam");
+    when(security.postProcess(any(), any(), any())).thenReturn("spam");
     Map<Object, Object> okValues = new HashMap<>();
     Map<Object, Exception> exceptionValues = new HashMap<>();
 
@@ -151,7 +151,7 @@ public class AuthorizingCacheImplTest {
 
   private void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, String region, String key) {
-    doNothing().when(authorizer).authorize(resource, operation, region, key);
+    doNothing().when(security).authorize(resource, operation, region, key);
   }
 
   @Test
@@ -170,7 +170,7 @@ public class AuthorizingCacheImplTest {
   @Test
   public void getIsPostProcessed() throws Exception {
     authorize(DATA, READ, REGION, "a");
-    when(authorizer.postProcess(REGION, "a", "value")).thenReturn("spam");
+    when(security.postProcess(REGION, "a", "value")).thenReturn("spam");
     when(region.get("a")).thenReturn("value");
     assertEquals("spam", authorizingCache.get(REGION, "a"));
   }
@@ -232,8 +232,8 @@ public class AuthorizingCacheImplTest {
 
     authorizingCache.putAll(REGION, entries, exceptionValues::put);
 
-    verify(authorizer).authorize(DATA, WRITE, REGION, "a");
-    verify(authorizer).authorize(DATA, WRITE, REGION, "c");
+    verify(security).authorize(DATA, WRITE, REGION, "a");
+    verify(security).authorize(DATA, WRITE, REGION, "c");
     verify(region).put("a", "b");
     verifyNoMoreInteractions(region);
     assertThat(exceptionValues).containsOnlyKeys("c");
@@ -256,7 +256,7 @@ public class AuthorizingCacheImplTest {
   public void removeIsPostProcessed() throws Exception {
     authorize(DATA, WRITE, REGION, "a");
     when(region.remove("a")).thenReturn("value");
-    when(authorizer.postProcess(REGION, "a", "value")).thenReturn("spam");
+    when(security.postProcess(REGION, "a", "value")).thenReturn("spam");
     Object value = authorizingCache.remove(REGION, "a");
     verify(region).remove("a");
     assertEquals("spam", value);
@@ -340,7 +340,7 @@ public class AuthorizingCacheImplTest {
   public void putIfAbsentIsPostProcessed() throws Exception {
     authorize(DATA, WRITE, REGION, "a");
     when(region.putIfAbsent(any(), any())).thenReturn("value");
-    when(authorizer.postProcess(REGION, "a", "value")).thenReturn("spam");
+    when(security.postProcess(REGION, "a", "value")).thenReturn("spam");
     String oldValue = authorizingCache.putIfAbsent(REGION, "a", "b");
     verify(region).putIfAbsent("a", "b");
     assertEquals("spam", oldValue);
@@ -364,7 +364,7 @@ public class AuthorizingCacheImplTest {
   @Test
   public void queryIsPostProcessedWithSingleResultValue() throws Exception {
     authorize(DATA, READ, REGION, ALL);
-    when(authorizer.postProcess(any(), any(), any())).thenReturn("spam");
+    when(security.postProcess(any(), any(), any())).thenReturn("spam");
     DefaultQuery query = mockQuery();
     String queryString = "select * from /region";
     Object[] bindParameters = {"a"};
@@ -376,7 +376,7 @@ public class AuthorizingCacheImplTest {
   @Test
   public void queryIsPostProcessedWithListOfObjectValues() throws Exception {
     authorize(DATA, READ, REGION, ALL);
-    when(authorizer.postProcess(any(), any(), any())).thenReturn("spam");
+    when(security.postProcess(any(), any(), any())).thenReturn("spam");
     DefaultQuery query = mockQuery();
     String queryString = "select * from /region";
     Object[] bindParameters = {"a"};
@@ -394,7 +394,7 @@ public class AuthorizingCacheImplTest {
   @Test
   public void queryIsPostProcessedWithListOfStructValues() throws Exception {
     authorize(DATA, READ, REGION, ALL);
-    when(authorizer.postProcess(any(), any(), any())).thenReturn("spam");
+    when(security.postProcess(any(), any(), any())).thenReturn("spam");
 
     SelectResults<Struct> results = buildListOfStructs("value1", "value2");
     DefaultQuery query = mockQuery();

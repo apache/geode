@@ -47,7 +47,7 @@ public class RemoveRequestOperationHandler
           "NULL is not a valid key for removal.");
     }
 
-    messageExecutionContext.getAuthorizingCache().remove(regionName, decodedKey);
+    messageExecutionContext.getSecureCache().remove(regionName, decodedKey);
 
     return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
   }

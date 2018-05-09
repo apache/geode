@@ -12,27 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.internal.protocol.protobuf.security;
 
-import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.security.ResourcePermission;
+import java.util.List;
+import java.util.Set;
 
 /**
- * An Authorizor that fails authorization because the user is not logged in.
+ * Access layer for the function service that performs authorization checks
  */
-public class NotLoggedInAuthorizer implements Authorizer {
-  @Override
-  public void authorize(ResourcePermission permission) {
-    throw new NotAuthorizedException("User has not yet logged in");
-  }
+public interface SecureFunctionService {
+  List<Object> executeFunctionOnRegion(String functionID, String regionName, Object arguments,
+      Set<?> keyFilter);
 
-  @Override
-  public Object postProcess(String regionPath, Object key, Object value) {
-    throw new NotAuthorizedException("User has not yet logged in");
-  }
+  List<Object> executeFunctionOnMember(String functionID, Object arguments,
+      List<String> memberNameList);
 
-  @Override
-  public boolean needsPostProcessing() {
-    throw new NotAuthorizedException("User has not yet logged in");
-  }
+  List<Object> executeFunctionOnGroups(String functionID, Object arguments,
+      List<String> groupNameList);
 }
