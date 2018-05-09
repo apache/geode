@@ -22,25 +22,25 @@ import java.util.stream.Collectors;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
-public class CreateJndiBindingFunction implements InternalFunction<JndiBindingsType.JndiBinding> {
+public class CreateJndiBindingFunction extends CliFunction<JndiBindingsType.JndiBinding> {
 
   static final String RESULT_MESSAGE =
       "Initiated jndi binding \"{0}\" on \"{1}\". See server logs to verify.";
 
   @Override
-  public void execute(FunctionContext<JndiBindingsType.JndiBinding> context) {
+  public CliFunctionResult executeFunction(FunctionContext<JndiBindingsType.JndiBinding> context) {
     ResultSender<Object> resultSender = context.getResultSender();
     JndiBindingsType.JndiBinding configuration = context.getArguments();
     JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
         convert(configuration.getConfigProperty()));
 
-    resultSender.lastResult(new CliFunctionResult(context.getMemberName(), true,
-        CliStrings.format(RESULT_MESSAGE, configuration.getJndiName(), context.getMemberName())));
+    return new CliFunctionResult(context.getMemberName(), true,
+        CliStrings.format(RESULT_MESSAGE, configuration.getJndiName(), context.getMemberName()));
   }
 
   static Map getParamsAsMap(JndiBindingsType.JndiBinding binding) {

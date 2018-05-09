@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.result.ResultBuilder.buildResult;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -32,16 +30,16 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateJndiBindingCommand extends InternalGfshCommand {
+public class CreateJndiBindingCommand extends SingleGfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   static final String CREATE_JNDIBINDING = "create jndi-binding";
@@ -100,7 +98,7 @@ public class CreateJndiBindingCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result createJDNIBinding(
+  public ResultModel createJDNIBinding(
       @CliOption(key = BLOCKING_TIMEOUT_SECONDS,
           help = BLOCKING_TIMEOUT_SECONDS__HELP) Integer blockingTimeout,
       @CliOption(key = CONNECTION_POOLED_DATASOURCE_CLASS,
@@ -146,8 +144,6 @@ public class CreateJndiBindingCommand extends InternalGfshCommand {
     if (dsConfigProperties != null && dsConfigProperties.length > 0)
       configuration.getConfigProperty().addAll(Arrays.asList(dsConfigProperties));
 
-    Result result;
-    boolean persisted = false;
     InternalConfigurationPersistenceService service =
         (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
 
@@ -162,32 +158,23 @@ public class CreateJndiBindingCommand extends InternalGfshCommand {
               ifNotExists);
         }
       }
-
-      service.updateCacheConfig("cluster", config -> {
-        config.getJndiBindings().add(configuration);
-        return config;
-      });
-      persisted = true;
     }
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
       List<CliFunctionResult> jndiCreationResult = executeAndGetFunctionResult(
           new CreateJndiBindingFunction(), configuration, targetMembers);
-      result = buildResult(jndiCreationResult);
+      ResultModel result = ResultModel.createMemberStatusResult(jndiCreationResult);
+      result.setConfigObject(configuration);
+      return result;
     } else {
-      if (persisted) {
-        result = ResultBuilder.createInfoResult(CliStrings.format(
-            "No members found. Cluster configuration is updated with jndi-binding \"{0}\".",
-            jndiName));
-      } else {
-        result = ResultBuilder.createInfoResult("No members found.");
-      }
+      return ResultModel.createInfo("No members found.");
     }
+  }
 
-    result.setCommandPersisted(persisted);
-
-    return result;
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+    config.getJndiBindings().add((JndiBindingsType.JndiBinding) element);
   }
 
   public enum DATASOURCE_TYPE {

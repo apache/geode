@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.result.ResultBuilder.buildResult;
 
 import java.util.List;
 import java.util.Set;
@@ -22,21 +21,22 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyJndiBindingFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyJndiBindingCommand extends InternalGfshCommand {
+public class DestroyJndiBindingCommand extends SingleGfshCommand {
   static final String DESTROY_JNDIBINDING = "destroy jndi-binding";
   static final String DESTROY_JNDIBINDING__HELP =
       "Destroy a JNDI binding that holds the configuration for an XA datasource.";
@@ -51,45 +51,40 @@ public class DestroyJndiBindingCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result destroyJDNIBinding(
+  public ResultModel destroyJDNIBinding(
       @CliOption(key = JNDI_NAME, mandatory = true, help = JNDI_NAME__HELP) String jndiName,
       @CliOption(key = CliStrings.IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean ifExists) {
 
-    Result result;
-    boolean persisted = false;
     InternalConfigurationPersistenceService service =
         (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
     if (service != null) {
-      service.updateCacheConfig("cluster", cc -> {
-        List<JndiBindingsType.JndiBinding> bindings = cc.getJndiBindings();
-        JndiBindingsType.JndiBinding binding = CacheElement.findElement(bindings, jndiName);
-        if (binding == null) {
-          throw new EntityNotFoundException(
-              CliStrings.format("Jndi binding with jndi-name \"{0}\" does not exist.", jndiName),
-              ifExists);
-        }
-        bindings.remove(binding);
-        return cc;
-      });
-      persisted = true;
+      List<JndiBindingsType.JndiBinding> bindings =
+          service.getCacheConfig("cluster").getJndiBindings();
+      JndiBindingsType.JndiBinding binding = CacheElement.findElement(bindings, jndiName);
+      // fail fast when CC is running and if required binding not found assuming that
+      // when CC is running then every configuration goes through CC
+      if (binding == null) {
+        throw new EntityNotFoundException(
+            CliStrings.format("Jndi binding with jndi-name \"{0}\" does not exist.", jndiName),
+            ifExists);
+      }
     }
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
       List<CliFunctionResult> jndiCreationResult =
           executeAndGetFunctionResult(new DestroyJndiBindingFunction(), jndiName, targetMembers);
-      return buildResult(jndiCreationResult);
+      ResultModel result = ResultModel.createMemberStatusResult(jndiCreationResult);
+      result.setConfigObject(jndiName);
+      return result;
     } else {
-      if (persisted) {
-        result = ResultBuilder.createInfoResult(CliStrings.format(
-            "No members found. Jndi-binding \"{0}\" is removed from cluster configuration.",
-            jndiName));
-      } else {
-        result = ResultBuilder.createInfoResult("No members found.");
-      }
+      return ResultModel.createInfo("No members found.");
     }
-    result.setCommandPersisted(persisted);
-    return result;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+    CacheElement.removeElement(config.getJndiBindings(), (String) element);
   }
 }
