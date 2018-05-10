@@ -3113,7 +3113,7 @@ public class WANTestBase extends DistributedTestCase {
     }
     final Set<RegionQueue> regionQueue;
     if (sender instanceof AbstractGatewaySender) {
-      regionQueue = ((AbstractGatewaySender) sender).getQueuesForConcurrentSerialGatewaySender();
+      regionQueue = ((AbstractGatewaySender) sender).getQueues();
     } else {
       regionQueue = null;
     }
@@ -3132,7 +3132,7 @@ public class WANTestBase extends DistributedTestCase {
     }
     final Set<RegionQueue> regionQueue;
     if (!sender.isParallel()) {
-      regionQueue = ((AbstractGatewaySender) sender).getQueuesForConcurrentSerialGatewaySender();
+      regionQueue = ((AbstractGatewaySender) sender).getQueues();
     } else {
       regionQueue = null;
     }
@@ -3397,8 +3397,7 @@ public class WANTestBase extends DistributedTestCase {
         senders.stream().filter(s -> s.getId().equals(senderId)).findFirst().get();
 
     Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
-      Set<RegionQueue> queues =
-          ((AbstractGatewaySender) sender).getQueuesForConcurrentSerialGatewaySender();
+      Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
       for (RegionQueue q : queues) {
         assertEquals(0, q.size());
       }

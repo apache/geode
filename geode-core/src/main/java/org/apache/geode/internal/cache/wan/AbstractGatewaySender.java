@@ -728,14 +728,6 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return null;
   }
 
-  public Set<RegionQueue> getQueuesForConcurrentSerialGatewaySender() {
-    if (this.eventProcessor != null
-        && (this.eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor)) {
-      return ((ConcurrentSerialGatewaySenderEventProcessor) this.eventProcessor).getQueues();
-    }
-    return null;
-  }
-
   protected void waitForRunningStatus() {
     synchronized (this.eventProcessor.runningStateLock) {
       while (this.eventProcessor.getException() == null && this.eventProcessor.isStopped()) {
