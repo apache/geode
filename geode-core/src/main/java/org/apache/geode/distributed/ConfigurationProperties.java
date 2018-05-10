@@ -2152,7 +2152,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"thread-monitor-auto-limit"</i> property <a
    * name="thread-monitor-auto-limit"/a>
    * <p>
-   * <U>Description</U>: Defines the number of thread monitoring attempts after which the stuck
+   * <U>Description</U>: Defines the number of thread monitoring attempts after which the stuck 
    * thread will be automatically killed (only applicable when <thread-monitor-auto-enabled> is set
    * to Y).
    * <p>
