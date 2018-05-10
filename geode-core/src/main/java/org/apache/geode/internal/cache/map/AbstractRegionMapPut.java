@@ -38,9 +38,6 @@ public abstract class AbstractRegionMapPut {
 
   public AbstractRegionMapPut(FocusedRegionMap focusedRegionMap, InternalRegion owner,
       EntryEventImpl event) {
-    if (owner == null) {
-      Assert.assertTrue(false, "The owner for RegionMap " + this + " is null for event " + event);
-    }
     this.focusedRegionMap = focusedRegionMap;
     this.owner = owner;
     this.event = event;
