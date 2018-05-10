@@ -484,7 +484,8 @@ public class HARegionQueue implements RegionQueue {
           entry = (Region.Entry) iterator.next();
           key = entry.getKey();
           if (isDebugEnabled) {
-            logger.debug("processing queue key {} and value {}", key, entry.getValue());
+            logger.debug("{} processing queue key {} and value {}", this.regionName, key,
+                entry.getValue());
           }
           if (key instanceof Long) {
             if (!(entry.getValue() instanceof ClientMarkerMessageImpl)) {
@@ -510,8 +511,8 @@ public class HARegionQueue implements RegionQueue {
               this.put(val);
             } else if (isDebugEnabled) {
               logger.debug(
-                  "bug 44959 encountered: HARegion.putGIIDataInRegion found null eventId in {}",
-                  val);
+                  "{} bug 44959 encountered: HARegion.putGIIDataInRegion found null eventId in {}",
+                  this.regionName, val);
             }
           }
         }
@@ -537,8 +538,8 @@ public class HARegionQueue implements RegionQueue {
     if (val instanceof HAEventWrapper && ((HAEventWrapper) val).getClientUpdateMessage() == null) {
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "HARegionQueue.putGIIDataInRegion(): key={} was removed at sender side, so not putting it into the ha queue.",
-            ((Conflatable) val).getKeyToConflate());
+            "{} HARegionQueue.putGIIDataInRegion(): key={} was removed at sender side, so not putting it into the ha queue.",
+            this.regionName, ((Conflatable) val).getKeyToConflate());
       }
     } else {
       this.put(val);
@@ -605,7 +606,7 @@ public class HARegionQueue implements RegionQueue {
     try {
       if (this.giiCount > 0) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: adding message to GII queue of size {}: {}", this.region.getName(),
+          logger.debug("{}: adding message to GII queue of size {}: {}", this.regionName,
               giiQueue.size(), object);
         }
         if (object instanceof HAEventWrapper) {
@@ -615,7 +616,7 @@ public class HARegionQueue implements RegionQueue {
         this.giiQueue.add(object);
       } else {
         if (logger.isTraceEnabled()) {
-          logger.trace("{}: adding message to HA queue: {}", this.region.getName(), object);
+          logger.trace("{}: adding message to HA queue: {}", this.regionName, object);
         }
         basicPut(object);
       }
@@ -717,7 +718,7 @@ public class HARegionQueue implements RegionQueue {
     this.giiLock.writeLock().lock();
     this.giiCount++; // TODO: non-atomic operation on volatile!
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: startGiiQueueing count is now {}", this.region.getName(), this.giiCount);
+      logger.debug("{}: startGiiQueueing count is now {}", this.regionName, this.giiCount);
     }
     this.giiLock.writeLock().unlock();
   }
@@ -733,17 +734,18 @@ public class HARegionQueue implements RegionQueue {
     try {
       this.giiCount--; // TODO: non-atomic operation on volatile!
       if (isDebugEnabled) {
-        logger.debug("{}: endGiiQueueing count is now {}", this.region.getName(), this.giiCount);
+        logger.debug("{}: endGiiQueueing count is now {}", this.regionName, this.giiCount);
       }
       if (this.giiCount < 0) {
         if (isDebugEnabled) {
-          logger.debug("{} found giiCount to be {}", this.region.getName(), this.giiCount);
+          logger.debug("{} found giiCount to be {}", this.regionName, this.giiCount);
         }
         this.giiCount = 0;
       }
       if (this.giiCount == 0) {
         if (isDebugEnabled) {
-          logger.debug("all GII requests completed - draining {} messages", this.giiQueue.size());
+          logger.debug("{} all GII requests completed - draining {} messages", this.regionName,
+              this.giiQueue.size());
         }
         boolean interrupted = false;
         int expectedCount = this.giiQueue.size();
@@ -758,17 +760,20 @@ public class HARegionQueue implements RegionQueue {
           actualCount++;
           try {
             if (isDebugEnabled) {
-              logger.debug("draining #{}: {}", (actualCount + 1), value);
+              logger.debug("{} draining #{}: {}", this.regionName, (actualCount + 1), value);
             }
             if (value instanceof HAEventWrapper) {
               if (((HAEventWrapper) value).getClientUpdateMessage() == null) {
                 // if there is no wrapped message look for it in the HA container map
-                value = haContainer.get(value);
-                if (value == null) {
+                ClientUpdateMessageImpl haContainerMessage =
+                    (ClientUpdateMessageImpl) haContainer.get(value);
+                if (haContainerMessage != null) {
+                  ((HAEventWrapper) value).setClientUpdateMessage(haContainerMessage);
+                } else {
                   if (isDebugEnabled) {
                     logger.debug(
-                        "ATTENTION: found gii queued event with null event message.  Please see bug #44852: {}",
-                        value);
+                        "{} ATTENTION: found gii queued event with null event message.  Please see bug #44852: {}",
+                        this.regionName, value);
                   }
                   continue;
                 }
@@ -800,7 +805,7 @@ public class HARegionQueue implements RegionQueue {
       throw t;
     } finally {
       if (logger.isTraceEnabled()) {
-        logger.trace("endGiiQueueing completed");
+        logger.trace("{} endGiiQueueing completed", this.regionName);
       }
       this.giiLock.writeLock().unlock();
     }
@@ -2097,7 +2102,6 @@ public class HARegionQueue implements RegionQueue {
         return null;
       }
       HAEventWrapper entryHaEventWrapper = null;
-      // synchronized (haContainer) {
       do {
         ClientUpdateMessageImpl entryMessage = (ClientUpdateMessageImpl) haContainer
             .putIfAbsent(inputHaEventWrapper, inputHaEventWrapper.getClientUpdateMessage());
@@ -3474,12 +3478,18 @@ public class HARegionQueue implements RegionQueue {
       }
       // Put the reference to the HAEventWrapper instance into the
       // HA queue.
+      if (logger.isDebugEnabled()) {
+        logger.debug("adding inputHaEventWrapper to HARegion at " + position + ":"
+            + inputHaEventWrapper + " for " + this.regionName);
+      }
       this.region.put(position, inputHaEventWrapper);
-      // logger.info(LocalizedStrings.DEBUG, "added message at position " + position);
     } else { // (event instanceof ClientMarkerMessageImpl OR ConflatableObject OR
              // ClientInstantiatorMessage)
+      if (logger.isDebugEnabled()) {
+        logger.debug("adding ClientUpdateMessage to HARegion at " + position + ":" + event + " for "
+            + this.regionName);
+      }
       this.region.put(position, event);
-      // logger.info(LocalizedStrings.DEBUG, "added non-msg at position " + position);
     }
   }
 
@@ -3881,5 +3891,9 @@ public class HARegionQueue implements RegionQueue {
       Optional<Integer> expiryTime = getProductIntegerProperty(THREAD_ID_EXPIRY_TIME_PROPERTY);
       return expiryTime.orElse(DEFAULT_THREAD_ID_EXPIRY_TIME);
     }
+  }
+
+  public Queue getGiiQueue() {
+    return this.giiQueue;
   }
 }
