@@ -18,6 +18,8 @@ package org.apache.geode.internal.cache.map;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -28,6 +30,7 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TXEntryState;
 import org.apache.geode.internal.cache.TXRmtEvent;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 
@@ -35,6 +38,8 @@ import org.apache.geode.internal.sequencelog.EntryLogger;
  * Does a put for a transaction that is being committed.
  */
 public class RegionMapCommitPut extends AbstractRegionMapPut {
+  private static final Logger logger = LogService.getLogger();
+
   private final boolean onlyExisting;
   private final boolean didDestroy;
   private final TXRmtEvent txEvent;
@@ -59,16 +64,16 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     this.remoteOrigin = !txId.getMemberId().equals(owner.getMyId());
     this.invokeCallbacks = shouldInvokeCallbacks();
     final boolean isTXHost = txEntryState != null;
-    // If we do not host the transaction entry and are not a replicate or partitioned (i.e.
-    // !isAllEvents)
+    // If the transaction originated on another member and we do not host the transaction entry
+    // and are not a replicate or partitioned (i.e. !isAllEvents)
     // then only apply the update to existing entries.
-    // If we do not host the transaction entry and we are a replicate or partitioned then only apply
-    // the update to
-    // existing entries when the operation is an update and we
+    // If the transaction originated on another member and we do not host the transaction entry
+    // and we are a replicate or partitioned
+    // then only apply the update to existing entries when the operation is an update and we
     // are initialized.
     // Otherwise use the standard create/update logic.
-    this.onlyExisting =
-        !isTXHost && (!owner.isAllEvents() || (!putOp.isCreate() && isOwnerInitialized()));
+    this.onlyExisting = remoteOrigin && !isTXHost
+        && (!owner.isAllEvents() || (!putOp.isCreate() && isOwnerInitialized()));
   }
 
   boolean isRemoteOrigin() {

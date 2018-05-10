@@ -110,6 +110,8 @@ public class RegionMapCommitPutTest {
 
   @Test
   public void localCreateIsNotOnlyExisting() {
+    when(transactionId.getMemberId()).thenReturn(myId);
+
     createInstance(Operation.CREATE, false, null, localTxEntryState);
 
     assertThat(instance.isOnlyExisting()).isFalse();
@@ -117,13 +119,26 @@ public class RegionMapCommitPutTest {
 
   @Test
   public void remoteCreateWithNotAllEventsIsOnlyExisting() {
+    when(transactionId.getMemberId()).thenReturn(remoteId);
+    when(internalRegion.isAllEvents()).thenReturn(false);
+
     createInstance(Operation.CREATE, false, txRmtEvent, null);
 
     assertThat(instance.isOnlyExisting()).isTrue();
   }
 
   @Test
+  public void remoteCreateWithLocalTxEntryStateIsNotOnlyExisting() {
+    when(transactionId.getMemberId()).thenReturn(remoteId);
+
+    createInstance(Operation.CREATE, false, txRmtEvent, localTxEntryState);
+
+    assertThat(instance.isOnlyExisting()).isFalse();
+  }
+
+  @Test
   public void remoteCreateWithAllEventsIsNotOnlyExisting() {
+    when(transactionId.getMemberId()).thenReturn(remoteId);
     when(internalRegion.isAllEvents()).thenReturn(true);
 
     createInstance(Operation.CREATE, false, txRmtEvent, null);
@@ -133,6 +148,7 @@ public class RegionMapCommitPutTest {
 
   @Test
   public void remoteUpdateWithAllEventsIsNotOnlyExisting() {
+    when(transactionId.getMemberId()).thenReturn(remoteId);
     when(internalRegion.isAllEvents()).thenReturn(true);
 
     createInstance(Operation.UPDATE, false, txRmtEvent, null);
@@ -249,6 +265,7 @@ public class RegionMapCommitPutTest {
 
   @Test
   public void remoteUpdateWithAllEventsAndInitializedIsOnlyExisting() {
+    when(transactionId.getMemberId()).thenReturn(remoteId);
     when(internalRegion.isAllEvents()).thenReturn(true);
     when(internalRegion.isInitialized()).thenReturn(true);
 
@@ -419,6 +436,7 @@ public class RegionMapCommitPutTest {
 
   @Test
   public void failedUpdateWithDidDestroyDoesCallTxApplyPutHandleDidDestroy() {
+    when(transactionId.getMemberId()).thenReturn(remoteId);
     when(internalRegion.getConcurrencyChecksEnabled()).thenReturn(true);
     createInstance(Operation.UPDATE, true, txRmtEvent, null);
 
@@ -431,6 +449,7 @@ public class RegionMapCommitPutTest {
 
   @Test
   public void successfulUpdateWithDidDestroyDoesNotCallTxApplyPutHandleDidDestroy() {
+    when(transactionId.getMemberId()).thenReturn(remoteId);
     when(internalRegion.getConcurrencyChecksEnabled()).thenReturn(true);
     RegionEntry existingEntry = mock(RegionEntry.class);
     when(focusedRegionMap.getEntry(eq(event))).thenReturn(existingEntry);
@@ -445,6 +464,7 @@ public class RegionMapCommitPutTest {
 
   @Test
   public void failedUpdateDoesCallInvokeTXCallbacks() {
+    when(transactionId.getMemberId()).thenReturn(remoteId);
     when(internalRegion.isInitialized()).thenReturn(true);
     when(internalRegion.getConcurrencyChecksEnabled()).thenReturn(true);
     createInstance(Operation.UPDATE, false, txRmtEvent, null);
@@ -461,6 +481,7 @@ public class RegionMapCommitPutTest {
 
   @Test
   public void successfulUpdateDoesNotCallInvokeTXCallbacks() {
+    when(transactionId.getMemberId()).thenReturn(remoteId);
     when(internalRegion.isInitialized()).thenReturn(true);
     when(internalRegion.getConcurrencyChecksEnabled()).thenReturn(true);
     RegionEntry existingEntry = mock(RegionEntry.class);
@@ -618,6 +639,7 @@ public class RegionMapCommitPutTest {
 
   @Test
   public void remoteUpdateWithOnlyExistingOnRemovedEntryFails() {
+    when(transactionId.getMemberId()).thenReturn(remoteId);
     when(internalRegion.isAllEvents()).thenReturn(true);
     when(internalRegion.isInitialized()).thenReturn(true);
     Object oldValue = new Object();
