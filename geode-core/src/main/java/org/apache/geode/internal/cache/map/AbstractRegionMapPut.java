@@ -16,15 +16,19 @@
  */
 package org.apache.geode.internal.cache.map;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.logging.LogService;
 
 public abstract class AbstractRegionMapPut {
+  private static final Logger logger = LogService.getLogger();
+
   private final InternalRegion owner;
   private final FocusedRegionMap focusedRegionMap;
   private final EntryEventImpl event;
