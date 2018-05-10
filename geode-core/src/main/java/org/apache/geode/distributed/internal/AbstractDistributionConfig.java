@@ -168,6 +168,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_AUTO_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_AUTO_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_INTERVAL;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_TIME_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.UDP_FRAGMENT_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.UDP_RECV_BUFFER_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.UDP_SEND_BUFFER_SIZE;
