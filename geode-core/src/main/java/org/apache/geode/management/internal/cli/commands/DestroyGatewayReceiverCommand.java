@@ -14,27 +14,25 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyGatewayReceiverFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
+public class DestroyGatewayReceiverCommand extends SingleGfshCommand {
   public static final String DESTROY_GATEWAYRECEIVER = "destroy gateway-receiver";
   public static final String DESTROY_GATEWAYRECEIVER__HELP =
       "Destroy the Gateway Receiver on a member or members.";
@@ -47,7 +45,7 @@ public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
-  public Result destroyGatewayReceiver(
+  public ResultModel destroyGatewayReceiver(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = DESTROY_GATEWAYRECEIVER__GROUP__HELP) String[] onGroups,
@@ -61,32 +59,19 @@ public class DestroyGatewayReceiverCommand extends InternalGfshCommand {
     Set<DistributedMember> members = getMembers(onGroups, onMember);
 
     List<CliFunctionResult> functionResults =
-        executeAndGetFunctionResult(DestroyGatewayReceiverFunction.INSTANCE, ifExists, members);
+        executeAndGetFunctionResult(DestroyGatewayReceiverFunction.INSTANCE, null, members);
 
-    CommandResult result = ResultBuilder.buildResult(functionResults);
+    ResultModel result = ResultModel.createMemberStatusResult(functionResults, ifExists);
+    result.setConfigObject(new CacheConfig.GatewayReceiver());
 
-    // Only update the cluster config if the command is not executed on specific members.
-    InternalConfigurationPersistenceService service =
-        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
-    if (onMember != null || service == null) {
-      persisted = false;
-    } else if (result.getStatus().equals(Result.Status.OK) && service != null) {
-      if (onGroups == null) {
-        onGroups = new String[] {"cluster"};
-      }
-      Arrays.stream(onGroups).forEach(group -> service.updateCacheConfig(group, cc -> {
-        if (cc == null || cc.getGatewayReceiver() == null) {
-          if (!ifExists) {
-            result.setStatus(Result.Status.ERROR);
-          }
-        } else {
-          cc.setGatewayReceiver(null);
-        }
-        return cc;
-      }));
-    }
 
-    result.setCommandPersisted(persisted);
     return result;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+    if (config.getGatewayReceiver() != null) {
+      config.setGatewayReceiver(null);
+    }
   }
 }

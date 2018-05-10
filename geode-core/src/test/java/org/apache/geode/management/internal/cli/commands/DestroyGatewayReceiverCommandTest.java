@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -52,13 +51,11 @@ public class DestroyGatewayReceiverCommandTest {
   private List<CliFunctionResult> functionResults;
   private InternalConfigurationPersistenceService ccService;
   private CliFunctionResult result1;
-  private XmlEntity xmlEntity;
 
   @Before
   public void setUp() throws Exception {
     command = spy(DestroyGatewayReceiverCommand.class);
     ccService = mock(InternalConfigurationPersistenceService.class);
-    xmlEntity = mock(XmlEntity.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
     doReturn(ccService).when(command).getConfigurationPersistenceService();
@@ -77,7 +74,7 @@ public class DestroyGatewayReceiverCommandTest {
 
   @Test
   public void memberNoGroup_isOK() {
-    result1 = new CliFunctionResult("member1", xmlEntity, "result1");
+    result1 = new CliFunctionResult("member1", CliFunctionResult.StatusState.OK, "result1");
     functionResults.add(result1);
     Set<DistributedMember> membersSet = new HashSet<>();
     membersSet.add(new InternalDistributedMember("member1", 0));
@@ -85,12 +82,12 @@ public class DestroyGatewayReceiverCommandTest {
 
     CommandResultAssert resultAssert =
         gfsh.executeAndAssertThat(command, "destroy gateway-receiver --member=\"member1\"");
-    resultAssert.statusIsSuccess().tableHasColumnWithValuesContaining("Status", "result1");
+    resultAssert.statusIsSuccess().tableHasColumnWithValuesContaining("Message", "result1");
   }
 
   @Test
   public void groupNoMember_isOK() {
-    result1 = new CliFunctionResult("member1", xmlEntity, "result1");
+    result1 = new CliFunctionResult("member1", CliFunctionResult.StatusState.OK, "result1");
     functionResults.add(result1);
     Set<DistributedMember> membersSet = new HashSet<>();
     membersSet.add(new InternalDistributedMember("member1", 0));
@@ -98,6 +95,6 @@ public class DestroyGatewayReceiverCommandTest {
 
     CommandResultAssert resultAssert =
         gfsh.executeAndAssertThat(command, "destroy gateway-receiver --group=\"group1\"");
-    resultAssert.statusIsSuccess().tableHasColumnWithValuesContaining("Status", "result1");
+    resultAssert.statusIsSuccess().tableHasColumnWithValuesContaining("Message", "result1");
   }
 }

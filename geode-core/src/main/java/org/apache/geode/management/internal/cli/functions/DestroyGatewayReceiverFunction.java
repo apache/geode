@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -25,6 +26,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
 
 public class DestroyGatewayReceiverFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
@@ -40,16 +42,10 @@ public class DestroyGatewayReceiverFunction implements InternalFunction {
     String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
-    boolean ifExists = (boolean) context.getArguments();
     Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
     if (gatewayReceivers == null || gatewayReceivers.isEmpty()) {
-      String message = "Gateway receiver not found.";
-      if (ifExists) {
-        resultSender
-            .lastResult(new CliFunctionResult(memberNameOrId, true, "Skipping: " + message));
-      } else {
-        resultSender.lastResult(new CliFunctionResult(memberNameOrId, false, message));
-      }
+      resultSender.lastResult(new CliFunctionResult(memberNameOrId, StatusState.IGNORED,
+          "Gateway receiver not found."));
       return;
     }
     for (GatewayReceiver receiver : cache.getGatewayReceivers()) {
@@ -58,7 +54,7 @@ public class DestroyGatewayReceiverFunction implements InternalFunction {
           receiver.stop();
         }
         receiver.destroy();
-        resultSender.sendResult(new CliFunctionResult(memberNameOrId, true,
+        resultSender.sendResult(new CliFunctionResult(memberNameOrId, StatusState.OK,
             String.format("GatewayReceiver destroyed on \"%s\"", memberNameOrId)));
       } catch (Exception e) {
         logger.error(e.getMessage(), e);
