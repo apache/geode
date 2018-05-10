@@ -22,6 +22,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
@@ -36,9 +37,11 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class AlterMappingCommand extends SingleGfshCommand {
   static final String ALTER_MAPPING = "alter jdbc-mapping";
-  static final String ALTER_MAPPING__HELP = "Alter properties for an existing jdbc mapping.";
+  static final String ALTER_MAPPING__HELP =
+      EXPERIMENTAL + "Alter properties for an existing jdbc mapping.";
 
   static final String ALTER_MAPPING__REGION_NAME = "region";
   static final String ALTER_MAPPING__REGION_NAME__HELP =
@@ -102,7 +105,7 @@ public class AlterMappingCommand extends SingleGfshCommand {
     // action
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new AlterMappingFunction(), newMapping, targetMembers);
-    ResultModel result = ResultModel.createMemberStatusResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null);
 
     // find the merged regionMapping from the function result
     CliFunctionResult successResult =

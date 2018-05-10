@@ -16,8 +16,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -39,6 +40,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -70,10 +72,15 @@ public class DestroyJndiBindingCommandTest {
     cacheConfig = mock(CacheConfig.class);
     ccService = mock(InternalConfigurationPersistenceService.class);
 
-
+    doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     when(ccService.getCacheConfig(any())).thenReturn(cacheConfig);
-    doCallRealMethod().when(ccService).updateCacheConfig(any(), any());
+    doAnswer(invocation -> {
+      UnaryOperator<CacheConfig> mutator = invocation.getArgument(1);
+      mutator.apply(cacheConfig);
+      return null;
+    }).when(ccService).updateCacheConfig(any(), any());
+
     when(ccService.getConfigurationRegion()).thenReturn(mock(Region.class));
     when(ccService.getConfiguration(any())).thenReturn(mock(Configuration.class));
   }
@@ -113,20 +120,24 @@ public class DestroyJndiBindingCommandTest {
     doReturn(null).when(command).getConfigurationPersistenceService();
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
-        .containsOutput("No members found").hasFailToPersistError();
+        .containsOutput("No members found").containsOutput(
+            "Cluster configuration service is not running. Configuration change is not persisted.");
   }
 
   @Test
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig() {
-    doNothing().when(ccService).updateCacheConfig(any(), any());
-    doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
+    List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
+    JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
+    jndiBinding.setJndiName("name");
+    bindings.add(jndiBinding);
+    doReturn(bindings).when(cacheConfig).getJndiBindings();
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
-        .containsOutput(
-            "No members found. Jndi-binding \\\"name\\\" is removed from cluster configuration.")
-        .hasNoFailToPersistError();
+        .containsOutput("No members found.")
+        .containsOutput("Changes to configuration for group 'cluster' is persisted.");
 
     verify(ccService).updateCacheConfig(any(), any());
+    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
   }
 
   @Test
@@ -164,6 +175,12 @@ public class DestroyJndiBindingCommandTest {
 
   @Test
   public void whenMembersFoundAndClusterConfigRunningThenUpdateClusterConfigAndInvokeFunction() {
+    List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
+    JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
+    jndiBinding.setJndiName("name");
+    bindings.add(jndiBinding);
+    doReturn(bindings).when(cacheConfig).getJndiBindings();
+
     Set<DistributedMember> members = new HashSet<>();
     members.add(mock(DistributedMember.class));
 
@@ -174,11 +191,13 @@ public class DestroyJndiBindingCommandTest {
 
     doReturn(members).when(command).findMembers(any(), any());
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
-    doNothing().when(ccService).updateCacheConfig(any(), any());
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .tableHasColumnOnlyWithValues("Member", "server1")
         .tableHasColumnOnlyWithValues("Status", "Jndi binding \"name\" destroyed on \"server1\"");
+
+    assertThat(cacheConfig.getJndiBindings().isEmpty()).isTrue();
+    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
 
     ArgumentCaptor<CreateJndiBindingFunction> function =
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);

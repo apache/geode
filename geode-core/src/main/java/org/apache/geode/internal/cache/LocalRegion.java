@@ -8334,15 +8334,19 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       try {
         synchronized (regionEntry) {
           if (!regionEntry.isRemoved()) {
-            Object value = regionEntry.getValueInVM(this);
-            if (value == Token.NOT_AVAILABLE) {
-              // Entry value is on disk
-              // Handle the case where we fault in a evicted disk entry
-              needsLRUCleanup = txLRUStart();
-              // Fault in the value from disk
-              value = regionEntry.getValue(this);
+            if (regionEntry instanceof DiskEntry && regionEntry instanceof EvictableEntry) {
+              EvictableEntry le = (EvictableEntry) regionEntry;
+              if (le.isEvicted()) {
+                // Handle the case where we fault in a disk entry
+                txLRUStart();
+                needsLRUCleanup = true;
+
+                // Fault in the value from disk
+                regionEntry.getValue(this);
+              }
             }
 
+            Object value = regionEntry.getValueInVM(this);
             /*
              * The tx will need the raw value for identity comparison. Please see
              * TXEntryState#checkForConflict(LocalRegion,Object)
@@ -8442,8 +8446,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   @Override
-  public boolean txLRUStart() {
-    return this.entries.disableLruUpdateCallback();
+  public void txLRUStart() {
+    this.entries.disableLruUpdateCallback();
   }
 
   @Override
@@ -10429,6 +10433,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return this.isUsedForParallelGatewaySenderQueue;
   }
 
+  public void removeCacheServiceProfile(String profileID) {
+    this.cacheServiceProfiles.remove(profileID);
+  }
+
   public AbstractGatewaySender getSerialGatewaySender() {
     return this.serialGatewaySender;
   }
@@ -10483,7 +10491,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         || isUsedForPartitionedRegionBucket();
   }
 
-  Map<String, CacheServiceProfile> getCacheServiceProfiles() {
+  public Map<String, CacheServiceProfile> getCacheServiceProfiles() {
     return this.cacheServiceProfiles.getSnapshot();
   }
 
@@ -12213,6 +12221,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
+  @Override
   public EvictionController getEvictionController() {
     return getRegionMap().getEvictionController();
   }
