@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -29,9 +31,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -43,7 +45,7 @@ import org.xml.sax.SAXException;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -105,13 +107,13 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void returnsErrorIfBindingAlreadyExistsAndIfUnspecified()
       throws ParserConfigurationException, SAXException, IOException {
-    InternalClusterConfigurationService clusterConfigService =
-        mock(InternalClusterConfigurationService.class);
+    InternalConfigurationPersistenceService clusterConfigService =
+        mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
     when(cacheConfig.getJndiBindings()).thenReturn(bindings);
     bindings.add(binding);
 
-    doReturn(clusterConfigService).when(command).getConfigurationService();
+    doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
 
     gfsh.executeAndAssertThat(command,
@@ -122,11 +124,11 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void skipsIfBindingAlreadyExistsAndIfSpecified()
       throws ParserConfigurationException, SAXException, IOException {
-    InternalClusterConfigurationService clusterConfigService =
-        mock(InternalClusterConfigurationService.class);
+    InternalConfigurationPersistenceService clusterConfigService =
+        mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
 
-    doReturn(clusterConfigService).when(command).getConfigurationService();
+    doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
     when(cacheConfig.getJndiBindings()).thenReturn(bindings);
     bindings.add(binding);
@@ -138,15 +140,14 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
-  public void skipsIfBindingAlreadyExistsAndIfSpecifiedTrue()
-      throws ParserConfigurationException, SAXException, IOException {
-    InternalClusterConfigurationService clusterConfigService =
-        mock(InternalClusterConfigurationService.class);
+  public void skipsIfBindingAlreadyExistsAndIfSpecifiedTrue() {
+    InternalConfigurationPersistenceService clusterConfigService =
+        mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
     when(cacheConfig.getJndiBindings()).thenReturn(bindings);
     bindings.add(binding);
 
-    doReturn(clusterConfigService).when(command).getConfigurationService();
+    doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
 
     gfsh.executeAndAssertThat(command,
@@ -157,13 +158,13 @@ public class CreateJndiBindingCommandTest {
 
   @Test
   public void returnsErrorIfBindingAlreadyExistsAndIfSpecifiedFalse() {
-    InternalClusterConfigurationService clusterConfigService =
-        mock(InternalClusterConfigurationService.class);
+    InternalConfigurationPersistenceService clusterConfigService =
+        mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
     when(cacheConfig.getJndiBindings()).thenReturn(bindings);
     bindings.add(binding);
 
-    doReturn(clusterConfigService).when(command).getConfigurationService();
+    doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
 
     gfsh.executeAndAssertThat(command,
@@ -176,31 +177,37 @@ public class CreateJndiBindingCommandTest {
   public void whenNoMembersFoundAndNoClusterConfigServiceRunningThenError() {
 
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
-        .statusIsSuccess().containsOutput("No members found").hasFailToPersistError();
+        .statusIsSuccess().containsOutput("No members found").containsOutput(
+            "Cluster configuration service is not running. Configuration change is not persisted.");
   }
 
   @Test
   public void whenNoMembersFoundAndClusterConfigRunningThenUpdateClusterConfig() {
-    InternalClusterConfigurationService clusterConfigService =
-        mock(InternalClusterConfigurationService.class);
+    InternalConfigurationPersistenceService clusterConfigService =
+        mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
 
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(clusterConfigService).when(command).getConfigurationService();
+    doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
+
+    doAnswer(invocation -> {
+      UnaryOperator<CacheConfig> mutator = invocation.getArgument(1);
+      mutator.apply(cacheConfig);
+      return null;
+    }).when(clusterConfigService).updateCacheConfig(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
-        .statusIsSuccess()
-        .containsOutput(
-            "No members found. Cluster configuration is updated with jndi-binding \\\"name\\\".")
-        .hasNoFailToPersistError();
+        .statusIsSuccess().containsOutput("No members found.")
+        .containsOutput("Changes to configuration for group 'cluster' is persisted.");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
+    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
   }
 
   @Test
@@ -214,7 +221,7 @@ public class CreateJndiBindingCommandTest {
     results.add(result);
 
     doReturn(members).when(command).findMembers(any(), any());
-    doReturn(null).when(command).getConfigurationService();
+    doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
 
     gfsh.executeAndAssertThat(command,
@@ -240,8 +247,7 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
-  public void whenMembersFoundAndClusterConfigRunningThenUpdateClusterConfigAndInvokeFunction()
-      throws IOException, ParserConfigurationException, SAXException, TransformerException {
+  public void whenMembersFoundAndClusterConfigRunningThenUpdateClusterConfigAndInvokeFunction() {
     Set<DistributedMember> members = new HashSet<>();
     members.add(mock(DistributedMember.class));
 
@@ -249,14 +255,19 @@ public class CreateJndiBindingCommandTest {
         "Tried creating jndi binding \"name\" on \"server1\"");
     List<CliFunctionResult> results = new ArrayList<>();
     results.add(result);
-    InternalClusterConfigurationService clusterConfigService =
-        mock(InternalClusterConfigurationService.class);
+    InternalConfigurationPersistenceService clusterConfigService =
+        mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
 
     doReturn(members).when(command).findMembers(any(), any());
-    doReturn(clusterConfigService).when(command).getConfigurationService();
+    doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
     doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
+    doAnswer(invocation -> {
+      UnaryOperator<CacheConfig> mutator = invocation.getArgument(1);
+      mutator.apply(cacheConfig);
+      return null;
+    }).when(clusterConfigService).updateCacheConfig(any(), any());
 
     gfsh.executeAndAssertThat(command,
         COMMAND
@@ -266,6 +277,7 @@ public class CreateJndiBindingCommandTest {
             "Tried creating jndi binding \"name\" on \"server1\"");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
+    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
 
     ArgumentCaptor<CreateJndiBindingFunction> function =
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);

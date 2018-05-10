@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.apache.geode.internal.lang.ThrowableUtils.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.internal.lang.ThrowableUtils.getRootCause;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Set;

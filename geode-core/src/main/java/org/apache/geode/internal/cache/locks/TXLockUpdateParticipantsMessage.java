@@ -15,7 +15,9 @@
 
 package org.apache.geode.internal.cache.locks;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;

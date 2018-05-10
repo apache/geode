@@ -545,7 +545,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     /**
      * Track the number of buckets this data store may have, implies isDataStore == true This value
      * is NOT sent directly but updated when {@link org.apache.geode.internal.cache.BucketAdvisor}s
-     * recieve updates
+     * receive updates
      */
     public transient short numBuckets = 0;
 

@@ -23,7 +23,7 @@ import org.apache.geode.internal.cache.tier.sockets.SerializedObjectPartList;
  * form, so that they can be separated into individual values without being deserialized. The
  * standard GetAll requires us to deserialize the value of every object.
  *
- * [bruce] this class is superceded by GetAll70, which merges GetAll651 and GetAllForRI
+ * [bruce] this class is superseded by GetAll70, which merges GetAll651 and GetAllForRI
  *
  *
  */

@@ -14,16 +14,19 @@
  */
 package org.apache.geode.internal.cache.diskPerf;
 
-import static org.junit.Assert.*;
-
-import java.util.*;
+import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.CacheObserverAdapter;
+import org.apache.geode.internal.cache.CacheObserverHolder;
+import org.apache.geode.internal.cache.DiskRegionHelperFactory;
+import org.apache.geode.internal.cache.DiskRegionProperties;
+import org.apache.geode.internal.cache.DiskRegionTestingBase;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;

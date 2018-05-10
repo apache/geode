@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -100,7 +101,7 @@ public class OperationsPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * closes the cache and disconnects the vm from teh distributed system
+   * closes the cache and disconnects the vm from the distributed system
    */
   public static void closeCache() {
     if (cache != null && !cache.isClosed()) {

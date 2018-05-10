@@ -15,7 +15,8 @@
 
 package org.apache.geode.distributed.internal.locks;
 
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.QueueStatHelper;
 
 /**
  * Empty implementation of <code>DistributedLockStats</code> used when there is currently no

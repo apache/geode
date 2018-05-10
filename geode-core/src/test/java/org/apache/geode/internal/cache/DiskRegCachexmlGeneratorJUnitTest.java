@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -34,7 +36,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test is for testing Disk attributes set programmatically The generated cacheXml is used to
- * create a cache and teh region properties retested.
+ * create a cache and the region properties retested.
  */
 @Category(IntegrationTest.class)
 public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {

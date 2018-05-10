@@ -18,8 +18,6 @@ import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
- *
- *
  * @since GemFire 7.0
  */
 public interface ResultData {
@@ -27,21 +25,48 @@ public interface ResultData {
   String RESULT_CONTENT = "content";
   String RESULT_FOOTER = "footer";
 
-
   String TYPE_COMPOSITE = "composite";
   String TYPE_ERROR = "error";
   String TYPE_INFO = "info";
   String TYPE_TABULAR = "table";
 
+  String SECTION_DATA_ACCESSOR = "__sections__";
+  String TABLE_DATA_ACCESSOR = "__tables__";
+  String BYTE_DATA_ACCESSOR = "__bytes__";
+  int FILE_TYPE_BINARY = 0;
+  int FILE_TYPE_TEXT = 1;
+  String FILE_NAME_FIELD = "fileName";
+  String FILE_TYPE_FIELD = "fileType";
+  String FILE_DATA_FIELD = "fileData";
+  String DATA_LENGTH_FIELD = "dataLength";
+  String FILE_MESSAGE = "fileMessage";
+
   String getHeader();
 
   String getFooter();
 
-  GfJsonObject getGfJsonObject();
+  default GfJsonObject getGfJsonObject() {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs - use getContent() instead");
+  }
 
-  String getType();
+  default String getType() {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs");
+  }
 
-  Status getStatus();
+  default Status getStatus() {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs");
+  }
 
-  void setStatus(final Status status);
+  default void setStatus(final Status status) {
+    throw new UnsupportedOperationException(
+        "This should never be called and only exists during migration from GfJsonObject to POJOs");
+  }
+
+  default Object getContent() {
+    throw new UnsupportedOperationException(
+        "This should never be called from a legacy ResultData object");
+  }
 }

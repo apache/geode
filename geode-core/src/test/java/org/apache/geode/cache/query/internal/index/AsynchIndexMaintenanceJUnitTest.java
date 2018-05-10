@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -79,7 +79,7 @@ public class AsynchIndexMaintenanceJUnitTest {
   }
 
   @Test
-  public void testIndexMaintenanceBasedOnThreshhold() throws Exception {
+  public void testIndexMaintenanceBasedOnThreshold() throws Exception {
     System.getProperties()
         .put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", "50");
     System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval",

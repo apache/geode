@@ -38,8 +38,11 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.FileResult;
+import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
@@ -78,7 +81,12 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       synchronized (mutex) {
         Assert.isTrue(isReadyForCommands(), "Not yet ready for commands");
 
-        return new CommandExecutor().execute(parseResult);
+        Object exeuctionResult = new CommandExecutor().execute((GfshParseResult) parseResult);
+        if (exeuctionResult instanceof ResultModel) {
+          return new ModelCommandResult((ResultModel) exeuctionResult);
+        }
+        return exeuctionResult;
+
       }
     }
 
@@ -137,7 +145,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
    * @throws IllegalStateException if gfsh doesn't have an active connection.
    */
   private Result executeOnRemote(GfshParseResult parseResult) {
-    Result commandResult = null;
+    CommandResult commandResult = null;
     Object response = null;
     Path tempFile = null;
 
@@ -168,9 +176,17 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
         return ResultBuilder.createBadConfigurationErrorResult("Interceptor Configuration Error");
       }
 
-      Result preExecResult = interceptor.preExecution(parseResult);
-      if (Status.ERROR.equals(preExecResult.getStatus())) {
-        return preExecResult;
+      Object preExecResult = interceptor.preExecution(parseResult);
+      if (preExecResult instanceof ResultModel) {
+        if (((ResultModel) preExecResult).getStatus() != Status.OK) {
+          return new ModelCommandResult((ResultModel) preExecResult);
+        }
+      }
+
+      if (preExecResult instanceof Result) {
+        if (Status.ERROR.equals(((Result) preExecResult).getStatus())) {
+          return (Result) preExecResult;
+        }
       }
 
       // when the preExecution yields a FileResult, we will get the fileData out of it
@@ -205,31 +221,38 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     // the response could be a string which is a json representation of the CommandResult object
     // it can also be a Path to a temp file downloaded from the rest http request
     if (response instanceof String) {
-      CommandResponse commandResponse =
-          CommandResponseBuilder.prepareCommandResponseFromJson((String) response);
+      try {
+        // TODO: stuff when failedToPersist...
+        // TODO: stuff for debug info...
+        commandResult = ResultBuilder.createModelBasedCommandResult((String) response);
+      } catch (Exception ex) {
+        CommandResponse commandResponse =
+            CommandResponseBuilder.prepareCommandResponseFromJson((String) response);
 
-      if (commandResponse.isFailedToPersist()) {
-        shell.printAsSevere(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
-        logWrapper.severe(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
-      }
+        if (commandResponse.isFailedToPersist()) {
+          shell.printAsSevere(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
+          logWrapper.severe(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
+        }
 
-      String debugInfo = commandResponse.getDebugInfo();
-      if (StringUtils.isNotBlank(debugInfo)) {
-        debugInfo = debugInfo.replaceAll("\n\n\n", "\n");
-        debugInfo = debugInfo.replaceAll("\n\n", "\n");
-        debugInfo =
-            debugInfo.replaceAll("\n", "\n[From Manager : " + commandResponse.getSender() + "]");
-        debugInfo = "[From Manager : " + commandResponse.getSender() + "]" + debugInfo;
-        this.logWrapper.info(debugInfo);
+        String debugInfo = commandResponse.getDebugInfo();
+        if (StringUtils.isNotBlank(debugInfo)) {
+          debugInfo = debugInfo.replaceAll("\n\n\n", "\n");
+          debugInfo = debugInfo.replaceAll("\n\n", "\n");
+          debugInfo =
+              debugInfo.replaceAll("\n", "\n[From Manager : " + commandResponse.getSender() + "]");
+          debugInfo = "[From Manager : " + commandResponse.getSender() + "]" + debugInfo;
+          this.logWrapper.info(debugInfo);
+        }
+        commandResult = ResultBuilder.fromJson((String) response);
       }
-      commandResult = ResultBuilder.fromJson((String) response);
     } else if (response instanceof Path) {
       tempFile = (Path) response;
     }
 
     // 3. Post Remote Execution
     if (interceptor != null) {
-      Result postExecResult = interceptor.postExecution(parseResult, commandResult, tempFile);
+      CommandResult postExecResult =
+          interceptor.postExecution(parseResult, commandResult, tempFile);
       if (postExecResult != null) {
         if (Status.ERROR.equals(postExecResult.getStatus())) {
           if (logWrapper.infoEnabled()) {

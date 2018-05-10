@@ -284,7 +284,7 @@ public class HARegionQueue implements RegionQueue {
    *
    * @since GemFire 6.0
    */
-  public boolean isClientSlowReciever = false;
+  public boolean isClientSlowReceiver = false;
 
   /**
    * initialization flag - when true the queue has fully initialized
@@ -296,7 +296,7 @@ public class HARegionQueue implements RegionQueue {
    *
    * @since GemFire 6.0
    */
-  static boolean testMarkerMessageRecieved = false;
+  static boolean testMarkerMessageReceived = false;
   static boolean isUsedByTest = false;
 
   /**
@@ -1599,9 +1599,9 @@ public class HARegionQueue implements RegionQueue {
         Object old = ((ConcurrentMap) tempDispatchedMessagesMap).putIfAbsent(this.regionName,
             this.threadIdToSeqId);
         if (isUsedByTest) {
-          testMarkerMessageRecieved = true;
+          testMarkerMessageReceived = true;
           if (logger.isDebugEnabled()) {
-            logger.debug("testIsAckRecieved: {}", testMarkerMessageRecieved);
+            logger.debug("testIsAckReceived: {}", testMarkerMessageReceived);
           }
         }
         Assert.assertTrue(old == null);
@@ -2107,40 +2107,23 @@ public class HARegionQueue implements RegionQueue {
             continue;
           }
           synchronized (entryHaEventWrapper) {
-            if (haContainer.getKey(entryHaEventWrapper) != null) {
+            if ((HAEventWrapper) haContainer.getKey(entryHaEventWrapper) != null) {
               entryHaEventWrapper.incAndGetReferenceCount();
-              // If the input and entry HAEventWrappers are not the same (which is the normal
-              // case), add the CQs and interest list from the input to the entry and create a new
-              // value from the entry.
-              if (entryHaEventWrapper != inputHaEventWrapper) { // See GEODE-4957
-                addClientCQsAndInterestList(entryMessage, inputHaEventWrapper, haContainer,
-                    regionName);
-                inputHaEventWrapper.setClientUpdateMessage(null);
-                newValueCd =
-                    new VMCachedDeserializable(entryHaEventWrapper, newValueCd.getSizeInBytes());
-              }
-            } else {
-              entryHaEventWrapper = null;
-            }
-          }
-        } else { // putIfAbsent successful
-          entryHaEventWrapper = (HAEventWrapper) haContainer.getKey(inputHaEventWrapper);
-          synchronized (entryHaEventWrapper) {
-            entryHaEventWrapper.incAndGetReferenceCount();
-            entryHaEventWrapper.setHAContainer(haContainer);
-            // If the input and entry HAEventWrappers are not the same (which is not the normal
-            // case), get the entry message, add the CQs and interest list from the input to the
-            // entry and create a new value from the entry.
-            if (entryHaEventWrapper != inputHaEventWrapper) { // See GEODE-4957
-              entryMessage = (ClientUpdateMessageImpl) haContainer.get(inputHaEventWrapper);
               addClientCQsAndInterestList(entryMessage, inputHaEventWrapper, haContainer,
                   regionName);
               inputHaEventWrapper.setClientUpdateMessage(null);
               newValueCd =
                   new VMCachedDeserializable(entryHaEventWrapper, newValueCd.getSizeInBytes());
+            } else {
+              entryHaEventWrapper = null;
             }
-            entryHaEventWrapper.setClientUpdateMessage(null);
-            entryHaEventWrapper.setIsRefFromHAContainer(true);
+          }
+        } else { // putIfAbsent successful
+          synchronized (inputHaEventWrapper) {
+            inputHaEventWrapper.incAndGetReferenceCount();
+            inputHaEventWrapper.setHAContainer(haContainer);
+            inputHaEventWrapper.setClientUpdateMessage(null);
+            inputHaEventWrapper.setIsRefFromHAContainer(true);
           }
           break;
         }
@@ -2248,7 +2231,7 @@ public class HARegionQueue implements RegionQueue {
             synchronized (this.permitMon) {
               if (reconcilePutPermits() <= 0) {
                 if (region.getSystem().getConfig().getRemoveUnresponsiveClient()) {
-                  isClientSlowReciever = true;
+                  isClientSlowReceiver = true;
                 } else {
                   try {
                     long logFrequency = CacheClientNotifier.DEFAULT_LOG_FREQUENCY;
@@ -2656,7 +2639,7 @@ public class HARegionQueue implements RegionQueue {
 
   /**
    * A static class which is created only for for testing prposes as some existing tests extend the
-   * HARegionQueue. Since teh constructors of HAregionQueue are private , this class can act as a
+   * HARegionQueue. Since the constructors of HAregionQueue are private , this class can act as a
    * bridge between the user defined HARegionQueue class & the actual class. This class object will
    * be buggy as it will tend to publish the Object o QRM thread & the expiry thread before the
    * complete creation of the HARegionQueue instance
@@ -3443,76 +3426,55 @@ public class HARegionQueue implements RegionQueue {
    */
   protected void putEventInHARegion(Conflatable event, Long position) {
     if (event instanceof HAEventWrapper) {
-      HAEventWrapper haEventWrapper = (HAEventWrapper) event;
+      HAEventWrapper inputHaEventWrapper = (HAEventWrapper) event;
       if (this.isQueueInitialized()) {
-        if (haEventWrapper.getIsRefFromHAContainer()) {
-          putEntryConditionallyIntoHAContainer(haEventWrapper);
+        if (inputHaEventWrapper.getIsRefFromHAContainer()) {
+          putEntryConditionallyIntoHAContainer(inputHaEventWrapper);
         } else {
-          // This means that the haEvenWrapper reference we have is not
+          // This means that the haEventWrapper reference we have is not
           // authentic, i.e. it doesn't refer to the HAEventWrapper instance
           // in the haContainer, but to the one outside it.
-          boolean entryFound;
-          // synchronized (this.haContainer) {
-          HAEventWrapper original = null;
+          HAEventWrapper haContainerKey = null;
           do {
-            ClientUpdateMessageImpl old =
+            ClientUpdateMessageImpl haContainerEntry =
                 (ClientUpdateMessageImpl) ((HAContainerWrapper) this.haContainer)
-                    .putIfAbsent(haEventWrapper, haEventWrapper.getClientUpdateMessage());
-            if (old != null) {
-              original =
-                  (HAEventWrapper) ((HAContainerWrapper) this.haContainer).getKey(haEventWrapper);
-              if (original == null) {
+                    .putIfAbsent(inputHaEventWrapper, inputHaEventWrapper.getClientUpdateMessage());
+            if (haContainerEntry != null) {
+              haContainerKey = (HAEventWrapper) ((HAContainerWrapper) this.haContainer)
+                  .getKey(inputHaEventWrapper);
+              if (haContainerKey == null) {
                 continue;
               }
-              synchronized (original) {
+              synchronized (haContainerKey) {
                 // assert the entry is still present
-                if (((HAContainerWrapper) this.haContainer).getKey(original) != null) {
-                  original.incAndGetReferenceCount();
-                  addClientCQsAndInterestList(old, haEventWrapper, this.haContainer,
-                      this.regionName);
-                  haEventWrapper = original;
+                if (((HAContainerWrapper) this.haContainer).getKey(haContainerKey) != null) {
+                  haContainerKey.incAndGetReferenceCount();
+                  addClientCQsAndInterestList(haContainerEntry, inputHaEventWrapper,
+                      this.haContainer, this.regionName);
+                  inputHaEventWrapper = haContainerKey;
                 } else {
-                  original = null;
+                  haContainerKey = null;
                 }
               }
             } else {
-              synchronized (haEventWrapper) {
-                haEventWrapper.incAndGetReferenceCount();
-                haEventWrapper.setHAContainer(this.haContainer);
-                if (!haEventWrapper.getPutInProgress()) {
+              synchronized (inputHaEventWrapper) {
+                inputHaEventWrapper.incAndGetReferenceCount();
+                inputHaEventWrapper.setHAContainer(this.haContainer);
+                if (!inputHaEventWrapper.getPutInProgress()) {
                   // This means that this is a GII'ed event. Hence we must
                   // explicitly set 'clientUpdateMessage' to null.
-                  haEventWrapper.setClientUpdateMessage(null);
+                  inputHaEventWrapper.setClientUpdateMessage(null);
                 }
-                haEventWrapper.setIsRefFromHAContainer(true);
+                inputHaEventWrapper.setIsRefFromHAContainer(true);
               }
               break;
             }
-          } while (original == null);
-          /*
-           * entry = (Map.Entry)((HAContainerWrapper)this.haContainer) .getEntry(haEventWrapper); if
-           * (entry == null) { entryFound = false;
-           * putEntryConditionallyIntoHAContainer(haEventWrapper); } else { entryFound = true; // Do
-           * not assign entry.getKey() to haEventWrapper right now.
-           * ((HAEventWrapper)entry.getKey()).incAndGetReferenceCount(); } }//haContainer
-           * synchronized ends if (entryFound) { addClientCQsAndInterestList(entry, haEventWrapper,
-           * haContainer, regionName); haEventWrapper = (HAEventWrapper)entry.getKey(); } else { //
-           * entry not found if (!haEventWrapper.getPutInProgress()) { // This means that this is a
-           * GII'ed event. Hence we must // explicitly set 'clientUpdateMessage' to null.
-           * haEventWrapper.setClientUpdateMessage(null); }
-           * haEventWrapper.setIsRefFromHAContainer(true); }
-           */
+          } while (haContainerKey == null);
         }
       }
-      // This has now been taken care of in AbstractRegionMap.initialImagePut()
-      // else{
-      // if(!haEventWrapper.getIsRefFromHAContainer()){
-      // haEventWrapper =(HAEventWrapper)((HAContainerWrapper)haContainer).getKey(haEventWrapper);
-      // }
-      // }
       // Put the reference to the HAEventWrapper instance into the
       // HA queue.
-      this.region.put(position, haEventWrapper);
+      this.region.put(position, inputHaEventWrapper);
       // logger.info(LocalizedStrings.DEBUG, "added message at position " + position);
     } else { // (event instanceof ClientMarkerMessageImpl OR ConflatableObject OR
              // ClientInstantiatorMessage)
@@ -3787,19 +3749,19 @@ public class HARegionQueue implements RegionQueue {
 
   public void initializeTransients() {}
 
-  public static boolean isTestMarkerMessageRecieved() {
-    return testMarkerMessageRecieved;
+  public static boolean isTestMarkerMessageReceived() {
+    return testMarkerMessageReceived;
   }
 
   public static void setUsedByTest(boolean isUsedByTest) {
     HARegionQueue.isUsedByTest = isUsedByTest;
     if (!isUsedByTest) {
-      HARegionQueue.testMarkerMessageRecieved = isUsedByTest;
+      HARegionQueue.testMarkerMessageReceived = isUsedByTest;
     }
   }
 
-  public boolean isClientSlowReciever() {
-    return isClientSlowReciever;
+  public boolean isClientSlowReceiver() {
+    return isClientSlowReceiver;
   }
 
   @Override

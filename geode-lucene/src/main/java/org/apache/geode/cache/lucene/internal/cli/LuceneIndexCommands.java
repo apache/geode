@@ -39,7 +39,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunct
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.management.cli.CliMetaData;
@@ -123,10 +123,12 @@ public class LuceneIndexCommands extends InternalGfshCommand {
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
         indexData.accumulate("Serializer", indexDetails.getSerializerString());
-        indexData.accumulate("Status", indexDetails.getInitialized() ? "Initialized" : "Defined");
+        indexData.accumulate("Status", indexDetails.getStatus().toString());
 
         if (stats) {
-          if (!indexDetails.getInitialized()) {
+          LuceneIndexStatus luceneIndexStatus = indexDetails.getStatus();
+          if (luceneIndexStatus == LuceneIndexStatus.NOT_INITIALIZED
+              || luceneIndexStatus == LuceneIndexStatus.INDEXING_IN_PROGRESS) {
             indexData.accumulate("Query Executions", "NA");
             indexData.accumulate("Updates", "NA");
             indexData.accumulate("Commits", "NA");
@@ -200,8 +202,8 @@ public class LuceneIndexCommands extends InternalGfshCommand {
     result = ResultBuilder.buildResult(tabularResult);
     if (xmlEntity != null) {
       persistClusterConfiguration(result, () -> {
-        ((InternalClusterConfigurationService) getConfigurationService()).addXmlEntity(xmlEntity,
-            null);
+        ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
+            .addXmlEntity(xmlEntity, null);
       });
     }
     return result;
@@ -294,8 +296,8 @@ public class LuceneIndexCommands extends InternalGfshCommand {
     if (xmlEntity != null) {
       persistClusterConfiguration(result, () -> {
         // Delete the xml entity to remove the index(es) in all groups
-        ((InternalClusterConfigurationService) getConfigurationService()).deleteXmlEntity(xmlEntity,
-            null);
+        ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
+            .deleteXmlEntity(xmlEntity, null);
       });
     }
 

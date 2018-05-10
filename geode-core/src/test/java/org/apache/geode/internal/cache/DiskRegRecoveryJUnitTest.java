@@ -14,7 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -756,7 +760,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
   }
 
   /**
-   * This tests the case where potential of writing a dummy byte was tehre. The case would be
+   * This tests the case where potential of writing a dummy byte was there. The case would be
    * compactor terminating early. The create is present in both Htree as well as Oplog. When
    * recovery is done, the create is added to the Oplog createdEntrySet. Now while compactor
    * iterates over the entries in the region, it skips the created entry because its Htree Offset is

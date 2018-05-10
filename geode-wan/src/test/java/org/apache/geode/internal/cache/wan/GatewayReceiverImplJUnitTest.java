@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -79,7 +80,7 @@ public class GatewayReceiverImplJUnitTest {
   }
 
   @Test
-  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveRecieverFromCacheServers()
+  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromCacheServers()
       throws IOException {
     InternalCache cache = mock(InternalCache.class);
     CacheServerImpl server = mock(CacheServerImpl.class);
@@ -96,7 +97,7 @@ public class GatewayReceiverImplJUnitTest {
   }
 
   @Test
-  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveRecieverFromReceivers()
+  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromReceivers()
       throws IOException {
     InternalCache cache = mock(InternalCache.class);
     CacheServerImpl server = mock(CacheServerImpl.class);

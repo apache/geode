@@ -162,7 +162,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
         .addServer("localhost", port2).addServer("localhost", port3).setSubscriptionEnabled(true)
         .setSubscriptionRedundancy(rLevel.intValue()).setThreadLocalConnections(true)
         .setMinConnections(6).setReadTimeout(20000).setPingInterval(1000).setRetryAttempts(5)
-        .create("HASlowRecieverDUnitTestPool");
+        .create("HASlowReceiverDUnitTestPool");
 
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());

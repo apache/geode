@@ -14,8 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
@@ -416,7 +420,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
         } catch (InvalidDeltaException ide) {
           assertTrue("InvalidDeltaException not expected.",
               delta.getIntVar() == DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
-          cache.getLoggerI18n().fine("Recieved InvalidDeltaException as expected.");
+          cache.getLoggerI18n().fine("Received InvalidDeltaException as expected.");
         }
       }
     }

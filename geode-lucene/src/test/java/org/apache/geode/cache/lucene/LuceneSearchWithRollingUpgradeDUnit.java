@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -274,10 +275,14 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
           shortcut.name(), regionName, locatorPorts);
       expectedRegionSize += 10;
       putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 15,
-          25, server1, server2);
+          25, server2);
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 15,
+          25, server1);
       expectedRegionSize += 5;
       putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 20,
-          30, server1, server2);
+          30, server2);
+      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 20,
+          30, server1);
 
       server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType, null,
           shortcut.name(), regionName, locatorPorts);
@@ -735,18 +740,37 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
         .getMethod("create", String.class, String.class, String.class, String.class)
         .invoke(luceneQueryFactory, INDEX_NAME, regionName, "active", "status");
 
-    Collection resultsActive =
-        (Collection) luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
+    Collection resultsActive = executeLuceneQuery(luceneQuery);
 
     luceneQuery = luceneQueryFactory.getClass()
         .getMethod("create", String.class, String.class, String.class, String.class)
         .invoke(luceneQueryFactory, INDEX_NAME, regionName, "inactive", "status");
 
-    Collection resultsInactive =
-        (Collection) luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
+    Collection resultsInactive = executeLuceneQuery(luceneQuery);
 
     assertEquals("Result size not as expected ", expectedRegionSize,
         resultsActive.size() + resultsInactive.size());
+  }
+
+  private Collection executeLuceneQuery(Object luceneQuery)
+      throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    Collection results = null;
+    int retryCount = 10;
+    while (true) {
+      try {
+        results = (Collection) luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
+        break;
+      } catch (Exception ex) {
+        if (!ex.getCause().getMessage().contains("currently indexing")) {
+          throw ex;
+        }
+        if (--retryCount == 0) {
+          throw ex;
+        }
+      }
+    }
+    return results;
+
   }
 
   private void verifyLuceneQueryResultInEachVM(String regionName, int expectedRegionSize,

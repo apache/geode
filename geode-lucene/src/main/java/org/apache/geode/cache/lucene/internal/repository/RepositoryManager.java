@@ -41,6 +41,19 @@ public interface RepositoryManager {
       throws BucketNotFoundException;
 
   /**
+   * Returns a collection of {@link IndexRepository} instances hosting index data of the input list
+   * of bucket ids. The bucket needs to be present on this member.
+   *
+   * The method will wait till the index is ready to be used if the waitOnRetry boolean is set to
+   * true
+   *
+   * @return a collection of {@link IndexRepository} instances
+   * @throws BucketNotFoundException if any of the requested buckets is not found on this member
+   */
+  Collection<IndexRepository> getRepositories(RegionFunctionContext context, boolean waitOnRetry)
+      throws BucketNotFoundException;
+
+  /**
    * Closes this {@link RepositoryManager}
    */
   void close();

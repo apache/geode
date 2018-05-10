@@ -56,7 +56,6 @@ import org.apache.geode.redis.internal.executor.SortedSetQuery;
  * synchronized, which is done away with and abstracted by this class.
  */
 public class RegionProvider implements Closeable {
-
   private final ConcurrentHashMap<ByteArrayWrapper, Region<?, ?>> regions;
 
   /**
@@ -390,24 +389,24 @@ public class RegionProvider implements Closeable {
    * This method creates a Region globally with the given name. If there is an error in the
    * creation, a runtime exception will be thrown.
    *
-   * @param key Name of Region to create
+   * @param regionPath Name of Region to create
    * @return Region Region created globally
    */
-  private Region<?, ?> createRegionGlobally(String key) {
+  private Region<?, ?> createRegionGlobally(String regionPath) {
     Region<?, ?> r = null;
-    r = cache.getRegion(key);
+    r = cache.getRegion(regionPath);
     if (r != null)
       return r;
     do {
       createRegionCmd.setCache(cache);
-      Result result = createRegionCmd.createRegion(key, defaultRegionType, null, null, true, null,
-          null, null, null, null, null, null, null, false, false, true, false, false, false, true,
-          null, null, null, null, null, null, null, null, null, null, null, null, null, false, null,
-          null, null, null, null, null, null, null, null, null, null);
+      Result result = createRegionCmd.createRegion(regionPath, defaultRegionType, null, null, true,
+          null, null, null, null, null, null, null, null, false, false, true, false, false, false,
+          true, null, null, null, null, null, null, null, null, null, null, null, null, null, false,
+          null, null, null, null, null, null, null, null, null, null, null);
 
-      r = cache.getRegion(key);
+      r = cache.getRegion(regionPath);
       if (result.getStatus() == Status.ERROR && r == null) {
-        String err = "";
+        String err = "Unable to create region named \"" + regionPath + "\":\n";
         while (result.hasNextLine())
           err += result.nextLine();
         throw new RegionCreationException(err);
@@ -419,13 +418,6 @@ public class RegionProvider implements Closeable {
 
   public Query getQuery(ByteArrayWrapper key, Enum<?> query) {
     return this.preparedQueries.get(key).get(query);
-    /*
-     * if (query instanceof ListQuery) { return
-     * this.queryService.newQuery(((ListQuery)query).getQueryString(this.regions.get(key).
-     * getFullPath())); } else { return
-     * this.queryService.newQuery(((SortedSetQuery)query).getQueryString(this.regions.get(key).
-     * getFullPath())); }
-     */
   }
 
   /**
@@ -562,5 +554,4 @@ public class RegionProvider implements Closeable {
     }
     return builder.toString();
   }
-
 }

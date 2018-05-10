@@ -41,6 +41,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
@@ -68,6 +69,19 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     PartitionedRepositoryManager partitionedRepositoryManager =
         new PartitionedRepositoryManager(this, mapper, this.waitingThreadPoolFromDM);
     return partitionedRepositoryManager;
+  }
+
+  public boolean isIndexingInProgress() {
+    PartitionedRegion userRegion = (PartitionedRegion) cache.getRegion(this.getRegionPath());
+    Set<Integer> fileRegionPrimaryBucketIds =
+        this.getFileAndChunkRegion().getDataStore().getAllLocalPrimaryBucketIds();
+    for (Integer bucketId : fileRegionPrimaryBucketIds) {
+      BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(bucketId);
+      if (!userBucket.isEmpty() && !this.isIndexAvailable(bucketId)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected void createLuceneListenersAndFileChunkRegions(

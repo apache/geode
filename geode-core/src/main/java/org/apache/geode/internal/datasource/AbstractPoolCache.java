@@ -145,7 +145,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
       // returning their own connections
       synchronized (connectionObject) {
         if (this.activeCache.containsKey(connectionObject)) {
-          // Asif: Remove teh connection from activeCache
+          // Asif: Remove the connection from activeCache
           // Don't add it to availabel pool now. Add it when we have
           // taken a lock on availableCache & then we will modify the
           // count.
@@ -385,8 +385,8 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
               // that destroy can be called on it.
               // We will first collect all the connections
               // which have timed out & then expire them.
-              // In that gap even if teh client genuinely closes
-              // teh connection , it will not be returned to the
+              // In that gap even if the client genuinely closes
+              // the connection , it will not be returned to the
               // pool as the active map no longer contains it
               this.activeCache.remove(conn);
               this.expiredConns.add(conn);

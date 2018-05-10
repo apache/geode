@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.junit.Assert.*;
-
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;

@@ -57,7 +57,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ForceReattemptException;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
@@ -570,10 +570,10 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Retained
-  public static EntryEventImpl getEventFromEntry(LocalRegion r, InternalDistributedMember myId,
-      InternalDistributedMember eventSender, int idx,
-      DistributedPutAllOperation.PutAllEntryData[] data, boolean notificationOnly,
-      ClientProxyMembershipID bridgeContext, boolean posDup, boolean skipCallbacks) {
+  public static EntryEventImpl getEventFromEntry(InternalRegion r, InternalDistributedMember myId,
+      InternalDistributedMember eventSender, int idx, PutAllEntryData[] data,
+      boolean notificationOnly, ClientProxyMembershipID bridgeContext, boolean posDup,
+      boolean skipCallbacks) {
     PutAllEntryData prd = data[idx];
     // EntryEventImpl ev = EntryEventImpl.create(r,
     // prd.getOp(),

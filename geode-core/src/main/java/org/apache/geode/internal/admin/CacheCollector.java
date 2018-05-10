@@ -15,7 +15,8 @@
 
 package org.apache.geode.internal.admin;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -51,7 +52,7 @@ public class CacheCollector {
 
   /**
    * A sequence number for the snapshots requested by this VM. We use this sequence number to ignore
-   * snapshot segments that are not relevent to the current snapshot
+   * snapshot segments that are not relevant to the current snapshot
    */
   private static int snapshotCount;
 

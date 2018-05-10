@@ -14,8 +14,11 @@
  */
 package org.apache.geode.pdx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -269,7 +272,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        GemFireCacheImpl cache = (GemFireCacheImpl) basicGetCache();
         assertTrue(cache == null || cache.isClosed());
       }
     });
@@ -382,7 +385,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        GemFireCacheImpl cache = (GemFireCacheImpl) basicGetCache();
         assertTrue(cache == null || cache.isClosed());
       }
     });

@@ -26,24 +26,24 @@ import static org.mockito.Mockito.spy;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
-import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class CommandExecutorTest {
-  ParseResult parseResult;
+  GfshParseResult parseResult;
   CommandExecutor executor;
   Result result;
 
   @Before
   public void before() {
-    parseResult = mock(ParseResult.class);
+    parseResult = mock(GfshParseResult.class);
     result = mock(Result.class);
     executor = spy(CommandExecutor.class);
   }
@@ -52,7 +52,7 @@ public class CommandExecutorTest {
   @Test
   public void executeWhenGivenDummyParseResult() throws Exception {
     Object result = executor.execute(parseResult);
-    assertThat(result).isInstanceOf(CommandResult.class);
+    assertThat(result).isInstanceOf(ResultModel.class);
     assertThat(result.toString()).contains("Error while processing command");
   }
 
@@ -75,7 +75,7 @@ public class CommandExecutorTest {
     ;
     doThrow(new RuntimeException("my message here")).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
-    assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
   }
 
@@ -93,7 +93,7 @@ public class CommandExecutorTest {
     doThrow(new IllegalArgumentException("my message here")).when(executor).invokeCommand(any(),
         any());
     Object thisResult = executor.execute(parseResult);
-    assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
   }
 
@@ -103,7 +103,7 @@ public class CommandExecutorTest {
     doThrow(new IllegalStateException("my message here")).when(executor).invokeCommand(any(),
         any());
     Object thisResult = executor.execute(parseResult);
-    assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
   }
 
@@ -112,7 +112,7 @@ public class CommandExecutorTest {
     ;
     doThrow(new UserErrorException("my message here")).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
-    assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
   }
 
@@ -122,7 +122,7 @@ public class CommandExecutorTest {
     doThrow(new EntityNotFoundException("my message here", true)).when(executor)
         .invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
-    assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.OK);
+    assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.OK);
     assertThat(thisResult.toString()).contains("Skipping: my message here");
   }
 
@@ -132,7 +132,7 @@ public class CommandExecutorTest {
     doThrow(new EntityNotFoundException("my message here")).when(executor).invokeCommand(any(),
         any());
     Object thisResult = executor.execute(parseResult);
-    assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
   }
 }

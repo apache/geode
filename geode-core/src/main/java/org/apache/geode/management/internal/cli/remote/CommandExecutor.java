@@ -15,14 +15,18 @@
 package org.apache.geode.management.internal.cli.remote;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.event.ParseResult;
 import org.springframework.util.ReflectionUtils;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
@@ -35,17 +39,17 @@ public class CommandExecutor {
   private Logger logger = LogService.getLogger();
 
   // used by the product
-  public Object execute(ParseResult parseResult) {
+  public Object execute(GfshParseResult parseResult) {
     return execute(null, parseResult);
   }
 
   // used by the GfshParserRule to pass in a mock command
-  public Object execute(Object command, ParseResult parseResult) {
+  public Object execute(Object command, GfshParseResult parseResult) {
     try {
       Object result = invokeCommand(command, parseResult);
 
       if (result == null) {
-        return ResultBuilder.createGemFireErrorResult("Command returned null: " + parseResult);
+        return ResultModel.createError("Command returned null: " + parseResult);
       }
       return result;
     }
@@ -59,23 +63,23 @@ public class CommandExecutor {
     // for these exceptions, needs to create a UserErrorResult (still reported as error by gfsh)
     // no need to log since this is a user error
     catch (UserErrorException | IllegalStateException | IllegalArgumentException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
+      return ResultModel.createError(e.getMessage());
     }
 
     // if entity not found, depending on the thrower's intention, report either as success or error
     // no need to log since this is a user error
     catch (EntityNotFoundException e) {
       if (e.isStatusOK()) {
-        return ResultBuilder.createInfoResult("Skipping: " + e.getMessage());
+        return ResultModel.createInfo("Skipping: " + e.getMessage());
       } else {
-        return ResultBuilder.createUserErrorResult(e.getMessage());
+        return ResultModel.createError(e.getMessage());
       }
     }
 
     // all other exceptions, log it and build an error result.
     catch (Exception e) {
       logger.error("Could not execute \"" + parseResult + "\".", e);
-      return ResultBuilder.createGemFireErrorResult(
+      return ResultModel.createError(
           "Error while processing command <" + parseResult + "> Reason : " + e.getMessage());
     }
 
@@ -89,12 +93,62 @@ public class CommandExecutor {
     }
   }
 
-  protected Object invokeCommand(Object command, ParseResult parseResult) {
+  protected Object invokeCommand(Object command, GfshParseResult parseResult) {
     // if no command instance is passed in, use the one in the parseResult
     if (command == null) {
       command = parseResult.getInstance();
     }
-    return ReflectionUtils.invokeMethod(parseResult.getMethod(), command,
-        parseResult.getArguments());
+
+    Object result =
+        ReflectionUtils.invokeMethod(parseResult.getMethod(), command, parseResult.getArguments());
+
+    if (!(command instanceof SingleGfshCommand)) {
+      return result;
+    }
+
+    SingleGfshCommand gfshCommand = (SingleGfshCommand) command;
+    ResultModel resultModel = (ResultModel) result;
+    if (resultModel.getStatus() == Result.Status.ERROR) {
+      return result;
+    }
+
+    // if command result is ok, we will need to see if we need to update cluster configuration
+    InfoResultModel infoResultModel = resultModel.addInfo();
+    ConfigurationPersistenceService ccService = gfshCommand.getConfigurationPersistenceService();
+    if (ccService == null) {
+      infoResultModel.addLine(
+          "Cluster configuration service is not running. Configuration change is not persisted.");
+      return resultModel;
+    }
+
+    if (parseResult.getParamValue("member") != null) {
+      infoResultModel.addLine(
+          "Configuration change is not persisted because the command is executed on specific member.");
+      return resultModel;
+    }
+
+    String groupInput = parseResult.getParamValueAsString("group");
+    if (groupInput == null) {
+      groupInput = "cluster";
+    }
+    String[] groups = groupInput.split(",");
+    for (String group : groups) {
+      ccService.updateCacheConfig(group, cc -> {
+        try {
+          gfshCommand.updateClusterConfig(group, cc, resultModel.getConfigObject());
+          infoResultModel
+              .addLine("Changes to configuration for group '" + group + "' is persisted.");
+        } catch (Exception e) {
+          String message = "failed to update cluster config for " + group;
+          logger.error(message, e);
+          // for now, if one cc update failed, we will set this flag. Will change this when we can
+          // add lines to the result returned by the command
+          infoResultModel.addLine(message + ". Reason: " + e.getMessage());
+          return null;
+        }
+        return cc;
+      });
+    }
+    return resultModel;
   }
 }

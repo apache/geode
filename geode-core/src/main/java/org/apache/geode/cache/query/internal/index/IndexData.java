@@ -38,7 +38,7 @@ public class IndexData {
   /**
    * An int array of size equal to the number of Iterators present in the Group representing the
    * Iterators for that region. It identifies the index result field position which maps to the
-   * RuntimeIterator for teh Group. The mapping of index result field is 1 based ( not zero). For
+   * RuntimeIterator for the Group. The mapping of index result field is 1 based ( not zero). For
    * example the second Iterator of the group ( 0 indxe based , hence 1 ) will map to the field
    * position in the Index Result given by the value maping[1]. If an iterator has no mapping , the
    * value will be 0. *

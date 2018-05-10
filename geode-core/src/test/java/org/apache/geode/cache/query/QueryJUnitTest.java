@@ -23,8 +23,10 @@
  */
 package org.apache.geode.cache.query;
 
-import static org.junit.Assert.*;
-import static org.junit.runners.MethodSorters.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 import java.io.Serializable;
 import java.util.Arrays;

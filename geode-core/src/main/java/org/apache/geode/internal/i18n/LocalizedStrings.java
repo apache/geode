@@ -4768,8 +4768,8 @@ public class LocalizedStrings {
       new StringId(3867, "no global transaction exists");
   public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_MEMCACHED_SERVER_ON_PORT_0_FOR_1_PROTOCOL =
       new StringId(3868, "Starting GemFireMemcachedServer on port {0} for {1} protocol");
-  public static final StringId TransactionManagerImpl_TRANSACTIONMANAGERIMPL_SETTRANSACTIONTIMEOUT_TRANSACTION_HAS_EITHER_EXPIRED_OR_ROLLEDBACK_OR_COMITTED =
-      new StringId(3869, "Transaction has either expired or rolledback or comitted");
+  public static final StringId TransactionManagerImpl_TRANSACTIONMANAGERIMPL_SETTRANSACTIONTIMEOUT_TRANSACTION_HAS_EITHER_EXPIRED_OR_ROLLEDBACK_OR_COMMITTED =
+      new StringId(3869, "Transaction has either expired or rolledback or committed");
   public static final StringId TransactionManagerImpl_TRANSACTIONMANAGERIMPL_RESUME_CANNOT_RESUME_A_NULL_TRANSACTION =
       new StringId(3870, "cannot resume a null transaction");
   public static final StringId AbstractDistributionConfig_SECURITY_CLIENT_DHALGO_NAME_0 =
@@ -5402,7 +5402,7 @@ public class LocalizedStrings {
       4228,
       "The maximum size in megabytes of all inactive log files combined. If this limit is exceeded, inactive log files will be deleted, oldest first, until the total size is within the limit. If set to zero, disk space usage is unlimited.");
   public static final StringId AbstractDistributionConfig_LOCATORS_NAME_0 = new StringId(4229,
-      "A possibly empty list of locators used to find other system nodes. Each element of the list must be a host name followed by bracketed, \"[]\", port number. Host names may be followed by a colon and a bind address used by the locator on that host.  Multiple elements must be comma seperated. Defaults to \"{0}\".");
+      "A possibly empty list of locators used to find other system nodes. Each element of the list must be a host name followed by bracketed, \"[]\", port number. Host names may be followed by a colon and a bind address used by the locator on that host.  Multiple elements must be comma separated. Defaults to \"{0}\".");
   public static final StringId AbstractDistributionConfig_TCP_PORT_NAME_0_1_2 = new StringId(4230,
       "The port used for tcp/ip communcations in the distributed system. If zero then a random available port is selected by the operating system.   Defaults to \"{0}\".  Legal values are in the range [{1}..{2}].");
   public static final StringId AbstractDistributionConfig_MCAST_PORT_NAME_0_1_2 = new StringId(4231,
@@ -6954,7 +6954,7 @@ public class LocalizedStrings {
 
   public static final StringId AbstractDistributionConfig_REMOTE_DISTRIBUTED_SYSTEMS_NAME_0 =
       new StringId(5185,
-          "A possibly empty list of locators used to find other distributed systems. Each element of the list must be a host name followed by bracketed, \"[]\", port number. Host names may be followed by a colon and a bind address used by the locator on that host.  Multiple elements must be comma seperated. Defaults to \"{0}\".");
+          "A possibly empty list of locators used to find other distributed systems. Each element of the list must be a host name followed by bracketed, \"[]\", port number. Host names may be followed by a colon and a bind address used by the locator on that host.  Multiple elements must be comma separated. Defaults to \"{0}\".");
   public static final StringId SerialGatewaySenderImpl_0__BECOMING_PRIMARY_GATEWAYSENDER =
       new StringId(5186, "{0} : Becoming primary gateway sender");
   public static final StringId AbstractGatewaySender_REMOTE_LOCATOR_FOR_REMOTE_SITE_0_IS_NOT_AVAILABLE_IN_LOCAL_LOCATOR_1 =
@@ -7713,21 +7713,23 @@ public class LocalizedStrings {
       new StringId(6665, "{0}: Enqueueing synchronization event: {1}");
   public static final StringId PoolImpl_CACHE_MUST_BE_CREATED_BEFORE_CREATING_POOL =
       new StringId(6666, "Cache must be created before creating pool");
-
+  public static final StringId LuceneIndexCreation_INDEX_CANNOT_BE_CREATED_DUE_TO_PROFILE_VIOLATION =
+      new StringId(6667,
+          "Lucene index {0} cannot be created because its parameters are incompatible with another Lucene index");
   public static final StringId AbstractDistributionConfig_THREAD_MONITOR_INTERVAL = new StringId(
-      6667,
+      6668,
       "Defines the time interval (in milliseconds) with which thread monitoring is scheduled to run.");
   public static final StringId AbstractDistributionConfig_THREAD_MONITOR_ENABLED =
-      new StringId(6668, "Defines whether thread monitoring is to be enabled.");
+      new StringId(6669, "Defines whether thread monitoring is to be enabled.");
   public static final StringId AbstractDistributionConfig_THREAD_MONITOR_TIME_LIMIT = new StringId(
-      6669,
+      6670,
       "Defines the time period (in milliseconds) after which the monitored thread is considered to be stuck.");
-  public static final StringId THREAD_MONITOR_NAME = new StringId(6670, "ThreadsMonitor");
+  public static final StringId THREAD_MONITOR_NAME = new StringId(6671, "ThreadsMonitor");
   public static final StringId AbstractDistributionConfig_THREAD_MONITOR_AUTO_ENABLED =
-      new StringId(6671,
+      new StringId(6672,
           "Defines whether thread monitoring is expected to automatically kill stuck thread.");
   public static final StringId AbstractDistributionConfig_THREAD_MONITOR_AUTO_LIMIT = new StringId(
-      6672,
+      6673,
       "Defines the number of thread monitoring attempts after which the stuck thread will be automatically killed (only applicable when <thread-monitor-auto-enabled> is set to Y).");
 
   /** Testing strings, messageId 90000-99999 **/

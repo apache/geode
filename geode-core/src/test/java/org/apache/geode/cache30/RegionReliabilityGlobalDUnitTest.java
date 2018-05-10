@@ -14,11 +14,9 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
-
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**

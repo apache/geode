@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import static org.apache.geode.management.internal.cli.shell.MultiCommandHelper.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.management.internal.cli.shell.MultiCommandHelper.getMultipleCommands;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 

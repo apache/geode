@@ -86,6 +86,8 @@ public interface LuceneIndexFactory {
    *
    * @param luceneSerializer A callback which converts a region value to a lucene document or
    *        documents to be stored in the index.
+   *
+   * @since Geode 1.4
    */
   LuceneIndexFactory setLuceneSerializer(LuceneSerializer luceneSerializer);
 }

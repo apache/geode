@@ -26,14 +26,12 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -48,16 +46,14 @@ public class ListJndiBindingCommand extends InternalGfshCommand {
   @CliCommand(value = LIST_JNDIBINDING, help = LIST_JNDIBINDING__HELP)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result listJndiBinding() {
-    CompositeResultData resultData = ResultBuilder.createCompositeResultData();
-    CompositeResultData.SectionResultData resultSection = resultData.addSection();
-    TabularResultData configTable = null;
-    TabularResultData memberTable = null;
+  public ResultModel listJndiBinding() {
+    ResultModel resultModel = new ResultModel();
+    TabularResultModel configTable = null;
 
-    InternalClusterConfigurationService ccService =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService ccService =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
     if (ccService != null) {
-      configTable = resultSection.addTable();
+      configTable = resultModel.addTable("clusterConfiguration");
       // we don't support creating jndi binding with random group name yet
       CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
       List<JndiBindingsType.JndiBinding> jndiBindings = cacheConfig.getJndiBindings();
@@ -77,13 +73,13 @@ public class ListJndiBindingCommand extends InternalGfshCommand {
 
     if (members.size() == 0) {
       if (configTable == null) {
-        return ResultBuilder.createUserErrorResult("No members found");
+        return ResultModel.createError("No members found");
       }
       configTable.setFooter("No members found");
-      return ResultBuilder.buildResult(resultData);
+      return resultModel;
     }
 
-    memberTable = resultSection.addTable();
+    TabularResultModel memberTable = resultModel.addTable("memberConfiguration");
     List<CliFunctionResult> rc = executeAndGetFunctionResult(LIST_BINDING_FUNCTION, null, members);
 
     memberTable.setHeader("Active JNDI bindings found on each member: ");
@@ -91,10 +87,10 @@ public class ListJndiBindingCommand extends InternalGfshCommand {
       Serializable[] serializables = oneResult.getSerializables();
       for (int i = 0; i < serializables.length; i += 2) {
         memberTable.accumulate("Member", oneResult.getMemberIdOrName());
-        memberTable.accumulate("JNDI Name", serializables[i]);
-        memberTable.accumulate("JDBC Driver Class", serializables[i + 1]);
+        memberTable.accumulate("JNDI Name", (String) serializables[i]);
+        memberTable.accumulate("JDBC Driver Class", (String) serializables[i + 1]);
       }
     }
-    return ResultBuilder.buildResult(resultData);
+    return resultModel;
   }
 }

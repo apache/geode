@@ -89,7 +89,7 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
   private void postSetUpRestAPITestBase() throws Exception {}
 
   /**
-   * close the clients and teh servers
+   * close the clients and the servers
    */
   @Override
   public final void preTearDown() throws Exception {

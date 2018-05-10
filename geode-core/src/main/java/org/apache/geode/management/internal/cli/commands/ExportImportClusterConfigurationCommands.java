@@ -38,7 +38,7 @@ import org.xml.sax.SAXException;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -48,10 +48,12 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.functions.GetRegionNamesFunction;
@@ -94,7 +96,7 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
     }
 
     File zipFile = tempDir.resolve("exportedCC.zip").toFile();
-    InternalClusterConfigurationService sc = locator.getSharedConfiguration();
+    InternalConfigurationPersistenceService sc = locator.getConfigurationPersistenceService();
 
     Result result;
     try {
@@ -105,7 +107,7 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
 
       InfoResultData infoData = ResultBuilder.createInfoResultData();
       byte[] byteData = FileUtils.readFileToByteArray(zipFile);
-      infoData.addAsFile(zipFileName, byteData, InfoResultData.FILE_TYPE_BINARY,
+      infoData.addAsFile(zipFileName, byteData, ResultData.FILE_TYPE_BINARY,
           CliStrings.EXPORT_SHARED_CONFIG__DOWNLOAD__MSG, false);
       result = ResultBuilder.buildResult(infoData);
     } catch (Exception e) {
@@ -134,8 +136,8 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
           help = CliStrings.IMPORT_SHARED_CONFIG__ZIP__HELP) String zip)
       throws IOException, TransformerException, SAXException, ParserConfigurationException {
 
-    InternalClusterConfigurationService sc =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService sc =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
 
     if (sc == null) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);
@@ -237,7 +239,8 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
     }
 
     @Override
-    public Result postExecution(GfshParseResult parseResult, Result commandResult, Path tempFile) {
+    public CommandResult postExecution(GfshParseResult parseResult, CommandResult commandResult,
+        Path tempFile) {
       if (commandResult.hasIncomingFiles()) {
         try {
           commandResult.saveIncomingFiles(System.getProperty("user.dir"));

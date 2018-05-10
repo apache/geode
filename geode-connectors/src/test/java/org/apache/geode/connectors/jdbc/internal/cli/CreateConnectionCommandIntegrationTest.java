@@ -28,6 +28,7 @@ import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -65,7 +66,8 @@ public class CreateConnectionCommandIntegrationTest {
 
   @Test
   public void createsConnectionConfigurationInService() throws Exception {
-    Result result = createConnectionCommand.createConnection(name, url, user, password, params);
+    ResultModel result =
+        createConnectionCommand.createConnection(name, url, user, password, params);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
@@ -91,7 +93,7 @@ public class CreateConnectionCommandIntegrationTest {
     IgnoredException ignoredException =
         IgnoredException.addIgnoredException(ConnectionConfigExistsException.class.getName());
 
-    Result result;
+    ResultModel result;
     try {
       result = createConnectionCommand.createConnection(name, url, user, password, params);
     } finally {
@@ -99,12 +101,13 @@ public class CreateConnectionCommandIntegrationTest {
     }
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
+
     assertThat(service.getConnectionConfig(name)).isSameAs(connectionConfig);
   }
 
   @Test
   public void createsConnectionConfigurationWithMinimumParams() throws Exception {
-    Result result = createConnectionCommand.createConnection(name, url, null, null, null);
+    ResultModel result = createConnectionCommand.createConnection(name, url, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 

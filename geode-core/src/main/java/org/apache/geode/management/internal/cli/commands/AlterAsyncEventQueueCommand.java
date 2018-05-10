@@ -34,14 +34,13 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -74,7 +73,7 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.AlterAsyncEventQueueCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
-  public Result execute(@CliOption(key = ID, mandatory = true, help = ID_HELP) String id,
+  public ResultModel execute(@CliOption(key = ID, mandatory = true, help = ID_HELP) String id,
       @CliOption(key = BATCH_SIZE, help = BATCH_SIZE_HELP) Integer batchSize,
       @CliOption(key = BATCH_TIME_INTERVAL,
           help = BATCH_TIME_INTERVAL_HELP) Integer batchTimeInterval,
@@ -85,20 +84,22 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
 
     // need not check if any running servers has this async-event-queue. A server with this queue id
     // may be shutdown, but we still need to update Cluster Configuration.
-    InternalClusterConfigurationService service =
-        (InternalClusterConfigurationService) getConfigurationService();
+    InternalConfigurationPersistenceService service =
+        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
 
     if (service == null) {
-      return ResultBuilder.createUserErrorResult("Cluster Configuration Service is not available. "
+      return ResultModel.createError("Cluster Configuration Service is not available. "
           + "Please connect to a locator with running Cluster Configuration Service.");
     }
 
     boolean locked = service.lockSharedConfiguration();
     if (!locked) {
-      return ResultBuilder.createGemFireErrorResult("Unable to lock the cluster configuration.");
+      return ResultModel.createCommandProcessingError("Unable to lock the cluster configuration.");
     }
 
-    TabularResultData tableData = ResultBuilder.createTabularResultData();
+    ResultModel result = new ResultModel();
+    TabularResultModel tableData = result.addTable();
+    boolean xmlUpdated = false;
     try {
       Region<String, Configuration> configRegion = service.getConfigurationRegion();
       for (String group : configRegion.keySet()) {
@@ -108,7 +109,6 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
           continue;
         }
 
-        boolean xmlUpdated = false;
         Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
         NodeList nodeList = document.getElementsByTagName("async-event-queue");
         for (int i = 0; i < nodeList.getLength(); i++) {
@@ -145,7 +145,7 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
       service.unlockSharedConfiguration();
     }
 
-    if (tableData.rowSize("Group") == 0) {
+    if (!xmlUpdated) {
       String message = String.format("Can not find an async event queue with id '%s'.", id);
       throw new EntityNotFoundException(message, ifExists);
     }
@@ -154,21 +154,21 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
     tableData.setFooter(System.lineSeparator()
         + "These changes won't take effect on the running servers. " + System.lineSeparator()
         + "Please restart the servers in these groups for the changes to take effect.");
-    return ResultBuilder.buildResult(tableData);
+
+    return result;
   }
 
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       Object batchSize = parseResult.getParamValue(BATCH_SIZE);
       Object batchTimeInterval = parseResult.getParamValue(BATCH_TIME_INTERVAL);
       Object maxQueueMemory = parseResult.getParamValue(MAX_QUEUE_MEMORY);
 
       if (batchSize == null && batchTimeInterval == null && maxQueueMemory == null) {
-        return ResultBuilder
-            .createUserErrorResult("need to specify at least one option to modify.");
+        return ResultModel.createError("need to specify at least one option to modify.");
       }
-      return ResultBuilder.createInfoResult("");
+      return new ResultModel();
     }
   }
 }

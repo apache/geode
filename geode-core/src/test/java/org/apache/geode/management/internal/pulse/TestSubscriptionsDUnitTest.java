@@ -14,11 +14,13 @@
  */
 package org.apache.geode.management.internal.pulse;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Host.*;
-import static org.apache.geode.test.dunit.NetworkUtils.*;
-import static org.apache.geode.test.dunit.Wait.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Properties;
 

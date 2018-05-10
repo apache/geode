@@ -31,7 +31,7 @@ import org.apache.geode.Instantiator;
  *
  * <p>
  * Note that this class is for internal use only. Customer classes that want to do something
- * similiar should implement a subclass of {@link DataSerializer} or {@link Instantiator}.
+ * similar should implement a subclass of {@link DataSerializer} or {@link Instantiator}.
  *
  * <p>
  * To add a new DataSerializableFixedID do this following:
@@ -71,6 +71,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    *
    * In DSFIDFactory, add a case for the new class case FOO: return new FOO(in);
    */
+  short CREATE_REGION_MESSAGE_LUCENE = -159;
   short FINAL_CHECK_PASSED_MESSAGE = -158;
   short NETWORK_PARTITION_MESSAGE = -157;
   short SUSPECT_MEMBERS_MESSAGE = -156;

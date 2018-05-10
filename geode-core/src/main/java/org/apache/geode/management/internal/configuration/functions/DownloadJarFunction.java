@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
@@ -50,7 +50,8 @@ public class DownloadJarFunction implements InternalFunction<Object[]> {
 
     RemoteInputStream result = null;
     if (locator != null && group != null && jarName != null) {
-      InternalClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
+      InternalConfigurationPersistenceService sharedConfig =
+          locator.getConfigurationPersistenceService();
       if (sharedConfig != null) {
         try {
           File jarFile = sharedConfig.getPathToJarOnThisLocator(group, jarName).toFile();

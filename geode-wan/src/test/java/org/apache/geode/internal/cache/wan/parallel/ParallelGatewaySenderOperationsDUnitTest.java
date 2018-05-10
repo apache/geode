@@ -21,6 +21,7 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -180,8 +181,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // make sure all the senders are running before doing any puts
     waitForSendersRunning();
 
+    int numPuts = 1000;
     // now, the senders are started. So, start the puts
-    vm4.invokeAsync(() -> doPuts(getTestMethodName() + "_PR", 1000));
+    AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getTestMethodName() + "_PR", numPuts));
 
     // now, pause all of the senders
     vm4.invoke(() -> pauseSender("ln"));
@@ -195,10 +197,11 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm6.invoke(() -> resumeSender("ln"));
     vm7.invoke(() -> resumeSender("ln"));
 
+    async.await(2, TimeUnit.MINUTES);
     validateParallelSenderQueueAllBucketsDrained();
 
     // find the region size on remote vm
-    vm2.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 1000));
+    vm2.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", numPuts));
   }
 
   /**
@@ -413,7 +416,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     ArrayList<Integer> vm5List = null;
     ArrayList<Integer> vm6List = null;
     ArrayList<Integer> vm7List = null;
-    boolean foundDroppedAtYetStartedPrimarySender = false;
+    boolean foundEventsDroppedDueToPrimarySenderNotRunning = false;
     int count = 0;
 
     do {
@@ -433,11 +436,11 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       vm7List =
           (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
       if (vm4List.get(0) + vm5List.get(0) + vm6List.get(0) + vm7List.get(0) > 0) {
-        foundDroppedAtYetStartedPrimarySender = true;
+        foundEventsDroppedDueToPrimarySenderNotRunning = true;
       }
       count++;
-    } while (foundDroppedAtYetStartedPrimarySender == false && count < 5);
-    assertThat(foundDroppedAtYetStartedPrimarySender);
+    } while (foundEventsDroppedDueToPrimarySenderNotRunning == false && count < 5);
+    assertThat(foundEventsDroppedDueToPrimarySenderNotRunning);
 
     // verify all the buckets on all the sender nodes are drained
     validateParallelSenderQueueAllBucketsDrained();

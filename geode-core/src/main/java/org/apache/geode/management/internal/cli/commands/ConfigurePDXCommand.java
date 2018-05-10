@@ -15,57 +15,30 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
-import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.security.ResourcePermission;
 
-public class ConfigurePDXCommand extends InternalGfshCommand {
+public class ConfigurePDXCommand extends SingleGfshCommand {
 
   protected ReflectionBasedAutoSerializer createReflectionBasedAutoSerializer(
       boolean checkPortability, String[] patterns) {
     return new ReflectionBasedAutoSerializer(checkPortability, patterns);
-  }
-
-  /**
-   * @param forParsing if true then this creation is used for parsing xml; if false then it is used
-   *        for generating xml.
-   * @since GemFire 5.7
-   */
-  protected CacheCreation getCacheCreation(boolean forParsing) {
-    return new CacheCreation(forParsing);
-  }
-
-  /**
-   * Creates the XmlEntity associated to the PDX configuration.
-   */
-  protected XmlEntity createXmlEntity(CacheCreation cache) {
-    final StringWriter stringWriter = new StringWriter();
-    final PrintWriter printWriter = new PrintWriter(stringWriter);
-    CacheXmlGenerator.generate(cache, printWriter, true, false, false);
-    printWriter.close();
-    String xmlDefinition = stringWriter.toString();
-
-    return XmlEntity.builder().withType(CacheXml.PDX).withConfig(xmlDefinition).build();
   }
 
   @CliCommand(value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
@@ -73,83 +46,71 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.ConfigurePDXCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result configurePDX(
+  public ResultModel configurePDX(
       @CliOption(key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
+          unspecifiedDefaultValue = "false",
           help = CliStrings.CONFIGURE_PDX__READ__SERIALIZED__HELP) Boolean readSerialized,
       @CliOption(key = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS,
+          unspecifiedDefaultValue = "false",
           help = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS__HELP) Boolean ignoreUnreadFields,
-      @CliOption(key = CliStrings.CONFIGURE_PDX__DISKSTORE, specifiedDefaultValue = "",
+      @CliOption(key = CliStrings.CONFIGURE_PDX__DISKSTORE, specifiedDefaultValue = "DEFAULT",
           help = CliStrings.CONFIGURE_PDX__DISKSTORE__HELP) String diskStore,
       @CliOption(key = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
           help = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES__HELP) String[] nonPortableClassesPatterns,
       @CliOption(key = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES,
           help = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES__HELP) String[] portableClassesPatterns) {
 
-    Result result;
-    ReflectionBasedAutoSerializer autoSerializer;
-    CacheCreation cache = getCacheCreation(true);
-    InfoResultData ird = ResultBuilder.createInfoResultData();
+    if (getConfigurationPersistenceService() == null) {
+      return ResultModel
+          .createError("Configure pdx failed because cluster configuration is disabled.");
+    }
+
+    ResultModel result = new ResultModel();
+    InfoResultModel infoSection = result.addInfo();
 
     if (!getAllNormalMembers().isEmpty()) {
-      ird.addLine(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING);
+      infoSection.addLine(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING);
     }
 
-    // Set persistent and the disk-store
+    PdxType pdxType = new PdxType();
+    pdxType.setIgnoreUnreadFields(ignoreUnreadFields);
+    pdxType.setReadSerialized(readSerialized);
+    infoSection.addLine(CliStrings.CONFIGURE_PDX__READ__SERIALIZED + " = " + readSerialized);
+    infoSection
+        .addLine(CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS + " = " + ignoreUnreadFields);
+
+    pdxType.setDiskStoreName(diskStore);
+    pdxType.setPersistent(diskStore != null);
+
     if (diskStore != null) {
-      cache.setPdxPersistent(true);
-      ird.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = " + cache.getPdxPersistent());
-
-      if (!diskStore.equals("")) {
-        cache.setPdxDiskStore(diskStore);
-        ird.addLine(CliStrings.CONFIGURE_PDX__DISKSTORE + " = " + cache.getPdxDiskStore());
-      } else {
-        ird.addLine(CliStrings.CONFIGURE_PDX__DISKSTORE + " = " + "DEFAULT");
-      }
+      infoSection.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = true");
+      infoSection.addLine(CliStrings.CONFIGURE_PDX__DISKSTORE + " = " + diskStore);
     } else {
-      cache.setPdxPersistent(CacheConfig.DEFAULT_PDX_PERSISTENT);
-      ird.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = " + cache.getPdxPersistent());
+      infoSection.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = false");
     }
 
-    // Set read-serialized
-    if (readSerialized != null) {
-      cache.setPdxReadSerialized(readSerialized);
-    } else {
-      cache.setPdxReadSerialized(CacheConfig.DEFAULT_PDX_READ_SERIALIZED);
-    }
-
-    ird.addLine(CliStrings.CONFIGURE_PDX__READ__SERIALIZED + " = " + cache.getPdxReadSerialized());
-
-    // Set ignoreUnreadFields
-    if (ignoreUnreadFields != null) {
-      cache.setPdxIgnoreUnreadFields(ignoreUnreadFields);
-    } else {
-      cache.setPdxIgnoreUnreadFields(CacheConfig.DEFAULT_PDX_IGNORE_UNREAD_FIELDS);
-    }
-
-    ird.addLine(
-        CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS + " = " + cache.getPdxIgnoreUnreadFields());
-
-    // Auto Serializer Configuration
+    ReflectionBasedAutoSerializer autoSerializer = null;
     if (portableClassesPatterns != null) {
       autoSerializer = createReflectionBasedAutoSerializer(true, portableClassesPatterns);
-      cache.setPdxSerializer(autoSerializer);
-      ird.addLine("PDX Serializer = " + cache.getPdxSerializer().getClass().getName());
-      ird.addLine("Portable Classes = " + Arrays.toString(portableClassesPatterns));
-    }
-
-    if (nonPortableClassesPatterns != null) {
+      infoSection.addLine("PDX Serializer = " + autoSerializer.getClass().getName());
+      infoSection.addLine("Portable Classes = " + Arrays.toString(portableClassesPatterns));
+    } else if (nonPortableClassesPatterns != null) {
       autoSerializer = createReflectionBasedAutoSerializer(false, nonPortableClassesPatterns);
-      cache.setPdxSerializer(autoSerializer);
-      ird.addLine("PDX Serializer = " + cache.getPdxSerializer().getClass().getName());
-      ird.addLine("Non Portable Classes = " + Arrays.toString(nonPortableClassesPatterns));
+      infoSection.addLine("PDX Serializer = " + autoSerializer.getClass().getName());
+      infoSection.addLine("Non Portable Classes = " + Arrays.toString(nonPortableClassesPatterns));
+    }
+    if (autoSerializer != null) {
+      pdxType.setPdxSerializer(new DeclarableType(ReflectionBasedAutoSerializer.class.getName(),
+          autoSerializer.getConfig()));
     }
 
-    XmlEntity xmlEntity = createXmlEntity(cache);
-    result = ResultBuilder.buildResult(ird);
-    persistClusterConfiguration(result,
-        () -> ((InternalClusterConfigurationService) getConfigurationService())
-            .addXmlEntity(xmlEntity, null));
+    result.setConfigObject(pdxType);
     return result;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
+    config.setPdx((PdxType) configObject);
   }
 
   /**
@@ -158,7 +119,7 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
   public static class Interceptor extends AbstractCliAroundInterceptor {
 
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       String[] portableClassesPatterns = (String[]) parseResult
           .getParamValue(CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES);
       String[] nonPortableClassesPatterns =
@@ -166,10 +127,9 @@ public class ConfigurePDXCommand extends InternalGfshCommand {
 
       if ((nonPortableClassesPatterns != null && nonPortableClassesPatterns.length > 0)
           && (portableClassesPatterns != null && portableClassesPatterns.length > 0)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.CONFIGURE_PDX__ERROR__MESSAGE);
+        return ResultModel.createError(CliStrings.CONFIGURE_PDX__ERROR__MESSAGE);
       }
-
-      return ResultBuilder.createInfoResult("");
+      return ResultModel.createInfo("");
     }
   }
 }

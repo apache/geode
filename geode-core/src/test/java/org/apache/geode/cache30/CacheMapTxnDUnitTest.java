@@ -20,7 +20,8 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Properties;
 import java.util.Set;
@@ -156,7 +157,7 @@ public class CacheMapTxnDUnitTest extends JUnit4DistributedTestCase { // TODO: r
                                                                                            // same
                                                                                            // vm but
                                                                                            // in
-                                                                                           // seperate
+                                                                                           // separate
                                                                                            // thread
     AsyncInvocation o3 = vm1.invokeAsync(() -> CacheMapTxnDUnitTest.miscMethodsNotOwner());// invoke
                                                                                            // in

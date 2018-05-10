@@ -614,7 +614,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
         }
       } else {
         String exception =
-            LocalizedStrings.TransactionManagerImpl_TRANSACTIONMANAGERIMPL_SETTRANSACTIONTIMEOUT_TRANSACTION_HAS_EITHER_EXPIRED_OR_ROLLEDBACK_OR_COMITTED
+            LocalizedStrings.TransactionManagerImpl_TRANSACTIONMANAGERIMPL_SETTRANSACTIONTIMEOUT_TRANSACTION_HAS_EITHER_EXPIRED_OR_ROLLEDBACK_OR_COMMITTED
                 .toLocalizedString();
         LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
         if (VERBOSE)
@@ -803,7 +803,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
               if (lag >= 0) {
                 // Asif: Expire the GTX .Do not worry if some GTX comes
                 // before it in Map , ie
-                // even if tehre is a GTX earlier than this one to expire ,
+                // even if there is a GTX earlier than this one to expire ,
                 // it is OK
                 // to first take care of this one
                 // TODO: Do the clean up from all Maps

@@ -14,8 +14,12 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -462,7 +466,7 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Listener which sends a notification after create to waiting threads and also extracts teh event
+   * Listener which sends a notification after create to waiting threads and also extracts the event
    * id storing it in a static variable
    *
    */
@@ -507,7 +511,7 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Listener which sends a notification after create to waiting threads and also extracts teh event
+   * Listener which sends a notification after create to waiting threads and also extracts the event
    * ids storing them in static variables
    *
    */

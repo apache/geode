@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
 
 import java.util.Properties;
 

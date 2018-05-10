@@ -16,10 +16,12 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionManager;
 
 public class FetchStatsRequest extends AdminRequest {
 

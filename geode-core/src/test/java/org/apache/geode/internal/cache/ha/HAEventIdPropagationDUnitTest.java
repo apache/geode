@@ -14,8 +14,12 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -617,7 +621,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Listener which sends a notification after create to waiting threads and also extracts teh event
+   * Listener which sends a notification after create to waiting threads and also extracts the event
    * id storing it in a static variable
    */
   static class HAEventIdPropagationListenerForClient extends CacheListenerAdapter {
@@ -702,7 +706,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Listener which sends a notification after create to waiting threads and also extracts teh event
+   * Listener which sends a notification after create to waiting threads and also extracts the event
    * id storing it in a static variable
    */
   static class HAEventIdPropagationListenerForServer extends CacheListenerAdapter {

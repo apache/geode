@@ -14,8 +14,12 @@
  */
 package org.apache.geode.pdx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -23,7 +27,11 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,17 +39,19 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({IntegrationTest.class, SerializationTest.class})
-public class PdxInstanceJUnitTest {
+public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
 
   private GemFireCacheImpl c;
   private int allFieldCount;
@@ -220,8 +230,11 @@ public class PdxInstanceJUnitTest {
     if (f instanceof PdxInstanceEnumInfo) {
       PdxInstanceEnumInfo e = (PdxInstanceEnumInfo) f;
       assertEquals("ONE", e.getName());
-      GemFireCacheImpl theCache = GemFireCacheImpl
-          .getForPdx("PDX registry is unavailable because the Cache has been closed.");
+      GemFireCacheImpl theCache = (GemFireCacheImpl) getCache();
+      if (theCache == null) {
+        throw new CacheClosedException(
+            "PDX registry is unavailable because the Cache has been closed.");
+      }
       theCache.getPdxRegistry().flushCache();
       assertEquals(MyComplexEnum.ONE, e.getObject());
     } else {
@@ -237,8 +250,11 @@ public class PdxInstanceJUnitTest {
     if (f instanceof PdxInstanceEnumInfo) {
       PdxInstanceEnumInfo e = (PdxInstanceEnumInfo) f;
       assertEquals("ONE", e.getName());
-      GemFireCacheImpl theCache = GemFireCacheImpl
-          .getForPdx("PDX registry is unavailable because the Cache has been closed.");
+      GemFireCacheImpl theCache = (GemFireCacheImpl) getCache();
+      if (theCache == null) {
+        throw new CacheClosedException(
+            "PDX registry is unavailable because the Cache has been closed.");
+      }
       theCache.getPdxRegistry().flushCache();
       assertEquals(MyEnum.ONE, e.getObject());
     } else {

@@ -14,8 +14,12 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.distributed.internal.DistributionConfig.*;
-import static org.apache.geode.internal.AvailablePort.*;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
+import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getAddress;
+import static org.apache.geode.internal.AvailablePort.isPortKeepable;
 
 import java.net.InetAddress;
 import java.util.ArrayList;

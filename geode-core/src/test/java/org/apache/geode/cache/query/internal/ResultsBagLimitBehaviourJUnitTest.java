@@ -14,7 +14,10 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -59,7 +62,7 @@ public class ResultsBagLimitBehaviourJUnitTest {
   }
 
   @Test
-  public void testOccurence() {
+  public void testOccurrence() {
     ResultsBag bag = getBagObject(String.class);
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
@@ -159,10 +162,10 @@ public class ResultsBagLimitBehaviourJUnitTest {
     }
   }
 
-  // Internal method AddAndGetOccurence used for iter evaluating
+  // Internal method AddAndGetOccurrence used for iter evaluating
   // only up till the limit
   @Test
-  public void testAddAndGetOccurence() {
+  public void testAddAndGetOccurrence() {
     ResultsBag bag = getBagObject(String.class);
     bag = getBagObject(String.class);
     ObjectType elementType = bag.getCollectionType().getElementType();
@@ -247,9 +250,9 @@ public class ResultsBagLimitBehaviourJUnitTest {
     for (int i = 1; i < 5; ++i) {
       Integer intg = new Integer(i);
       if (temp.contains(wrap(intg, bag.getCollectionType().getElementType()))) {
-        int occurence = bag.occurrences(wrap(intg, bag.getCollectionType().getElementType()));
+        int occurrence = bag.occurrences(wrap(intg, bag.getCollectionType().getElementType()));
         assertTrue(bag.remove(wrap(intg, bag.getCollectionType().getElementType())));
-        assertEquals(--occurence,
+        assertEquals(--occurrence,
             bag.occurrences(wrap(intg, bag.getCollectionType().getElementType())));
         --currSize;
         assertEquals(currSize, bag.size());
@@ -258,9 +261,9 @@ public class ResultsBagLimitBehaviourJUnitTest {
       }
     }
     if (temp.contains(wrap(null, bag.getCollectionType().getElementType()))) {
-      int occurence = bag.occurrences(wrap(null, bag.getCollectionType().getElementType()));
+      int occurrence = bag.occurrences(wrap(null, bag.getCollectionType().getElementType()));
       assertTrue(bag.remove(wrap(null, bag.getCollectionType().getElementType())));
-      assertEquals(--occurence,
+      assertEquals(--occurrence,
           bag.occurrences(wrap(null, bag.getCollectionType().getElementType())));
       --currSize;
       assertEquals(currSize, bag.size());
@@ -503,18 +506,18 @@ public class ResultsBagLimitBehaviourJUnitTest {
     // Remove all the elements from the list which match the
     // first element pf the list and also
     // Get the number of occurnce of first element of List, in the bag
-    int occurence = bag.occurrences(asList.get(0));
+    int occurrence = bag.occurrences(asList.get(0));
     // Now remove the this element from the list totally
     Object toRemove = asList.get(0);
-    for (int i = 0; i < occurence; ++i) {
+    for (int i = 0; i < occurrence; ++i) {
       asList.remove(toRemove);
     }
     // So we have added one element in thje list which does not exist in the bag
-    // and removeed one element from list which exists in teh bag.
+    // and removeed one element from list which exists in the bag.
     bag.removeAll(asList);
-    assertEquals(occurence, bag.size());
+    assertEquals(occurrence, bag.size());
     Iterator itr = bag.iterator();
-    for (int i = 0; i < occurence; ++i) {
+    for (int i = 0; i < occurrence; ++i) {
       itr.next();
     }
     assertFalse(itr.hasNext());
@@ -542,18 +545,18 @@ public class ResultsBagLimitBehaviourJUnitTest {
     // Remove all the elements from the list which match the
     // first element pf the list and also
     // Get the number of occurnce of first element of List, in the bag
-    int occurence = bag.occurrences(asList.get(0));
+    int occurrence = bag.occurrences(asList.get(0));
     // Now remove the this element from the list totally
     Object toRemove = asList.get(0);
-    for (int i = 0; i < occurence; ++i) {
+    for (int i = 0; i < occurrence; ++i) {
       asList.remove(toRemove);
     }
     // So we have added one element in thje list which does not exist in the bag
-    // and removeed one element from list which exists in teh bag.
+    // and removeed one element from list which exists in the bag.
     bag.retainAll(asList);
-    assertEquals((4 - occurence), bag.size());
+    assertEquals((4 - occurrence), bag.size());
     Iterator itr = bag.iterator();
-    for (int i = 0; i < (4 - occurence); ++i) {
+    for (int i = 0; i < (4 - occurrence); ++i) {
       itr.next();
     }
     assertFalse(itr.hasNext());
@@ -580,10 +583,10 @@ public class ResultsBagLimitBehaviourJUnitTest {
     // assertIndexDetailsEquals(5,asList.size());
     // Remove all the elements from the list which match the
     // first element pf the list
-    int occurence = bag.occurrences(asList.get(0));
+    int occurrence = bag.occurrences(asList.get(0));
     // Now remove the this element from the list totally
     Object toRemove = asList.get(0);
-    for (int i = 0; i < occurence; ++i) {
+    for (int i = 0; i < occurrence; ++i) {
       asList.remove(toRemove);
     }
     assertTrue(bag.containsAll(asList));

@@ -1228,10 +1228,10 @@ public class WANTestBase extends DistributedTestCase {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     GatewaySenderStats statistics = sender.getStatistics();
     ArrayList<Integer> stats = new ArrayList<Integer>();
-    int eventNotQueued = statistics.getEventsNotQueuedAtYetRunningPrimarySender();
+    int eventNotQueued = statistics.getEventsDroppedDueToPrimarySenderNotRunning();
     if (eventNotQueued > 0) {
-      logger.info(
-          "Found " + eventNotQueued + " not queued events due to primary sender is yet running");
+      logger
+          .info("Found " + eventNotQueued + " events dropped due to primary sender is not running");
     }
     stats.add(eventNotQueued);
     stats.add(statistics.getEventsNotQueued());
@@ -2704,7 +2704,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void validateRegionSize(String regionName, final int regionSize) {
-    validateRegionSize(regionName, regionSize, 30000);
+    validateRegionSize(regionName, regionSize, 60000);
   }
 
   public static void validateRegionSize(String regionName, final int regionSize,
@@ -3242,10 +3242,6 @@ public class WANTestBase extends DistributedTestCase {
           break;
         }
       }
-      RegionQueue regionQueue =
-          ((AbstractGatewaySender) sender).getQueues().toArray(new RegionQueue[1])[0];
-      Set<BucketRegion> buckets = ((PartitionedRegion) regionQueue.getRegion()).getDataStore()
-          .getAllLocalPrimaryBucketRegions();
       final AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
       RegionQueue queue = abstractSender.getEventProcessor().queue;
       Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {

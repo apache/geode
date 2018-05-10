@@ -54,7 +54,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Test for Partitioned Region operations on a single node. Following tests are included:
  * <P>
- * (1) testPut() - Tests teh put() functionality for the partitioned region.
+ * (1) testPut() - Tests the put() functionality for the partitioned region.
  * </P>
  *
  *

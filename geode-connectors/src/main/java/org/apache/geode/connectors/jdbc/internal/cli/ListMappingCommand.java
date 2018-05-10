@@ -14,28 +14,32 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.distributed.ConfigurationPersistenceService.CLUSTER_CONFIG;
+
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-
-public class ListMappingCommand extends InternalGfshCommand {
+@Experimental
+public class ListMappingCommand extends GfshCommand {
   static final String LIST_MAPPING = "list jdbc-mappings";
-  static final String LIST_MAPPING__HELP = "Display jdbc mappings for all members.";
+  static final String LIST_MAPPING__HELP = EXPERIMENTAL + "Display jdbc mappings for all members.";
 
   static final String LIST_OF_MAPPINGS = "List of mappings";
   static final String NO_MAPPINGS_FOUND = "No mappings found";
@@ -50,28 +54,31 @@ public class ListMappingCommand extends InternalGfshCommand {
     Collection<ConnectorService.RegionMapping> mappings = null;
 
     // check if CC is available and use it to describe the connection
-    ClusterConfigurationService ccService = getConfigurationService();
+    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
     if (ccService != null) {
-      ConnectorService service =
-          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
-      if (service != null) {
-        mappings = service.getRegionMapping();
+      CacheConfig cacheConfig = ccService.getCacheConfig(CLUSTER_CONFIG);
+      if (cacheConfig != null) {
+        ConnectorService service =
+            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
+        if (service != null) {
+          mappings = service.getRegionMapping();
+        }
       }
     } else {
       // otherwise get it from any member
       Set<DistributedMember> members = findMembers(null, null);
       if (members.size() > 0) {
         DistributedMember targetMember = members.iterator().next();
-        List<?> result =
-            (List<?>) executeFunction(new ListMappingFunction(), null, targetMember).getResult();
-        if (!result.isEmpty()) {
-          mappings = (Collection<ConnectorService.RegionMapping>) result.get(0);
+        CliFunctionResult result =
+            executeFunctionAndGetFunctionResult(new ListMappingFunction(), null, targetMember);
+        if (result != null) {
+          mappings = (Collection<ConnectorService.RegionMapping>) result.getResultObject();
         }
       }
     }
 
     if (mappings == null) {
-      return ResultBuilder.createInfoResult("No mappings found");
+      return ResultBuilder.createInfoResult(EXPERIMENTAL + "\n" + NO_MAPPINGS_FOUND);
     }
 
     // output
@@ -82,9 +89,10 @@ public class ListMappingCommand extends InternalGfshCommand {
 
   private Result createResult(TabularResultData tabularResultData, boolean mappingsExist) {
     if (mappingsExist) {
+      tabularResultData.setHeader(EXPERIMENTAL);
       return ResultBuilder.buildResult(tabularResultData);
     } else {
-      return ResultBuilder.createInfoResult(NO_MAPPINGS_FOUND);
+      return ResultBuilder.createInfoResult(EXPERIMENTAL + "\n" + NO_MAPPINGS_FOUND);
     }
   }
 

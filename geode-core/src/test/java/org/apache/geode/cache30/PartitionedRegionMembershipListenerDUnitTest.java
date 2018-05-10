@@ -18,7 +18,8 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -30,7 +31,6 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache30.RegionMembershipListenerDUnitTest.MyRML;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;

@@ -26,10 +26,9 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -38,18 +37,20 @@ public class ListMembersCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result listMember(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+  public ResultModel listMember(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.LIST_MEMBER__GROUP__HELP) String[] groups) {
 
+    ResultModel crm = new ResultModel();
     Set<DistributedMember> memberSet = new TreeSet<>();
     memberSet.addAll(this.findMembersIncludingLocators(groups, null));
 
     if (memberSet.isEmpty()) {
-      return ResultBuilder.createInfoResult(CliStrings.LIST_MEMBER__MSG__NO_MEMBER_FOUND);
+      crm.addInfo().addLine(CliStrings.LIST_MEMBER__MSG__NO_MEMBER_FOUND);
+      return crm;
     }
 
-    TabularResultData resultData = ResultBuilder.createTabularResultData();
+    TabularResultModel resultData = crm.addTable();
     final DistributedMember coordinatorMember = getCoordinator();
     for (DistributedMember member : memberSet) {
       resultData.accumulate("Name", member.getName());
@@ -60,7 +61,7 @@ public class ListMembersCommand extends InternalGfshCommand {
       }
     }
 
-    return ResultBuilder.buildResult(resultData);
+    return crm;
   }
 
   DistributedMember getCoordinator() {

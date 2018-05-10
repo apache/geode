@@ -502,7 +502,7 @@ public class TXEntryState implements Releasable {
     return this.op <= OP_D_DESTROY && this.op >= OP_L_DESTROY;
   }
 
-  boolean isOpDestroyEvent(LocalRegion r) {
+  boolean isOpDestroyEvent(InternalRegion r) {
     // Note that if the region is a proxy then we go ahead and distributed
     // the destroy because we can't eliminate it based on committed state
     return isOpDestroy()
@@ -514,7 +514,7 @@ public class TXEntryState implements Releasable {
    *
    * @since GemFire 5.0
    */
-  boolean isOpAnyEvent(LocalRegion r) {
+  boolean isOpAnyEvent(InternalRegion r) {
     return isOpPutEvent() || isOpCreateEvent() || isOpInvalidateEvent() || isOpDestroyEvent(r);
   }
 
@@ -893,8 +893,8 @@ public class TXEntryState implements Releasable {
   }
 
   @Retained
-  EntryEvent getEvent(LocalRegion r, Object key, TXState txs) {
-    LocalRegion eventRegion = r;
+  EntryEvent getEvent(InternalRegion r, Object key, TXState txs) {
+    InternalRegion eventRegion = r;
     if (r.isUsedForPartitionedRegionBucket()) {
       eventRegion = r.getPartitionedRegion();
     }
@@ -937,8 +937,8 @@ public class TXEntryState implements Releasable {
    */
   public boolean destroy(EntryEventImpl event, boolean cacheWrite, boolean originRemote)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
-    LocalRegion lr = event.getRegion();
-    CacheWriter cWriter = lr.basicGetWriter();
+    InternalRegion internalRegion = event.getRegion();
+    CacheWriter cWriter = internalRegion.basicGetWriter();
     byte advisedOp = adviseOp((cacheWrite ? OP_D_DESTROY : OP_L_DESTROY), event);
     if (cWriter != null && cacheWrite && !event.inhibitAllNotifications()) {
       boolean oldOriginRemote = event.isOriginRemote();
@@ -998,9 +998,9 @@ public class TXEntryState implements Releasable {
     this.bulkOp = event.getOperation().isPutAll();
     byte advisedOp = adviseOp(putOp, event);
 
-    LocalRegion lr = event.getRegion();
+    InternalRegion internalRegion = event.getRegion();
     if (!event.isNetSearch()) {
-      CacheWriter cWriter = lr.basicGetWriter();
+      CacheWriter cWriter = internalRegion.basicGetWriter();
       boolean oldOriginRemote = event.isOriginRemote();
       if (event.hasClientOrigin() || originRemote) {
         event.setOriginRemote(true);
@@ -1405,7 +1405,7 @@ public class TXEntryState implements Releasable {
     return false;
   }
 
-  void checkForConflict(LocalRegion r, Object key) throws CommitConflictException {
+  void checkForConflict(InternalRegion r, Object key) throws CommitConflictException {
     if (!isDirty()) {
       // All we did was read the entry and we don't do read/write conflicts; yet.
       return;
@@ -1553,7 +1553,7 @@ public class TXEntryState implements Releasable {
     return isOpCreate();
   }
 
-  private void txApplyDestroyLocally(LocalRegion r, Object key, TXState txState) {
+  private void txApplyDestroyLocally(InternalRegion r, Object key, TXState txState) {
     boolean invokeCallbacks = isOpDestroyEvent(r);
     List<EntryEventImpl> pendingCallbacks =
         invokeCallbacks ? txState.getPendingCallbacks() : new ArrayList<EntryEventImpl>();
@@ -1571,7 +1571,7 @@ public class TXEntryState implements Releasable {
     // transaction listener that no destroy was done.
   }
 
-  private void txApplyInvalidateLocally(LocalRegion r, Object key, Object newValue,
+  private void txApplyInvalidateLocally(InternalRegion r, Object key, Object newValue,
       boolean didDestroy, TXState txState) {
     try {
       r.txApplyInvalidate(key, newValue, didDestroy, txState.getTransactionId(), null,
@@ -1583,7 +1583,7 @@ public class TXEntryState implements Releasable {
     }
   }
 
-  private void txApplyPutLocally(LocalRegion r, Operation putOp, Object key, Object newValue,
+  private void txApplyPutLocally(InternalRegion r, Operation putOp, Object key, Object newValue,
       boolean didDestroy, TXState txState) {
     try {
       r.txApplyPut(putOp, key, newValue, didDestroy, txState.getTransactionId(), null,
@@ -1599,7 +1599,7 @@ public class TXEntryState implements Releasable {
    *
    * @return true if this entry is not dirty.
    */
-  boolean cleanupNonDirty(LocalRegion r) {
+  boolean cleanupNonDirty(InternalRegion r) {
     if (isDirty()) {
       return false;
     } else {
@@ -1608,7 +1608,7 @@ public class TXEntryState implements Releasable {
     }
   }
 
-  void buildMessage(LocalRegion r, Object key, TXCommitMessage msg, Set otherRecipients) {
+  void buildMessage(InternalRegion r, Object key, TXCommitMessage msg, Set otherRecipients) {
     if (!isDirty()) {
       // all we do was read so just return
       return;
@@ -1653,7 +1653,8 @@ public class TXEntryState implements Releasable {
   }
 
 
-  void buildCompleteMessage(LocalRegion r, Object key, TXCommitMessage msg, Set otherRecipients) {
+  void buildCompleteMessage(InternalRegion r, Object key, TXCommitMessage msg,
+      Set otherRecipients) {
     if (!isDirty()) {
       // all we do was read so just return
       return;
@@ -1699,7 +1700,7 @@ public class TXEntryState implements Releasable {
 
 
 
-  void applyChanges(LocalRegion r, Object key, TXState txState) {
+  void applyChanges(InternalRegion r, Object key, TXState txState) {
     if (logger.isDebugEnabled()) {
       logger.debug("applyChanges txState=" + txState + " ,key=" + key + " ,r=" + r.getDisplayName()
           + " ,op=" + this.op + " ,isDirty=" + isDirty());
@@ -1895,7 +1896,7 @@ public class TXEntryState implements Releasable {
     return filterRoutingInfo;
   }
 
-  void cleanup(LocalRegion r) {
+  void cleanup(InternalRegion r) {
     if (this.refCountEntry != null) {
       r.txDecRefCount(refCountEntry);
     }
@@ -1919,7 +1920,7 @@ public class TXEntryState implements Releasable {
      * Creates a local tx entry event
      */
     @Retained
-    TxEntryEventImpl(LocalRegion r, Object key) {
+    TxEntryEventImpl(InternalRegion r, Object key) {
       super(r, getNearSideOperation(), key, getNearSidePendingValue(),
           TXEntryState.this.getCallbackArgument(), false, r.getMyId(), true/* generateCallbacks */,
           true /* initializeId */);

@@ -14,7 +14,8 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static java.lang.Integer.*;
+import static java.lang.Integer.MAX_VALUE;
+import static java.lang.Integer.valueOf;
 
 import java.util.ArrayList;
 import java.util.Collection;

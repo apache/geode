@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal;
 
-import java.lang.ref.*;
+import java.lang.ref.WeakReference;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 

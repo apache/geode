@@ -14,8 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -184,7 +188,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
     // in the client. All of these keys hash to bucket 0 in a two-bucket PR
     // except Object11 and IDoNotExist1
     final String notAffectedKey = "Object1";
-    final String nonexistantKey = (usePR && useTX) ? "IDoNotExist2" : "IDoNotExist1";
+    final String nonexistentKey = (usePR && useTX) ? "IDoNotExist2" : "IDoNotExist1";
     final String key1 = "Object10";
     final String key2 = (usePR && useTX) ? "Object12" : "Object11";
 
@@ -224,8 +228,8 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
     assertTrue(myRegion.containsKey(key2));
 
     // now try a key that doesn't exist anywhere
-    assertNull(myRegion.get(nonexistantKey));
-    assertFalse(myRegion.containsKey(nonexistantKey));
+    assertNull(myRegion.get(nonexistentKey));
+    assertFalse(myRegion.containsKey(nonexistentKey));
 
     if (useTX) {
       c.getCacheTransactionManager().commit();
@@ -305,7 +309,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
     // in the client. All of these keys hash to bucket 0 in a two-bucket PR
     // except Object11 and IDoNotExist1
     final String notAffectedKey = "Object1";
-    final String nonexistantKey = (usePR && useTX) ? "IDoNotExist2" : "IDoNotExist1";
+    final String nonexistentKey = (usePR && useTX) ? "IDoNotExist2" : "IDoNotExist1";
     final String key1 = "Object10";
     final String key2 = (usePR && useTX) ? "Object12" : "Object11";
 
@@ -355,8 +359,8 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
 
 
     // now try a key that doesn't exist anywhere
-    assertNull(myRegion.get(nonexistantKey));
-    assertFalse(myRegion.containsKey(nonexistantKey));
+    assertNull(myRegion.get(nonexistentKey));
+    assertFalse(myRegion.containsKey(nonexistentKey));
 
     if (useTX) {
       c.getCacheTransactionManager().commit();

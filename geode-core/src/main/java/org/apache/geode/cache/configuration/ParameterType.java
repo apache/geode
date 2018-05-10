@@ -18,10 +18,11 @@
 
 package org.apache.geode.cache.configuration;
 
+import java.util.Objects;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.geode.annotations.Experimental;
@@ -55,60 +56,22 @@ import org.apache.geode.annotations.Experimental;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "parameter-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"string", "declarable"})
+@XmlType(name = "parameter-type", namespace = "http://geode.apache.org/schema/cache")
 @Experimental
-public class ParameterType {
+public class ParameterType extends ObjectType {
 
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected StringType string;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected DeclarableType declarable;
   @XmlAttribute(name = "name", required = true)
   protected String name;
 
-  /**
-   * Gets the value of the string property.
-   *
-   * possible object is
-   * {@link StringType }
-   *
-   */
-  public StringType getString() {
-    return string;
+  public ParameterType() {};
+
+  public ParameterType(String name) {
+    this.name = name;
   }
 
-  /**
-   * Sets the value of the string property.
-   *
-   * allowed object is
-   * {@link StringType }
-   *
-   */
-  public void setString(StringType value) {
-    this.string = value;
-  }
-
-  /**
-   * Gets the value of the declarable property.
-   *
-   * possible object is
-   * {@link DeclarableType }
-   *
-   */
-  public DeclarableType getDeclarable() {
-    return declarable;
-  }
-
-  /**
-   * Sets the value of the declarable property.
-   *
-   * allowed object is
-   * {@link DeclarableType }
-   *
-   */
-  public void setDeclarable(DeclarableType value) {
-    this.declarable = value;
+  public ParameterType(String name, String value) {
+    this.name = name;
+    setString(value);
   }
 
   /**
@@ -133,4 +96,25 @@ public class ParameterType {
     this.name = value;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ParameterType that = (ParameterType) o;
+    return Objects.equals(name, that.name) && super.equals(o);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name);
+  }
+
+  @Override
+  public String toString() {
+    return name + ":" + super.toString();
+  }
 }

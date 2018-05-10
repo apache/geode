@@ -77,8 +77,8 @@ public class CreateMappingCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
-          .getCacheXmlContent();
+      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("jdbc:connector-service")
           .doesNotContain("jdbc:connection").contains("jdbc:region-mapping")
           .contains("jdbc:field-mapping");
@@ -113,8 +113,8 @@ public class CreateMappingCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
-          .getCacheXmlContent();
+      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("primary-key-in-value=\"false\"");
     });
 
@@ -147,8 +147,8 @@ public class CreateMappingCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
-          .getCacheXmlContent();
+      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("jdbc:connector-service");
       assertThat(xml).isNotNull().contains("jdbc:region-mapping");
       assertThat(xml).isNotNull().doesNotContain("jdbc:field-mapping");

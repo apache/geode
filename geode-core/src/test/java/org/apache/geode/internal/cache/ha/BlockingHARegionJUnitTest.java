@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
@@ -39,7 +41,7 @@ public class BlockingHARegionJUnitTest {
 
   private static InternalCache cache = null;
 
-  /** boolean to record an exception occurence in another thread **/
+  /** boolean to record an exception occurrence in another thread **/
   private static volatile boolean exceptionOccurred = false;
   /** StringBuffer to store the exception **/
   private static StringBuffer exceptionString = new StringBuffer();

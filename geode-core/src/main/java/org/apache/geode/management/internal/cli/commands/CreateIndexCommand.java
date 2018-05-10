@@ -21,30 +21,29 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.domain.IndexInfo;
+import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateIndexCommand extends InternalGfshCommand {
+public class CreateIndexCommand extends SingleGfshCommand {
   private static final CreateIndexFunction createIndexFunction = new CreateIndexFunction();
 
   @CliCommand(value = CliStrings.CREATE_INDEX, help = CliStrings.CREATE_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  // TODO : Add optionContext for indexName
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  public Result createIndex(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
+  public ResultModel createIndex(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
       help = CliStrings.CREATE_INDEX__NAME__HELP) final String indexName,
 
       @CliOption(key = CliStrings.CREATE_INDEX__EXPRESSION, mandatory = true,
@@ -64,26 +63,53 @@ public class CreateIndexCommand extends InternalGfshCommand {
 
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.CREATE_INDEX__GROUP__HELP) final String[] group) {
+          help = CliStrings.CREATE_INDEX__GROUP__HELP) final String[] groups) {
 
-    Result result;
-    final Set<DistributedMember> targetMembers = findMembers(group, memberNameOrID);
+    final Set<DistributedMember> targetMembers = findMembers(groups, memberNameOrID);
 
     if (targetMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, indexType);
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setName(indexName);
+    index.setExpression(indexedExpression);
+    index.setFromClause(regionPath);
+    if (indexType == IndexType.PRIMARY_KEY) {
+      index.setKeyIndex(true);
+    } else {
+      index.setKeyIndex(false);
+      index.setType(indexType.getName());
+    }
+
     List<CliFunctionResult> functionResults =
-        executeAndGetFunctionResult(createIndexFunction, indexInfo, targetMembers);
-    result = ResultBuilder.buildResult(functionResults);
-    XmlEntity xmlEntity = findXmlEntity(functionResults);
-
-    if (xmlEntity != null) {
-      persistClusterConfiguration(result,
-          () -> ((InternalClusterConfigurationService) getConfigurationService())
-              .addXmlEntity(xmlEntity, group));
-    }
+        executeAndGetFunctionResult(createIndexFunction, index, targetMembers);
+    ResultModel result = ResultModel.createMemberStatusResult(functionResults);
+    result.setConfigObject(index);
     return result;
+  }
+
+  String getValidRegionName(String regionPath, CacheConfig cacheConfig) {
+    // Check to see if the region path contains an alias e.g "/region1 r1"
+    // Then the first string will be the regionPath
+    String[] regionPathTokens = regionPath.trim().split(" ");
+    regionPath = regionPathTokens[0];
+    // check to see if the region path is in the form of "--region=region.entrySet() z"
+    while (regionPath.contains(".") && cacheConfig.findRegionConfiguration(regionPath) == null) {
+      regionPath = regionPath.substring(0, regionPath.lastIndexOf("."));
+    }
+    return regionPath;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+    RegionConfig.Index index = (RegionConfig.Index) element;
+    String regionPath = getValidRegionName(index.getFromClause(), config);
+
+    RegionConfig regionConfig = config.findRegionConfiguration(regionPath);
+    if (regionConfig == null) {
+      throw new EntityNotFoundException("Region " + index.getFromClause() + " not found.");
+    }
+    regionConfig.getIndex().add(index);
   }
 }

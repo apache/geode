@@ -2047,9 +2047,9 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
-      boolean requireOldValue, long lastModified, boolean overwriteDestroyed)
-      throws TimeoutException, CacheWriterException {
+  public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     final long startTime = PartitionedRegionStats.startTime();
     boolean result = false;
     final DistributedPutAllOperation putAllOp_save = event.setPutAllOperation(null);
@@ -3577,10 +3577,10 @@ public class PartitionedRegion extends LocalRegion
         logger.debug("FunctionService: Executing on remote nodes with member to keys map.{}",
             memberToKeysMap);
       }
-      PartitionedRegionFunctionResultWaiter resultReciever =
+      PartitionedRegionFunctionResultWaiter resultReceiver =
           new PartitionedRegionFunctionResultWaiter(getSystem(), this.getPRId(),
               localResultCollector, function, resultSender);
-      return resultReciever.getPartitionedDataFrom(recipMap, this, execution);
+      return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
     }
     return localResultCollector;
   }
@@ -3826,11 +3826,11 @@ public class PartitionedRegion extends LocalRegion
               localBucketSet, resultSender, execution.isReExecute());
       execution.executeFunctionOnLocalNode(function, prContext, resultSender, dm, isTX());
     }
-    PartitionedRegionFunctionResultWaiter resultReciever =
+    PartitionedRegionFunctionResultWaiter resultReceiver =
         new PartitionedRegionFunctionResultWaiter(getSystem(), this.getPRId(), localRC, function,
             resultSender);
 
-    return resultReciever.getPartitionedDataFrom(recipMap, this, execution);
+    return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
   }
 
   /**
@@ -3921,11 +3921,11 @@ public class PartitionedRegion extends LocalRegion
               localBucketSet, resultSender, execution.isReExecute());
       execution.executeFunctionOnLocalPRNode(function, prContext, resultSender, dm, isTX());
     }
-    PartitionedRegionFunctionResultWaiter resultReciever =
+    PartitionedRegionFunctionResultWaiter resultReceiver =
         new PartitionedRegionFunctionResultWaiter(getSystem(), this.getPRId(), localResultCollector,
             function, resultSender);
 
-    return resultReciever.getPartitionedDataFrom(recipMap, this, execution);
+    return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
   }
 
   /**
@@ -4811,7 +4811,7 @@ public class PartitionedRegion extends LocalRegion
         new PartitionedRegionFunctionResultSender(null, this, 0, rc, sender, false, true,
             execution.isForwardExceptions(), function, bucketSet);
 
-    PartitionedRegionFunctionResultWaiter resultReciever =
+    PartitionedRegionFunctionResultWaiter resultReceiver =
         new PartitionedRegionFunctionResultWaiter(getSystem(), this.getPRId(), rc, function,
             resultSender);
 
@@ -4823,7 +4823,7 @@ public class PartitionedRegion extends LocalRegion
 
     recipMap.put(targetNode, context);
 
-    return resultReciever.getPartitionedDataFrom(recipMap, this, execution);
+    return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
   }
 
   /**
@@ -5136,7 +5136,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
+  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
       final Object expectedOldValue)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
 
@@ -7735,7 +7735,7 @@ public class PartitionedRegion extends LocalRegion
    * @see BucketRegion#cacheWriteBeforePut(EntryEventImpl, Set, CacheWriter, boolean, Object)
    */
   @Override
-  protected void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
+  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
       CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
     final boolean isDebugEnabled = logger.isDebugEnabled();

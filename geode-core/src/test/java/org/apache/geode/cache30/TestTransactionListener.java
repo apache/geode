@@ -15,7 +15,8 @@
 package org.apache.geode.cache30;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.TransactionEvent;
+import org.apache.geode.cache.TransactionListener;
 
 /**
  * A <code>TransactionListener</code> used in testing. Its callback methods are implemented to throw

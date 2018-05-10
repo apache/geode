@@ -358,13 +358,13 @@ public class RegionAttributesType {
   @XmlElement(name = "subscription-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType.SubscriptionAttributes subscriptionAttributes;
   @XmlElement(name = "cache-loader", namespace = "http://geode.apache.org/schema/cache")
-  protected CacheLoaderType cacheLoader;
+  protected DeclarableType cacheLoader;
   @XmlElement(name = "cache-writer", namespace = "http://geode.apache.org/schema/cache")
-  protected CacheWriterType cacheWriter;
+  protected DeclarableType cacheWriter;
   @XmlElement(name = "cache-listener", namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionAttributesType.CacheListener> cacheListener;
+  protected List<DeclarableType> cacheListener;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType.Compressor compressor;
+  protected ClassNameType compressor;
   @XmlElement(name = "eviction-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType.EvictionAttributes evictionAttributes;
   @XmlAttribute(name = "concurrency-level")
@@ -670,10 +670,10 @@ public class RegionAttributesType {
    * Gets the value of the cacheLoader property.
    *
    * possible object is
-   * {@link CacheLoaderType }
+   * {@link DeclarableType }
    *
    */
-  public CacheLoaderType getCacheLoader() {
+  public DeclarableType getCacheLoader() {
     return cacheLoader;
   }
 
@@ -681,10 +681,10 @@ public class RegionAttributesType {
    * Sets the value of the cacheLoader property.
    *
    * allowed object is
-   * {@link CacheLoaderType }
+   * {@link DeclarableType }
    *
    */
-  public void setCacheLoader(CacheLoaderType value) {
+  public void setCacheLoader(DeclarableType value) {
     this.cacheLoader = value;
   }
 
@@ -692,10 +692,10 @@ public class RegionAttributesType {
    * Gets the value of the cacheWriter property.
    *
    * possible object is
-   * {@link CacheWriterType }
+   * {@link DeclarableType }
    *
    */
-  public CacheWriterType getCacheWriter() {
+  public DeclarableType getCacheWriter() {
     return cacheWriter;
   }
 
@@ -703,10 +703,10 @@ public class RegionAttributesType {
    * Sets the value of the cacheWriter property.
    *
    * allowed object is
-   * {@link CacheWriterType }
+   * {@link DeclarableType }
    *
    */
-  public void setCacheWriter(CacheWriterType value) {
+  public void setCacheWriter(DeclarableType value) {
     this.cacheWriter = value;
   }
 
@@ -729,13 +729,13 @@ public class RegionAttributesType {
    *
    * <p>
    * Objects of the following type(s) are allowed in the list
-   * {@link RegionAttributesType.CacheListener }
+   * {@link DeclarableType }
    *
    *
    */
-  public List<RegionAttributesType.CacheListener> getCacheListener() {
+  public List<DeclarableType> getCacheListener() {
     if (cacheListener == null) {
-      cacheListener = new ArrayList<RegionAttributesType.CacheListener>();
+      cacheListener = new ArrayList<DeclarableType>();
     }
     return this.cacheListener;
   }
@@ -744,10 +744,10 @@ public class RegionAttributesType {
    * Gets the value of the compressor property.
    *
    * possible object is
-   * {@link RegionAttributesType.Compressor }
+   * {@link ClassNameType }
    *
    */
-  public RegionAttributesType.Compressor getCompressor() {
+  public ClassNameType getCompressor() {
     return compressor;
   }
 
@@ -755,10 +755,10 @@ public class RegionAttributesType {
    * Sets the value of the compressor property.
    *
    * allowed object is
-   * {@link RegionAttributesType.Compressor }
+   * {@link ClassNameType }
    *
    */
-  public void setCompressor(RegionAttributesType.Compressor value) {
+  public void setCompressor(ClassNameType value) {
     this.compressor = value;
   }
 
@@ -1416,147 +1416,6 @@ public class RegionAttributesType {
    * &lt;complexType>
    *   &lt;complexContent>
    *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"className", "parameter"})
-  public static class CacheListener {
-
-    @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected String className;
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected List<ParameterType> parameter;
-
-    /**
-     * Gets the value of the className property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getClassName() {
-      return className;
-    }
-
-    /**
-     * Sets the value of the className property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setClassName(String value) {
-      this.className = value;
-    }
-
-    /**
-     * Gets the value of the parameter property.
-     *
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the parameter property.
-     *
-     * <p>
-     * For example, to add a new item, do as follows:
-     *
-     * <pre>
-     * getParameter().add(newItem);
-     * </pre>
-     *
-     *
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link ParameterType }
-     *
-     *
-     */
-    public List<ParameterType> getParameter() {
-      if (parameter == null) {
-        parameter = new ArrayList<ParameterType>();
-      }
-      return this.parameter;
-    }
-
-  }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"className"})
-  public static class Compressor {
-
-    @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected String className;
-
-    /**
-     * Gets the value of the className property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getClassName() {
-      return className;
-    }
-
-    /**
-     * Sets the value of the className property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setClassName(String value) {
-      this.className = value;
-    }
-
-  }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
    *       &lt;choice>
    *         &lt;element name="asynchronous-writes">
    *           &lt;complexType>
@@ -2104,67 +1963,9 @@ public class RegionAttributesType {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"className", "parameter"})
-    public static class LruHeapPercentage {
-
-      @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache")
-      protected String className;
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected List<ParameterType> parameter;
+    public static class LruHeapPercentage extends DeclarableType {
       @XmlAttribute(name = "action")
       protected EnumActionDestroyOverflow action;
-
-      /**
-       * Gets the value of the className property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getClassName() {
-        return className;
-      }
-
-      /**
-       * Sets the value of the className property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setClassName(String value) {
-        this.className = value;
-      }
-
-      /**
-       * Gets the value of the parameter property.
-       *
-       * <p>
-       * This accessor method returns a reference to the live list,
-       * not a snapshot. Therefore any modification you make to the
-       * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the parameter property.
-       *
-       * <p>
-       * For example, to add a new item, do as follows:
-       *
-       * <pre>
-       * getParameter().add(newItem);
-       * </pre>
-       *
-       *
-       * <p>
-       * Objects of the following type(s) are allowed in the list
-       * {@link ParameterType }
-       *
-       *
-       */
-      public List<ParameterType> getParameter() {
-        if (parameter == null) {
-          parameter = new ArrayList<ParameterType>();
-        }
-        return this.parameter;
-      }
 
       /**
        * Gets the value of the action property.
@@ -2216,91 +2017,9 @@ public class RegionAttributesType {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"className", "parameter"})
-    public static class LruMemorySize {
-
-      @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache")
-      protected String className;
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected List<ParameterType> parameter;
-      @XmlAttribute(name = "action")
-      protected EnumActionDestroyOverflow action;
+    public static class LruMemorySize extends LruHeapPercentage {
       @XmlAttribute(name = "maximum")
       protected String maximum;
-
-      /**
-       * Gets the value of the className property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getClassName() {
-        return className;
-      }
-
-      /**
-       * Sets the value of the className property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setClassName(String value) {
-        this.className = value;
-      }
-
-      /**
-       * Gets the value of the parameter property.
-       *
-       * <p>
-       * This accessor method returns a reference to the live list,
-       * not a snapshot. Therefore any modification you make to the
-       * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the parameter property.
-       *
-       * <p>
-       * For example, to add a new item, do as follows:
-       *
-       * <pre>
-       * getParameter().add(newItem);
-       * </pre>
-       *
-       *
-       * <p>
-       * Objects of the following type(s) are allowed in the list
-       * {@link ParameterType }
-       *
-       *
-       */
-      public List<ParameterType> getParameter() {
-        if (parameter == null) {
-          parameter = new ArrayList<ParameterType>();
-        }
-        return this.parameter;
-      }
-
-      /**
-       * Gets the value of the action property.
-       *
-       * possible object is
-       * {@link EnumActionDestroyOverflow }
-       *
-       */
-      public EnumActionDestroyOverflow getAction() {
-        return action;
-      }
-
-      /**
-       * Sets the value of the action property.
-       *
-       * allowed object is
-       * {@link EnumActionDestroyOverflow }
-       *
-       */
-      public void setAction(EnumActionDestroyOverflow value) {
-        this.action = value;
-      }
 
       /**
        * Gets the value of the maximum property.
@@ -2584,9 +2303,9 @@ public class RegionAttributesType {
   public static class PartitionAttributes {
 
     @XmlElement(name = "partition-resolver", namespace = "http://geode.apache.org/schema/cache")
-    protected RegionAttributesType.PartitionAttributes.PartitionResolver partitionResolver;
+    protected DeclarableType partitionResolver;
     @XmlElement(name = "partition-listener", namespace = "http://geode.apache.org/schema/cache")
-    protected List<RegionAttributesType.PartitionAttributes.PartitionListener> partitionListener;
+    protected List<DeclarableType> partitionListener;
     @XmlElement(name = "fixed-partition-attributes",
         namespace = "http://geode.apache.org/schema/cache")
     protected List<RegionAttributesType.PartitionAttributes.FixedPartitionAttributes> fixedPartitionAttributes;
@@ -2609,10 +2328,10 @@ public class RegionAttributesType {
      * Gets the value of the partitionResolver property.
      *
      * possible object is
-     * {@link RegionAttributesType.PartitionAttributes.PartitionResolver }
+     * {@link DeclarableType }
      *
      */
-    public RegionAttributesType.PartitionAttributes.PartitionResolver getPartitionResolver() {
+    public DeclarableType getPartitionResolver() {
       return partitionResolver;
     }
 
@@ -2620,11 +2339,10 @@ public class RegionAttributesType {
      * Sets the value of the partitionResolver property.
      *
      * allowed object is
-     * {@link RegionAttributesType.PartitionAttributes.PartitionResolver }
+     * {@link DeclarableType }
      *
      */
-    public void setPartitionResolver(
-        RegionAttributesType.PartitionAttributes.PartitionResolver value) {
+    public void setPartitionResolver(DeclarableType value) {
       this.partitionResolver = value;
     }
 
@@ -2647,14 +2365,13 @@ public class RegionAttributesType {
      *
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link RegionAttributesType.PartitionAttributes.PartitionListener }
+     * {@link DeclarableType }
      *
      *
      */
-    public List<RegionAttributesType.PartitionAttributes.PartitionListener> getPartitionListener() {
+    public List<DeclarableType> getPartitionListener() {
       if (partitionListener == null) {
-        partitionListener =
-            new ArrayList<RegionAttributesType.PartitionAttributes.PartitionListener>();
+        partitionListener = new ArrayList<DeclarableType>();
       }
       return this.partitionListener;
     }
@@ -2944,206 +2661,6 @@ public class RegionAttributesType {
       }
 
     }
-
-
-    /**
-     * <p>
-     * Java class for anonymous complex type.
-     *
-     * <p>
-     * The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-     *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     *
-     *
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"className", "parameter"})
-    public static class PartitionListener {
-
-      @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
-          required = true)
-      protected String className;
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected List<ParameterType> parameter;
-
-      /**
-       * Gets the value of the className property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getClassName() {
-        return className;
-      }
-
-      /**
-       * Sets the value of the className property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setClassName(String value) {
-        this.className = value;
-      }
-
-      /**
-       * Gets the value of the parameter property.
-       *
-       * <p>
-       * This accessor method returns a reference to the live list,
-       * not a snapshot. Therefore any modification you make to the
-       * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the parameter property.
-       *
-       * <p>
-       * For example, to add a new item, do as follows:
-       *
-       * <pre>
-       * getParameter().add(newItem);
-       * </pre>
-       *
-       *
-       * <p>
-       * Objects of the following type(s) are allowed in the list
-       * {@link ParameterType }
-       *
-       *
-       */
-      public List<ParameterType> getParameter() {
-        if (parameter == null) {
-          parameter = new ArrayList<ParameterType>();
-        }
-        return this.parameter;
-      }
-
-    }
-
-
-    /**
-     * <p>
-     * Java class for anonymous complex type.
-     *
-     * <p>
-     * The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-     *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-     *       &lt;/sequence>
-     *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     *
-     *
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"className", "parameter"})
-    public static class PartitionResolver {
-
-      @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
-          required = true)
-      protected String className;
-      @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-      protected List<ParameterType> parameter;
-      @XmlAttribute(name = "name")
-      protected String name;
-
-      /**
-       * Gets the value of the className property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getClassName() {
-        return className;
-      }
-
-      /**
-       * Sets the value of the className property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setClassName(String value) {
-        this.className = value;
-      }
-
-      /**
-       * Gets the value of the parameter property.
-       *
-       * <p>
-       * This accessor method returns a reference to the live list,
-       * not a snapshot. Therefore any modification you make to the
-       * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the parameter property.
-       *
-       * <p>
-       * For example, to add a new item, do as follows:
-       *
-       * <pre>
-       * getParameter().add(newItem);
-       * </pre>
-       *
-       *
-       * <p>
-       * Objects of the following type(s) are allowed in the list
-       * {@link ParameterType }
-       *
-       *
-       */
-      public List<ParameterType> getParameter() {
-        if (parameter == null) {
-          parameter = new ArrayList<ParameterType>();
-        }
-        return this.parameter;
-      }
-
-      /**
-       * Gets the value of the name property.
-       *
-       * possible object is
-       * {@link String }
-       *
-       */
-      public String getName() {
-        return name;
-      }
-
-      /**
-       * Sets the value of the name property.
-       *
-       * allowed object is
-       * {@link String }
-       *
-       */
-      public void setName(String value) {
-        this.name = value;
-      }
-
-    }
-
   }
 
 

@@ -36,23 +36,29 @@ resources:
   type: git
   source:
     uri: https://github.com/apache/geode.git
-    branch: develop
+    branch: ((!geode-build-branch))
     paths:
-    - ci/pipelines/develop.yml
+    - ci/*
 - name: geode-docker-images-pipeline
   type: git
   source:
     uri: https://github.com/apache/geode.git
-    branch: develop
+    branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/docker-images.yml
 - name: geode-metrics-pipeline
   type: git
   source:
     uri: https://github.com/apache/geode.git
-    branch: develop
+    branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/metrics.yml
+- name: apachegeode-build-concourse-docker-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/apachegeode-build-concourse
 
 jobs:
 - name: set-develop-pipeline
@@ -61,12 +67,23 @@ jobs:
   plan:
   - get: geode-develop-pipeline
     trigger: true
-  - put: apachegeode-concourse
-    params:
-      pipelines:
-      - name: develop
-        team: main
-        config_file: geode-develop-pipeline/ci/pipelines/develop.yml
+  - get: apachegeode-build-concourse-docker-image
+  - task: deploy-build
+    image: apachegeode-build-concourse-docker-image
+    config:
+      inputs:
+      - name: geode-develop-pipeline
+      outputs:
+      - name: results
+      platform: linux
+      params:
+        OUTPUT_DIRECTORY: results
+        GEODE_BRANCH: ((!geode-build-branch))
+        CONCOURSE_USERNAME: ((!concourse-username))
+        CONCOURSE_PASSWORD: ((!concourse-password))
+      run:
+        path: geode-develop-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
+
 - name: set-docker-images-pipeline
   serial: true
   public: true

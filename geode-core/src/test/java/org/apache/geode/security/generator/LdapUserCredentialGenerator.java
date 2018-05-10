@@ -14,7 +14,7 @@
  */
 package org.apache.geode.security.generator;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_DHALGO;
 
 import java.security.Principal;
 import java.util.Properties;

@@ -87,8 +87,8 @@ public class AlterConnectionCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
-          .getCacheXmlContent();
+      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("jdbc:connector-service");
     });
 
@@ -116,8 +116,8 @@ public class AlterConnectionCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
-          .getCacheXmlContent();
+      String xml = InternalLocator.getLocator().getConfigurationPersistenceService()
+          .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).isNotNull().contains("jdbc:connector-service");
     });
 
@@ -131,16 +131,6 @@ public class AlterConnectionCommandDUnitTest {
       assertThat(config.getConnectionProperties()).hasSize(0);
     });
 
-    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
-
-    server2.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      ConnectorService.Connection config =
-          cache.getService(JdbcConnectorService.class).getConnectionConfig("name");
-      assertThat(config.getUrl()).isNull();
-      assertThat(config.getUser()).isNull();
-      assertThat(config.getPassword()).isNull();
-      assertThat(config.getConnectionProperties()).hasSize(0);
-    });
+    startupRule.startServerVM(2, locator.getPort());
   }
 }

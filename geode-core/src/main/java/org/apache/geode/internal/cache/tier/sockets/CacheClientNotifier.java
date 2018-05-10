@@ -987,7 +987,7 @@ public class CacheClientNotifier {
           }
           deadProxies.add(proxy);
         }
-        this.blackListSlowReciever(proxy);
+        this.blackListSlowReceiver(proxy);
       }
     }
     checkAndRemoveFromClientMsgsRegion(conflatable);
@@ -1038,9 +1038,9 @@ public class CacheClientNotifier {
     return result;
   }
 
-  private void blackListSlowReciever(CacheClientProxy clientProxy) {
+  private void blackListSlowReceiver(CacheClientProxy clientProxy) {
     final CacheClientProxy proxy = clientProxy;
-    if ((proxy.getHARegionQueue() != null && proxy.getHARegionQueue().isClientSlowReciever())
+    if ((proxy.getHARegionQueue() != null && proxy.getHARegionQueue().isClientSlowReceiver())
         && !blackListedClients.contains(proxy.getProxyID())) {
       // log alert with client info.
       logger.warn(

@@ -76,7 +76,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
 
   protected AbstractExecution execution;
 
-  protected volatile boolean endResultRecieved = false;
+  protected volatile boolean endResultReceived = false;
 
   protected volatile List<FunctionInvocationTargetException> fites;
 
@@ -97,7 +97,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
   }
 
   public void addResult(DistributedMember memId, Object resultOfSingleExecution) {
-    if (this.userRC != null && !this.endResultRecieved) {
+    if (this.userRC != null && !this.endResultReceived) {
       try {
         this.userRC.addResult(memId, resultOfSingleExecution);
       } catch (RuntimeException badre) {
@@ -111,13 +111,13 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
   public void endResults() {
     if (this.userRC != null) {
       this.userRC.endResults();
-      this.endResultRecieved = true;
+      this.endResultReceived = true;
     }
   }
 
   public void clearResults() {
     if (userRC != null) {
-      this.endResultRecieved = false;
+      this.endResultReceived = false;
       this.userRC.clearResults();
     }
     this.fites.clear();
@@ -394,7 +394,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
                   id);
               if (execution.isClientServerMode()) {
                 if (this.userRC != null) {
-                  this.endResultRecieved = false;
+                  this.endResultReceived = false;
                   this.userRC.endResults();
                   this.userRC.clearResults();
                 }

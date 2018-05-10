@@ -20,22 +20,24 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionComm
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__URL;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__USER;
 
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
-import org.apache.geode.distributed.ClusterConfigurationService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -43,10 +45,12 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeConnectionCommand extends InternalGfshCommand {
+@Experimental
+public class DescribeConnectionCommand extends GfshCommand {
   private static Logger logger = LogService.getLogger();
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
-  static final String DESCRIBE_CONNECTION__HELP = "Describe the specified jdbc connection.";
+  static final String DESCRIBE_CONNECTION__HELP =
+      EXPERIMENTAL + "Describe the specified jdbc connection .";
   static final String DESCRIBE_CONNECTION__NAME = "name";
   static final String DESCRIBE_CONNECTION__NAME__HELP =
       "Name of the jdbc connection to be described.";
@@ -63,33 +67,37 @@ public class DescribeConnectionCommand extends InternalGfshCommand {
     ConnectorService.Connection connection = null;
 
     // check if CC is available and use it to describe the connection
-    ClusterConfigurationService ccService = getConfigurationService();
+    ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
     if (ccService != null) {
-      ConnectorService service =
-          ccService.getCustomCacheElement("cluster", "connector-service", ConnectorService.class);
-      if (service != null) {
-        connection = CacheElement.findElement(service.getConnection(), name);
+      CacheConfig cacheConfig = ccService.getCacheConfig("cluster");
+      if (cacheConfig != null) {
+        ConnectorService service =
+            cacheConfig.findCustomCacheElement("connector-service", ConnectorService.class);
+        if (service != null) {
+          connection = CacheElement.findElement(service.getConnection(), name);
+        }
       }
     } else {
       // otherwise get it from any member
       Set<DistributedMember> members = findMembers(null, null);
       if (members.size() > 0) {
         DistributedMember targetMember = members.iterator().next();
-        List<?> result =
-            (List<?>) executeFunction(new DescribeConnectionFunction(), name, targetMember)
-                .getResult();
-        if (!result.isEmpty()) {
-          connection = (ConnectorService.Connection) result.get(0);
+        CliFunctionResult result = executeFunctionAndGetFunctionResult(
+            new DescribeConnectionFunction(), name, targetMember);
+        if (result != null) {
+          connection = (ConnectorService.Connection) result.getResultObject();
         }
       }
     }
 
     if (connection == null) {
-      throw new EntityNotFoundException("connection named '" + name + "' not found");
+      throw new EntityNotFoundException(
+          EXPERIMENTAL + "\n" + "connection named '" + name + "' not found");
     }
 
     CompositeResultData resultData = ResultBuilder.createCompositeResultData();
     fillResultData(connection, resultData);
+    resultData.setHeader(EXPERIMENTAL);
     return ResultBuilder.buildResult(resultData);
   }
 

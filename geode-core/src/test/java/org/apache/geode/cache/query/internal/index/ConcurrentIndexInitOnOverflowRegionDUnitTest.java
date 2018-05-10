@@ -14,7 +14,10 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -375,7 +378,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTes
         switch (spot) {
           case 6: // processAction in IndexManager
             hooked = true;
-            // wait untill some thread unhooks.
+            // wait until some thread unhooks.
             while (hooked) {
               Wait.pause(20);
             }

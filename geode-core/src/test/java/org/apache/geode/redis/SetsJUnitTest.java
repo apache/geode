@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 
 import org.junit.After;
@@ -36,6 +35,7 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 
@@ -44,12 +44,11 @@ public class SetsJUnitTest {
   private static Jedis jedis;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
-  private static Random rand;
+  private static ThreePhraseGenerator generator = new ThreePhraseGenerator();
   private static int port = 6379;
 
   @BeforeClass
   public static void setUp() throws IOException {
-    rand = new Random();
     CacheFactory cf = new CacheFactory();
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
@@ -66,9 +65,9 @@ public class SetsJUnitTest {
   public void testSAddScard() {
     int elements = 10;
     Set<String> strings = new HashSet<String>();
-    String key = randString();
+    String key = generator.generate('x');
     for (int i = 0; i < elements; i++) {
-      String elem = randString();
+      String elem = generator.generate('x');
       strings.add(elem);
     }
     String[] stringArray = strings.toArray(new String[strings.size()]);
@@ -82,9 +81,9 @@ public class SetsJUnitTest {
   public void testSMembersIsMember() {
     int elements = 10;
     Set<String> strings = new HashSet<String>();
-    String key = randString();
+    String key = generator.generate('x');
     for (int i = 0; i < elements; i++) {
-      String elem = randString();
+      String elem = generator.generate('x');
       strings.add(elem);
     }
     String[] stringArray = strings.toArray(new String[strings.size()]);
@@ -102,13 +101,13 @@ public class SetsJUnitTest {
 
   @Test
   public void testSMove() {
-    String source = randString();
-    String dest = randString();
-    String test = randString();
+    String source = generator.generate('x');
+    String dest = generator.generate('x');
+    String test = generator.generate('x');
     int elements = 10;
     Set<String> strings = new HashSet<String>();
     for (int i = 0; i < elements; i++) {
-      String elem = randString();
+      String elem = generator.generate('x');
       strings.add(elem);
     }
     String[] stringArray = strings.toArray(new String[strings.size()]);
@@ -123,7 +122,7 @@ public class SetsJUnitTest {
       i++;
     }
 
-    assertTrue(jedis.smove(test, dest, randString()) == 0);
+    assertTrue(jedis.smove(test, dest, generator.generate('x')) == 0);
   }
 
   @Test
@@ -133,10 +132,10 @@ public class SetsJUnitTest {
     String[] keys = new String[numSets];
     ArrayList<Set<String>> sets = new ArrayList<Set<String>>();
     for (int j = 0; j < numSets; j++) {
-      keys[j] = randString();
+      keys[j] = generator.generate('x');
       Set<String> newSet = new HashSet<String>();
       for (int i = 0; i < elements; i++)
-        newSet.add(randString());
+        newSet.add(generator.generate('x'));
       sets.add(newSet);
     }
 
@@ -152,7 +151,7 @@ public class SetsJUnitTest {
 
     assertEquals(result, jedis.sdiff(keys));
 
-    String destination = randString();
+    String destination = generator.generate('x');
 
     jedis.sdiffstore(destination, keys);
 
@@ -168,10 +167,10 @@ public class SetsJUnitTest {
     String[] keys = new String[numSets];
     ArrayList<Set<String>> sets = new ArrayList<Set<String>>();
     for (int j = 0; j < numSets; j++) {
-      keys[j] = randString();
+      keys[j] = generator.generate('x');
       Set<String> newSet = new HashSet<String>();
       for (int i = 0; i < elements; i++)
-        newSet.add(randString());
+        newSet.add(generator.generate('x'));
       sets.add(newSet);
     }
 
@@ -187,7 +186,7 @@ public class SetsJUnitTest {
 
     assertEquals(result, jedis.sunion(keys));
 
-    String destination = randString();
+    String destination = generator.generate('x');
 
     jedis.sunionstore(destination, keys);
 
@@ -203,10 +202,10 @@ public class SetsJUnitTest {
     String[] keys = new String[numSets];
     ArrayList<Set<String>> sets = new ArrayList<Set<String>>();
     for (int j = 0; j < numSets; j++) {
-      keys[j] = randString();
+      keys[j] = generator.generate('x');
       Set<String> newSet = new HashSet<String>();
       for (int i = 0; i < elements; i++)
-        newSet.add(randString());
+        newSet.add(generator.generate('x'));
       sets.add(newSet);
     }
 
@@ -222,25 +221,13 @@ public class SetsJUnitTest {
 
     assertEquals(result, jedis.sinter(keys));
 
-    String destination = randString();
+    String destination = generator.generate('x');
 
     jedis.sinterstore(destination, keys);
 
     Set<String> destResult = jedis.smembers(destination);
 
     assertEquals(result, destResult);
-  }
-
-  private String randString() {
-    int length = rand.nextInt(8) + 5;
-    StringBuilder rString = new StringBuilder();
-    for (int i = 0; i < length; i++) {
-      // Use random upper- and lower-case letters only. Using punctuation characters,
-      // namely the underscore, can lead to spurious test failures due to invalid region
-      // names, e.g., two leading underscores.
-      rString.append((char) (65 + rand.nextInt(26) + (rand.nextBoolean() ? 26 : 0)));
-    }
-    return rString.toString();
   }
 
   @After

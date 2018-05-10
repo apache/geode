@@ -42,9 +42,12 @@ The standalone locators distribute configuration to all locators in a cluster. E
 **Note:**
 The default behavior for `gfsh` is to create and save cluster configurations. You can disable the cluster configuration service by using the `--enable-cluster-configuration=false` option when starting locators.
 
-Subsequently, any servers that you start with `gfsh` that have `--use-cluster-configuration` set to `true` will pick up the cluster configuration from the locator as well as any appropriate group-level configurations (for member groups they belong to). To disable the cluster configuration service on a server, you must start the server with the `--use-cluster-configuration` parameter set to `false`. By default, the parameter is set to true.
+You can load existing configuration into
+the cluster by using the
+[`gfsh import cluster-configuration`](../../tools_modules/gfsh/command-pages/import.html#topic_vnv_grz_ck)
+command after starting up a locator.
 
-You can also load existing configuration files into the cluster configuration service by starting up a standalone locator with the parameter `--load-cluster-configuration-from-dir` set to true. See [Loading Existing Configuration Files into Cluster Configuration](gfsh_load_from_shared_dir.html).
+Subsequently, any servers that you start with `gfsh` that have `--use-cluster-configuration` set to `true` will pick up the cluster configuration from the locator as well as any appropriate group-level configurations (for member groups they belong to). To disable the cluster configuration service on a server, you must start the server with the `--use-cluster-configuration` parameter set to `false`. By default, the parameter is set to true.
 
 ## How the Cluster Configuration Service Works
 

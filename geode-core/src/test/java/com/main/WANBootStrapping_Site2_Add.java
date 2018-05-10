@@ -79,7 +79,7 @@ public class WANBootStrapping_Site2_Add {
       }
     }
 
-    // region size should be 100. This is the data which will recieve from remote site
+    // region size should be 100. This is the data which will receive from remote site
     while (region.size() != 100) {
       continue;
     }

@@ -72,10 +72,10 @@ public abstract class TXStateStub implements TXStateInterface {
   @Override
   public abstract void commit() throws CommitConflictException;
 
-  protected abstract void validateRegionCanJoinTransaction(LocalRegion region)
+  protected abstract void validateRegionCanJoinTransaction(InternalRegion region)
       throws TransactionException;
 
-  protected abstract TXRegionStub generateRegionStub(LocalRegion region);
+  protected abstract TXRegionStub generateRegionStub(InternalRegion region);
 
   @Override
   public abstract void rollback();
@@ -105,7 +105,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * @param region The region to involve in the tx.
    * @return existing or new stub for region
    */
-  protected TXRegionStub getTXRegionStub(LocalRegion region) {
+  protected TXRegionStub getTXRegionStub(InternalRegion region) {
     TXRegionStub stub = regionStubs.get(region);
     if (stub == null) {
       /*
@@ -246,7 +246,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * @see org.apache.geode.internal.cache.TXStateInterface#getRegions()
    */
   @Override
-  public Collection<LocalRegion> getRegions() {
+  public Collection<InternalRegion> getRegions() {
     throw new UnsupportedOperationException();
   }
 
@@ -330,7 +330,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * LocalRegion)
    */
   @Override
-  public TXRegionState readRegion(LocalRegion r) {
+  public TXRegionState readRegion(InternalRegion r) {
     throw new UnsupportedOperationException();
   }
 
@@ -392,7 +392,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * LocalRegion)
    */
   @Override
-  public TXRegionState txReadRegion(LocalRegion localRegion) {
+  public TXRegionState txReadRegion(InternalRegion internalRegion) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -405,7 +405,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * LocalRegion, java.lang.Object)
    */
   @Override
-  public TXRegionState txWriteRegion(LocalRegion localRegion, KeyInfo entryKey) {
+  public TXRegionState txWriteRegion(InternalRegion internalRegion, KeyInfo entryKey) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -418,7 +418,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * LocalRegion)
    */
   @Override
-  public TXRegionState writeRegion(LocalRegion r) {
+  public TXRegionState writeRegion(InternalRegion r) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -690,14 +690,14 @@ public abstract class TXStateStub implements TXStateInterface {
 
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion region) {
-    getTXRegionStub(region).postPutAll(putallOp, successfulPuts, region);
+      InternalRegion reg) {
+    getTXRegionStub(reg).postPutAll(putallOp, successfulPuts, reg);
   }
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-      LocalRegion region) {
-    getTXRegionStub(region).postRemoveAll(op, successfulOps, region);
+      InternalRegion reg) {
+    getTXRegionStub(reg).postRemoveAll(op, successfulOps, reg);
   }
 
 

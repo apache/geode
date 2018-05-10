@@ -30,6 +30,7 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
+import org.apache.geode.management.internal.cli.result.LegacyCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 
@@ -49,15 +50,15 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
   }
 
   @Override
-  public Result postExecution(GfshParseResult parseResult, Result result, Path tempFile) {
+  public CommandResult postExecution(GfshParseResult parseResult, CommandResult result,
+      Path tempFile) {
     File outputFile = getOutputFile(parseResult);
 
     if (outputFile == null) {
       return result;
     }
 
-    CommandResult commandResult = (CommandResult) result;
-    CompositeResultData resultData = (CompositeResultData) commandResult.getResultData();
+    CompositeResultData resultData = (CompositeResultData) result.getResultData();
     CompositeResultData.SectionResultData sectionResultData = resultData.retrieveSectionByIndex(0);
 
     String limit = sectionResultData.retrieveString("Limit");
@@ -69,7 +70,7 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
     }
 
     TabularResultData tabularResultData = sectionResultData.retrieveTableByIndex(0);
-    CommandResult resultTable = new CommandResult(tabularResultData);
+    CommandResult resultTable = new LegacyCommandResult(tabularResultData);
     try {
       writeResultTableToFile(outputFile, resultTable);
       // return a result w/ message explaining limit
@@ -86,7 +87,7 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
     infoResultData.addLine(SystemUtils.LINE_SEPARATOR);
     infoResultData.addLine("Query results output to " + outputFile.getAbsolutePath());
 
-    return new CommandResult(infoResultData);
+    return new LegacyCommandResult(infoResultData);
   }
 
   private File getOutputFile(ParseResult parseResult) {

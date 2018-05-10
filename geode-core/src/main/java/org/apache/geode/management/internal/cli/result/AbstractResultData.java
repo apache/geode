@@ -39,18 +39,6 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
  * @since GemFire 7.0
  */
 public abstract class AbstractResultData implements ResultData {
-  public static final String SECTION_DATA_ACCESSOR = "__sections__";
-  public static final String TABLE_DATA_ACCESSOR = "__tables__";
-  public static final String BYTE_DATA_ACCESSOR = "__bytes__";
-
-  public static final int FILE_TYPE_BINARY = 0;
-  public static final int FILE_TYPE_TEXT = 1;
-  private static final String FILE_NAME_FIELD = "fileName";
-  private static final String FILE_TYPE_FIELD = "fileType";
-  private static final String FILE_DATA_FIELD = "fileData";
-  private static final String DATA_FIELD = "data";
-  private static final String DATA_LENGTH_FIELD = "dataLength";
-  private static final String FILE_MESSAGE = "fileMessage";
 
   protected GfJsonObject gfJsonObject;
   protected GfJsonObject contentObject;

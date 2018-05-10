@@ -26,7 +26,7 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -46,6 +46,7 @@ public class AlterRegionCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   public Result alterRegion(
       @CliOption(key = CliStrings.ALTER_REGION__REGION, mandatory = true,
+          optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.ALTER_REGION__REGION__HELP) String regionPath,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
@@ -138,7 +139,7 @@ public class AlterRegionCommand extends InternalGfshCommand {
     XmlEntity xmlEntity = findXmlEntity(regionAlterResults);
     if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> ((InternalClusterConfigurationService) getConfigurationService())
+          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
               .addXmlEntity(xmlEntity, groups));
     }
     return result;
