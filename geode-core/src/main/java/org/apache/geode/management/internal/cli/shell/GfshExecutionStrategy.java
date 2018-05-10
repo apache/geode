@@ -252,20 +252,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       CommandResult postExecResult =
           interceptor.postExecution(parseResult, commandResult, tempFile);
       if (postExecResult != null) {
-        boolean errored = false;
-        if (postExecResult instanceof ResultModel) {
-          if (Status.ERROR.equals(((ResultModel) postExecResult).getStatus())) {
-            errored = true;
-          }
-          commandResult = new ModelCommandResult((ResultModel) postExecResult);
-        } else { // Must be Result
-          if (Status.ERROR.equals(((Result) postExecResult).getStatus())) {
-            errored = true;
-          }
-          commandResult = (CommandResult) postExecResult;
-        }
-
-        if (errored) {
+        if (Status.ERROR.equals(postExecResult.getStatus())) {
           if (logWrapper.infoEnabled()) {
             logWrapper.info("Post execution Result :: " + postExecResult);
           }
