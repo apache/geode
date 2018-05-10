@@ -50,13 +50,13 @@ public class AbstractRegionMapPutTest {
   @SuppressWarnings("rawtypes")
   private final Map entryMap = mock(Map.class);
   private final EntryEventImpl event = mock(EntryEventImpl.class);
-  private final RegionEntry regionEntry = mock(RegionEntry.class);
+  private final RegionEntry createdRegionEntry = mock(RegionEntry.class);
   private final TestableRegionMapPut instance = spy(new TestableRegionMapPut());
 
   @Before
   public void setup() {
     RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
-    when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(regionEntry);
+    when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(createdRegionEntry);
     when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
     when(focusedRegionMap.getEntryMap()).thenReturn(entryMap);
     when(internalRegion.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
@@ -97,13 +97,15 @@ public class AbstractRegionMapPutTest {
   }
 
   @Test
-  public void putWithUnsatisfiedPreconditionsFails() {
+  public void putWithUnsatisfiedPreconditionsReturnsNull() {
+    instance.checkPreconditions = false;
+
     RegionEntry result = instance.put();
 
     assertThat(result).isNull();
-    assertThat(instance.getRegionEntry()).isSameAs(regionEntry);
+    assertThat(instance.getRegionEntry()).isSameAs(createdRegionEntry);
     verify(focusedRegionMap, times(1)).getEntry(eq(event));
-    verify(focusedRegionMap, times(1)).putEntryIfAbsent(any(), eq(regionEntry));
+    verify(focusedRegionMap, times(1)).putEntryIfAbsent(any(), eq(createdRegionEntry));
     verify(instance, times(1)).isOnlyExisting();
     verify(instance, never()).entryExists(any());
     verify(instance, times(1)).serializeNewValueIfNeeded();
@@ -125,7 +127,7 @@ public class AbstractRegionMapPutTest {
 
     instance.put();
 
-    verify(focusedRegionMap, times(1)).removeEntry(any(), eq(regionEntry), eq(false));
+    verify(focusedRegionMap, times(1)).removeEntry(any(), eq(createdRegionEntry), eq(false));
   }
 
   @Test
@@ -140,10 +142,9 @@ public class AbstractRegionMapPutTest {
   }
 
   @Test
-  public void diskAccessException() {
-    IndexManager oqlIndexManager = mock(IndexManager.class);
-    when(internalRegion.getIndexManager()).thenReturn(oqlIndexManager);
-    doThrow(DiskAccessException.class).when(instance).setOldValueForDelta();
+  public void putCallsHandleDiskAccessExceptionWhenThrownDuringPut() {
+    instance.checkPreconditions = true;
+    doThrow(DiskAccessException.class).when(instance).createOrUpdateEntry();
 
     assertThatThrownBy(() -> instance.put()).isInstanceOf(DiskAccessException.class);
 
@@ -151,15 +152,16 @@ public class AbstractRegionMapPutTest {
   }
 
   @Test
-  public void putWithSatisfiedPreconditionsSucceeds() {
+  public void putWithSatisfiedPreconditionsAndNoExistingEntryReturnsRegionEntryFromFactory() {
+    when(focusedRegionMap.getEntry(event)).thenReturn(null);
     instance.checkPreconditions = true;
 
     RegionEntry result = instance.put();
 
-    assertThat(result).isSameAs(regionEntry);
-    assertThat(instance.getRegionEntry()).isSameAs(regionEntry);
+    assertThat(result).isSameAs(createdRegionEntry);
+    assertThat(instance.getRegionEntry()).isSameAs(createdRegionEntry);
     verify(focusedRegionMap, times(1)).getEntry(eq(event));
-    verify(focusedRegionMap, times(1)).putEntryIfAbsent(any(), eq(regionEntry));
+    verify(focusedRegionMap, times(1)).putEntryIfAbsent(any(), eq(createdRegionEntry));
     verify(instance, times(1)).isOnlyExisting();
     verify(instance, never()).entryExists(any());
     verify(instance, times(1)).serializeNewValueIfNeeded();
@@ -176,18 +178,18 @@ public class AbstractRegionMapPutTest {
   }
 
   @Test
-  public void regionWithIndexMaintenanceSynchronousCausesSetUpdateInProgressToBeCalled() {
+  public void regionWithIndexMaintenanceSynchronousCallsSetUpdateInProgress() {
     when(internalRegion.getIndexMaintenanceSynchronous()).thenReturn(true);
     instance.checkPreconditions = true;
 
     instance.put();
 
-    verify(regionEntry, times(1)).setUpdateInProgress(true);
-    verify(regionEntry, times(1)).setUpdateInProgress(false);
+    verify(createdRegionEntry, times(1)).setUpdateInProgress(true);
+    verify(createdRegionEntry, times(1)).setUpdateInProgress(false);
   }
 
   @Test
-  public void putWithOnlyExistingTrueFails() {
+  public void putWithOnlyExistingTrueReturnsNull() {
     instance.onlyExisting = true;
 
     RegionEntry result = instance.put();
@@ -225,7 +227,7 @@ public class AbstractRegionMapPutTest {
     assertThat(instance.getRegionEntry()).isSameAs(existingEntry);
     verify(focusedRegionMap, times(1)).getEntry(eq(event));
     verify(focusedRegionMap, never()).getEntryFactory();
-    verify(focusedRegionMap, never()).putEntryIfAbsent(any(), eq(regionEntry));
+    verify(focusedRegionMap, never()).putEntryIfAbsent(any(), eq(createdRegionEntry));
     verify(instance, times(1)).isOnlyExisting();
     verify(instance, times(1)).entryExists(eq(existingEntry));
     verify(instance, times(1)).serializeNewValueIfNeeded();
@@ -245,7 +247,8 @@ public class AbstractRegionMapPutTest {
   public void putWithExistingEntryFromPutIfAbsentSucceeds() {
     instance.checkPreconditions = true;
     RegionEntry existingEntry = mock(RegionEntry.class);
-    when(focusedRegionMap.putEntryIfAbsent(any(), eq(regionEntry))).thenReturn(existingEntry);
+    when(focusedRegionMap.putEntryIfAbsent(any(), eq(createdRegionEntry)))
+        .thenReturn(existingEntry);
 
     RegionEntry result = instance.put();
 
@@ -274,7 +277,8 @@ public class AbstractRegionMapPutTest {
     instance.checkPreconditions = true;
     RegionEntry existingEntry = mock(RegionEntry.class);
     when(existingEntry.isRemovedPhase2()).thenReturn(true).thenReturn(false);
-    when(focusedRegionMap.putEntryIfAbsent(any(), eq(regionEntry))).thenReturn(existingEntry);
+    when(focusedRegionMap.putEntryIfAbsent(any(), eq(createdRegionEntry)))
+        .thenReturn(existingEntry);
 
     RegionEntry result = instance.put();
 
