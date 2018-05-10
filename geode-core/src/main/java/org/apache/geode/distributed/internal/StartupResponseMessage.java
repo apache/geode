@@ -193,15 +193,6 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage
     return STARTUP_RESPONSE_MESSAGE;
   }
 
-  private void fromDataProblem(String s) {
-    if (this.fromDataProblems == null) {
-      this.fromDataProblems = new StringBuffer();
-    }
-
-    this.fromDataProblems.append(s);
-    this.fromDataProblems.append(System.getProperty("line.separator", "\n"));
-  }
-
   @Override
   public Version[] getSerializationVersions() {
     return null;
