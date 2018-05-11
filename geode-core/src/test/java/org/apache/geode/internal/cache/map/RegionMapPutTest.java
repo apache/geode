@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -63,6 +64,7 @@ public class RegionMapPutTest {
   private Object expectedOldValue = null;
   private boolean overwriteDestroyed = false;
   private RegionMapPut instance;
+  private final RegionEntry existingRegionEntry = mock(RegionEntry.class);
 
   @Before
   public void setup() {
@@ -92,10 +94,26 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void setsEventOldValueToExistingRegionEntryValue_ifOldValueIsGatewaySenderEvent() {
+    givenExistingRegionEntry();
+
+    GatewaySenderEventImpl oldValue = new GatewaySenderEventImpl();
+    when(existingRegionEntry.getValue()).thenReturn(oldValue);
+
+    doPut();
+
+    verify(event, times(1)).setOldValue(same(oldValue), eq(true));
+    verify(event, never()).setOldValue(not(same(oldValue)), eq(true));
+  }
+
+  @Test
   public void setsEventOldValueToExistingRegionEntryValue_ifOperationGuaranteesOldValue() {
-    Object oldValue = new Object();
-    givenExistingRegionEntryWithValue(oldValue);
+    givenExistingRegionEntry();
     givenAnOperationThatGuaranteesOldValue();
+
+    Object oldValue = new Object();
+    when(existingRegionEntry.getValueOffHeapOrDiskWithoutFaultIn(same(internalRegion)))
+        .thenReturn(oldValue);
 
     doPut();
 
@@ -106,9 +124,11 @@ public class RegionMapPutTest {
   @Test
   public void setsEventOldValueToExistingRegionEntryValue_ifIsRequiredOldValueAndOperationDoesNotGuaranteeOldValue() {
     this.requireOldValue = true;
-    Object oldValue = new Object();
-    givenExistingRegionEntryWithValueInMemory(oldValue);
+    givenExistingRegionEntry();
     givenAnOperationThatDoesNotGuaranteeOldValue();
+
+    Object oldValue = new Object();
+    when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(oldValue);
 
     doPut();
 
@@ -118,10 +138,12 @@ public class RegionMapPutTest {
 
   @Test
   public void setsEventOldValueToExistingRegionEntryValue_ifIsCacheWriteAndOperationDoesNotGuaranteeOldValue() {
-    Object oldValue = new Object();
-    givenExistingRegionEntryWithValueInMemory(oldValue);
+    givenExistingRegionEntry();
     givenAnOperationThatDoesNotGuaranteeOldValue();
     givenPutNeedsToDoCacheWrite();
+
+    Object oldValue = new Object();
+    when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(oldValue);
 
     doPut();
 
@@ -133,7 +155,9 @@ public class RegionMapPutTest {
   public void setsEventOldValueToNotAvailable_ifIsCacheWriteAndOperationDoesNotGuaranteeOldValue_andExistingValueIsNull() {
     givenPutNeedsToDoCacheWrite();
     givenAnOperationThatDoesNotGuaranteeOldValue();
-    givenExistingRegionEntryWithValueInMemory(null);
+    givenExistingRegionEntry();
+
+    when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(null);
 
     doPut();
 
@@ -435,16 +459,8 @@ public class RegionMapPutTest {
     when(internalRegion.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
   }
 
-  private void givenExistingRegionEntryWithValue(Object value) {
-    RegionEntry existingRegionEntry = mock(RegionEntry.class);
-    when(existingRegionEntry.getValueOffHeapOrDiskWithoutFaultIn(same(internalRegion)))
-        .thenReturn(value);
+  private void givenExistingRegionEntry() {
     when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
   }
 
-  private void givenExistingRegionEntryWithValueInMemory(Object value) {
-    RegionEntry existingRegionEntry = mock(RegionEntry.class);
-    when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(value);
-    when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
-  }
 }
