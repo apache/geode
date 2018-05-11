@@ -113,6 +113,23 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void setsEventOldValueToNotAvailable_ifIsCacheWriteAndOperationDoesNotGuaranteeOldValue_andExistingValueIsNull() {
+    RegionEntry existingRegionEntry = mock(RegionEntry.class);
+    when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(null);
+    when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
+
+    when(event.getOperation()).thenReturn(Operation.UPDATE); // does not guarantee old value
+
+    // So that isCacheWrite is true
+    when(event.isGenerateCallbacks()).thenReturn(true);
+    when(internalRegion.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
+
+    doPut();
+
+    verify(event, times(1)).setOldValue(Token.NOT_AVAILABLE);
+  }
+
+  @Test
   public void retrieveOldValueForDeltaDefaultToFalse() {
     createInstance();
 
