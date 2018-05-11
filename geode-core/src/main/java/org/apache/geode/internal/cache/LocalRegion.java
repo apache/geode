@@ -8336,19 +8336,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       try {
         synchronized (regionEntry) {
           if (!regionEntry.isRemoved()) {
-            if (regionEntry instanceof DiskEntry && regionEntry instanceof EvictableEntry) {
-              EvictableEntry le = (EvictableEntry) regionEntry;
-              if (le.isEvicted()) {
-                // Handle the case where we fault in a disk entry
-                txLRUStart();
-                needsLRUCleanup = true;
-
-                // Fault in the value from disk
-                regionEntry.getValue(this);
-              }
+            Object value = regionEntry.getValueInVM(this);
+            if (value == Token.NOT_AVAILABLE || regionEntry.isEvicted()) {
+              // Entry value is on disk
+              // Handle the case where we fault in a evicted disk entry
+              needsLRUCleanup = txLRUStart();
+              // Fault in the value from disk
+              value = regionEntry.getValue(this);
             }
 
-            Object value = regionEntry.getValueInVM(this);
             /*
              * The tx will need the raw value for identity comparison. Please see
              * TXEntryState#checkForConflict(LocalRegion,Object)
@@ -8448,8 +8444,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   @Override
-  public void txLRUStart() {
-    this.entries.disableLruUpdateCallback();
+  public boolean txLRUStart() {
+    return this.entries.disableLruUpdateCallback();
   }
 
   @Override
