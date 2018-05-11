@@ -108,8 +108,6 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
 
   private static final Lock lock = new ReentrantLock();
 
-  // @Category(FlakyTest.class) // GEODE-516 & GEODE-576: async actions, thread sleeps, time
-  // sensitive
   @Test
   public void testDistributedDeadlockWithFunction() throws Throwable {
     Host host = Host.getHost(0);

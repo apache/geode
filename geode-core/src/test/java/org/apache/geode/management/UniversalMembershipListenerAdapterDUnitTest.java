@@ -80,7 +80,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Distributed tests for {@link UniversalMembershipListenerAdapter}.
@@ -1077,7 +1076,6 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   /**
    * Tests notification of events for bridge server in system bridge client process.
    */
-  @Category(FlakyTest.class) // GEODE-1879
   @Test
   public void testServerEventsInPeerSystem() throws Exception {
     boolean[] firedSystem = new boolean[3];

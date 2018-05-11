@@ -38,7 +38,6 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({DistributedTest.class, RedisTest.class})
@@ -108,9 +107,6 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
     disconnectAllFromDS();
   }
 
-  @Category(FlakyTest.class) // GEODE-1092: random ports, failure stack involves TCPTransport
-                             // ConnectionHandler (are we eating BindExceptions somewhere?), uses
-                             // Random, async actions
   @Test
   public void testConcListOps() throws Exception {
     final Jedis jedis1 = new Jedis(localHost, server1Port, JEDIS_TIMEOUT);
@@ -146,8 +142,6 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
     assertEquals(result1, result2);
   }
 
-  @Category(FlakyTest.class) // GEODE-717: random ports, BindException in failure stack, async
-                             // actions
   @Test
   public void testConcCreateDestroy() throws Exception {
     IgnoredException.addIgnoredException("RegionDestroyedException");
@@ -208,8 +202,6 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Just make sure there are no unexpected server crashes
    */
-  @Category(FlakyTest.class) // GEODE-1697
-  @Test
   public void testConcOps() throws Exception {
 
     final int ops = 100;
