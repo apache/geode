@@ -21,12 +21,11 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.test.junit.categories.SnapshotTest;
-import org.apache.geode.test.junit.categories.StatisticsTest;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * Compares the output results of {@link StatArchiveWithConsecutiveResourceInstGenerator} against

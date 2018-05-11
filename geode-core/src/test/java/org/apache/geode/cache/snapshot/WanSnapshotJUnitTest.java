@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.examples.snapshot.MyObject;
-import org.apache.geode.test.junit.categories.SnapshotTest;
 import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +33,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SnapshotTest;
 
 @Category({IntegrationTest.class, SnapshotTest.class})
 public class WanSnapshotJUnitTest extends SnapshotTestCase {

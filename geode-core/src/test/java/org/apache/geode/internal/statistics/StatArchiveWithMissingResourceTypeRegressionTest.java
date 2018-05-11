@@ -21,9 +21,6 @@ import java.io.File;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.derby.catalog.Statistics;
-import org.apache.geode.test.junit.categories.SnapshotTest;
-import org.apache.geode.test.junit.categories.StatisticsTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,6 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * StatArchiveReader should throw IllegalStateException with detailed information instead of
