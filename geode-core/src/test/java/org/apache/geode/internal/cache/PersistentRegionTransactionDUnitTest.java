@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.stream.IntStream;
 
@@ -32,12 +33,14 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -46,14 +49,16 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
 
   private VM server;
   private VM client;
-  private final int KEY = 5;
-  private final String VALUE = "value 5";
-  private final String REGIONNAME = "region";
+  private static final int KEY = 5;
+  private static final String VALUE = "value 5";
+  private static final String REGIONNAME = "region";
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
 
+  @Rule
+  public DistributedDiskDirRule distributedDiskDir = new DistributedDiskDirRule();
 
   @Before
   public void allowTransactions() {
@@ -71,10 +76,10 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void clientTransactionCanGetNotRecoveredEntryOnPersistentOverflowRegion()
       throws Exception {
-    createServer(server, true);
+    createServer(server, true, false);
     putData(server);
     server.invoke(() -> getCache().close());
-    int port = createServer(server, true);
+    int port = createServer(server, true, false);
 
 
     client.invoke(() -> {
@@ -97,15 +102,17 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private int createServer(final VM server, boolean isOverflow) {
+  private int createServer(final VM server, boolean isOverflow, boolean isAsyncDiskWrite) {
     return server.invoke(() -> {
       if (!isOverflow) {
         System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "false");
       }
       CacheFactory cacheFactory = new CacheFactory();
       Cache cache = getCache(cacheFactory);
+      cache.createDiskStoreFactory().setQueueSize(3).setTimeInterval(10000).create("disk");
       if (isOverflow) {
         cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT)
+            .setDiskSynchronous(!isAsyncDiskWrite).setDiskStoreName("disk")
             .setEvictionAttributes(
                 EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK))
             .create(REGIONNAME);
@@ -120,7 +127,7 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void clientTransactionCanGetEvictedEntryOnPersistentOverflowRegion() throws Exception {
-    int port = createServer(server, true);
+    int port = createServer(server, true, false);
     putData(server);
     client.invoke(() -> {
       ClientCacheFactory factory = new ClientCacheFactory().addPoolServer("localhost", port);
@@ -137,7 +144,7 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void transactionCanGetEvictedEntryOnPersistentOverflowRegion() throws Exception {
-    createServer(server, true);
+    createServer(server, true, false);
     putData(server);
     server.invoke(() -> {
       LocalRegion region = (LocalRegion) getCache().getRegion(REGIONNAME);
@@ -154,10 +161,10 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void transactionCanGetNotRecoveredEntryOnPersistentOverflowRegion() throws Exception {
-    createServer(server, true);
+    createServer(server, true, false);
     putData(server);
     server.invoke(() -> getCache().close());
-    createServer(server, true);
+    createServer(server, true, false);
     server.invoke(() -> {
       LocalRegion region = (LocalRegion) getCache().getRegion("region");
       getCache().getCacheTransactionManager().begin();
@@ -170,11 +177,11 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void TransactionCanGetNotRecoveredEntryOnPersistentRegion() throws Exception {
-    createServer(server, false);
+  public void transactionCanGetNotRecoveredEntryOnPersistentRegion() throws Exception {
+    createServer(server, false, false);
     putData(server);
     server.invoke(() -> getCache().close());
-    createServer(server, false);
+    createServer(server, false, false);
     server.invoke(() -> {
       LocalRegion region = (LocalRegion) getCache().getRegion("region");
       assertThat(region.getValueInVM(KEY)).isNull();
@@ -189,10 +196,10 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void clientTransactionCanGetNotRecoveredEntryOnPersistentRegion() throws Exception {
-    createServer(server, false);
+    createServer(server, false, false);
     putData(server);
     server.invoke(() -> getCache().close());
-    int port = createServer(server, false);
+    int port = createServer(server, false, false);
 
 
     client.invoke(() -> {
@@ -205,6 +212,31 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
       } finally {
         cache.getCacheTransactionManager().rollback();
       }
+    });
+  }
+
+  @Test
+  public void transactionCanUpdateEntryOnAsyncOverflowRegion() throws Exception {
+    createServer(server, true, true);
+    server.invoke(() -> {
+      Cache cache = getCache();
+      DiskStoreImpl diskStore = (DiskStoreImpl) cache.findDiskStore("disk");
+      LocalRegion region = (LocalRegion) cache.getRegion("region");
+      region.put(1, "value1");
+      region.put(2, "value2"); // causes key 1 to be evicted and sits in the async queue
+      TXManagerImpl txManager = getCache().getTxManager();
+      txManager.begin();
+      assertNotEquals(region.getValueInVM(1), Token.NOT_AVAILABLE);
+      region.put(1, "new value");
+      TransactionId txId = txManager.suspend();
+      region.put(3, "value3");
+      region.put(4, "value4");
+      diskStore.flush();
+      txManager.resume(txId);
+
+      txManager.commit();
+
+      assertEquals("new value", region.get(1));
     });
   }
 }

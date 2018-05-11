@@ -8335,7 +8335,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         synchronized (regionEntry) {
           if (!regionEntry.isRemoved()) {
             Object value = regionEntry.getValueInVM(this);
-            if (value == Token.NOT_AVAILABLE) {
+            if (value == Token.NOT_AVAILABLE || regionEntry.isEvictBitSet()) {
               // Entry value is on disk
               // Handle the case where we fault in a evicted disk entry
               needsLRUCleanup = txLRUStart();

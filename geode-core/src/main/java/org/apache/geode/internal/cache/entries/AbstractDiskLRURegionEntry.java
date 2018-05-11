@@ -31,4 +31,8 @@ public abstract class AbstractDiskLRURegionEntry extends AbstractOplogDiskRegion
 
   // Do not add any instance variables to this class.
   // Instead add them to the LRU section of LeafRegionEntry.cpp.
+  @Override
+  public boolean isEvictBitSet() {
+    return isEvicted();
+  }
 }
