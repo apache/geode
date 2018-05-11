@@ -17,10 +17,12 @@
 package org.apache.geode.internal.cache.map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -87,6 +89,27 @@ public class RegionMapPutTest {
   private RegionEntry doPut() {
     createInstance();
     return instance.put();
+  }
+
+  @Test
+  public void setsEventOldValueToExistingRegionEntryValue_ifIsCacheWriteAndOperationDoesNotGuaranteeOldValue() {
+    Object oldValue = new Object();
+
+    RegionEntry existingRegionEntry = mock(RegionEntry.class);
+    when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(oldValue);
+    when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
+
+    when(event.getOperation()).thenReturn(Operation.UPDATE); // does not guarantee old value
+
+    // So that isCacheWrite is true
+    when(event.isGenerateCallbacks()).thenReturn(true);
+    when(internalRegion.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
+
+
+    doPut();
+
+    verify(event, times(1)).setOldValue(same(oldValue));
+    verify(event, never()).setOldValue(not(same(oldValue)));
   }
 
   @Test
