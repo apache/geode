@@ -21,6 +21,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
@@ -46,6 +47,10 @@ public class CreateGatewayReceiverCommandTest {
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
+  private final String NOT_PERSISTED_ON_MEMBER =
+      "Configuration change is not persisted because the command is executed on specific member";
+  private final String NOT_PERSISTED_CC_NOT_RUNNING =
+      "Cluster configuration service is not running. Configuration change is not persisted";
 
   private CreateGatewayReceiverCommand command;
   private InternalCache cache;
@@ -106,8 +111,9 @@ public class CreateGatewayReceiverCommandTest {
     result1 = new CliFunctionResult("member", true, "result1");
     functionResults.add(result1);
     gfsh.executeAndAssertThat(command, "create gateway-receiver").statusIsSuccess()
-        .containsOutput("Cluster configuration is not updated");
-    verify(ccService, never()).deleteXmlEntity(any(), any());
+        .containsOutput(NOT_PERSISTED_CC_NOT_RUNNING);
+    verify(ccService, never()).addXmlEntity(any(), any());
+    verify(ccService, never()).updateCacheConfig(any(), any());
   }
 
   @Test
@@ -117,8 +123,9 @@ public class CreateGatewayReceiverCommandTest {
     result1 = new CliFunctionResult("member", true, "result1");
     functionResults.add(result1);
     gfsh.executeAndAssertThat(command, "create gateway-receiver --member=xyz").statusIsSuccess()
-        .containsOutput("Cluster configuration is not updated");
-    verify(ccService, never()).deleteXmlEntity(any(), any());
+        .containsOutput(NOT_PERSISTED_ON_MEMBER);
+    verify(ccService, never()).addXmlEntity(any(), any());
+    verify(ccService, never()).updateCacheConfig(any(), any());
   }
 
   @Test
@@ -129,9 +136,8 @@ public class CreateGatewayReceiverCommandTest {
     functionResults.add(result1);
 
     // does not delete because command failed, so hasNoFailToPersistError should still be true
-    gfsh.executeAndAssertThat(command, "create gateway-receiver").statusIsError()
-        .containsOutput("Cluster configuration is not updated");
-    verify(ccService, never()).deleteXmlEntity(any(), any());
+    gfsh.executeAndAssertThat(command, "create gateway-receiver").statusIsError();
+    verify(ccService, never()).updateCacheConfig(any(), any());
   }
 
   @Test
@@ -144,8 +150,7 @@ public class CreateGatewayReceiverCommandTest {
     functionResults.add(result2);
 
     // does not delete because command failed, so hasNoFailToPersistError should still be true
-    gfsh.executeAndAssertThat(command, "create gateway-receiver").statusIsSuccess()
-        .doesNotContainOutput("Cluster configuration is not updated");
-    verify(ccService, never()).deleteXmlEntity(any(), any());
+    gfsh.executeAndAssertThat(command, "create gateway-receiver").statusIsSuccess();
+    verify(ccService, times(1)).updateCacheConfig(any(), any());
   }
 }
