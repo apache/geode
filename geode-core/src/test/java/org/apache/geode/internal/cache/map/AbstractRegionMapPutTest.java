@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -33,6 +34,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.InOrder;
 
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
@@ -101,7 +103,6 @@ public class AbstractRegionMapPutTest {
     RegionEntry result = instance.put();
 
     assertThat(result).isNull();
-    assertThat(instance.getRegionEntry()).isSameAs(createdRegionEntry);
     verify(focusedRegionMap, times(1)).getEntry(eq(event));
     verify(focusedRegionMap, times(1)).putEntryIfAbsent(any(), eq(createdRegionEntry));
     verify(instance, times(1)).isOnlyExisting();
@@ -120,7 +121,7 @@ public class AbstractRegionMapPutTest {
   }
 
   @Test
-  public void removeEntryCalledIfShouldCreatedEntryBeRemoved() {
+  public void putWithShouldCreatedEntryBeRemovedCallsRemoveEntry() {
     instance.shouldCreatedEntryBeRemoved = true;
 
     instance.put();
@@ -129,14 +130,17 @@ public class AbstractRegionMapPutTest {
   }
 
   @Test
-  public void oqlIndexManagerInitializedAndCountedDown() {
+  public void putWithOqlIndexManagerCallInitAndCountDown() {
     IndexManager oqlIndexManager = mock(IndexManager.class);
     when(internalRegion.getIndexManager()).thenReturn(oqlIndexManager);
+    instance.checkPreconditions = true;
 
     instance.put();
 
-    verify(oqlIndexManager, times(1)).waitForIndexInit();
-    verify(oqlIndexManager, times(1)).countDownIndexUpdaters();
+    InOrder inOrder = inOrder(oqlIndexManager, instance);
+    inOrder.verify(oqlIndexManager, times(1)).waitForIndexInit();
+    inOrder.verify(instance, times(1)).createOrUpdateEntry();
+    inOrder.verify(oqlIndexManager, times(1)).countDownIndexUpdaters();
   }
 
   @Test
@@ -151,29 +155,16 @@ public class AbstractRegionMapPutTest {
 
   @Test
   public void putWithSatisfiedPreconditionsAndNoExistingEntryReturnsRegionEntryFromFactory() {
-    when(focusedRegionMap.getEntry(event)).thenReturn(null);
     instance.checkPreconditions = true;
+    when(focusedRegionMap.getEntry(event)).thenReturn(null);
 
     RegionEntry result = instance.put();
 
     assertThat(result).isSameAs(createdRegionEntry);
-    assertThat(instance.getRegionEntry()).isSameAs(createdRegionEntry);
-    verify(focusedRegionMap, times(1)).getEntry(eq(event));
-    verify(focusedRegionMap, times(1)).putEntryIfAbsent(any(), eq(createdRegionEntry));
-    verify(instance, times(1)).isOnlyExisting();
-    verify(instance, never()).entryExists(any());
-    verify(instance, times(1)).serializeNewValueIfNeeded();
-    verify(instance, times(1)).runWhileLockedForCacheModification(any());
-    verify(instance, times(1)).setOldValueForDelta();
-    verify(instance, times(1)).setOldValueInEvent();
-    verify(instance, times(1)).unsetOldValueForDelta();
-    verify(instance, times(1)).checkPreconditions();
-    verify(instance, times(1)).invokeCacheWriter();
-    verify(instance, times(1)).createOrUpdateEntry();
-    verify(instance, times(1)).shouldCreatedEntryBeRemoved();
-    verify(instance, times(1)).doBeforeCompletionActions();
-    verify(instance, times(1)).doAfterCompletionActions();
+    verifyMapContractWhenCreateSucceeds();
+    verifyAbstractContract();
   }
+
 
   @Test
   public void regionWithIndexMaintenanceSynchronousCallsSetUpdateInProgress() {
@@ -182,37 +173,27 @@ public class AbstractRegionMapPutTest {
 
     instance.put();
 
-    verify(createdRegionEntry, times(1)).setUpdateInProgress(true);
-    verify(createdRegionEntry, times(1)).setUpdateInProgress(false);
+    InOrder inOrder = inOrder(createdRegionEntry, instance);
+    inOrder.verify(createdRegionEntry, times(1)).setUpdateInProgress(true);
+    inOrder.verify(instance, times(1)).createOrUpdateEntry();
+    inOrder.verify(createdRegionEntry, times(1)).setUpdateInProgress(false);
   }
 
   @Test
-  public void putWithOnlyExistingTrueReturnsNull() {
+  public void putWithOnlyExistingTrueAndNoEntryExistsReturnsNull() {
     instance.onlyExisting = true;
+    instance.entryExists = false;
 
     RegionEntry result = instance.put();
 
     assertThat(result).isNull();
-    assertThat(instance.getRegionEntry()).isNull();
     verify(focusedRegionMap, times(1)).getEntry(eq(event));
     verify(focusedRegionMap, never()).putEntryIfAbsent(any(), any());
-    verify(instance, times(1)).isOnlyExisting();
-    verify(instance, times(1)).entryExists(any());
-    verify(instance, times(1)).serializeNewValueIfNeeded();
-    verify(instance, times(1)).runWhileLockedForCacheModification(any());
-    verify(instance, never()).setOldValueForDelta();
-    verify(instance, never()).setOldValueInEvent();
-    verify(instance, never()).unsetOldValueForDelta();
-    verify(instance, never()).checkPreconditions();
-    verify(instance, never()).invokeCacheWriter();
-    verify(instance, never()).createOrUpdateEntry();
-    verify(instance, never()).shouldCreatedEntryBeRemoved();
-    verify(instance, never()).doBeforeCompletionActions();
-    verify(instance, times(1)).doAfterCompletionActions();
+    verifyAbstractContract();
   }
 
   @Test
-  public void putWithExistingEntrySucceeds() {
+  public void putWithExistingEntryReturnsExistingEntry() {
     instance.checkPreconditions = true;
     instance.onlyExisting = true;
     instance.entryExists = true;
@@ -222,27 +203,14 @@ public class AbstractRegionMapPutTest {
     RegionEntry result = instance.put();
 
     assertThat(result).isSameAs(existingEntry);
-    assertThat(instance.getRegionEntry()).isSameAs(existingEntry);
     verify(focusedRegionMap, times(1)).getEntry(eq(event));
     verify(focusedRegionMap, never()).getEntryFactory();
     verify(focusedRegionMap, never()).putEntryIfAbsent(any(), eq(createdRegionEntry));
-    verify(instance, times(1)).isOnlyExisting();
-    verify(instance, times(1)).entryExists(eq(existingEntry));
-    verify(instance, times(1)).serializeNewValueIfNeeded();
-    verify(instance, times(1)).runWhileLockedForCacheModification(any());
-    verify(instance, times(1)).setOldValueForDelta();
-    verify(instance, times(1)).setOldValueInEvent();
-    verify(instance, times(1)).unsetOldValueForDelta();
-    verify(instance, times(1)).checkPreconditions();
-    verify(instance, times(1)).invokeCacheWriter();
-    verify(instance, times(1)).createOrUpdateEntry();
-    verify(instance, never()).shouldCreatedEntryBeRemoved();
-    verify(instance, times(1)).doBeforeCompletionActions();
-    verify(instance, times(1)).doAfterCompletionActions();
+    verifyAbstractContract();
   }
 
   @Test
-  public void putWithExistingEntryFromPutIfAbsentSucceeds() {
+  public void putWithExistingEntryFromPutIfAbsentReturnsExistingEntry() {
     instance.checkPreconditions = true;
     RegionEntry existingEntry = mock(RegionEntry.class);
     when(focusedRegionMap.putEntryIfAbsent(any(), eq(createdRegionEntry)))
@@ -251,27 +219,13 @@ public class AbstractRegionMapPutTest {
     RegionEntry result = instance.put();
 
     assertThat(result).isSameAs(existingEntry);
-    assertThat(instance.getRegionEntry()).isSameAs(existingEntry);
     verify(focusedRegionMap, times(1)).getEntry(eq(event));
     verify(focusedRegionMap, times(1)).getEntryFactory();
-    verify(instance, times(1)).isOnlyExisting();
-    verify(instance, never()).entryExists(any());
-    verify(instance, times(1)).serializeNewValueIfNeeded();
-    verify(instance, times(1)).runWhileLockedForCacheModification(any());
-    verify(instance, times(1)).setOldValueForDelta();
-    verify(instance, times(1)).setOldValueInEvent();
-    verify(instance, times(1)).unsetOldValueForDelta();
-    verify(instance, times(1)).checkPreconditions();
-    verify(instance, times(1)).invokeCacheWriter();
-    verify(instance, times(1)).createOrUpdateEntry();
-    verify(instance, never()).shouldCreatedEntryBeRemoved();
-    verify(instance, times(1)).doBeforeCompletionActions();
-    verify(instance, times(1)).doAfterCompletionActions();
+    verifyAbstractContract();
   }
 
-
   @Test
-  public void putWithExistingEntryFromPutIfAbsentThatIsRemovedSucceeds() {
+  public void putWithExistingEntryFromPutIfAbsentThatIsRemovedReturnsExistingEntry() {
     instance.checkPreconditions = true;
     RegionEntry existingEntry = mock(RegionEntry.class);
     when(existingEntry.isRemovedPhase2()).thenReturn(true).thenReturn(false);
@@ -281,22 +235,57 @@ public class AbstractRegionMapPutTest {
     RegionEntry result = instance.put();
 
     assertThat(result).isSameAs(existingEntry);
-    assertThat(instance.getRegionEntry()).isSameAs(existingEntry);
     verify(focusedRegionMap, times(2)).getEntry(eq(event));
     verify(focusedRegionMap, times(2)).getEntryFactory();
     verify(entryMap, times(1)).remove(any(), eq(existingEntry));
+    verifyAbstractContractWithRetry();
+  }
+
+  private void verifyMapContractWhenCreateSucceeds() {
+    verify(focusedRegionMap, times(1)).getEntry(eq(event));
+    verify(focusedRegionMap, times(1)).putEntryIfAbsent(any(), eq(createdRegionEntry));
+  }
+
+  private void verifyAbstractContractWithRetry() {
     verify(instance, times(2)).isOnlyExisting();
-    verify(instance, never()).entryExists(any());
+    verifyCommonAbstractContract();
+  }
+
+  private void verifyAbstractContract() {
+    verify(instance, times(1)).isOnlyExisting();
+    verifyCommonAbstractContract();
+  }
+
+  private void verifyCommonAbstractContract() {
+    if (instance.onlyExisting) {
+      verify(instance, times(1)).entryExists(any());
+    } else {
+      verify(instance, never()).entryExists(any());
+    }
     verify(instance, times(1)).serializeNewValueIfNeeded();
     verify(instance, times(1)).runWhileLockedForCacheModification(any());
-    verify(instance, times(1)).setOldValueForDelta();
-    verify(instance, times(1)).setOldValueInEvent();
-    verify(instance, times(1)).unsetOldValueForDelta();
-    verify(instance, times(1)).checkPreconditions();
-    verify(instance, times(1)).invokeCacheWriter();
-    verify(instance, times(1)).createOrUpdateEntry();
-    verify(instance, never()).shouldCreatedEntryBeRemoved();
-    verify(instance, times(1)).doBeforeCompletionActions();
+    if (!instance.onlyExisting || instance.entryExists) {
+      verify(instance, times(1)).setOldValueForDelta();
+      verify(instance, times(1)).setOldValueInEvent();
+      verify(instance, times(1)).unsetOldValueForDelta();
+      verify(instance, times(1)).checkPreconditions();
+    } else {
+      verify(instance, never()).setOldValueForDelta();
+      verify(instance, never()).setOldValueInEvent();
+      verify(instance, never()).unsetOldValueForDelta();
+      verify(instance, never()).checkPreconditions();
+    }
+    if (instance.checkPreconditions || !instance.onlyExisting || instance.entryExists) {
+      verify(instance, times(1)).invokeCacheWriter();
+      verify(instance, times(1)).createOrUpdateEntry();
+      verify(instance, times(1)).doBeforeCompletionActions();
+      verify(instance, times(instance.isCreate() ? 1 : 0)).shouldCreatedEntryBeRemoved();
+    } else {
+      verify(instance, never()).invokeCacheWriter();
+      verify(instance, never()).createOrUpdateEntry();
+      verify(instance, never()).doBeforeCompletionActions();
+      verify(instance, never()).shouldCreatedEntryBeRemoved();
+    }
     verify(instance, times(1)).doAfterCompletionActions();
   }
 
