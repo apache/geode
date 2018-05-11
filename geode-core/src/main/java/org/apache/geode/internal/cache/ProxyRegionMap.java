@@ -785,6 +785,11 @@ class ProxyRegionMap implements RegionMap {
         EntryEventImpl event, boolean isEntryUpdate) {
       throw new IllegalStateException("Should never be called");
     }
+
+    @Override
+    public boolean isEvicted() {
+      return false;
+    }
   }
 
   @Override

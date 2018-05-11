@@ -2235,4 +2235,9 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
   public void returnToPool() {
     // noop by default
   }
+
+  @Override
+  public boolean isEvicted() {
+    return false;
+  }
 }

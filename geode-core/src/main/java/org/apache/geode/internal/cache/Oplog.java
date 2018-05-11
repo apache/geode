@@ -7285,6 +7285,10 @@ public class Oplog implements CompactableOplog, Flushable {
       throw new IllegalStateException("Should never be called");
     }
 
+    @Override
+    public boolean isEvicted() {
+      return false;
+    }
   }
 
   /**

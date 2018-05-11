@@ -462,7 +462,5 @@ public interface RegionEntry {
   Object prepareValueForCache(RegionEntryContext context, Object value, EntryEventImpl event,
       boolean isEntryUpdate);
 
-  default boolean isEvictBitSet() {
-    return false;
-  }
+  boolean isEvicted();
 }
