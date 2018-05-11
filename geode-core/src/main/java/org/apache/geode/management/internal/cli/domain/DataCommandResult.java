@@ -14,33 +14,29 @@
  */
 package org.apache.geode.management.internal.cli.domain;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.cache.query.internal.Undefined;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.util.JsonUtil;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.pdx.PdxInstance;
 
 
 /**
@@ -370,12 +366,7 @@ public class DataCommandResult implements Serializable {
     return locateEntryLocations;
   }
 
-  public void setLocateEntryLocations(List<KeyInfo> locateEntryLocations) {
-    this.locateEntryLocations = locateEntryLocations;
-  }
-
-  public Result toCommandResult() {
-
+  public ResultModel toResultModel() {
     if (StringUtils.isEmpty(keyClass)) {
       keyClass = "java.lang.String";
     }
@@ -384,62 +375,48 @@ public class DataCommandResult implements Serializable {
       valueClass = "java.lang.String";
     }
 
+    ResultModel result = new ResultModel();
+    DataResultModel data = result.addData();
+
     if (errorString != null) {
-      CompositeResultData data = ResultBuilder.createCompositeResultData();
-      SectionResultData section = data.addSection();
-      section.addData("Message", errorString);
-      section.addData(RESULT_FLAG, operationCompletedSuccessfully);
-      return ResultBuilder.buildResult(data);
+      data.addData("Message", errorString);
+      data.addData(RESULT_FLAG, operationCompletedSuccessfully);
+      return result;
     }
 
-    CompositeResultData data = ResultBuilder.createCompositeResultData();
-    SectionResultData section = data.addSection();
-    TabularResultData table = section.addTable();
-
-    section.addData(RESULT_FLAG, operationCompletedSuccessfully);
+    data.addData(RESULT_FLAG, operationCompletedSuccessfully);
     if (infoString != null) {
-      section.addData("Message", infoString);
+      data.addData("Message", infoString);
     }
 
     if (isGet()) {
-      toCommandResult_isGet(section, table);
+      toResultModel_isGet(data);
     } else if (isLocateEntry()) {
-      toCommandResult_isLocate(section, table);
+      toResultModel_isLocate(result, data);
     } else if (isPut()) {
-      toCommandResult_isPut(section, table);
+      toResultModel_isPut(data);
     } else if (isRemove()) {
-      toCommandResult_isRemove(section, table);
+      toResultModel_isRemove(data);
     }
-    return ResultBuilder.buildResult(data);
+
+    return result;
   }
 
-  private void toCommandResult_isGet(SectionResultData section, TabularResultData table) {
-    section.addData("Key Class", getKeyClass());
-    if (!isDeclaredPrimitive(keyClass)) {
-      addJSONStringToTable(table, inputKey);
-    } else {
-      section.addData("Key", inputKey);
-    }
 
-    section.addData("Value Class", getValueClass());
-    if (!isDeclaredPrimitive(valueClass)) {
-      addJSONStringToTable(table, getResult);
-    } else {
-      section.addData("Value", getResult);
-    }
+  private void toResultModel_isGet(DataResultModel data) {
+    data.addData("Key Class", getKeyClass());
+    data.addData("Key", inputKey);
+    data.addData("Value Class", getValueClass());
+    data.addData("Value", getResult != null ? getResult.toString() : "null");
   }
 
-  private void toCommandResult_isLocate(SectionResultData section, TabularResultData table) {
+  private void toResultModel_isLocate(ResultModel result, DataResultModel data) {
 
-    section.addData("Key Class", getKeyClass());
-    if (!isDeclaredPrimitive(keyClass)) {
-      addJSONStringToTable(table, inputKey);
-    } else {
-      section.addData("Key", inputKey);
-    }
+    data.addData("Key Class", getKeyClass());
+    data.addData("Key", inputKey);
 
     if (locateEntryLocations != null) {
-      TabularResultData locationTable = section.addTable();
+      TabularResultModel locationTable = result.addTable();
 
       int totalLocations = 0;
 
@@ -489,38 +466,23 @@ public class DataCommandResult implements Serializable {
           }
         }
       }
-      section.addData("Locations Found", totalLocations);
+      data.addData("Locations Found", totalLocations);
     } else {
-      section.addData("Location Info ", "Could not find location information");
+      data.addData("Location Info ", "Could not find location information");
     }
   }
 
-  private void toCommandResult_isPut(SectionResultData section, TabularResultData table) {
-    section.addData("Key Class", getKeyClass());
-
-    if (!isDeclaredPrimitive(keyClass)) {
-      addJSONStringToTable(table, inputKey);
-    } else {
-      section.addData("Key", inputKey);
-    }
-
-    section.addData("Value Class", getValueClass());
-    if (!isDeclaredPrimitive(valueClass)) {
-      addJSONStringToTable(table, putResult);
-    } else {
-      section.addData("Old Value", putResult);
-    }
-
+  private void toResultModel_isPut(DataResultModel data) {
+    data.addData("Key Class", getKeyClass());
+    data.addData("Key", inputKey);
+    data.addData("Value Class", getValueClass());
+    data.addData("Old Value", putResult != null ? putResult.toString() : "null");
   }
 
-  private void toCommandResult_isRemove(SectionResultData section, TabularResultData table) {
+  private void toResultModel_isRemove(DataResultModel data) {
     if (inputKey != null) {// avoids printing key when remove ALL is called
-      section.addData("Key Class", getKeyClass());
-      if (!isDeclaredPrimitive(keyClass)) {
-        addJSONStringToTable(table, inputKey);
-      } else {
-        section.addData("Key", inputKey);
-      }
+      data.addData("Key Class", getKeyClass());
+      data.addData("Key", inputKey);
     }
   }
 
@@ -530,119 +492,62 @@ public class DataCommandResult implements Serializable {
    * instead of Result as Command Step is required to add NEXT_STEP information to guide
    * executionStrategy to route it through final step.
    */
-  public CompositeResultData toSelectCommandResult() {
-    if (errorString != null) {
-      CompositeResultData data = ResultBuilder.createCompositeResultData();
-      SectionResultData section = data.addSection();
-      section.addData("Message", errorString);
-      section.addData(RESULT_FLAG, operationCompletedSuccessfully);
-      return data;
+  public ResultModel toSelectCommandResult() {
+    ResultModel result = new ResultModel();
+    if (!operationCompletedSuccessfully) {
+      result.setStatus(Result.Status.ERROR);
+      DataResultModel data = result.addData();
+      data.addData(RESULT_FLAG, operationCompletedSuccessfully);
+      if (errorString != null) {
+        data.addData("Message", errorString);
+      } else if (infoString != null) {
+        data.addData("Message", infoString);
+      }
+      return result;
     } else {
-      CompositeResultData data = ResultBuilder.createCompositeResultData();
-      SectionResultData section = data.addSection();
-      TabularResultData table = section.addTable();
-      section.addData(RESULT_FLAG, operationCompletedSuccessfully);
+      DataResultModel data = result.addData();
+      TabularResultModel table = result.addTable();
+      data.addData(RESULT_FLAG, operationCompletedSuccessfully);
       if (infoString != null) {
-        section.addData("Message", infoString);
+        data.addData("Message", infoString);
       }
       if (inputQuery != null) {
         if (this.limit > 0) {
-          section.addData("Limit", this.limit);
+          data.addData("Limit", this.limit);
         }
         if (this.selectResult != null) {
-          section.addData(NUM_ROWS, this.selectResult.size());
+          data.addData(NUM_ROWS, this.selectResult.size());
           if (this.queryTraceString != null) {
-            section.addData("Query Trace", this.queryTraceString);
+            data.addData("Query Trace", this.queryTraceString);
           }
           buildTable(table, 0, selectResult.size());
         }
       }
-      return data;
+      return result;
     }
   }
 
-  private int buildTable(TabularResultData table, int startCount, int endCount) {
-    // Three steps:
-    // 1a. Convert each row object to a Json object.
-    // 1b. Build a list of keys that are used for each object
-    // 2. Pad MISSING_VALUE into Json objects for those data that are missing any particular key
-    // 3. Build the table from these Json objects.
-
-    // 1.
+  private void buildTable(TabularResultModel table, int startCount, int endCount) {
     int lastRowExclusive = Math.min(selectResult.size(), endCount + 1);
     List<SelectResultRow> paginatedRows = selectResult.subList(startCount, lastRowExclusive);
 
-    List<GfJsonObject> tableRows = new ArrayList<>();
-    List<GfJsonObject> rowsWithRealJsonObjects = new ArrayList<>();
-    Set<String> columns = new HashSet<>();
+    // First find all the possible columns - not a Set because we want them ordered consistently
+    List<String> possibleColumns = new ArrayList<>();
+    for (SelectResultRow row : paginatedRows) {
+      for (String column : row.getColumnValues().keySet()) {
+        if (!possibleColumns.contains(column)) {
+          possibleColumns.add(column);
+        }
+      }
+    }
 
     for (SelectResultRow row : paginatedRows) {
-      GfJsonObject object = new GfJsonObject();
-      try {
-        if (row.value == null || MISSING_VALUE.equals(row.value)) {
-          object.put("Value", MISSING_VALUE);
-        } else if (row.type == ROW_TYPE_PRIMITIVE) {
-          object.put(RESULT_FLAG, row.value);
-        } else {
-          object = buildGfJsonFromRawObject(row.value);
-          rowsWithRealJsonObjects.add(object);
-          object.keys().forEachRemaining(columns::add);
-        }
-        tableRows.add(object);
-      } catch (GfJsonException e) {
-        JSONObject errJson =
-            new JSONObject().put("Value", "Error getting bean properties " + e.getMessage());
-        tableRows.add(new GfJsonObject(errJson, false));
+      Map<String, String> columnValues = row.getColumnValues();
+      for (String column : possibleColumns) {
+        table.accumulate(column,
+            columnValues.getOrDefault(column, DataCommandResult.MISSING_VALUE));
       }
     }
-
-    // 2.
-    for (GfJsonObject tableRow : rowsWithRealJsonObjects) {
-      for (String key : columns) {
-        if (!tableRow.has(key)) {
-          try {
-            tableRow.put(key, MISSING_VALUE);
-          } catch (GfJsonException e) {
-            logger.warn("Ignored GfJsonException:", e);
-          }
-        }
-      }
-    }
-
-    // 3.
-    for (GfJsonObject jsonObject : tableRows) {
-      addJSONObjectToTable(table, jsonObject);
-    }
-
-    return paginatedRows.size();
-  }
-
-
-  private boolean isDeclaredPrimitive(String keyClass2) {
-    try {
-      Class klass = ClassPathLoader.getLatest().forName(keyClass2);
-      return JsonUtil.isPrimitiveOrWrapper(klass);
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
-  }
-
-
-  private Object getDomainValue(Object value) {
-    if (value instanceof String) {
-      String str = (String) value;
-      if (str.contains("{") && str.contains("}")) {// small filter to see if its json string
-        try {
-          JSONObject json = new JSONObject(str);
-          return json.get("type-class");
-        } catch (Exception e) {
-          return str;
-        }
-      } else {
-        return str;
-      }
-    }
-    return value;
   }
 
   public Object getInputQuery() {
@@ -657,7 +562,7 @@ public class DataCommandResult implements Serializable {
     this.limit = limit;
   }
 
-  public static class KeyInfo implements /* Data */ Serializable {
+  public static class KeyInfo implements Serializable {
 
     private String memberId;
     private String memberName;
@@ -737,26 +642,6 @@ public class DataCommandResult implements Serializable {
       }
       return false;
     }
-
-    // @Override
-    public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeString(memberId, out);
-      DataSerializer.writeString(memberName, out);
-      DataSerializer.writeString(host, out);
-      DataSerializer.writePrimitiveInt(pid, out);
-      DataSerializer.writeArrayList(locations, out);
-
-
-    }
-
-    // @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      memberId = DataSerializer.readString(in);
-      memberName = DataSerializer.readString(in);
-      host = DataSerializer.readString(in);
-      pid = DataSerializer.readPrimitiveInt(in);
-      locations = DataSerializer.readArrayList(in);
-    }
   }
 
   public static final int ROW_TYPE_STRUCT_RESULT = 100;
@@ -766,31 +651,64 @@ public class DataCommandResult implements Serializable {
   public static class SelectResultRow implements Serializable {
     private static final long serialVersionUID = 1L;
     private int type;
-    private Object value;
+    private final Map<String, String> columnValues;
 
     public SelectResultRow(int type, Object value) {
       this.type = type;
-      this.value = value;
+      this.columnValues = createColumnValues(value);
     }
 
-    public int getType() {
-      return type;
+    public Map<String, String> getColumnValues() {
+      return columnValues;
     }
 
-    public void setType(int type) {
-      this.type = type;
+    private Map<String, String> createColumnValues(Object value) {
+      Map<String, String> result = new LinkedHashMap<>();
+
+      if (value == null || MISSING_VALUE.equals(value)) {
+        result.put("Value", MISSING_VALUE);
+      } else if (type == ROW_TYPE_PRIMITIVE) {
+        result.put(RESULT_FLAG, value.toString());
+      } else if (value instanceof Undefined) {
+        result.put("Value", "UNDEFINED");
+      } else {
+        resolveObjectToColumns(result, value);
+      }
+
+      return result;
     }
 
-    public Object getValue() {
-      return value;
+    private void resolveObjectToColumns(Map<String, String> columnData, Object value) {
+      if (value instanceof PdxInstance) {
+        resolvePdxToColumns(columnData, (PdxInstance) value);
+      } else if (value instanceof Struct) {
+        resolveStructToColumns(columnData, (StructImpl) value);
+      } else {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.valueToTree(value);
+
+        node.fieldNames().forEachRemaining(field -> {
+          try {
+            columnData.put(field, mapper.writeValueAsString(node.get(field)));
+          } catch (JsonProcessingException e) {
+            columnData.put(field, e.getMessage());
+          }
+        });
+      }
     }
 
-    public void setValue(Object value) {
-      this.value = value;
+    private void resolvePdxToColumns(Map<String, String> columnData, PdxInstance pdx) {
+      for (String field : pdx.getFieldNames()) {
+        columnData.put(field, pdx.getField(field).toString());
+      }
     }
 
+    private void resolveStructToColumns(Map<String, String> columnData, StructImpl struct) {
+      for (String field : struct.getFieldNames()) {
+        columnData.put(field, struct.get(field).toString());
+      }
+    }
   }
-
 
   public void aggregate(DataCommandResult result) {
     /* Right now only called for LocateEntry */
@@ -827,98 +745,6 @@ public class DataCommandResult implements Serializable {
         locateEntryLocations.add(result.locateEntryResult);
       }
     }
-  }
-
-
-  private void addJSONObjectToTable(TabularResultData table, GfJsonObject object) {
-    Iterator<String> keys;
-
-    keys = object.keys();
-    while (keys.hasNext()) {
-      String k = keys.next();
-      // filter out meta-field type-class used to identify java class of json object
-      if (!"type-class".equals(k)) {
-        Object value = object.get(k);
-
-        if (value != null) {
-          table.accumulate(k, getDomainValue(value));
-        }
-      }
-    }
-  }
-
-  private GfJsonObject buildGfJsonFromRawObject(Object object) throws GfJsonException {
-    GfJsonObject jsonObject;
-    if (String.class.equals(object.getClass())) {
-      jsonObject = new GfJsonObject(sanitizeJsonString((String) object));
-    } else {
-      jsonObject = new GfJsonObject(object, true);
-    }
-
-    return jsonObject;
-  }
-
-  private String sanitizeJsonString(String s) {
-    // InputString in JSON Form but with round brackets
-    String newString = s.replaceAll("'", "\"");
-    if (newString.charAt(0) == '(') {
-      int len = newString.length();
-      newString = "{" + newString.substring(1, len - 1) + "}";
-    }
-    return newString;
-  }
-
-  private void addJSONStringToTable(TabularResultData table, Object object) {
-    if (object == null || MISSING_VALUE.equals(object)) {
-      table.accumulate("Value", MISSING_VALUE);
-    } else {
-      try {
-        GfJsonObject jsonObject = buildGfJsonFromRawObject(object);
-        addJSONObjectToTable(table, jsonObject);
-      } catch (Exception e) {
-        table.accumulate("Value", "Error getting bean properties " + e.getMessage());
-      }
-    }
-  }
-
-
-  // @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(command, out);
-    out.writeUTF(command);
-    DataSerializer.writeObject(putResult, out);
-    DataSerializer.writeObject(getResult, out);
-    DataSerializer.writeObject(locateEntryResult, out);
-    DataSerializer.writeArrayList((ArrayList<?>) locateEntryLocations, out);
-    DataSerializer.writeBoolean(hasResultForAggregation, out);
-    DataSerializer.writeObject(removeResult, out);
-    DataSerializer.writeObject(inputKey, out);
-    DataSerializer.writeObject(inputValue, out);
-    DataSerializer.writeObject(error, out);
-    DataSerializer.writeString(errorString, out);
-    DataSerializer.writeString(infoString, out);
-    DataSerializer.writeString(keyClass, out);
-    DataSerializer.writeString(valueClass, out);
-    DataSerializer.writeBoolean(operationCompletedSuccessfully, out);
-  }
-
-  // @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    command = DataSerializer.readString(in);
-    putResult = DataSerializer.readObject(in);
-    getResult = DataSerializer.readObject(in);
-    locateEntryLocations = DataSerializer.readArrayList(in);
-    locateEntryResult = DataSerializer.readObject(in);
-    hasResultForAggregation = DataSerializer.readBoolean(in);
-    removeResult = DataSerializer.readObject(in);
-    inputKey = DataSerializer.readObject(in);
-    inputValue = DataSerializer.readObject(in);
-    error = DataSerializer.readObject(in);
-    errorString = DataSerializer.readString(in);
-    infoString = DataSerializer.readString(in);
-    keyClass = DataSerializer.readString(in);
-    valueClass = DataSerializer.readString(in);
-    operationCompletedSuccessfully = DataSerializer.readBoolean(in);
   }
 
 }

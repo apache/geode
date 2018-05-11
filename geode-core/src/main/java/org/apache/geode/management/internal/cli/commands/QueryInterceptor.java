@@ -19,34 +19,32 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.springframework.shell.event.ParseResult;
 
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.LegacyCommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.ModelCommandResult;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class QueryInterceptor extends AbstractCliAroundInterceptor {
   public static final String FILE_ALREADY_EXISTS_MESSAGE =
       "The specified output file already exists.";
 
   @Override
-  public Result preExecution(GfshParseResult parseResult) {
+  public ResultModel preExecution(GfshParseResult parseResult) {
     File outputFile = getOutputFile(parseResult);
 
     if (outputFile != null && outputFile.exists()) {
-      return ResultBuilder.createUserErrorResult(FILE_ALREADY_EXISTS_MESSAGE);
+      return ResultModel.createError(FILE_ALREADY_EXISTS_MESSAGE);
     }
 
-    return ResultBuilder.createInfoResult("");
+    return new ResultModel();
   }
 
   @Override
@@ -58,36 +56,36 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
       return result;
     }
 
-    CompositeResultData resultData = (CompositeResultData) result.getResultData();
-    CompositeResultData.SectionResultData sectionResultData = resultData.retrieveSectionByIndex(0);
+    ResultModel model = ((ModelCommandResult) result).getResultData();
+    Map<String, String> sectionResultData = model.getDataSection("0").getContent();
 
-    String limit = sectionResultData.retrieveString("Limit");
-    String resultString = sectionResultData.retrieveString("Result");
-    String rows = sectionResultData.retrieveString("Rows");
+    String limit = sectionResultData.get("Limit");
+    String resultString = sectionResultData.get("Result");
+    String rows = sectionResultData.get("Rows");
 
     if ("false".equalsIgnoreCase(resultString)) {
       return result;
     }
 
-    TabularResultData tabularResultData = sectionResultData.retrieveTableByIndex(0);
-    CommandResult resultTable = new LegacyCommandResult(tabularResultData);
     try {
-      writeResultTableToFile(outputFile, resultTable);
+      writeResultTableToFile(outputFile, result);
       // return a result w/ message explaining limit
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
-    InfoResultData infoResultData = ResultBuilder.createInfoResultData();
-    infoResultData.addLine("Result : " + resultString);
-    if (StringUtils.isNotBlank(limit)) {
-      infoResultData.addLine("Limit  : " + limit);
-    }
-    infoResultData.addLine("Rows   : " + rows);
-    infoResultData.addLine(SystemUtils.LINE_SEPARATOR);
-    infoResultData.addLine("Query results output to " + outputFile.getAbsolutePath());
+    ResultModel newModel = new ResultModel();
+    DataResultModel data = newModel.addData();
 
-    return new LegacyCommandResult(infoResultData);
+    data.addData("Result", resultString);
+    if (StringUtils.isNotBlank(limit)) {
+      data.addData("Limit", limit);
+    }
+    data.addData("Rows", rows);
+
+    newModel.addInfo().addLine("Query results output to " + outputFile.getAbsolutePath());
+
+    return new ModelCommandResult(newModel);
   }
 
   private File getOutputFile(ParseResult parseResult) {

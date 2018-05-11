@@ -112,12 +112,8 @@ public class RemoveCommandDUnitTest {
   public void removeKeyFromPartitionedRegion() {
     String command = "remove --key=key1 --region=" + PARTITIONED_REGION_NAME;
 
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
-
-    String output = gfsh.getGfshOutput();
-    assertThat(output).containsPattern("Result\\s+:\\s+true");
-    assertThat(output).containsPattern("Key Class\\s+:\\s+java.lang.String");
-    assertThat(output).containsPattern("Key\\s+:\\s+key1");
+    gfsh.executeAndAssertThat(command).statusIsSuccess().containsKeyValuePair("Result", "true")
+        .containsKeyValuePair("Key Class", "java.lang.String").containsKeyValuePair("Key", "key1");
 
     server1.invoke(() -> verifyKeyIsRemoved(PARTITIONED_REGION_NAME, "key1"));
     server2.invoke(() -> verifyKeyIsRemoved(PARTITIONED_REGION_NAME, "key1"));

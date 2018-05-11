@@ -181,9 +181,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
         if (((ResultModel) preExecResult).getStatus() != Status.OK) {
           return new ModelCommandResult((ResultModel) preExecResult);
         }
-      }
-
-      if (preExecResult instanceof Result) {
+      } else { // Must be Result
         if (Status.ERROR.equals(((Result) preExecResult).getStatus())) {
           return (Result) preExecResult;
         }
@@ -261,7 +259,6 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
         } else if (logWrapper.fineEnabled()) {
           logWrapper.fine("Post execution Result :: " + postExecResult);
         }
-        commandResult = postExecResult;
       }
     }
 
