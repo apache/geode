@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.functions;
 import java.io.Serializable;
 
 import org.apache.geode.cache.configuration.CacheConfig.GatewayReceiver;
-import org.apache.geode.cache.configuration.ClassWithParametersType;
+import org.apache.geode.cache.configuration.DeclarableType;
 
 /**
  * This class stores the arguments provided in the create gateway-receiver command.
@@ -55,8 +55,8 @@ public class GatewayReceiverFunctionArgs implements Serializable {
     this.maximumTimeBetweenPings = configuration.getMaximumTimeBetweenPings() != null
         ? Integer.valueOf(configuration.getMaximumTimeBetweenPings()) : null;
     this.gatewayTransportFilters = configuration.getGatewayTransportFilter() != null
-        ? configuration.getGatewayTransportFilter().stream()
-            .map(ClassWithParametersType::getClassName).toArray(String[]::new)
+        ? configuration.getGatewayTransportFilter().stream().map(DeclarableType::getClassName)
+            .toArray(String[]::new)
         : null;
     this.hostnameForSenders = configuration.getHostnameForSenders();
     this.ifNotExists = ifNotExists;

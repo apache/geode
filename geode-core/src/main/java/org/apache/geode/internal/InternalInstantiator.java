@@ -889,7 +889,7 @@ public class InternalInstantiator {
       DataSerializer.writeObject(this.eventId, out);
     }
 
-    private void fromDataProblem(String s) {
+    private void recordFromDataProblem(String s) {
       if (this.fromDataProblems == null) {
         this.fromDataProblems = new StringBuffer();
       }
@@ -913,8 +913,9 @@ public class InternalInstantiator {
               InternalDataSerializer.getCachedClass(this.instantiatorClassName); // fix for bug
                                                                                  // 41206
         } catch (ClassNotFoundException ex) {
-          fromDataProblem(LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0
-              .toLocalizedString(ex));
+          recordFromDataProblem(
+              LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0
+                  .toLocalizedString(ex));
           this.instantiatorClass = null;
         }
         try {
@@ -922,8 +923,9 @@ public class InternalInstantiator {
               InternalDataSerializer.getCachedClass(this.instantiatedClassName); // fix for bug
                                                                                  // 41206
         } catch (ClassNotFoundException ex) {
-          fromDataProblem(LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATED_CLASS_0
-              .toLocalizedString(ex));
+          recordFromDataProblem(
+              LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATED_CLASS_0
+                  .toLocalizedString(ex));
           this.instantiatedClass = null;
         }
       }

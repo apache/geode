@@ -5056,7 +5056,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Called by AbstractRegionMap txApplyPut when it was told a destroy was also done
    * by the transaction.
    */
-  void txApplyPutHandleDidDestroy(Object key) {
+  @Override
+  public void txApplyPutHandleDidDestroy(Object key) {
     if (this.entryUserAttributes != null) {
       this.entryUserAttributes.remove(key);
     }
@@ -5120,8 +5121,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     getCachePerfStats().endPut(startPut, false);
   }
 
-  void txApplyPutPart2(RegionEntry regionEntry, Object key, long lastModified, boolean isCreate,
-      boolean didDestroy, boolean clearConflict) {
+  @Override
+  public void txApplyPutPart2(RegionEntry regionEntry, Object key, long lastModified,
+      boolean isCreate, boolean didDestroy, boolean clearConflict) {
     if (this.testCallable != null) {
       Operation op = isCreate ? Operation.CREATE : Operation.UPDATE;
       this.testCallable.call(this, op, regionEntry);
@@ -10574,7 +10576,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @return true only if it's cache has bridge servers and this is nt a meta region
    */
-  protected boolean shouldNotifyBridgeClients() {
+  @Override
+  public boolean shouldNotifyBridgeClients() {
     return !this.cache.getCacheServers().isEmpty() && !this.isUsedForPartitionedRegionAdmin
         && !this.isUsedForPartitionedRegionBucket && !this.isUsedForMetaRegion;
   }
@@ -10584,7 +10587,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @return true only if this region has a Listener
    */
-  boolean shouldDispatchListenerEvent() {
+  @Override
+  public boolean shouldDispatchListenerEvent() {
     return hasListener();
   }
 

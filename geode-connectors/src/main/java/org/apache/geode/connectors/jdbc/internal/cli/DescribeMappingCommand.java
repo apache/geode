@@ -33,13 +33,12 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -58,8 +57,8 @@ public class DescribeMappingCommand extends GfshCommand {
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result describeMapping(@CliOption(key = DESCRIBE_MAPPING__REGION_NAME, mandatory = true,
-      help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName) {
+  public ResultModel describeMapping(@CliOption(key = DESCRIBE_MAPPING__REGION_NAME,
+      mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName) {
     ConnectorService.RegionMapping mapping = null;
 
     // check if CC is available and use it to describe the connection
@@ -91,25 +90,21 @@ public class DescribeMappingCommand extends GfshCommand {
           EXPERIMENTAL + "\n" + "mapping for region '" + regionName + "' not found");
     }
 
-    CompositeResultData resultData = ResultBuilder.createCompositeResultData();
-    fillResultData(mapping, resultData);
-    resultData.setHeader(EXPERIMENTAL);
-    return ResultBuilder.buildResult(resultData);
+    ResultModel resultModel = new ResultModel();
+    fillResultData(mapping, resultModel);
+    resultModel.setHeader(EXPERIMENTAL);
+    return resultModel;
   }
 
-  private void fillResultData(ConnectorService.RegionMapping mapping,
-      CompositeResultData resultData) {
-    CompositeResultData.SectionResultData sectionResult =
-        resultData.addSection(RESULT_SECTION_NAME);
-    sectionResult.addSeparator('-');
-    sectionResult.addData(CREATE_MAPPING__REGION_NAME, mapping.getRegionName());
-    sectionResult.addData(CREATE_MAPPING__CONNECTION_NAME, mapping.getConnectionConfigName());
-    sectionResult.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
-    sectionResult.addData(CREATE_MAPPING__PDX_CLASS_NAME, mapping.getPdxClassName());
-    sectionResult.addData(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY,
-        mapping.isPrimaryKeyInValue());
+  private void fillResultData(ConnectorService.RegionMapping mapping, ResultModel resultModel) {
+    DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME);
+    sectionModel.addData(CREATE_MAPPING__REGION_NAME, mapping.getRegionName());
+    sectionModel.addData(CREATE_MAPPING__CONNECTION_NAME, mapping.getConnectionConfigName());
+    sectionModel.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
+    sectionModel.addData(CREATE_MAPPING__PDX_CLASS_NAME, mapping.getPdxClassName());
+    sectionModel.addData(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, mapping.isPrimaryKeyInValue());
 
-    TabularResultData tabularResultData = sectionResult.addTable(FIELD_TO_COLUMN_TABLE);
+    TabularResultModel tabularResultData = resultModel.addTable(FIELD_TO_COLUMN_TABLE);
     tabularResultData.setHeader("Field to Column Mappings:");
     if (mapping.getFieldMapping() != null) {
       mapping.getFieldMapping().forEach((entry) -> {

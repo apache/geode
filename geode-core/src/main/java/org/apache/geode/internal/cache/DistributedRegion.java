@@ -3848,4 +3848,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     return op.getLatestLastAccessTime();
   }
 
+  @Override
+  public Set adviseNetWrite() {
+    return getCacheDistributionAdvisor().adviseNetWrite();
+  }
+
 }

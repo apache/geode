@@ -1580,7 +1580,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    *
    * @since GemFire 5.0
    */
-  boolean isAllEvents() {
+  @Override
+  public boolean isAllEvents() {
     return getDataPolicy().withReplication()
         || getSubscriptionAttributes().getInterestPolicy().isAll();
   }

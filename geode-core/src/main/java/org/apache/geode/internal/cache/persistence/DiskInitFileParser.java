@@ -584,7 +584,7 @@ public class DiskInitFileParser {
     DataInputStream dis = new DataInputStream(bais);
     PersistentMemberID result = new PersistentMemberID();
     if (Version.GFE_70.compareTo(gfversion) > 0) {
-      result.fromData662(dis);
+      result._fromData662(dis);
     } else {
       InternalDataSerializer.invokeFromData(result, dis);
     }
