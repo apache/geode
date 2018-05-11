@@ -42,11 +42,6 @@ public interface TypeRegistration {
 
   void addImportedType(int typeId, PdxType importedType);
 
-  /**
-   * Test hook to get the last allocated type id
-   */
-  int getLastAllocatedTypeId();
-
   void initialize();
 
   void gatewaySenderStarted(GatewaySender gatewaySender);
@@ -91,11 +86,6 @@ public interface TypeRegistration {
    * An empty set will be returned if no types exist.
    */
   Set<PdxType> getPdxTypesForClassName(String className);
-
-  /*
-   * test hook
-   */
-  void testClearRegistry();
 
   boolean isClient();
 

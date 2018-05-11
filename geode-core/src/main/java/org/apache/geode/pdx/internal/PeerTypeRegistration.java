@@ -342,29 +342,6 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
-  private int lastAllocatedTypeId; // for unit tests
-  private int lastAllocatedEnumId; // for unit tests
-
-  /**
-   * Test hook that returns the most recently allocated type id
-   *
-   * @return the most recently allocated type id
-   */
-  public int getLastAllocatedTypeId() {
-    verifyConfiguration();
-    return this.lastAllocatedTypeId;
-  }
-
-  /**
-   * Test hook that returns the most recently allocated enum id
-   *
-   * @return the most recently allocated enum id
-   */
-  public int getLastAllocatedEnumId() {
-    verifyConfiguration();
-    return this.lastAllocatedEnumId;
-  }
-
   public int defineType(PdxType newType) {
     verifyConfiguration();
     Integer existingId = typeToId.get(newType);
@@ -786,18 +763,9 @@ public class PeerTypeRegistration implements TypeRegistration {
   /**
    * For testing purpose
    */
+  @Deprecated
   public Map<String, CopyOnWriteHashSet<PdxType>> getClassToType() {
     return classToType;
-  }
-
-  /**
-   * test hook
-   */
-  @Override
-  public void testClearRegistry() {
-    idToType.clear();
-    enumToId.clear();
-    typeToId.clear();
   }
 
   @Override

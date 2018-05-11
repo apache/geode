@@ -87,10 +87,6 @@ public class PdxSerializableJUnitTest {
     this.cache.close();
   }
 
-  private int getLastPdxTypeId() {
-    return this.cache.getPdxRegistry().getLastAllocatedTypeId();
-  }
-
   private int getPdxTypeIdForClass(Class c) {
     // here we are assuming Dsid == 0
     return this.cache.getPdxRegistry().getExistingTypeForClass(c).hashCode()

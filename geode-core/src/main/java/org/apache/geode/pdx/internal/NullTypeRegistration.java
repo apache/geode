@@ -27,50 +27,57 @@ import org.apache.geode.pdx.PdxInitializationException;
  */
 public class NullTypeRegistration implements TypeRegistration {
 
+  @Override
   public int defineType(PdxType newType) {
     throw new PdxInitializationException("Trying to use PDX type, but type registry is disabled");
   }
 
+  @Override
   public PdxType getType(int typeId) {
     throw new PdxInitializationException("Trying to use PDX type, but type registry is disabled");
   }
 
+  @Override
   public void addRemoteType(int typeId, PdxType type) {
     throw new PdxInitializationException("Trying to use PDX type, but type registry is disabled");
   }
 
-  public int getLastAllocatedTypeId() {
-    throw new PdxInitializationException("Trying to use PDX type, but type registry is disabled");
-  }
-
+  @Override
   public void initialize() {
     // do nothing
   }
 
+  @Override
   public void gatewaySenderStarted(GatewaySender gatewaySender) {
     // do nothing
   }
 
+  @Override
   public void creatingPersistentRegion() {
     // do nothing
   }
 
+  @Override
   public void creatingPool() {
     // do nothing
   }
 
+  @Override
   public int getEnumId(Enum<?> v) {
     throw new PdxInitializationException("Trying to use PDX type, but type registry is disabled");
   }
 
+  @Override
   public void addRemoteEnum(int enumId, EnumInfo newInfo) {
     throw new PdxInitializationException("Trying to use PDX type, but type registry is disabled");
   }
 
+  @Override
   public int defineEnum(EnumInfo newInfo) {
     throw new PdxInitializationException("Trying to use PDX type, but type registry is disabled");
   }
 
+  @Override
   public EnumInfo getEnumById(int enumId) {
     throw new PdxInitializationException("Trying to use PDX type, but type registry is disabled");
   }
@@ -93,11 +100,6 @@ public class NullTypeRegistration implements TypeRegistration {
   @Override
   public Set<PdxType> getPdxTypesForClassName(String className) {
     return Collections.emptySet();
-  }
-
-  @Override
-  public void testClearRegistry() {
-
   }
 
   @Override

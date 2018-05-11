@@ -19,7 +19,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
@@ -37,8 +36,7 @@ public class MembershipManagerHelper {
   public static MembershipManager getMembershipManager(DistributedSystem sys) {
     InternalDistributedSystem isys = (InternalDistributedSystem) sys;
     ClusterDistributionManager dm = (ClusterDistributionManager) isys.getDM();
-    MembershipManager mgr = dm.getMembershipManager();
-    return mgr;
+    return dm.getMembershipManager();
   }
 
   /**
@@ -64,10 +62,6 @@ public class MembershipManagerHelper {
     }
   }
 
-  public static void beHealthyMember(DistributedSystem sys) {
-    ((Manager) getMembershipManager(sys)).beHealthy();
-  }
-
   /** returns the current coordinator address */
   public static DistributedMember getCoordinator(DistributedSystem sys) {
     return ((Manager) getMembershipManager(sys)).getCoordinator();
@@ -88,25 +82,6 @@ public class MembershipManagerHelper {
   public static void removeTestHook(DistributedSystem sys,
       org.apache.geode.distributed.internal.membership.MembershipTestHook hook) {
     getMembershipManager(sys).unregisterTestHook(hook);
-  }
-
-  // /**
-  // * returns the view lock. Holding this lock will prevent the processing
-  // * of new views, and will prevent other threads from being able to access
-  // * the view
-  // */
-  // public static Object getViewLock(DistributedSystem sys) {
-  // return getMembershipManager(sys).latestViewLock;
-  // }
-
-  /** returns true if the given member is shunned */
-  public static boolean isShunned(DistributedSystem sys, DistributedMember mbr) {
-    return ((Manager) getMembershipManager(sys)).isShunned(mbr);
-  }
-
-  /** returns true if the given member is a surprise member */
-  public static boolean isSurpriseMember(DistributedSystem sys, DistributedMember mbr) {
-    return getMembershipManager(sys).isSurpriseMember(mbr);
   }
 
   /**
@@ -133,13 +108,11 @@ public class MembershipManagerHelper {
       final DistributedMember member, final long timeout) {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
-        return !getMembershipManager(sys).getView().contains((InternalDistributedMember) member);
+        return !getMembershipManager(sys).getView().contains(member);
       }
 
       public String description() {
-        String assMsg =
-            "Waited over " + timeout + " ms for " + member + " to depart, but it didn't";
-        return assMsg;
+        return "Waited over " + timeout + " ms for " + member + " to depart, but it didn't";
       }
     };
     Wait.waitForCriterion(ev, timeout, 200, true);
