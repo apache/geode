@@ -73,7 +73,7 @@ public class RegionMapPutTest {
     when(internalRegion.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(focusedRegionMap.getEntryMap()).thenReturn(mock(Map.class));
     when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
-    when(event.getOperation()).thenReturn(Operation.UPDATE);
+    givenAnOperationThatDoesNotGuaranteeOldValue();
     when(event.getKey()).thenReturn("key");
     when(event.getRegion()).thenReturn(internalRegion);
     when(regionEntry.getValueAsToken()).thenReturn(Token.REMOVED_PHASE1);
@@ -92,19 +92,24 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void setsEventOldValueToExistingRegionEntryValue_ifIsRequiredOldValueAndOperationDoesNotGuaranteeOldValue() {
+    this.requireOldValue = true;
+    Object oldValue = new Object();
+    givenExistingRegionEntryWithValue(oldValue);
+    givenAnOperationThatDoesNotGuaranteeOldValue();
+
+    doPut();
+
+    verify(event, times(1)).setOldValue(same(oldValue));
+    verify(event, never()).setOldValue(not(same(oldValue)));
+  }
+
+  @Test
   public void setsEventOldValueToExistingRegionEntryValue_ifIsCacheWriteAndOperationDoesNotGuaranteeOldValue() {
     Object oldValue = new Object();
-
-    RegionEntry existingRegionEntry = mock(RegionEntry.class);
-    when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(oldValue);
-    when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
-
-    when(event.getOperation()).thenReturn(Operation.UPDATE); // does not guarantee old value
-
-    // So that isCacheWrite is true
-    when(event.isGenerateCallbacks()).thenReturn(true);
-    when(internalRegion.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
-
+    givenExistingRegionEntryWithValue(oldValue);
+    givenAnOperationThatDoesNotGuaranteeOldValue();
+    givenPutNeedsToDoCacheWrite();
 
     doPut();
 
@@ -114,15 +119,9 @@ public class RegionMapPutTest {
 
   @Test
   public void setsEventOldValueToNotAvailable_ifIsCacheWriteAndOperationDoesNotGuaranteeOldValue_andExistingValueIsNull() {
-    RegionEntry existingRegionEntry = mock(RegionEntry.class);
-    when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(null);
-    when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
-
-    when(event.getOperation()).thenReturn(Operation.UPDATE); // does not guarantee old value
-
-    // So that isCacheWrite is true
-    when(event.isGenerateCallbacks()).thenReturn(true);
-    when(internalRegion.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
+    givenPutNeedsToDoCacheWrite();
+    givenAnOperationThatDoesNotGuaranteeOldValue();
+    givenExistingRegionEntryWithValue(null);
 
     doPut();
 
@@ -411,4 +410,18 @@ public class RegionMapPutTest {
         eq(true), eq(ifNew), eq(ifOld), eq(expectedOldValue), eq(requireOldValue));
   }
 
+  private void givenAnOperationThatDoesNotGuaranteeOldValue() {
+    when(event.getOperation()).thenReturn(Operation.UPDATE); // does not guarantee old value
+  }
+
+  private void givenPutNeedsToDoCacheWrite() {
+    when(event.isGenerateCallbacks()).thenReturn(true);
+    when(internalRegion.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
+  }
+
+  private void givenExistingRegionEntryWithValue(Object value) {
+    RegionEntry existingRegionEntry = mock(RegionEntry.class);
+    when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(value);
+    when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
+  }
 }
