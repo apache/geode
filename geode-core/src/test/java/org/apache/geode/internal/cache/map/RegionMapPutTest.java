@@ -94,6 +94,22 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void doesNotSetEventOldValueToExistingRegionEntryValue_ifNotRequired() {
+    givenExistingRegionEntry();
+    givenAnOperationThatDoesNotGuaranteeOldValue();
+    givenPutDoesNotNeedToDoCacheWrite();
+    this.requireOldValue = false;
+
+    Object oldValue = new Object();
+    when(existingRegionEntry.getValue()).thenReturn(oldValue);
+
+    doPut();
+
+    verify(event, never()).setOldValue(any());
+    verify(event, never()).setOldValue(any(), anyBoolean());
+  }
+
+  @Test
   public void setsEventOldValueToExistingRegionEntryValue_ifOldValueIsGatewaySenderEvent() {
     givenExistingRegionEntry();
 
@@ -456,6 +472,11 @@ public class RegionMapPutTest {
 
   private void givenPutNeedsToDoCacheWrite() {
     when(event.isGenerateCallbacks()).thenReturn(true);
+    when(internalRegion.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
+  }
+
+  private void givenPutDoesNotNeedToDoCacheWrite() {
+    when(event.isGenerateCallbacks()).thenReturn(false);
     when(internalRegion.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
   }
 
