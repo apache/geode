@@ -265,7 +265,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
   protected void doBeforeCompletionActions() {
     final EntryEventImpl event = getEvent();
     getOwner().recordEvent(event);
-    if (isOwnerUninitialized()) {
+    if (!isOwnerInitialized()) {
       event.inhibitCacheListenerNotification(true);
     }
     updateLru();

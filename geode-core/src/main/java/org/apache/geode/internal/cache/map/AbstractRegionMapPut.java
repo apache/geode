@@ -48,10 +48,6 @@ public abstract class AbstractRegionMapPut {
     this.ownerInitialized = owner.isInitialized();
   }
 
-  protected boolean isOwnerUninitialized() {
-    return !ownerInitialized;
-  }
-
   protected boolean isOwnerInitialized() {
     return ownerInitialized;
   }

@@ -69,7 +69,6 @@ public class AbstractRegionMapPutTest {
     TestableRegionMapPut testableRegionMapPut = new TestableRegionMapPut();
 
     assertThat(testableRegionMapPut.isOwnerInitialized()).isTrue();
-    assertThat(testableRegionMapPut.isOwnerUninitialized()).isFalse();
   }
 
   @Test
@@ -79,7 +78,6 @@ public class AbstractRegionMapPutTest {
     TestableRegionMapPut testableRegionMapPut = new TestableRegionMapPut();
 
     assertThat(testableRegionMapPut.isOwnerInitialized()).isFalse();
-    assertThat(testableRegionMapPut.isOwnerUninitialized()).isTrue();
   }
 
   @Test
