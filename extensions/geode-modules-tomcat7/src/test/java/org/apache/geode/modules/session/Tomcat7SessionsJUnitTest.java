@@ -20,6 +20,7 @@ import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
+import org.apache.geode.test.junit.categories.HttpSessionTest;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -27,7 +28,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.modules.session.catalina.Tomcat7DeltaSessionManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, HttpSessionTest.class})
 public class Tomcat7SessionsJUnitTest extends TestSessionsBase {
 
   // Set up the session manager we need

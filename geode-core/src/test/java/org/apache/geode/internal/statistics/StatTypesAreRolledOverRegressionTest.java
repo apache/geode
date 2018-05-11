@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.geode.test.junit.categories.SnapshotTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,7 +43,7 @@ import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class StatTypesAreRolledOverRegressionTest {
 
   private static final long FILE_SIZE_LIMIT = 512;

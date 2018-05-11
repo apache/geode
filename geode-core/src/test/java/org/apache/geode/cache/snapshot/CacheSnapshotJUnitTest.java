@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Map.Entry;
 
 import com.examples.snapshot.MyObject;
+import org.apache.geode.test.junit.categories.SnapshotTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -29,7 +30,7 @@ import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SnapshotTest.class})
 public class CacheSnapshotJUnitTest extends SnapshotTestCase {
   @Test
   public void testExportAndImport() throws Exception {

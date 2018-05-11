@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,7 +45,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Test that we can create multiple caches in the same JVM
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class MultipleCacheJUnitTest {
 
   @Rule

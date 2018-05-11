@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.geode.test.junit.categories.SnapshotTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
@@ -33,7 +35,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since Geode 1.0
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class StatArchiveWithConsecutiveResourceInstGeneratorTest
     extends StatArchiveWithConsecutiveResourceInstGenerator {
 

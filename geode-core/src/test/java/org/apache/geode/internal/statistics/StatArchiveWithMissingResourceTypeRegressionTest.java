@@ -21,6 +21,9 @@ import java.io.File;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.derby.catalog.Statistics;
+import org.apache.geode.test.junit.categories.SnapshotTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,7 +45,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * GEODE-2013: StatArchiveReader throws NullPointerException due to missing ResourceType
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class StatArchiveWithMissingResourceTypeRegressionTest {
 
   private static final String ARCHIVE_FILE_NAME =
