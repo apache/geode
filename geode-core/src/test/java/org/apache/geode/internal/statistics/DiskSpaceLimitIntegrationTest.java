@@ -46,11 +46,12 @@ import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * Flaky: GEODE-2790, GEODE-3205
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 @SuppressWarnings("unused")
 public class DiskSpaceLimitIntegrationTest {
 

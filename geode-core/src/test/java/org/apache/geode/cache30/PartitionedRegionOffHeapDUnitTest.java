@@ -26,13 +26,14 @@ import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
  * Tests Partitioned Region with OffHeap memory.
  *
  * @since Geode 1.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OffHeapTest.class})
 public class PartitionedRegionOffHeapDUnitTest extends PartitionedRegionDUnitTest {
 
   @Override

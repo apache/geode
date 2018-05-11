@@ -63,13 +63,14 @@ import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * Integration tests for {@link GemFireStatSampler}.
  *
  * @since GemFire 7.0
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
 
   private static final Logger logger = LogService.getLogger();

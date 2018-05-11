@@ -18,8 +18,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OffHeapTest.class})
 public class FreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
 
   @Override

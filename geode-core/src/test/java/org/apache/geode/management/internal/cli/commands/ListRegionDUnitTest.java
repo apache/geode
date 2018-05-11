@@ -33,9 +33,10 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, GfshTest.class})
 public class ListRegionDUnitTest {
   private static final String REGION1 = "region1";
   private static final String REGION2 = "region2";

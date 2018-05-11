@@ -38,8 +38,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-3530
+@Category({DistributedTest.class, FlakyTest.class, GfshTest.class}) // GEODE-3530
 @SuppressWarnings("serial")
 public class RebalanceCommandDistributedTest extends CliCommandTestBase {
 

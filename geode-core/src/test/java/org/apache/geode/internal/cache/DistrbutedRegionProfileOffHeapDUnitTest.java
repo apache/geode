@@ -37,8 +37,9 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OffHeapTest.class})
 public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase {
 
   @Override

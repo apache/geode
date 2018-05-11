@@ -41,8 +41,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RegionsTest.class})
 public class PartitionedRegionLoaderWriterDUnitTest extends JUnit4CacheTestCase {
 
   private static final String PartitionedRegionName = "PartitionedRegionTest";

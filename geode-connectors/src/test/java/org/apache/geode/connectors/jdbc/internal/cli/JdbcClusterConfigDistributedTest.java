@@ -29,9 +29,11 @@ import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, JDBCConnectorTest.class, GfshTest.class})
 @SuppressWarnings("serial")
 public class JdbcClusterConfigDistributedTest {
 

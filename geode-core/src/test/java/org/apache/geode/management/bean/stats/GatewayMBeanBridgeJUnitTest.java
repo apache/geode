@@ -26,8 +26,9 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.management.internal.beans.GatewaySenderMBeanBridge;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
 
   private GatewaySenderMBeanBridge bridge;

@@ -32,9 +32,11 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, JDBCConnectorTest.class, GfshTest.class})
 public class CreateMappingCommandIntegrationTest {
 
   private InternalCache cache;

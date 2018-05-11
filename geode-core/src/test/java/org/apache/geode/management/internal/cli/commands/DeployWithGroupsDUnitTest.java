@@ -32,6 +32,7 @@ import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
@@ -41,7 +42,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  * @since GemFire 7.0
  */
 @SuppressWarnings("serial")
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, GfshTest.class})
 public class DeployWithGroupsDUnitTest implements Serializable {
   private static final String GROUP1 = "Group1";
   private static final String GROUP2 = "Group2";

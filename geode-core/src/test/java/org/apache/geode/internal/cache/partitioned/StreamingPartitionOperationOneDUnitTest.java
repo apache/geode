@@ -54,8 +54,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RegionsTest.class})
 public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase {
 
   /* SerializableRunnable object to create PR */

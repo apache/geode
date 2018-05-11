@@ -21,13 +21,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.SuiteRunner;
 
 /**
  * Only commands that extends CliCommandTestBase needs to be in this test suite
  */
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({DistributedTest.class, SecurityTest.class, GfshTest.class})
 @RunWith(SuiteRunner.class)
 @Suite.SuiteClasses({GemfireDataCommandsDUnitTest.class, ShellCommandsDUnitTest.class})
 public class CommandOverHttpDUnitTest {

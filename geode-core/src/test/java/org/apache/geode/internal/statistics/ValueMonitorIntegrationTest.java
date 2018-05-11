@@ -45,13 +45,14 @@ import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.statistics.StatisticsNotification.Type;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * Integration test for the SampleCollector class.
  *
  * @since GemFire 7.0
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class ValueMonitorIntegrationTest {
 
   private Mockery mockContext;

@@ -41,13 +41,14 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * This class tests the functionality of the (new multi-threaded) {@link MergeLogFiles} utility.
  *
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LoggingTest.class})
 public class MergeLogFilesJUnitTest {
 
   //////// Test Methods

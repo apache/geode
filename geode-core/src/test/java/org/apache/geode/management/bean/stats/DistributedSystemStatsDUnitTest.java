@@ -40,8 +40,9 @@ import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, StatisticsTest.class})
 @SuppressWarnings({"unused", "serial"})
 public class DistributedSystemStatsDUnitTest implements Serializable {
 

@@ -102,11 +102,12 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 
 /**
  * Tests the basic use cases for PR persistence.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RegionsTest.class})
 public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedRegionTestBase {
 
   private static final int NUM_BUCKETS = 15;
