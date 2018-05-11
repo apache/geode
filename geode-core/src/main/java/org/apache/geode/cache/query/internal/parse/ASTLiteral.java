@@ -16,12 +16,14 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.StringTokenizer;
 
-import antlr.*;
+import antlr.Token;
 
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 

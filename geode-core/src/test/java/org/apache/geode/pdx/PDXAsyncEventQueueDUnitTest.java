@@ -14,8 +14,6 @@
  */
 package org.apache.geode.pdx;
 
-import static org.junit.Assert.*;
-
 import java.util.List;
 import java.util.Properties;
 

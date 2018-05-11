@@ -14,22 +14,16 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.Set;
-
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
-public class ListConnectionFunction
-    extends JdbcCliFunction<Void, Set<ConnectorService.Connection>> {
-
-  ListConnectionFunction() {
-    super();
-  }
+public class ListConnectionFunction extends CliFunction<Void> {
 
   @Override
-  Set<ConnectorService.Connection> getFunctionResult(JdbcConnectorService service,
-      FunctionContext<Void> context) {
-    return service.getConnectionConfigs();
+  public CliFunctionResult executeFunction(FunctionContext<Void> context) {
+    JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
+    return new CliFunctionResult(context.getMemberName(), service.getConnectionConfigs());
   }
 }

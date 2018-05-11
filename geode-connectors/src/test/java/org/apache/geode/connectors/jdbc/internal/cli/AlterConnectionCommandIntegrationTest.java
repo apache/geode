@@ -27,6 +27,7 @@ import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -63,7 +64,7 @@ public class AlterConnectionCommandIntegrationTest {
   @Test
   public void altersConnectionConfigurationInService() {
     String[] newParams = new String[] {"key1:value1", "key2:value2"};
-    Result result =
+    ResultModel result =
         alterConnectionCommand.alterConnection(name, "newUrl", "newUser", "newPassword", newParams);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);

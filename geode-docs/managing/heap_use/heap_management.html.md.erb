@@ -163,13 +163,13 @@ If your application spikes above the critical threshold on a regular basis, try 
 
 The settings that will work well for your system depend on a number of factors, including these:
 
- - The size of the data objects you store in the cache
+ - **The size of the data objects you store in the cache:**
 Very large data objects can be evicted and garbage collected relatively quickly. The same amount of space in use by many small objects takes more processing effort to clear and might require lower thresholds to allow eviction and GC activities to keep up.
 
- - Application behavior
+ - **Application behavior:**
 Applications that quickly put a lot of data into the cache can more easily overrun the eviction and GC capabilities. Applications that operate more slowly may be more easily offset by eviction and GC efforts, possibly allowing you to set your thresholds higher than in the more volatile system.
 
- - Your choice of JVM
+ - **Your choice of JVM:**
 Each JVM has its own GC behavior, which affects how efficiently the collector can operate, how quickly it kicks in when needed, and other factors.
 
 ## <a id="resource_manager_example_configurations" class="no-quick-link"></a>Resource Manager Example Configurations

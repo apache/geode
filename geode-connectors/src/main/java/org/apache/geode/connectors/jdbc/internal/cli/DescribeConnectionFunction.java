@@ -17,17 +17,15 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
-public class DescribeConnectionFunction
-    extends JdbcCliFunction<String, ConnectorService.Connection> {
-
-  DescribeConnectionFunction() {
-    super();
-  }
+public class DescribeConnectionFunction extends CliFunction<String> {
 
   @Override
-  ConnectorService.Connection getFunctionResult(JdbcConnectorService service,
-      FunctionContext<String> context) {
-    return service.getConnectionConfig(context.getArguments());
+  public CliFunctionResult executeFunction(FunctionContext<String> context) {
+    JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
+    ConnectorService.Connection connection = service.getConnectionConfig(context.getArguments());
+    return new CliFunctionResult(context.getMemberName(), connection);
   }
 }

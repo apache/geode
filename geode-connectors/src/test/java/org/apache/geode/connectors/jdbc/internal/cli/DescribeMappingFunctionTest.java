@@ -95,9 +95,9 @@ public class DescribeMappingFunctionTest {
 
     function.execute(context);
 
-    ArgumentCaptor<Object> argument = ArgumentCaptor.forClass(Object.class);
+    ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue()).isSameAs(regionMapping);
+    assertThat(argument.getValue().getResultObject()).isSameAs(regionMapping);
   }
 
   @Test
@@ -106,9 +106,9 @@ public class DescribeMappingFunctionTest {
 
     function.execute(context);
 
-    ArgumentCaptor<Object> argument = ArgumentCaptor.forClass(Object.class);
+    ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue()).isNull();
+    assertThat(argument.getValue().getResultObject()).isNull();
 
   }
 
@@ -120,7 +120,7 @@ public class DescribeMappingFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getMessage()).contains(NullPointerException.class.getName());
+    assertThat(argument.getValue().getStatus()).contains(NullPointerException.class.getName());
   }
 
   @Test
@@ -132,7 +132,6 @@ public class DescribeMappingFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getMessage()).contains("some message")
-        .doesNotContain(IllegalArgumentException.class.getName());
+    assertThat(argument.getValue().getStatus()).contains("some message");
   }
 }

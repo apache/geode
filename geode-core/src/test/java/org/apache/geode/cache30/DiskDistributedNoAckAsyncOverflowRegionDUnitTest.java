@@ -14,12 +14,10 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.*;
-
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.*;
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionAttributes;

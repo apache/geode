@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;

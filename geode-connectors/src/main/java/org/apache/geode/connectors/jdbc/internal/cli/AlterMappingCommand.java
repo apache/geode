@@ -22,25 +22,26 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class AlterMappingCommand extends SingleGfshCommand {
   static final String ALTER_MAPPING = "alter jdbc-mapping";
-  static final String ALTER_MAPPING__HELP = "Alter properties for an existing jdbc mapping.";
+  static final String ALTER_MAPPING__HELP =
+      EXPERIMENTAL + "Alter properties for an existing jdbc mapping.";
 
   static final String ALTER_MAPPING__REGION_NAME = "region";
   static final String ALTER_MAPPING__REGION_NAME__HELP =
@@ -64,7 +65,7 @@ public class AlterMappingCommand extends SingleGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result alterMapping(
+  public ResultModel alterMapping(
       @CliOption(key = ALTER_MAPPING__REGION_NAME, mandatory = true,
           help = ALTER_MAPPING__REGION_NAME__HELP) String regionName,
       @CliOption(key = ALTER_MAPPING__CONNECTION_NAME, specifiedDefaultValue = "",
@@ -104,15 +105,15 @@ public class AlterMappingCommand extends SingleGfshCommand {
     // action
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new AlterMappingFunction(), newMapping, targetMembers);
-    CommandResult commandResult = ResultBuilder.buildResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null);
 
     // find the merged regionMapping from the function result
     CliFunctionResult successResult =
         results.stream().filter(CliFunctionResult::isSuccessful).findAny().get();
     ConnectorService.RegionMapping mergedMapping =
         (ConnectorService.RegionMapping) successResult.getResultObject();
-    commandResult.setConfigObject(mergedMapping);
-    return commandResult;
+    result.setConfigObject(mergedMapping);
+    return result;
   }
 
   @Override

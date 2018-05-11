@@ -599,7 +599,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       for (CacheServiceProfile remoteProfile : profile.cacheServiceProfiles) {
         CacheServiceProfile localProfile = myProfiles.get(remoteProfile.getId());
         if (localProfile == null) {
-          cspResult = remoteProfile.getMissingProfileMessage(true);
+          cspResult = getMissingProfileMessage(remoteProfile, true);
         } else {
           cspResult = remoteProfile.checkCompatibility(rgn.getFullPath(), localProfile);
         }
@@ -617,7 +617,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
           for (CacheServiceProfile localProfile : myProfiles.values()) {
             if (!profile.cacheServiceProfiles.stream()
                 .anyMatch(remoteProfile -> remoteProfile.getId().equals(localProfile.getId()))) {
-              cspResult = localProfile.getMissingProfileMessage(false);
+              cspResult = getMissingProfileMessage(localProfile, false);
               break;
             }
           }
@@ -637,6 +637,11 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       }
 
       return result;
+    }
+
+    protected String getMissingProfileMessage(CacheServiceProfile profile,
+        boolean existsInThisMember) {
+      return profile.getMissingProfileMessage(existsInThisMember);
     }
 
     /**

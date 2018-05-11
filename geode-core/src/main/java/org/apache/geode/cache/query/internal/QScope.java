@@ -14,7 +14,9 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Nested name scope for name resolution Currently allow only one iterator per scope, and can be

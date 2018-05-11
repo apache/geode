@@ -93,7 +93,7 @@ public class CompositeResultData extends AbstractResultData {
     int i = 0;
     for (Iterator<String> iterator = contentObject.keys(); iterator.hasNext();) {
       String key = iterator.next();
-      if (key.startsWith(CompositeResultData.SECTION_DATA_ACCESSOR)) {
+      if (key.startsWith(ResultData.SECTION_DATA_ACCESSOR)) {
         if (i == index) {
           sectionToRetrieve = new SectionResultData(contentObject.getJSONObject(key));
           break;
@@ -204,7 +204,7 @@ public class CompositeResultData extends AbstractResultData {
       int i = 0;
       for (Iterator<String> iterator = sectionGfJsonObject.keys(); iterator.hasNext();) {
         String key = iterator.next();
-        if (key.startsWith(CompositeResultData.TABLE_DATA_ACCESSOR)) {
+        if (key.startsWith(ResultData.TABLE_DATA_ACCESSOR)) {
           if (i == index) {
             tabularResultData = new TabularResultData(sectionGfJsonObject.getJSONObject(key));
             break;

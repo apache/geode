@@ -22,26 +22,26 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class AlterConnectionCommand extends SingleGfshCommand {
   static final String ALTER_JDBC_CONNECTION = "alter jdbc-connection";
   static final String ALTER_JDBC_CONNECTION__HELP =
-      "Alter properties for an existing jdbc connection.";
+      EXPERIMENTAL + "Alter properties for an existing jdbc connection.";
 
   static final String ALTER_CONNECTION__NAME = "name";
   static final String ALTER_CONNECTION__NAME__HELP = "Name of the connection to be altered.";
@@ -61,7 +61,7 @@ public class AlterConnectionCommand extends SingleGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result alterConnection(
+  public ResultModel alterConnection(
       @CliOption(key = ALTER_CONNECTION__NAME, mandatory = true,
           help = ALTER_CONNECTION__NAME__HELP) String name,
       @CliOption(key = ALTER_CONNECTION__URL, specifiedDefaultValue = "",
@@ -103,9 +103,9 @@ public class AlterConnectionCommand extends SingleGfshCommand {
     ConnectorService.Connection mergedConnection =
         (ConnectorService.Connection) successResult.getResultObject();
 
-    CommandResult commandResult = ResultBuilder.buildResult(results);
-    commandResult.setConfigObject(mergedConnection);
-    return commandResult;
+    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null);
+    result.setConfigObject(mergedConnection);
+    return result;
   }
 
   @Override

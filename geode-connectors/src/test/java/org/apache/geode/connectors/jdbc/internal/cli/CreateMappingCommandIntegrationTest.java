@@ -30,6 +30,7 @@ import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -69,8 +70,8 @@ public class CreateMappingCommandIntegrationTest {
 
   @Test
   public void createsRegionMappingInService() {
-    Result result = createRegionMappingCommand.createMapping(regionName, connectionName, tableName,
-        pdxClass, keyInValue, fieldMappings);
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, connectionName,
+        tableName, pdxClass, keyInValue, fieldMappings);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
@@ -100,7 +101,7 @@ public class CreateMappingCommandIntegrationTest {
     IgnoredException ignoredException =
         IgnoredException.addIgnoredException(RegionMappingExistsException.class.getName());
 
-    Result result;
+    ResultModel result;
     try {
       result = createRegionMappingCommand.createMapping(regionName, connectionName, tableName,
           pdxClass, keyInValue, fieldMappings);
@@ -115,8 +116,8 @@ public class CreateMappingCommandIntegrationTest {
 
   @Test
   public void createsRegionMappingWithMinimumParams() {
-    Result result = createRegionMappingCommand.createMapping(regionName, connectionName, null, null,
-        false, null);
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, connectionName, null,
+        null, false, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 

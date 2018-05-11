@@ -285,7 +285,7 @@ public class CacheConfig {
   protected CacheConfig.GatewayReceiver gatewayReceiver;
   @XmlElement(name = "gateway-conflict-resolver",
       namespace = "http://geode.apache.org/schema/cache")
-  protected CacheConfig.GatewayConflictResolver gatewayConflictResolver;
+  protected DeclarableType gatewayConflictResolver;
   @XmlElement(name = "async-event-queue", namespace = "http://geode.apache.org/schema/cache")
   protected List<CacheConfig.AsyncEventQueue> asyncEventQueue;
   @XmlElement(name = "cache-server", namespace = "http://geode.apache.org/schema/cache")
@@ -312,7 +312,7 @@ public class CacheConfig {
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected List<String> backup;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected InitializerType initializer;
+  protected DeclarableType initializer;
   @XmlAnyElement(lax = true)
   protected List<CacheElement> cacheElements;
   @XmlAttribute(name = "copy-on-read")
@@ -467,10 +467,10 @@ public class CacheConfig {
    * Gets the value of the gatewayConflictResolver property.
    *
    * possible object is
-   * {@link CacheConfig.GatewayConflictResolver }
+   * {@link DeclarableType }
    *
    */
-  public CacheConfig.GatewayConflictResolver getGatewayConflictResolver() {
+  public DeclarableType getGatewayConflictResolver() {
     return gatewayConflictResolver;
   }
 
@@ -478,10 +478,10 @@ public class CacheConfig {
    * Sets the value of the gatewayConflictResolver property.
    *
    * allowed object is
-   * {@link CacheConfig.GatewayConflictResolver }
+   * {@link DeclarableType }
    *
    */
-  public void setGatewayConflictResolver(CacheConfig.GatewayConflictResolver value) {
+  public void setGatewayConflictResolver(DeclarableType value) {
     this.gatewayConflictResolver = value;
   }
 
@@ -818,10 +818,10 @@ public class CacheConfig {
    * Gets the value of the initializer property.
    *
    * possible object is
-   * {@link InitializerType }
+   * {@link DeclarableType }
    *
    */
-  public InitializerType getInitializer() {
+  public DeclarableType getInitializer() {
     return initializer;
   }
 
@@ -829,10 +829,10 @@ public class CacheConfig {
    * Sets the value of the initializer property.
    *
    * allowed object is
-   * {@link InitializerType }
+   * {@link DeclarableType }
    *
    */
-  public void setInitializer(InitializerType value) {
+  public void setInitializer(DeclarableType value) {
     this.initializer = value;
   }
 
@@ -1110,13 +1110,13 @@ public class CacheConfig {
   public static class AsyncEventQueue {
 
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
-    protected List<ClassWithParametersType> gatewayEventFilter;
+    protected List<DeclarableType> gatewayEventFilter;
     @XmlElement(name = "gateway-event-substitution-filter",
         namespace = "http://geode.apache.org/schema/cache")
-    protected ClassWithParametersType gatewayEventSubstitutionFilter;
+    protected DeclarableType gatewayEventSubstitutionFilter;
     @XmlElement(name = "async-event-listener", namespace = "http://geode.apache.org/schema/cache",
         required = true)
-    protected ClassWithParametersType asyncEventListener;
+    protected DeclarableType asyncEventListener;
     @XmlAttribute(name = "id", required = true)
     protected String id;
     @XmlAttribute(name = "parallel")
@@ -1161,13 +1161,13 @@ public class CacheConfig {
      *
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link ClassWithParametersType }
+     * {@link DeclarableType }
      *
      *
      */
-    public List<ClassWithParametersType> getGatewayEventFilter() {
+    public List<DeclarableType> getGatewayEventFilter() {
       if (gatewayEventFilter == null) {
-        gatewayEventFilter = new ArrayList<ClassWithParametersType>();
+        gatewayEventFilter = new ArrayList<DeclarableType>();
       }
       return this.gatewayEventFilter;
     }
@@ -1176,10 +1176,10 @@ public class CacheConfig {
      * Gets the value of the gatewayEventSubstitutionFilter property.
      *
      * possible object is
-     * {@link ClassWithParametersType }
+     * {@link DeclarableType }
      *
      */
-    public ClassWithParametersType getGatewayEventSubstitutionFilter() {
+    public DeclarableType getGatewayEventSubstitutionFilter() {
       return gatewayEventSubstitutionFilter;
     }
 
@@ -1187,10 +1187,10 @@ public class CacheConfig {
      * Sets the value of the gatewayEventSubstitutionFilter property.
      *
      * allowed object is
-     * {@link ClassWithParametersType }
+     * {@link DeclarableType }
      *
      */
-    public void setGatewayEventSubstitutionFilter(ClassWithParametersType value) {
+    public void setGatewayEventSubstitutionFilter(DeclarableType value) {
       this.gatewayEventSubstitutionFilter = value;
     }
 
@@ -1198,10 +1198,10 @@ public class CacheConfig {
      * Gets the value of the asyncEventListener property.
      *
      * possible object is
-     * {@link ClassWithParametersType }
+     * {@link DeclarableType }
      *
      */
-    public ClassWithParametersType getAsyncEventListener() {
+    public DeclarableType getAsyncEventListener() {
       return asyncEventListener;
     }
 
@@ -1209,10 +1209,10 @@ public class CacheConfig {
      * Sets the value of the asyncEventListener property.
      *
      * allowed object is
-     * {@link ClassWithParametersType }
+     * {@link DeclarableType }
      *
      */
-    public void setAsyncEventListener(ClassWithParametersType value) {
+    public void setAsyncEventListener(DeclarableType value) {
       this.asyncEventListener = value;
     }
 
@@ -1536,94 +1536,6 @@ public class CacheConfig {
     }
 
   }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"className", "parameter"})
-  public static class GatewayConflictResolver {
-
-    @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
-        required = true)
-    protected String className;
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected List<ParameterType> parameter;
-
-    /**
-     * Gets the value of the className property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getClassName() {
-      return className;
-    }
-
-    /**
-     * Sets the value of the className property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setClassName(String value) {
-      this.className = value;
-    }
-
-    /**
-     * Gets the value of the parameter property.
-     *
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the parameter property.
-     *
-     * <p>
-     * For example, to add a new item, do as follows:
-     *
-     * <pre>
-     * getParameter().add(newItem);
-     * </pre>
-     *
-     *
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link ParameterType }
-     *
-     *
-     */
-    public List<ParameterType> getParameter() {
-      if (parameter == null) {
-        parameter = new ArrayList<ParameterType>();
-      }
-      return this.parameter;
-    }
-
-  }
-
 
   /**
    * <p>
@@ -2024,7 +1936,7 @@ public class CacheConfig {
       @XmlElement(name = "gateway-endpoint", namespace = "http://geode.apache.org/schema/cache")
       protected List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> gatewayEndpoint;
       @XmlElement(name = "gateway-listener", namespace = "http://geode.apache.org/schema/cache")
-      protected List<CacheConfig.GatewayHub.Gateway.GatewayListener> gatewayListener;
+      protected List<DeclarableType> gatewayListener;
       @XmlElement(name = "gateway-queue", namespace = "http://geode.apache.org/schema/cache")
       protected CacheConfig.GatewayHub.Gateway.GatewayQueue gatewayQueue;
       @XmlAttribute(name = "early-ack")
@@ -2089,13 +2001,13 @@ public class CacheConfig {
        *
        * <p>
        * Objects of the following type(s) are allowed in the list
-       * {@link CacheConfig.GatewayHub.Gateway.GatewayListener }
+       * {@link DeclarableType }
        *
        *
        */
-      public List<CacheConfig.GatewayHub.Gateway.GatewayListener> getGatewayListener() {
+      public List<DeclarableType> getGatewayListener() {
         if (gatewayListener == null) {
-          gatewayListener = new ArrayList<CacheConfig.GatewayHub.Gateway.GatewayListener>();
+          gatewayListener = new ArrayList<DeclarableType>();
         }
         return this.gatewayListener;
       }
@@ -2354,94 +2266,6 @@ public class CacheConfig {
         }
 
       }
-
-
-      /**
-       * <p>
-       * Java class for anonymous complex type.
-       *
-       * <p>
-       * The following schema fragment specifies the expected content contained within this class.
-       *
-       * <pre>
-       * &lt;complexType>
-       *   &lt;complexContent>
-       *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-       *       &lt;sequence>
-       *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-       *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-       *       &lt;/sequence>
-       *     &lt;/restriction>
-       *   &lt;/complexContent>
-       * &lt;/complexType>
-       * </pre>
-       *
-       *
-       */
-      @XmlAccessorType(XmlAccessType.FIELD)
-      @XmlType(name = "", propOrder = {"className", "parameter"})
-      public static class GatewayListener {
-
-        @XmlElement(name = "class-name", namespace = "http://geode.apache.org/schema/cache",
-            required = true)
-        protected String className;
-        @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-        protected List<ParameterType> parameter;
-
-        /**
-         * Gets the value of the className property.
-         *
-         * possible object is
-         * {@link String }
-         *
-         */
-        public String getClassName() {
-          return className;
-        }
-
-        /**
-         * Sets the value of the className property.
-         *
-         * allowed object is
-         * {@link String }
-         *
-         */
-        public void setClassName(String value) {
-          this.className = value;
-        }
-
-        /**
-         * Gets the value of the parameter property.
-         *
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the parameter property.
-         *
-         * <p>
-         * For example, to add a new item, do as follows:
-         *
-         * <pre>
-         * getParameter().add(newItem);
-         * </pre>
-         *
-         *
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link ParameterType }
-         *
-         *
-         */
-        public List<ParameterType> getParameter() {
-          if (parameter == null) {
-            parameter = new ArrayList<ParameterType>();
-          }
-          return this.parameter;
-        }
-
-      }
-
 
       /**
        * <p>
@@ -2732,7 +2556,7 @@ public class CacheConfig {
 
     @XmlElement(name = "gateway-transport-filter",
         namespace = "http://geode.apache.org/schema/cache")
-    protected List<ClassWithParametersType> gatewayTransportFilter;
+    protected List<DeclarableType> gatewayTransportFilter;
     @XmlAttribute(name = "start-port")
     protected String startPort;
     @XmlAttribute(name = "end-port")
@@ -2767,13 +2591,13 @@ public class CacheConfig {
      *
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link ClassWithParametersType }
+     * {@link DeclarableType }
      *
      *
      */
-    public List<ClassWithParametersType> getGatewayTransportFilter() {
+    public List<DeclarableType> getGatewayTransportFilter() {
       if (gatewayTransportFilter == null) {
-        gatewayTransportFilter = new ArrayList<ClassWithParametersType>();
+        gatewayTransportFilter = new ArrayList<DeclarableType>();
       }
       return this.gatewayTransportFilter;
     }
@@ -2980,13 +2804,13 @@ public class CacheConfig {
   public static class GatewaySender {
 
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
-    protected List<ClassWithParametersType> gatewayEventFilter;
+    protected List<DeclarableType> gatewayEventFilter;
     @XmlElement(name = "gateway-event-substitution-filter",
         namespace = "http://geode.apache.org/schema/cache")
-    protected ClassWithParametersType gatewayEventSubstitutionFilter;
+    protected DeclarableType gatewayEventSubstitutionFilter;
     @XmlElement(name = "gateway-transport-filter",
         namespace = "http://geode.apache.org/schema/cache")
-    protected List<ClassWithParametersType> gatewayTransportFilter;
+    protected List<DeclarableType> gatewayTransportFilter;
     @XmlAttribute(name = "id", required = true)
     protected String id;
     @XmlAttribute(name = "remote-distributed-system-id", required = true)
@@ -3039,13 +2863,13 @@ public class CacheConfig {
      *
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link ClassWithParametersType }
+     * {@link DeclarableType }
      *
      *
      */
-    public List<ClassWithParametersType> getGatewayEventFilter() {
+    public List<DeclarableType> getGatewayEventFilter() {
       if (gatewayEventFilter == null) {
-        gatewayEventFilter = new ArrayList<ClassWithParametersType>();
+        gatewayEventFilter = new ArrayList<DeclarableType>();
       }
       return this.gatewayEventFilter;
     }
@@ -3054,10 +2878,10 @@ public class CacheConfig {
      * Gets the value of the gatewayEventSubstitutionFilter property.
      *
      * possible object is
-     * {@link ClassWithParametersType }
+     * {@link DeclarableType }
      *
      */
-    public ClassWithParametersType getGatewayEventSubstitutionFilter() {
+    public DeclarableType getGatewayEventSubstitutionFilter() {
       return gatewayEventSubstitutionFilter;
     }
 
@@ -3065,10 +2889,10 @@ public class CacheConfig {
      * Sets the value of the gatewayEventSubstitutionFilter property.
      *
      * allowed object is
-     * {@link ClassWithParametersType }
+     * {@link DeclarableType }
      *
      */
-    public void setGatewayEventSubstitutionFilter(ClassWithParametersType value) {
+    public void setGatewayEventSubstitutionFilter(DeclarableType value) {
       this.gatewayEventSubstitutionFilter = value;
     }
 
@@ -3091,13 +2915,13 @@ public class CacheConfig {
      *
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link ClassWithParametersType }
+     * {@link DeclarableType }
      *
      *
      */
-    public List<ClassWithParametersType> getGatewayTransportFilter() {
+    public List<DeclarableType> getGatewayTransportFilter() {
       if (gatewayTransportFilter == null) {
-        gatewayTransportFilter = new ArrayList<ClassWithParametersType>();
+        gatewayTransportFilter = new ArrayList<DeclarableType>();
       }
       return this.gatewayTransportFilter;
     }

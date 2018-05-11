@@ -14,11 +14,15 @@
  */
 package org.apache.geode.cache.query.data;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 
 
 public class Position implements Serializable, DataSerializable, Comparable {

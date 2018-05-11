@@ -14,7 +14,9 @@
  */
 package com.company.data;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.TransactionEvent;
+import org.apache.geode.cache.TransactionListener;
 
 /**
  * A <code>TransactionListener</code> that is <code>Declarable</code>

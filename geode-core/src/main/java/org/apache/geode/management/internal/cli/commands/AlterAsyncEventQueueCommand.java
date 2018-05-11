@@ -82,23 +82,22 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
           unspecifiedDefaultValue = "false") boolean ifExists)
       throws IOException, SAXException, ParserConfigurationException, TransformerException {
 
-    ResultModel result = new ResultModel();
-
     // need not check if any running servers has this async-event-queue. A server with this queue id
     // may be shutdown, but we still need to update Cluster Configuration.
     InternalConfigurationPersistenceService service =
         (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
 
     if (service == null) {
-      return result.createError("Cluster Configuration Service is not available. "
+      return ResultModel.createError("Cluster Configuration Service is not available. "
           + "Please connect to a locator with running Cluster Configuration Service.");
     }
 
     boolean locked = service.lockSharedConfiguration();
     if (!locked) {
-      return result.createCommandProcessingError("Unable to lock the cluster configuration.");
+      return ResultModel.createCommandProcessingError("Unable to lock the cluster configuration.");
     }
 
+    ResultModel result = new ResultModel();
     TabularResultModel tableData = result.addTable();
     boolean xmlUpdated = false;
     try {
@@ -166,11 +165,10 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
       Object batchTimeInterval = parseResult.getParamValue(BATCH_TIME_INTERVAL);
       Object maxQueueMemory = parseResult.getParamValue(MAX_QUEUE_MEMORY);
 
-      ResultModel resultModel = new ResultModel();
       if (batchSize == null && batchTimeInterval == null && maxQueueMemory == null) {
-        resultModel.createError("need to specify at least one option to modify.");
+        return ResultModel.createError("need to specify at least one option to modify.");
       }
-      return resultModel;
+      return new ResultModel();
     }
   }
 }

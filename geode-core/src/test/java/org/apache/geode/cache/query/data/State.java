@@ -20,7 +20,7 @@
 
 package org.apache.geode.cache.query.data;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;

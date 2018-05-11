@@ -92,15 +92,15 @@ public class ConfigurePDXCommandTest {
     gfshParserRule
         .executeAndAssertThat(command,
             BASE_COMMAND_STRING + "--auto-serializable-classes=" + new String[] {})
-        .statusIsError().containsOutput("Could not process command due to error.")
+        .statusIsError().containsOutput("Error while processing command")
         .containsOutput("Can't create ReflectionBasedAutoSerializer.");
     gfshParserRule
         .executeAndAssertThat(command,
             BASE_COMMAND_STRING + "--portable-auto-serializable-classes=" + new String[] {})
-        .statusIsError().containsOutput("Could not process command due to error.")
+        .statusIsError().containsOutput("Error while processing command")
         .containsOutput("Can't create ReflectionBasedAutoSerializer.");
 
-    verify(command, times(0)).persistClusterConfiguration(any(), any());
+    verify(command, times(0)).updateClusterConfig(any(), any(), any());
   }
 
   @Test
@@ -112,7 +112,7 @@ public class ConfigurePDXCommandTest {
         .statusIsError().containsOutput(
             "The autoserializer cannot support both portable and non-portable classes at the same time.");
 
-    verify(command, times(0)).persistClusterConfiguration(any(), any());
+    verify(command, times(0)).updateClusterConfig(any(), any(), any());
   }
 
   @Test

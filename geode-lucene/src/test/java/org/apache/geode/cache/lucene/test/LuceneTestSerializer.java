@@ -15,7 +15,9 @@
 package org.apache.geode.cache.lucene.test;
 
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Properties;
 
 import org.apache.lucene.document.Document;
 

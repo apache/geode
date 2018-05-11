@@ -14,65 +14,30 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 
-public class DestroyMappingFunction extends JdbcCliFunction<String, CliFunctionResult> {
-
-  DestroyMappingFunction() {
-    super();
-  }
+@Experimental
+public class DestroyMappingFunction extends CliFunction<String> {
 
   @Override
-  CliFunctionResult getFunctionResult(JdbcConnectorService service, FunctionContext<String> context)
-      throws Exception {
-    // input
+  public CliFunctionResult executeFunction(FunctionContext<String> context) {
+    JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
     String regionName = context.getArguments();
-
-    // action
-    boolean success = destroyRegionMapping(service, regionName);
-
-    // output
-    String member = getMember(context);
-    return createResult(success, context, member, regionName);
-  }
-
-  /**
-   * Destroys the named region mapping
-   */
-  boolean destroyRegionMapping(JdbcConnectorService service, String regionName) {
+    String member = context.getMemberName();
     ConnectorService.RegionMapping mapping = service.getMappingForRegion(regionName);
     if (mapping != null) {
       service.destroyRegionMapping(regionName);
-      return true;
-    }
-    return false;
-  }
-
-  private CliFunctionResult createResult(boolean success, FunctionContext<String> context,
-      String member, String regionName) {
-    CliFunctionResult result;
-    if (success) {
-      XmlEntity xmlEntity = createXmlEntity(context);
-      result = createSuccessResult(member, regionName, xmlEntity);
+      String message = "Destroyed region mapping for region " + regionName + " on " + member;
+      return new CliFunctionResult(member, true, message);
     } else {
-      result = createNotFoundResult(member, regionName);
+      String message = "Region mapping for region \"" + regionName + "\" not found";
+      return new CliFunctionResult(member, false, message);
     }
-    return result;
-  }
-
-  private CliFunctionResult createSuccessResult(String member, String regionName,
-      XmlEntity xmlEntity) {
-    String message = "Destroyed region mapping for region " + regionName + " on " + member;
-    return new CliFunctionResult(member, xmlEntity, message);
-  }
-
-  private CliFunctionResult createNotFoundResult(String member, String regionName) {
-    String message = "Region mapping for region \"" + regionName + "\" not found";
-    return new CliFunctionResult(member, false, message);
   }
 }

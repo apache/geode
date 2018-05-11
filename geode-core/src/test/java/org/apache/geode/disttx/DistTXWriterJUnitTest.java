@@ -14,8 +14,8 @@
  */
 package org.apache.geode.disttx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 

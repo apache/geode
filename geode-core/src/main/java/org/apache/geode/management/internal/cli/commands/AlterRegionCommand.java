@@ -46,6 +46,7 @@ public class AlterRegionCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   public Result alterRegion(
       @CliOption(key = CliStrings.ALTER_REGION__REGION, mandatory = true,
+          optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.ALTER_REGION__REGION__HELP) String regionPath,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,

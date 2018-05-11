@@ -14,8 +14,9 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
 
 import java.util.Properties;
 

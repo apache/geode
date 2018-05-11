@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.query;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

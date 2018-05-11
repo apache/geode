@@ -14,9 +14,37 @@
  */
 package org.apache.geode.cache;
 
-import static org.apache.geode.cache.RegionShortcut.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.RegionShortcut.LOCAL;
+import static org.apache.geode.cache.RegionShortcut.LOCAL_HEAP_LRU;
+import static org.apache.geode.cache.RegionShortcut.LOCAL_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.LOCAL_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.LOCAL_PERSISTENT_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_HEAP_LRU;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PROXY;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PROXY_REDUNDANT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_HEAP_LRU;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_HEAP_LRU;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_PROXY;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileWriter;

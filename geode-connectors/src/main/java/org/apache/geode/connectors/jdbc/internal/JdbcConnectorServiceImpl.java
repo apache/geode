@@ -19,13 +19,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
-
+@Experimental
 public class JdbcConnectorServiceImpl implements JdbcConnectorService {
 
   private final Map<String, ConnectorService.Connection> connectionsByName =

@@ -14,7 +14,8 @@
  */
 package org.apache.geode.disttx;
 
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
 
 import java.io.DataInput;
 import java.io.DataOutput;

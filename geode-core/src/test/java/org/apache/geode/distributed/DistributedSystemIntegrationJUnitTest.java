@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileWriter;

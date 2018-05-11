@@ -95,11 +95,6 @@ public class Assert {
       } else {
         ex = new InternalGemFireError();
       }
-      // org.apache.geode.internal.cache.GemFireCache gfc
-      // = org.apache.geode.internal.cache.GemFireCache.getInstance();
-      // if (gfc != null) {
-      // gfc.getLogger().info("DEBUG", ex);
-      // }
       throw ex;
     }
   }

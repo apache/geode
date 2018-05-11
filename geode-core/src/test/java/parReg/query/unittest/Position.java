@@ -15,7 +15,9 @@
 package parReg.query.unittest;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;

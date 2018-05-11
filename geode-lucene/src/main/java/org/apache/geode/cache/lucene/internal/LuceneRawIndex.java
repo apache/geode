@@ -55,4 +55,9 @@ public class LuceneRawIndex extends LuceneIndexImpl {
   public boolean isIndexAvailable(int id) {
     return true;
   }
+
+  @Override
+  public boolean isIndexingInProgress() {
+    return false;
+  }
 }

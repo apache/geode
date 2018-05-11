@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -45,7 +44,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -120,7 +118,6 @@ public class AlterMappingFunctionTest {
     when(service.getMappingForRegion(REGION_NAME)).thenReturn(existingMapping);
 
     AlterMappingFunction function = spy(new AlterMappingFunction());
-    doReturn(null).when(function).createXmlEntity(context);
     function.execute(context);
 
     verify(service, times(1)).replaceRegionMapping(any());
@@ -131,14 +128,7 @@ public class AlterMappingFunctionTest {
     doThrow(ConnectionConfigNotFoundException.class).when(service)
         .replaceRegionMapping(eq(regionMapping));
 
-    IgnoredException ignoredException =
-        IgnoredException.addIgnoredException(RegionMappingNotFoundException.class.getName());
-
-    try {
-      function.execute(context);
-    } finally {
-      ignoredException.remove();
-    }
+    function.execute(context);
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());

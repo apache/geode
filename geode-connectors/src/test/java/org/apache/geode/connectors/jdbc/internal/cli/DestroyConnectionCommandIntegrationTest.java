@@ -27,6 +27,7 @@ import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -64,7 +65,7 @@ public class DestroyConnectionCommandIntegrationTest {
     service.createConnectionConfig(connectionConfig);
     assertThat(service.getConnectionConfig(connectionName)).isSameAs(connectionConfig);
 
-    Result result = command.destroyConnection(connectionName);
+    ResultModel result = command.destroyConnection(connectionName);
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     assertThat(service.getConnectionConfig(connectionName)).isNull();
@@ -75,7 +76,7 @@ public class DestroyConnectionCommandIntegrationTest {
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     assertThat(service.getConnectionConfig(connectionName)).isNull();
 
-    Result result = command.destroyConnection(connectionName);
+    ResultModel result = command.destroyConnection(connectionName);
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
 
     assertThat(service.getConnectionConfig(connectionName)).isNull();

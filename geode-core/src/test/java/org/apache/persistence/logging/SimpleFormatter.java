@@ -14,8 +14,9 @@
  */
 package org.apache.persistence.logging;
 
-import java.io.*;
-import java.util.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Date;
 
 /**
  * A Formatter that returns a textual description of a LogRecord

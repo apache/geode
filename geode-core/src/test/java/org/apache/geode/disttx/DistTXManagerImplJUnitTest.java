@@ -14,8 +14,9 @@
  */
 package org.apache.geode.disttx;
 
-import static junit.framework.TestCase.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static junit.framework.TestCase.assertTrue;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.util.Properties;
 

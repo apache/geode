@@ -16,18 +16,16 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
+import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
-public class DescribeMappingFunction
-    extends JdbcCliFunction<String, ConnectorService.RegionMapping> {
-
-  DescribeMappingFunction() {
-    super();
-  }
+public class DescribeMappingFunction extends CliFunction<String> {
 
   @Override
-  ConnectorService.RegionMapping getFunctionResult(JdbcConnectorService service,
-      FunctionContext<String> context) {
-    return service.getMappingForRegion(context.getArguments());
+  public CliFunctionResult executeFunction(FunctionContext<String> context) {
+    JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
+
+    return new CliFunctionResult(context.getMemberName(),
+        service.getMappingForRegion(context.getArguments()));
   }
 }

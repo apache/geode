@@ -19,10 +19,19 @@
  */
 package org.apache.geode.cache.query;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,9 +39,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.query.data.*;
-import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.data.Country;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.QueryObserverAdapter;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.categories.PerformanceTest;
 
