@@ -22,7 +22,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -93,6 +97,9 @@ public class SSLSocketIntegrationTest {
   @Rule
   public TestName testName = new TestName();
 
+
+  private Throwable serverException;
+
   @Before
   public void setUp() throws Exception {
     File keystore = findTestKeystore();
@@ -152,7 +159,7 @@ public class SSLSocketIntegrationTest {
   @Test
   public void securedSocketTransmissionShouldWork() throws Exception {
     this.serverSocket = this.socketCreator.createServerSocket(0, 0, this.localHost);
-    this.serverThread = startServer(this.serverSocket);
+    this.serverThread = startServer(this.serverSocket, 15000);
 
     int serverPort = this.serverSocket.getLocalPort();
     this.clientSocket = this.socketCreator.connectForServer(this.localHost, serverPort);
@@ -163,8 +170,24 @@ public class SSLSocketIntegrationTest {
     output.flush();
 
     // this is the real assertion of this test
-    await().atMost(1, TimeUnit.MINUTES)
-        .until(() -> assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE));
+    await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      return !serverThread.isAlive();
+    });
+    assertNull(serverException);
+    assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE);
+  }
+
+  @Test(expected = SocketTimeoutException.class)
+  public void handshakeCanTimeoutOnServer() throws Throwable {
+    this.serverSocket = this.socketCreator.createServerSocket(0, 0, this.localHost);
+    this.serverThread = startServer(this.serverSocket, 1000);
+
+    int serverPort = this.serverSocket.getLocalPort();
+    Socket socket = new Socket();
+    socket.connect(new InetSocketAddress(localHost, serverPort));
+    await().atMost(5, TimeUnit.SECONDS).until(() -> assertFalse(serverThread.isAlive()));
+    assertNotNull(serverException);
+    throw serverException;
   }
 
   @Test
@@ -249,16 +272,18 @@ public class SSLSocketIntegrationTest {
     return file;
   }
 
-  private Thread startServer(final ServerSocket serverSocket) throws Exception {
+  private Thread startServer(final ServerSocket serverSocket, int timeoutMillis) throws Exception {
     Thread serverThread = new Thread(new MyThreadGroup(this.testName.getMethodName()), () -> {
+      long startTime = System.currentTimeMillis();
       try {
         Socket socket = serverSocket.accept();
-        SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER)
-            .startHandshakeIfSocketIsSSL(socket, 15000);
+        SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER).handshakeIfSocketIsSSL(socket,
+            timeoutMillis);
+        assertEquals(0, socket.getSoTimeout());
         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
         messageFromClient.set((String) ois.readObject());
-      } catch (IOException | ClassNotFoundException e) {
-        throw new Error(e);
+      } catch (Throwable throwable) {
+        serverException = throwable;
       }
     }, this.testName.getMethodName() + "-server");
 

@@ -1549,12 +1549,12 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   }
 
   private CommunicationMode getCommunicationModeForNonSelector(Socket socket) throws IOException {
-    this.socketCreator.startHandshakeIfSocketIsSSL(socket, this.acceptTimeout);
+    socket.setSoTimeout(0);
+    this.socketCreator.handshakeIfSocketIsSSL(socket, this.acceptTimeout);
     byte communicationModeByte = (byte) socket.getInputStream().read();
     if (communicationModeByte == -1) {
       throw new EOFException();
     }
-    socket.setSoTimeout(0);
     return CommunicationMode.fromModeNumber(communicationModeByte);
   }
 
