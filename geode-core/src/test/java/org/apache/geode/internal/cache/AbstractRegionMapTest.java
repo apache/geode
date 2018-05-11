@@ -861,12 +861,12 @@ public class AbstractRegionMapTest {
     AbstractRegionMap arm = new TxPutIfAbsentTestableAbstractRegionMap();
     List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
     TXId txId = new TXId(arm._getOwner().getMyId(), 1);
-    TXRmtEvent txRmtEvent = mock(TXRmtEvent.class);
     EventID eventId = mock(EventID.class);
+    TXEntryState txEntryState = mock(TXEntryState.class);
     Object newValue = "value";
 
-    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false, txId, txRmtEvent, eventId, null,
-        pendingCallbacks, null, null, null, null, 1);
+    arm.txApplyPut(Operation.UPDATE, KEY, newValue, false, txId, null, eventId, null,
+        pendingCallbacks, null, null, txEntryState, null, 1);
 
     assertEquals(1, pendingCallbacks.size());
     verify(arm._getOwner(), times(1)).txApplyPutPart2(any(), any(), anyLong(), anyBoolean(),
@@ -913,14 +913,6 @@ public class AbstractRegionMapTest {
         false);
   }
 
-  private EntryEventImpl createEventForCreate(LocalRegion lr, String key) {
-    when(lr.getKeyInfo(key)).thenReturn(new KeyInfo(key, null, null));
-    EntryEventImpl event =
-        EntryEventImpl.create(lr, Operation.CREATE, key, false, null, true, false);
-    event.setNewValue("create_value");
-    return event;
-  }
-
   private static class TxNoRegionEntryTestableAbstractRegionMap
       extends TxTestableAbstractRegionMap {
     @Override
@@ -957,7 +949,7 @@ public class AbstractRegionMapTest {
     @Override
     public RegionEntry getEntry(Object key) {
       RegionEntry regionEntry = mock(RegionEntry.class);
-      when(regionEntry.isRemoved()).thenReturn(true);
+      when(regionEntry.isDestroyedOrRemoved()).thenReturn(true);
       return regionEntry;
     }
 

@@ -16,10 +16,12 @@ package org.apache.geode.internal.cache.map;
 
 import java.util.Map;
 
+import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
+import org.apache.geode.internal.cache.TXEntryState;
 
 public interface FocusedRegionMap {
 
@@ -46,9 +48,16 @@ public interface FocusedRegionMap {
 
   void lruEntryCreate(RegionEntry regionEntry);
 
+  void incEntryCount(int delta);
+
   void runWhileEvictionDisabled(Runnable runnable);
 
   void lruUpdateCallback();
 
   void resetThreadLocals();
+
+  void txRemoveOldIndexEntry(Operation putOp, RegionEntry regionEntry);
+
+  void processAndGenerateTXVersionTag(EntryEventImpl callbackEvent, RegionEntry regionEntry,
+      TXEntryState txEntryState);
 }

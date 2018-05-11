@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.CachePerfStats;
@@ -59,6 +60,7 @@ public class RegionMapPutTest {
   private boolean requireOldValue = false;
   private Object expectedOldValue = null;
   private boolean overwriteDestroyed = false;
+  private RegionMapPut instance;
 
   @Before
   public void setup() {
@@ -76,12 +78,158 @@ public class RegionMapPutTest {
     when(regionEntry.isRemoved()).thenReturn(true);
   }
 
-  private RegionEntry doPut() {
-    RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, internalRegion,
-        cacheModificationLock, entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed,
-        requireOldValue, expectedOldValue);
-    return regionMapPut.put();
+  private void createInstance() {
+    instance = new RegionMapPut(focusedRegionMap, internalRegion, cacheModificationLock,
+        entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed, requireOldValue,
+        expectedOldValue);
   }
+
+  private RegionEntry doPut() {
+    createInstance();
+    return instance.put();
+  }
+
+  @Test
+  public void retrieveOldValueForDeltaDefaultToFalse() {
+    createInstance();
+
+    assertThat(instance.isRetrieveOldValueForDelta()).isFalse();
+  }
+
+  @Test
+  public void retrieveOldValueForDeltaTrueIfEventHasDeltaBytes() {
+    when(event.getDeltaBytes()).thenReturn(new byte[1]);
+
+    createInstance();
+
+    assertThat(instance.isRetrieveOldValueForDelta()).isTrue();
+  }
+
+  @Test
+  public void retrieveOldValueForDeltaFalseIfEventHasDeltaBytesAndRawNewValue() {
+    when(event.getDeltaBytes()).thenReturn(new byte[1]);
+    when(event.getRawNewValue()).thenReturn(new Object());
+
+    createInstance();
+
+    assertThat(instance.isRetrieveOldValueForDelta()).isFalse();
+  }
+
+  @Test
+  public void replaceOnClientDefaultsToFalse() {
+    createInstance();
+
+    assertThat(instance.isReplaceOnClient()).isFalse();
+  }
+
+  @Test
+  public void replaceOnClientIsTrueIfOperationIsReplaceAndOwnerIsClient() {
+    when(event.getOperation()).thenReturn(Operation.REPLACE);
+    when(internalRegion.hasServerProxy()).thenReturn(true);
+
+    createInstance();
+
+    assertThat(instance.isReplaceOnClient()).isTrue();
+  }
+
+  @Test
+  public void replaceOnClientIsFalseIfOperationIsReplaceAndOwnerIsNotClient() {
+    when(event.getOperation()).thenReturn(Operation.REPLACE);
+
+    createInstance();
+
+    assertThat(instance.isReplaceOnClient()).isFalse();
+  }
+
+  @Test
+  public void onlyExistingDefaultsToFalse() {
+    createInstance();
+
+    assertThat(instance.isOnlyExisting()).isFalse();
+  }
+
+  @Test
+  public void onlyExistingIsTrueIfOld() {
+    ifOld = true;
+
+    createInstance();
+
+    assertThat(instance.isOnlyExisting()).isTrue();
+  }
+
+  @Test
+  public void onlyExistingIsFalseIfOldAndReplaceOnClient() {
+    ifOld = true;
+    when(event.getOperation()).thenReturn(Operation.REPLACE);
+    when(internalRegion.hasServerProxy()).thenReturn(true);
+
+    createInstance();
+
+    assertThat(instance.isOnlyExisting()).isFalse();
+  }
+
+  @Test
+  public void cacheWriteDefaultToFalse() {
+    createInstance();
+
+    assertThat(instance.isCacheWrite()).isFalse();
+  }
+
+  @Test
+  public void cacheWriteIsFaseIfGenerateCallbacksButNotDistributedEtc() {
+    when(event.isGenerateCallbacks()).thenReturn(true);
+    createInstance();
+
+    assertThat(instance.isCacheWrite()).isFalse();
+  }
+
+  @Test
+  public void cacheWriteIsTrueIfGenerateCallbacksAndDistributed() {
+    when(event.isGenerateCallbacks()).thenReturn(true);
+    when(internalRegion.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
+    createInstance();
+
+    assertThat(instance.isCacheWrite()).isTrue();
+  }
+
+  @Test
+  public void cacheWriteIsTrueIfGenerateCallbacksAndServerProxy() {
+    when(event.isGenerateCallbacks()).thenReturn(true);
+    when(internalRegion.hasServerProxy()).thenReturn(true);
+    createInstance();
+
+    assertThat(instance.isCacheWrite()).isTrue();
+  }
+
+  @Test
+  public void cacheWriteIsTrueIfGenerateCallbacksAndCacheWriter() {
+    when(event.isGenerateCallbacks()).thenReturn(true);
+    when(internalRegion.basicGetWriter()).thenReturn(mock(CacheWriter.class));
+    createInstance();
+
+    assertThat(instance.isCacheWrite()).isTrue();
+  }
+
+  @Test
+  public void isOriginRemoteCausesCacheWriteToBeFalse() {
+    when(event.isOriginRemote()).thenReturn(true);
+    when(event.isGenerateCallbacks()).thenReturn(true);
+    when(internalRegion.basicGetWriter()).thenReturn(mock(CacheWriter.class));
+    createInstance();
+
+    assertThat(instance.isCacheWrite()).isFalse();
+  }
+
+  @Test
+  public void netSearchCausesCacheWriteToBeFalse() {
+    when(event.isNetSearch()).thenReturn(true);
+    when(event.isGenerateCallbacks()).thenReturn(true);
+    when(internalRegion.basicGetWriter()).thenReturn(mock(CacheWriter.class));
+    createInstance();
+
+    assertThat(instance.isCacheWrite()).isFalse();
+  }
+
 
   @Test
   public void createOnEmptyMapAddsEntry() throws Exception {
