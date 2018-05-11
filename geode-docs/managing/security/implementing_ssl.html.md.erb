@@ -21,7 +21,10 @@ limitations under the License.
 
 You can configure SSL for authentication between members and to protect your data during
 distribution. You can use SSL alone or in conjunction with the other <%=vars.product_name%> security options.
-<%=vars.product_name%> SSL connections use the Java Secure Sockets Extension (JSSE) package.
+
+<%=vars.product_name%> SSL connections use the Java Secure Sockets Extension (JSSE) package, so the properties
+described here apply to <%=vars.product_name%> servers and to Java-based clients. SSL configuration in non-Java
+clients may differ &mdash; see the client's documentation for details.
 
 ## <a id="ssl_configurable_components" class="no-quick-link"></a>SSL-Configurable Components
 
@@ -154,7 +157,7 @@ ssl-default-alias=Locator-Cert
  
 **Client properties**
 
-On the client, the list of enabled components reflects the server's configuration so the client
+On Java clients, the list of enabled components reflects the server's configuration so the client
 knows how it is expected to communicate with (for example) servers and locators.  Paths to keystore
 and truststore are local to the client.
 
