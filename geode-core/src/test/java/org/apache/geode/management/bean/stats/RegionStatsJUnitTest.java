@@ -27,13 +27,13 @@ import org.apache.geode.management.internal.beans.DiskRegionBridge;
 import org.apache.geode.management.internal.beans.PartitionedRegionBridge;
 import org.apache.geode.management.internal.beans.RegionMBeanBridge;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.StatisticsTest;
+import org.apache.geode.test.junit.categories.JMXTest;
 
 /**
  * Implementing RegionMXBean to ensure test coverage
  *
  */
-@Category({IntegrationTest.class, StatisticsTest.class})
+@Category({IntegrationTest.class, JMXTest.class})
 public class RegionStatsJUnitTest extends MBeanStatsTestCase {
 
   private RegionMBeanBridge bridge;

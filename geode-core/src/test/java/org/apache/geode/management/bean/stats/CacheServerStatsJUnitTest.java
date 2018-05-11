@@ -24,9 +24,9 @@ import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.management.internal.beans.CacheServerBridge;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.StatisticsTest;
+import org.apache.geode.test.junit.categories.JMXTest;
 
-@Category({IntegrationTest.class, StatisticsTest.class})
+@Category({IntegrationTest.class, JMXTest.class})
 public class CacheServerStatsJUnitTest extends MBeanStatsTestCase {
 
   private CacheServerBridge bridge;

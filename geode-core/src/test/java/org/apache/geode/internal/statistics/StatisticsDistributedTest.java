@@ -89,7 +89,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  *
  * @since GemFire 7.0
  */
-@Category(value = {DistributedTest.class, StatisticsTest.class})
+@Category({DistributedTest.class, StatisticsTest.class})
 @SuppressWarnings({"rawtypes", "serial", "unused"})
 public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
