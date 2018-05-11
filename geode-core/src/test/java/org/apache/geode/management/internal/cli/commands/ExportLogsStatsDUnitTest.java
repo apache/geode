@@ -45,10 +45,9 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, GfshTest.class})
+@Category({DistributedTest.class})
 public class ExportLogsStatsDUnitTest {
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();

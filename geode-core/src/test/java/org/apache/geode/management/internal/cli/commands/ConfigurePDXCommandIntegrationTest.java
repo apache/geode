@@ -21,12 +21,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({IntegrationTest.class, GfshTest.class})
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ConfigurePDXCommandIntegrationTest {
   private static final String BASE_COMMAND_STRING = "configure pdx ";
 

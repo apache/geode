@@ -42,10 +42,9 @@ import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, GfshTest.class})
+@Category({DistributedTest.class})
 public class RemoveCommandJsonDUnitTest implements Serializable {
   private static final String JSON_REGION_NAME = "jsonReplicateRegion";
 

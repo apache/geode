@@ -17,5 +17,5 @@ package org.apache.geode.test.junit.categories;
 /**
  * JUnit Test Category that specifies a test that tests Compressor features.
  */
-public interface CompressorTest {
+public interface CompressionTest {
 }

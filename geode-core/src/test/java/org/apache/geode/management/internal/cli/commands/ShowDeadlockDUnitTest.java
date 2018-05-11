@@ -42,7 +42,6 @@ import org.apache.geode.test.concurrent.FileBasedCountDownLatch;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 /**
@@ -50,7 +49,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
  *
  * @see GemFireDeadlockDetectorDUnitTest
  */
-@Category({DistributedTest.class, GfshTest.class})
+@Category({DistributedTest.class})
 public class ShowDeadlockDUnitTest {
   private static Thread stuckThread = null;
   private static final Lock LOCK = new ReentrantLock();
